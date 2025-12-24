@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(VTKFile_Class) TagsMethods
-USE BaseMethod
+USE penf, ONLY: str
 IMPLICIT NONE
 CONTAINS
 
@@ -32,22 +32,22 @@ INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 IF (.NOT. obj%isInitiated) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & ' [INTERNAL ERROR] :: VTKFile is not initiated!')
+                    ' [INTERNAL ERROR] :: VTKFile is not initiated!')
 END IF
 
 IF (.NOT. obj%isOpen()) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: VTKFile is not open')
+                    '[INTERNAL ERROR] :: VTKFile is not open')
 END IF
 
 IF (.NOT. obj%isWrite()) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: VTKFile does not have write permission')
+                 '[INTERNAL ERROR] :: VTKFile does not have write permission')
 END IF
 
 buffer = '<?xml version="1.0" encoding="UTF-8"?>'//CHAR_LF

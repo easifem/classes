@@ -21,9 +21,5 @@ if(USE_LIS)
     ${PROJECT_NAME}
     PRIVATE ${src_path}/BlockNodeFieldLis_Class@ConstructorMethods.F90
             ${src_path}/BlockNodeFieldLis_Class@IOMethods.F90
-            ${src_path}/BlockNodeFieldLis_Class@SetMethods.F90
-            ${src_path}/BlockNodeFieldLis_Class@GetMethods.F90
-            ${src_path}/BlockNodeFieldLis_Class@OperatorMethods.F90
-            ${src_path}/BlockNodeFieldLis_Class@DBCMethods.F90
-            ${src_path}/BlockNodeFieldLis_Class@BlasMethods.F90)
+            ${src_path}/BlockNodeFieldLis_Class@SetMethods.F90)
 endif()

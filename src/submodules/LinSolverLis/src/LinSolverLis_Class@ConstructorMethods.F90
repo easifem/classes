@@ -16,256 +16,688 @@
 !
 
 SUBMODULE(LinSolverLis_Class) ConstructorMethods
-USE BaseMethod
+USE BaseType, ONLY: TypePrecondOpt, &
+                    TypeSolverNameOpt
+USE LinSolver_Class, ONLY: LinSolverInitiate, &
+                           LinSolverDeallocate
+USE Display_Method, ONLY: ToString
+USE String_Class, ONLY: String
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                        GetSolverNameString
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigSolverName_bicgstabl(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigSolverName_bicgstabl()"
+#endif
+
+  INTEGER(I4B) :: bicgstab_ell
+
+  bicgstab_ell = obj%opt%GetBicgstabEll()
+  opt = opt//' -i bicgstabl -ell '//ToString(bicgstab_ell)
+END SUBROUTINE ConfigSolverName_bicgstabl
+
+!----------------------------------------------------------------------------
+!                                                        GetSolverNameString
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigSolverName_gmres(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigSolverName_gmres()"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetKrylovSubspaceSize()
+  opt = opt//' -i gmres -restart '//ToString(i1)
+END SUBROUTINE ConfigSolverName_gmres
+
+!----------------------------------------------------------------------------
+!                                                        GetSolverNameString
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigSolverName_orthomin(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigSolverName_orthomin()"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetKrylovSubspaceSize()
+  opt = opt//' -i orthomin -restart '//ToString(i1)
+END SUBROUTINE ConfigSolverName_orthomin
+
+!----------------------------------------------------------------------------
+!                                                        GetSolverNameString
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigSolverName_fgmres(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigSolverName_fgmres()"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetKrylovSubspaceSize()
+  opt = opt//' -i fgmres -restart '//ToString(i1)
+END SUBROUTINE ConfigSolverName_fgmres
+
+!----------------------------------------------------------------------------
+!                                                        GetSolverNameString
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigSolverName_idrs(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigSolverName_idrs()"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetKrylovSubspaceSize()
+  opt = opt//' -i idrs -irestart '//ToString(i1)
+END SUBROUTINE ConfigSolverName_idrs
+
+!----------------------------------------------------------------------------
+!                                                        GetSolverNameString
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigSolverName_sor(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigSolverName_sor()"
+#endif
+
+  REAL(DFP) :: i1
+
+  i1 = obj%opt%GetSorOmega()
+  opt = opt//' -i sor -omega '//ToString(i1)
+END SUBROUTINE ConfigSolverName_sor
+
+!----------------------------------------------------------------------------
+!                                                              ConfigMaxIter
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigMaxIter(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigMaxIter"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetMaxIter()
+  opt = opt//' -maxiter '//ToString(i1)
+END SUBROUTINE ConfigMaxIter
+
+!----------------------------------------------------------------------------
+!                                                              ConfigPrint
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrint(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrint"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = 3
+  opt = opt//' -print '//ToString(i1)
+END SUBROUTINE ConfigPrint
+
+!----------------------------------------------------------------------------
+!                                                              ConfigScale
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigScale(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigScale"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetScale()
+  opt = opt//' -scale '//ToString(i1)
+END SUBROUTINE ConfigScale
+
+!----------------------------------------------------------------------------
+!                                                                  ConfigRtol
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigRelativeTolerance(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigRelativeTolerance"
+#endif
+
+  REAL(DFP) :: i1
+
+  i1 = obj%opt%GetRelativeTolerance()
+  opt = opt//' -tol '//ToString(i1)
+END SUBROUTINE ConfigRelativeTolerance
+
+!----------------------------------------------------------------------------
+!                                                           ConfigInitxZeros
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigInitxZeros(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigInitxZeros"
+#endif
+
+  LOGICAL(LGT) :: i1
+
+  i1 = obj%opt%GetInitxZeros()
+
+  IF (i1) THEN
+    opt = opt//' -initx_zeros true '
+  ELSE
+    opt = opt//' -initx_zeros false '
+  END IF
+END SUBROUTINE ConfigInitxZeros
+
+!----------------------------------------------------------------------------
+!                                                         ConfigRelativeToRHS
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigRelativeToRHS(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigRelativeToRHS()"
+#endif
+
+  LOGICAL(LGT) :: i1
+
+  i1 = obj%opt%GetRelativeToRHS()
+
+  IF (i1) THEN
+    opt = opt//" -conv_cond 1 "
+  ELSE
+    opt = opt//" -conv_cond 0 "
+  END IF
+
+END SUBROUTINE ConfigRelativeToRHS
+
+!----------------------------------------------------------------------------
+!                                                          ConfigPrecond_none
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_none(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_none()"
+#endif
+
+  opt = opt//' -p none '
+END SUBROUTINE ConfigPrecond_none
+
+!----------------------------------------------------------------------------
+!                                                       ConfigPrecond_jacobi
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_jacobi(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_jacobi()"
+#endif
+
+  opt = opt//' -p jacobi '
+END SUBROUTINE ConfigPrecond_jacobi
+
+!----------------------------------------------------------------------------
+!                                                       ConfigPrecond_ilu
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_ilu(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_ilu()"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetIluFill()
+  opt = opt//' -p ilu -ilu_fill '//ToString(i1)
+
+END SUBROUTINE ConfigPrecond_ilu
+
+!----------------------------------------------------------------------------
+!                                                       ConfigPrecond_ssor
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_ssor(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_ssor()"
+#endif
+
+  REAL(DFP) :: i1
+
+  i1 = obj%opt%GetSsorOmega()
+  opt = opt//' -p ssor -ssor_omega '//ToString(i1)
+
+END SUBROUTINE ConfigPrecond_ssor
+
+!----------------------------------------------------------------------------
+!                                                       ConfigPrecond_hybrid
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_hybrid(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_hybrid()"
+#endif
+
+  INTEGER(I4B) :: i1, i2, i3, i4
+  REAL(DFP) :: r1, r2
+
+  i1 = obj%opt%GetHybridI()
+  i2 = obj%opt%GetHybridMaxIter()
+  i3 = obj%opt%GetHybridEll()
+  i4 = obj%opt%GetHybridRestart()
+  r1 = obj%opt%GetHybridTol()
+  r2 = obj%opt%GetHybridOmega()
+
+  opt = opt//' -p hybrid -hybrid_i '//ToString(i1)// &
+        ' -hybrid_maxiter '//ToString(i2)// &
+        ' -hybrid_ell '//ToString(i3)// &
+        ' -hybrid_restart '//ToString(i4)// &
+        ' -hybrid_tol '//ToString(r1)// &
+        ' -hybrid_omega '//ToString(r2)
+
+END SUBROUTINE ConfigPrecond_hybrid
+
+!----------------------------------------------------------------------------
+!                                                           ConfigPrecond_is
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_is(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_is()"
+#endif
+
+  INTEGER(I4B) :: i1
+  REAL(DFP) :: r1
+
+  i1 = obj%opt%GetIsM()
+  r1 = obj%opt%GetIsAlpha()
+
+  opt = opt//' -p is '//' -is_m '//ToString(i1)// &
+        ' -is_alpha '//ToString(r1)
+
+END SUBROUTINE ConfigPrecond_is
+
+!----------------------------------------------------------------------------
+!                                                           ConfigPrecond_sainv
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_sainv(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_sainv()"
+#endif
+
+  REAL(DFP) :: r1
+
+  r1 = obj%opt%GetSainvDrop()
+  opt = opt//' -p sainv -sainv_drop '//ToString(r1)
+
+END SUBROUTINE ConfigPrecond_sainv
+
+!----------------------------------------------------------------------------
+!                                                        ConfigPrecond_saamg
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_saamg(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_saamg()"
+#endif
+
+  LOGICAL(LGT) :: b1
+  REAL(DFP) :: r1
+
+  b1 = obj%opt%GetSaamgUnsym()
+  r1 = obj%opt%GetSaamgTheta()
+
+  IF (b1) THEN
+    opt = opt//' -p saamg -sammg_unsym true -saamg_theta '// &
+          ToString(r1)
+  ELSE
+
+    opt = opt//' -p saamg -sammg_unsym false -saamg_theta '// &
+          ToString(r1)
+  END IF
+
+END SUBROUTINE ConfigPrecond_saamg
+
+!----------------------------------------------------------------------------
+!                                                        ConfigPrecond_iluc
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_iluc(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_iluc()"
+#endif
+
+  REAL(DFP) :: r1, r2
+
+  r1 = obj%opt%GetIlucDrop()
+  r2 = obj%opt%GetIlucRate()
+
+  opt = opt//' -p iluc -iluc_drop '//ToString(r1)// &
+        ' -iluc_rate '//ToString(r2)
+END SUBROUTINE ConfigPrecond_iluc
+
+!----------------------------------------------------------------------------
+!                                                        ConfigPrecond_adds
+!----------------------------------------------------------------------------
+
+SUBROUTINE ConfigPrecond_adds(obj, opt)
+  CLASS(LinSolverLis_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: opt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_adds()"
+#endif
+
+  INTEGER(I4B) :: i1
+
+  i1 = obj%opt%GetAddsIter()
+
+  opt = opt//' -p ilut -adds true -adds_iter '//ToString(i1)
+
+END SUBROUTINE ConfigPrecond_adds
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Initiate
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "ls_Initiate"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: solverName
-INTEGER(I4B) :: preconditionOption
-INTEGER(I4B) :: convergenceIn
-INTEGER(I4B) :: convergenceType
-INTEGER(I4B) :: maxIter
-LOGICAL(LGT) :: relativeToRHS
-INTEGER(I4B) :: KrylovSubspaceSize
-REAL(DFP) :: rtol
-REAL(DFP) :: atol
-INTEGER(I4B) :: scale
-! LIS, Solver digonal scaling
-! scale_none: No scaling
-! scale_jacobi: jacobi scaling inv(D)Ax = inv(D)b
-! scale_symm_diag: sqrt(inv(D)) A sqrt(inv(D)) x = sqrt(inv(D))b
-LOGICAL(LGT) :: initx_zeros
-! if True, then we set sol=0.0 as initial guess.
-INTEGER(I4B) :: bicgstab_ell
-!
-REAL(DFP) :: sor_omega
-INTEGER(I4B) :: p_name
-! Name of preconditioner
-INTEGER(I4B) :: p_ilu_lfil
-! Sparsekit, ilu
-INTEGER(I4B) :: p_ilu_mbloc
-! Sparsekit, ilu
-REAL(DFP) :: p_ilu_droptol
-! Sparsekit, ilu
-REAL(DFP) :: p_ilu_permtol
-! Sparsekit, ilu
-REAL(DFP) :: p_ilu_alpha
-! Sparsekit, ilu, alpha
-INTEGER(I4B) :: p_ilu_fill
-! ILU, fill-in
-REAL(DFP) :: p_ssor_omega
-! The relaxation coefficient omega in (0.0, 2.0)
-INTEGER(I4B) :: p_hybrid_i
-! Hybrid, the linear solver, for example, SSOR, GMRES,
-INTEGER(I4B) :: p_hybrid_maxiter
-! Hybrid, maximum number of iterations
-REAL(DFP) :: p_hybrid_tol
-! Hybrid, convergence tolerance
-REAL(DFP) :: p_hybrid_omega
-! Hybrid, The relaxation coefficient omega of the SOR
-! omega should be in (0.0, 2.0)
-INTEGER(I4B) :: p_hybrid_ell
-!Hybrid, The degree l of the BiCGSTAB(l)
-INTEGER(I4B) :: p_hybrid_restart
-! Hybrid, The restart value of GMRES and Orthomin
-REAL(DFP) :: p_is_alpha
-! I+S, The parameter alpha of $I + \alpha {S}^{m}$
-INTEGER(I4B) :: p_is_m
-! I+S, The parameter m of $I + \alpha {S}^{m}$
-REAL(DFP) :: p_sainv_drop
-! SA-AMG, The drop criteria
-LOGICAL(LGT) :: p_saamg_unsym
-! SA-AMG, Select the unsymmetric version
-! The matrix structure must be symmetric
-REAL(DFP) :: p_saamg_theta
-! SA-AMG, The drop criteria
-REAL(DFP) :: p_iluc_drop
-! Crout ILU, default is 0.05, The drop criteria
-REAL(DFP) :: p_iluc_rate
-! Crout ILU, The ratio of the maximum fill-in
-LOGICAL(LGT) :: p_adds
-! ilut Additive Schwarz, default is true
-INTEGER(I4B) :: p_adds_iter
-! default value is 1
-! ILUT Additive Schwarz number of iteration
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+INTEGER(I4B) :: ierr, solverName, precond
+LOGICAL(LGT) :: isPrecondition
 TYPE(String) :: opt
 
-CALL LinSolverInitiate(obj, param)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL LinSolverInitiate(obj=obj)
 
 CALL lis_solver_create(obj%lis_solver, ierr)
-CALL chkerr(ierr)
 
-CALL getAbstractLinSolverParam( &
-  & param=param, &
-  & prefix=myPrefix, &
-  & solverName=solverName, &
-  & preconditionOption=preconditionOption, &
-  & maxIter=maxIter, &
-  & atol=atol, &
-  & rtol=rtol, &
-  & convergenceIn=convergenceIn, &
-  & convergenceType=convergenceType, &
-  & relativeToRHS=relativeToRHS, &
-  & KrylovSubspaceSize=KrylovSubspaceSize, &
-  & scale=scale, &
-  & initx_zeros=initx_zeros, &
-  & bicgstab_ell=bicgstab_ell, &
-  & sor_omega=sor_omega, &
-  & p_name=p_name, &
-  & p_ilu_lfil=p_ilu_lfil, &
-  & p_ilu_mbloc=p_ilu_mbloc, &
-  & p_ilu_droptol=p_ilu_droptol, &
-  & p_ilu_permtol=p_ilu_permtol, &
-  & p_ilu_alpha=p_ilu_alpha, &
-  & p_ilu_fill=p_ilu_fill, &
-  & p_ssor_omega=p_ssor_omega, &
-  & p_hybrid_i=p_hybrid_i, &
-  & p_hybrid_maxiter=p_hybrid_maxiter, &
-  & p_hybrid_tol=p_hybrid_tol, &
-  & p_hybrid_omega=p_hybrid_omega, &
-  & p_hybrid_ell=p_hybrid_ell, &
-  & p_hybrid_restart=p_hybrid_restart, &
-  & p_is_alpha=p_is_alpha, &
-  & p_is_m=p_is_m, &
-  & p_sainv_drop=p_sainv_drop, &
-  & p_saamg_unsym=p_saamg_unsym, &
-  & p_saamg_theta=p_saamg_theta, &
-  & p_iluc_drop=p_iluc_drop, &
-  & p_iluc_rate=p_iluc_rate, &
-  & p_adds=p_adds, &
-  & p_adds_iter=p_adds_iter &
-  & )
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 
 opt = ""
+solverName = obj%opt%GetSolverName()
 
-SELECT CASE (SolverName)
+SELECT CASE (solverName)
 
-CASE (LIS_BICGSTABL)
+CASE (TypeSolverNameOpt%CG)
+  opt = opt//' -i cg '
 
-  opt = opt//' -i bicgstabl -ell '//tostring(bicgstab_ell)
+CASE (TypeSolverNameOpt%BICG)
+  opt = opt//' -i bicg '
 
-CASE (LIS_ORTHOMIN, LIS_GMRES, LIS_FGMRES)
+CASE (TypeSolverNameOpt%CGS)
+  opt = opt//' -i cgs '
 
-  opt = ' -i '//tostring(SolverName)// &
-      & ' -restart '//tostring(KrylovSubspaceSize)
+CASE (TypeSolverNameOpt%BICGSTAB)
+  opt = opt//' -i bicgstab '
 
-CASE (LIS_IDRS)
+CASE (TypeSolverNameOpt%BICGSTABL)
+  CALL ConfigSolverName_bicgstabl(obj=obj, opt=opt)
 
-  opt = ' -i '//tostring(SolverName)// &
-      & ' -irestart '//tostring(KrylovSubspaceSize)
+CASE (TypeSolverNameOpt%GPBiCG)
+  opt = opt//' -i gpbicg '
 
-CASE (LIS_SOR)
-  opt = ' -i sor -omega '//tostring(sor_omega)
+CASE (TypeSolverNameOpt%tfqmr)
+  opt = opt//' -i tfqmr '
 
+CASE (TypeSolverNameOpt%ORTHOMIN)
+  CALL ConfigSolverName_orthomin(obj=obj, opt=opt)
+
+CASE (TypeSolverNameOpt%GMRES)
+  CALL ConfigSolverName_gmres(obj=obj, opt=opt)
+
+CASE (TypeSolverNameOpt%jacobi)
+  opt = opt//' -i jacobi '
+
+CASE (TypeSolverNameOpt%gs)
+  opt = opt//' -i gs '
+
+CASE (TypeSolverNameOpt%SOR)
+  CALL ConfigSolverName_sor(obj=obj, opt=opt)
+
+CASE (TypeSolverNameOpt%bicgsafe)
+  opt = opt//' -i bicgsafe '
+
+CASE (TypeSolverNameOpt%cr)
+  opt = opt//' -i cr '
+
+CASE (TypeSolverNameOpt%bicr)
+  opt = opt//' -i bicr '
+
+CASE (TypeSolverNameOpt%crs)
+  opt = opt//' -i crs '
+
+CASE (TypeSolverNameOpt%bicrstab)
+  opt = opt//' -i bicrstab '
+
+CASE (TypeSolverNameOpt%gpbicr)
+  opt = opt//' -i gpbicr '
+
+CASE (TypeSolverNameOpt%bicrsafe)
+  opt = opt//' -i bicrsafe '
+
+CASE (TypeSolverNameOpt%FGMRES)
+  CALL ConfigSolverName_fgmres(obj=obj, opt=opt)
+
+CASE (TypeSolverNameOpt%IDRS)
+  CALL ConfigSolverName_idrs(obj=obj, opt=opt)
+
+CASE (TypeSolverNameOpt%idr1)
+  opt = opt//' -i idr1 '
+
+CASE (TypeSolverNameOpt%minres)
+  opt = opt//' -i minres '
+
+CASE (TypeSolverNameOpt%cocg)
+  opt = opt//' -i cocg '
+
+CASE (TypeSolverNameOpt%cocr)
+  opt = opt//' -i cocr '
+
+#ifdef DEBUG_VER
 CASE DEFAULT
-  opt = ' -i '//tostring(SolverName)
+  CALL AssertError1(.FALSE., myName, "No case found for solver name")
+#endif
 
 END SELECT
 
-opt = opt//' -maxiter '//tostring(maxIter)//" -print 3 "// &
-  & " -scale "//tostring(scale)//' -tol '//tostring(rtol)
+CALL ConfigMaxIter(obj=obj, opt=opt)
+CALL ConfigPrint(obj=obj, opt=opt)
+CALL ConfigScale(obj=obj, opt=opt)
+CALL ConfigRelativeTolerance(obj=obj, opt=opt)
+CALL ConfigInitxZeros(obj=obj, opt=opt)
+CALL ConfigRelativeToRHS(obj=obj, opt=opt)
 
-IF (initx_zeros) THEN
-  opt = opt//' -initx_zeros true '
-ELSE
-  opt = opt//' -initx_zeros false '
+precond = obj%opt%GetPreconditionOption()
+isPrecondition = precond .NE. TypePrecondOpt%NONE
+IF (.NOT. isPrecondition) THEN
+  CALL lis_solver_set_option(opt%chars(), obj%lis_solver, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
 END IF
 
-IF (relativeToRHS) THEN
-  opt = opt//" -conv_cond 1 "
-ELSE
-  opt = opt//" -conv_cond 0 "
-END IF
+precond = obj%opt%GetPreconditionName()
 
-IF (preconditionOption .NE. NO_PRECONDITION) THEN
+SELECT CASE (precond)
+CASE (TypePrecondOpt%NONE)
+  CALL ConfigPrecond_none(obj=obj, opt=opt)
 
-  SELECT CASE (p_name)
-  CASE (PRECOND_NONE)
-    opt = opt//' -p none '
-  CASE (PRECOND_JACOBI)
-    opt = opt//' -p jacobi '
-  CASE (PRECOND_ILU)
-    opt = opt//' -p ilu -ilu_fill '//tostring(p_ilu_fill)
-  CASE (PRECOND_SSOR)
-    opt = opt//' -p ssor -ssor_omega '//tostring(p_ssor_omega)
+CASE (TypePrecondOpt%JACOBI)
+  CALL ConfigPrecond_jacobi(obj=obj, opt=opt)
 
-  CASE (PRECOND_HYBRID)
-    opt = opt//' -p hybrid -hybrid_i '//tostring(p_hybrid_i)// &
-      & ' -hybrid_maxiter '//tostring(p_hybrid_maxiter)// &
-      & ' -hybrid_ell '//tostring(p_hybrid_ell)// &
-      & ' -hybrid_restart '//tostring(p_hybrid_restart)// &
-      & ' -hybrid_tol '//tostring(p_hybrid_tol)// &
-      & ' -hybrid_omega '//tostring(p_hybrid_omega)
+CASE (TypePrecondOpt%ILU)
+  CALL ConfigPrecond_ilu(obj=obj, opt=opt)
 
-  CASE (PRECOND_IS)
-    opt = opt//' -p is ' &
-      & //' -is_m '//tostring(p_is_m) &
-      & //' -is_alpha '//tostring(p_is_alpha)
+CASE (TypePrecondOpt%SSOR)
+  CALL ConfigPrecond_ssor(obj=obj, opt=opt)
 
-  CASE (PRECOND_SAINV)
-    opt = opt//' -p sainv -sainv_drop '//tostring(p_sainv_drop)
+CASE (TypePrecondOpt%HYBRID)
+  CALL ConfigPrecond_hybrid(obj=obj, opt=opt)
 
-  CASE (PRECOND_SAAMG)
-    IF (p_saamg_unsym) THEN
-      opt = opt//' -p saamg -sammg_unsym true -saamg_theta ' &
-          & //tostring(p_saamg_theta)
-    ELSE
-      opt = opt//' -p saamg -sammg_unsym false -saamg_theta ' &
-          & //tostring(p_saamg_theta)
-    END IF
+CASE (TypePrecondOpt%IS)
+  CALL ConfigPrecond_is(obj=obj, opt=opt)
 
-  CASE (PRECOND_ILUC)
-    opt = opt//' -p iluc -iluc_drop ' &
-        & //tostring(p_iluc_drop) &
-        & //' -iluc_rate ' &
-        & //tostring(p_iluc_rate)
+CASE (TypePrecondOpt%SAINV)
+  CALL ConfigPrecond_sainv(obj=obj, opt=opt)
 
-  CASE (PRECOND_ADDS)
-    opt = opt//' -p ilut -adds true -adds_iter ' &
-          //tostring(p_adds_iter)
+CASE (TypePrecondOpt%SAAMG)
+  CALL ConfigPrecond_saamg(obj=obj, opt=opt)
 
-  CASE DEFAULT
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-      & 'Unknown precondition option')
+CASE (TypePrecondOpt%ILUC)
+  CALL ConfigPrecond_iluc(obj=obj, opt=opt)
 
-  END SELECT
+CASE (TypePrecondOpt%ADDS)
+  CALL ConfigPrecond_adds(obj=obj, opt=opt)
 
-END IF
+#ifdef DEBUG_VER
+CASE DEFAULT
+  CALL AssertError1(.FALSE., myName, "No case found for precondition name")
+#endif
+
+END SELECT
 
 CALL lis_solver_set_option(opt%chars(), obj%lis_solver, ierr)
-CALL chkerr(ierr)
 
-END PROCEDURE ls_Initiate
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Deallocate
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
 INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL lis_solver_destroy(obj%lis_solver, ierr)
-CALL chkerr(ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
 CALL LinSolverDeallocate(obj)
-END PROCEDURE ls_Deallocate
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                 Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_final
+MODULE PROCEDURE obj_final
 CALL obj%DEALLOCATE()
-END PROCEDURE ls_final
+END PROCEDURE obj_final
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

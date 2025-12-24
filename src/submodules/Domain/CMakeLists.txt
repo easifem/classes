@@ -15,12 +15,12 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/DomainUtility.F90
-          ${src_path}/Domain_Class@ConstructorMethods.F90
-          ${src_path}/Domain_Class@IOMethods.F90
-          ${src_path}/Domain_Class@GetMethods.F90
-          ${src_path}/Domain_Class@SetMethods.F90
-          ${src_path}/Domain_Class@MeshDataMethods.F90)
+# set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+# target_sources(
+#   ${PROJECT_NAME}
+#   PRIVATE ${src_path}/DomainUtility.F90
+#           ${src_path}/Domain_Class@ConstructorMethods.F90
+#           ${src_path}/Domain_Class@IOMethods.F90
+#           ${src_path}/Domain_Class@GetMethods.F90
+#           ${src_path}/Domain_Class@SetMethods.F90
+#           ${src_path}/Domain_Class@MeshDataMethods.F90)

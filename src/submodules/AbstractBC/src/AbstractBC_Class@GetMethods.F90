@@ -15,172 +15,211 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractBC_Class) GetMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString, Display
+
 IMPLICIT NONE
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                 IsInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%isInit
+END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
+!                                                       IsElemToEdgeInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElemToEdgeInitiated
+ans = obj%isElemToEdge
+END PROCEDURE obj_IsElemToEdgeInitiated
+
+!----------------------------------------------------------------------------
+!                                                       IsElemToFaceInitiated
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsElemToFaceInitiated
+ans = obj%isElemToFace
+END PROCEDURE obj_IsElemToFaceInitiated
+
+!----------------------------------------------------------------------------
+!                                                          GetTotalElemToEdge
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemToEdge
+ans = obj%tElemToEdge
+END PROCEDURE obj_GetTotalElemToEdge
+
+!----------------------------------------------------------------------------
+!                                                          GetTotalElemToFace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElemToFace
+ans = obj%tElemToFace
+END PROCEDURE obj_GetTotalElemToFace
+
+!----------------------------------------------------------------------------
+!                                                               GetElemToFace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemToFace
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemToFace()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = indx .LE. obj%tElemToFace
+CALL AssertError1(isok, myName, &
+                  "indx ("//ToString(indx)//") > tElemToFace ("// &
+                  ToString(obj%tElemToFace)//")")
+#endif
+
+localCellNumber = obj%elemToFace(1, indx)
+localFaceNumber = obj%elemToFace(2, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemToFace
+
+!----------------------------------------------------------------------------
+!                                                               GetElemToEdge
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemToEdge
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemToEdge()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = indx .LE. obj%tElemToEdge
+CALL AssertError1(isok, myName, &
+                  "indx ("//ToString(indx)//") > tElemToEdge ("// &
+                  ToString(obj%tElemToEdge)//")")
+#endif
+
+localCellNumber = obj%elemToEdge(1, indx)
+localEdgeNumber = obj%elemToEdge(2, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemToEdge
 
 !----------------------------------------------------------------------------
 !                                                                 GetMeshID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetMeshID
-ans = obj%boundary%getMeshID(dim=dim)
-END PROCEDURE bc_GetMeshID
+MODULE PROCEDURE obj_GetMeshID
+ans = obj%boundary%GetMeshID(dim=dim)
+END PROCEDURE obj_GetMeshID
+
+!----------------------------------------------------------------------------
+!                                                           GetMeshIDPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshIDPointer
+CALL obj%boundary%GetMeshIDPointer(dim=dim, ans=ans, tsize=tsize)
+END PROCEDURE obj_GetMeshIDPointer
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetDOFNo
+MODULE PROCEDURE obj_GetDOFNo
 ans = obj%idof
-END PROCEDURE bc_GetDOFNo
+END PROCEDURE obj_GetDOFNo
 
 !----------------------------------------------------------------------------
-!                                                                       Get
+!                                                           GetTotalNodeNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Get
-CHARACTER(*), PARAMETER :: myName = "bc_Get()"
-INTEGER(I4B) :: ii, tsize, tNodes, tTimes
-LOGICAL(LGT) :: isNodalValuePresent, isNOTOK
+MODULE PROCEDURE obj_GetTotalNodeNum
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeNum()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: ii, localFaceNumber, localEdgeNumber, localCellNumber, &
+                mysize
+LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START] ')
 #endif
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & '[INTERNAL ERROR] :: AbstractBC_ object is not initiated'//  &
-  & ', initiate it first.')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%dom)
+CALL AssertError1(isok, myName, &
+                  'AbstractBC_::obj%dom is not associated!')
+#endif
 
-! get node numbers
-IF (.NOT. ASSOCIATED(obj%dom)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[INTERNAL ERROR] :: AbstractBC_::obj%dom is not associated!')
-  RETURN
-END IF
+ans = 0
+mysize = obj%boundary%GetTotalNodeNum(dom=obj%dom)
+ans = ans + mysize
 
-nodeNum = obj%boundary%GetNodeNum(domain=obj%dom)
-tNodes = SIZE(nodeNum)
+CALL obj%SetElemToLocalBoundary()
 
-tTimes = 1
-IF (PRESENT(times)) tTimes = SIZE(times)
+DO ii = 1, obj%tElemToFace
+  CALL obj%GetElemToFace(indx=ii, localCellNumber=localCellNumber, &
+                         localFaceNumber=localFaceNumber)
 
-isNodalValuePresent = PRESENT(nodalValue)
+  mysize = fedof%GetTotalFaceDOF(globalElement=localCellNumber, &
+                                 localFaceNumber=localFaceNumber, islocal=yes)
+  ans = ans + mysize
+END DO
 
-IF (isNodalValuePresent .AND. obj%isUserFunction) THEN
-  CALL obj%GetFromUserFunction(nodeNum=nodeNum, nodalValue=nodalValue,  &
-    & times=times)
-  RETURN
-END IF
+DO ii = 1, obj%tElemToEdge
+  CALL obj%GetElemToEdge(indx=ii, localCellNumber=localCellNumber, &
+                         localEdgeNumber=localEdgeNumber)
 
-isNOTOK = isNodalValuePresent .AND. (.NOT. ALLOCATED(obj%nodalValue))
+  mysize = fedof%GetTotalEdgeDOF(globalElement=localCellNumber, &
+                                 localEdgeNumber=localEdgeNumber, islocal=yes)
 
-IF (isNOTOK) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: AbstractBC_::obj%nodalValue is not allocated!')
-  RETURN
-END IF
-
-IF (.NOT. isNodalValuePresent) RETURN
-
-! get nodal values
-SELECT CASE (obj%nodalValueType)
-
-! Constant
-CASE (CONSTANT)
-  CALL Reallocate(nodalValue, tNodes, tTimes)
-  nodalValue = obj%nodalValue(1, 1)
-
-! Space
-CASE (SPACE)
-  isNOTOK = SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)
-  IF (isNOTOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-     & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
-    RETURN
-  END IF
-
-  nodalValue = obj%nodalValue
-
-! Time
-CASE (TIME)
-  tsize = SIZE(obj%nodalValue, 1)
-  IF (PRESENT(times)) THEN
-    IF (tsize .NE. SIZE(times)) THEN
-      CALL e%RaiseError(modName//'::'//myName//" - "// &
-       & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
-    END IF
-  END IF
-
-  CALL Reallocate(nodalValue, SIZE(nodeNum), tsize)
-
-  DO ii = 1, tsize
-    nodalValue(:, ii) = obj%nodalValue(ii, 1)
-  END DO
-
-! SpaceTime
-CASE (SpaceTime)
-  IF (SIZE(obj%nodalValue, 1) .NE. SIZE(nodeNum)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-     & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 1 ) .NE. SIZE( nodeNum )')
-  END IF
-
-  IF (PRESENT(times)) THEN
-    IF (SIZE(obj%nodalValue, 2) .NE. SIZE(times)) THEN
-      CALL e%RaiseError(modName//'::'//myName//" - "// &
-        & '[INTERNAL ERROR] :: SIZE( obj%nodalValue, 2 ) .NE. SIZE( times )')
-    END IF
-  END IF
-
-  nodalValue = obj%nodalValue
-END SELECT
+  ans = ans + mysize
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END] ')
 #endif
-END PROCEDURE bc_Get
-
-!----------------------------------------------------------------------------
-!                                                           bc_GetFEVar
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE bc_GetFEVar
-CHARACTER(*), PARAMETER :: myName = "bc_GetFEVar()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development.')
-
-! If useFunction is true  then
-!    if constant
-!    if time
-!    if space
-!    if space-time
-
-! If useFunction is not true then
-END PROCEDURE bc_GetFEVar
+END PROCEDURE obj_GetTotalNodeNum
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_isuseFunction
+MODULE PROCEDURE obj_isuseFunction
 ans = obj%isUserFunction
-END PROCEDURE bc_isuseFunction
+END PROCEDURE obj_isuseFunction
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetQuery
-CALL obj%boundary%GetQuery(&
-  & isSelectionByBox=isSelectionByBox, &
-  & isSelectionByMeshID=isSelectionByMeshID, &
-  & isSelectionByElemNum=isSelectionByElemNum, &
-  & isSelectionByNodeNum=isSelectionByNodeNum)
+MODULE PROCEDURE obj_GetParam
+CALL obj%boundary%GetParam(isSelectionByBox=isSelectionByBox, &
+                           isSelectionByMeshID=isSelectionByMeshID, &
+                           isSelectionByElemNum=isSelectionByElemNum, &
+                           isSelectionByNodeNum=isSelectionByNodeNum)
 
 IF (PRESENT(idof)) idof = obj%idof
 IF (PRESENT(isTangent)) isTangent = obj%isTangent
@@ -188,155 +227,26 @@ IF (PRESENT(isNormal)) isNormal = obj%isNormal
 IF (PRESENT(useFunction)) useFunction = obj%isUserFunction
 IF (PRESENT(isUserFunction)) isUserFunction = obj%isUserFunction
 IF (PRESENT(nodalValueType)) nodalValueType = obj%nodalValueType
-IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
-IF (PRESENT(useExternal)) useExternal = obj%useExternal
-END PROCEDURE bc_GetQuery
+IF (PRESENT(isInitiated)) isInitiated = obj%isInit
+IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
+IF (PRESENT(isElemToFace)) isElemToFace = obj%isElemToFace
+IF (PRESENT(isElemToEdge)) isElemToEdge = obj%isElemToEdge
+END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
 !                                                                GetPrefix
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "bc_GetPrefix()"
+MODULE PROCEDURE obj_GetPrefix
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child class.')
-END PROCEDURE bc_GetPrefix
+          '[WIP ERROR] :: This routine should be implemented by child class.')
+END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
-!                                                       GetFromUserFunction
+!                                                              Include Error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_GetFromUserFunction
-CHARACTER(*), PARAMETER :: myName = "bc_GetFromUserFunction()"
-INTEGER(I4B) :: ii, kk, retType, tNodes, nsd, tTimes, argType
-REAL(DFP) :: xij(4, 1), ans
-LOGICAL(LGT) :: problem
-
-! get pointer to nodecoord
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-problem = .NOT. ASSOCIATED(obj%func)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & "[INTERNAL ERROR] :: When nodalValueType is "//  &
-  & CHAR_LF//"Space and useFunction is specified, "//  &
-  & CHAR_LF//"then SpaceFunction is needed, "//  &
-  & CHAR_LF//"but it is not associated")
-  RETURN
-END IF
-
-retType = obj%func%GetReturnType()
-problem = retType .NE. Scalar
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Return type of user function should be '//  &
-    & 'scalar.')
-  RETURN
-END IF
-
-problem = (obj%nodalValueType .EQ. Time) .AND. (.NOT. PRESENT(times))
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[INTERNAL ERROR] :: When `nodalValueType` is Time "//  &
-    & " and `IsUserFunction` is TRUE, "//  &
-    & " then `times` is needed in the passing argument,"//  &
-    & " but it is not present")
-  RETURN
-END IF
-
-problem = (obj%nodalValueType .EQ. SpaceTime) .AND. (.NOT. PRESENT(times))
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[INTERNAL ERROR] :: When `nodalValueType` is SpaceTime "//  &
-    & " and `IsUserFunction` is TRUE, "//  &
-    & " then `times` is needed in the passing argument,"//  &
-    & " but it is not present")
-  RETURN
-END IF
-
-argType = obj%func%GetArgType()
-problem = argType .NE. obj%nodalValueType
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: argType='//tostring(argType)//  &
-    & ' in user function is not same '//  &
-    & 'as nodalValueType '//tostring(obj%nodalValueType)//  &
-    & ' in AbstractBC_')
-  RETURN
-END IF
-
-tNodes = SIZE(nodeNum)
-nsd = obj%dom%GetNSD()
-
-SELECT CASE (obj%nodalValueType)
-
-! Constant
-CASE (Constant)
-  CALL Reallocate(nodalValue, tNodes, 1)
-
-  CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1), &
-    & globalNode=nodeNum(1:1))
-
-  CALL obj%func%Get(val=ans)
-
-  nodalValue(:, 1) = ans
-
-! Space
-CASE (Space)
-  CALL Reallocate(nodalValue, tNodes, 1)
-
-  DO ii = 1, tNodes
-    CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
-      & globalNode=nodeNum(ii:ii))
-
-    CALL obj%func%Get(val=ans, args=xij(1:3, 1))
-
-    nodalValue(ii, 1) = ans
-  END DO
-
-! Time
-CASE (Time)
-
-  tTimes = SIZE(times)
-
-  CALL Reallocate(nodalValue, tNodes, tTimes)
-
-  DO ii = 1, tTimes
-    CALL obj%func%Get(val=ans, args=times(ii:ii))
-
-    nodalValue(:, ii) = ans
-  END DO
-
-! SpaceTime
-CASE (SpaceTime)
-  tTimes = SIZE(times)
-
-  CALL Reallocate(nodalValue, tNodes, tTimes)
-
-  DO kk = 1, tTimes
-    xij(nsd + 1, 1) = times(kk)
-
-    DO ii = 1, tNodes
-      CALL obj%dom%GetNodeCoord(nodeCoord=xij(1:nsd, 1:1),  &
-        & globalNode=nodeNum(ii:ii))
-
-      CALL obj%func%Get(val=ans, args=xij(1:4, 1))
-
-      nodalValue(ii, kk) = ans
-    END DO
-  END DO
-
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
-END PROCEDURE bc_GetFromUserFunction
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

@@ -86,43 +86,48 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => txt_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => txt_Deallocate
-  FINAL :: txt_final
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_final
 
   ! SET:
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetCSVFileProperties => &
-    & txt_SetCSVFileProperties
+    & obj_SetCSVFileProperties
   PROCEDURE, PUBLIC, PASS(obj) :: SetSkipRows => &
-    & txt_SetSkipRows
+    & obj_SetSkipRows
   PROCEDURE, PUBLIC, PASS(obj) :: SetHeaderIndx => &
-    & txt_SetHeaderIndx
+    & obj_SetHeaderIndx
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Getnrows => txt_Getnrows
-  PROCEDURE, PUBLIC, PASS(obj) :: Getncols => txt_Getncols
-  PROCEDURE, PUBLIC, PASS(obj) :: GetChunkSize => txt_GetChunkSize
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDataTypes => txt_GetDataTypes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetValue => txt_GetValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn => txt_GetColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: GetRealColumn => txt_GetRealColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: Getnrows => obj_Getnrows
+  PROCEDURE, PUBLIC, PASS(obj) :: Getncols => obj_Getncols
+  PROCEDURE, PUBLIC, PASS(obj) :: GetChunkSize => obj_GetChunkSize
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDataTypes => obj_GetDataTypes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetValue => obj_GetValue
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn => obj_GetColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRealColumn1 => obj_GetRealColumn_real32
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRealColumn2 => obj_GetRealColumn_real64
   PROCEDURE, PUBLIC, PASS(obj) :: GetRealVectorColumn => &
-    & txt_GetRealVectorColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: GetIntColumn => txt_GetIntColumn
+    obj_GetRealVectorColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntColumn1 => obj_getIntColumn_int8
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntColumn2 => obj_getIntColumn_int16
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntColumn3 => obj_getIntColumn_int32
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIntColumn4 => obj_getIntColumn_int64
   PROCEDURE, PUBLIC, PASS(obj) :: GetIntVectorColumn => &
-    & txt_GetIntVectorColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStringColumn => txt_GetStringColumn
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLogicalColumn => txt_GetLogicalColumn
+    & obj_GetIntVectorColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStringColumn => obj_GetStringColumn
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLogicalColumn => obj_GetLogicalColumn
   !!
-  GENERIC, PUBLIC :: Get => GetValue, GetRealColumn, &
-    & GetIntColumn, GetStringColumn, GetLogicalColumn, &
-    & GetIntVectorColumn, GetRealVectorColumn
+  GENERIC, PUBLIC :: Get => GetValue, GetRealColumn1, &
+    GetRealColumn2, GetIntColumn1, GetIntColumn2, &
+    GetIntColumn3, GetIntColumn4, GetStringColumn, &
+    GetLogicalColumn, GetIntVectorColumn, GetRealVectorColumn
 
   ! IO:
   ! @ReadMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: csvFileRead => txt_CSVFileRead
+  PROCEDURE, PUBLIC, PASS(obj) :: csvFileRead => obj_CSVFileRead
   GENERIC, PUBLIC :: READ => csvFileRead
 END TYPE CSVFile_
 
@@ -152,8 +157,8 @@ PUBLIC :: CSVFilePointer_
 ! summary: Initiate the txt file
 
 INTERFACE
-  MODULE SUBROUTINE txt_initiate(obj, filename, unit, status, access, form, &
-    & position, action, pad, recl, comment, separator, delimiter)
+  MODULE SUBROUTINE obj_initiate(obj, filename, unit, status, access, form, &
+                   position, action, pad, recl, comment, separator, delimiter)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: filename
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unit
@@ -180,11 +185,11 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: comment
     CHARACTER(*), OPTIONAL, INTENT(IN) :: separator
     CHARACTER(*), OPTIONAL, INTENT(IN) :: delimiter
-  END SUBROUTINE txt_initiate
+  END SUBROUTINE obj_initiate
 END INTERFACE
 
 INTERFACE CSVFileInitiate
-  MODULE PROCEDURE txt_initiate
+  MODULE PROCEDURE obj_initiate
 END INTERFACE CSVFileInitiate
 
 PUBLIC :: CSVFileInitiate
@@ -198,14 +203,14 @@ PUBLIC :: CSVFileInitiate
 ! summary: Deallocate the data
 
 INTERFACE
-  MODULE SUBROUTINE txt_Deallocate(obj, Delete)
+  MODULE SUBROUTINE obj_Deallocate(obj, Delete)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: Delete
-  END SUBROUTINE txt_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 INTERFACE CSVFileDeallocate
-  MODULE PROCEDURE txt_Deallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE CSVFileDeallocate
 
 PUBLIC :: CSVFileDeallocate
@@ -215,9 +220,9 @@ PUBLIC :: CSVFileDeallocate
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_final(obj)
+  MODULE SUBROUTINE obj_final(obj)
     TYPE(CSVFile_), INTENT(INOUT) :: obj
-  END SUBROUTINE txt_final
+  END SUBROUTINE obj_final
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -225,10 +230,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION txt_getnrows(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_getnrows(obj) RESULT(ans)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION txt_getnrows
+  END FUNCTION obj_getnrows
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -236,10 +241,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION txt_getncols(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_getncols(obj) RESULT(ans)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION txt_getncols
+  END FUNCTION obj_getncols
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -247,10 +252,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE FUNCTION txt_getChunkSize(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_getChunkSize(obj) RESULT(ans)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION txt_getChunkSize
+  END FUNCTION obj_getChunkSize
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -258,10 +263,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE PURE SUBROUTINE txt_getDataTypes(obj, dataType)
+  MODULE PURE SUBROUTINE obj_getDataTypes(obj, dataType)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: dataType(:)
-  END SUBROUTINE txt_getDataTypes
+  END SUBROUTINE obj_getDataTypes
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -269,12 +274,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getValue(obj, irow, icol, val)
+  MODULE SUBROUTINE obj_getValue(obj, irow, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: irow
     INTEGER(I4B), INTENT(IN) :: icol
     CLASS(*), INTENT(OUT) :: val
-  END SUBROUTINE txt_getValue
+  END SUBROUTINE obj_getValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -282,11 +287,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getColumn(obj, icol, val)
+  MODULE SUBROUTINE obj_getColumn(obj, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: icol
     CLASS(*), INTENT(INOUT) :: val(:)
-  END SUBROUTINE txt_getColumn
+  END SUBROUTINE obj_getColumn
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -294,11 +299,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getRealColumn(obj, icol, val)
+  MODULE SUBROUTINE obj_GetRealColumn_real32(obj, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: icol
-    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
-  END SUBROUTINE txt_getRealColumn
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  END SUBROUTINE obj_getRealColumn_real32
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -306,11 +311,23 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getRealVectorColumn(obj, icol, val)
+  MODULE SUBROUTINE obj_GetRealColumn_real64(obj, icol, val)
+    CLASS(CSVFile_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: icol
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  END SUBROUTINE obj_getRealColumn_real64
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_getRealVectorColumn(obj, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: icol
     TYPE(RealVector_), INTENT(INOUT) :: val
-  END SUBROUTINE txt_getRealVectorColumn
+  END SUBROUTINE obj_getRealVectorColumn
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -318,11 +335,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getIntColumn(obj, icol, val)
+  MODULE SUBROUTINE obj_getIntColumn_int8(obj, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: icol
-    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: val(:)
-  END SUBROUTINE txt_getIntColumn
+    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  END SUBROUTINE obj_getIntColumn_int8
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -330,11 +347,47 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getIntVectorColumn(obj, icol, val)
+  MODULE SUBROUTINE obj_getIntColumn_int16(obj, icol, val)
+    CLASS(CSVFile_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: icol
+    INTEGER(INT16), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  END SUBROUTINE obj_getIntColumn_int16
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_getIntColumn_int32(obj, icol, val)
+    CLASS(CSVFile_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: icol
+    INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  END SUBROUTINE obj_getIntColumn_int32
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_getIntColumn_int64(obj, icol, val)
+    CLASS(CSVFile_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: icol
+    INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: val(:)
+  END SUBROUTINE obj_getIntColumn_int64
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_getIntVectorColumn(obj, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: icol
     TYPE(IntVector_), INTENT(INOUT) :: val
-  END SUBROUTINE txt_getIntVectorColumn
+  END SUBROUTINE obj_getIntVectorColumn
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -342,11 +395,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getStringColumn(obj, icol, val)
+  MODULE SUBROUTINE obj_getStringColumn(obj, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: icol
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: val(:)
-  END SUBROUTINE txt_getStringColumn
+  END SUBROUTINE obj_getStringColumn
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -354,11 +407,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_getLogicalColumn(obj, icol, val)
+  MODULE SUBROUTINE obj_getLogicalColumn(obj, icol, val)
     CLASS(CSVFile_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: icol
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: val(:)
-  END SUBROUTINE txt_getLogicalColumn
+  END SUBROUTINE obj_getLogicalColumn
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -366,7 +419,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_setCSVFileProperties(obj, isQuotedStrings, &
+  MODULE SUBROUTINE obj_setCSVFileProperties(obj, isQuotedStrings, &
     & isQuotedData, TrueChar, FalseChar, chunk_size, echostat, echounit)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isQuotedStrings
@@ -376,7 +429,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: chunk_size
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: echostat
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: echounit
-  END SUBROUTINE txt_setCSVFileProperties
+  END SUBROUTINE obj_setCSVFileProperties
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -384,10 +437,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_setSkipRows(obj, indx)
+  MODULE SUBROUTINE obj_setSkipRows(obj, indx)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx(:)
-  END SUBROUTINE txt_setSkipRows
+  END SUBROUTINE obj_setSkipRows
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -395,10 +448,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE txt_setHeaderIndx(obj, indx)
+  MODULE SUBROUTINE obj_setHeaderIndx(obj, indx)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
-  END SUBROUTINE txt_setHeaderIndx
+  END SUBROUTINE obj_setHeaderIndx
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -410,10 +463,10 @@ END INTERFACE
 ! summary: This subroutine reads the `CSVFile_` file
 
 INTERFACE
-  MODULE SUBROUTINE txt_CSVFileRead(obj, iostat)
+  MODULE SUBROUTINE obj_CSVFileRead(obj, iostat)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: iostat
-  END SUBROUTINE txt_CSVFileRead
+  END SUBROUTINE obj_CSVFileRead
 END INTERFACE
 !----------------------------------------------------------------------------
 !                                                     WriteLine@WriteMethods
@@ -424,10 +477,10 @@ END INTERFACE
 ! summary: Write a single line (record)
 
 INTERFACE
-  MODULE SUBROUTINE txt_write_Blank(obj)
+  MODULE SUBROUTINE obj_write_Blank(obj)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     !! YES or NO
-  END SUBROUTINE txt_write_Blank
+  END SUBROUTINE obj_write_Blank
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -439,14 +492,14 @@ END INTERFACE
 ! summary: Write a single line (record)
 
 INTERFACE
-  MODULE SUBROUTINE txt_write_Line(obj, val, iostat, iomsg, advance)
+  MODULE SUBROUTINE obj_write_Line(obj, val, iostat, iomsg, advance)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
     CHARACTER(*), OPTIONAL, INTENT(OUT) :: iomsg
     CHARACTER(*), OPTIONAL, INTENT(IN) :: advance
     !! YES or NO
-  END SUBROUTINE txt_write_Line
+  END SUBROUTINE obj_write_Line
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -458,14 +511,14 @@ END INTERFACE
 ! summary: Write a single line (record)
 
 INTERFACE
-  MODULE SUBROUTINE txt_write_Lines(obj, val, iostat, iomsg, advance)
+  MODULE SUBROUTINE obj_write_Lines(obj, val, iostat, iomsg, advance)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
     CHARACTER(*), OPTIONAL, INTENT(OUT) :: iomsg
     CHARACTER(*), OPTIONAL, INTENT(IN) :: advance
     !! YES, NO
-  END SUBROUTINE txt_write_Lines
+  END SUBROUTINE obj_write_Lines
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -477,7 +530,7 @@ END INTERFACE
 ! summary: Write a single line (record)
 
 INTERFACE
-  MODULE SUBROUTINE txt_write_Char(obj, val, iostat, iomsg, &
+  MODULE SUBROUTINE obj_write_Char(obj, val, iostat, iomsg, &
     &  advance)
     CLASS(CSVFile_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: val
@@ -485,7 +538,7 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(OUT) :: iomsg
     CHARACTER(*), OPTIONAL, INTENT(IN) :: advance
     !! YES, NO
-  END SUBROUTINE txt_write_Char
+  END SUBROUTINE obj_write_Char
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -496,25 +549,25 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write an integer
 
-#define __SUBROUTINE_NAME__ txt_write_Int8
+#define __SUBROUTINE_NAME__ obj_write_Int8
 #define __DATA_TYPE__ INTEGER( Int8 )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_Int16
+#define __SUBROUTINE_NAME__ obj_write_Int16
 #define __DATA_TYPE__ INTEGER( Int16 )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_Int32
+#define __SUBROUTINE_NAME__ obj_write_Int32
 #define __DATA_TYPE__ INTEGER( Int32 )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_Int64
+#define __SUBROUTINE_NAME__ obj_write_Int64
 #define __DATA_TYPE__ INTEGER( Int64 )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
@@ -528,13 +581,13 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write a real value
 
-#define __SUBROUTINE_NAME__ txt_write_Real32
+#define __SUBROUTINE_NAME__ obj_write_Real32
 #define __DATA_TYPE__ REAL( Real32 )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_Real64
+#define __SUBROUTINE_NAME__ obj_write_Real64
 #define __DATA_TYPE__ REAL( Real64 )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
@@ -548,25 +601,25 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write an integer vector
 
-#define __SUBROUTINE_NAME__ txt_write_vec_Int8
+#define __SUBROUTINE_NAME__ obj_write_vec_Int8
 #define __DATA_TYPE__ INTEGER( Int8 )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_vec_Int16
+#define __SUBROUTINE_NAME__ obj_write_vec_Int16
 #define __DATA_TYPE__ INTEGER( Int16 )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_vec_Int32
+#define __SUBROUTINE_NAME__ obj_write_vec_Int32
 #define __DATA_TYPE__ INTEGER( Int32 )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_vec_Int64
+#define __SUBROUTINE_NAME__ obj_write_vec_Int64
 #define __DATA_TYPE__ INTEGER( Int64 )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
@@ -580,7 +633,7 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write a intvector
 
-#define __SUBROUTINE_NAME__ txt_write_IntVector
+#define __SUBROUTINE_NAME__ obj_write_IntVector
 #define __DATA_TYPE__ TYPE( IntVector_ )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
@@ -594,7 +647,7 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write a vector of intvector
 
-#define __SUBROUTINE_NAME__ txt_write_vec_IntVector
+#define __SUBROUTINE_NAME__ obj_write_vec_IntVector
 #define __DATA_TYPE__ TYPE( IntVector_ )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
@@ -608,13 +661,13 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write a real value vector
 
-#define __SUBROUTINE_NAME__ txt_write_vec_Real32
+#define __SUBROUTINE_NAME__ obj_write_vec_Real32
 #define __DATA_TYPE__ REAL( Real32 )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_vec_Real64
+#define __SUBROUTINE_NAME__ obj_write_vec_Real64
 #define __DATA_TYPE__ REAL( Real64 )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
@@ -628,7 +681,7 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write a RealVector
 
-#define __SUBROUTINE_NAME__ txt_write_RealVector
+#define __SUBROUTINE_NAME__ obj_write_RealVector
 #define __DATA_TYPE__ TYPE( RealVector_ )
 #include "./WriteScalar.inc"
 #undef __SUBROUTINE_NAME__
@@ -642,7 +695,7 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write a vector of RealVector
 
-#define __SUBROUTINE_NAME__ txt_write_vec_RealVector
+#define __SUBROUTINE_NAME__ obj_write_vec_RealVector
 #define __DATA_TYPE__ TYPE( RealVector_ )
 #include "./WriteVector.inc"
 #undef __SUBROUTINE_NAME__
@@ -656,25 +709,25 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write an integer matrix
 
-#define __SUBROUTINE_NAME__ txt_write_mat_Int8
+#define __SUBROUTINE_NAME__ obj_write_mat_Int8
 #define __DATA_TYPE__ INTEGER( Int8 )
 #include "./WriteMatrix.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_mat_Int16
+#define __SUBROUTINE_NAME__ obj_write_mat_Int16
 #define __DATA_TYPE__ INTEGER( Int16 )
 #include "./WriteMatrix.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_mat_Int32
+#define __SUBROUTINE_NAME__ obj_write_mat_Int32
 #define __DATA_TYPE__ INTEGER( Int32 )
 #include "./WriteMatrix.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_mat_Int64
+#define __SUBROUTINE_NAME__ obj_write_mat_Int64
 #define __DATA_TYPE__ INTEGER( Int64 )
 #include "./WriteMatrix.inc"
 #undef __SUBROUTINE_NAME__
@@ -688,13 +741,13 @@ END INTERFACE
 ! date: 20 July 2022
 ! summary: Write a real value vector
 
-#define __SUBROUTINE_NAME__ txt_write_mat_Real32
+#define __SUBROUTINE_NAME__ obj_write_mat_Real32
 #define __DATA_TYPE__ REAL( Real32 )
 #include "./WriteMatrix.inc"
 #undef __SUBROUTINE_NAME__
 #undef __DATA_TYPE__
 
-#define __SUBROUTINE_NAME__ txt_write_mat_Real64
+#define __SUBROUTINE_NAME__ obj_write_mat_Real64
 #define __DATA_TYPE__ REAL( Real64 )
 #include "./WriteMatrix.inc"
 #undef __SUBROUTINE_NAME__

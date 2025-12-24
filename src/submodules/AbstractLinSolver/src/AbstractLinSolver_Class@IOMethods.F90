@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) IOMethods
-USE BaseMethod
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 CONTAINS
 
@@ -24,32 +24,58 @@ CONTAINS
 !                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE als_Display
+MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL Display(msg, unitNo=unitno)
-CALL Display("engine : "//obj%engine%chars(), unitNo=unitno)
-CALL Display(obj%isInitiated, "isInitiated : ", unitNo=unitno)
-CALL Display(obj%solverName, "solverName : ", unitNo=unitno)
-CALL Display(obj%preconditionOption, "preconditionOption : ", unitNo=unitno)
-CALL Display(obj%convergenceIn, "convergenceIn : ", unitNo=unitno)
-CALL Display(obj%convergenceType, "convergenceType : ", unitNo=unitno)
-CALL Display(obj%maxIter, "maxIter : ", unitNo=unitno)
-CALL Display(obj%relativeToRHS, "relativeToRHS : ", unitNo=unitno)
-CALL Display(obj%KrylovSubspaceSize, "KrylovSubspaceSize : ", unitNo=unitno)
-CALL Display(obj%atol, "atol : ", unitNo=unitno)
-CALL Display(obj%rtol, "rtol : ", unitNo=unitno)
-CALL Display(obj%ierr, "ierr : ", unitNo=unitno)
-CALL Display(obj%iter, "iter : ", unitNo=unitno)
-IF (ASSOCIATED(obj%Amat)) THEN
-  CALL Display("Amat is ASSOCIATED", unitNo=unitno)
-ELSE
-  CALL Display("Amat is NOT ASSOCIATED", unitNo=unitno)
+
+isok = obj%isInit
+IF (.NOT. isok) THEN
+  CALL Display(obj%isInit, "isInitiated: ", unitNo=unitno)
+  RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END IF
-IF (ALLOCATED(obj%RES)) &
-  & CALL Display("obj%RES is ALLOCATED", unitNo=unitno)
-END PROCEDURE als_Display
+
+CALL obj%opt%Display("AbstractLinSolver options:", unitno=unitno)
+CALL Display(obj%ierr, "ierr: ", unitNo=unitno)
+CALL Display(obj%iter, "iter: ", unitNo=unitno)
+CALL Display(obj%tol, "tol: ", unitNo=unitno)
+CALL Display(obj%normRes, "normRes: ", unitNo=unitno)
+CALL Display(obj%error0, "error0: ", unitNo=unitno)
+CALL Display(obj%error, "error: ", unitNo=unitno)
+
+isok = ALLOCATED(obj%res)
+CALL Display("obj%res is ALLOCATED:", unitNo=unitno)
+
+isok = ASSOCIATED(obj%amat)
+CALL Display(isok, "amat is ASSOCIATED: ", unitNo=unitno)
+
+IF (isok) THEN
+  CALL obj%amat%Display("amat: ", unitNo=unitno)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

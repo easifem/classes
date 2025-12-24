@@ -15,17 +15,20 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 MODULE PLPlot_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: DFP, LGT, I4B
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE ParameterList, ONLY: ParameterList_
-USE AbstractPlot_Class
+USE AbstractPlot_Class, ONLY: AbstractPlot_
 USE EasyPlplot, ONLY: binData
+
 IMPLICIT NONE
+
 PRIVATE
 PUBLIC :: binData
+
 CHARACTER(*), PARAMETER :: modName = "PLPlot_Class"
 CHARACTER(*), PARAMETER, PUBLIC :: PS_PLUS = "+"
 CHARACTER(*), PARAMETER, PUBLIC :: PS_CROSS = "x"
@@ -92,66 +95,53 @@ CHARACTER(*), PARAMETER :: CODE_PS_TRIAG_R = "#(855)"
 TYPE, EXTENDS(AbstractPlot_) :: PLPlot_
 CONTAINS
   PRIVATE
-  !!
-  !! @ConstructorMethods
-  !!
+
+  !@ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => Plot_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Plot_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => Plot_Display
-  !!
-  !! @PlotMethods
-  !!
+
+  !@PlotMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Show => plot_Show
   PROCEDURE, PUBLIC, PASS(obj) :: Figure => plot_Figure
   PROCEDURE, PUBLIC, PASS(obj) :: Subplot => plot_Subplot
-  !!
-  !! @LinePlotMethods
-  !!
+
+  !@LinePlotMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Plot2D => plot_Plot2D
   PROCEDURE, PUBLIC, PASS(obj) :: ErrorBar => plot_ErrorBar
   PROCEDURE, PUBLIC, PASS(obj) :: Plot3D => plot_Plot3D
   PROCEDURE, PUBLIC, PASS(obj) :: line_plot_x1y1
   PROCEDURE, PUBLIC, PASS(obj) :: line_plot_x1y2
-  GENERIC, PUBLIC :: LinePlot => &
-    & line_plot_x1y1, &
-    & line_plot_x1y2
-  !!
-  !! @ScatterMethods
-  !!
+  GENERIC, PUBLIC :: LinePlot => line_plot_x1y1, line_plot_x1y2
+
+  !@ScatterMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Scatter => plot_Scatter
-  !!
-  !! @ContourMethods
-  !!
+
+  !@ContourMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Contour => plot_Contour
   PROCEDURE, PUBLIC, PASS(obj) :: Contourf => plot_Contourf
-  !!
-  !! @ColorbarMethods
-  !!
+
+  !@ColorbarMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Colorbar => plot_Colorbar
   PROCEDURE, PUBLIC, PASS(obj) :: Colorbar2 => plot_Colorbar2
-  !!
-  !! @BarMethods
-  !!
+
+  !@BarMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Bar => plot_Bar
   PROCEDURE, PUBLIC, PASS(obj) :: Barh => plot_Barh
   PROCEDURE, PUBLIC, PASS(obj) :: Hist => plot_Hist
-  !!
-  !! @FillMethods
-  !!
+
+  !@FillMethods
   PROCEDURE, PUBLIC, PASS(obj) :: FillBetween => plot_FillBetween
   PROCEDURE, PUBLIC, PASS(obj) :: FillBetweenx => plot_FillBetweenx
-  !!
-  !! @QuiverMethods
-  !!
+
+  !@QuiverMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Quiver => plot_Quiver
-  !!
-  !! @SurfaceMethods
-  !!
+
+  !@SurfaceMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Surface => plot_Surface
   PROCEDURE, PUBLIC, PASS(obj) :: Wireframe => plot_Wireframe
-  !!
-  !! @SetMethods
-  !!
+
+  !@SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetXlim => plot_SetXlim
   PROCEDURE, PUBLIC, PASS(obj) :: SetYlim => plot_SetYlim
   PROCEDURE, PUBLIC, PASS(obj) :: SetXYlim => plot_SetXYlim
@@ -281,15 +271,11 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE line_plot_x1y1(obj, &
-    & x, y, filename, &
-    & xmin, ymin, xmax, ymax, &
-    & fontScaling, isWhiteOnBlack, &
-    & isTransparent, colormap, figSize, &
-    & lineColor, lineType, lineWidth, &
-    & pointColor, pointType, pointSize, &
-    & dx, dy, isLogX, isLogY, tickColor, tickWidth, &
-    & xlabel, ylabel, title, labelColor)
+  MODULE SUBROUTINE line_plot_x1y1(obj, x, y, filename, xmin, ymin, xmax, &
+        ymax, fontScaling, isWhiteOnBlack, isTransparent, colormap, figSize, &
+           lineColor, lineType, lineWidth, pointColor, pointType, pointSize, &
+                               dx, dy, isLogX, isLogY, tickColor, tickWidth, &
+                                   xlabel, ylabel, title, labelColor)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
@@ -338,35 +324,14 @@ INTERFACE
   END SUBROUTINE line_plot_x1y1
 END INTERFACE
 
-! INTERFACE
-! MODULE SUBROUTINE line_plot_x1y1( obj, x, y, filename, &
-!   & xlabel, ylabel, title, lineWidth, xmin, ymin, xmax, ymax, &
-!   & isPoint, pointSize, pointType )
-!   CLASS( PLPlot_ ), INTENT( IN ) :: obj
-!   REAL( DFP ), INTENT( IN ) :: x( : )
-!   REAL( DFP ), INTENT( IN ) :: y( : )
-!   CHARACTER( LEN = * ), INTENT( IN ) :: filename
-!   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: xlabel
-!   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: ylabel
-!   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: title
-!   REAL( DFP ), OPTIONAL, INTENT( IN ) :: lineWidth
-!   REAL( DFP ), OPTIONAL, INTENT( IN ) :: xmin, xmax
-!   REAL( DFP ), OPTIONAL, INTENT( IN ) :: ymin, ymax
-!   LOGICAL( LGT ), OPTIONAL, INTENT( IN ) :: isPoint
-!     !! If true we print points also
-!   INTEGER( I4B ), OPTIONAL, INTENT( IN ) :: pointSize
-!   CHARACTER( LEN = * ), OPTIONAL, INTENT( IN ) :: pointType
-! END SUBROUTINE line_plot_x1y1
-! END INTERFACE
-
 !----------------------------------------------------------------------------
 !                                                  LinePlot@LinePlotMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
   MODULE SUBROUTINE line_plot_x1y2(obj, x, y, filename, &
-    & xlabel, ylabel, legendTexts, title, lineWidth, xmin, ymin, xmax, ymax, &
-    & isPoint, pointSize, pointType)
+      xlabel, ylabel, legendTexts, title, lineWidth, xmin, ymin, xmax, ymax, &
+                                   isPoint, pointSize, pointType)
     CLASS(PLPlot_), INTENT(IN) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:, :)
@@ -391,7 +356,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_Plot2D(obj, x, y, lineColor, lineType, &
-    & lineWidth, pointColor, pointType, pointSize)
+                                lineWidth, pointColor, pointType, pointSize)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
@@ -410,7 +375,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_ErrorBar(obj, x, y, xerr, yerr, &
-    & lineColor, lineType, lineWidth)
+                                  lineColor, lineType, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
@@ -428,7 +393,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_Plot3D(obj, x, y, z, lineColor, lineType, &
-    & lineWidth, pointColor, pointType, pointSize)
+                                lineWidth, pointColor, pointType, pointSize)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
@@ -448,7 +413,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_Scatter(obj, x, y, c, s, pointColor, &
-    & pointType, pointSize)
+                                 pointType, pointSize)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
   !! x data
@@ -473,23 +438,23 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_Contour(obj, x, y, z, N, lineColor, &
-    & lineType, lineWidth)
+                                 lineType, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-  !!
+    !! plot object
     REAL(DFP), INTENT(IN) :: x(:)
-  !! x-coordinates of data
+    !! x-coordinates of data
     REAL(DFP), INTENT(IN) :: y(:)
-  !! y-coordinates of data
+    !! y-coordinates of data
     REAL(DFP), INTENT(IN) :: z(:, :)
-  !! Data for contouring
+    !! Data for contouring
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: N
-  !! Number of levels to use in contour
+    !! Number of levels to use in contour
     CHARACTER(*), OPTIONAL, INTENT(IN) :: lineColor
-  !! Color of contour lines
+    !! Color of contour lines
     CHARACTER(*), OPTIONAL, INTENT(IN) :: lineType
-  !! Style of contour lines
+    !! Style of contour lines
     REAL(DFP), OPTIONAL, INTENT(IN) :: lineWidth
-  !! Width of contour lines
+    !! Width of contour lines
   END SUBROUTINE plot_Contour
 END INTERFACE
 
@@ -500,7 +465,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE plot_Contourf(obj, x, y, z, N)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-  !!
+  !! plot object
     REAL(DFP), INTENT(IN) :: x(:)
   !! x-coordinates of data
     REAL(DFP), INTENT(IN) :: y(:)
@@ -518,6 +483,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE plot_Colorbar(obj, z, N, leftLabel, rightLabel)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
+  !! plot object
     REAL(DFP), INTENT(IN) :: z(:, :)
   !! data used for levels computation
     INTEGER(I4B), INTENT(IN) :: N
@@ -536,6 +502,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE plot_Colorbar2(obj, z, N, leftLabel, rightLabel)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
+  !! plot object
     REAL(DFP), INTENT(IN) :: z(:, :)
   !! data used for levels computation
     INTEGER(I4B), INTENT(IN) :: N
@@ -553,8 +520,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_Bar(obj, x, y, c, relWidth, fillColor, &
-    & fillPattern, lineColor, lineWidth)
+                             fillPattern, lineColor, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
+  !! plot object
     REAL(DFP), INTENT(IN) :: x(:)
   !! x-positions of the bars' centers
     REAL(DFP), INTENT(IN) :: y(:)
@@ -580,9 +548,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_Barh(obj, y, x, c, relWidth, fillColor, &
-    & fillPattern, lineColor, lineWidth)
+                              fillPattern, lineColor, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-  !!
+  !! plot object
     REAL(DFP), INTENT(IN) :: y(:)
   !! y-positions of the bars' centers
     REAL(DFP), INTENT(IN) :: x(:)
@@ -608,9 +576,9 @@ END INTERFACE
 
 INTERFACE
 MODULE SUBROUTINE plot_Hist(obj, d, N, db, relWidth, fillColor, fillPattern, &
-                                              & lineColor, lineWidth)
+                                                       & lineColor, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-  !!
+  !! plot object
     REAL(DFP), INTENT(IN) :: d(:)
   !! Data for binning
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: N
@@ -636,9 +604,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_FillBetween(obj, x, y1, y0, fillColor, &
-    & fillPattern, lineWidth)
+                                     fillPattern, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
-  !!
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y1(:)
     REAL(DFP), INTENT(IN), OPTIONAL :: y0(:)
@@ -672,8 +639,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_Quiver(obj, x, y, u, v, s, c, scaling, &
-    & lineColor, lineType, lineWidth)
-  !!
+                                lineColor, lineType, lineWidth)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
   !!
     REAL(DFP), INTENT(IN) :: x(:)
@@ -962,7 +928,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE plot_SetLegend(obj, corner, series, lineWidths, &
-    & pointScales, pointCounts, ncol)
+                                   pointScales, pointCounts, ncol)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
   !!
     CHARACTER(*), INTENT(IN) :: corner
@@ -986,8 +952,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE plot_Set(obj, device, fileName, fontScaling,&
-    & isWhiteOnBlack, isTransparent, colormap, figSize, isFileFamily)
+  MODULE SUBROUTINE plot_Set(obj, device, fileName, fontScaling, &
+               isWhiteOnBlack, isTransparent, colormap, figSize, isFileFamily)
     CLASS(PLPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), OPTIONAL, INTENT(IN) :: device
   !! Output device to use
@@ -1016,3 +982,4 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 END MODULE PLPlot_Class
+#endif

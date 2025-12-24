@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(MatrixFieldLis_Class) IOMethods
-USE BaseMethod
+USE MatrixField_Class, ONLY: MatrixFieldDisplay
+USE Display_Method, ONLY: Display
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -25,92 +30,37 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL MatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
-IF (obj%engine%chars() .EQ. "LIS_OMP") THEN
-  IF (ALLOCATED(obj%lis_ia)) THEN
-    CALL Display("# lis_ia ALLOCATED", unitNo=unitNo)
-  ELSE
-    CALL Display("# lis_ia NOT ALLOCATED", unitNo=unitNo)
-  END IF
-  IF (ALLOCATED(obj%lis_ja)) THEN
-    CALL Display("# lis_ja ALLOCATED", unitNo=unitNo)
-  ELSE
-    CALL Display("# lis_ja NOT ALLOCATED", unitNo=unitNo)
-  END IF
-END IF
+
+isok = ALLOCATED(obj%lis_ia)
+CALL Display(isok, "obj%lis_ia ALLOCATED:", unitNo=unitno)
+IF (isok) &
+  CALL Display(obj%lis_ia, "lis_ia:", unitno=unitno)
+
+isok = ALLOCATED(obj%lis_ja)
+CALL Display(isok, "obj%lis_ja ALLOCATED:", unitno=unitno)
+IF (isok) &
+  CALL Display(obj%lis_ja, "lis_ja:", unitno=unitno)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                                 Export
+!
 !----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
-TYPE(String) :: dname
-
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-& '[START] Export()')
-
-CALL MatrixFieldExport(obj=obj, hdf5=hdf5, group=group)
-IF (ALLOCATED(obj%lis_ia)) THEN
-  dname = TRIM(group)//"/lis_ia"
-  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%lis_ia)
-END IF
-IF (ALLOCATED(obj%lis_ja)) THEN
-  dname = TRIM(group)//"/lis_ja"
-  CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-  & vals=obj%lis_ja)
-END IF
-
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-& '[END] Export()')
-
-END PROCEDURE obj_Export
-
-!----------------------------------------------------------------------------
-!                                                                    Import
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Import
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: nnz
-
-CALL MatrixFieldImport(  &
-  & obj=obj,  &
-  & hdf5=hdf5,  &
-  & group=group,  &
-  & dom=dom, &
-  & domains=domains)
-
-CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-nnz = getNNZ(obj%mat)
-obj%lis_ia = obj%mat%csr%ia - 1
-obj%lis_ja = obj%mat%csr%ja - 1
-
-CALL lis_matrix_set_csr( &
-  & nnz, &
-  & obj%lis_ia, &
-  & obj%lis_ja, &
-  & obj%mat%a, &
-  & obj%lis_ptr, &
-  & ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_assemble(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_get_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
-CALL CHKERR(ierr)
-END PROCEDURE obj_Import
 
 END SUBMODULE IOMethods

@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(VTKPlot_Class) StructuredGridMethods
-USE BaseMethod
+USE VTKFile_Class, ONLY: VTKFile_, VTK_BINARY, VTK_StructuredGrid
+USE GridPointUtility, ONLY: MeshGrid
+
 IMPLICIT NONE
 CONTAINS
 
@@ -57,10 +59,10 @@ CHARACTER(*), PARAMETER :: myName = "vts_plot_x1y1z1w1"
 CALL MeshGrid(x=xx, y=yy, z=zz, xgv=x, ygv=y, zgv=z)
 
 IF (ANY(SHAPE(xx) .NE. SHAPE(yy)) .OR. &
-  & ANY(SHAPE(yy) .NE. SHAPE(zz)) .OR. &
-  & ANY(SHAPE(zz) .NE. SHAPE(xx))) THEN
+    ANY(SHAPE(yy) .NE. SHAPE(zz)) .OR. &
+    ANY(SHAPE(zz) .NE. SHAPE(xx))) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Shape of xx, yy, and zz should be the same.')
+                    'Shape of xx, yy, and zz should be the same.')
 END IF
 
 nx1 = 0; nx2 = SIZE(xx, 1) - 1
@@ -68,26 +70,26 @@ ny1 = 0; ny2 = SIZE(xx, 2) - 1
 nz1 = 0; nz2 = SIZE(xx, 3) - 1
 
 CALL aVTKfile%InitiateVTKFile( &
-  & filename=filename, &
-  & mode="NEW", &
-  & DataFormat=VTK_BINARY, &
-  & DataStructureType=VTK_StructuredGrid, &
-  & WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
+  filename=filename, &
+  mode="NEW", &
+  DataFormat=VTK_BINARY, &
+  DataStructureType=VTK_StructuredGrid, &
+  WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
 
 CALL aVTKfile%WritePiece(extent=[nx1, nx2, ny1, ny2, nz1, nz2])
 CALL aVTKfile%WritePoints(x=xx, y=yy, z=zz)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("open"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("open"))
 
-CALL aVTKfile%WriteDataArray(&
-  & name=String(TRIM(label)), &
-  & x=w)
+CALL aVTKfile%WriteDataArray( &
+  name=String(TRIM(label)), &
+  x=w)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("close"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("close"))
 
 CALL aVTKfile%WritePiece()
 CALL aVTKfile%DEALLOCATE()
@@ -105,16 +107,16 @@ TYPE(VTKFile_) :: aVTKfile
 CHARACTER(*), PARAMETER :: myName = "vts_plot_x3y3z3w2"
 
 IF (ANY(SHAPE(x) .NE. SHAPE(y)) .OR. &
-  & ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
-  & ANY(SHAPE(z) .NE. SHAPE(x))) THEN
+    ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
+    ANY(SHAPE(z) .NE. SHAPE(x))) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Shape of x, y, and z should be the same.')
+                    'Shape of x, y, and z should be the same.')
   RETURN
 END IF
 
 IF (SIZE(label) .NE. SIZE(w, 2)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Size of label should be same as size(w,2).')
+                    'Size of label should be same as size(w,2).')
   RETURN
 END IF
 
@@ -123,28 +125,28 @@ ny1 = 0; ny2 = SIZE(x, 2) - 1
 nz1 = 0; nz2 = SIZE(x, 3) - 1
 
 CALL aVTKfile%InitiateVTKFile( &
-  & filename=filename, &
-  & mode="NEW", &
-  & DataFormat=VTK_BINARY, &
-  & DataStructureType=VTK_StructuredGrid, &
-  & WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
+  filename=filename, &
+  mode="NEW", &
+  DataFormat=VTK_BINARY, &
+  DataStructureType=VTK_StructuredGrid, &
+  WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
 
 CALL aVTKfile%WritePiece(extent=[nx1, nx2, ny1, ny2, nz1, nz2])
 CALL aVTKfile%WritePoints(x=x, y=y, z=z)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("open"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("open"))
 
 DO ii = 1, SIZE(w, 2)
-  CALL aVTKfile%WriteDataArray(&
-    & name=label(ii), &
-    & x=w(:, ii))
+  CALL aVTKfile%WriteDataArray( &
+    name=label(ii), &
+    x=w(:, ii))
 END DO
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("close"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("close"))
 
 CALL aVTKfile%WritePiece()
 CALL aVTKfile%DEALLOCATE()
@@ -228,11 +230,11 @@ nx1 = 0; nx2 = SIZE(x, 1) - 1
 ny1 = 0; ny2 = SIZE(x, 2) - 1
 nz1 = 0; nz2 = SIZE(x, 3) - 1
 CALL aVTKfile%InitiateVTKFile( &
-  & filename=filename, &
-  & mode="NEW", &
-  & DataFormat=VTK_BINARY, &
-  & DataStructureType=VTK_StructuredGrid, &
-  & WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
+  filename=filename, &
+  mode="NEW", &
+  DataFormat=VTK_BINARY, &
+  DataStructureType=VTK_StructuredGrid, &
+  WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
 CALL aVTKfile%WritePiece(extent=[nx1, nx2, ny1, ny2, nz1, nz2])
 CALL aVTKfile%WritePoints(x=x, y=y, z=z)
 CALL aVTKfile%WritePiece()
@@ -250,8 +252,8 @@ TYPE(VTKFile_) :: aVTKfile
 REAL(DFP), ALLOCATABLE :: temp(:)
 
 IF (ANY(SHAPE(x) .NE. SHAPE(y)) .OR. &
-  & ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
-  & ANY(SHAPE(z) .NE. SHAPE(x))) THEN
+    ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
+    ANY(SHAPE(z) .NE. SHAPE(x))) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
     & 'Shape of x, y, and z should be the same.')
 END IF
@@ -259,27 +261,27 @@ nx1 = 0; nx2 = SIZE(x, 1) - 1
 ny1 = 0; ny2 = SIZE(x, 2) - 1
 nz1 = 0; nz2 = SIZE(x, 3) - 1
 CALL aVTKfile%InitiateVTKFile( &
-  & filename=filename, &
-  & mode="NEW", &
-  & DataFormat=VTK_BINARY, &
-  & DataStructureType=VTK_StructuredGrid, &
-  & WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
+  filename=filename, &
+  mode="NEW", &
+  DataFormat=VTK_BINARY, &
+  DataStructureType=VTK_StructuredGrid, &
+  WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
 CALL aVTKfile%WritePiece(extent=[nx1, nx2, ny1, ny2, nz1, nz2])
 CALL aVTKfile%WritePoints(x=x, y=y, z=z)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("open"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("open"))
 
 temp = RESHAPE(w, [SIZE(w)])
-CALL aVTKfile%WriteDataArray(&
-  & name=String(TRIM(label)), &
-  & x=temp)
+CALL aVTKfile%WriteDataArray( &
+  name=String(TRIM(label)), &
+  x=temp)
 IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("close"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("close"))
 
 CALL aVTKfile%WritePiece()
 CALL aVTKfile%DEALLOCATE()
@@ -296,16 +298,16 @@ TYPE(VTKFile_) :: aVTKfile
 REAL(DFP), ALLOCATABLE :: temp(:)
 
 IF (ANY(SHAPE(x) .NE. SHAPE(y)) .OR. &
-  & ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
-  & ANY(SHAPE(z) .NE. SHAPE(x))) THEN
+    ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
+    ANY(SHAPE(z) .NE. SHAPE(x))) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Shape of x, y, and z should be the same.')
+                    'Shape of x, y, and z should be the same.')
   RETURN
 END IF
 
 IF (SIZE(label) .NE. SIZE(w, 4)) THEN
   CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'The size of label should be same as size(w, 4)')
+                    'The size of label should be same as size(w, 4)')
   RETURN
 END IF
 
@@ -314,34 +316,175 @@ ny1 = 0; ny2 = SIZE(x, 2) - 1
 nz1 = 0; nz2 = SIZE(x, 3) - 1
 
 CALL aVTKfile%InitiateVTKFile( &
-  & filename=filename, &
-  & mode="NEW", &
-  & DataFormat=VTK_BINARY, &
-  & DataStructureType=VTK_StructuredGrid, &
-  & WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
+  filename=filename, &
+  mode="NEW", &
+  DataFormat=VTK_BINARY, &
+  DataStructureType=VTK_StructuredGrid, &
+  WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
 
 CALL aVTKfile%WritePiece(extent=[nx1, nx2, ny1, ny2, nz1, nz2])
 CALL aVTKfile%WritePoints(x=x, y=y, z=z)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("open"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("open"))
 
 DO ii = 1, SIZE(label)
   temp = RESHAPE(w(:, :, :, ii), [SIZE(x)])
-  CALL aVTKfile%WriteDataArray(&
-    & name=String(label(ii)%chars()), &
-    & x=temp)
+  CALL aVTKfile%WriteDataArray( &
+    name=String(label(ii)%chars()), &
+    x=temp)
 END DO
 
 IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("close"))
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("close"))
 
 CALL aVTKfile%WritePiece()
 CALL aVTKfile%DEALLOCATE()
 END PROCEDURE vts_plot_x3y3z3w4
+
+!----------------------------------------------------------------------------
+!                                                                      Plot
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vts_plot_x1y1f
+REAL(DFP), ALLOCATABLE :: xx(:, :, :), yy(:, :, :), zz(:, :, :)
+REAL(DFP), PARAMETER :: zgv(1) = [0.0_DFP]
+
+CALL MeshGrid(x=xx, y=yy, z=zz, xgv=x, ygv=y, zgv=[0.0_DFP])
+CALL obj%plot(x=xx, y=yy, z=zz, f=f, filename=filename)
+DEALLOCATE (xx, yy, zz)
+END PROCEDURE vts_plot_x1y1f
+
+!----------------------------------------------------------------------------
+!                                                                      Plot
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vts_plot_x2y2f
+REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), 1) :: xx, yy, zz
+xx(:, :, 1) = x
+yy(:, :, 1) = y
+zz = 0.0_DFP
+CALL obj%plot(x=xx, y=yy, z=zz, f=f, filename=filename)
+END PROCEDURE vts_plot_x2y2f
+
+!----------------------------------------------------------------------------
+!                                                                      Plot
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vts_plot_x3y3z3f
+CHARACTER(*), PARAMETER :: myName = "vts_plot_x3y3z3f"
+REAL(DFP) :: arg(3)
+REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), SIZE(x, 3)) :: func
+INTEGER(I4B) :: nx1, nx2, ny1, ny2, nz1, nz2, ii, jj, kk
+TYPE(VTKFile_) :: aVTKfile
+
+IF (.NOT. ASSOCIATED(f)) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+                    'function is not associated')
+END IF
+
+IF (ANY(SHAPE(x) .NE. SHAPE(y)) .OR. &
+    ANY(SHAPE(y) .NE. SHAPE(z)) .OR. &
+    ANY(SHAPE(z) .NE. SHAPE(x))) THEN
+  CALL e%raiseError(modName//'::'//myName//' - '// &
+                    'Shape of x, y, and z should be the same.')
+END IF
+
+nx1 = 0; nx2 = SIZE(x, 1) - 1
+ny1 = 0; ny2 = SIZE(x, 2) - 1
+nz1 = 0; nz2 = SIZE(x, 3) - 1
+
+CALL aVTKfile%InitiateVTKFile( &
+  filename=filename, &
+  mode="NEW", &
+  DataFormat=VTK_BINARY, &
+  DataStructureType=VTK_StructuredGrid, &
+  WholeExtent=[nx1, nx2, ny1, ny2, nz1, nz2])
+
+CALL aVTKfile%WritePiece(extent=[nx1, nx2, ny1, ny2, nz1, nz2])
+CALL aVTKfile%WritePoints(x=x, y=y, z=z)
+
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("open"))
+
+DO kk = 1, SIZE(x, 3)
+  DO jj = 1, SIZE(x, 2)
+    DO ii = 1, SIZE(x, 1)
+      arg(1) = x(ii, jj, kk)
+      arg(2) = y(ii, jj, kk)
+      arg(3) = z(ii, jj, kk)
+      func(ii, jj, kk) = f(arg)
+    END DO
+  END DO
+END DO
+
+CALL aVTKfile%WriteDataArray( &
+  name=String("f"), &
+  x=func, &
+  numberOfComponents=1)
+
+CALL aVTKfile%WriteDataArray( &
+  location=String("node"), &
+  action=String("close"))
+
+CALL aVTKfile%WritePiece()
+CALL aVTKfile%DEALLOCATE()
+END PROCEDURE vts_plot_x3y3z3f
+
+!----------------------------------------------------------------------------
+!                                                                      Plot
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vts_surface_x1y1f
+REAL(DFP), ALLOCATABLE :: xx(:, :, :), yy(:, :, :), zz(:, :, :)
+REAL(DFP) :: arg(3)
+INTEGER(I4B) :: ii, jj, kk
+
+CALL MeshGrid(x=xx, y=yy, z=zz, xgv=x, ygv=y, zgv=[0.0_DFP])
+
+DO kk = 1, SIZE(xx, 3)
+  DO jj = 1, SIZE(xx, 2)
+    DO ii = 1, SIZE(xx, 1)
+      arg(1) = xx(ii, jj, kk)
+      arg(2) = yy(ii, jj, kk)
+      arg(3) = zz(ii, jj, kk)
+      zz(ii, jj, kk) = f(arg)
+    END DO
+  END DO
+END DO
+
+CALL obj%plot(x=xx, y=yy, z=zz, filename=filename)
+DEALLOCATE (xx, yy, zz)
+
+END PROCEDURE vts_surface_x1y1f
+
+!----------------------------------------------------------------------------
+!                                                                      Plot
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE vts_surface_x2y2f
+REAL(DFP), DIMENSION(SIZE(x, 1), SIZE(x, 2), 1) :: xx, yy, zz
+REAL(DFP) :: arg(3)
+INTEGER(I4B) :: ii, jj, kk
+
+xx(:, :, 1) = x
+yy(:, :, 1) = y
+DO kk = 1, SIZE(xx, 3)
+  DO jj = 1, SIZE(xx, 2)
+    DO ii = 1, SIZE(xx, 1)
+      arg(1) = xx(ii, jj, kk)
+      arg(2) = yy(ii, jj, kk)
+      arg(3) = zz(ii, jj, kk)
+      zz(ii, jj, kk) = f(arg)
+    END DO
+  END DO
+END DO
+CALL obj%plot(x=xx, y=yy, z=zz, filename=filename)
+END PROCEDURE vts_surface_x2y2f
 
 END SUBMODULE StructuredGridMethods

@@ -20,13 +20,26 @@
 ! summary: This modules is a factory for linear solver, vector and matrix
 
 MODULE FieldFactory
-USE GlobalData
-USE String_Class
-USE Field
-USE Domain_Class, ONLY: Domain_, DomainPointer_
+USE GlobalData, ONLY: I4B, LGT, DFP
+USE String_Class, ONLY: String
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE ExceptionHandler_Class, ONLY: e
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE MatrixField_Class, ONLY: MatrixField_, MatrixFieldPointer_
+USE BlockMatrixField_Class, ONLY: BlockMatrixField_
+
+USE BlockNodeField_Class, ONLY: BlockNodeField_
+USE ScalarField_Class, ONLY: ScalarField_, ScalarFieldPointer_
+USE STScalarField_Class, ONLY: STScalarField_, STScalarFieldPointer_
+USE VectorField_Class, ONLY: VectorField_, VectorFieldPointer_
+USE STVectorField_Class, ONLY: STVectorField_, STVectorFieldPointer_
+
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "FieldFactory"
 
 PUBLIC :: AbstractMatrixFieldFactory
@@ -44,75 +57,6 @@ PUBLIC :: InitiateScalarFields
 PUBLIC :: InitiateVectorFields
 PUBLIC :: InitiateSTScalarFields
 PUBLIC :: InitiateSTVectorFields
-
-PUBLIC :: MeshFieldFactory
-PUBLIC :: ScalarMeshFieldFactory
-PUBLIC :: VectorMeshFieldFactory
-PUBLIC :: TensorMeshFieldFactory
-
-!----------------------------------------------------------------------------
-!                                                           MeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns child of AbstractMeshField
-
-INTERFACE
-  MODULE FUNCTION MeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractMeshField_), POINTER :: ans
-  END FUNCTION MeshFieldFactory
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     ScalarMeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns subclass of AbstractScalarMeshField
-
-INTERFACE
-  MODULE FUNCTION ScalarMeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractScalarMeshField_), POINTER :: ans
-  END FUNCTION ScalarMeshFieldFactory
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     VectorMeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns subclass of AbstractVectorMeshField
-
-INTERFACE
-  MODULE FUNCTION VectorMeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractVectorMeshField_), POINTER :: ans
-  END FUNCTION VectorMeshFieldFactory
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     TensorMeshFieldFactory
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-09-14
-! summary: This function returns subclass of AbstractTensorMeshField
-
-INTERFACE
-  MODULE FUNCTION TensorMeshFieldFactory(engine, name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: engine
-    CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractTensorMeshField_), POINTER :: ans
-  END FUNCTION TensorMeshFieldFactory
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                        MatrixFieldFactory
@@ -273,8 +217,9 @@ END INTERFACE
 !
 ! NOTE: This is a module routine not a Method to ScalarField_
 
-INTERFACE InitiateScalarFields
-  MODULE SUBROUTINE ScalarField_Initiate1(obj, names, fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE ScalarField_Initiate1(obj, names, fieldType, engine, &
+                                          fedof, geofedof)
     TYPE(ScalarFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to ScalarField or subclass
     !! NOTE: It should be allocated
@@ -285,9 +230,13 @@ INTERFACE InitiateScalarFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     CHARACTER(*), INTENT(IN) :: engine
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! pointer to the domain
   END SUBROUTINE ScalarField_Initiate1
+END INTERFACE
+
+INTERFACE InitiateScalarFields
+  MODULE PROCEDURE ScalarField_Initiate1
 END INTERFACE InitiateScalarFields
 
 !----------------------------------------------------------------------------
@@ -314,9 +263,9 @@ END INTERFACE InitiateScalarFields
 !
 ! NOTE: This is a module routine not a Method to ScalarField_
 
-INTERFACE InitiateScalarFields
-  MODULE SUBROUTINE ScalarField_Initiate2(obj, names, fieldType, engine,  &
-    & dom)
+INTERFACE
+  MODULE SUBROUTINE ScalarField_Initiate2( &
+    obj, names, fieldType, engine, fedof, geofedof)
     TYPE(ScalarFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to ScalarField or subclass
     !! NOTE: It should be allocated
@@ -327,9 +276,13 @@ INTERFACE InitiateScalarFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     TYPE(String), INTENT(IN) :: engine(:)
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     !! pointer to the domain
   END SUBROUTINE ScalarField_Initiate2
+END INTERFACE
+
+INTERFACE InitiateScalarFields
+  MODULE PROCEDURE ScalarField_Initiate2
 END INTERFACE InitiateScalarFields
 
 !----------------------------------------------------------------------------
@@ -347,9 +300,9 @@ END INTERFACE InitiateScalarFields
 !
 ! NOTE: This is a module routine not a Method to STScalarField_
 
-INTERFACE InitiateSTScalarFields
-  MODULE SUBROUTINE STScalarField_Initiate1(obj, names, timeCompo, &
-    & fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE STScalarField_Initiate1( &
+    obj, names, timeCompo, fieldType, engine, fedof, geofedof)
     TYPE(STScalarFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to STScalarField or subclass
     !! NOTE: It should be allocated
@@ -362,9 +315,13 @@ INTERFACE InitiateSTScalarFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     CHARACTER(*), INTENT(IN) :: engine
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! pointer to the domain
   END SUBROUTINE STScalarField_Initiate1
+END INTERFACE
+
+INTERFACE InitiateSTScalarFields
+  MODULE PROCEDURE STScalarField_Initiate1
 END INTERFACE InitiateSTScalarFields
 
 !----------------------------------------------------------------------------
@@ -385,9 +342,9 @@ END INTERFACE InitiateSTScalarFields
 !
 ! NOTE: This is a module routine not a Method to ScalarField_
 
-INTERFACE InitiateSTScalarFields
-  MODULE SUBROUTINE STScalarField_Initiate2(obj, names, timeCompo, &
-    & fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE STScalarField_Initiate2( &
+    obj, names, timeCompo, fieldType, engine, fedof, geofedof)
     TYPE(STScalarFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to STScalarField or subclass
     !! NOTE: It should be allocated
@@ -400,9 +357,13 @@ INTERFACE InitiateSTScalarFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     TYPE(String), INTENT(IN) :: engine(:)
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     !! pointer to the domain
   END SUBROUTINE STScalarField_Initiate2
+END INTERFACE
+
+INTERFACE InitiateSTScalarFields
+  MODULE PROCEDURE STScalarField_Initiate2
 END INTERFACE InitiateSTScalarFields
 
 !----------------------------------------------------------------------------
@@ -427,9 +388,9 @@ END INTERFACE InitiateSTScalarFields
 !
 ! NOTE: This is a module routine not a Method to VectorField_
 
-INTERFACE InitiateVectorFields
-  MODULE SUBROUTINE VectorField_Initiate1(obj, names, spaceCompo, &
-    &  fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE VectorField_Initiate1( &
+    obj, names, spaceCompo, fieldType, engine, fedof, geofedof)
     TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to VectorField or subclass
     !! NOTE: It should be allocated
@@ -442,9 +403,13 @@ INTERFACE InitiateVectorFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     CHARACTER(*), INTENT(IN) :: engine
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! pointer to the domain
   END SUBROUTINE VectorField_Initiate1
+END INTERFACE
+
+INTERFACE InitiateVectorFields
+  MODULE PROCEDURE VectorField_Initiate1
 END INTERFACE InitiateVectorFields
 
 !----------------------------------------------------------------------------
@@ -471,9 +436,9 @@ END INTERFACE InitiateVectorFields
 !
 ! NOTE: This is a module routine not a Method to VectorField_
 
-INTERFACE InitiateVectorFields
-  MODULE SUBROUTINE VectorField_Initiate2(obj, names, spaceCompo,  &
-     & fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE VectorField_Initiate2( &
+    obj, names, spaceCompo, fieldType, engine, fedof, geofedof)
     TYPE(VectorFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to VectorField or subclass
     !! NOTE: It should be allocated
@@ -486,9 +451,13 @@ INTERFACE InitiateVectorFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     TYPE(String), INTENT(IN) :: engine(:)
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     !! pointer to the domain
   END SUBROUTINE VectorField_Initiate2
+END INTERFACE
+
+INTERFACE InitiateVectorFields
+  MODULE PROCEDURE VectorField_Initiate2
 END INTERFACE InitiateVectorFields
 
 !----------------------------------------------------------------------------
@@ -506,9 +475,9 @@ END INTERFACE InitiateVectorFields
 !
 ! NOTE: This is a module routine not a Method to STVectorField_
 
-INTERFACE InitiateSTVectorFields
-  MODULE SUBROUTINE STVectorField_Initiate1(obj, names, spaceCompo, &
-    & timeCompo, fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE STVectorField_Initiate1( &
+    obj, names, spaceCompo, timeCompo, fieldType, engine, fedof, geofedof)
     TYPE(STVectorFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to STVectorField or subclass
     !! NOTE: It should be allocated
@@ -523,9 +492,13 @@ INTERFACE InitiateSTVectorFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     CHARACTER(*), INTENT(IN) :: engine
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! pointer to the domain
   END SUBROUTINE STVectorField_Initiate1
+END INTERFACE
+
+INTERFACE InitiateSTVectorFields
+  MODULE PROCEDURE STVectorField_Initiate1
 END INTERFACE InitiateSTVectorFields
 
 !----------------------------------------------------------------------------
@@ -546,9 +519,9 @@ END INTERFACE InitiateSTVectorFields
 !
 ! NOTE: This is a module routine not a Method to STVectorField_
 
-INTERFACE InitiateSTVectorFields
-  MODULE SUBROUTINE STVectorField_Initiate2(obj, names, spaceCompo,  &
-     & timeCompo, fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE STVectorField_Initiate2( &
+    obj, names, spaceCompo, timeCompo, fieldType, engine, fedof, geofedof)
     TYPE(STVectorFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to VectorField or subclass
     !! NOTE: It should be allocated
@@ -563,9 +536,13 @@ INTERFACE InitiateSTVectorFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     TYPE(String), INTENT(IN) :: engine(:)
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     !! pointer to the domain
   END SUBROUTINE STVectorField_Initiate2
+END INTERFACE
+
+INTERFACE InitiateSTVectorFields
+  MODULE PROCEDURE STVectorField_Initiate2
 END INTERFACE InitiateSTVectorFields
 
 !----------------------------------------------------------------------------
@@ -576,9 +553,10 @@ END INTERFACE InitiateSTVectorFields
 ! date:  2023-03-29
 ! summary: Initiate a vector of MatrixFieldPointer_
 
-INTERFACE InitiateMatrixFields
-MODULE SUBROUTINE MatrixField_Initiate1(obj, names, matrixProps, spaceCompo, &
-                                         &  timeCompo, fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE MatrixField_Initiate1( &
+    obj, names, matrixProps, spaceCompo, timeCompo, fieldType, engine, &
+    fedof, geofedof)
     TYPE(MatrixFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to MatrixField or subclass
     !! NOTE: It should be allocated
@@ -595,9 +573,13 @@ MODULE SUBROUTINE MatrixField_Initiate1(obj, names, matrixProps, spaceCompo, &
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     CHARACTER(*), INTENT(IN) :: engine
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! pointer to the domain
   END SUBROUTINE MatrixField_Initiate1
+END INTERFACE
+
+INTERFACE InitiateMatrixFields
+  MODULE PROCEDURE MatrixField_Initiate1
 END INTERFACE InitiateMatrixFields
 
 !----------------------------------------------------------------------------
@@ -608,9 +590,10 @@ END INTERFACE InitiateMatrixFields
 ! date:  2023-03-29
 ! summary: Initiate a vector of MatrixFieldPointer_
 
-INTERFACE InitiateMatrixFields
-  MODULE SUBROUTINE MatrixField_Initiate2(obj, names, matrixProps, spaceCompo,  &
-     & timeCompo, fieldType, engine, dom)
+INTERFACE
+  MODULE SUBROUTINE MatrixField_Initiate2( &
+    obj, names, matrixProps, spaceCompo, timeCompo, fieldType, engine, &
+    fedof, geofedof)
     TYPE(MatrixFieldPointer_), INTENT(INOUT) :: obj(:)
     !! A vector of pointer to MatrixField or subclass
     !! NOTE: It should be allocated
@@ -627,9 +610,17 @@ INTERFACE InitiateMatrixFields
     !! NOTE: Field type, for info see documentation of AbstractNodeField_
     TYPE(String), INTENT(IN) :: engine(:)
     !! Engine, for info see documentation of AbstractNodeField_
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
     !! pointer to the domain
   END SUBROUTINE MatrixField_Initiate2
+END INTERFACE
+
+INTERFACE InitiateMatrixFields
+  MODULE PROCEDURE MatrixField_Initiate2
 END INTERFACE InitiateMatrixFields
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE FieldFactory

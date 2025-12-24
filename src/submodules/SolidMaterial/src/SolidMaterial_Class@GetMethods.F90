@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(SolidMaterial_Class) GetMethods
-USE BaseMethod, ONLY: Tostring
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 CONTAINS
 
@@ -25,29 +25,34 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSolidMaterialPointer
-CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer"
-LOGICAL(LGT) :: problem
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSolidMaterialPointer()"
+#endif
+
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tsize
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 tsize = SIZE(obj)
-problem = materialNo .GT. tsize
+
+#ifdef DEBUG_VER
+isok = materialNo .LE. tsize
+CALL AssertError1(isok, myName, &
+     'materialNo = '//Tostring(materialNo)//' is greater than total &
+     &materials = '//Tostring(tsize))
+#endif
+
 ans => NULL()
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: materialNo = '//Tostring(materialNo)//  &
-    & ' is greater than total materials = '//Tostring(tsize))
-  RETURN
-END IF
 ans => obj(materialNo)%ptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetSolidMaterialPointer
 
 !----------------------------------------------------------------------------
@@ -55,7 +60,21 @@ END PROCEDURE obj_GetSolidMaterialPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetStressStrainModelPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetStressStrainModelPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans => obj%stressStrainModel
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetStressStrainModelPointer
 
 !----------------------------------------------------------------------------
@@ -63,7 +82,27 @@ END PROCEDURE obj_GetStressStrainModelPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = myprefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                            Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

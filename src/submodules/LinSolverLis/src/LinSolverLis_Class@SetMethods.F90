@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(LinSolverLis_Class) SetMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -24,27 +23,33 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Set
-CHARACTER(*), PARAMETER :: myName = "ls_Set"
+MODULE PROCEDURE obj_Set
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+CHARACTER(128) :: engine
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: s(2)
-CHARACTER(100) :: engine
 
-CALL Amat%GetParam(engine=engine)
+#ifdef DEBUG_VER
+CALL amat%GetParam(engine=engine)
 
-IF (TRIM(engine) .NE. "LIS_OMP") THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-  & 'engine of Amat should be LIS_OMP, but give engine is = ' &
-  & //TRIM(engine))
-END IF
+isok = TRIM(engine) .EQ. "LIS_OMP"
+CALL AssertError1(isok, myName, &
+      'engine of amat should be LIS_OMP, but give engine is = '//TRIM(engine))
+#endif
 
-s = Amat%SHAPE()
-CALL obj%SetParam( &
-  & Amat=Amat, &
-  & localNumColumn=s(2), &
-  & localNumRow=s(1), &
-  & globalNumRow=s(1), &
-  & globalNumColumn=s(2))
+s = amat%SHAPE()
 
-END PROCEDURE ls_Set
+CALL obj%SetParam(amat=amat, localNumColumn=s(2), localNumRow=s(1), &
+                  globalNumRow=s(1), globalNumColumn=s(2))
+END PROCEDURE obj_Set
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

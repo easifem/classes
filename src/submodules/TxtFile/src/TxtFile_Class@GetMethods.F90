@@ -16,59 +16,158 @@
 !
 
 SUBMODULE(TxtFile_Class) GetMethods
-USE BaseMethod
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
 !                                                               getEchoStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getEchoStat
-  ans = obj%echostat
-END PROCEDURE txt_getEchoStat
+MODULE PROCEDURE txt_GetEchoStat
+ans = obj%echostat
+END PROCEDURE txt_GetEchoStat
 
 !----------------------------------------------------------------------------
 !                                                               getEchoUnit
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getEchoUnit
-  ans = obj%echounit
-END PROCEDURE txt_getEchoUnit
+MODULE PROCEDURE txt_GetEchoUnit
+ans = obj%echounit
+END PROCEDURE txt_GetEchoUnit
 
 !----------------------------------------------------------------------------
 !                                                            GetTotalRecords
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getTotalRecords
-  TYPE(String) :: aline
-  INTEGER( I4B ) :: iostat
-  !!
-  !! check
-  !!
-  IF (.NOT. obj%isInitiated() .OR. &
-    & .NOT. obj%isOpen() .OR. &
-    & .NOT. obj%isRead()) THEN
-    ans = 0; RETURN
+MODULE PROCEDURE txt_GetTotalRecords
+TYPE(String) :: aline
+INTEGER(I4B) :: iostat
+LOGICAL(LGT) :: isok, notok
+
+ans = 0
+notok = .NOT. obj%IsInitiated() .OR. .NOT. obj%IsOpen() .OR. &
+        .NOT. obj%IsRead()
+
+IF (notok) RETURN
+
+CALL obj%REWIND()
+
+DO
+
+  CALL obj%readLine(val=aline, iostat=iostat)
+
+  IF (obj%IsEOF()) EXIT
+
+  isok = obj%IsValidRecord(aline=aline, ignoreBlank=ignoreBlank, &
+                     ignoreComment=ignoreComment, commentSymbol=commentSymbol)
+
+  IF (isok) ans = ans + 1
+  
+  aline = ""
+
+END DO
+
+CALL obj%REWIND()
+
+END PROCEDURE txt_GetTotalRecords
+
+!----------------------------------------------------------------------------
+!                                                             GetTotalData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_GetTotalData
+TYPE(String) :: aline
+INTEGER(I4B) :: iostat, totalTokens
+LOGICAL(LGT) :: isok, notok
+TYPE(String), ALLOCATABLE :: tokens(:)
+
+notok = .NOT. obj%IsInitiated() .OR. .NOT. obj%IsOpen() .OR. &
+        .NOT. obj%IsRead()
+
+ans = 0
+
+IF (notok) RETURN
+
+CALL obj%REWIND()
+
+DO
+
+  CALL obj%ReadLine(val=aline, iostat=iostat)
+
+  IF (obj%IsEOF()) EXIT
+
+  isok = obj%IsValidRecord(aline=aline, &
+                           ignoreBlank=ignoreBlank, &
+                           ignoreComment=ignoreComment, &
+                           commentSymbol=commentSymbol)
+
+  IF (isok) THEN
+    CALL aline%Split(tokens=tokens, sep=separator)
+    totalTokens = SIZE(tokens)
+    ans = ans + totalTokens
   END IF
-  !!
-  !! main
-  !!
-  ans = 0
-  CALL obj%REWIND()
-  DO
-    CALL obj%readLine(val=aline, iostat=iostat )
-    IF ( obj%isEOF() ) EXIT
-    IF( obj%isValidRecord( aline=aline, &
-      & ignoreBlank=ignoreBlank, &
-      & ignoreComment=ignoreComment, &
-      & commentSymbol=commentSymbol ) ) ans = ans + 1
-  END DO
-  CALL obj%REWIND()
-  !!
-END PROCEDURE txt_getTotalRecords
+
+  aline = ""
+
+END DO
+
+CALL obj%REWIND()
+
+IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
+
+END PROCEDURE txt_GetTotalData
+
+!----------------------------------------------------------------------------
+!                                                         GetTotalDataBounds
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE txt_GetTotalDataBounds
+TYPE(String) :: aline
+INTEGER(I4B) :: iostat, totalTokens
+LOGICAL(LGT) :: isok, notok
+TYPE(String), ALLOCATABLE :: tokens(:)
+
+notok = .NOT. obj%IsInitiated() .OR. .NOT. obj%IsOpen() .OR. &
+        .NOT. obj%IsRead()
+
+ans = 0
+
+IF (notok) RETURN
+
+CALL obj%REWIND()
+
+DO
+
+  CALL obj%ReadLine(val=aline, iostat=iostat)
+
+  IF (obj%IsEOF()) EXIT
+
+  isok = obj%IsValidRecord(aline=aline, &
+                           ignoreBlank=ignoreBlank, &
+                           ignoreComment=ignoreComment, &
+                           commentSymbol=commentSymbol)
+
+  IF (isok) THEN
+    CALL aline%Split(tokens=tokens, sep=separator)
+    totalTokens = SIZE(tokens)
+    ans(2) = MAX(ans(2), totalTokens)
+    ans(1) = ans(1) + 1
+  END IF
+
+  aline = ""
+
+END DO
+
+CALL obj%REWIND()
+
+IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
+
+END PROCEDURE txt_GetTotalDataBounds
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
 END SUBMODULE GetMethods

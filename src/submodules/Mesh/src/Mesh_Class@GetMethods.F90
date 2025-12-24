@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(Mesh_Class) GetMethods
-USE BaseMethod
+USE ReferenceElement_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -34,52 +34,6 @@ END PROCEDURE obj_GetRefElemPointer
 MODULE PROCEDURE obj_GetOrder
 ans = obj%refelem%order
 END PROCEDURE obj_GetOrder
-
-!----------------------------------------------------------------------------
-!                                                       GetFacetConnectivity
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE MeshGetFacetConnectivity
-INTEGER(I4B), ALLOCATABLE :: cellNptrs(:)
-INTEGER(I4B) :: localFaceID, cellNum
-
-SELECT CASE (elementType)
-CASE (INTERNAL_ELEMENT)
-  IF (isMaster) THEN
-    cellNum = obj%internalFacetData(facetElement)%masterCellNumber
-    localFaceID = obj%internalFacetData(facetElement)%masterLocalFacetID
-  ELSE
-    cellNum = obj%internalFacetData(facetElement)%slaveCellNumber
-    localFaceID = obj%internalFacetData(facetElement)%slaveLocalFacetID
-  END IF
-
-CASE (DOMAIN_BOUNDARY_ELEMENT, BOUNDARY_ELEMENT)
-  cellNum = obj%boundaryFacetData(facetElement)%masterCellNumber
-  localFaceID = obj%boundaryFacetData(facetElement)%masterLocalFacetID
-END SELECT
-
-IF (cellNum .NE. 0) THEN
-  cellNptrs = obj%GetConnectivity(globalElement=cellNum)
-  ans = cellNptrs(GetConnectivity(obj%facetElements(localFaceID)))
-ELSE
-  ALLOCATE (ans(0))
-END IF
-
-IF (ALLOCATED(cellNptrs)) DEALLOCATE (cellNptrs)
-END PROCEDURE MeshGetFacetConnectivity
-
-!----------------------------------------------------------------------------
-!                                                      GetFacetConnectivity
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetFacetConnectivity
-INTEGER(I4B), ALLOCATABLE :: nptrs(:), indx(:)
-nptrs = obj%GetConnectivity(globalElement=globalElement)
-indx = GetConnectivity(obj%facetElements(iface))
-ans = nptrs(indx)
-IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-IF (ALLOCATED(indx)) DEALLOCATE (indx)
-END PROCEDURE obj_GetFacetConnectivity
 
 !----------------------------------------------------------------------------
 !
@@ -102,39 +56,28 @@ CALL AbstractMeshGetParam(obj=obj, &
     & tElemTopologies=tElemTopologies,  &
     & elemTopologies=elemTopologies)
 
-IF (PRESENT(xidim)) xidim = obj%xidim
 IF (PRESENT(elemType)) elemType = obj%elemType
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
-!                                                               GetMaterial
+!                                                         isFacetElement
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMaterial2
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
-ans = 0
-
-isok = ALLOCATED(obj%material)
-IF (.NOT. isok) RETURN
-
-isok = medium .LE. SIZE(obj%material)
-IF (.NOT. isok) RETURN
-#endif
-
-ans = obj%material(medium)
-END PROCEDURE obj_GetMaterial2
+MODULE PROCEDURE obj_isFacetElement
+ans = ALLOCATED(obj%facetElements)
+END PROCEDURE obj_isFacetElement
 
 !----------------------------------------------------------------------------
-!                                                         GetTotalMaterial
+!                                                      GetTotalFacetElements
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalMaterial2
-ans = 0
-IF (ALLOCATED(obj%material)) THEN
-  ans = SIZE(obj%material)
+MODULE PROCEDURE obj_GetTotalFacetElements
+IF (ALLOCATED(obj%facetElements)) THEN
+  ans = SIZE(obj%facetElements)
+ELSE
+  ans = 0
 END IF
-END PROCEDURE obj_GetTotalMaterial2
+END PROCEDURE obj_GetTotalFacetElements
 
 !----------------------------------------------------------------------------
 !

@@ -15,19 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE DirichletBC_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
-USE Domain_Class, ONLY: Domain_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE FPL, ONLY: ParameterList_
-USE AbstractBC_Class
+USE AbstractBC_Class, ONLY: AbstractBC_
 USE tomlf, ONLY: toml_table
-USE TxtFile_Class
+USE TxtFile_Class, ONLY: TxtFile_
+
 IMPLICIT NONE
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "DirichletBC_Class"
 CHARACTER(*), PARAMETER :: myprefix = "DirichletBC"
+
 PUBLIC :: DirichletBCDeallocate
 PUBLIC :: DirichletBCDisplay
 PUBLIC :: DirichletBC_
@@ -36,6 +38,7 @@ PUBLIC :: AddDirichletBC
 PUBLIC :: AppendDirichletBC
 PUBLIC :: GetDirichletBCPointer
 PUBLIC :: DirichletBCImportFromToml
+PUBLIC :: TypeDirichletBC
 
 !----------------------------------------------------------------------------
 !                                                               DirichletBC_
@@ -53,6 +56,12 @@ CONTAINS
 END TYPE DirichletBC_
 
 !----------------------------------------------------------------------------
+!                                                             TypeDirichletBC
+!----------------------------------------------------------------------------
+
+TYPE(DirichletBC_), PARAMETER :: TypeDirichletBC = DirichletBC_()
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -61,35 +70,43 @@ TYPE :: DirichletBCPointer_
 END TYPE DirichletBCPointer_
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DirichletBCDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     TYPE(DirichletBC_), ALLOCATABLE :: obj(:)
   END SUBROUTINE obj_Deallocate_Vector
+END INTERFACE
+
+INTERFACE DirichletBCDeallocate
+  MODULE PROCEDURE obj_Deallocate_Vector
 END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DirichletBCDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
     TYPE(DirichletBCPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE obj_Deallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE DirichletBCDeallocate
+  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
-!                                                   Final@ConstructorMethods
+!                                                    Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -99,7 +116,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 addDirichletBC@SetMethods
+!                                                  AddDirichletBC@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -107,7 +124,7 @@ END INTERFACE
 ! update: 2023-09-10
 ! summary: Add dirichlet boundary conditions to the vector of pointer
 
-INTERFACE AddDirichletBC
+INTERFACE
   MODULE SUBROUTINE obj_AddDirichletBC(dbc, dbcNo, param, boundary, dom)
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
     !! Dirichlet boundary to form
@@ -117,8 +134,12 @@ INTERFACE AddDirichletBC
     !! parameter for constructing [[DirichletBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(Domain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
   END SUBROUTINE obj_AddDirichletBC
+END INTERFACE
+
+INTERFACE AddDirichletBC
+  MODULE PROCEDURE obj_AddDirichletBC
 END INTERFACE AddDirichletBC
 
 !----------------------------------------------------------------------------
@@ -130,7 +151,7 @@ END INTERFACE AddDirichletBC
 ! update: 2023-09-10
 ! summary: Add Dirichlet boundary conditions to the vector of pointer
 
-INTERFACE AppendDirichletBC
+INTERFACE
   MODULE SUBROUTINE obj_AppendDirichletBC(dbc, param, boundary, dom, dbcNo)
     TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: dbc(:)
     !! Dirichlet boundary to form
@@ -138,14 +159,18 @@ INTERFACE AppendDirichletBC
     !! parameter for constructing [[DirichletBC_]].
     TYPE(MeshSelection_), INTENT(IN) :: boundary
     !! Boundary region
-    CLASS(Domain_), INTENT(IN) :: dom
+    CLASS(AbstractDomain_), INTENT(IN) :: dom
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Dirichlet boundary number
   END SUBROUTINE obj_AppendDirichletBC
+END INTERFACE
+
+INTERFACE AppendDirichletBC
+  MODULE PROCEDURE obj_AppendDirichletBC
 END INTERFACE AppendDirichletBC
 
 !----------------------------------------------------------------------------
-!                                                 GetDirichletBC@GetMethods
+!                                                   GetDirichletBC@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -153,17 +178,21 @@ END INTERFACE AppendDirichletBC
 ! update: 2023-09-10
 ! summary: Get dirichlet boundary conditions to the vector of pointer
 
-INTERFACE GetDirichletBCPointer
+INTERFACE
   MODULE FUNCTION obj_GetDirichletBCPointer(dbc, dbcNo) RESULT(ans)
     CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
     !! Dirichlet boundary nunber
     CLASS(DirichletBC_), POINTER :: ans
   END FUNCTION obj_GetDirichletBCPointer
+END INTERFACE
+
+INTERFACE GetDirichletBCPointer
+  MODULE PROCEDURE obj_GetDirichletBCPointer
 END INTERFACE GetDirichletBCPointer
 
 !----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
+!                                                        GetPrefix@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -178,75 +207,91 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                    ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
 ! summary:  Initiate param from the toml file
 
-INTERFACE DirichletBCImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
-    TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
+    TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+INTERFACE DirichletBCImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                    ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE DirichletBCImportFromToml
- MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, filename,  &
-       & printToml)
-    TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
-    CLASS(Domain_), TARGET, INTENT(IN) :: dom
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, filename, &
+                                        printToml)
+    TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+INTERFACE DirichletBCImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                         Display@IOMethods
+!                                                           Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
 ! summary:  Display the vector of NeumannBC_
 
-INTERFACE DirichletBCDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(DirichletBC_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Vector
+END INTERFACE
+
+INTERFACE DirichletBCDisplay
+  MODULE PROCEDURE obj_Display_Vector
 END INTERFACE DirichletBCDisplay
 
 !----------------------------------------------------------------------------
-!                                                         Display@IOMethods
+!                                                           Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Display the vector of NeumannBC_
+! summary: Display the vector of NeumannBC_
 
-INTERFACE DirichletBCDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(DirichletBCPointer_) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE
+
+INTERFACE DirichletBCDisplay
+  MODULE PROCEDURE obj_Display_Ptr_Vector
 END INTERFACE DirichletBCDisplay
 
 !----------------------------------------------------------------------------

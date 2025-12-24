@@ -21,6 +21,7 @@ target_sources(
   PRIVATE ${src_path}/AbstractNodeField_Class@ConstructorMethods.F90
           ${src_path}/AbstractNodeField_Class@GetMethods.F90
           ${src_path}/AbstractNodeField_Class@SetMethods.F90
-          ${src_path}/AbstractNodeField_Class@DBCMethods.F90
           ${src_path}/AbstractNodeField_Class@BlasMethods.F90
-          ${src_path}/AbstractNodeField_Class@IOMethods.F90)
+          ${src_path}/AbstractNodeField_Class@IOMethods.F90
+          ${src_path}/AbstractNodeField_Class@HDFMethods.F90
+          ${src_path}/AbstractNodeField_Class@VTKMethods.F90)

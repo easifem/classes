@@ -19,10 +19,12 @@ MODULE MeshFacetData_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 IMPLICIT NONE
 
-CHARACTER(*), PARAMETER :: modName = "MeshFacetData_Class"
 PRIVATE
 
+CHARACTER(*), PARAMETER :: modName = "MeshFacetData_Class"
+
 PUBLIC :: MeshFacetData_
+PUBLIC :: MeshFacetDataDeallocate
 
 !----------------------------------------------------------------------------
 !                                                             MeshFacetData_
@@ -43,8 +45,8 @@ PUBLIC :: MeshFacetData_
 !
 ! The `halo` of the mesh will be stored inside the instance of `Mesh_`
 !
-! For each Halo (neighbouring mesh) we have an instance of MeshFacetData_.
-! therefore, I have defined MeshFacetData_ as the collection of
+! For each Halo (neighbouring mesh) we have an instance of obj_.
+! therefore, I have defined obj_ as the collection of
 ! all meshfacets.
 
 TYPE MeshFacetData_
@@ -56,10 +58,11 @@ TYPE MeshFacetData_
   INTEGER(I4B), ALLOCATABLE :: slaveLocalFacetID(:)
   ! CLASS( Halo_ ), POINTER :: halo => NULL()
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => MeshFacetData_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => MeshFacetData_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => MeshFacetData_isInitiated
-  PROCEDURE, PUBLIC, PASS(obj) :: Size => MeshFacetData_Size
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate1
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => obj_isInitiated
+  PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Set => MeshFacet_Set
   ! PROCEDURE, PUBLIC, PASS( obj ) :: Size => MeshFacet_Size
   ! PROCEDURE, PUBLIC, PASS( obj ) :: SetSlaveCellNumber => &
@@ -72,6 +75,34 @@ CONTAINS
 END TYPE MeshFacetData_
 
 !----------------------------------------------------------------------------
+!                                                       Deallocate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-16
+! summary:  Deallocate the data stored in obj_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate1(obj)
+    CLASS(MeshFacetData_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Deallocate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-16
+! summary:  Deallocate the data stored in obj_
+
+INTERFACE MeshFacetDataDeallocate
+  MODULE SUBROUTINE obj_Deallocate2(obj)
+    TYPE(MeshFacetData_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate2
+END INTERFACE MeshFacetDataDeallocate
+
+!----------------------------------------------------------------------------
 !                                                Initaite@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -80,10 +111,10 @@ END TYPE MeshFacetData_
 ! summary: Initiate an instance of MeshFacetData
 
 INTERFACE
-  MODULE SUBROUTINE MeshFacetData_Initiate(obj, n)
+  MODULE SUBROUTINE obj_Initiate(obj, n)
     CLASS(MeshFacetData_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: n
-  END SUBROUTINE MeshFacetData_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -95,10 +126,10 @@ END INTERFACE
 ! summary: Returns true if MeshFacetData initiated
 
 INTERFACE
-  MODULE FUNCTION MeshFacetData_isInitiated(obj) RESULT(ans)
+  MODULE FUNCTION obj_isInitiated(obj) RESULT(ans)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION MeshFacetData_isInitiated
+  END FUNCTION obj_isInitiated
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -110,10 +141,10 @@ END INTERFACE
 ! summary: Returns the size of MeshFacetData
 
 INTERFACE
-  MODULE FUNCTION MeshFacetData_Size(obj) RESULT(ans)
+  MODULE FUNCTION obj_Size(obj) RESULT(ans)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION MeshFacetData_Size
+  END FUNCTION obj_Size
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -125,11 +156,11 @@ END INTERFACE
 ! summary: Display mesh facet data
 
 INTERFACE
-  MODULE SUBROUTINE MeshFacetData_Display(obj, msg, unitno)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(MeshFacetData_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE MeshFacetData_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 END MODULE MeshFacetData_Class

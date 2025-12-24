@@ -19,147 +19,139 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixFieldLis_Class) ConstructorMethods
-USE BaseMethod
+USE MatrixField_Class, ONLY: MatrixFieldInitiate
+USE MatrixField_Class, ONLY: MatrixFieldDeallocate
+USE CSRMatrix_Method, ONLY: GetNNZ
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1"
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: nnz
-
-CALL MatrixFieldInitiate1(obj=obj, param=param, dom=dom)
-
-CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-nnz = getNNZ(obj%mat)
-obj%lis_ia = obj%mat%csr%ia - 1
-obj%lis_ja = obj%mat%csr%ja - 1
-
-CALL lis_matrix_set_csr( &
-  & nnz, &
-  & obj%lis_ia, &
-  & obj%lis_ja, &
-  & obj%mat%a, &
-  & obj%lis_ptr, &
-  & ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_assemble(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_get_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
-CALL CHKERR(ierr)
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_Initiate2
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
 INTEGER(I4B) :: ierr
 INTEGER(I4B) :: nnz
 
-CALL MatrixFieldInitiate2( &
-  & obj=obj, &
-  & obj2=obj2, &
-  & copyFull=copyFull, &
-  & copyStructure=copyStructure, &
-  & usePointer=usePointer)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL MatrixFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
+                         copyStructure=copyStructure, usePointer=usePointer)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
-CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
+#endif
 
-nnz = getNNZ(obj%mat)
+CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+nnz = GetNNZ(obj%mat)
 obj%lis_ia = obj%mat%csr%ia - 1
 obj%lis_ja = obj%mat%csr%ja - 1
 
-CALL lis_matrix_set_csr( &
-  & nnz, &
-  & obj%lis_ia, &
-  & obj%lis_ja, &
-  & obj%mat%a, &
-  & obj%lis_ptr, &
-  & ierr)
+CALL lis_matrix_set_csr(nnz, obj%lis_ia, obj%lis_ja, obj%mat%a, obj%lis_ptr, &
+                        ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 CALL lis_matrix_assemble(obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 CALL lis_matrix_get_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3"
-INTEGER(I4B), PARAMETER :: tVar = 2
-INTEGER(I4B) :: ierr
-INTEGER(I4B) :: nnz
-
-CALL MatrixFieldInitiate3(obj=obj, param=param, dom=dom)
-CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_matrix_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-nnz = getNNZ(obj%mat)
-obj%lis_ia = obj%mat%csr%ia - 1
-obj%lis_ja = obj%mat%csr%ja - 1
-
-CALL lis_matrix_set_csr( &
-  & nnz, &
-  & obj%lis_ia, &
-  & obj%lis_ja, &
-  & obj%mat%a, &
-  & obj%lis_ptr, &
-  & ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_assemble(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_get_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_matrix_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
-CALL CHKERR(ierr)
-END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
 INTEGER(I4B) :: ierr
-CALL lis_matrix_unset(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_matrix_destroy(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = obj%IsInitiated()
+IF (isok) THEN
+  CALL lis_matrix_unset(obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  CALL lis_matrix_destroy(obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+END IF
+
+isok = obj%IsSubmatInitiated()
+IF (isok) THEN
+  CALL lis_matrix_unset(obj%submat_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  CALL lis_matrix_destroy(obj%submat_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+END IF
+
 IF (ALLOCATED(obj%lis_ia)) DEALLOCATE (obj%lis_ia)
 IF (ALLOCATED(obj%lis_ja)) DEALLOCATE (obj%lis_ja)
+IF (ALLOCATED(obj%submat_lis_ia)) DEALLOCATE (obj%submat_lis_ia)
+IF (ALLOCATED(obj%submat_lis_ja)) DEALLOCATE (obj%submat_lis_ja)
+
+obj%submat_is = 0
+obj%submat_ie = 0
+obj%submat_lis_ptr = 0
+
 CALL MatrixFieldDeallocate(obj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -169,5 +161,11 @@ END PROCEDURE obj_Deallocate
 MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
+
+!----------------------------------------------------------------------------
+!                                                               Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

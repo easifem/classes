@@ -15,579 +15,246 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) BlasMethods
-IMPLICIT NONE
+USE RealVector_Method, ONLY: Axpy
+USE RealVector_Method, ONLY: Copy
+USE RealVector_Method, ONLY: Norm1
+USE RealVector_Method, ONLY: Norm2
+USE RealVector_Method, ONLY: Normi
+USE RealVector_Method, ONLY: Dot_Product
+USE RealVector_Method, ONLY: PMUL
+USE RealVector_Method, ONLY: Reciprocal
+USE RealVector_Method, ONLY: SCAL
 
-#ifdef USE_LIS
-#include "lisf.h"
-#endif
+IMPLICIT NONE
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                     AXPY1
+!                                                                      AXPY1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AXPY1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_AXPY1()"
-LOGICAL(LGT) :: problem
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-
-#ifdef DEBUG_VER
-  problem = x%engine .NE. "NATIVE_SERIAL"
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of x should be NATIVE_SERIAL.')
-    RETURN
-  END IF
-#endif
-
-  CALL AXPY(X=x%realvec, Y=obj%realvec, A=scale)
-
-#ifdef USE_LIS
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-
-  CALL lis_vector_is_null(x%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  ! alpha, x, y, ierr
-  CALL lis_vector_axpy(scale, x%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+CALL AXPY(X=x%realvec, Y=obj%realvec, A=scale)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_AXPY1
 
 !----------------------------------------------------------------------------
-!                                                                   AXPY2
+!                                                                      AXPY2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AXPY2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_AXPY2()"
-LOGICAL(LGT) :: problem
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-
-#ifdef DEBUG_VER
-  problem = x1%engine .NE. "NATIVE_SERIAL" .OR.  &
-          & x2%engine .NE. "NATIVE_SERIAL"
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of x1 and x2'// &
-      & 'should be NATIVE_SERIAL.')
-    RETURN
-  END IF
-#endif
-
-  CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
-  CALL AXPY(X=x2%realvec, Y=obj%realvec, A=a2)
-
-#ifdef USE_LIS
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  CALL lis_vector_is_null(x1%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  CALL lis_vector_is_null(x2%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  ! alpha, x, y, ierr
-  CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
-  CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
+CALL AXPY(X=x2%realvec, Y=obj%realvec, A=a2)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_AXPY2
 
 !----------------------------------------------------------------------------
-!                                                                   AXPY3
+!                                                                      AXPY3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AXPY3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_AXPY3()"
-LOGICAL(LGT) :: problem
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-
-#ifdef DEBUG_VER
-  problem = x1%engine .NE. "NATIVE_SERIAL" .OR.  &
-          & x2%engine .NE. "NATIVE_SERIAL" .OR. &
-          & x3%engine .NE. "NATIVE_SERIAL"
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of x1, x2 and x3'// &
-      & 'should be NATIVE_SERIAL.')
-    RETURN
-  END IF
-#endif
-
-  CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
-  CALL AXPY(X=x2%realvec, Y=obj%realvec, A=a2)
-  CALL AXPY(X=x3%realvec, Y=obj%realvec, A=a3)
-
-#ifdef USE_LIS
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  CALL lis_vector_is_null(x1%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  CALL lis_vector_is_null(x2%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  CALL lis_vector_is_null(x3%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  ! alpha, x, y, ierr
-  CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
-  CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
-  CALL lis_vector_axpy(a3, x3%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+CALL AXPY(x=x1%realvec, y=obj%realvec, a=a1)
+CALL AXPY(x=x2%realvec, y=obj%realvec, a=a2)
+CALL AXPY(x=x3%realvec, y=obj%realvec, a=a3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_AXPY3
 
 !----------------------------------------------------------------------------
-!                                                                     SCAL
+!                                                                       SCAL
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SCAL
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SCAL()"
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-
-  CALL SCAL(x=obj%realvec, A=scale)
-
-#ifdef USE_LIS
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  ! alpha, x, ierr
-  CALL lis_vector_scale(scale, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+CALL SCAL(x=obj%realvec, a=scale)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE obj_SCAL
 
 !----------------------------------------------------------------------------
-!                                                                      COPY
+!                                                                       COPY
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_COPY
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_COPY()"
-LOGICAL(LGT) :: problem
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-
-#ifdef DEBUG_VER
-  problem = obj2%engine .NE. "NATIVE_SERIAL"
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: engine of obj2 should be NATIVE_SERIAL.')
-    RETURN
-  END IF
-#endif
-
-  CALL COPY(y=obj%realvec, x=obj2%realvec)
-
-#ifdef USE_LIS
-
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-
-  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  CALL lis_vector_copy(obj2%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+CALL COPY(y=obj%realvec, x=obj2%realvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_COPY
 
 !----------------------------------------------------------------------------
-!                                                                    NORM2
+!                                                                      NORM2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Norm2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Norm2()"
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0_DFP
-
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-  ans = NORM2(obj=obj%realvec)
-
-#ifdef USE_LIS
-
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  CALL lis_vector_nrm2(obj%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+ans = NORM2(obj=obj%realvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_Norm2
 
 !----------------------------------------------------------------------------
-!                                                                    NORM1
+!                                                                       NORM1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Norm1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Norm1()"
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0
-
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-  ans = NORM1(obj=obj%realvec)
-
-#ifdef USE_LIS
-
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  CALL lis_vector_nrm1(obj%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+ans = NORM1(obj=obj%realvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_Norm1
 
 !----------------------------------------------------------------------------
-!                                                                    NORM2
+!                                                                      NORM2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Normi
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Normi()"
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0_DFP
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-  ans = NORMi(obj=obj%realvec)
-
-#ifdef USE_LIS
-
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  CALL lis_vector_nrmi(obj%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+ans = NORMi(obj=obj%realvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_Normi
 
 !----------------------------------------------------------------------------
-!                                                               DOT_PRODUCT
+!                                                                DOT_PRODUCT
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DOT_PRODUCT
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_DOT_PRODUCT()"
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ans = 0.0_DFP
-
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-  ans = DOT_PRODUCT(obj1=obj%realvec, obj2=obj2%realvec)
-
-#ifdef USE_LIS
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-
-  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  CALL lis_vector_dot(obj%lis_ptr, obj2%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+ans = DOT_PRODUCT(obj1=obj%realvec, obj2=obj2%realvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_DOT_PRODUCT
 
 !----------------------------------------------------------------------------
-!                                                               DOT_PRODUCT
+!                                                                       PMUL
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_PMUL
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_PMUL()"
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-  CALL PMUL(obj=obj%realvec, obj1=obj1%realvec, obj2=obj2%realvec)
-
-#ifdef USE_LIS
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  CALL lis_vector_is_null(obj1%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  CALL lis_vector_pmul(obj1%lis_ptr, obj2%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+CALL PMUL(obj=obj%realvec, obj1=obj1%realvec, obj2=obj2%realvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_PMUL
 
 !----------------------------------------------------------------------------
@@ -595,51 +262,27 @@ END PROCEDURE obj_PMUL
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Reciprocal
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Reciprocal()"
-INTEGER(I4B) :: ierr
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-SELECT CASE (obj%engine%chars())
-CASE (TypeEngineName%native_serial)
-  CALL Reciprocal(obj1=obj%realvec, obj2=obj%realvec)
-
-#ifdef USE_LIS
-
-CASE (TypeEngineName%lis_omp)
-
-#ifdef DEBUG_VER
-  CALL lis_vector_is_null(obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-#endif
-
-  CALL lis_vector_reciprocal(obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#endif
-
-CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: No case found given engine = '//  &
-    & obj%engine%chars())
-  RETURN
-END SELECT
+CALL Reciprocal(obj1=obj%realvec, obj2=obj%realvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Reciprocal
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE BlasMethods

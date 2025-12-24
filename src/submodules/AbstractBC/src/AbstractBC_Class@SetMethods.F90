@@ -16,7 +16,11 @@
 !
 
 SUBMODULE(AbstractBC_Class) SetMethods
-USE BaseMethod
+USE Display_Method, ONLY: Display, ToString
+USE GlobalData, ONLY: CHAR_LF
+USE ReallocateUtility, ONLY: Reallocate
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+
 IMPLICIT NONE
 CONTAINS
 
@@ -24,122 +28,494 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE bc_Set
-CHARACTER(*), PARAMETER :: myName = "bc_Set"
-LOGICAL(LGT) :: notFunc_notExt, isConstVal, isSpaceVal, isSTVal,  &
-  & isTimeVal, bool1, bool2, isUserFunction
+MODULE PROCEDURE obj_Set
+CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+LOGICAL(LGT) :: abool
+
+INTEGER(I4B) :: acase
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Set()')
+                        '[START]')
 #endif
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[CONFIG ERROR ] :: AbstractBC_ object is not initiated.')
+#ifdef DEBUG_VER
+CALL set_check_error(obj, constantNodalValue, spaceNodalValue, &
+                     timeNodalValue, spaceTimeNodalValue, userFunction)
+#endif
+
+abool = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)
+
+acase = 0
+IF (abool) THEN
+  IF (PRESENT(constantNodalValue)) THEN
+    acase = 1
+  ELSE IF (PRESENT(spaceNodalValue)) THEN
+    acase = 2
+  ELSEIF (PRESENT(timeNodalValue)) THEN
+    acase = 3
+  ELSEIF (PRESENT(spaceTimeNodalValue)) THEN
+    acase = 4
+  END IF
+
+ELSE
+
+  IF (obj%isUserFunction .AND. PRESENT(userFunction)) THEN
+    acase = 5
+  END IF
+
 END IF
 
-notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%useExternal)
+SELECT CASE (acase)
+CASE (1)
+  ! constantNodalValue
+  obj%nrow = 1
+  obj%ncol = 1
+  CALL Reallocate(obj%nodalvalue, obj%nrow, obj%ncol)
+  obj%nodalvalue(1:obj%nrow, 1:obj%ncol) = constantNodalValue
 
-isUserFunction = PRESENT(userFunction)
-isConstVal = PRESENT(constantNodalValue)
-isSpaceVal = PRESENT(spaceNodalValue)
-isTimeVal = PRESENT(timeNodalValue)
-isSTVal = PRESENT(spaceTimeNodalValue)
+CASE (2)
+  ! spaceNodalValue
+  obj%nrow = SIZE(spaceNodalValue, 1)
+  obj%ncol = 1
+  CALL Reallocate(obj%nodalvalue, obj%nrow, obj%ncol)
+  obj%nodalvalue(1:obj%nrow, 1) = spaceNodalValue
 
-IF (notFunc_notExt .AND. isUserFunction) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & "[CONFIG ERROR] :: AbstractBC_::obj is initiated "//CHAR_LF// &
-  & "with useFunction=.FALSE. and useExternal=.FALSE."//CHAR_LF// &
-  & "So you cannot provide userFunction.")
-END IF
+CASE (3)
+  ! timeNodalValue
+  obj%nrow = SIZE(timeNodalValue)
+  obj%ncol = 1
 
-bool1 = notFunc_notExt .AND. isConstVal
-bool2 = bool1 .AND. obj%nodalValueType .NE. Constant
-IF (bool2) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
-    & "with nodalValueType=Constant "//CHAR_LF// &
-    & 'So, constantNodalValue cannot be present.')
-  RETURN
-END IF
+  CALL Reallocate(obj%nodalvalue, obj%nrow, obj%ncol)
+  obj%nodalvalue(1:obj%nrow, 1) = timeNodalValue
 
-! constant
-IF (bool1) THEN
-  CALL Reallocate(obj%NodalValue, 1, 1)
-  obj%NodalValue = constantNodalValue
-  RETURN
-END IF
+CASE (4)
+  obj%nrow = SIZE(spaceTimeNodalValue, 1)
+  obj%ncol = SIZE(spaceTimeNodalValue, 2)
+  CALL Reallocate(obj%NodalValue, obj%nrow, obj%ncol)
+  obj%nodalvalue(1:obj%nrow, 1:obj%ncol) = spaceTimeNodalValue
 
-! spaceNodalValue
-bool1 = notFunc_notExt .AND. isSpaceVal
-bool2 = bool1 .AND. (obj%nodalValueType .NE. Space)
-IF (bool2) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
-    & "with nodalValueType=Space"//CHAR_LF// &
-    & 'So, spaceNodalValue cannot be present.')
-  RETURN
-END IF
-
-IF (bool1) THEN
-  CALL Reallocate(obj%NodalValue, SIZE(spaceNodalValue), 1)
-  obj%NodalValue(:, 1) = spaceNodalValue
-  RETURN
-END IF
-
-! timeNodalValue
-bool1 = notFunc_notExt .AND. isTimeVal
-bool2 = bool1 .AND. (obj%nodalValueType .NE. Time)
-IF (bool2) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
-    & "with nodalValueType=Time"//CHAR_LF// &
-    & 'So, timeNodalValue cannot be present.')
-  RETURN
-END IF
-
-IF (bool1) THEN
-  CALL Reallocate(obj%NodalValue, SIZE(timeNodalValue), 1)
-  obj%NodalValue(:, 1) = timeNodalValue
-  RETURN
-END IF
-
-! spaceTimeNodalValue
-bool1 = notFunc_notExt .AND. isSTVal
-bool2 = bool1 .AND. (obj%nodalValueType .NE. SpaceTime)
-IF (bool2) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & "[CONFIG ERROR] :: AbstractBC_::obj is not initiated with "//  &
-  & " nodalValueType=SpaceTime"// &
-  & CHAR_LF// &
-  & 'So, spaceTimeNodalValue cannot be present')
-  RETURN
-END IF
-IF (bool1) THEN
-  obj%NodalValue = spaceTimeNodalValue
-  RETURN
-END IF
-
-! userFunction
-bool1 = isUserFunction .AND. obj%isUserFunction
-IF (.NOT. bool1) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[CONFIG ERROR] :: AbstractBC_::obj is not correctly initiated"// &
-    & " for userFunction")
-  RETURN
-END IF
-
-IF (isUserFunction) THEN
+CASE (5)
   obj%func => userFunction
-  RETURN
-END IF
+
+CASE DEFAULT
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[CONFIG ERROR] :: Invalid case')
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Set()')
+                        '[END]')
 #endif
 
-END PROCEDURE bc_Set
+END PROCEDURE obj_Set
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
+                           timeNodalValue, spaceTimeNodalValue, userFunction)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+  REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
+  REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
+  TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
+
+  LOGICAL(LGT) :: isConstVal, isSpaceVal, isTimeVal, isSTVal, &
+                  isUserFunction, bool1, bool2, notFunc_notExt
+
+  CHARACTER(*), PARAMETER :: myname = "set_check_error()"
+
+  CALL AssertError1(obj%isInit, myName, &
+                    "AbstractBC_ object is not initiated")
+
+  notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)
+
+  isUserFunction = PRESENT(userFunction)
+  isConstVal = PRESENT(constantNodalValue)
+  isSpaceVal = PRESENT(spaceNodalValue)
+  isTimeVal = PRESENT(timeNodalValue)
+  isSTVal = PRESENT(spaceTimeNodalValue)
+
+  IF (notFunc_notExt .AND. isUserFunction) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+               "[CONFIG ERROR] :: AbstractBC_::obj is initiated "//CHAR_LF// &
+             "with useFunction=.FALSE. and isUseExternal=.FALSE."//CHAR_LF// &
+                      "So you cannot provide userFunction.")
+    RETURN
+  END IF
+
+  bool1 = notFunc_notExt .AND. isConstVal
+  bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%constant)
+  IF (bool2) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
+                      "with nodalValueType=Constant "//CHAR_LF// &
+                      'So, constantNodalValue cannot be present.')
+    RETURN
+  END IF
+
+  !! spaceNodalValue
+  bool1 = notFunc_notExt .AND. isSpaceVal
+  bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%space)
+  IF (bool2) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
+                      "with nodalValueType=Space"//CHAR_LF// &
+                      'So, spaceNodalValue cannot be present.')
+    RETURN
+  END IF
+
+  bool1 = notFunc_notExt .AND. isTimeVal
+  bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%time)
+  IF (bool2) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                    "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
+                      "with nodalValueType=Time"//CHAR_LF// &
+                      'So, timeNodalValue cannot be present.')
+    RETURN
+  END IF
+
+  bool1 = notFunc_notExt .AND. isSTVal
+  bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFeVariableOpt%spacetime)
+  IF (bool2) THEN
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+               "[CONFIG ERROR] :: AbstractBC_::obj is not initiated with "// &
+                      " nodalValueType=SpaceTime"// &
+                      CHAR_LF// &
+                      'So, spaceTimeNodalValue cannot be present')
+    RETURN
+  END IF
+
+  IF (isUserFunction) THEN
+
+    bool1 = obj%isUserFunction
+    IF (.NOT. bool1) THEN
+      CALL e%RaiseError(modName//'::'//myName//" - "// &
+           "[CONFIG ERROR] :: AbstractBC_::obj is not correctly initiated"// &
+                        " for userFunction")
+      RETURN
+    END IF
+  END IF
+END SUBROUTINE set_check_error
+
+!----------------------------------------------------------------------------
+!                                                 SetElemToLocalBoundary
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetElemToLocalBoundary
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetElemToLocalBoundary()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL set_elem_to_faces(obj)
+CALL set_elem_to_edges(obj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_SetElemToLocalBoundary
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE set_elem_to_faces(obj)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "set_elem_to_faces()"
+#endif
+
+  LOGICAL(LGT), PARAMETER :: onlyBoundaryElement = .TRUE., yes = .TRUE., &
+                             no = .FALSE.
+
+  ! INTEGER(I4B), PARAMETER :: expandFactor = 2
+
+  INTEGER(I4B) :: ii, jj, nsd, tsize, indx(4), tmeshid, maxnode2elem, &
+                  localFaceNumber, localCellNumber
+  INTEGER(I4B), POINTER :: intptr(:)
+  CLASS(AbstractMesh_), POINTER :: bmesh, cmesh
+  INTEGER(I4B), ALLOCATABLE :: bndy2cell(:), bndy_con(:), n2e(:), &
+                               cell_con(:)
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  IF (obj%isElemToFace) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                  'obj%isElemToFace is already .true., so nothing to do here')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(obj%dom)
+  CALL AssertError1(isok, myName, "dom is not associated")
+#endif
+
+  obj%isElemToFace = .TRUE.
+  nsd = obj%dom%GetNSD()
+  tsize = nsd - 1
+  CALL obj%boundary%GetMeshIDPointer(dim=tsize, ans=intptr, tsize=tmeshid)
+  ! The above statement tells us that this method works
+  ! when isSelectionByMeshID is set to .true. in the boundary object
+
+  isok = (tmeshid .EQ. 0) .OR. (nsd .LT. 2)
+
+  IF (isok) THEN
+    obj%tElemToFace = 0
+    CALL Reallocate(obj%elemToFace, 0, 0)
+    intptr => NULL()
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
+
+  cmesh => obj%dom%GetMeshPointer(dim=nsd)
+  maxnode2elem = cmesh%GetMaxNodeToElements()
+
+#ifdef DEBUG_VER
+  isok = maxnode2elem .NE. 0
+  CALL AssertError1(isok, myName, "maxNodeToElements from mesh is zero")
+#endif
+
+  ALLOCATE (n2e(maxnode2elem))
+
+  ! here tsize = nsd - 1
+  bmesh => obj%dom%GetMeshPointer(dim=tsize)
+
+  indx = 0
+
+  ! Here we are getting the total number of boundary elements
+  ! which have meshid given in intptr
+  indx(1) = bmesh%GetTotalElements(meshid=intptr(1:tmeshid))
+  tsize = indx(1)
+  ALLOCATE (bndy2cell(tsize))
+  CALL Reallocate(obj%elemToFace, 2, tsize)
+  obj%tElemToFace = tsize
+
+  ! info: here we are getting the local element number of boundary
+  CALL bmesh%GetElemNum_(meshid=intptr, islocal=yes, ans=bndy2cell, &
+                         tsize=indx(2))
+
+  tsize = cmesh%GetMaxNNE()
+
+#ifdef DEBUG_VER
+  isok = tsize .NE. 0
+  CALL AssertError1(isok, myName, "maxNNE from mesh is zero")
+#endif
+
+  ALLOCATE (bndy_con(tsize), cell_con(tsize))
+
+  ! info: Now we start a loop over all boundary elements
+  !       here,tsize is total num of boundary elems returned by GetElemNum_
+  tsize = indx(2)
+
+  boundary_loop: DO ii = 1, tsize
+
+    ! info: Here we are getting connectivity of boundary elements
+    !       only vertex connectivity is needed
+    !       here islocal is set to yes because globalElement is local
+    CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
+                                ans=bndy_con, tsize=indx(3), &
+                                islocal=yes, opt="V")
+
+    isok = indx(3) .EQ. 0
+    IF (isok) CYCLE
+
+    !info: select a vertex node of boundary element, say, bndy_con(1)
+    !      and get all elements connected to this node in cell mesh
+    !      here islocal is set to no because globalNode is not local
+    CALL cmesh%GetNodeToElements_(ans=n2e, tsize=indx(4), &
+                                  globalNode=bndy_con(1), islocal=no)
+
+    !info: now we start a new loop over all elements in n2e
+    node_to_element_loop: DO jj = 1, indx(4)
+      ! todo: we can check if the element is active or not
+
+      localCellNumber = cmesh%GetLocalElemNumber(globalElement=n2e(jj))
+
+#ifdef DEBUG_VER
+      isok = localCellNumber .NE. 0
+      CALL AssertError1(isok, myName, "found localCellNumber is zero")
+#endif
+
+      CALL cmesh%FindFace(globalElement=localCellNumber, &
+                          faceCon=bndy_con(1:indx(3)), &
+                          isFace=isok, islocal=yes, &
+                          localFaceNumber=localFaceNumber, &
+                          onlyBoundaryElement=onlyBoundaryElement)
+
+      IF (isok) THEN
+        obj%elemToFace(1, ii) = localCellNumber
+        obj%elemToFace(2, ii) = localFaceNumber
+        EXIT node_to_element_loop
+      END IF
+
+    END DO node_to_element_loop
+
+  END DO boundary_loop
+
+  IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+  IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
+  IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
+  IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
+  intptr => NULL()
+  bmesh => NULL()
+  cmesh => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE set_elem_to_faces
+
+!----------------------------------------------------------------------------
+!                                                          set_elem_to_edges
+!----------------------------------------------------------------------------
+
+SUBROUTINE set_elem_to_edges(obj)
+  CLASS(AbstractBC_), INTENT(INOUT) :: obj
+
+  CHARACTER(*), PARAMETER :: myName = "set_elem_to_edges()"
+  LOGICAL(LGT), PARAMETER :: onlyBoundaryElement = .TRUE., yes = .TRUE., &
+                             no = .FALSE.
+  INTEGER(I4B), PARAMETER :: dim = 1
+
+  ! INTEGER(I4B), PARAMETER :: expandFactor = 2
+
+  INTEGER(I4B) :: ii, jj, tsize, indx(4), tmeshid, maxnode2elem, &
+                  localEdgeNumber, localCellNumber, nsd
+  INTEGER(I4B), POINTER :: intptr(:)
+  CLASS(AbstractMesh_), POINTER :: bmesh, cmesh
+  INTEGER(I4B), ALLOCATABLE :: bndy2cell(:), bndy_con(:), n2e(:), &
+                               cell_con(:)
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  IF (obj%isElemToEdge) RETURN
+
+  obj%isElemToEdge = .TRUE.
+
+  nsd = obj%dom%GetNSD()
+
+  CALL obj%boundary%GetMeshIDPointer(dim=dim, ans=intptr, tsize=tmeshid)
+
+  isok = tmeshid .EQ. 0 .OR. (nsd .NE. 3)
+
+  IF (isok) THEN
+    obj%tElemToEdge = 0
+    CALL Reallocate(obj%elemToEdge, 0, 0)
+    CALL finishme
+    RETURN
+  END IF
+
+  cmesh => obj%dom%GetMeshPointer(dim=nsd)
+  maxnode2elem = cmesh%GetMaxNodeToElements()
+  ALLOCATE (n2e(maxnode2elem))
+
+  bmesh => obj%dom%GetMeshPointer(dim=dim)
+
+  indx = 0
+
+  indx(1) = bmesh%GetTotalElements(meshid=intptr(1:tmeshid))
+  tsize = indx(1)
+  ALLOCATE (bndy2cell(tsize))
+  CALL Reallocate(obj%elemToEdge, 2, tsize)
+  obj%tElemToEdge = tsize
+
+  ! INFO: here we are getting the local element number of boundary
+  CALL bmesh%GetElemNum_(meshid=intptr, islocal=yes, ans=bndy2cell, &
+                         tsize=indx(2))
+
+  tsize = cmesh%GetMaxNNE()
+  ALLOCATE (bndy_con(tsize), cell_con(tsize))
+
+  ! INFO: A loop over all boundary elements, tsize is total num of bndy elem
+  tsize = indx(2)
+  boundary_loop: DO ii = 1, tsize
+
+    CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
+                            ans=bndy_con, tsize=indx(3), islocal=yes, opt="V")
+
+    isok = indx(3) .NE. 0
+    IF (.NOT. isok) CYCLE
+
+    !INFO: select a node, bndy_con(1)
+    CALL cmesh%GetNodeToElements_(ans=n2e, tsize=indx(4), &
+                                  globalNode=bndy_con(1), islocal=no)
+
+    !INFO: loop over all elements connected to con(1)
+    node_to_element_loop: DO jj = 1, indx(4)
+      localCellNumber = cmesh%GetLocalElemNumber(globalElement=n2e(jj))
+
+      CALL cmesh%FindEdge(globalElement=localCellNumber, &
+                          edgeCon=bndy_con(1:indx(3)), &
+                          isEdge=isok, islocal=yes, &
+                          localEdgeNumber=localEdgeNumber, &
+                          onlyBoundaryElement=onlyBoundaryElement)
+
+      IF (isok) THEN
+        obj%elemToEdge(1, ii) = localCellNumber
+        obj%elemToEdge(2, ii) = localEdgeNumber
+        EXIT node_to_element_loop
+      END IF
+
+    END DO node_to_element_loop
+
+  END DO boundary_loop
+
+  DEALLOCATE (n2e, bndy_con, cell_con)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+CONTAINS
+  SUBROUTINE finishme
+    IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+    IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
+    IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
+    IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
+    intptr => NULL()
+    bmesh => NULL()
+    cmesh => NULL()
+  END SUBROUTINE finishme
+
+END SUBROUTINE set_elem_to_edges
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

@@ -713,8 +713,8 @@ END INTERFACE
 ! summary: Discrete Chebyshev Transform of a function
 
 INTERFACE
-  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType) &
-    & RESULT(ans)
+  MODULE FUNCTION Orthopol_Transform2(obj, n, f, quadType, x1, x2) &
+    RESULT(ans)
     CLASS(Chebyshev1Space1D_), INTENT(IN) :: obj
     !! orthopol
     INTEGER(I4B), INTENT(IN) :: n
@@ -724,6 +724,8 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: quadType
     !! Quadrature type, Gauss, GaussLobatto, GaussRadau, GaussRadauLeft
     !! GaussRadauRight
+    REAL(DFP), INTENT(IN) :: x1, x2
+    !! x1 and x2 are the end points of the interval
     REAL(DFP) :: ans(0:n)
     !! modal values  or coefficients
   END FUNCTION Orthopol_Transform2
@@ -739,7 +741,7 @@ END INTERFACE
 
 INTERFACE
   MODULE PURE FUNCTION Orthopol_InvTransform1(obj, n, coeff, x) &
-    & RESULT(ans)
+    RESULT(ans)
     CLASS(Chebyshev1Space1D_), INTENT(IN) :: obj
     !! orthopol
     INTEGER(I4B), INTENT(IN) :: n

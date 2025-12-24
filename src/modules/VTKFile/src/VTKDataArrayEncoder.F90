@@ -19,780 +19,758 @@ MODULE VTKDataArrayEncoder
 USE GlobalData
 IMPLICIT NONE
 PRIVATE
-PUBLIC :: encodeVTKDataArray
 
-INTERFACE PACK_DATA
-  MODULE PROCEDURE Pack_Data_Int32
-END INTERFACE PACK_DATA
-
-PUBLIC :: PACK_DATA
+PUBLIC :: EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank1_Real32( x, fmt ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: x( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank1_Real32(x, fmt) RESULT(Ans)
+    REAL(REAL32), INTENT(IN) :: x(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank1_Real32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank1_Real32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank1_Real32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank1_Real64( x, fmt ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: x( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank1_Real64(x, fmt) RESULT(Ans)
+    REAL(REAL64), INTENT(IN) :: x(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank1_Real64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank1_Real64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank1_Real64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank1_Int8( x, fmt ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank1_Int8(x, fmt) RESULT(Ans)
+    INTEGER(INT8), INTENT(IN) :: x(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank1_Int8
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank1_Int8
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank1_Int8
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank1_Int16( x, fmt ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank1_Int16(x, fmt) RESULT(Ans)
+    INTEGER(INT16), INTENT(IN) :: x(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank1_Int16
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank1_Int16
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank1_Int16
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank1_Int32( x, fmt ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank1_Int32(x, fmt) RESULT(Ans)
+    INTEGER(INT32), INTENT(IN) :: x(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank1_Int32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank1_Int32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank1_Int32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank1_Int64( x, fmt ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank1_Int64(x, fmt) RESULT(Ans)
+    INTEGER(INT64), INTENT(IN) :: x(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank1_Int64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank1_Int64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank1_Int64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank2_Real32( x, fmt ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank2_Real32(x, fmt) RESULT(Ans)
+    REAL(REAL32), INTENT(IN) :: x(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank2_Real32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank2_Real32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank2_Real32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank2_Real64( x, fmt ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank2_Real64(x, fmt) RESULT(Ans)
+    REAL(REAL64), INTENT(IN) :: x(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank2_Real64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank2_Real64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank2_Real64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank2_Int8( x, fmt ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank2_Int8(x, fmt) RESULT(Ans)
+    INTEGER(INT8), INTENT(IN) :: x(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank2_Int8
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank2_Int8
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank2_Int8
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank2_Int16( x, fmt ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank2_Int16(x, fmt) RESULT(Ans)
+    INTEGER(INT16), INTENT(IN) :: x(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank2_Int16
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank2_Int16
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank2_Int16
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank2_Int32( x, fmt ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank2_Int32(x, fmt) RESULT(Ans)
+    INTEGER(INT32), INTENT(IN) :: x(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank2_Int32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank2_Int32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank2_Int32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank2_Int64( x, fmt ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank2_Int64(x, fmt) RESULT(Ans)
+    INTEGER(INT64), INTENT(IN) :: x(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank2_Int64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank2_Int64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank2_Int64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank3Methods
+!                                           EncodeVTKDataArray@Rank3Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank3_Real32( x, fmt ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1:, 1:)
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank3_Real32(x, fmt) RESULT(Ans)
+    REAL(REAL32), INTENT(IN) :: x(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank3_Real32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank3_Real32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank3_Real32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank3Methods
+!                                           EncodeVTKDataArray@Rank3Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank3_Real64( x, fmt ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank3_Real64(x, fmt) RESULT(Ans)
+    REAL(REAL64), INTENT(IN) :: x(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank3_Real64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank3_Real64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank3_Real64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank3Methods
+!                                           EncodeVTKDataArray@Rank3Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank3_Int8( x, fmt ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank3_Int8(x, fmt) RESULT(Ans)
+    INTEGER(INT8), INTENT(IN) :: x(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank3_Int8
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank3_Int8
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank3_Int8
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank3Methods
+!                                           EncodeVTKDataArray@Rank3Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank3_Int16( x, fmt ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank3_Int16(x, fmt) RESULT(Ans)
+    INTEGER(INT16), INTENT(IN) :: x(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank3_Int16
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank3_Int16
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank3_Int16
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank3Methods
+!                                           EncodeVTKDataArray@Rank3Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank3_Int32( x, fmt ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank3_Int32(x, fmt) RESULT(Ans)
+    INTEGER(INT32), INTENT(IN) :: x(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank3_Int32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank3_Int32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank3_Int32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank3Methods
+!                                           EncodeVTKDataArray@Rank3Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank3_Int64( x, fmt ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank3_Int64(x, fmt) RESULT(Ans)
+    INTEGER(INT64), INTENT(IN) :: x(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank3_Int64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank3_Int64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank3_Int64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank4Methods
+!                                           EncodeVTKDataArray@Rank4Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank4_Real32( x, fmt ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank4_Real32(x, fmt) RESULT(Ans)
+    REAL(REAL32), INTENT(IN) :: x(1:, 1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank4_Real32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank4_Real32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank4_Real32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank4Methods
+!                                           EncodeVTKDataArray@Rank4Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank4_Real64( x, fmt ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank4_Real64(x, fmt) RESULT(Ans)
+    REAL(REAL64), INTENT(IN) :: x(1:, 1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank4_Real64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank4_Real64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank4_Real64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank4Methods
+!                                           EncodeVTKDataArray@Rank4Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank4_Int8( x, fmt ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank4_Int8(x, fmt) RESULT(Ans)
+    INTEGER(INT8), INTENT(IN) :: x(1:, 1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank4_Int8
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank4_Int8
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank4_Int8
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank4Methods
+!                                           EncodeVTKDataArray@Rank4Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank4_Int16( x, fmt ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank4_Int16(x, fmt) RESULT(Ans)
+    INTEGER(INT16), INTENT(IN) :: x(1:, 1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank4_Int16
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank4_Int16
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank4_Int16
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank4Methods
+!                                           EncodeVTKDataArray@Rank4Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank4_Int32( x, fmt ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank4_Int32(x, fmt) RESULT(Ans)
+    INTEGER(INT32), INTENT(IN) :: x(1:, 1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank4_Int32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank4_Int32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank4_Int32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank4Methods
+!                                           EncodeVTKDataArray@Rank4Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_rank4_Int64( x, fmt ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_rank4_Int64(x, fmt) RESULT(Ans)
+    INTEGER(INT64), INTENT(IN) :: x(1:, 1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_rank4_Int64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_rank4_Int64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_rank4_Int64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank1_Real32( x, y, z, fmt ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: x( 1: )
-  REAL( Real32 ), INTENT( IN ) :: y( 1: )
-  REAL( Real32 ), INTENT( IN ) :: z( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank1_Real32(x, y, z, fmt) RESULT(Ans)
+    REAL(REAL32), INTENT(IN) :: x(1:)
+    REAL(REAL32), INTENT(IN) :: y(1:)
+    REAL(REAL32), INTENT(IN) :: z(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank1_Real32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank1_Real32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank1_Real32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank1_Real64( x, y, z, fmt ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: x( 1: )
-  REAL( Real64 ), INTENT( IN ) :: y( 1: )
-  REAL( Real64 ), INTENT( IN ) :: z( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank1_Real64(x, y, z, fmt) RESULT(Ans)
+    REAL(REAL64), INTENT(IN) :: x(1:)
+    REAL(REAL64), INTENT(IN) :: y(1:)
+    REAL(REAL64), INTENT(IN) :: z(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank1_Real64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank1_Real64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank1_Real64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank1_Int8( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: z( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank1_Int8(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT8), INTENT(IN) :: x(1:)
+    INTEGER(INT8), INTENT(IN) :: y(1:)
+    INTEGER(INT8), INTENT(IN) :: z(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank1_Int8
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank1_Int8
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank1_Int8
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank1_Int16( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: z( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank1_Int16(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT16), INTENT(IN) :: x(1:)
+    INTEGER(INT16), INTENT(IN) :: y(1:)
+    INTEGER(INT16), INTENT(IN) :: z(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank1_Int16
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank1_Int16
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank1_Int16
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank1_Int32( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: z( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank1_Int32(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT32), INTENT(IN) :: x(1:)
+    INTEGER(INT32), INTENT(IN) :: y(1:)
+    INTEGER(INT32), INTENT(IN) :: z(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank1_Int32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank1_Int32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank1_Int32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank1Methods
+!                                           EncodeVTKDataArray@Rank1Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank1_Int64( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: y( 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: z( 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank1_Int64(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT64), INTENT(IN) :: x(1:)
+    INTEGER(INT64), INTENT(IN) :: y(1:)
+    INTEGER(INT64), INTENT(IN) :: z(1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank1_Int64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank1_Int64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank1_Int64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank2_Real32( x, y, z, fmt ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: y( 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: z( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank2_Real32(x, y, z, fmt) RESULT(Ans)
+    REAL(REAL32), INTENT(IN) :: x(1:, 1:)
+    REAL(REAL32), INTENT(IN) :: y(1:, 1:)
+    REAL(REAL32), INTENT(IN) :: z(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank2_Real32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank2_Real32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank2_Real32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank2_Real64( x, y, z, fmt ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: y( 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: z( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank2_Real64(x, y, z, fmt) RESULT(Ans)
+    REAL(REAL64), INTENT(IN) :: x(1:, 1:)
+    REAL(REAL64), INTENT(IN) :: y(1:, 1:)
+    REAL(REAL64), INTENT(IN) :: z(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank2_Real64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank2_Real64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank2_Real64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank2_Int8( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: z( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank2_Int8(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT8), INTENT(IN) :: x(1:, 1:)
+    INTEGER(INT8), INTENT(IN) :: y(1:, 1:)
+    INTEGER(INT8), INTENT(IN) :: z(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank2_Int8
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank2_Int8
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank2_Int8
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank2_Int16( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: z( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank2_Int16(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT16), INTENT(IN) :: x(1:, 1:)
+    INTEGER(INT16), INTENT(IN) :: y(1:, 1:)
+    INTEGER(INT16), INTENT(IN) :: z(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank2_Int16
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank2_Int16
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank2_Int16
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank2_Int32( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: z( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank2_Int32(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT32), INTENT(IN) :: x(1:, 1:)
+    INTEGER(INT32), INTENT(IN) :: y(1:, 1:)
+    INTEGER(INT32), INTENT(IN) :: z(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank2_Int32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank2_Int32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank2_Int32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank2_Int64( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: y( 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: z( 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank2_Int64(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT64), INTENT(IN) :: x(1:, 1:)
+    INTEGER(INT64), INTENT(IN) :: y(1:, 1:)
+    INTEGER(INT64), INTENT(IN) :: z(1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank2_Int64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank2_Int64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank2_Int64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank3_Real32( x, y, z, fmt ) RESULT( Ans )
-  REAL( Real32 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  REAL( Real32 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank3_Real32(x, y, z, fmt) RESULT(Ans)
+    REAL(REAL32), INTENT(IN) :: x(1:, 1:, 1:)
+    REAL(REAL32), INTENT(IN) :: y(1:, 1:, 1:)
+    REAL(REAL32), INTENT(IN) :: z(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank3_Real32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank3_Real32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Real32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank3_Real64( x, y, z, fmt ) RESULT( Ans )
-  REAL( Real64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  REAL( Real64 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank3_Real64(x, y, z, fmt) RESULT(Ans)
+    REAL(REAL64), INTENT(IN) :: x(1:, 1:, 1:)
+    REAL(REAL64), INTENT(IN) :: y(1:, 1:, 1:)
+    REAL(REAL64), INTENT(IN) :: z(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank3_Real64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank3_Real64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Real64
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank3_Int8( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int8 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int8 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank3_Int8(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT8), INTENT(IN) :: x(1:, 1:, 1:)
+    INTEGER(INT8), INTENT(IN) :: y(1:, 1:, 1:)
+    INTEGER(INT8), INTENT(IN) :: z(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank3_Int8
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank3_Int8
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Int8
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank3_Int16( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int16 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int16 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank3_Int16(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT16), INTENT(IN) :: x(1:, 1:, 1:)
+    INTEGER(INT16), INTENT(IN) :: y(1:, 1:, 1:)
+    INTEGER(INT16), INTENT(IN) :: z(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank3_Int16
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank3_Int16
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Int16
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank3_Int32( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int32 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank3_Int32(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT32), INTENT(IN) :: x(1:, 1:, 1:)
+    INTEGER(INT32), INTENT(IN) :: y(1:, 1:, 1:)
+    INTEGER(INT32), INTENT(IN) :: z(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank3_Int32
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank3_Int32
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Int32
-END INTERFACE encodeVTKDataArray
+END INTERFACE EncodeVTKDataArray
 
 !----------------------------------------------------------------------------
-!                                           encodeVTKDataArray@Rank2Methods
+!                                           EncodeVTKDataArray@Rank2Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
-MODULE FUNCTION encode_xyz_rank3_Int64( x, y, z, fmt ) RESULT( Ans )
-  INTEGER( Int64 ), INTENT( IN ) :: x( 1:, 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: y( 1:, 1:, 1: )
-  INTEGER( Int64 ), INTENT( IN ) :: z( 1:, 1:, 1: )
-  CHARACTER( LEN = * ), INTENT( IN ) :: fmt
+  MODULE FUNCTION encode_xyz_rank3_Int64(x, y, z, fmt) RESULT(Ans)
+    INTEGER(INT64), INTENT(IN) :: x(1:, 1:, 1:)
+    INTEGER(INT64), INTENT(IN) :: y(1:, 1:, 1:)
+    INTEGER(INT64), INTENT(IN) :: z(1:, 1:, 1:)
+    CHARACTER(LEN=*), INTENT(IN) :: fmt
     !! fmt is encoding format, ASCII or BINARY
-  CHARACTER( LEN = : ), ALLOCATABLE :: ans
-END FUNCTION encode_xyz_rank3_Int64
+    CHARACTER(LEN=:), ALLOCATABLE :: ans
+  END FUNCTION encode_xyz_rank3_Int64
 END INTERFACE
 
-INTERFACE encodeVTKDataArray
+INTERFACE EncodeVTKDataArray
   MODULE PROCEDURE encode_xyz_rank3_Int64
-END INTERFACE encodeVTKDataArray
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-CONTAINS
-
-PURE SUBROUTINE Pack_Data_Int32( a1, a2, packed )
-  INTEGER( Int32 ), INTENT( IN ) :: a1( 1: )
-  INTEGER( Int32 ), INTENT( IN ) :: a2( 1: )
-  INTEGER( Int8 ), ALLOCATABLE, INTENT( INOUT ) :: packed( : )
-  !> main
-  INTEGER( Int8 ), ALLOCATABLE :: p1(:)
-  INTEGER( Int8 ), ALLOCATABLE :: p2(:)
-  p1 = transfer(a1,p1)
-  p2 = transfer(a2,p2)
-  packed = [p1,p2]
-END SUBROUTINE Pack_Data_Int32
+END INTERFACE EncodeVTKDataArray
 
 END MODULE VTKDataArrayEncoder
+

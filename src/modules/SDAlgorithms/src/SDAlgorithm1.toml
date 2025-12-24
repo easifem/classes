@@ -1,0 +1,4 @@
+[SDAlgorithm1]
+methodName = "alphaMethod"
+[SDAlgorithm1.alphaMethod]
+alpha = 0.5

@@ -31,7 +31,7 @@ LOGICAL(LGT) :: isok, problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 CALL obj%DEALLOCATE()
@@ -102,7 +102,7 @@ CALL obj%SetParam( &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE refelem_Initiate
@@ -202,11 +202,6 @@ MODULE PROCEDURE refelem_Display
 LOGICAL(LGT) :: notFull0
 CHARACTER(*), PARAMETER :: myName = "refelem_Display()"
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
 notFull0 = INPUT(option=notFull, default=.FALSE.)
 CALL Display(msg, unitno=unitno)
 CALL Display(obj%refelem, "refelem: ", unitno=unitno)
@@ -227,11 +222,6 @@ ELSE
   CALL Display("baseInterpolation: NOT ALLOCATED")
 END IF
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
 END PROCEDURE refelem_Display
 
 !----------------------------------------------------------------------------
@@ -246,7 +236,7 @@ colTitle(1) = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 rowTitle(1) = "BaseContinuity"
@@ -270,7 +260,7 @@ ans = MdEncode(obj%refelem)  &
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
 END PROCEDURE refelem_MdEncode

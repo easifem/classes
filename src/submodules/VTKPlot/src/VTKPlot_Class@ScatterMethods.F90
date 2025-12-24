@@ -17,6 +17,7 @@
 
 SUBMODULE(VTKPlot_Class) ScatterMethods
 USE BaseMethod
+USE VTKFile_Class, ONLY: VTKFile_, VTK_BINARY, VTK_Polydata, VTK_ASCII
 IMPLICIT NONE
 CONTAINS
 
@@ -25,56 +26,67 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_scatter3D_1
-!
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "plot_scatter3D_1"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: nPoints
-TYPE(VTKFile_) :: aVTKfile
+TYPE(VTKFile_) :: vtk
 REAL(DFP), ALLOCATABLE :: temp(:)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ! check
-IF ((SIZE(x) .NE. SIZE(y)) .OR. &
-  & (SIZE(y) .NE. SIZE(z)) .OR. &
-  & (SIZE(z) .NE. SIZE(x))) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Size of x, y, and z should be the same.')
-END IF
+#ifdef DEBUG_VER
+isok = SIZE(x) .EQ. SIZE(y)
+CALL AssertError1(isok, myName, &
+                  'Size of x and y should be the same.')
+
+isok = SIZE(y) .EQ. SIZE(z)
+CALL AssertError1(isok, myName, &
+                  'Size of y and z should be the same.')
+
+isok = SIZE(x) .EQ. SIZE(z)
+CALL AssertError1(isok, myName, &
+                  'Size of x and z should be the same.')
+#endif
 
 nPoints = SIZE(x)
 
-CALL aVTKfile%InitiateVTKFile( &
-  & filename=filename, &
-  & mode="NEW", &
-  & DataFormat=VTK_ASCII, &
-  & DataStructureType=VTK_PolyData)
+CALL vtk%InitiateVTKFile( &
+  filename=filename, mode="NEW", DataFormat=VTK_ASCII, &
+  DataStructureType=VTK_POLYDATA)
 
-CALL aVTKfile%WritePiece(nPoints=nPoints, &
-  & nVerts=0_I4B, &
-  & nLines=0_I4B, &
-  & nStrips=0_I4B, &
-  & nPolys=0_I4B)
+CALL vtk%WritePiece( &
+  nPoints=nPoints, nVerts=0_I4B, nLines=0_I4B, nStrips=0_I4B, &
+  nPolys=0_I4B)
 
-CALL aVTKfile%WritePoints(x=x, y=y, z=z)
+CALL vtk%WritePoints(x=x, y=y, z=z)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("open"))
+CALL vtk%WriteDataArray( &
+  location=String("node"), action=String("open"))
 
 temp = zeros(nPoints, 1.0_DFP)
-CALL aVTKfile%WriteDataArray(&
-  & name=String(TRIM(label)), &
-  & x=temp, &
-  & y=temp, &
-  & z=z)
+CALL vtk%WriteDataArray( &
+  name=String(TRIM(label)), x=temp, y=temp, z=z)
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("close"))
+CALL vtk%WriteDataArray( &
+  location=String("node"), action=String("close"))
 
-CALL aVTKfile%WritePiece()
+CALL vtk%WritePiece()
 
-CALL aVTKfile%DEALLOCATE()
+CALL vtk%DEALLOCATE()
 
 IF (ALLOCATED(temp)) DEALLOCATE (temp)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE plot_scatter3D_1
 
 !----------------------------------------------------------------------------
@@ -82,62 +94,68 @@ END PROCEDURE plot_scatter3D_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_scatter3D_2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "plot_scatter3D_2()"
+LOGICAL(LGT) :: isok
+#endif
 
-CHARACTER(*), PARAMETER :: myName = "plot_scatter3D_2"
 INTEGER(I4B) :: nPoints, ii, ndata
 TYPE(VTKFile_) :: aVTKfile
-TYPE(String) :: labelstr
+TYPE(String) :: labelstr, node_str, open_str, close_str
 REAL(DFP), ALLOCATABLE :: temp(:)
 
-! check
-IF ((SIZE(x) .NE. SIZE(y)) .OR. &
-  & (SIZE(y) .NE. SIZE(z, 1)) .OR. &
-  & (SIZE(z, 1) .NE. SIZE(x))) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Size of x, y, and z should be the same.')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = SIZE(x) .EQ. SIZE(y)
+CALL AssertError1(isok, myName, &
+                  'Size of x and y should be the same.')
+
+isok = SIZE(y) .EQ. SIZE(z, 1)
+CALL AssertError1(isok, myName, &
+                  'Size of y and z should be the same.')
+
+isok = SIZE(x) .EQ. SIZE(z, 1)
+CALL AssertError1(isok, myName, &
+                  'Size of x and z should be the same.')
+#endif
+
+node_str = String("node")
+open_str = String("open")
+close_str = String("close")
 
 nPoints = SIZE(x)
 ndata = SIZE(z, 2)
 CALL aVTKfile%InitiateVTKFile( &
-  & filename=filename, &
-  & mode="NEW", &
-  & DataFormat=VTK_BINARY, &
-  & DataStructureType=VTK_PolyData)
+  filename=filename, mode="NEW", dataFormat=VTK_BINARY, &
+  dataStructureType=VTK_POLYDATA)
 
-CALL aVTKfile%WritePiece(nPoints=nPoints, &
-  & nVerts=0_I4B, &
-  & nLines=0_I4B, &
-  & nStrips=0_I4B, &
-  & nPolys=0_I4B)
+CALL aVTKfile%WritePiece( &
+  nPoints=nPoints, nVerts=0_I4B, nLines=0_I4B, nStrips=0_I4B, nPolys=0_I4B)
 
 CALL aVTKfile%WritePoints(x=x, y=y, z=z(:, 1))
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("open"))
+CALL aVTKfile%WriteDataArray(location=node_str, action=open_str)
 
 temp = zeros(nPoints, 1.0_DFP)
 DO ii = 1, ndata
-
   labelstr = TRIM(label)//tostring(ii)
-  ! CALL aVTKfile%WriteDataArray(&
-  !   & name=labelstr, &
-  !   & x=temp, &
-  !   & y=temp, &
-  !   & z=z(:, ii))
-
   CALL aVTKfile%WriteDataArray(name=labelstr, x=z(:, ii))
-
 END DO
 
-CALL aVTKfile%WriteDataArray(&
-  & location=String("node"), &
-  & action=String("close"))
+CALL aVTKfile%WriteDataArray(location=node_str, action=close_str)
 
 CALL aVTKfile%WritePiece()
 CALL aVTKfile%DEALLOCATE()
 IF (ALLOCATED(temp)) DEALLOCATE (temp)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE plot_scatter3D_2
 
 !----------------------------------------------------------------------------
@@ -207,5 +225,11 @@ CALL aVTKfile%WriteDataArray(&
 CALL aVTKfile%WritePiece()
 CALL aVTKfile%DEALLOCATE()
 END PROCEDURE plot_scatter3D_4
+
+!----------------------------------------------------------------------------
+!                                                            Include errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ScatterMethods

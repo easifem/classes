@@ -16,9 +16,13 @@
 !
 
 SUBMODULE(STVectorFieldLis_Class) IOMethods
-USE BaseMethod
-USE HDF5File_Method
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer, &
+                                   AbstractNodeFieldDisplay
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -26,149 +30,29 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Display"
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
 
-  realvec => AbstractNodeFieldGetPointer(obj)
-  CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
-  CALL CHKERR(ierr)
-  NULLIFY (realvec)
-  CALL STVectorFieldDisplay(obj=obj, msg=msg, unitno=unitno)
-
-ELSE
-
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'STVectorFieldLis_::obj is NOT AVAILABLE')
-
+IF (ierr .NE. LIS_FALSE) THEN
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'STVectorFieldLis_::obj is NOT AVAILABLE')
+  RETURN
 END IF
+
+realvec => AbstractNodeFieldGetPointer(obj)
+CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+CALL CHKERR(ierr)
+
+NULLIFY (realvec)
+CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                                     Import
+!
 !----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
-TYPE(String) :: dsetname
-LOGICAL(LGT) :: bools(3)
-TYPE(ParameterList_) :: param
-INTEGER(I4B) :: ierr
-REAL(DFP), POINTER :: realvec(:)
-
-! info
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[START] Import()")
-
-CALL AbstractNodeFieldImport( &
-  & obj=obj, &
-  & hdf5=hdf5, &
-  & group=group, &
-  & dom=dom, &
-  & domains=domains)
-
-! spaceCompo
-dsetname = TRIM(group)//"/spaceCompo"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
-ELSE
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset spaceCompo should be present')
-END IF
-
-! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
-ELSE
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'The dataset timeCompo should be present')
-END IF
-
-dsetname = TRIM(group)//"/tSize"
-bools(1) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/dof"
-bools(2) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/realVec"
-bools(3) = hdf5%pathExists(dsetname%chars())
-
-IF (.NOT. ALL(bools)) THEN
-  CALL param%initiate()
-  CALL SetSTVectorFieldParam( &
-    & param=param, &
-    & name=obj%name%chars(), &
-    & fieldType=obj%fieldType, &
-    & timeCompo=obj%timeCompo, &
-    & spaceCompo=obj%spaceCompo, &
-    & engine=obj%engine%chars() &
-    & )
-  obj%isInitiated = .FALSE.
-  CALL obj%initiate(param=param, dom=dom)
-  CALL param%DEALLOCATE()
-ELSE
-  ! till now we have read tSize, dof, and realVec
-  ! but we have not created lis vector
-  ! so we create lis_vector
-  ! then we update values from realvec to lis_vector using scatter methods
-
-  CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-
-  CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-  & obj%global_n, ierr)
-  CALL CHKERR(ierr)
-
-  CALL lis_vector_get_range( &
-  & obj%lis_ptr, &
-  & obj%is, &
-  & obj%ie, &
-  & ierr &
-  & )
-  CALL CHKERR(ierr)
-
-  realvec => AbstractNodeFieldGetPointer(obj)
-  CALL lis_vector_scatter(realvec, obj%lis_ptr, ierr)
-  CALL CHKERR(ierr)
-  NULLIFY (realvec)
-
-END IF
-
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Import()")
-
-END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                                                     Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
-INTEGER(I4B) :: ierr
-REAL(DFP), POINTER :: realvec(:)
-
-CALL e%raiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Export()')
-
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-IF (ierr .EQ. LIS_FALSE) THEN
-  realvec => AbstractNodeFieldGetPointer(obj)
-  CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
-  CALL CHKERR(ierr)
-  NULLIFY (realvec)
-  CALL STVectorFieldExport(obj=obj, hdf5=hdf5, group=group)
-ELSE
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-    & 'STVectorFieldLis_::obj%lis_ptr is NOT AVAILABLE')
-END IF
-
-CALL e%raiseInformation(modName//"::"//myName//" - "// &
-  & "[END] Export()")
-END PROCEDURE obj_Export
 
 END SUBMODULE IOMethods

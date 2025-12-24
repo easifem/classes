@@ -19,7 +19,10 @@
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) MatVecMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
+
+USE CSRMatrix_Method, ONLY: Matvec
+
 IMPLICIT NONE
 CONTAINS
 
@@ -28,19 +31,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Matvec1
-CHARACTER(*), PARAMETER :: myName = "obj_Matvec1()"
-
 #ifdef DEBUG_VER
 INTEGER(I4B) :: s(2), y1, x1
 LOGICAL(LGT) :: problem
+CHARACTER(*), PARAMETER :: myName = "obj_Matvec1()"
 #endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
+                        '[START] ')
 
-#ifdef DEBUG_VER
 s = obj%SHAPE()
 y1 = SIZE(y)
 x1 = SIZE(x)
@@ -49,28 +49,23 @@ problem = y1 .NE. s(1) .OR. x1 .NE. s(2)
 
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'There is some mismatch in dimension of matrix and vectors'// &
-    & 'The shape of MatrixField_ instance is ' &
-    & //tostring(s(1))//", " &
-    & //tostring(s(2))//", " &
-    & //'However, the size of x is ' &
-    & //tostring(x1)//", " &
-    & //'and, the size of y is ' &
-    & //tostring(y1))
+               'There is some mismatch in dimension of matrix and vectors'// &
+                    'The shape of MatrixField_ instance is ' &
+                    //ToString(s(1))//", " &
+                    //ToString(s(2))//", " &
+                    //'However, the size of x is ' &
+                    //ToString(x1)//", " &
+                    //'and, the size of y is ' &
+                    //ToString(y1))
 END IF
 #endif
 
-CALL Matvec( &
-  & obj=obj%mat, &
-  & y=y, &
-  & x=x, &
-  & isTranspose=isTranspose, &
-  & addContribution=addContribution, &
-  & scale=scale)
+CALL Matvec(obj=obj%mat, y=y, x=x, isTranspose=isTranspose, &
+            addContribution=addContribution, scale=scale)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Matvec1
 
@@ -79,31 +74,30 @@ END PROCEDURE obj_Matvec1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Matvec2
+#ifdef DEBUG_VER
+
 CHARACTER(*), PARAMETER :: myName = "obj_Matvec2()"
+#endif
+
 REAL(DFP), POINTER :: xvec(:)
 REAL(DFP), POINTER :: yvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-xvec => x%getPointer()
-yvec => y%getPointer()
+xvec => x%GetPointer()
+yvec => y%GetPointer()
 
-CALL Matvec( &
-  & obj=obj%mat, &
-  & y=yvec, &
-  & x=xvec, &
-  & isTranspose=isTranspose, &
-  & addContribution=addContribution, &
-  & scale=scale)
+CALL Matvec(obj=obj%mat, y=yvec, x=xvec, isTranspose=isTranspose, &
+            addContribution=addContribution, scale=scale)
 
 NULLIFY (xvec, yvec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Matvec2
 

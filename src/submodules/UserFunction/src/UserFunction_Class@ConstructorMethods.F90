@@ -16,8 +16,12 @@
 !
 
 SUBMODULE(UserFunction_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+USE StringUtility, ONLY: UpperCase
+USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
+USE BaseType, ONLY: varopt => TypeFEVariableOpt
+USE GlobalData, ONLY: CHAR_LF
+USE Display_Method, ONLY: Display, ToString
+
 IMPLICIT NONE
 CONTAINS
 
@@ -26,15 +30,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserFunctionGetReturnType
-TYPE(String) :: name0
-name0 = UpperCase(name)
-SELECT CASE (name0%chars())
-CASE ("SCALAR")
-  ans = Scalar
-CASE ("VECTOR")
-  ans = Vector
-CASE ("MATRIX")
-  ans = Matrix
+CHARACTER(1) :: name0
+name0 = UpperCase(name(1:1))
+
+SELECT CASE (name0)
+CASE ("S")
+  ans = varopt%Scalar
+CASE ("V")
+  ans = varopt%Vector
+CASE ("M")
+  ans = varopt%Matrix
 END SELECT
 
 name0 = ""
@@ -45,165 +50,190 @@ END PROCEDURE UserFunctionGetReturnType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserFunctionGetArgType
-TYPE(String) :: name0
-name0 = UpperCase(name)
-SELECT CASE (name0%chars())
-CASE ("CONSTANT")
-  ans = Constant
-CASE ("TIME")
-  ans = Time
-CASE ("SPACE")
-  ans = Space
-CASE ("SPACETIME")
-  ans = SpaceTime
-CASE ("OTHERS", "SOLUTIONDEPENDENT")
-  ans = SolutionDependent
+CHARACTER(2) :: name0
+INTEGER(I4B) :: n
+
+name0 = UpperCase(name(1:2))
+
+SELECT CASE (name0)
+CASE ("CO")
+  ans = varopt%Constant
+CASE ("TI")
+  ans = varopt%Time
+CASE ("OT", "SO")
+  ans = varopt%SolutionDependent
+CASE ("SP")
+  n = LEN_TRIM(name)
+  IF (n .GT. 5) THEN
+    ans = varopt%SpaceTime
+  ELSE
+    ans = varopt%Space
+  END IF
+CASE DEFAULT
+  ans = -1
 END SELECT
-name0 = ""
 END PROCEDURE UserFunctionGetArgType
+
+!----------------------------------------------------------------------------
+!                                                         GetDefaultNumArgs
+!----------------------------------------------------------------------------
+
+FUNCTION GetDefaultNumArgs(argType) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: argType
+  INTEGER(I4B) :: ans
+
+  SELECT CASE (argType)
+  CASE (varopt%Constant)
+    ans = DEFAULT_NUM_ARG_CONSTANT
+  CASE (varopt%Space)
+    ans = DEFAULT_NUM_ARG_SPACE
+  CASE (varopt%Time)
+    ans = DEFAULT_NUM_ARG_TIME
+  CASE (varopt%SpaceTime)
+    ans = DEFAULT_NUM_ARG_SPACETIME
+  CASE DEFAULT
+    ans = -1
+  END SELECT
+
+END FUNCTION GetDefaultNumArgs
+
+!----------------------------------------------------------------------------
+!                                                     GetDefaultNumReturns
+!----------------------------------------------------------------------------
+
+FUNCTION GetDefaultNumReturns(returnType) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: returnType
+  INTEGER(I4B) :: ans
+
+  SELECT CASE (returnType)
+  CASE (varopt%Scalar)
+    ans = DEFAULT_NUM_ARG_SCALAR
+  CASE (varopt%Vector)
+    ans = DEFAULT_NUM_ARG_VECTOR
+  CASE (varopt%Matrix)
+    ans = DEFAULT_NUM_ARG_MATRIX
+  CASE DEFAULT
+    ans = -1
+  END SELECT
+
+END FUNCTION GetDefaultNumReturns
 
 !----------------------------------------------------------------------------
 !                                                      SetUserFunctionParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE SetUserFunctionParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetUserFunctionParam()"
+#endif
+
 INTEGER(I4B) :: numArgs0, numReturns0, returnShape0(2)
+LOGICAL(LGT) :: isok, abool
 
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="returnType",  &
-  & VALUE=returnType)
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="argType",  &
-  & VALUE=argType)
-CALL Set(obj=param, dataType="char", prefix=myprefix, key="name",  &
-  & VALUE=name)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (PRESENT(numArgs)) THEN
+CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="returnType", &
+         VALUE=returnType)
+CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="argType", &
+         VALUE=argType)
+CALL Set(obj=param, dataType="char", prefix=myprefix, key="name", &
+         VALUE=name)
+
+isok = PRESENT(numArgs)
+
+IF (isok) THEN
   numArgs0 = numArgs
 ELSE
-  SELECT CASE (argType)
-  CASE (Constant)
-    numArgs0 = DEFAULT_NUM_ARG_CONSTANT
-  CASE (Space)
-    numArgs0 = DEFAULT_NUM_ARG_SPACE
-  CASE (Time)
-    numArgs0 = DEFAULT_NUM_ARG_TIME
-  CASE (SpaceTime)
-    numArgs0 = DEFAULT_NUM_ARG_SPACETIME
-  CASE DEFAULT
-    numArgs0 = 0
-  END SELECT
+  numArgs0 = GetDefaultNumArgs(argType)
 END IF
 
-IF (PRESENT(numReturns)) THEN
+isok = PRESENT(numReturns)
+
+IF (isok) THEN
   numReturns0 = numReturns
 ELSE
-  SELECT CASE (returnType)
-  CASE (Scalar)
-    numReturns0 = DEFAULT_NUM_ARG_SCALAR
-  CASE (Vector)
-    numReturns0 = DEFAULT_NUM_ARG_VECTOR
-  CASE (Matrix)
-    numReturns0 = DEFAULT_NUM_ARG_MATRIX
-  CASE DEFAULT
-    numReturns0 = 0
-  END SELECT
+  numReturns0 = GetDefaultNumReturns(returnType)
 END IF
 
 returnShape0 = 0
-IF (returnType .EQ. Matrix) THEN
-  IF (.NOT. PRESENT(returnShape)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When returnType is Matrix, then'//  &
-      & CHAR_LF//'returnShape should be present.')
-    RETURN
-  END IF
 
-  IF (numReturns0 .NE. returnShape(1) * returnShape(2)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When returnType is Matrix, then '//  &
-      & 'numReturns should be equal to the total number of elements.')
-    RETURN
-  END IF
+SELECT CASE (returnType)
+CASE (varopt%Matrix)
+
+#ifdef DEBUG_VER
+  isok = PRESENT(returnShape)
+  CALL AssertError1(isok, myName, &
+             'When returnType is Matrix, then returnShape should be present.')
+#endif
+
+#ifdef DEBUG_VER
+  isok = numReturns0 .EQ. returnShape(1) * returnShape(2)
+  CALL AssertError1(isok, myName, &
+       'When returnType is Matrix, then numReturns should be equal to the &
+       &total number of elements of returned matrix.')
+#endif
 
   returnShape0 = returnShape
-END IF
 
-CALL Set(obj=param, dataType=[1_I4B], prefix=myprefix,  &
-  & key="returnShape", VALUE=returnShape0)
+CASE (varopt%Scalar)
+  isok = numReturns0 .EQ. 1
 
-IF (returnType .EQ. Scalar) THEN
-  IF (numReturns0 .NE. 1) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When returnType is Scalar, then '//  &
-      & 'numReturns should be 1.')
-    RETURN
-  END IF
-END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    'When returnType is Scalar, then numReturns should be 1.')
+#endif
 
-IF (argType .EQ. Constant) THEN
-  IF (numArgs0 .NE. 0) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When argType is Constant, then '//  &
-      & 'numArgs should be 0.')
-    RETURN
-  END IF
-END IF
+END SELECT
 
-IF (argType .EQ. Time) THEN
-  IF (numArgs0 .NE. 1) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When argType is Time, then '//  &
-      & 'numArgs should be 1.')
-    RETURN
-  END IF
-END IF
+CALL Set(obj=param, dataType=[1_I4B], prefix=myprefix, key="returnShape", &
+         VALUE=returnShape0)
 
-IF (argType .EQ. Space) THEN
-  IF (numArgs0 .NE. 3) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When argType is Space, then '//  &
-      & 'numArgs should be 3.')
-    RETURN
-  END IF
-END IF
+! CALL checerror_numargs(argType, numArgs0, myName)
 
-IF (argType .EQ. SpaceTime) THEN
-  IF (numArgs0 .NE. 4) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When argType is SpaceTime, then '//  &
-      & 'numArgs should be 4.')
-    RETURN
-  END IF
-END IF
+CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="numArgs", &
+         VALUE=numArgs0)
 
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="numArgs",  &
-  & VALUE=numArgs0)
+CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="numReturns", &
+         VALUE=numReturns0)
 
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="numReturns",  &
-  & VALUE=numReturns0)
+abool = PRESENT(luaScript)
 
-IF (PRESENT(luaScript)) THEN
-  IF (.NOT. PRESENT(luaFunctionName)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: When luaScript is given, you should'//  &
-      & ' also mention the luaFunctionName.')
-    RETURN
-  END IF
+IF (abool) THEN
 
-  CALL Set(obj=param, dataType=.TRUE., prefix=myprefix, key="isLuaScript",  &
-    & VALUE=.TRUE.)
-  CALL Set(obj=param, dataType="char", prefix=myprefix, key="luaScript",  &
-    & VALUE=luaScript)
-  CALL Set(obj=param, dataType="char", prefix=myprefix,  &
-    & key="luaFunctionName", VALUE=luaFunctionName)
+#ifdef DEBUG_VER
+  isok = PRESENT(luaFunctionName)
+  CALL AssertError1(isok, myName, &
+      'When luaScript is given, you should also mention the luaFunctionName.')
+#endif
+
+  CALL Set(obj=param, dataType=.TRUE., prefix=myprefix, key="isLuaScript", &
+           VALUE=.TRUE.)
+
+  CALL Set(obj=param, dataType="char", prefix=myprefix, key="luaScript", &
+           VALUE=luaScript)
+
+  CALL Set(obj=param, dataType="char", prefix=myprefix, &
+           key="luaFunctionName", VALUE=luaFunctionName)
+
 ELSE
-  CALL Set(obj=param, dataType=.TRUE., prefix=myprefix, key="isLuaScript",  &
-    & VALUE=.FALSE.)
-  CALL Set(obj=param, dataType="char", prefix=myprefix, key="luaScript",  &
-    & VALUE="empty")
-  CALL Set(obj=param, dataType="char", prefix=myprefix,  &
-    & key="luaFunctionName", VALUE="empty")
+
+  CALL Set(obj=param, dataType=.TRUE., prefix=myprefix, key="isLuaScript", &
+           VALUE=.FALSE.)
+
+  CALL Set(obj=param, dataType="char", prefix=myprefix, key="luaScript", &
+           VALUE="empty")
+
+  CALL Set(obj=param, dataType="char", prefix=myprefix, &
+           key="luaFunctionName", VALUE="empty")
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 END PROCEDURE SetUserFunctionParam
 
@@ -213,28 +243,29 @@ END PROCEDURE SetUserFunctionParam
 
 MODULE PROCEDURE obj_CheckEssentialParam
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-INTEGER(I4B) :: ii
-TYPE(String), ALLOCATABLE :: essentialParam(:)
-TYPE(String) :: astr
+CHARACTER(:), ALLOCATABLE :: astr
 
-astr = "/isLuaScript/luaScript/numReturns/numArgs/returnType/argType"//  &
-  &"/luaFunctionName/returnShape/name"
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL astr%Split(essentialParam, sep="/")
-CALL CheckEssentialParam(obj=param,  &
-  & keys=essentialParam,  &
-  & prefix=myprefix,  &
-  & myName=myName,  &
-  & modName=modName)
-!NOTE: CheckEssentialParam param is defined in easifemClasses FPL_Method
+astr = "/isLuaScript/luaScript/numReturns/numArgs/returnType/argType"// &
+       "/luaFunctionName/returnShape/name"
 
-IF (ALLOCATED(essentialParam)) THEN
-  DO ii = 1, SIZE(essentialParam)
-    essentialParam(ii) = ""
-  END DO
-  DEALLOCATE (essentialParam)
-END IF
+CALL CheckEssentialParam(obj=param, &
+                         keys=astr, &
+                         prefix=myprefix, &
+                         myName=myName, &
+                         modName=modName)
+!note: CheckEssentialParam param is defined in easifemClasses FPL_Method
 astr = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
@@ -242,8 +273,16 @@ END PROCEDURE obj_CheckEssentialParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-!> main
-obj%isInitiated = .FALSE.
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = .FALSE.
 obj%isUserFunctionSet = .FALSE.
 obj%isLuaScript = .FALSE.
 obj%luaScript = ""
@@ -257,9 +296,14 @@ obj%scalarValue = 0.0_DFP
 obj%name = ""
 IF (ALLOCATED(obj%vectorValue)) DEALLOCATE (obj%vectorValue)
 IF (ALLOCATED(obj%matrixValue)) DEALLOCATE (obj%matrixValue)
-IF (ASSOCIATED(obj%scalarFunction)) obj%scalarFunction => NULL()
-IF (ASSOCIATED(obj%vectorFunction)) obj%vectorFunction => NULL()
-IF (ASSOCIATED(obj%matrixFunction)) obj%matrixFunction => NULL()
+obj%scalarFunction => NULL()
+obj%vectorFunction => NULL()
+obj%matrixFunction => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -274,41 +318,224 @@ END PROCEDURE obj_Final
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
+MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%DEALLOCATE()
 CALL obj%CheckEssentialParam(param)
 
-CALL GetValue(obj=param, prefix=myprefix, key="name",  &
-  & VALUE=obj%name)
+CALL GetValue(obj=param, prefix=myprefix, key="name", VALUE=obj%name)
 
-CALL GetValue(obj=param, prefix=myprefix, key="returnType",  &
-  & VALUE=obj%returnType)
+CALL GetValue(obj=param, prefix=myprefix, key="returnType", &
+              VALUE=obj%returnType)
 
-CALL GetValue(obj=param, prefix=myprefix, key="argType",  &
-  & VALUE=obj%argType)
+CALL GetValue(obj=param, prefix=myprefix, key="argType", VALUE=obj%argType)
 
-CALL GetValue(obj=param, prefix=myprefix, key="isLuaScript",  &
-  & VALUE=obj%isLuaScript)
+CALL GetValue(obj=param, prefix=myprefix, key="isLuaScript", &
+              VALUE=obj%isLuaScript)
 
-CALL GetValue(obj=param, prefix=myprefix, key="luaScript",  &
-  & VALUE=obj%luaScript)
+CALL GetValue(obj=param, prefix=myprefix, key="luaScript", &
+              VALUE=obj%luaScript)
 
-CALL GetValue(obj=param, prefix=myprefix, key="luaFunctionName",  &
-  & VALUE=obj%luaFunctionName)
+CALL GetValue(obj=param, prefix=myprefix, key="luaFunctionName", &
+              VALUE=obj%luaFunctionName)
 
-CALL GetValue(obj=param, prefix=myprefix, key="numArgs",  &
-  & VALUE=obj%numArgs)
+CALL GetValue(obj=param, prefix=myprefix, key="numArgs", &
+              VALUE=obj%numArgs)
 
-CALL GetValue(obj=param, prefix=myprefix, key="numReturns",  &
-  & VALUE=obj%numReturns)
+CALL GetValue(obj=param, prefix=myprefix, key="numReturns", &
+              VALUE=obj%numReturns)
 
-CALL GetValue(obj=param, prefix=myprefix, key="returnShape",  &
-  & VALUE=obj%returnShape)
-obj%isInitiated = .TRUE.
-END PROCEDURE obj_Initiate
+CALL GetValue(obj=param, prefix=myprefix, key="returnShape", &
+              VALUE=obj%returnShape)
+obj%isInit = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
-!
+!                                                                    Initiate
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+LOGICAL(LGT) :: abool
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
+
+obj%name = name
+obj%returnType = returnType
+obj%argType = argType
+
+! Handle optional arguments numArgs
+isok = PRESENT(numArgs)
+IF (isok) THEN
+  obj%numArgs = numArgs
+ELSE
+  obj%numArgs = GetDefaultNumArgs(argType)
+END IF
+
+! Handle optional arguments numReturns
+! obj%numReturns = numReturns
+isok = PRESENT(numReturns)
+IF (isok) THEN
+  obj%numReturns = numReturns
+ELSE
+  obj%numReturns = GetDefaultNumReturns(returnType)
+END IF
+
+! obj%returnShape = returnShape
+#ifdef DEBUG_VER
+abool = obj%returnType .EQ. varopt%matrix
+IF (abool) THEN
+  isok = PRESENT(returnShape)
+  CALL AssertError1(isok, myName, &
+             'When returnType is Matrix, then returnShape should be present.')
+
+  isok = obj%numReturns .EQ. returnShape(1) * returnShape(2)
+  CALL AssertError1(isok, myName, &
+       'When returnType is Matrix, then numReturns should be equal to the &
+       &total number of elements of returned matrix.')
+END IF
+#endif
+
+#ifdef DEBUG_VER
+abool = obj%returnType .EQ. varopt%scalar
+IF (abool) THEN
+  isok = obj%numReturns .EQ. 1
+  CALL AssertError1(isok, myName, &
+                    'When returnType is Scalar, then numReturns should be 1.')
+END IF
+#endif
+
+IF (PRESENT(returnShape)) obj%returnShape = returnShape
+
+! obj%isLuaScript = isLuaScript
+obj%isLuaScript = PRESENT(luaScript)
+IF (.NOT. obj%isLuaScript) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+obj%luaScript = luaScript
+
+#ifdef DEBUG_VER
+isok = PRESENT(luaFunctionName)
+CALL AssertError1(isok, myName, &
+           'When luaScript is given, then luaFunctionName should be present.')
+#endif
+
+obj%luaFunctionName = luaFunctionName
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                         checkerror_numargs
+!----------------------------------------------------------------------------
+
+SUBROUTINE checerror_numargs(argType, numArgs0, myname)
+  INTEGER(I4B), INTENT(IN) :: argType, numArgs0
+  CHARACTER(*), INTENT(IN) :: myName
+
+  LOGICAL(LGT) :: isok
+
+  SELECT CASE (argType)
+  CASE (varopt%Constant)
+
+    isok = numArgs0 .EQ. 0
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                       '[CONFIG ERROR] :: When argType is Constant, then '// &
+                        'numArgs should be 0.')
+      RETURN
+    END IF
+
+  CASE (varopt%Time)
+
+    isok = numArgs0 .EQ. 1
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                        '[CONFIG ERROR] :: When argType is Time, then '// &
+                        'numArgs should be 1.')
+      RETURN
+    END IF
+
+  CASE (varopt%Space)
+
+    isok = numArgs0 .EQ. 3
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                        '[CONFIG ERROR] :: When argType is Space, then '// &
+                        'numArgs should be 3.')
+      RETURN
+    END IF
+
+  CASE (varopt%SpaceTime)
+
+    isok = numArgs0 .EQ. 4
+    IF (.NOT. isok) THEN
+      CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[CONFIG ERROR] :: When argType is SpaceTime, then '// &
+                        'numArgs should be 4.')
+      RETURN
+    END IF
+
+  END SELECT
+END SUBROUTINE checerror_numargs
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
+END PROCEDURE obj_Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
+END PROCEDURE obj_Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

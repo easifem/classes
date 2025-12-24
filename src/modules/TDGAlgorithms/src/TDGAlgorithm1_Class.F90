@@ -1,0 +1,216 @@
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+
+MODULE TDGAlgorithm1_Class
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE TxtFile_Class, ONLY: TxtFile_
+USE ExceptionHandler_Class, ONLY: e
+USE tomlf, ONLY: toml_table
+USE BaseType, ONLY: ElemShapeData_
+
+IMPLICIT NONE
+
+PRIVATE
+PUBLIC :: TDGAlgorithm1_
+CHARACTER(*), PARAMETER :: modName = "TDGAlgorithm1_Class()"
+
+INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 20
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-24
+! summary:  Displacement based single step semi discrete algorithm
+
+TYPE :: TDGAlgorithm1_
+  LOGICAL(LGT) :: isInit = .FALSE.
+  !! Flag to check if the object is initiated
+
+  CHARACTER(4) :: name = "TDG1"
+
+  INTEGER(I4B) :: nrow = 0_I4B, ncol = 0_I4B
+  !! Number of rows and columns in ct, mt, mtplus matrices
+
+  REAL(DFP) :: initialGuess(MAX_ORDER_TIME + 3) = 0.0_DFP
+  !! coefficient for initial guess of solution
+  LOGICAL(LGT) :: initialGuess_zero(MAX_ORDER_TIME + 3) = .TRUE.
+
+  REAL(DFP) :: dis(MAX_ORDER_TIME + 3) = 0.0_DFP
+  !! dis coefficient for displacement update
+  !! displacement = dis(1)*Un+dis(2)*Vn*dt + dis(3)*sol(1) + ...
+  !! dis(1) coefficient of displacement at time tn
+  !! dis(2) coefficient of velocity at time tn
+  !! dis(3:MAX_ORDER_TIME+3) coefficient of solution dof at time t1, t2, ...
+  LOGICAL(LGT) :: dis_zero(MAX_ORDER_TIME + 3) = .TRUE.
+
+  REAL(DFP) :: vel(MAX_ORDER_TIME + 3) = 0.0_DFP
+  !! vel coefficient for velocity update
+  !! velocity = vel(1)*Un / dt + vel(2) * Vn  + vel(3)*sol(1)/dt + ...
+  !! vel(1) coefficient of displacement at time tn
+  !! vel(2) coefficient of velocity at time tn
+  !! vel(3:MAX_ORDER_TIME+3) coefficient of solution dof at time t1, t2, ...
+  LOGICAL(LGT) :: vel_zero(MAX_ORDER_TIME + 3) = .TRUE.
+
+  REAL(DFP) :: mt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  !! coefficient for mass matrix in space (Ms)
+
+  REAL(DFP) :: kt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  !! coefficient for stiffness matrix in space (Ks*dt)
+
+  REAL(DFP) :: rhs_m_u1(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: rhs_m_v1(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: rhs_k_u1(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: rhs_k_v1(MAX_ORDER_TIME + 1) = 0.0_DFP
+
+  LOGICAL(LGT) :: rhs_m_u1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+  LOGICAL(LGT) :: rhs_m_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+  LOGICAL(LGT) :: rhs_k_u1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+  LOGICAL(LGT) :: rhs_k_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+
+CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
+END TYPE TDGAlgorithm1_
+
+!----------------------------------------------------------------------------
+!                                              IsInitiated@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-27
+! summary: Check if the object is initiated
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(TDGAlgorithm1_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      Set@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Initiate Newmark-Beta method
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd)
+    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
+    TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
+  END SUBROUTINE obj_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                MakeZeros@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Reset the TDGAlgorithm1_ object to zero values
+
+INTERFACE
+  MODULE SUBROUTINE obj_MakeZeros(obj)
+    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
+    ! internal varibales
+    REAL(DFP), PARAMETER :: myzero = 0.0_DFP
+  END SUBROUTINE obj_MakeZeros
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  Display@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Display the content
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary:  Deallocate the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ImportFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Import data from toml table
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ImportFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
+    CLASS(TDGAlgorithm1_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    ! internal variables
+    CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+    TYPE(toml_table), ALLOCATABLE :: table
+    TYPE(toml_table), POINTER :: node
+    INTEGER(I4B) :: origin, stat
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE TDGAlgorithm1_Class

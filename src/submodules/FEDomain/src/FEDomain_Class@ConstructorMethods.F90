@@ -20,8 +20,41 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(FEDomain_Class) ConstructorMethods
+USE AbstractDomain_Class, ONLY: AbstractDomainInitiate, &
+                                AbstractDomainDeallocate
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate
+
+CALL AbstractDomainDeallocate(obj=obj)
+
+obj%mesh => NULL()
+
+IF (ASSOCIATED(obj%meshVolume)) THEN
+  CALL obj%meshVolume%DEALLOCATE()
+  obj%meshVolume => NULL()
+END IF
+
+IF (ASSOCIATED(obj%meshSurface)) THEN
+  CALL obj%meshSurface%DEALLOCATE()
+  obj%meshSurface => NULL()
+END IF
+
+IF (ASSOCIATED(obj%meshCurve)) THEN
+  CALL obj%meshCurve%DEALLOCATE()
+  obj%meshCurve => NULL()
+END IF
+
+IF (ASSOCIATED(obj%meshPoint)) THEN
+  CALL obj%meshPoint%DEALLOCATE()
+  obj%meshPoint => NULL()
+END IF
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                              Final

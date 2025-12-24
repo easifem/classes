@@ -15,25 +15,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE MatrixFieldLis_Class
-USE GlobalData
-USE BaseType
-USE String_Class, ONLY: String
-USE FPL, ONLY: ParameterList_
-USE FPL_Method
-USE HDF5File_Class
+USE GlobalData, ONLY: I4B, DFP, LGT, INT64
+USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
-USE AbstractField_Class
-USE AbstractNodeField_Class
-USE AbstractMatrixField_Class
-USE MatrixField_Class
-USE Domain_Class
+USE AbstractField_Class, ONLY: AbstractField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE MatrixField_Class, ONLY: MatrixField_
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+
 IMPLICIT NONE
+
 PRIVATE
+
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixFieldLis_Class"
-CHARACTER(*), PRIVATE, PARAMETER :: myPrefix = "MatrixField"
+
 PUBLIC :: MatrixFieldLis_
-PUBLIC :: TypeMatrixFieldLis
-PUBLIC :: MatrixFieldLisInitiate2
+PUBLIC :: MatrixFieldLisInitiate
 PUBLIC :: MatrixFieldLisDeallocate
 
 !----------------------------------------------------------------------------
@@ -47,19 +46,24 @@ PUBLIC :: MatrixFieldLisDeallocate
 !{!pages/docs-api/MatrixFieldLis/MatrixFieldLis_.md!}
 
 TYPE, EXTENDS(MatrixField_) :: MatrixFieldLis_
-  INTEGER(I4B), ALLOCATABLE :: lis_ia(:)
-  INTEGER(I4B), ALLOCATABLE :: lis_ja(:)
+  INTEGER(I4B), ALLOCATABLE :: lis_ia(:), submat_lis_ia(:)
+  !! IA of CSR matrix
+  INTEGER(I4B), ALLOCATABLE :: lis_ja(:), submat_lis_ja(:)
+  !! JA of CSR matrix
+  INTEGER(I4B) :: submat_is = 0_I4B
+  !! starting index (MPI)
+  INTEGER(I4B) :: submat_ie = 0_I4B
+  !! end index + 1 (MPI)
+  INTEGER(INT64) :: submat_lis_ptr = 0_INT64
+  !! lis_ptr is pointer returned by the LIS library
+  !! It is used when engine is LIS_OMP or LIS_MPI
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate from the parameter list
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other object
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate for block matrices
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
   FINAL :: obj_Final
@@ -77,10 +81,18 @@ CONTAINS
   ! @MatvecMethods
   PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
-END TYPE MatrixFieldLis_
 
-TYPE(MatrixFieldLis_), PARAMETER :: TypeMatrixFieldLis = &
-& MatrixFieldLis_(domains=NULL())
+  ! SET:
+  ! @DBCMethods
+  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  !! Apply dirichlet boundary condition
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBCtoRHS => &
+    obj_ApplyDirichletBCToRHS
+  !! Apply dirichlet boundary conditions to rhs
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDirichletBCSubMat => &
+    obj_GetDirichletBCSubMat
+  !! Get submatrix for dirichlet boundary condition
+END TYPE MatrixFieldLis_
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -90,46 +102,6 @@ INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(MatrixFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Final
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-30
-! summary: This routine initiates the Matrix Field
-!
-!# Introduction
-!
-! This routine initiates an instance of [[MatrixField_]].
-! The options/arguments to initiate the matrix field are
-! contained inside param, which is an instance of [[ParameterList_]].
-! In addition, [[Domain_]] `dom` is target to the pointer
-! [[AbstractField_:domain]]
-!
-! - Param contains both essential and optional parameters which are used in
-! constructing the matrix field
-! - dom is a pointer to a domain, where we are interested in constructing the
-! matrix
-!
-! ESSENTIAL PARAMETERS are
-!
-! - `name` This is name of field (char)
-! - `matrixProp`, UNSYM, SYM (char)
-!
-! OPTIONAL PARAMETERS
-!
-! - `spaceCompo`, INT, default is 1
-! - `timeCompo`, INT, default is 1
-! - `fieldType`, INT, default is FIELD_TYPE_NORMAL
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, dom)
-    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -167,9 +139,9 @@ END INTERFACE
 ! Add functionality for other options too.
 !@endtodo
 
-INTERFACE MatrixFieldLisInitiate2
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be an instance of MatrixField_
@@ -177,23 +149,11 @@ INTERFACE MatrixFieldLisInitiate2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
   END SUBROUTINE obj_Initiate2
-END INTERFACE MatrixFieldLisInitiate2
-
-!----------------------------------------------------------------------------
-!                                               Initiate@sConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-30
-! summary: This routine initiates the Matrix Field
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, param, dom)
-    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-  END SUBROUTINE obj_Initiate3
 END INTERFACE
+
+INTERFACE MatrixFieldLisInitiate
+  MODULE PROCEDURE obj_Initiate2
+END INTERFACE MatrixFieldLisInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -203,10 +163,14 @@ END INTERFACE
 ! date: 2023-03-30
 ! summary: This routine deallocates the data stored inside the matrix
 
-INTERFACE MatrixFieldLisDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE MatrixFieldLisDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE MatrixFieldLisDeallocate
 
 !----------------------------------------------------------------------------
@@ -234,12 +198,16 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom, domains)
+  MODULE SUBROUTINE obj_Import( &
+    obj, hdf5, group, fedof, fedofs, timefedof, timefedofs, geofedof, &
+    geofedofs)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -276,8 +244,8 @@ END INTERFACE
 ! outside and it should have same length as the input vector.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Matvec2(obj, x, y, isTranspose, &
-    & addContribution, scale)
+  MODULE SUBROUTINE obj_Matvec2( &
+    obj, x, y, isTranspose, addContribution, scale)
     CLASS(MatrixFieldLis_), INTENT(IN) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: x
     !! Input vector in y=Ax
@@ -288,5 +256,60 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
   END SUBROUTINE obj_Matvec2
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ApplyDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-14
+! summary:  Apply dirichlet boundary condition to matrixfield_
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbcPtrs)
+    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
+    !! These are column numbers which are local node
+  END SUBROUTINE obj_ApplyDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            ApplyDirichletBCtoRHS@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-14
+! summary:  Apply dirichlet boundary condition to a node field
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyDirichletBCToRHS( &
+    obj, x, y, isTranspose, scale, addContribution)
+    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractNodeField_), INTENT(IN) :: x
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: y
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTranspose
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+  END SUBROUTINE obj_ApplyDirichletBCToRHS
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetDirichletBCSubMat@DBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-12-14
+! summary:  Get submatrix for apply dirichlet boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDirichletBCSubMat(obj, submat)
+    CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: submat
+  END SUBROUTINE obj_GetDirichletBCSubMat
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE MatrixFieldLis_Class

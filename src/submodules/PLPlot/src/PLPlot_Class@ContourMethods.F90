@@ -15,9 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) ContourMethods
-USE BaseMethod
-USE EasyPlplot
+USE EasyPlplot, ONLY: Contour, Contourf
+
 IMPLICIT NONE
 CONTAINS
 
@@ -26,14 +27,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Contour
-  CALL Contour( &
-    & x=x, &
-    & y=y, &
-    & z=z, &
-    & N=N, &
-    & lineColor=lineColor, &
-    & lineStyle=lineType, &
-    & lineWidth=lineWidth )
+CALL Contour(x=x, y=y, z=z, N=N, lineColor=lineColor, &
+             lineStyle=lineType, lineWidth=lineWidth)
 END PROCEDURE plot_Contour
 
 !----------------------------------------------------------------------------
@@ -41,11 +36,8 @@ END PROCEDURE plot_Contour
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Contourf
-  CALL Contourf( &
-    & x=x, &
-    & y=y, &
-    & z=z, &
-    & N=N )
+CALL Contourf(x=x, y=y, z=z, N=N)
 END PROCEDURE plot_Contourf
 
 END SUBMODULE ContourMethods
+#endif

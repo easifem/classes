@@ -24,10 +24,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElasticParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetElasticParam()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetElasticParam
 
 !----------------------------------------------------------------------------
@@ -35,11 +50,27 @@ END PROCEDURE obj_GetElasticParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetC
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetC()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
 C = 0.0_DFP
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetC
 
 !----------------------------------------------------------------------------
@@ -47,11 +78,28 @@ END PROCEDURE obj_GetC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetInvC
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetInvC()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
 InvC = 0.0_DFP
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_GetInvC
 
 !----------------------------------------------------------------------------
@@ -59,11 +107,27 @@ END PROCEDURE obj_GetInvC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElasticityType
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetElasticityType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
 ans = 0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetElasticityType
 
 !----------------------------------------------------------------------------
@@ -71,11 +135,27 @@ END PROCEDURE obj_GetElasticityType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
 ans = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
@@ -93,5 +173,9 @@ END PROCEDURE obj_isPlaneStress
 MODULE PROCEDURE obj_isPlaneStrain
 ans = obj%isPStrain
 END PROCEDURE obj_isPlaneStrain
+
+!----------------------------------------------------------------------------
+!                                                            Include Error
+!----------------------------------------------------------------------------
 
 END SUBMODULE GetMethods

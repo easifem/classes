@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(VTKDataArrayEncoder) XYZRank2Methods
-USE BaseMethod
+USE befor64, ONLY: B64_ENCODE, PACK_DATA
+USE penf, ONLY: str
 IMPLICIT NONE
 CONTAINS
 
@@ -25,11 +26,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_xyz_rank2_Real32
-  INTEGER( I4B ) :: i, j, jj, ii, nbyte
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYReal32
-#include "./ENCODE_XYZ_RANK2.inc"
+INTEGER(I4B) :: i, j, jj, ii, nbyte
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+ans = ''; ii = SIZE(x, 1); jj = SIZE(x, 2)
+nbyte = (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal32
+#include "./include/ENCODE_XYZ_RANK2.F90"
 END PROCEDURE encode_xyz_rank2_Real32
 
 !----------------------------------------------------------------------------
@@ -37,11 +38,11 @@ END PROCEDURE encode_xyz_rank2_Real32
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_xyz_rank2_Real64
-  INTEGER( I4B ) :: i, j, jj, ii, nbyte
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYReal64
-#include "./ENCODE_XYZ_RANK2.inc"
+INTEGER(I4B) :: i, j, jj, ii, nbyte
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+ans = ''; ii = SIZE(x, 1); jj = SIZE(x, 2)
+nbyte = (SIZE(x) + SIZE(y) + SIZE(z)) * BYReal64
+#include "./include/ENCODE_XYZ_RANK2.F90"
 END PROCEDURE encode_xyz_rank2_Real64
 
 !----------------------------------------------------------------------------
@@ -49,11 +50,11 @@ END PROCEDURE encode_xyz_rank2_Real64
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_xyz_rank2_Int64
-  INTEGER( I4B ) :: i, j, jj, ii, nbyte
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYInt64
-#include "./ENCODE_XYZ_RANK2.inc"
+INTEGER(I4B) :: i, j, jj, ii, nbyte
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+ans = ''; ii = SIZE(x, 1); jj = SIZE(x, 2)
+nbyte = (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt64
+#include "./include/ENCODE_XYZ_RANK2.F90"
 END PROCEDURE encode_xyz_rank2_Int64
 
 !----------------------------------------------------------------------------
@@ -61,11 +62,11 @@ END PROCEDURE encode_xyz_rank2_Int64
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_xyz_rank2_Int32
-  INTEGER( I4B ) :: i, j, jj, ii, nbyte
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYInt32
-#include "./ENCODE_XYZ_RANK2.inc"
+INTEGER(I4B) :: i, j, jj, ii, nbyte
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+ans = ''; ii = SIZE(x, 1); jj = SIZE(x, 2)
+nbyte = (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt32
+#include "./include/ENCODE_XYZ_RANK2.F90"
 END PROCEDURE encode_xyz_rank2_Int32
 
 !----------------------------------------------------------------------------
@@ -73,11 +74,11 @@ END PROCEDURE encode_xyz_rank2_Int32
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_xyz_rank2_Int16
-  INTEGER( I4B ) :: i, j, jj, ii, nbyte
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYInt16
-#include "./ENCODE_XYZ_RANK2.inc"
+INTEGER(I4B) :: i, j, jj, ii, nbyte
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+ans = ''; ii = SIZE(x, 1); jj = SIZE(x, 2)
+nbyte = (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt16
+#include "./include/ENCODE_XYZ_RANK2.F90"
 END PROCEDURE encode_xyz_rank2_Int16
 
 !----------------------------------------------------------------------------
@@ -85,11 +86,11 @@ END PROCEDURE encode_xyz_rank2_Int16
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE encode_xyz_rank2_Int8
-  INTEGER( I4B ) :: i, j, jj, ii, nbyte
-  INTEGER( Int8 ), ALLOCATABLE :: xp( : )
-  ans = ''; ii = SIZE( x, 1 ); jj = SIZE( x, 2 )
-  nbyte = (SIZE( x ) + SIZE( y ) + SIZE( z )) * BYInt8
-#include "./ENCODE_XYZ_RANK2.inc"
+INTEGER(I4B) :: i, j, jj, ii, nbyte
+INTEGER(INT8), ALLOCATABLE :: xp(:)
+ans = ''; ii = SIZE(x, 1); jj = SIZE(x, 2)
+nbyte = (SIZE(x) + SIZE(y) + SIZE(z)) * BYInt8
+#include "./include/ENCODE_XYZ_RANK2.F90"
 END PROCEDURE encode_xyz_rank2_Int8
 
 END SUBMODULE XYZRank2Methods

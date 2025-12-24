@@ -19,8 +19,14 @@
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
 SUBMODULE(MatrixFieldLis_Class) MatVecMethods
-USE BaseMethod
+USE GlobalData, ONLY: INT64
+USE InputUtility, ONLY: Input
+USE BaseType, ONLY: math => TypeMathOpt
+
 IMPLICIT NONE
+
+#include "lisf.h"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -28,58 +34,112 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Matvec2
-#include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Matvec2"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Matvec2()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: ierr
 LOGICAL(LGT) :: isTranspose0
 LOGICAL(LGT) :: addContribution0
 REAL(DFP) :: scale0
 INTEGER(INT64) :: temp_lis_ptr
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(x%lis_ptr, ierr)
 CALL CHKERR(ierr)
-IF (.NOT. x%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either AbstractNodeField_::x is not initiated'// &
-  & " or, x%lis_ptr is not available")
-END IF
+#endif
 
+#ifdef DEBUG_VER
+isok = x%isInitiated()
+CALL AssertError1(isok, myName, &
+                  "AbstractNodeField_::x is not initiated")
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(y%lis_ptr, ierr)
 CALL CHKERR(ierr)
-IF (.NOT. y%isInitiated .OR. ierr .EQ. LIS_TRUE) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & 'Either AbstractNodeField_::y is not initiated'// &
-  & " or, y%lis_ptr is not available")
-END IF
+#endif
 
-isTranspose0 = input(option=isTranspose, default=.FALSE.)
-addContribution0 = input(option=addContribution, default=.FALSE.)
-scale0 = input(option=scale, default=1.0_DFP)
+#ifdef DEBUG_VER
+isok = y%isInitiated()
+CALL AssertError1(isok, myName, &
+                  "AbstractNodeField_::y is not initiated")
+#endif
+
+isTranspose0 = Input(option=isTranspose, default=math%no)
+addContribution0 = Input(option=addContribution, default=math%no)
+scale0 = Input(option=scale, default=math%one)
 
 IF (addContribution0) THEN
   CALL lis_vector_duplicate(y%lis_ptr, temp_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
+#endif
+
   IF (isTranspose0) THEN
     CALL lis_matvech(obj%lis_ptr, x%lis_ptr, temp_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
     CALL CHKERR(ierr)
+#endif
+
   ELSE
     CALL lis_matvec(obj%lis_ptr, x%lis_ptr, temp_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
     CALL CHKERR(ierr)
+#endif
+
   END IF
+
   CALL lis_vector_axpy(scale0, temp_lis_ptr, y%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
+#endif
+
   CALL lis_vector_destroy(temp_lis_ptr, ierr)
+
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
-ELSE
-  IF (isTranspose0) THEN
-    CALL lis_matvech(obj%lis_ptr, x%lis_ptr, y%lis_ptr, ierr)
-    CALL CHKERR(ierr)
-  ELSE
-    CALL lis_matvec(obj%lis_ptr, x%lis_ptr, y%lis_ptr, ierr)
-    CALL CHKERR(ierr)
-  END IF
+#endif
+
+  RETURN
 END IF
 
+IF (isTranspose0) THEN
+  CALL lis_matvech(obj%lis_ptr, x%lis_ptr, y%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  RETURN
+END IF
+
+CALL lis_matvec(obj%lis_ptr, x%lis_ptr, y%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Matvec2
+
+!----------------------------------------------------------------------------
+!                                                               Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE MatVecMethods

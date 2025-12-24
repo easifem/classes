@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(SolidMaterial_Class) SetMethods
-USE BaseMethod, ONLY: ToString
+USE Display_Method, ONLY: ToString, Display
 USE MaterialFactory, ONLY: SolidMaterialFactory
 ! USE FPL_Method
 IMPLICIT NONE
@@ -26,55 +26,73 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AddSolidMaterial
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_AddSolidMaterial"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tsize1
+#endif
 
-IF (materialNo .GT. tMaterials) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[OUT OF BOUND ERROR] :: Given MaterialNo [='//TOSTRING(materialNo)// &
-    & '] is greater than total number of solidMaterials [='//  &
-    & TOSTRING(tMaterials)//']!')
-  RETURN
+LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = materialNo .LE. tMaterials
+CALL AssertError1(isok, myName, &
+     'Given MaterialNo [='//ToString(materialNo)//'] is greater than &
+     &total number of solidMaterials [='//ToString(tMaterials)//']!')
+#endif
+
+abool = PRESENT(region) .AND. PRESENT(solidMaterialToMesh)
+#ifdef DEBUG_VER
+isok = .TRUE.
+tsize1 = 0
+IF (abool) THEN
+  tsize1 = SIZE(solidMaterialToMesh)
+  isok = materialNo .LE. tsize1
 END IF
+CALL AssertError1(isok, myName, &
+     'Given MaterialNo [='//TOSTRING(materialNo)//'] is greater than the &
+      &size of solidMaterialToMesh [='//ToString(tsize1)//']!')
+#endif
 
-IF (PRESENT(region) .AND. PRESENT(solidMaterialToMesh)) THEN
-  IF (materialNo .GT. SIZE(solidMaterialToMesh)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[OUT OF BOUND ERROR] :: Given MaterialNo [='//TOSTRING(materialNo)// &
-      & '] is greater than the size of solidMaterialToMesh [='//  &
-      & TOSTRING(SIZE(solidMaterialToMesh))//']!')
-  END IF
-  solidMaterialToMesh(materialNo) = region
+IF (abool) solidMaterialToMesh(materialNo) = region
+
+abool = PRESENT(param)
+#ifdef DEBUG_VER
+isok = .TRUE.
+tsize1 = 0
+IF (abool) THEN
+  tsize1 = SIZE(obj)
+  isok = materialNo .LE. tsize1
 END IF
+CALL AssertError1(isok, myName, &
+     'Given MaterialNo [='//ToString(materialNo)//'] is greater than the &
+     &size of solidMaterial[='//ToString(tsize1)//']!')
 
-IF (PRESENT(param)) THEN
-  IF (materialNo .GT. SIZE(obj)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-     & '[OUT OF BOUND ERROR] :: Given MaterialNo [='//TOSTRING(materialNo)// &
-      & '] is greater than the size of solidMaterial[='//  &
-      & TOSTRING(SIZE(obj))//']!')
-    RETURN
-  END IF
+isok = .NOT. ASSOCIATED(obj(materialNo)%ptr)
+CALL AssertError1(isok, myName, &
+      'solidMaterial('//ToString(materialNo)//')%ptr is already associated.')
 
-  IF (ASSOCIATED(obj(materialNo)%ptr)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[POINTER ERROR] :: solidMaterial('//TOSTRING(materialNo)// &
-      & ')%ptr is already associated.')
-    RETURN
-  END IF
+isok = PRESENT(materialName)
+CALL AssertError1(isok, myName, 'materialName should be present.')
+#endif
 
-  IF (.NOT. PRESENT(materialName)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-      & '[ARG MISSING] :: materialName should be present.')
-  END IF
-
-  obj(materialNo)%ptr => &
-    & SolidMaterialFactory(TRIM(materialName))
-  !! INFO: Solid material factory is defined in MaterialFactory.
-
-  CALL obj(materialNo)%ptr%initiate(param)
-
+IF (abool) THEN
+  obj(materialNo)%ptr => SolidMaterialFactory(TRIM(materialName))
+  !! info: Solid material factory is defined in MaterialFactory.
+  CALL obj(materialNo)%ptr%Initiate(param)
 END IF
 
 END PROCEDURE obj_AddSolidMaterial
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

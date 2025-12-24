@@ -18,7 +18,10 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/LinearElasticModel_Class@ConstructorMethods.F90
+  PRIVATE ${src_path}/LinearElasticModelUtility@Methods.F90
+          ${src_path}/LinearElasticModel_Class@ConstructorMethods.F90
           ${src_path}/LinearElasticModel_Class@IOMethods.F90
+          ${src_path}/LinearElasticModel_Class@HDFMethods.F90
+          ${src_path}/LinearElasticModel_Class@TomlMethods.F90
           ${src_path}/LinearElasticModel_Class@GetMethods.F90
           ${src_path}/LinearElasticModel_Class@SetMethods.F90)

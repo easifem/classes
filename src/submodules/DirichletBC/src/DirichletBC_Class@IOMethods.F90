@@ -16,120 +16,38 @@
 !
 
 SUBMODULE(DirichletBC_Class) IOMethods
-USE BaseMethod
-USE TomlUtility
-USE tomlf, ONLY:  &
-  & toml_serialize,  &
-  & toml_get => get_value, &
-  & toml_len => len, &
-  & toml_array,  &
-  & toml_stat
+USE Display_Method, ONLY: Display, ToString
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-TYPE(toml_table), POINTER :: node
-TYPE(toml_array), POINTER :: array
-INTEGER(I4B) :: origin, stat, tsize, ii, tsize1
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
-#endif
-
-tsize1 = SIZE(obj)
-
-array => NULL()
-CALL toml_get(table, tomlName, array, origin=origin, &
-  & requested=.FALSE., stat=stat)
-
-IF (.NOT. ASSOCIATED(array)) THEN
-  IF (tsize1 .GT. 0_I4B) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & 'In toml file :: cannot find ['//tomlName//"] table.")
-  ELSE
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-      & 'In toml file :: cannot find ['//tomlName//"] table.")
-  END IF
-  RETURN
-END IF
-
-tsize = toml_len(array)
-IF (tsize .NE. tsize1) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: The number of boundary condition '//char_lf// &
-    & ' in the toml config ('//tostring(tsize)//') is not same '// &
-    & ' as the size of obj ('//tostring(tsize1)//")")
-  RETURN
-END IF
-
-DO ii = 1, tsize
-  node => NULL()
-  CALL toml_get(array, ii, node)
-  IF (.NOT. ASSOCIATED(node)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[CONFIG ERROR] :: DirichletBC '//tostring(ii)//  &
-      & ' cannot be read from the toml file.')
-  END IF
-  IF (.NOT. ASSOCIATED(obj(ii)%ptr)) ALLOCATE (obj(ii)%ptr)
-  CALL obj(ii)%ptr%ImportFromToml(table=node, dom=dom)
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
-#endif
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-TYPE(toml_table), ALLOCATABLE :: table
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
-#endif
-
-IF (PRESENT(afile)) THEN
-  CALL GetValue(table=table, afile=afile)
-ELSEIF (PRESENT(filename)) THEN
-  CALL GetValue(table=table, filename=filename)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ARG ERROR] :: either filename or afile should be present!')
-  RETURN
-END IF
-
-CALL DirichletBCImportFromToml(obj=obj, table=table, dom=dom,  &
-  & tomlName=tomlName)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
-#endif
-END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !                                                                 Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Vector()"
+#endif
+
 INTEGER(I4B) :: tsize, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 tsize = SIZE(obj)
 CALL Display(msg, unitNo=unitNo)
-CALL Display("dbc: SIZE["//TOSTRING(tsize)//']', unitNo=unitNo)
+CALL Display("dbc: SIZE["//ToString(tsize)//']', unitNo=unitNo)
+
 DO ii = 1, tsize
-  CALL obj(ii)%Display("dbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
+  CALL obj(ii)%Display("dbc("//ToString(ii)//"): ", unitNo=unitNo)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display_Vector
 
 !----------------------------------------------------------------------------
@@ -137,18 +55,39 @@ END PROCEDURE obj_Display_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Ptr_Vector()"
+#endif
+
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: bool1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 tsize = SIZE(obj)
 CALL Display(msg, unitNo=unitNo)
-CALL Display("dbc: SIZE["//TOSTRING(tsize)//']', unitNo=unitNo)
+CALL Display("dbc: SIZE["//ToString(tsize)//']', unitNo=unitNo)
 DO ii = 1, tsize
   bool1 = ASSOCIATED(obj(ii)%ptr)
-  CALL Display(bool1, "dbc("//TOSTRING(ii)//") ASSOCIATED: ", unitNo=unitNo)
+  CALL Display(bool1, "dbc("//ToString(ii)//") ASSOCIATED: ", unitNo=unitNo)
   IF (bool1) THEN
-    CALL obj(ii)%ptr%Display("dbc("//TOSTRING(ii)//"): ", unitNo=unitNo)
+    CALL obj(ii)%ptr%Display("dbc("//ToString(ii)//"): ", unitNo=unitNo)
   END IF
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                               Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

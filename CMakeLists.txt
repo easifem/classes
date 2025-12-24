@@ -21,8 +21,8 @@ project(${PROJECT_NAME})
 
 enable_language(Fortran C CXX)
 
-set(VERSION_MAJOR "24")
-set(VERSION_MINOR "4")
+set(VERSION_MAJOR "25")
+set(VERSION_MINOR "04")
 set(VERSION_BugFix "1")
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
 
@@ -106,8 +106,6 @@ else()
   message(STATUS "${PROJECT_NAME} will be built as a static library.")
   add_library(${PROJECT_NAME} STATIC "")
 endif()
-
-# include(${PROJECT_SOURCE_DIR}/cmake/Compiler.cmake)
 
 message(
   STATUS
@@ -285,11 +283,6 @@ install(
   DESTINATION ${INSTALL_CMAKEDIR}
   COMPONENT "${PROJECT_NAME}-dev")
 
-# Find external dependency of the project FIXME:
-if(NOT CMAKE_PREFIX_PATH)
-  list(APPEND CMAKE_PREFIX_PATH "$ENV{EASIFEM_EXTPKGS}" "$ENV{EASIFEM_BASE}")
-endif()
-
 # linking include(${PROJECT_SOURCE_DIR}/cmake/targetLinkLibs.cmake)
 find_package(easifemBase REQUIRED)
 if(easifemBase_FOUND)
@@ -298,9 +291,6 @@ else()
   message(ERROR "NOT FOUND easifemBase")
 endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC easifemBase::easifemBase)
-
-include(${PROJECT_SOURCE_DIR}/cmake/addHDF5.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/addGmsh.cmake)
 
 # Add source files
 include(src/modules/CMakeLists.txt)

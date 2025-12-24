@@ -411,7 +411,7 @@ INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 CALL param%Initiate()
@@ -423,11 +423,11 @@ CALL obj%ImportParamFromToml(param=param, table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Making domain')
+                        '[START] Making domain')
 #endif
 
-CALL GetValue(obj=param, prefix=obj%GetPrefix(), key="domainFile",  &
-  & VALUE=astr)
+CALL GetValue(obj=param, prefix=obj%GetPrefix(), key="domainFile", &
+              VALUE=astr)
 
 CALL domainFile%Initiate(filename=astr%chars(), mode="READ")
 astr = ""
@@ -438,7 +438,7 @@ CALL domainFile%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Making domain')
+                        '[END] Making domain')
 #endif
 
 CALL obj%Initiate(param=param, dom=obj%dom)
@@ -448,53 +448,53 @@ CALL param%DEALLOCATE()
 !                                                       Make solid materials
 !----------------------------------------------------------------------------
 
-CALL toml_get(table, "materialName", astr%raw,  &
-  & TOML_SOLID_MATERIAL_NAME, origin=origin, stat=stat)
+CALL toml_get(table, "materialName", astr%raw, &
+              TOML_SOLID_MATERIAL_NAME, origin=origin, stat=stat)
 
-CALL SolidMaterialImportFromToml(table=table,  &
-  & tomlName=astr%chars(), obj=obj%solidMaterial,  &
-  & solidMaterialToMesh=obj%solidMaterialToMesh, dom=obj%dom)
+CALL SolidMaterialImportFromToml(table=table, &
+                               tomlName=astr%chars(), obj=obj%solidMaterial, &
+                     solidMaterialToMesh=obj%solidMaterialToMesh, dom=obj%dom)
 ! NOTE: SolidMaterialImportFromToml is defined in SolidMaterial_Class
 
 !----------------------------------------------------------------------------
 !                                                         Make Dirichlet BC
 !----------------------------------------------------------------------------
 
-CALL toml_get(table, "diricletBCName", astr%raw,  &
-  & TOML_DIRICHLET_BC_NAME, origin=origin, stat=stat)
+CALL toml_get(table, "diricletBCName", astr%raw, &
+              TOML_DIRICHLET_BC_NAME, origin=origin, stat=stat)
 
-CALL DirichletBCImportFromToml(table=table, dom=obj%dom,  &
-  & tomlName=astr%chars(), obj=obj%dbc)
+CALL DirichletBCImportFromToml(table=table, dom=obj%dom, &
+                               tomlName=astr%chars(), obj=obj%dbc)
 
 !----------------------------------------------------------------------------
 !                                                           Make Neumann BC
 !----------------------------------------------------------------------------
 
-CALL toml_get(table, "neumannBCName", astr%raw,  &
-  & TOML_NEUMANN_BC_NAME, origin=origin, stat=stat)
+CALL toml_get(table, "neumannBCName", astr%raw, &
+              TOML_NEUMANN_BC_NAME, origin=origin, stat=stat)
 
-CALL NeumannBCImportFromToml(table=table, dom=obj%dom,  &
-  & tomlName=astr%chars(), obj=obj%nbc)
+CALL NeumannBCImportFromToml(table=table, dom=obj%dom, &
+                             tomlName=astr%chars(), obj=obj%nbc)
 
 !----------------------------------------------------------------------------
 !                                                         Make Point Source
 !----------------------------------------------------------------------------
 
-CALL toml_get(table, "pointSourceName", astr%raw,  &
-  & TOML_POINT_SOURCE_NAME, origin=origin, stat=stat)
+CALL toml_get(table, "pointSourceName", astr%raw, &
+              TOML_POINT_SOURCE_NAME, origin=origin, stat=stat)
 
-CALL NeumannBCImportFromToml(table=table, dom=obj%dom,  &
-  & tomlName=astr%chars(), obj=obj%nbcPointSource)
+CALL NeumannBCImportFromToml(table=table, dom=obj%dom, &
+                             tomlName=astr%chars(), obj=obj%nbcPointSource)
 
 !----------------------------------------------------------------------------
 !                                                     Make WearkDirichletBC
 !----------------------------------------------------------------------------
 
-CALL toml_get(table, "weakDirichletBCName", astr%raw,  &
-  & TOML_NITSCHE_BC_NAME, origin=origin, stat=stat)
+CALL toml_get(table, "weakDirichletBCName", astr%raw, &
+              TOML_NITSCHE_BC_NAME, origin=origin, stat=stat)
 
-CALL NitscheBCImportFromToml(table=table, dom=obj%dom,  &
-  & tomlName=astr%chars(), obj=obj%wdbc)
+CALL NitscheBCImportFromToml(table=table, dom=obj%dom, &
+                             tomlName=astr%chars(), obj=obj%wdbc)
 
 !----------------------------------------------------------------------------
 !                                                               Set
@@ -503,12 +503,14 @@ CALL NitscheBCImportFromToml(table=table, dom=obj%dom,  &
 CALL obj%Set()
 
 !----------------------------------------------------------------------------
-!
+!                                                              ApplyIC
 !----------------------------------------------------------------------------
+
+CALL obj%ApplyIC(table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_ImportFromToml1
 
@@ -538,8 +540,8 @@ CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
 
 IF (.NOT. ASSOCIATED(node)) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: following error occured while reading '//  &
-    & 'the toml file :: cannot find ['//tomlName//"] table in config.")
+                '[CONFIG ERROR] :: following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
   RETURN
 END IF
 
@@ -547,8 +549,8 @@ CALL obj%ImportFromToml(table=node)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
-    & unitNo=stdout)
+  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
+               unitNo=stdout)
 END IF
 #endif
 
@@ -556,14 +558,14 @@ NULLIFY (node)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+           currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_ImportFromToml2
 
@@ -574,7 +576,7 @@ END PROCEDURE obj_ImportFromToml2
 MODULE PROCEDURE obj_ExportToToml
 CHARACTER(*), PARAMETER :: myName = "obj_ExportToToml"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child class.')
+          '[WIP ERROR] :: This routine should be implemented by child class.')
 END PROCEDURE obj_ExportToToml
 
 !----------------------------------------------------------------------------

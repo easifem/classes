@@ -15,53 +15,28 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE AbstractFE_Class
-USE GlobalData
-USE BaseType, ONLY: BaseInterpolation_, &
-  & BaseContinuity_,  &
-  & ElemShapeData_,  &
-  & QuadraturePoint_,  &
-  & LagrangeInterpolation_,  &
-  & OrthogonalInterpolation_,  &
-  & HierarchyInterpolation_,  &
-  & SerendipityInterpolation_,  &
-  & HermitInterpolation_,  &
-  & ReferenceElement_
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_
 USE String_Class, ONLY: String
-USE AbstractRefElement_Class
-USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
+USE BasisOpt_Class, ONLY: BasisOpt_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
+USE UserFunction_Class, ONLY: UserFunction_
+
 IMPLICIT NONE
 PRIVATE
+
 PUBLIC :: AbstractFE_
 PUBLIC :: AbstractFEPointer_
-PUBLIC :: SetAbstractFEParam
-PUBLIC :: SetFiniteElementParam
 PUBLIC :: AbstractFEDeallocate
 PUBLIC :: AbstractFEDisplay
-PUBLIC :: AbstractFEInitiate
-PUBLIC :: AbstractFECheckEssentialParam
 PUBLIC :: DEALLOCATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
-CHARACTER(*), PARAMETER :: AbstractFEEssentialParams = &
-& "/nsd/order/anisoOrder/tEdgeOrder/edgeOrder/tFaceOrder"//  &
-& "/faceOrder/cellOrder/feType/elemType/ipType/dofType"//  &
-& "/transformType/refElemDomain/baseContinuity/baseInterpolation"//  &
-& "/isIsotropicOrder/isAnisotropicOrder/isEdgeOrder/isFaceOrder"//  &
-& "/isCellOrder/tCellOrder/basisType/alpha/beta/lambda"
-
-INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
-INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
-INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
-INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
-
-INTEGER(I4B), PARAMETER :: MAX_NO_FACE = 6
-!! Maximum number of faces in an element
-INTEGER(I4B), PARAMETER :: MAX_NO_EDGE = 12
-!! Maximum number of edges in an element
 
 !----------------------------------------------------------------------------
-!                                                        AbstractRefElement_
+!                                                                 AbstractFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -71,176 +46,188 @@ INTEGER(I4B), PARAMETER :: MAX_NO_EDGE = 12
 !{!pages/docs-api/AbstractFE/AbstractFE_.md!}
 
 TYPE, ABSTRACT :: AbstractFE_
-  PRIVATE
-  LOGICAL(LGT) :: firstCall = .TRUE.
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  ! PRIVATE
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
-  INTEGER(I4B) :: nsd = 0
-  !! spatial dimension of fintie element
-  INTEGER(I4B) :: order = 0
-  !! Isotropic order of polynomial space
-  LOGICAL(LGT) :: isIsotropicOrder = .FALSE.
-  !! True if the order is same in all the direction
-  INTEGER(I4B) :: anisoOrder(3)
-  !! Order in x, y, and z direction
-  LOGICAL(LGT) :: isAnisotropicOrder = .FALSE.
-  !! True if the order is different in different directions
-  INTEGER(I4B) :: edgeOrder(MAX_NO_EDGE) = 0
-  !! Order on each edge of the element
-  INTEGER(I4B) :: tEdgeOrder = 0
-  !! The actual size of edgeOrder
-  LOGICAL(LGT) :: isEdgeOrder = .FALSE.
-  !! True if we set the edge order
-  INTEGER(I4B) :: faceOrder(MAX_NO_FACE)
-  !! Order of approximation on each face of the element
-  INTEGER(I4B) :: tFaceOrder = 0
-  !! The actual size of faceOrder
-  LOGICAL(LGT) :: isFaceOrder = .FALSE.
-  !! True if we set the face order
-  INTEGER(I4B) :: cellOrder(3)
-  !! Order of approximation inside the element
-  INTEGER(I4B) :: tCellOrder = 0
-  !! The actual size of cellOrder
-  LOGICAL(LGT) :: isCellOrder = .FALSE.
-  !! True if we set the cell order
-  INTEGER(I4B) :: feType = 0
-  !! Type of finite element
-  !! Scalar, Vector, Matrix
-  INTEGER(I4B) :: elemType = 0
-  !! Topology type of reference elemtn
-  !! Line, Triangle, Quadrangle, Tetrahedron, Hexahedron,
-  !! Prism, Pyramid
-  INTEGER(I4B) :: ipType = 0
-  !! Type of lattice point (i.e., interpolation point type)
-  INTEGER(I4B) :: dofType(4) = 0
-  !! Currently it is not used
-  !! dofType(1): Type of dof for shape function defined on vertex
-  !! dofType(2): Type of dof for shape functions on edge
-  !! dofType(3): Type of dof for shape functions on face
-  !! dofType(4): Type of dof for shape functions in cell
-  !! These shape functions can take following values:
-  !! - FE_DOF_POINT_EVAL
-  INTEGER(I4B) :: transformType = 0
-  !! Currently it is not used
-  !! Type of Tranformation usef for polynomial space
-  !! - FE_TRANSFORM_IDENTITY
-  TYPE(String) :: baseContinuity0
-  !! String name of base continuity
-  TYPE(String) :: baseInterpolation0
-  !! String name of base interpolation
-  !! LagrangePolynomial
-  !! SerendipityPolynomial
-  !! HermitPolynomial
-  !! OrthogonalPolynomial
-  !! HierarchyPolynomial
-  INTEGER(I4B) :: basisType(3)
-  !! Integer code for basis type in x, y, and z direction
-  !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
-  !! Ultraspherical
-  REAL(DFP) :: alpha(3)
-  !!Jacobi parameters
-  REAL(DFP) :: beta(3)
-  !! Jacobi parameters
-  REAL(DFP) :: lambda(3)
-  !! Ultraspherical parameters
-  TYPE(String) :: refElemDomain
-  !! String name for reference element domain.
-  !! It can take following values:
-  !! - UNIT
-  !! - BIUNIT
-  CLASS(BaseContinuity_), ALLOCATABLE :: baseContinuity
-  !! continuity or conformity of basis defined on reference
-  !! element, following values are allowed
-  !! H1, HCurl, HDiv, DG
-  CLASS(BaseInterpolation_), ALLOCATABLE :: baseInterpolation
-  !! Type of basis functions used for interpolation on reference
-  !! element, Following values are allowed
-  !! LagrangeInterpolation
-  !! HermitInterpolation
-  !! SerendipityInterpolation
-  !! HierarchyInterpolation
-  !! OrthogonalInterpolation
-  CLASS(AbstractRefElement_), POINTER :: refelem => NULL()
-  !! reference element
-  TYPE(ReferenceElement_) :: refelem0
-  !! This is only for internal use
-  !! At the time of initiate we extract refelem0 from refelem
-  !! This way we do not have to make copy every time we
-  !! make quadrature points and shape function data
-  TYPE(ReferenceElement_) :: facetElem0(MAX_NO_FACE)
-  !! Facet elements
-  REAL(DFP), ALLOCATABLE :: coeff(:, :)
+  TYPE(BasisOpt_) :: opt
+  !! basis options
+
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   !@ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-  !! Constructor method for AbstractFE element
-  !! This method can be overloaded by Subclass of this abstract class.
-  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  !! Initiate method from arguments
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Initiate by copy
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & obj_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  !IO:
+  !@IOMethods
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of a finite element
-  PROCEDURE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
   !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: ReactEncode => obj_ReactEncode
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => &
+    obj_ReactEncode
   !! Display the contents
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
+    obj_Deallocate
   !! Deallocate the data stored in an instance
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportFromToml1
+  !! Import the data from toml file
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
+  !! Import the data from toml table
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    ImportFromToml2
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Sets the parameters of finite element
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  !! Set the order and reallocate appropriate data in
+  !! already initiated AbstractFE_
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
+  !! Set the orientation
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+    obj_SetQuadratureOrder
+  !! Set order of quadrature
+  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+    obj_SetQuadratureType
+  !! Set quadrature type
 
   !GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get prefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRefElemCoord => &
+    obj_GetRefElemCoord
+  !! Get the coordinates of reference element
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
+    obj_GetTopologyType
+  !! returns the topoType
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Sets the parameters of finite element
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData =>  &
-    &  obj_GetLocalElemShapeData
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_H1 =>  &
-    & obj_GetLocalElemShapeData_H1_Master
-  !! Get local element shape data for H1
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HDiv =>  &
-    & obj_GetLocalElemShapeData_HDiv_Master
-  !! Get local element shape data for Hdiv
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_HCurl =>  &
-    & obj_GetLocalElemShapeData_HCurl_Master
-  !! Get local element shape data for HCurl
-  PROCEDURE, PRIVATE, PASS(obj) :: GetLocalElemshapeData_DG =>  &
-    & obj_GetLocalElemShapeData_DG_Master
-
-  ! GET:
-  ! @Global element shapedata
-
-  !! Get local element shape data for Discontinuous Galerkin
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData =>  &
-    &  obj_GetGlobalElemShapeData
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_H1 =>  &
-    & obj_GetGlobalElemShapeData_H1_Master
-  !! Get global shape data for H1
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HDiv =>  &
-    & obj_GetGlobalElemShapeData_HDiv_Master
-  !! Get global shape data for Hdiv
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_HCurl =>  &
-    & obj_GetGlobalElemShapeData_HCurl_Master
-  !! Get global shape data for HCurl
-  PROCEDURE, PRIVATE, PASS(obj) :: GetGlobalElemshapeData_DG =>  &
-    & obj_GetGlobalElemShapeData_DG_Master
-  !! Get global shape data for Discontinuous Galerkin
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
+    obj_GetBaseInterpolation
+  !! Get the base interpolation
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
+    obj_GetBaseContinuity
+  !! Get the base continuity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+    obj_GetLocalElemShapeData
+  !! Get local element shape data for cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+    obj_GetGlobalElemShapeData
+  !! Get global element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData2 => &
+    obj_GetGlobalElemShapeData2
+  !! Get global element shape data
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
+  !! Get local element shape data for cell element and
+  !! local face number
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetAllLocalFacetElemShapeData => obj_GetAllLocalFacetElemShapeData
+  !! Get local element shape data for cell element and
+  !! all faces
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
+    obj_GetGlobalFacetElemShapeData
+  !! Get global element shape data for cell and facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData2 => &
+    obj_GetGlobalFacetElemShapeData2
+  !! Get global element shape data for cell and facet
+  !! This is a higher level method
+  PROCEDURE, PUBLIC, PASS(obj) :: GetAllGlobalFacetElemShapeData => &
+    obj_GetAllGlobalFacetElemShapeData
+  !! Get global element shape data for cell and facet
 
   ! GET:
   ! @QuadratureMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints =>  &
-    & obj_GetQuadraturePoints1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+    obj_GetQuadraturePoints
+  !! Get quadrature points in cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
+  !! Get quadrature points on the face of cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetAllFacetQuadraturePoints => obj_GetAllFacetQuadraturePoints
+  !! Get quadrature points on all faces
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
+  !! Get total number of quadrature points
+
+  ! GET:
+  ! @InterpolationMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
+    obj_GetInterpolationPoints
+  !! Get Interpolation points in cell element
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
+  !! Get total number of Interpolation points
+
+  ! GET:
+  ! @FacetDOFMethods
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetDOFValueFromVertex => obj_GetFacetDOFValueFromVertex
+  !! Get the dof values corresponding to a constant function
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
+  !! Get the dof values corresponding to a constant function
+  !! This method should be implemented by the child class
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromSTFunc => &
+    obj_GetFacetDOFValueFromSTFunc
+  !! Get the dof values of a space-time user function on a facet
+  !! This method should be implemented by the child class
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSTFacetDOFValueFromSTFunc => &
+    obj_GetSTFacetDOFValueFromSTFunc
+  !! Get the space time dof values from space time user function
+  !! This method should be implemented by the child class
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSTFacetDOFValueFromConstant => &
+    obj_GetSTFacetDOFValueFromConstant
+  !! Get the space time dof values of a space-time user function on a facet
+  !! This method should be implemented by the child class
+  GENERIC, PUBLIC :: GetFacetDOFValue => &
+    GetFacetDOFValueFromSTFunc, &
+    GetFacetDOFValueFromVertex, &
+    GetFacetDOFValueFromConstant, &
+    GetSTFacetDOFValueFromSTFunc, &
+    GetSTFacetDOFValueFromConstant
+
+  ! GET:
+  ! @CellDOFMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOFValueFromSTUserFunc => &
+    obj_GetVertexDOFValueFromSTFunc
+  !! Get the vertex dof values from space-time user functions
+  GENERIC, PUBLIC :: GetVertexDOFValue => GetVertexDOFValueFromSTUserFunc
+  !! Get the vertex dof values
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInCellDOFValueFromSTUserFunc => &
+    obj_GetInCellDOFValueFromSTFunc
+  !! Get the vertex dof values from space-time user functions
+  GENERIC, PUBLIC :: GetInCellDOFValue => GetInCellDOFValueFromSTUserFunc
+  !! Get the vertex dof values
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc => &
+    obj_GetDOFValueFromSTFunc
+  !! Get the dof values of a space-time user function on a facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc2 => &
+    obj_GetDOFValueFromSTFunc2
+  !! Get the dof values of a space-time user function on a facet
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromQuadrature => &
+    obj_GetDOFValueFromQuadrature
+  GENERIC, PUBLIC :: GetDOFValue => &
+    GetDOFValueFromSTFunc, &
+    GetDOFValueFromSTFunc2, &
+    GetDOFValueFromQuadrature
+  !! Get the degree of freedom values
 END TYPE AbstractFE_
 
 !----------------------------------------------------------------------------
@@ -252,44 +239,29 @@ TYPE :: AbstractFEPointer_
 END TYPE AbstractFEPointer_
 
 !----------------------------------------------------------------------------
-!                                    CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-08-11
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE AbstractFECheckEssentialParam
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractFE_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE AbstractFECheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                     SetAbstractFEParam@ConstructorMethods
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-11
-! summary:  Sets the parameters for initiating abstract finite element
+! date: 27 Aug 2022
+! summary: Initiates an instance of the finite element
 
 INTERFACE
-  MODULE SUBROUTINE SetAbstractFEParam( &
-    & param, prefix, nsd, elemType, baseContinuity, &
-    & baseInterpolation, ipType, basisType, alpha, &
-    & beta, lambda, order, anisoOrder, edgeOrder,  &
-    & faceOrder, cellOrder)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! ParameterList
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! Prefix
-    INTEGER(I4B), INTENT(IN) :: nsd
-    !! Number of spatial dimension
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, elemType, nsd, baseContinuity, baseInterpolation, feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, order, &
+    anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, faceOrient, &
+    edgeOrient, tcell, tface, tedge, errCheck, quadratureIsHomogeneous, &
+    quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object
     INTEGER(I4B), INTENT(IN) :: elemType
     !! Type of finite element
     !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
     !! Hexahedron
+    INTEGER(I4B), INTENT(IN) :: nsd
+    !! Number of spatial dimension
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! Continuity or Conformity of basis function.
     !! This parameter is used to determine the nodal coordinates of
@@ -309,6 +281,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! Interpolation point type, It is required when
     !! baseInterpol is LagrangePolynomial
+    !! Default ipType is Equidistance
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
     !! Basis type: Legendre, Lobatto, Ultraspherical,
     !! Jacobi, Monomial
@@ -318,40 +291,69 @@ INTERFACE
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameters
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
+    !! Finite element type
+    !! Default is Scalar
+    !! For HDiv and Hcurl it should be Vector
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
+    !! Degree of freedom type, default is nodal
+    !! The size of dofType is 4
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    !! transformation type, from reference element to physical element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! Isotropic Order of finite element
+    !! order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! Anisotropic order, order in x, y, and z directions
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! Order of approximation along edges
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
-    !! Order of approximation along face
+    !! aniso tropic order, necessary for Lagrange interpolation
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! Order of approximation along cell
-  END SUBROUTINE SetAbstractFEParam
+    !! cell order, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order, necessary for Hierarchical interpolation
+    !! number of rows in faceOrder is 3
+    !! number of columns in faceOrder is tfaceorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order, necessary for Hierarchical interpolation
+    !! size of edgeorder is tedgeorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient, necessary for Hierarchical interpolation
+    !! number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder, necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder,
+    !! necessary for Hierarchical interpolation
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder, necessary for Hierarchical interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(:)
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureOrder(:)
+    !! quadrature accuracy in x, y, and z direction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips(:)
+    !! Number of interpolation points in x, y, and z directions
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! Quadrature nips
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha(:)
+    !! Quadrature alpha
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta(:)
+    !! Quadrature beta
+    REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(:)
+    !! Quadrature lambda
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
-INTERFACE SetFiniteElementParam
-  MODULE PROCEDURE SetAbstractFEParam
-END INTERFACE SetFiniteElementParam
-
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Initiates an instance of the finite element
-
-INTERFACE AbstractFEInitiate
-  MODULE SUBROUTINE obj_Initiate(obj, param)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate
-END INTERFACE AbstractFEInitiate
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -366,7 +368,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                                          Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -380,21 +382,25 @@ INTERFACE AbstractFEDeallocate
 END INTERFACE AbstractFEDeallocate
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                                          Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE DEALLOCATE
+INTERFACE AbstractFEDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(AbstractFEPointer_), ALLOCATABLE :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE AbstractFEDeallocate
+
+INTERFACE DEALLOCATE
+  MODULE PROCEDURE Deallocate_Ptr_Vector
 END INTERFACE DEALLOCATE
 
 !----------------------------------------------------------------------------
-!                                                         Display@IOMethods
+!                                                             Display@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -411,7 +417,7 @@ INTERFACE AbstractFEDisplay
 END INTERFACE AbstractFEDisplay
 
 !----------------------------------------------------------------------------
-!                                                          MdEncode@Methods
+!                                                            MdEncode@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -441,7 +447,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        SetParam@SetMethods
+!                                                            SetParam@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -450,29 +456,39 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam( &
-    & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
-    & cellOrder, feType, elemType, ipType, basisType, alpha, &
-    & beta, lambda, dofType, transformType, refElemDomain, &
-    & baseContinuity, baseInterpolation, isIsotropicOrder,  &
-    & isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
-    & tEdgeOrder, tFaceOrder, tCellOrder)
+    obj, nsd, order, anisoOrder, edgeOrder, faceOrder, cellOrder, fetype, &
+    elemType, topoType, elemIndx, ipType, basisType, alpha, beta, lambda, &
+    dofType, transformType, refElemDomain, baseContinuity, &
+    baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
+    isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
+    quadratureIsHomogeneous, quadratureType, quadratureType1, &
+    quadratureType2, quadratureType3, quadratureOrder, quadratureOrder1, &
+    quadratureOrder2, quadratureOrder3, quadratureIsOrder, quadratureNips, &
+    quadratureNips1, quadratureNips2, quadratureNips3, quadratureIsNips, &
+    quadratureAlpha, quadratureAlpha1, quadratureAlpha2, quadratureAlpha3, &
+    quadratureBeta, quadratureBeta1, quadratureBeta2, quadratureBeta3, &
+    quadratureLambda, quadratureLambda1, quadratureLambda2, quadratureLambda3)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
     !! Number of spatial dimension
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order of element (isotropic order)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
     !! order in x, y, and z directions
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
     !! order of approximation on the edges of element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
     !! order of approximation on the faces of element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(3)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
     !! order of approximation in the cell of element
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: feType
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
     !! finite element type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
     !! Reference element type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
+    !! Topology of reference element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemIndx
+    !! Element index of the reference element
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! interpolation point type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
@@ -483,7 +499,7 @@ INTERFACE
     !! Jacobi parameter
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
     !! Ultraspherical parameter
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(4)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
     !! degree of freedom type
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
     !! transformation type
@@ -498,31 +514,166 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isAnisotropicOrder
     !! True if anisoOrder
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isEdgeOrder
+    !! is edge order set
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isFaceOrder
+    !! is face order set
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isCellOrder
+    !! is cell order set
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdgeOrder
+    !! total edge order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFaceOrder
+    !! total face order
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCellOrder
+    !! total cell order
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
+    !! is quadratur homogeneous in all dimensions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+    !! Quadrature type in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
+    !! quadrature accuracy in x, y, and z direction
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder1
+    !! quadrature accuracy in x, y, and z direction
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder2
+    !! quadrature accuracy in x, y, and z direction
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder3
+    !! quadrature accuracy in x, y, and z direction
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
+    !! Is quadrature order considered
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(:)
+    !! Number of interpolation points in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips1
+    !! Number of interpolation points in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips2
+    !! Number of interpolation points in x, y, and z directions
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips3
+    !! Number of interpolation points in x, y, and z directions
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
+    !! Should we consider nips
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
+    !! Jacobi parameters for quadrature
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha1
+    !! Jacobi parameters for quadrature
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha2
+    !! Jacobi parameters for quadrature
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha3
+    !! Jacobi parameters for quadrature
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta1
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta2
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta3
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda1
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda2
+    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda3
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
+!                                                            GetOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-12-11
-! summary:  Get prefix
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
 
 INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractFE_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
+  MODULE SUBROUTINE obj_SetOrder( &
+    obj, order, anisoorder, cellOrder, faceOrder, edgeOrder, tcell, tface, &
+    tedge, errCheck)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
+    !! order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoorder(:)
+    !! aniso tropic order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
+    !! cell order
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
+    !! face order, number of rows in faceOrder is 3
+    !! number of columns in faceOrder is tfaceorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
+    !! edge order, size of edgeorder is tedgeorder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetParam@GetMethods
+!                                                            GetOrder@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-12
+! summary:  This routine set order in the already initiated AbstractFE_
+!
+!# Introduction
+!
+! This routine sets order in the already initiated AbstractFE_
+! Make sure the object is initiated by calling correct constructor methods
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrientation( &
+    obj, cellOrient, faceOrient, edgeOrient, tcell, tface, tedge, errCheck)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! abstract finite element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! cell orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! face orient
+    !! number of rows in faceoriient is 3
+    !! number of columns in faceorient is tfaceorient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! edge orient
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
+    !! size of cellOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
+    !! number of columns in faceOrder
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
+    !! size of edgeorder
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! user can ignore this option
+    !! for dev: this option checks the errors in debug mode
+  END SUBROUTINE obj_SetOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetRefElemCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-13
+! summary: Get the reference element coordinates
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetRefElemCoord(obj, ans, nrow, ncol)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! Reference element coordinates
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! Number of data written in ans
+  END SUBROUTINE obj_GetRefElemCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            GetParam@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -531,12 +682,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam( &
-    & obj, nsd, order, anisoOrder, edgeOrder, faceOrder, &
-    & cellOrder, feType, elemType, ipType, basisType, alpha, &
-    & beta, lambda, dofType, transformType, refElemDomain, &
-    & baseContinuity, baseInterpolation, isIsotropicOrder,  &
-    & isAnisotropicOrder, isEdgeOrder, isFaceOrder, isCellOrder, &
-    & tEdgeOrder, tFaceOrder, tCellOrder)
+    obj, nsd, order, anisoOrder, edgeOrder, faceOrder, cellOrder, fetype, &
+    elemType, topoType, elemIndx, ipType, basisType, alpha, beta, lambda, &
+    dofType, transformType, refElemDomain, baseContinuity, &
+    baseInterpolation, isIsotropicOrder, isAnisotropicOrder, isEdgeOrder, &
+    isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureNips, quadratureIsOrder, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(AbstractFE_), INTENT(IN) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
     !! Number of spatial dimension
@@ -544,16 +697,20 @@ INTERFACE
     !! order of element (isotropic order)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: anisoOrder(3)
     !! order in x, y, and z directions
-    INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: edgeOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: edgeOrder(:)
     !! order of approximation on the edges of element
-    INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: faceOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: faceOrder(:, :)
     !! order of approximation on the faces of element
-    INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: cellOrder(:)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: cellOrder(:)
     !! order of approximation in the cell of element
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: feType
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fetype
     !! finite element type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemType
     !! Reference element type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: topoType
+    !! Get the topology type
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemIndx
+    !! Get the index of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
     !! interpolation point type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(3)
@@ -568,27 +725,51 @@ INTERFACE
     !! degree of freedom type
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
     !! transformation type
-    TYPE(String), OPTIONAL, INTENT(OUT) :: baseContinuity
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseContinuity
     !! String name of type of continuity used for basis functions
-    TYPE(String), OPTIONAL, INTENT(OUT) :: baseInterpolation
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseInterpolation
     !! String name of type of interpolation used for basis functions
-    TYPE(String), OPTIONAL, INTENT(OUT) :: refElemDomain
+    CHARACTER(*), OPTIONAL, INTENT(OUT) :: refElemDomain
     !! Domain of reference element
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isIsotropicOrder
     !! True if isotropic order
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isAnisotropicOrder
     !! True if anisoOrder
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isEdgeOrder
+    !! is edge order set
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isFaceOrder
+    !! is face order set
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isCellOrder
+    !! is cell order set
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEdgeOrder
+    !! total edge order
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tFaceOrder
+    !! total face order
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tCellOrder
+    !! total cell order
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsHomogeneous
+    !! see QuadratureOpt_
+    INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureType(3)
+    !! see QuadratureOpt_
+    INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureOrder(3)
+    !! See QuadratureOpt_
+    INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureNips(3)
+    !! See QuadratureOpt_
+    REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureAlpha(3)
+    !! See QuadratureOpt_
+    REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureBeta(3)
+    !! See QuadratureOpt_
+    REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureLambda(3)
+    !! See QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsOrder
+    !! See QuadratureOpt_
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsNips
+    !! See QuadratureOpt_
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                               GetLocalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -598,37 +779,49 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                          GetLocalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-08-15
-! summary:  Get local element shape data shape data on facets
+! summary:  Get local element shape data shape data in cell and facet
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData(obj, cellElemsd, &
-    & facetElemsd, quad)
+  MODULE SUBROUTINE obj_GetLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-      !! finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: cellElemsd
-      !! element shape data on cell
-    CLASS(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
-      !! element shapedata on facet element
-      !! The size of facetElemsd should be equal to total number of
-      !! facets in element.
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad(:)
-      !! Quadrature points on each facet element
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
   END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                       GetAllLocalFacetElemShapeData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-08-15
+! summary:  Get local element shape data shape data in cell and facet
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetAllLocalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, quad, facetQuad, tsize)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:), facetElemsd(:)
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:), facetQuad(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetAllLocalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetGlobalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -636,17 +829,17 @@ END INTERFACE
 ! summary:  Get Global element shape data shape data
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoElemsd)
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
     REAL(DFP), INTENT(IN) :: xij(:, :)
     !! nodal coordinates of element
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
     !! shape function data for geometry which contains local shape function
     !! data. If not present then the local shape function in elemsd
     !! will be used for geometry. This means we are dealing with
@@ -655,220 +848,815 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        GetLocalElemShapeData_H1@H1Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemshapeData_H1_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemshapeData_H1_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@H1Methods
+!                                              GetGlobalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-08-15
 ! summary:  Get Global element shape data shape data
+!
+!# Introduction
+!
+! This is a high level routine for getting global shape data of element
+! It needs AbstractFE object for solution, and geometry
+!
+! It will first make quadrature points
+! Then it will make local element shape data for solution and geometry
+! Then it will make global element shape data for solution
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_H1_Master(obj, elemsd,   &
-    & xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+  MODULE SUBROUTINE obj_GetGlobalElemShapeData2( &
+    obj, geofeptr, elemsd, geoelemsd, xij, quad)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj, geofeptr
     !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! Abstract finite element for geometry
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
     !! shape function data
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
+    !! shape function data for geometry which contains local shape function
+    !! data. If not present then the local shape function in elemsd
+    !! will be used for geometry. This means we are dealing with
+    !! isoparametric shape functions.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Quadrature point
     REAL(DFP), INTENT(IN) :: xij(:, :)
     !! nodal coordinates of element
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_H1_Master
+  END SUBROUTINE obj_GetGlobalElemShapeData2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                    GetLocalElemShapeData_HDiv@HDivMethods
+!                                         GetGlobalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-08-15
-! summary:  Get local shape data
+! summary:  Get Global element shape data shape data in cell and facet
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData_HDiv_Master(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData_HDiv_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         GetGlobalElemShapeData@HDivMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_HDiv_Master(obj, elemsd, &
-    & xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
+    !! element shape data for geometry in cell and facet
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
+    !! nodal coordinates of cell element
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_HDiv_Master
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetGlobalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                   GetLocalElemShapeData_HCurl@HCurlMethods
+!                                        GetGlobalFacetElemShapeData2@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-08-15
-! summary:  Get local shape data
+! summary:  Get Global element shape data shape data in cell and facet
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData_HCurl_Master(obj, elemsd, quad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData_HCurl_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       GetGlobalElemShapeData@HCurlMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_HCurl_Master(obj, elemsd, &
-    & xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
+  MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData2( &
+    obj, geofeptr, elemsd, facetElemsd, geoElemsd, geoFacetElemsd, &
+    localFaceNumber, quad, facetQuad, xij)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj, geofeptr
+    !! Abstract FE for solution and geometry
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
+                                           geoFacetElemsd
+    !! element shape data in cell and facet
+    !! element shape data for geometry in cell and facet
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! quadrature points for cell and facetQuad
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
+    !! nodal coordinates of cell element
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_HCurl_Master
+  END SUBROUTINE obj_GetGlobalFacetElemShapeData2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         GetLocalElemShapeData_DG@DGMethods
+!                                     GetAllGlobalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-08-15
-! summary:  Get local shape data
+! summary:  Get Global element shape data shape data in cell and facet
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetLocalElemShapeData_DG_Master(obj, elemsd, quad)
+  MODULE SUBROUTINE obj_GetAllGlobalFacetElemShapeData( &
+    obj, elemsd, facetElemsd, tsize, geoElemsd, geoFacetElemsd, xij)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    CLASS(QuadraturePoint_), INTENT(IN) :: quad
-  END SUBROUTINE obj_GetLocalElemShapeData_DG_Master
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@DGMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
-
-INTERFACE
-  MODULE SUBROUTINE obj_GetGlobalElemShapeData_DG_Master(obj, elemsd, &
-    & xij, geoElemsd)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
-    CLASS(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:), facetElemsd(:)
+    !! element shape data in cell and facet
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd(:), geoFacetElemsd(:)
+    !! element shape data for geometry in cell and facet
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
+    !! nodal coordinates of cell element
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
-    CLASS(ElemShapeData_), OPTIONAL, INTENT(INOUT) :: geoElemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
-  END SUBROUTINE obj_GetGlobalElemShapeData_DG_Master
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetAllGlobalFacetElemShapeData
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     GetQuadraturePoints@QuadratureMethods
+!                                                 GetQuadraturePoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-05
 ! summary: Get quadrature points
 
+! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
+! alpha, beta, lambda, xij)
+
 INTERFACE
-  MODULE SUBROUTINE obj_GetQuadraturePoints1(obj, quad, quadratureType,  &
-    & order, nips, alpha, beta, lambda)
+  MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    CLASS(QuadraturePoint_), INTENT(INOUT) :: quad
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
-    INTEGER(I4B), INTENT(IN) :: quadratureType(:)
-    !! Type of quadrature points
-    !! GaussLegendre
-    !! GaussLegendreLobatto
-    !! GaussLegendreRadau, GaussLegendreRadauLeft
-    !! GaussLegendreRadauRight
-    !! GaussChebyshev
-    !! GaussChebyshevLobatto
-    !! GaussChebyshevRadau, GaussChebyshevRadauLeft
-    !! GaussChebyshevRadauRight
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
-    !! Order of integrand
-    !! either the order or the nips should be present
-    !! Both nips and order should not be present
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nips(:)
-    !! Number of integration points required
-    !! Either order or nips should be present
-    !! Both nips and order should not be present
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi parameter
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameter
-  END SUBROUTINE obj_GetQuadraturePoints1
+  END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetFacetQuadraturePoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points on a local face of element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetQuadraturePoints( &
+    obj, quad, facetQuad, localFaceNumber)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Quadrature points
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+  END SUBROUTINE obj_GetFacetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetAllFacetQuadraturePoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get quadrature points on a local face of element
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetAllFacetQuadraturePoints( &
+    obj, quad, facetQuad, tsize)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:), facetQuad(:)
+    !! Quadrature points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetAllFacetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetTotalQuadraturePoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Get total number of quadrature points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  SetQuadratureOrder@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary: Set the order for quadrature
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
+  END SUBROUTINE obj_SetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   SetQuadratureType@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-17
+! summary:  Set the quadrature type
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetQuadratureType( &
+    obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+  END SUBROUTINE obj_SetQuadratureType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetTopologyType@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-24
+! summary: Returns the topoType
+
+INTERFACE
+  MODULE FUNCTION obj_GetTopologyType(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTopologyType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-12
+! summary:  Import data from toml table
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, elemType, nsd)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
+    !! element type of finite element, optional
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml, elemType, nsd)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
+    !! element type
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetBaseInterpolation@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-16
+! summary:  Get the baseInterpolation
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    CHARACTER(4) :: ans
+  END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetBaseContinuity@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetBaseContinuity(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    CHARACTER(2) :: ans
+  END FUNCTION obj_GetBaseContinuity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalInterpolationPoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-05
+! summary: Get total number of interpolation points
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalInterpolationPoints( &
+    obj, order, ipType) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! order of interpolation in x, y, and z directions
+    INTEGER(I4B), INTENT(IN) :: ipType(:)
+    !! interpolation point type in x, y, and z directions
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetInterpolationPoints@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetInterpolationPoints( &
+    obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of reference element
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! data written in xij
+    INTEGER(I4B), INTENT(IN) :: order(:)
+    !! order of interpolation
+    INTEGER(I4B), INTENT(IN) :: ipType(:)
+    !! interpolation point type
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
+    !! Jacobi and Ultraspherical parameters
+  END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromConstant( &
+    obj, elemsd, facetElemsd, xij, localFaceNumber, ans, tsize, &
+    massMat, ipiv, funcValue, onlyFaceBubble, icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    !! not needed
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of reference element
+    !! not needed
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    !! not  needed
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at the quadrature points
+    !! used internally. The should be atleast facetElemsd%nips
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! Component index for vector valued constant function
+    !! icompo is not used here.
+  END SUBROUTINE obj_GetFacetDOFValueFromConstant
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromVertex( &
+    obj, elemsd, facetElemsd, geoElemsd, geoFacetElemsd, xij, &
+    localFaceNumber, func, ans, tsize, massMat, ipiv, funcValue, &
+    onlyFaceBubble, tVertices)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, geoElemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd, geoFacetElemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! nodal coordinates of physical element cell
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    REAL(DFP), INTENT(INOUT) :: func(:)
+    !! nodal values of function at vertex degree of freedom
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! degree of freedom values corresponding to func
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! tota size written in ans
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix (formed and used inside the routine)
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at the quadrature points
+    !! this is formed inside the routine
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    INTEGER(I4B), INTENT(IN) :: tVertices
+    !! tVertices are needed when onlyFaceBubble is true
+    !! tVertices are total number of vertex degree of
+    !! freedom
+  END SUBROUTINE obj_GetFacetDOFValueFromVertex
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+!
+!# Introduction
+!
+! The user function should be scalar.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetFacetDOFValueFromSTFunc( &
+    obj, elemsd, facetElemsd, xij, times, localFaceNumber, func, ans, tsize, &
+    massMat, ipiv, funcValue, onlyFaceBubble, icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(IN) :: xij(:, :), times
+    !! Nodal coordinates of element
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points used inside
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
+  END SUBROUTINE obj_GetFacetDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+!
+!# Introduction
+!
+! The user function should be scalar.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc( &
+    obj, elemsd, facetElemsd, timeElemsd, xij, times, localFaceNumber, &
+    func, ans, nrowStart, nrowEnd, ncolStart, ncolEnd, massMat, ipiv, &
+    funcValue, temp, onlyFaceBubble, icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: timeElemsd
+    !! shape function for timeElemsd
+    REAL(DFP), INTENT(IN) :: xij(:, :), times(:)
+    !! Nodal coordinates of element
+    !! Times should have size equal to 2
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: nrowStart, nrowEnd, ncolStart, ncolEnd
+    !! Data written in ans
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:, :)
+    !! function values at quadrature points used inside
+    !! The number of rows should be atleast max(nips, nipt)
+    !! The number of columns should be at least nipt
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary vector needed internally
+    !! the size should be at nns * nnt
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face dof of space elements,
+    !! Note that we always include all the dof of time element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
+  END SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetFacetDOFValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get Interpolation points
+!
+!# Introduction
+!
+! The user function should be scalar.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSTFacetDOFValueFromConstant( &
+    obj, elemsd, facetElemsd, timeElemsd, xij, times, localFaceNumber, &
+    ans, nrowStart, nrowEnd, ncolStart, ncolEnd, massMat, ipiv, funcValue, &
+    temp, onlyFaceBubble, icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: timeElemsd
+    !! shape function for timeElemsd
+    REAL(DFP), INTENT(IN) :: xij(:, :), times(:)
+    !! Nodal coordinates of element
+    !! Times should have size equal to 2
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: nrowStart, nrowEnd, ncolStart, ncolEnd
+    !! Data written in ans
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:, :)
+    !! function values at quadrature points used inside
+    !! The number of rows should be atleast max(nips, nipt)
+    !! The number of columns should be at least nipt
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary vector needed internally
+    !! the size should be at nns * nnt
+    LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
+    !! if true then we include only face dof of space elements,
+    !! Note that we always include all the dof of time element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
+  END SUBROUTINE obj_GetSTFacetDOFValueFromConstant
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                    GetDOFValueFromQuadrature@CellDOFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-01
+! summary: Get degree of freedom values from space-time user function
+! It is a very high level routine which initiates most of its arguments
+! and call GetDOFValueFromSTFunc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDOFValueFromSTFunc2( &
+    obj, geofeptr, elemsd, geoelemsd, facetElemsd, geoFacetElemsd, &
+    cellElemsd, geoCellElemsd, quad, facetQuad, cellQuad, xij, times, &
+    func, ans, tsize, massMat, ipiv, funcValue, temp, &
+    icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    CLASS(AbstractFE_), INTENT(INOUT) :: geofeptr
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:), geoelemsd(:)
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd(:), geoFacetElemsd(:)
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd, geoCellElemsd
+    !! shape function defined for computing the inside cell DOF
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:)
+    !! Quadrture data corresponding to each facet
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad(:)
+  !! Quadrature data for all facet elements for in face dof
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: cellQuad
+  !! Quadrature data for in cell dof
+    REAL(DFP), INTENT(IN) :: xij(:, :), times
+    !! Nodal coordinates of element
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points used inside
+    !! the size should be enough that quadrature values can be stored
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary array used for getting the degrees of freedom
+    !! The size of temp should be at least equal to maximum number
+    !! of degree of freedom in the element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from user function
+  END SUBROUTINE obj_GetDOFValueFromSTFunc2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  GetDOFValueFromUserFunction@CellDOFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-05
+! summary: Get all dof values from a user functions
+!
+!# Introduction
+!
+! The user function should be scalar.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDOFValueFromSTFunc( &
+    obj, elemsd, facetElemsd, cellElemsd, xij, times, func, ans, tsize, &
+    massMat, ipiv, funcValue, temp, icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:)
+    !! element shape function defined inside the cell
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd(:)
+    !! shape function defined on the face of element
+    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
+    !! shape function defined for computing the inside cell DOF
+    REAL(DFP), INTENT(IN) :: xij(:, :), times
+    !! Nodal coordinates of element
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Nodal coordinates of interpolation points
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points used inside
+    !! the size should be enough that quadrature values can be stored
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! temporary array used for getting the degrees of freedom
+    !! The size of temp should be at least equal to maximum number
+    !! of degree of freedom in the element
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from user function
+  END SUBROUTINE obj_GetDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  GetVertexDOFValueFromSTFunc@CellDOFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-01
+! summary: Get all the vertex DOF from space-time user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVertexDOFValueFromSTFunc( &
+    obj, ans, tsize, func, xij, times, icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite element
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Vertex degree of freedom values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in ans
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! User function
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Nodal coordinates of the elements
+    REAL(DFP), INTENT(IN) :: times
+    !! time
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which a vector user function return
+  END SUBROUTINE obj_GetVertexDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetInCellDOFValue@CellDOFMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetInCellDOFValueFromSTFunc( &
+    obj, cellElemsd, func, times, ans, temp, tsize, massMat, ipiv, &
+    funcValue, offset, icompo)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
+    !! cell element shape data
+    TYPE(UserFunction_), INTENT(INOUT) :: func
+    !! user defined functions quadrature values of function
+    REAL(DFP), INTENT(IN) :: times
+    !! times
+    REAL(DFP), INTENT(INOUT) :: ans(:), temp(:)
+    !! Nodal coordinates of interpolation points
+    !! Size of temp and ans should be atleast cellElemsd%nns
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    REAL(DFP), INTENT(INOUT) :: funcValue(:)
+    !! function values at quadrature points used inside
+    !! the size should be enough that quadrature values can be stored
+    INTEGER(I4B), INTENT(IN) :: offset
+    !! Starting and ending indices for vertex and face DOFs
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
+    !! index of values which are returned from vector user function
+  END SUBROUTINE obj_GetInCellDOFValueFromSTFunc
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                               GetFacetDOFValueFromQuadrature@CellDOFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-01
+! summary: Get all DOF from quadrature values
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDOFValueFromQuadrature( &
+    obj, elemsd, func, ans, tsize, massMat, ipiv, onlyInside, tVertices)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! shape function defined on the face of element
+    REAL(DFP), INTENT(INOUT) :: func(:)
+    !! quadrature values of function
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! nodal coordinates of interpolation points
+    !! The size of nns should be atleast elemsd%nns
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! data written in xij
+    REAL(DFP), INTENT(INOUT) :: massMat(:, :)
+    !! mass matrix, the size should be atleast elemsd%nns
+    INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
+    !! pivot indices for LU decomposition of mass matrix
+    !! The size should be atleast elemsd%nns
+    LOGICAL(LGT), INTENT(IN) :: onlyInside
+    !! if true then we include only face bubble, that is,
+    !! only include internal face bubble.
+    !! if onlyInside is true, then we will not use 1:Vertices
+    !! and use tVertices + 1
+    INTEGER(I4B), INTENT(IN) :: tVertices
+    !! tVertices are needed when onlyFaceBubble is true
+    !! tVertices are total number of vertex degree of
+    !! freedom
+  END SUBROUTINE obj_GetDOFValueFromQuadrature
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE AbstractFE_Class

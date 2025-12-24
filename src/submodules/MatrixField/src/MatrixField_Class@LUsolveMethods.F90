@@ -20,7 +20,10 @@
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) LUSolveMethods
-USE BaseMethod
+USE InputUtility, ONLY: Input
+
+USE CSRMatrix_Method, ONLY: LUSOLVE, LUTSOLVE
+
 IMPLICIT NONE
 CONTAINS
 
@@ -29,52 +32,62 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ILUSOLVE1
-CHARACTER(*), PARAMETER :: myName = "obj_ILUSOLVE1"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ILUSOLVE1()"
 INTEGER(I4B) :: s(2), info, sol1, rhs1
+LOGICAL(LGT) :: isok
+#endif
 
-IF (.NOT. obj%isInitiated) THEN
+LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//" - "// &
+                  '[INTERNAL ERROR] :: MatrixField_ object is not initiated.')
+END IF
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%engine%chars() .EQ. "NATIVE_SERIAL"
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[INTERNAL ERROR] :: This routine is only avaiable for NATIVE_SERIAL')
+END IF
+#endif
+
+#ifdef DEBUG_VER
+s = obj%SHAPE()
+sol1 = SIZE(sol)
+rhs1 = SIZE(rhs)
+
+isok = (sol1 .EQ. rhs1) .AND. (sol1 .EQ. s(1))
+IF (.NOT. isok) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'MatrixField_ object is not initiated.')
+  '[INTERNAL ERROR] :: Size of sol vector should be equal to the size of rhs')
+END IF
+#endif
+
+abool = Input(default=.FALSE., option=isTranspose)
+
+IF (abool) THEN
+  CALL LUTSOLVE(sol=sol, rhs=rhs, alu=obj%pmat%A, jlu=obj%pmat%JA, &
+                ju=obj%pmat%JU)
+  RETURN
 END IF
 
-IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'This routine is only avaiable for NATIVE_SERIAL')
-END IF
+CALL LUSOLVE(sol=sol, rhs=rhs, alu=obj%pmat%A, jlu=obj%pmat%JA, &
+             ju=obj%pmat%JU)
 
-IF (.NOT. obj%isPmatInitiated) THEN
-
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Pmat is not initiated')
-
-ELSE
-
-  s = obj%SHAPE()
-  sol1 = SIZE(sol)
-  rhs1 = SIZE(rhs)
-
-  IF (sol1 .NE. rhs1 .OR. sol1 .NE. s(1)) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-    & 'Size of sol vector should be equal to the size of rhs')
-  END IF
-
-  IF (INPUT(default=.FALSE., option=isTranspose)) THEN
-    CALL LUTSOLVE( &
-      & sol=sol, &
-      & rhs=rhs, &
-      & alu=obj%pmat%A, &
-      & jlu=obj%pmat%JA, &
-      & ju=obj%pmat%JU)
-  ELSE
-    CALL LUSOLVE( &
-      & sol=sol, &
-      & rhs=rhs, &
-      & alu=obj%pmat%A, &
-      & jlu=obj%pmat%JA, &
-      & ju=obj%pmat%JU)
-  END IF
-
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_ILUSOLVE1
 
 !----------------------------------------------------------------------------
@@ -84,8 +97,8 @@ END PROCEDURE obj_ILUSOLVE1
 MODULE PROCEDURE obj_ILUSOLVE2
 REAL(DFP), POINTER :: solval(:)
 REAL(DFP), POINTER :: rhsval(:)
-solval => sol%getPointer()
-rhsval => rhs%getPointer()
+solval => sol%GetPointer()
+rhsval => rhs%GetPointer()
 CALL obj%ILUSOLVE(sol=solval, rhs=rhsval, isTranspose=isTranspose)
 NULLIFY (solval, rhsval)
 END PROCEDURE obj_ILUSOLVE2

@@ -25,6 +25,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 
 IMPLICIT NONE
+
 PRIVATE
 
 ! PUBLIC :: INTERNAL_NODE, BOUNDARY_NODE, DOMAIN_BOUNDARY_NODE,  &

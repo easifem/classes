@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(VTKFile_Class) ConstructorMethods
-USE BaseMethod
+USE InputUtility, ONLY: Input
+USE XMLFile_Class, ONLY: xmlFile_Deallocate, xmlFile_Close
+
 IMPLICIT NONE
 CONTAINS
 
@@ -25,72 +27,71 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE InitiateVTKFile
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "InitiateVTKFile()"
+#endif
+
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START]')
 #endif
 
-IF (obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: VTKFile is already initiated, '//  &
-    & ' call Deallocate() first')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. obj%isInitiated
+CALL AssertError1(isok, myName, &
+                  'VTKFile is already initiated, call Deallocate() first')
+#endif
 
 obj%dataFormat = Input(option=dataFormat, default=VTK_BINARY_APPENDED)
-obj%dataStructureType = Input(option=dataStructureType,  &
-  & default=VTK_UnstructuredGrid)
+obj%dataStructureType = Input(option=dataStructureType, &
+                              default=VTK_UnstructuredGrid)
 
 obj%dataStructureName = TRIM(dataStructureName(obj%dataStructureType))
 obj%WholeExtent = 0
 obj%origin = 0
 obj%spacing = 1
 
-IF (PRESENT(WholeExtent)) THEN
-  obj%WholeExtent(1:SIZE(WholeExtent)) = WholeExtent(:)
-END IF
+isok = PRESENT(WholeExtent)
+IF (isok) obj%WholeExtent(1:SIZE(WholeExtent)) = WholeExtent(:)
 
-IF (PRESENT(origin)) THEN
-  obj%origin(1:SIZE(origin)) = origin(:)
-END IF
+isok = PRESENT(origin)
+IF (isok) obj%origin(1:SIZE(origin)) = origin(:)
 
-IF (PRESENT(spacing)) THEN
-  obj%SPACING(1:SIZE(spacing)) = SPACING(:)
-END IF
+isok = PRESENT(spacing)
+IF (isok) obj%SPACING(1:SIZE(spacing)) = SPACING(:)
 
-IF (PRESENT(isVolatile)) THEN
-  obj%isVolatile = isVolatile
-ELSE
-  obj%isVolatile = .FALSE.
-END IF
+isok = PRESENT(isVolatile)
+obj%isVolatile = .FALSE.
+IF (isok) obj%isVolatile = isVolatile
 
 SELECT CASE (obj%dataStructureType)
 
 ! Structured case
 CASE (VTK_Imagedata, VTK_RectilinearGrid, VTK_StructuredGrid, &
-  & PARALLEL_VTK_Imagedata, PARALLEL_VTK_RectilinearGrid, &
-  & PARALLEL_VTK_StructuredGrid)
+      PARALLEL_VTK_Imagedata, PARALLEL_VTK_RectilinearGrid, &
+      PARALLEL_VTK_StructuredGrid)
+
   obj%isStructured = .TRUE.
 
-  IF (.NOT. PRESENT(WholeExtent)) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: In case of structured data set WholeExtent'// &
-    & ' should be give')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  isok = PRESENT(WholeExtent)
+  CALL AssertError1(isok, myName, &
+                  'In case of structured data set WholeExtent should be give')
+#endif
 
   ! Unstructured case
 CASE (VTK_Polydata, VTK_UnstructuredGrid, PARALLEL_VTK_Polydata, &
-  & PARALLEL_VTK_UnstructuredGrid)
+      PARALLEL_VTK_UnstructuredGrid)
   obj%isStructured = .FALSE.
 
-  ! Default case prints error
+#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: Cannot recognize dataStructureType')
-  RETURN
+  CALL AssertError1(.FALSE., myName, &
+                    "No case found for dataStructureType")
+#endif
+
 END SELECT
 
 ! Handle appended case
@@ -106,20 +107,18 @@ END IF
 IF (obj%isVolatile) THEN
   obj%volatileBuffer = ''
 ELSE
-  CALL obj%Initiate(filename=filename,  &
-    & mode=Input(option=mode, default="NEW"))
+  CALL obj%Initiate(filename=filename, &
+                    mode=Input(option=mode, default="NEW"))
   CALL obj%OPEN()
 END IF
 
 CALL obj%WriteRootTag()
-
 CALL obj%WritedataStructureTag(meshdataFormat=meshdataFormat)
-
 CALL obj%OpenScratchFile()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END]')
 #endif
 END PROCEDURE InitiateVTKFile
 
@@ -128,6 +127,15 @@ END PROCEDURE InitiateVTKFile
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "VTKFile_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL xmlFile_Deallocate(obj, delete)
 obj%isStructured = .FALSE.
 obj%dataStructureType = 0
@@ -143,6 +151,11 @@ obj%isVolatile = .FALSE.
 obj%VolatileBuffer = ''
 obj%origin = 0
 obj%spacing = 1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE VTKFile_Deallocate
 
 !----------------------------------------------------------------------------
@@ -158,13 +171,35 @@ END PROCEDURE VTKFile_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_Close
-IF (obj%isOpen()) THEN
-  CALL obj%WriteEndTag(name=String(obj%dataStructureName))
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "VTKFile_Close()"
+#endif
+
+LOGICAL(LGT) :: isok
+TYPE(String) :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = obj%isOpen()
+
+IF (isok) THEN
+  astr = obj%dataStructureName
+  CALL obj%WriteEndTag(name=astr)
   CALL obj%WritedataArray()
-  CALL obj%WriteEndTag(name=String('VTKFile'))
+  astr = 'VTKFile'
+  CALL obj%WriteEndTag(name=astr)
   IF (.NOT. obj%isVolatile) CALL xmlFile_Close(obj)
-  CALL obj%closeScratchFile()
+  CALL obj%CloseScratchFile()
+  astr = ''
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE VTKFile_Close
 
 !----------------------------------------------------------------------------
@@ -172,13 +207,19 @@ END PROCEDURE VTKFile_Close
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKFile_UpdateOffset
-IF (obj%dataFormat .EQ. VTK_APPENDED) THEN
+LOGICAL(LGT) :: isok
+
+isok = obj%dataFormat .EQ. VTK_APPENDED
+
+IF (isok) THEN
+
   IF (obj%encoding4Appended .EQ. 'raw') THEN
     obj%offset = obj%offset + BYInt32 + nByte
   ELSE
     obj%offset = obj%offset + ((nByte + BYInt32 + 2_I4B) / 3_I4B) * 4_I4B
   END IF
 END IF
+
 END PROCEDURE VTKFile_UpdateOffset
 
 !----------------------------------------------------------------------------
@@ -192,15 +233,15 @@ INTEGER(I4B) :: iostat
 IF (obj%dataFormat .EQ. VTK_APPENDED) THEN
   ! obj%scratch = getUnitNo()
   OPEN (newunit=obj%scratch, &
-    & form='UNFORMATTED',   &
-    & access='STREAM',      &
-    & action='READWRITE',   &
-    & status='SCRATCH', &
-    & iostat=iostat)
-  !
+        form='UNFORMATTED', &
+        access='STREAM', &
+        action='READWRITE', &
+        status='SCRATCH', &
+        iostat=iostat)
+
   IF (iostat .NE. 0) &
-    & CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & ' - Some error has occured while opening scratch file')
+    CALL e%RaiseError(modName//'::'//myName//" - "// &
+                      ' - Some error has occured while opening scratch file')
 END IF
 !
 END PROCEDURE VTKFile_OpenScratchFile
@@ -222,7 +263,9 @@ END IF
 END PROCEDURE VTKFile_CloseScratchFile
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -55,9 +55,12 @@ USE Mesh_Class
 USE FEMesh_Class
 USE MeshPointerVector_Class
 
-USE Domain_Class
-USE DomainUtility
+USE AbstractDomain_Class
+USE FEDomain_Class
+! USE Domain_Class
+! USE DomainUtility
 USE DomainConnectivity_Class
+USE FEDomainConnectivity_Class
 USE MeshSelection_Class
 ! USE QuadratureVariables_Class
 

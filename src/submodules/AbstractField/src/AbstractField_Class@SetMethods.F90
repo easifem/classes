@@ -15,8 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) SetMethods
-USE BaseMethod
-USE FPL_Method
+USE Display_Method, ONLY: ToString
+USE GlobalData, ONLY: CHAR_LF
 IMPLICIT NONE
 CONTAINS
 
@@ -24,14 +24,20 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE SetParam
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+MODULE PROCEDURE obj_SetParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+LOGICAL(LGT) :: isok
+#endif
 
-CHARACTER(*), PARAMETER :: myName = "SetParam"
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, tfedof
 
-IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (PRESENT(isInitiated)) obj%isInit = isInitiated
 IF (PRESENT(fieldType)) obj%fieldType = fieldType
 IF (PRESENT(name)) obj%name = TRIM(name)
 IF (PRESENT(engine)) obj%engine = TRIM(engine)
@@ -43,32 +49,274 @@ IF (PRESENT(local_n)) obj%local_n = local_n
 IF (PRESENT(is)) obj%is = is
 IF (PRESENT(ie)) obj%ie = ie
 IF (PRESENT(lis_ptr)) obj%lis_ptr = lis_ptr
-IF (PRESENT(domain)) obj%domain => domain
-IF (PRESENT(domains)) THEN
-  IF (.NOT. ALLOCATED(obj%domains)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractField_::Obj%domains is not allocated ')
-  END IF
+IF (PRESENT(fedof)) obj%fedof => fedof
 
-  IF (SIZE(obj%domains) .NE. SIZE(domains)) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: AbstractField_::Obj%domains '//  &
-    & CHAR_LF//'size is not same as size of domains')
-  END IF
+IF (PRESENT(fedofs)) THEN
 
-  DO ii = 1, SIZE(domains)
-    obj%domains(ii)%ptr => domains(ii)%ptr
+#ifdef DEBUG_VER
+  isok = ALLOCATED(obj%fedofs)
+  CALL AssertError1(isok, myName, &
+                    'AbstractField_::Obj%fedofs is not allocated ')
+#endif
+
+#ifdef DEBUG_VER
+  tfedof = SIZE(obj%fedofs)
+  ii = SIZE(fedofs)
+
+  isok = tfedof .EQ. ii
+  CALL AssertError1( &
+    isok, myName, 'AbstractField_::Obj%fedofs size is not same as &
+    &size of fedofs')
+#endif
+
+  tfedof = SIZE(fedofs)
+  DO ii = 1, tfedof
+    obj%fedofs(ii)%ptr => fedofs(ii)%ptr
+  END DO
+
+END IF
+
+!
+!SELECT TYPE (obj)
+!CLASS IS (AbstractNodeField_)
+!  IF (PRESENT(tSize)) obj%tSize = tSize
+!  IF (PRESENT(realVec)) obj%realVec = realVec
+!  IF (PRESENT(dof)) obj%dof = dof
+!CLASS IS (AbstractMatrixField_)
+!  IF (PRESENT(isPMatInitiated)) obj%isPMatInitiated = isPMatInitiated
+!END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetParam
+
+!----------------------------------------------------------------------------
+!                                                                     SetName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%name = TRIM(name)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetName
+
+!----------------------------------------------------------------------------
+!                                                                      SetAll
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetAll
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetAll()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  'This routine should be implemented by child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetAll
+
+!----------------------------------------------------------------------------
+!                                                    SetMaxTotalNodeNumForBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaxTotalNodeNumForBC1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaxTotalNodeNumForBC1()"
+#endif
+
+LOGICAL(LGT) :: isok, ispresent, notset
+INTEGER(I4B) :: ibc, tbc, ans1, ans2, ans
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans1 = obj%maxTotalNodeNumForBC
+ans2 = ans1
+ans = ans1
+
+ispresent = PRESENT(dbc)
+IF (ispresent) THEN
+  ans2 = dbc%GetTotalNodeNum(fedof=obj%fedof)
+  ans = MAX(ans1, ans2)
+  ans1 = ans
+END IF
+
+ispresent = PRESENT(dbcvec)
+IF (ispresent) THEN
+  tbc = SIZE(dbcvec)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(dbcvec(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = dbcvec(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
   END DO
 END IF
 
-SELECT TYPE (obj)
-CLASS IS (AbstractNodeField_)
-  IF (PRESENT(tSize)) obj%tSize = tSize
-  IF (PRESENT(realVec)) obj%realVec = realVec
-  IF (PRESENT(dof)) obj%dof = dof
-CLASS IS (AbstractMatrixField_)
-  IF (PRESENT(isPMatInitiated)) obj%isPMatInitiated = isPMatInitiated
-END SELECT
-END PROCEDURE SetParam
+notset = .NOT. obj%isMaxTotalNodeNumForBCSet
+
+ispresent = ALLOCATED(obj%dbc) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%dbc)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%dbc(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+ispresent = ALLOCATED(obj%nbc) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%nbc)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%nbc(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%nbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+ispresent = ALLOCATED(obj%nbc_point) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%nbc_point)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%nbc_point(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%nbc_point(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedof)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+obj%maxTotalNodeNumForBC = ans
+obj%isMaxTotalNodeNumForBCSet = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMaxTotalNodeNumForBC1
+
+!----------------------------------------------------------------------------
+!                                                    SetMaxTotalNodeNumForBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMaxTotalNodeNumForBC2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMaxTotalNodeNumForBC2()"
+#endif
+
+LOGICAL(LGT) :: isok, ispresent, notset
+INTEGER(I4B) :: ibc, tbc, ans1, ans2, ans
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans1 = obj%maxTotalNodeNumForBC
+ans2 = ans1
+ans = ans1
+
+ispresent = PRESENT(dbc)
+IF (ispresent) THEN
+  ans2 = dbc%GetTotalNodeNum(fedof=obj%fedofs(ivar)%ptr)
+  ans = MAX(ans1, ans2)
+  ans1 = ans
+END IF
+
+ispresent = PRESENT(dbcvec)
+IF (ispresent) THEN
+  tbc = SIZE(dbcvec)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(dbcvec(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = dbcvec(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar)%ptr)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+notset = .NOT. obj%isMaxTotalNodeNumForBCSet
+
+ispresent = ALLOCATED(obj%dbc) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%dbc)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%dbc(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%dbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar)%ptr)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+ispresent = ALLOCATED(obj%nbc) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%nbc)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%nbc(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%nbc(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar)%ptr)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+ispresent = ALLOCATED(obj%nbc_point) .AND. notset
+IF (ispresent) THEN
+  tbc = SIZE(obj%nbc_point)
+  DO ibc = 1, tbc
+    isok = ASSOCIATED(obj%nbc_point(ibc)%ptr)
+    IF (.NOT. isok) CYCLE
+    ans2 = obj%nbc_point(ibc)%ptr%GetTotalNodeNum(fedof=obj%fedofs(ivar)%ptr)
+    ans = MAX(ans1, ans2)
+    ans1 = ans
+  END DO
+END IF
+
+obj%maxTotalNodeNumForBC = ans
+obj%isMaxTotalNodeNumForBCSet = .TRUE.
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMaxTotalNodeNumForBC2
+
+!----------------------------------------------------------------------------
+!                                                             Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

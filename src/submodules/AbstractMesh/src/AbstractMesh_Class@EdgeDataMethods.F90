@@ -16,15 +16,19 @@
 !
 
 SUBMODULE(AbstractMesh_Class) EdgeDataMethods
-USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_EDGES,  &
-  & PARAM_REFELEM_MAX_POINTS, RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: &
+  PARAM_REFELEM_MAX_EDGES, &
+  PARAM_REFELEM_MAX_POINTS, &
+  RefElemGetGeoParam
 USE ReferenceLine_Method, ONLY: MaxOrder_Line
 USE ReallocateUtility, ONLY: Reallocate
 USE EdgeData_Class
 USE EdgeDataBinaryTree_Class
 USE SortUtility
 USE GlobalData, ONLY: INT8
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,10 +37,10 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateEdgeConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
-INTEGER(I4B) :: tElements, iel, elemType, tEdges,  &
-  & localEdges(MaxOrder_Line + 1, PARAM_REFELEM_MAX_EDGES), &
-  & edge(2), sorted_edge(2), &
-  & tNodes, tsize1, tsize2, iedge
+INTEGER(I4B) :: tElements, iel, elemType, tEdges, &
+                localEdges(MaxOrder_Line + 1, PARAM_REFELEM_MAX_EDGES), &
+                edge(2), sorted_edge(2), &
+                tNodes, tsize1, tsize2, iedge
 LOGICAL(LGT) :: problem
 TYPE(EdgeDataBinaryTree_) :: edgeTree
 TYPE(EdgeData_) :: edgeValue
@@ -44,25 +48,19 @@ TYPE(EdgeData_), POINTER :: edgePtr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 problem = obj%isEdgeConnectivityInitiated
-IF (problem) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'AbstractMesh_::obj edge connectivity already initiated,')
-  RETURN
-END IF
+IF (problem) RETURN
 
-#ifdef DEBUG_VER
 problem = .NOT. ALLOCATED(obj%elementData)
 
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
+           '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
   RETURN
 END IF
-#endif
 
 tElements = obj%GetTotalElements()
 
@@ -71,19 +69,18 @@ CALL edgeTree%Initiate()
 obj%isEdgeConnectivityInitiated = .TRUE.
 
 DO iel = 1, tElements
-  problem = .NOT. obj%elementData(iel)%isActive
+  problem = .NOT. obj%elementData(iel)%ptr%isActive
   IF (problem) CYCLE
-  elemType = obj%elementData(iel)%name
-  CALL RefElemGetGeoParam(elemType=elemType,  &
-    & tEdges=tEdges, tNodes=tNodes, edgeCon=localEdges,  &
-    & edgeOpt=1_I4B)
+  elemType = obj%elementData(iel)%ptr%name
+  CALL RefElemGetGeoParam(elemType=elemType, tEdges=tEdges, tNodes=tNodes, &
+                          edgeCon=localEdges, edgeOpt=1_I4B)
 
-  CALL Reallocate(obj%elementData(iel)%globalEdges, tEdges)
-  CALL Reallocate(obj%elementData(iel)%edgeOrient, tEdges)
+  CALL Reallocate(obj%elementData(iel)%ptr%globalEdges, tEdges)
+  CALL Reallocate(obj%elementData(iel)%ptr%edgeOrient, tEdges)
 
   DO iedge = 1, tEdges
 
-    edge = obj%elementData(iel)%globalNodes(localEdges(1:2, iedge))
+    edge = obj%elementData(iel)%ptr%globalNodes(localEdges(1:2, iedge))
     sorted_edge = SORT(edge)
 
     edgePtr => EdgeData_Pointer(sorted_edge)
@@ -95,18 +92,18 @@ DO iel = 1, tElements
     obj%tEdges = tsize2
 
     IF (edge(1) .GT. edge(2)) THEN
-      obj%elementData(iel)%edgeOrient(iedge) = -1_INT8
+      obj%elementData(iel)%ptr%edgeOrient(iedge) = -1_INT8
     ELSE
-      obj%elementData(iel)%edgeOrient(iedge) = 1_INT8
+      obj%elementData(iel)%ptr%edgeOrient(iedge) = 1_INT8
     END IF
 
     IF (tsize1 .NE. tsize2) THEN
-      obj%elementData(iel)%globalEdges(iedge) = tsize2
+      obj%elementData(iel)%ptr%globalEdges(iedge) = tsize2
       edgePtr%id = tsize2
     ELSE
       CALL Initiate(edgeValue, sorted_edge)
       edgePtr => edgeTree%GetValuePointer(edgeValue)
-      obj%elementData(iel)%globalEdges(iedge) = edgePtr%id
+      obj%elementData(iel)%ptr%globalEdges(iedge) = edgePtr%id
     END IF
 
   END DO
@@ -114,10 +111,11 @@ DO iel = 1, tElements
 END DO
 
 CALL edgeTree%DEALLOCATE()
+NULLIFY (edgePtr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateEdgeConnectivity

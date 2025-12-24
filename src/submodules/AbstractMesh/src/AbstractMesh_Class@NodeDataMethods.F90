@@ -16,11 +16,22 @@
 !
 
 SUBMODULE(AbstractMesh_Class) NodeDataMethods
-USE Display_Method
-USE IntegerUtility
+USE Display_Method, ONLY: Display, tostring
+USE IntegerUtility, ONLY: RemoveDuplicates, OPERATOR(.ISIN.)
 USE GlobalData, ONLY: stdout
-USE AppendUtility
+USE AppendUtility, ONLY: Append, Expand
+USE NodeData_Class, ONLY: NodeData_ExpandGlobalElements, &
+                          NodeData_GetTotalGlobalElements, &
+                          NodeData_GetPointerToGlobalElements, &
+                          NodeData_ExpandGlobalNodes, &
+                          NodeData_SetExtraGlobalNodes
+
+USE Kdtree2_Module, ONLY: Kdtree2_create
+
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,60 +40,56 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateNodeToElements
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
-INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum,  &
-  & globalNodeNum, nodewise_size(obj%tNodes)
+INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum, &
+                globalNodeNum, nodewise_size(obj%tNodes)
 TYPE(CPUTime_) :: TypeCPUTime
 INTEGER(I4B), PARAMETER :: chunk_size = 32
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-IF (obj%isNodeToElementsInitiated) THEN
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-    & "[INFO] :: NodeToElements is already initiated.")
-  RETURN
-END IF
+IF (obj%isNodeToElementsInitiated) RETURN
+obj%isNodeToElementsInitiated = .TRUE.
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
-
-obj%isNodeToElementsInitiated = .TRUE.
 
 nodewise_size = 0
 
 DO ii = 1, obj%tElements
-  globalElemNum = obj%elementData(ii)%globalElemNum
+  globalElemNum = obj%elementData(ii)%ptr%globalElemNum
 
-  nn = SIZE(obj%elementData(ii)%globalNodes)
+  nn = SIZE(obj%elementData(ii)%ptr%globalNodes)
 
   DO jj = 1, nn
-    globalNodeNum = obj%elementData(ii)%globalNodes(jj)
+
+    globalNodeNum = obj%elementData(ii)%ptr%globalNodes(jj)
     localNodeNum = obj%local_nptrs(globalNodeNum)
 
-    CALL Expand(vec=obj%nodeData(localNodeNum)%globalElements, &
-      & n=nodewise_size(localNodeNum), chunk_size=chunk_size,  &
-      & val=globalElemNum)
+    CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(localNodeNum)%ptr, &
+      n=nodewise_size(localNodeNum), chunk_size=chunk_size, val=globalElemNum)
+
   END DO
 
 END DO
 
 ! Now we have to fix the size of `nodeData%globalElements`
 DO ii = 1, obj%tNodes
-  CALL Expand(vec=obj%nodeData(ii)%globalElements, &
-    & n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
+  CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(ii)%ptr, &
+                  n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
 END DO
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time : "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL Display(modName//" : "//myName// &
+               " : time : "// &
+               tostring(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateNodeToElements
@@ -98,17 +105,14 @@ INTEGER(I4B) :: inode, nodewise_size, telem, iel, global_elem_num,  &
 INTEGER(I4B), PARAMETER :: chunk_size = 64
 LOGICAL(LGT) :: found(obj%tNodes), skip
 TYPE(CPUTime_) :: TypeCPUTime
+INTEGER(I4B), POINTER :: globalElements(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
   & '[START] ')
 #endif
 
-IF (obj%isNodeToNodesInitiated) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "Node to node information is already initiated.")
-  RETURN
-END IF
+IF (obj%isNodeToNodesInitiated) RETURN
 
 IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -119,23 +123,25 @@ obj%isNodeToNodesInitiated = .TRUE.
 DO inode = 1, obj%tNodes
   nodewise_size = 0
   found = .FALSE.
-  telem = SIZE(obj%nodeData(inode)%globalElements)
+  telem = NodeData_GetTotalGlobalElements(obj%nodeData(inode)%ptr)
+  globalElements => NodeData_GetPointerToGlobalElements( &
+                    obj%nodeData(inode)%ptr)
 
   DO iel = 1, telem
-    global_elem_num = obj%nodeData(inode)%globalElements(iel)
+    global_elem_num = globalElements(iel)
     local_elem_num = obj%GetLocalElemNumber(global_elem_num)
 
-    tnode = SIZE(obj%elementData(local_elem_num)%globalNodes)
+    tnode = SIZE(obj%elementData(local_elem_num)%ptr%globalNodes)
     DO ii = 1, tnode
 
-      global_node_num = obj%elementData(local_elem_num)%globalNodes(ii)
+      global_node_num = obj%elementData(local_elem_num)%ptr%globalNodes(ii)
       local_node_num = obj%GetLocalNodeNumber(global_node_num)
 
       skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
       IF (.NOT. skip) THEN
-        CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
-          & n=nodewise_size, chunk_size=chunk_size, &
-          & val=global_node_num)
+        CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
+                                     n=nodewise_size, chunk_size=chunk_size, &
+                                        val=global_node_num)
         found(local_node_num) = .TRUE.
       END IF
 
@@ -143,22 +149,24 @@ DO inode = 1, obj%tNodes
 
   END DO
 
-  CALL Expand(vec=obj%nodeData(inode)%globalNodes, &
-    & n=nodewise_size, chunk_size=chunk_size, &
-    & finished=.TRUE.)
+  CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
+                                  n=nodewise_size, chunk_size=chunk_size, &
+                                  finished=.TRUE.)
 
 END DO
 
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName//  &
-    & " : time : "//  &
-    & tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  CALL Display(modName//" : "//myName// &
+               " : time : "// &
+               tostring(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
+
+globalElements => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateNodetoNodes
@@ -171,43 +179,39 @@ MODULE PROCEDURE obj_InitiateExtraNodetoNodes
 ! Define internal  variables
 INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
 INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
-  & indx(:)
+                             indx(:), extraGlobalNodes(:)
 LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes()"
 LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 ! problem = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
 ! IF (problem) RETURN
 
 problem = obj%isExtraNodeToNodesInitiated
-IF (problem) THEN
-  CALL e%raiseWarning(modName//"::"//myName//" - "// &
-    & "[INTERNAL ERROR] :: Node to node information is already initiated")
-  RETURN
-END IF
+IF (problem) RETURN
 
-IF (.NOT. obj%isNodeToNodesInitiated) &
-  & CALL obj%InitiateNodeToNodes()
+IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
 
-IF (.NOT. obj%isNodeToElementsInitiated) &
-  & CALL obj%InitiateNodeToElements()
+IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
-IF (.NOT. obj%isElementToElementsInitiated) &
-  & CALL obj%InitiateElementToElements()
+IF (.NOT. obj%isElementToElementsInitiated) CALL obj%InitiateElementToElements()
 
 DO iLocalNode = 1, obj%tNodes
+
   iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
   n2n = obj%GetNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
   n2e = obj%GetNodeToElements(globalNode=iGlobalNode)
 
   DO iel = 1, SIZE(n2e)
+    CALL Reallocate(extraGlobalNodes, 0_I4B)
+
     e2e = obj%GetElementToElements(globalElement=n2e(iel), &
-      & onlyElements=.TRUE.)
+                                   onlyElements=.TRUE.)
 
     mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
 
@@ -217,14 +221,17 @@ DO iLocalNode = 1, obj%tNodes
 
         indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
         mask_nptrs = .NOT. (indx.ISIN.n2n)
-        CALL APPEND(obj%nodeData(iLocalNode)%extraGlobalNodes, &
-          & indx, mask_nptrs)
+
+        CALL APPEND(extraGlobalNodes, indx, mask_nptrs)
 
       END IF
 
     END DO
 
-    CALL RemoveDuplicates(obj%nodeData(iLocalNode)%extraGlobalNodes)
+    CALL RemoveDuplicates(extraGlobalNodes)
+
+    CALL NodeData_SetExtraGlobalNodes(obj%nodeData(iLocalNode)%ptr, &
+                                      extraGlobalNodes)
 
   END DO
 
@@ -238,8 +245,60 @@ IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
 IF (ALLOCATED(indx)) DEALLOCATE (indx)
 IF (ALLOCATED(mask_elem)) DEALLOCATE (mask_elem)
 IF (ALLOCATED(mask_nptrs)) DEALLOCATE (mask_nptrs)
+IF (ALLOCATED(extraGlobalNodes)) DEALLOCATE (extraGlobalNodes)
 
 END PROCEDURE obj_InitiateExtraNodetoNodes
+
+!----------------------------------------------------------------------------
+!                                                            InitiateKdtree
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateKdtree
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: nsd, nrow, ncol
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
+TYPE(CPUTime_) :: TypeCPUTime
+REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
+
+IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DeallocateKdtree()
+
+nsd = obj%GetNSD()
+
+ncol = obj%GetTotalNodes()
+ALLOCATE (nodeCoord(3, ncol))
+CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=nrow, ncol=ncol)
+
+! FUNCTION Kdtree2_create(input_data, dim, sort, rearrange) RESULT(mr)
+obj%kdtree => Kdtree2_Create(input_data=nodeCoord(1:nsd, :), &
+                             dim=nsd, sort=.FALSE., rearrange=.TRUE.)
+
+ALLOCATE (obj%kdresult(ncol))
+
+DEALLOCATE (nodeCoord)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+IF (obj%showTime) THEN
+  CALL TypeCPUTime%SetEndTime()
+  CALL Display(modName//" : "//myName// &
+               " : time : "// &
+               ToString(TypeCPUTime%GetTime()), unitno=stdout)
+END IF
+
+END PROCEDURE obj_InitiateKdtree
 
 !----------------------------------------------------------------------------
 !

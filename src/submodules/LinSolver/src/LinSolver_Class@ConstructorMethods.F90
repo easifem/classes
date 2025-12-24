@@ -16,228 +16,267 @@
 !
 
 SUBMODULE(LinSolver_Class) ConstructorMethods
-USE BaseMethod
+USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
+USE InputUtility, ONLY: Input
+USE AbstractLinSolver_Class, ONLY: AbstractLinSolverDeallocate, &
+                                   AbstractLinSolverInitiate
+
+USE LinSolverOpt_Class, ONLY: TypeLinSolverOpt
+
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     setPreconditionOption
+!                                                       SetPreconditionOption
 !----------------------------------------------------------------------------
 
-SUBROUTINE setPreconditionOption(IPAR, PRECOND_TYPE)
-  INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
+SUBROUTINE SetPreconditionOption(ipar, PRECOND_TYPE)
+  INTEGER(I4B), INTENT(INOUT) :: ipar(:)
   INTEGER(I4B), INTENT(IN) :: PRECOND_TYPE
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetPreconditionOption()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   SELECT CASE (PRECOND_TYPE)
-  CASE (NO_PRECONDITION)
-    IPAR(2) = 0
-  CASE (LEFT_PRECONDITION)
-    IPAR(2) = 1
-  CASE (RIGHT_PRECONDITION)
-    IPAR(2) = 2
-  CASE (LEFT_RIGHT_PRECONDITION)
-    IPAR(2) = 3
+  CASE (TypePrecondOpt%NONE)
+    ipar(2) = 0
+  CASE (TypePrecondOpt%left)
+    ipar(2) = 1
+  CASE (TypePrecondOpt%right)
+    ipar(2) = 2
+  CASE (TypePrecondOpt%both)
+    ipar(2) = 3
+  CASE DEFAULT
+    ipar(2) = 0
   END SELECT
-END SUBROUTINE setPreconditionOption
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE SetPreconditionOption
 
 !----------------------------------------------------------------------------
-!                                                     setKrylovSubspaceSize
+!                                                       SetKrylovSubspaceSize
 !----------------------------------------------------------------------------
 
-SUBROUTINE setKrylovSubspaceSize(IPAR, m)
-  INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
+SUBROUTINE SetKrylovSubspaceSize(ipar, m)
+  INTEGER(I4B), INTENT(INOUT) :: ipar(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: m
-  IPAR(5) = INPUT(default=15, option=m)
-END SUBROUTINE setKrylovSubspaceSize
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetKrylovSubspaceSize()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  ipar(5) = Input(default=TypeLinSolverOpt%krylovSubspaceSize, option=m)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE SetKrylovSubspaceSize
 
 !----------------------------------------------------------------------------
-!                                                                 setMatIter
+!                                                                 SetMatIter
 !----------------------------------------------------------------------------
 
-SUBROUTINE setMaxIter(IPAR, maxIter)
-  INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
+SUBROUTINE SetMaxIter(ipar, maxIter)
+  INTEGER(I4B), INTENT(INOUT) :: ipar(:)
   INTEGER(I4B), INTENT(IN) :: maxIter
-  IPAR(6) = maxIter
-END SUBROUTINE setMaxIter
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetMaxIter()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  ipar(6) = maxIter
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE SetMaxIter
 
 !----------------------------------------------------------------------------
-!                                                          setConvergenceType
+!                                                          SetConvergenceType
 !----------------------------------------------------------------------------
 
-SUBROUTINE setConvergenceType(IPAR, convergenceIn, convergenceType, &
-  & relativeToRHS)
-  INTEGER(I4B), INTENT(INOUT) :: IPAR(:)
+SUBROUTINE SetConvergenceType(ipar, convergenceIn, convergenceType, &
+                              relativeToRHS)
+  INTEGER(I4B), INTENT(INOUT) :: ipar(:)
   INTEGER(I4B), INTENT(IN) :: convergenceIn
   INTEGER(I4B), INTENT(IN) :: convergenceType
   LOGICAL(LGT), INTENT(IN) :: relativeToRHS
-  !
-  IPAR(3) = 1
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetConvergenceType()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  ipar(3) = 1
+
   SELECT CASE (convergenceType)
-  CASE (absoluteConvergence)
-    IF (convergenceIn .EQ. convergenceInSol) THEN
-      IPAR(3) = -1
-    ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
-      IPAR(3) = 1
+  CASE (TypeConvergenceOpt%absolute)
+
+    IF (convergenceIn .EQ. TypeConvergenceOpt%sol) THEN
+      ipar(3) = -1
+    ELSE IF (convergenceIn .EQ. TypeConvergenceOpt%res) THEN
+      ipar(3) = 1
     END IF
-  CASE (relativeConvergence)
-    IF (convergenceIn .EQ. convergenceInSol) THEN
+
+  CASE (TypeConvergenceOpt%relative)
+
+    IF (convergenceIn .EQ. TypeConvergenceOpt%sol) THEN
       IF (relativeToRHS) THEN
-        IPAR(3) = -2
+        ipar(3) = -2
       ELSE
-        IPAR(3) = -1
+        ipar(3) = -1
       END IF
-    ELSE IF (convergenceIn .EQ. convergenceInRes) THEN
+
+    ELSE IF (convergenceIn .EQ. TypeConvergenceOpt%res) THEN
+
       IF (relativeToRHS) THEN
-        IPAR(3) = 2
+        ipar(3) = 2
       ELSE
-        IPAR(3) = 1
+        ipar(3) = 1
       END IF
+
     END IF
+
   END SELECT
-END SUBROUTINE setConvergenceType
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE SetConvergenceType
 
 !----------------------------------------------------------------------------
-!
+!                                                                SetTolerance
 !----------------------------------------------------------------------------
 
-SUBROUTINE setTolerance(FPAR, atol, rtol)
+SUBROUTINE SetTolerance(fpar, atol, rtol)
   REAL(DFP), INTENT(INOUT) :: fpar(:)
   REAL(DFP), OPTIONAL, INTENT(IN) :: atol
   REAL(DFP), OPTIONAL, INTENT(IN) :: rtol
 
-  IF (PRESENT(atol)) THEN
-    FPAR(2) = atol
-  END IF
-  IF (PRESENT(rtol)) THEN
-    FPAR(1) = rtol
-  END IF
-END SUBROUTINE setTolerance
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetTolerance()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  IF (PRESENT(atol)) fpar(2) = atol
+  IF (PRESENT(rtol)) fpar(1) = rtol
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE SetTolerance
 
 !----------------------------------------------------------------------------
-!                                                       checkEssentialParam
+!                                                                    Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_checkEssentialParam
-CHARACTER(*), PARAMETER :: myName = "ls_checkEssentialParam"
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
 
-! name
-IF (.NOT. param%isPresent(key=myprefix//"/solverName")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/solverName should be present in param')
+INTEGER(I4B) :: preconditionOption0, maxIter0, convergenceIn0, &
+                convergenceType0, krylovSubspaceSize0
+REAL(DFP) :: rtol0, atol0
+LOGICAL(LGT) :: relativeToRHS0
 
-! preconditionOption
-IF (.NOT. param%isPresent(key=myprefix//"/preconditionOption")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/preconditionOption should be present in param')
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-! convergenceIn
-IF (.NOT. param%isPresent(key=myprefix//"/convergenceIn")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/convergenceIn should be present in param')
+CALL AbstractLinSolverInitiate(obj=obj)
 
-! convergenceType
-IF (.NOT. param%isPresent(key=myprefix//"/convergenceType")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/convergenceType should be present in param')
+CALL obj%GetParam( &
+  preconditionOption=preconditionOption0, convergenceIn=convergenceIn0, &
+  convergenceType=convergenceType0, relativeToRHS=relativeToRHS0, &
+  krylovSubspaceSize=krylovSubspaceSize0, maxIter=maxIter0, rtol=rtol0, &
+  atol=atol0)
 
-! maxIter
-IF (.NOT. param%isPresent(key=myprefix//"/maxIter")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/maxIter should be present in param')
+CALL SetPreconditionOption(ipar=obj%ipar, PRECOND_TYPE=preconditionOption0)
 
-! relativeToRHS
-IF (.NOT. param%isPresent(key=myprefix//"/relativeToRHS")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/relativeToRHS should be present in param')
+CALL SetConvergenceType( &
+  ipar=obj%ipar, convergenceIn=convergenceIn0, &
+  convergenceType=convergenceType0, relativeToRHS=relativeToRHS0)
 
-! KrylovSubspaceSize
-IF (.NOT. param%isPresent(key=myprefix//"/KrylovSubspaceSize")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/KrylovSubspaceSize should be present in param')
+obj%ipar(5) = krylovSubspaceSize0
+CALL SetMaxIter(ipar=obj%ipar, maxIter=maxIter0)
+CALL SetTolerance(fpar=obj%fpar, rtol=rtol0, atol=atol0)
 
-! rtol
-IF (.NOT. param%isPresent(key=myprefix//"/rtol")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/rtol should be present in param')
-
-! atol
-IF (.NOT. param%isPresent(key=myprefix//"/atol")) &
-  & CALL e%raiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/atol should be present in param')
-END PROCEDURE ls_checkEssentialParam
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Initiate
-INTEGER(I4B) :: solverName, preconditionOption, convergenceIn, &
-  & convergenceType, maxIter, KrylovSubspaceSize
-REAL(DFP) :: rtol, atol
-LOGICAL(LGT) :: relativeToRHS
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
 
-CALL obj%checkEssentialParam(param)
-CALL getAbstractLinSolverParam( &
-  & param=param, &
-  & prefix=myprefix, &
-  & solverName=solverName, &
-  & preconditionOption=preconditionOption, &
-  & convergenceIn=convergenceIn, &
-  & convergenceType=convergenceType, &
-  & maxIter=maxIter, &
-  & relativeToRHS=relativeToRHS, &
-  & KrylovSubspaceSize=KrylovSubspaceSize, &
-  & rtol=rtol, &
-  & atol=atol)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL obj%SetParam(&
-  & isInitiated=.TRUE., &
-  & engine="NATIVE_SERIAL", &
-  & ierr=0_I4B, &
-  & iter=0_I4B, &
-  & solverName=solverName, &
-  & preconditionOption=preconditionOption, &
-  & convergenceIn=convergenceIn, &
-  & convergenceType=convergenceType, &
-  & maxIter=maxIter, &
-  & relativeToRHS=relativeToRHS, &
-  & KrylovSubspaceSize=KrylovSubspaceSize, &
-  & atol=atol, &
-  & rtol=rtol &
-  & )
-
-obj%IPAR = 0
-CALL setPreconditionOption(obj%IPAR, preconditionOption)
-CALL setConvergenceType(obj%IPAR, convergenceIn, convergenceType, &
-  & relativeToRHS)
-obj%IPAR(5) = KrylovSubspaceSize
-CALL setMaxIter(obj%IPAR, maxIter)
-obj%FPAR = 0.0_DFP
-CALL setTolerance(fpar=obj%fpar, rtol=rtol, atol=atol)
-! CALL Reallocate(obj%RES, maxIter)
-! CALL Reallocate(obj%dbcIndx, 0)
-END PROCEDURE ls_Initiate
-
-!----------------------------------------------------------------------------
-!                                                            Deallocate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE ls_Deallocate
 CALL AbstractLinSolverDeallocate(obj)
 obj%ipar = 0
 obj%fpar = 0.0_DFP
-IF (ALLOCATED(obj%W)) DEALLOCATE (obj%W)
-END PROCEDURE ls_Deallocate
+IF (ALLOCATED(obj%w)) DEALLOCATE (obj%w)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                 Final
+!                                                                       Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_final
+MODULE PROCEDURE obj_final
 CALL obj%DEALLOCATE()
-END PROCEDURE ls_final
+END PROCEDURE obj_final
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

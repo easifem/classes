@@ -23,9 +23,15 @@
 ! summary: This module contains methods for domain data type
 
 MODULE FEDomain_Class
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: LGT, I4B, DFP
+USE TxtFile_Class, ONLY: TxtFile_
+USE tomlf, ONLY: toml_table
+USE BaseType, ONLY: BoundingBox_
+USE ElemData_Class, ONLY: ElemData_
 
 IMPLICIT NONE
 PRIVATE
@@ -41,12 +47,115 @@ CHARACTER(*), PARAMETER :: modName = "FEDomain_Class"
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-04-15
 ! summary: FEDomain_ contains finite element mesh data of a domain
 !
 !{!pages/docs-api/FEDomain/FEDomain_.md!}
 
 TYPE, EXTENDS(AbstractDomain_) :: FEDomain_
+  PRIVATE
+  CLASS(AbstractMesh_), POINTER :: meshVolume => NULL()
+    !! meshVolume list of meshes of volume entities
+  CLASS(AbstractMesh_), POINTER :: meshSurface => NULL()
+    !! meshSurface list of meshes of surface entities
+  CLASS(AbstractMesh_), POINTER :: meshCurve => NULL()
+    !! meshCurve list of meshes of curve entities
+  CLASS(AbstractMesh_), POINTER :: meshPoint => NULL()
+    !! meshPoint list of meshes of point entities
+  CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+    !! mesh points to meshVolume for nsd = 3
+    !! mesh points to meshSurface for nsd = 2
+    !! mesh points to meshCurve for nsd = 1
+    !! mesh points to meshPoint for nsd = 0
+CONTAINS
+
+  ! CONSTRUCTOR:
+  !@ConstructorMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate data stored inside an instance of domain
+  FINAL :: obj_Final
+
+  ! IO:
+  ! @IOMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Initiates an instance of domain by importing data from meshfile
+
+  !! TODO Add an export method to [[obj_]] class
+
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  PROCEDURE, PUBLIC, PASS(obj) :: DisplayDomainInfo => &
+    obj_DisplayDomainInfo
+
+  ! GET:
+  ! @GetMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer1
+  !! Get the pointer to mesh object
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
+  !! Local element number
+  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
+  !! Local element number
+  PROCEDURE, PASS(obj) :: GetLocalElemNumber1 => obj_GetLocalElemNumber1
+  !! Get local element number from global element number
+  PROCEDURE, PASS(obj) :: GetLocalElemNumber2 => obj_GetLocalElemNumber2
+  !! Get local element number from global element number
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalEdgeNumber => &
+    obj_GetGlobalEdgeNumber
+  !! Get global Edge number from global element and localEdgenumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFaceNumber => &
+    obj_GetGlobalFaceNumber
+  !! Get global face number from global element and localFacenumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
+  !! Get element data from mesh of domain
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => obj_GetElemDataPointer
+  !! Get element data pointer from mesh of domain
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntitiesList => &
+    obj_GetTotalEntitiesList
+  !! Get the total number of entities list in a given element
+
+  PROCEDURE, PASS(obj) :: GetConnectivity1_ => obj_GetConnectivity1_
+  !! Get connectivity of an element in a single vector
+  !! you can specify opt="A, V, E, F, C" for all, vertex, edge, face, cell
+
+  PROCEDURE, PASS(obj) :: GetConnectivity2_ => obj_GetConnectivity2_
+  !! Get connectivity of an element into separate vectors
+  !! you can get cell, face, and edge connectivity
+
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
+  !! Get total number of vertex nodes in a given element, mesh
+  PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
+  !! Get total number of vertex nodes in a list of global elements
+
+  ! SET:
+  ! @MeshDataMethods
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
+    obj_InitiateNodeToElements
+  !! Initiate node to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
+    obj_InitiateNodeToNodes
+  !! Initiate node to node data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
+    obj_InitiateElementToElements
+  !! Initiate element to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateBoundaryData => &
+    obj_InitiateBoundaryData
+  !! Initiate element to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
+    obj_InitiateFacetElements
+  !! Initiate element to element data
+
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
+    obj_InitiateExtraNodeToNodes
+  !! Initiate extra node to nodes information for edge based methods
+
 END TYPE FEDomain_
 
 !----------------------------------------------------------------------------
@@ -56,6 +165,21 @@ END TYPE FEDomain_
 TYPE :: FEDomainPointer_
   CLASS(FEDomain_), POINTER :: ptr => NULL()
 END TYPE FEDomainPointer_
+
+!----------------------------------------------------------------------------
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: Deallocate data stored in AbstractDomain object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+    !! AbstractDomain object
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   Final@ConstructorMethods
@@ -86,6 +210,490 @@ INTERFACE FEDomain_Pointer
     CLASS(FEDomain_), POINTER :: ans
   END FUNCTION obj_Constructor_1
 END INTERFACE FEDomain_Pointer
+
+!----------------------------------------------------------------------------
+!                                                           Import@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-03-28
+! summary: Construct an instance of domain by importing data from mesh
+
+INTERFACE
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE obj_Import
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display the domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               DisplayDomainInfo@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 20 May 2022
+! summary: Display the domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_DisplayDomainInfo(obj, msg, unitno)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_DisplayDomainInfo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetMeshPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 23 July 2021
+! summary: This rotuine returns mesh pointer
+!
+!# Introduction
+!
+! This returns the pointer to the abtract mesh object
+! - dim is the dimension of the mesh; dim=0,1,2,3 corresponds to the point,
+! curve, surface, volume meshes.
+! - the default value of dim is obj%nsd
+
+INTERFACE
+  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
+                                      globalElement, isLocal) RESULT(Ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! dimension of mesh entity
+    !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! entity number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    CLASS(AbstractMesh_), POINTER :: ans
+  END FUNCTION obj_GetMeshPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalNodeNumber1(obj, globalNode, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    !! Global node number in mesh of obj%nsd dimension
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is true, then globalNode is a local node number
+    INTEGER(I4B) :: ans
+    !! Local node number in mesh of obj%nsd dimension
+  END FUNCTION obj_GetLocalNodeNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              getLocalNodeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 21 Sept 2021
+! summary: Returns local node number of a global node number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalNodeNumber2(obj, globalNode, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is true, then globalNode is a local node number
+    INTEGER(I4B) :: ans(SIZE(globalNode))
+  END FUNCTION obj_GetLocalNodeNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetLocalElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This function returns the local element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalElemNumber1(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans(SIZE(globalElement))
+  END FUNCTION obj_GetLocalElemNumber1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetLocalElemNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-01-27
+! summary: This function returns the local element number
+
+INTERFACE
+  MODULE FUNCTION obj_GetLocalElemNumber2(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetLocalElemNumber2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetGlobalEdgeNumber@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, localEdgeNumber, &
+                                          islocal) RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! local or global element number
+    INTEGER(I4B), INTENT(IN) :: localEdgeNumber
+    !! local Edge number in global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+    !! global Edge number
+  END FUNCTION obj_GetGlobalEdgeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetGlobalFaceNumber@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-21
+! summary:  Get global face number from globalElement and local face number
+
+INTERFACE
+MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, localFaceNumber, &
+                                          islocal) RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! local or global element number
+    INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! local face number in global element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+    !! global face number
+  END FUNCTION obj_GetGlobalFaceNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetElemDataPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemData(obj, elemdata, globalElement, islocal)
+    CLASS(FEDomain_), INTENT(in) :: obj
+    TYPE(ElemData_), INTENT(INOUT) :: elemdata
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetElemData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetElemDataPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-04-18
+! summary:  Get teh element data (hardcopoy)
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemDataPointer(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), TARGET, INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    TYPE(ElemData_), POINTER :: ans
+  END FUNCTION obj_GetElemDataPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalEntitiesList@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-23
+! summary: Get total number of entities in a given element
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEntitiesList(obj, globalElement, islocal) &
+    RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If islocal is true then globalElement is local element
+    INTEGER(I4B) :: ans(4)
+  END FUNCTION obj_GetTotalEntitiesList
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2024-04-12
+! summary: Returns the connectivity vector of a given element number
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
+                                          opt, dim, entityNum, islocal)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    !!
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    !! Make sure globalElement is present
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! vertex connectivity
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! total size
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: opt
+    !! Vertex, Edge, Face, Cell
+    !! Default is Vertex
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+  END SUBROUTINE obj_GetConnectivity1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetConnectivity@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-07-14
+! summary:  Get connectivity
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
+                                          nodeCon, tCellCon, tFaceCon, &
+                                          tEdgeCon, tNodeCon, globalElement, &
+                                          dim, entityNum, islocal)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
+    !! cell connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: faceCon(:)
+    !! face connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: edgeCon(:)
+    !! edge connectivity of element
+    INTEGER(I4B), INTENT(INOUT) :: nodeCon(:)
+    !! node connectivity of element
+    INTEGER(I4B), INTENT(OUT) :: tCellCon
+    !! size of data written in cellCon
+    INTEGER(I4B), INTENT(OUT) :: tFaceCon
+    !! size of data written in faceCon
+    INTEGER(I4B), INTENT(OUT) :: tEdgeCon
+    !! size of data written in edgecon
+    INTEGER(I4B), INTENT(OUT) :: tnodeCon
+    !! size of data written in nodecon
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension, if dim is present then
+    !! if dim=0, then search is performed in meshPoint
+    !! if dim=1, then search is performed in meshCurve
+    !! if dim=2, then search is performed in meshSurface
+    !! if dim=3, then search is performed in meshVolume
+    !! The default value of dim is obj%nsd
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_GetConnectivity2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalVertexNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary: Returns total number of vertex nodes in the mesh
+!
+!# Introduction
+!
+! This function can perform several tasks as described below:
+!
+! - If `globalElement` is present then it returns the total number of vertex
+! nodes in the element. In this case if `islocal` is true then
+! `globalElement` is a local element number.
+!
+! - If `globalElement` is not present then it returns the total number of
+!   vertex nodes in the mesh of dimension `dim`.
+!   In this case if `entityNum` is present then it returns the total number
+!   of vertex nodes in the mesh of dimension `dim` and entity number
+!  `entityNum`.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes1(obj, globalElement, dim, &
+                                           entityNum, islocal) RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalElement
+    !! Global element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! Entity number of the mesh
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! If true then global element is a local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             GetTotalVertexNodes@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-05
+! summary:  Get total vertex nodes in a collection of elements
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexNodes2(obj, globalElement, dim, &
+                                           entityNum, islocal) RESULT(ans)
+    CLASS(FEDomain_), INTENT(IN) :: obj
+    !! abstrract mesh
+    INTEGER(I4B), INTENT(IN) :: globalElement(:)
+    !! global or local element number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
+    !! Dimension of the mesh
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: entityNum
+    !! Entity number of the mesh
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalVertexNodes2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     InitiateNodeToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the node-to-elements data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToElements(obj)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateNodeToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateNodeToNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the node-to-nodes data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateNodeToNodes(obj)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateNodeToNodes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateElementToElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the element-to-element data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateElementToElements(obj)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateElementToElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       InitiateBoundaryData@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the boundarydata info in mesh of domain
+!
+!# Introduction
+!
+! This routine sets the boundary data info in mesh of domain.
+! This routine calls `InitiateBoundarydata` on each mesh
+! Then, it calls SetFacetElementType() on domain object.
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateBoundaryData(obj)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateBoundaryData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      InitiateFacetElements@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the facet elements data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateFacetElements(obj)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateFacetElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                  InitiateExtraNodeToNodes@MeshDataMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 4 Nov 2022
+! summary: This routine sets the node-to-nodes data in mesh of domain
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateExtraNodeToNodes(obj)
+    CLASS(FEDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_InitiateExtraNodeToNodes
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

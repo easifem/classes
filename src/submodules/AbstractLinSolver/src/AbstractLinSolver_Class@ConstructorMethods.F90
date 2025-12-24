@@ -16,8 +16,6 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
 IMPLICIT NONE
 CONTAINS
 
@@ -25,29 +23,67 @@ CONTAINS
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE als_Deallocate
-obj%engine = ''
-obj%isInitiated = .FALSE.
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%DEALLOCATE()
+obj%isInit = .FALSE.
 obj%ierr = 0
 obj%iter = 0
-obj%solverName = 0
-obj%preconditionOption = 0
-obj%convergenceIn = 0
-obj%convergenceType = 0
-obj%maxIter = 0
-obj%relativeToRHS = .FALSE.
-obj%KrylovSubspaceSize = 15
-obj%atol = 1.0E-8
-obj%rtol = 1.0E-8
-obj%globalNumColumn = 0
-obj%globalNumRow = 0
-obj%localNumColumn = 0
-obj%localNumRow = 0
-obj%comm = 0
-obj%myRank = 0
-obj%numProcs = 1
-IF (ALLOCATED(obj%RES)) DEALLOCATE (obj%RES)
-NULLIFY (obj%Amat)
-END PROCEDURE als_Deallocate
+obj%tol = 0.0
+obj%normRes = 0.0
+obj%error0 = 0.0
+obj%error = 0.0
+IF (ALLOCATED(obj%res)) DEALLOCATE (obj%res)
+NULLIFY (obj%amat)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                    Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = .TRUE.
+obj%ierr = 0
+obj%iter = 0
+obj%tol = 0.0
+obj%normRes = 0.0
+obj%error0 = 0.0
+obj%error = 0.0
+IF (ALLOCATED(obj%res)) DEALLOCATE (obj%res)
+NULLIFY (obj%amat)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

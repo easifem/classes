@@ -16,7 +16,7 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 18 June 2021
+! date: 2024-04-16
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(AbstractDomain_Class) ConstructorMethods
@@ -32,29 +32,18 @@ CONTAINS
 
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "AbstractDomain_Initiate()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
 
 CALL obj%IMPORT(hdf5=hdf5, group=group)
 
-SELECT CASE (obj%nsd)
-CASE (0)
-  obj%mesh => obj%meshPoint
-CASE (1)
-  obj%mesh => obj%meshCurve
-CASE (2)
-  obj%mesh => obj%meshSurface
-CASE (3)
-  obj%mesh => obj%meshVolume
-END SELECT
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -64,7 +53,7 @@ END PROCEDURE obj_Initiate
 
 MODULE PROCEDURE obj_Deallocate
 ! obj%showTime = .FALSE.
-obj%isInitiated = .FALSE.
+obj%isInit = .FALSE.
 obj%engine = ''
 obj%majorVersion = 0
 obj%minorVersion = 0
@@ -81,34 +70,8 @@ obj%tEntitiesForNodes = 0
 obj%tEntitiesForElements = 0
 obj%tElements(0:3) = 0
 obj%tEntities(0:3) = 0
-CALL DEALLOCATE (obj%meshmap)
-
-obj%mesh => NULL()
-
-IF (ASSOCIATED(obj%meshVolume)) THEN
-  CALL obj%meshVolume%DEALLOCATE()
-  obj%meshVolume => NULL()
-END IF
-
-IF (ASSOCIATED(obj%meshSurface)) THEN
-  CALL obj%meshSurface%DEALLOCATE()
-  obj%meshSurface => NULL()
-END IF
-
-IF (ASSOCIATED(obj%meshCurve)) THEN
-  CALL obj%meshCurve%DEALLOCATE()
-  obj%meshCurve => NULL()
-END IF
-
-IF (ASSOCIATED(obj%meshPoint)) THEN
-  CALL obj%meshPoint%DEALLOCATE()
-  obj%meshPoint => NULL()
-END IF
-
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
-
 CALL obj%DeallocateKdtree()
-
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

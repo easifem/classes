@@ -16,143 +16,136 @@
 !
 
 SUBMODULE(STScalarField_Class) ConstructorMethods
-USE BaseMethod
-USE FPL_Method
+USE FPL_Method, ONLY: GetValue, Set
+USE String_Class, ONLY: String
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
+                                   AbstractNodeFieldInitiate, &
+                                   AbstractNodeFieldDeallocate
+
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
+USE ArangeUtility, ONLY: Arange
+USE Display_Method, ONLY: ToString
+
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
 IMPLICIT NONE
+
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                    SetSTScalarFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetSTScalarFieldParam
-CHARACTER(*), PARAMETER :: myName = "SetSTScalarFieldParam()"
-TYPE(ParameterList_), POINTER :: sublist
-INTEGER(I4B) :: ierr
-
-CALL SetAbstractFieldParam( &
-  & param=param, &
-  & prefix=myprefix, &
-  & name=name, &
-  & engine=engine, &
-  & fieldType=fieldType, &
-  & comm=comm, &
-  & local_n=local_n, &
-  & global_n=global_n)
-
-sublist => NULL()
-ierr = param%GetSubList(key=myprefix, sublist=sublist)
-
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-  RETURN
-END IF
-
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-  RETURN
-END IF
-
-CALL Set( &
-  & obj=sublist, &
-  & datatype=TypeIntI4B, &
-  & prefix=myprefix, &
-  & key="timeCompo", &
-  & VALUE=timeCompo)
-
-sublist => NULL()
-END PROCEDURE SetSTScalarFieldParam
-
-!----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-CALL AbstractFieldCheckEssentialParam(obj=obj, param=param, prefix=myprefix)
-IF (.NOT. param%IsPresent(key=myprefix//"/timeCompo")) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: timeCompo should be present in param.')
-END IF
-END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-CHARACTER(1) :: names(1)
-TYPE(String) :: astr
-INTEGER(I4B) :: nsd, tdof, ierr, tNodes
-TYPE(ParameterList_), POINTER :: sublist
+MODULE PROCEDURE obj_Initiate4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+#endif
 
-! main
-sublist => NULL()
+CHARACTER(1) :: dof_names(1)
+INTEGER(I4B) :: dof_tNodes(1), dof_tsize, dof_spaceCompo(1), &
+                dof_timeCompo(1), dof_tPhysicalVarNames
+LOGICAL(LGT) :: istimefedof, isok, timeCompoMade
 
-ierr = param%GetSubList(key=myprefix, sublist=sublist)
-IF (ierr .NE. 0_I4B) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (.NOT. ASSOCIATED(sublist)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-END IF
-
-CALL obj%CheckEssentialParam(sublist)
 CALL obj%DEALLOCATE()
 
-CALL GetValue(obj=sublist, prefix=myprefix, key="name", VALUE=astr)
-CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo",  &
-  & VALUE=obj%timeCompo)
-tNodes = dom%GetTotalNodes()
-tdof = tNodes * obj%timeCompo
-names(1) (:) = astr%slice(1, 1)
+! Handle timefedof and timeCompo
+! we can compute timeCompo from timefedof as well as from timeCompo
+! so let's do it
 
-CALL AbstractNodeFieldSetParam(obj=obj,  &
-  & dof_tPhysicalVars=1_I4B,  &
-  & dof_storageFMT=NODES_FMT,  &
-  & dof_spaceCompo=[1_I4B],  &
-  & dof_timeCompo=[obj%timeCompo],  &
-  & dof_tNodes=[tNodes],  &
-  & dof_names_char=names,  &
-  & tSize=tdof)
+timeCompoMade = .FALSE.
+istimefedof = PRESENT(timefedof)
+IF (istimefedof) THEN
+  timeCompoMade = timefedof%IsInitiated()
+  IF (timeCompoMade) dof_timeCompo(1) = timefedof%GetTotalDOF()
+END IF
 
-nsd = dom%GetNSD()
+IF (.NOT. timeCompoMade) THEN
+#ifdef DEBUG_VER
+  isok = PRESENT(timeCompo)
+  CALL AssertError1(isok, myName, "timeCompo is not present")
+#endif
+  dof_timeCompo(1) = timeCompo(1)
+  timeCompoMade = .TRUE.
+END IF
 
-CALL AbstractNodeFieldInitiate(obj=obj, param=param, dom=dom)
+obj%timeCompo = dof_timeCompo(1)
 
-astr = ""
-sublist => NULL()
-END PROCEDURE obj_Initiate1
+CALL Reallocate(obj%idofs, obj%timeCompo)
+obj%idofs = Arange(1_I4B, obj%timeCompo)
+
+dof_names(1) = name(1:1)
+dof_tNodes(1) = fedof%GetTotalDOF()
+dof_spaceCompo(1) = 1_I4B
+dof_tsize = dof_tNodes(1) * dof_spaceCompo(1) * dof_timeCompo(1)
+dof_tPhysicalVarNames = 1_I4B
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
+  storageFMT=MYSTORAGEFORMAT, spaceCompo=dof_spaceCompo, &
+  isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., timeCompo=dof_timeCompo, &
+  isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
+  tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
+  isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
+  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., &
+  isTNodesScalar=.TRUE., geofedof=geofedof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
-!                                                               Initiate
+!                                                                   Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate2
-CALL AbstractNodeFieldInitiate2(&
-  & obj=obj, &
-  & obj2=obj2, &
-  & copyFull=copyFull, &
-  & copyStructure=copyStructure, &
-  & usePointer=usePointer)
-SELECT TYPE (obj2)
-CLASS IS (STScalarField_)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+INTEGER(I4B) :: tsize, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
+
+SELECT TYPE (obj2); CLASS IS (STScalarField_)
   obj%timeCompo = obj2%timeCompo
+
+  tsize = SafeSize(obj2%idofs)
+  CALL Reallocate(obj%idofs, tsize)
+  DO ii = 1, tsize
+    obj%idofs(ii) = obj2%idofs(ii)
+  END DO
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
 obj%timeCompo = 0_I4B
+IF (ALLOCATED(obj%idofs)) DEALLOCATE (obj%idofs)
 CALL AbstractNodeFieldDeallocate(obj)
 END PROCEDURE obj_Deallocate
 
@@ -165,24 +158,7 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!                                                                STScalarField
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor1
-CALL ans%initiate(param, dom)
-END PROCEDURE obj_Constructor1
-
-!----------------------------------------------------------------------------
-!                                                        STScalarField_Pointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (ans)
-CALL ans%initiate(param, dom)
-END PROCEDURE obj_Constructor_1
-
-!----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Ptr_Vector
@@ -199,7 +175,33 @@ END IF
 END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
+!                                                           SafeAlllocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_STScalarFieldSafeAllocate1
+LOGICAL(LGT) :: isalloc
+INTEGER(I4B) :: tsize
+
+isalloc = ALLOCATED(obj)
+
+IF (.NOT. isalloc) THEN
+  ALLOCATE (obj(newsize))
+  RETURN
+END IF
+
+tsize = SIZE(obj)
+
+IF (tsize .LT. newsize) THEN
+  CALL STScalarFieldDeallocate(obj)
+  ALLOCATE (obj(newsize))
+END IF
+
+END PROCEDURE obj_STScalarFieldSafeAllocate1
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -24,180 +24,233 @@ CONTAINS
 !                                                                 getnrow
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getnrows
-  ans=obj%nrows
-END PROCEDURE txt_getnrows
+MODULE PROCEDURE obj_getnrows
+ans = obj%nrows
+END PROCEDURE obj_getnrows
 
 !----------------------------------------------------------------------------
 !                                                                 getncol
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getncols
-  ans=obj%ncols
-END PROCEDURE txt_getncols
+MODULE PROCEDURE obj_getncols
+ans = obj%ncols
+END PROCEDURE obj_getncols
 
 !----------------------------------------------------------------------------
 !                                                               getChunkSize
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getChunkSize
-  ans=obj%chunk_size
-END PROCEDURE txt_getChunkSize
+MODULE PROCEDURE obj_getChunkSize
+ans = obj%chunk_size
+END PROCEDURE obj_getChunkSize
 
 !----------------------------------------------------------------------------
 !                                                           GetVariableTypes
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getDataTypes
-  IF( ALLOCATED( obj%data ) ) THEN
-    ALLOCATE( dataType( obj%ncols ) )
-    dataType = GetDataType( obj%data(1, : ) )
-  END IF
-END PROCEDURE txt_getDataTypes
+MODULE PROCEDURE obj_getDataTypes
+IF (ALLOCATED(obj%DATA)) THEN
+  ALLOCATE (dataType(obj%ncols))
+  dataType = GetDataType(obj%DATA(1, :))
+END IF
+END PROCEDURE obj_getDataTypes
 
 !----------------------------------------------------------------------------
 !                                                                 getValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getValue
-  !!
-  IF( ALLOCATED( obj%data ) ) THEN
-    !!
-    SELECT TYPE( val )
-    !!
-    TYPE IS ( INTEGER( I4B ) )
-      !!
-      val = obj%data( irow, icol )%to_number( kind=1_I4B )
-      !!
-    TYPE IS ( REAL( DFP )  )
-      !!
-      val = obj%data( irow, icol )%to_number( kind=1.0_DFP )
-      !!
-    TYPE IS ( LOGICAL( LGT ) )
-      !!
-      val = obj%data( irow, icol )%to_logical( )
-      !!
-    TYPE IS ( CHARACTER( LEN = * ) )
-      !!
-      IF( obj%data( irow, icol )%is_allocated( ) ) THEN
-        val = obj%data( irow, icol )%chars( )
-      ELSE
-        val = ""
-      END IF
-      !!
-    TYPE IS ( String )
-      !!
-      val = obj%data( irow, icol )
-      !!
-    END SELECT
-    !!
-  END IF
-  !!
-END PROCEDURE txt_getValue
+MODULE PROCEDURE obj_getValue
+IF (ALLOCATED(obj%DATA)) THEN
+  SELECT TYPE (val)
+  TYPE IS (INTEGER(INT8))
+    val = obj%DATA(irow, icol)%to_number(kind=1_INT8)
+  TYPE IS (INTEGER(INT16))
+    val = obj%DATA(irow, icol)%to_number(kind=1_INT16)
+  TYPE IS (INTEGER(INT32))
+    val = obj%DATA(irow, icol)%to_number(kind=1_INT32)
+  TYPE IS (INTEGER(INT64))
+    val = obj%DATA(irow, icol)%to_number(kind=1_INT64)
+  TYPE IS (REAL(REAL32))
+    val = obj%DATA(irow, icol)%to_number(kind=1.0_REAL32)
+  TYPE IS (REAL(REAL64))
+    val = obj%DATA(irow, icol)%to_number(kind=1.0_REAL64)
+  TYPE IS (LOGICAL(LGT))
+    val = obj%DATA(irow, icol)%to_logical()
+  TYPE IS (CHARACTER(LEN=*))
+    IF (obj%DATA(irow, icol)%is_allocated()) THEN
+      val = obj%DATA(irow, icol)%chars()
+    ELSE
+      val = ""
+    END IF
+  TYPE IS (String)
+    val = obj%DATA(irow, icol)
+  END SELECT
+END IF
+END PROCEDURE obj_getValue
 
 !----------------------------------------------------------------------------
 !                                                                 getColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getColumn
-  INTEGER( I4B ) :: ii
+MODULE PROCEDURE obj_getColumn
+INTEGER(I4B) :: ii
   !! counter
-  IF( obj%ncols .GE. icol .and. icol .GT. 0 ) THEN
-    DO ii = 1, obj%nrows
-      CALL obj%getValue( irow=ii, icol=icol, val=val(ii))
-    END DO
-  END IF
+IF (obj%ncols .GE. icol .AND. icol .GT. 0) THEN
+  DO ii = 1, obj%nrows
+    CALL obj%getValue(irow=ii, icol=icol, val=val(ii))
+  END DO
+END IF
   !!
-END PROCEDURE txt_getColumn
+END PROCEDURE obj_getColumn
 
 !----------------------------------------------------------------------------
 !                                                             getRealColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getRealColumn
+MODULE PROCEDURE obj_GetRealColumn_real32
   !!
-  IF( ALLOCATED( obj%data ) ) THEN
-    CALL Reallocate( val, obj%nrows )
-    CALL obj%getColumn( icol=icol, val=val )
-  ELSE
-    CALL Reallocate( val, 0_I4B )
-  END IF
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
   !!
-END PROCEDURE txt_getRealColumn
+END PROCEDURE obj_GetRealColumn_real32
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetRealColumn_real64
+  !!
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
+  !!
+END PROCEDURE obj_GetRealColumn_real64
 
 !----------------------------------------------------------------------------
 !                                                             getRealColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getRealVectorColumn
+MODULE PROCEDURE obj_getRealVectorColumn
   !!
-  IF( ALLOCATED( obj%data ) ) THEN
-    CALL Allocate( val, obj%nrows )
-    CALL obj%getColumn( icol=icol, val=val%val )
-  ELSE
-    CALL Allocate( val, 0_I4B )
-  END IF
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL ALLOCATE (val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val%val)
+ELSE
+  CALL ALLOCATE (val, 0_I4B)
+END IF
   !!
-END PROCEDURE txt_getRealVectorColumn
+END PROCEDURE obj_getRealVectorColumn
 
 !----------------------------------------------------------------------------
 !                                                              getIntColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getIntColumn
+MODULE PROCEDURE obj_getIntColumn_int8
   !!
-  IF( ALLOCATED( obj%data ) ) THEN
-    CALL Reallocate( val, obj%nrows )
-    CALL obj%getColumn( icol=icol, val=val )
-  ELSE
-    CALL Reallocate( val, 0_I4B )
-  END IF
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
   !!
-END PROCEDURE txt_getIntColumn
+END PROCEDURE obj_getIntColumn_int8
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_getIntColumn_int16
+  !!
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
+  !!
+END PROCEDURE obj_getIntColumn_int16
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_getIntColumn_int32
+  !!
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
+  !!
+END PROCEDURE obj_getIntColumn_int32
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_getIntColumn_int64
+  !!
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
+  !!
+END PROCEDURE obj_getIntColumn_int64
 
 !----------------------------------------------------------------------------
 !                                                              getIntColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getIntVectorColumn
+MODULE PROCEDURE obj_getIntVectorColumn
   !!
-  IF( ALLOCATED( obj%data ) ) THEN
-    CALL Allocate( val, obj%nrows )
-    CALL obj%getColumn( icol=icol, val=val%val )
-  ELSE
-    CALL Allocate( val, 0_I4B )
-  END IF
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL ALLOCATE (val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val%val)
+ELSE
+  CALL ALLOCATE (val, 0_I4B)
+END IF
   !!
-END PROCEDURE txt_getIntVectorColumn
+END PROCEDURE obj_getIntVectorColumn
 
 !----------------------------------------------------------------------------
 !                                                           getStringColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getStringColumn
+MODULE PROCEDURE obj_getStringColumn
   !!
-  IF( ALLOCATED( obj%data ) ) THEN
-    CALL Reallocate( val, obj%nrows )
-    CALL obj%getColumn( icol=icol, val=val )
-  ELSE
-    CALL Reallocate( val, 0_I4B )
-  END IF
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
   !!
-END PROCEDURE txt_getStringColumn
+END PROCEDURE obj_getStringColumn
 
 !----------------------------------------------------------------------------
 !                                                         getLogicalColumn
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE txt_getLogicalColumn
+MODULE PROCEDURE obj_getLogicalColumn
   !!
-  IF( ALLOCATED( obj%data ) ) THEN
-    CALL Reallocate( val, obj%nrows )
-    CALL obj%getColumn( icol=icol, val=val )
-  ELSE
-    CALL Reallocate( val, 0_I4B )
-  END IF
+IF (ALLOCATED(obj%DATA)) THEN
+  CALL Reallocate(val, obj%nrows)
+  CALL obj%getColumn(icol=icol, val=val)
+ELSE
+  CALL Reallocate(val, 0_I4B)
+END IF
   !!
-END PROCEDURE txt_getLogicalColumn
+END PROCEDURE obj_getLogicalColumn
 
 END SUBMODULE GetMethods

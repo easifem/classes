@@ -28,7 +28,6 @@ USE BlockNodeField_Class
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class
-USE Domain_Class
 USE DirichletBC_Class
 IMPLICIT NONE
 PRIVATE

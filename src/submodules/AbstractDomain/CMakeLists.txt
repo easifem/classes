@@ -20,6 +20,8 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/AbstractDomain_Class@ConstructorMethods.F90
           ${src_path}/AbstractDomain_Class@IOMethods.F90
+          ${src_path}/AbstractDomain_Class@TomlMethods.F90
+          ${src_path}/AbstractDomain_Class@HDFMethods.F90
           ${src_path}/AbstractDomain_Class@GetMethods.F90
           ${src_path}/AbstractDomain_Class@SetMethods.F90
           ${src_path}/AbstractDomain_Class@MeshDataMethods.F90)

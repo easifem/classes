@@ -15,56 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeFieldLis_Class) ConstructorMethods
-USE BaseMethod
+USE BlockNodeField_Class, ONLY: BlockNodeFieldDeallocate
+
 IMPLICIT NONE
-CONTAINS
 
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
 #include "lisf.h"
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-INTEGER(I4B) :: ierr
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-CALL BlockNodeFieldInitiate3(obj=obj, param=param, dom=dom)
-
-CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
-#endif
-
-CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
-  & obj%global_n, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
-#endif
-
-CALL lis_vector_get_range( &
-  & obj%lis_ptr, &
-  & obj%is, &
-  & obj%ie, &
-  & ierr &
-  & )
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate3
+CONTAINS
 
 !----------------------------------------------------------------------------
 !                                                                      Final

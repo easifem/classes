@@ -15,13 +15,30 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! SUBMODULE(UserFunction_Class) SetMethods
-! USE BaseMethod
-! IMPLICIT NONE
-! CONTAINS
-!
-! !----------------------------------------------------------------------------
-! !
-! !----------------------------------------------------------------------------
-!
-! END SUBMODULE SetMethods
+SUBMODULE(UserFunction_Class) SetMethods
+IMPLICIT NONE
+CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                    SetName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%name = name
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetName
+
+END SUBMODULE SetMethods

@@ -13,12 +13,13 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
+#ifdef USE_PLPLOT
 SUBMODULE(PLPlot_Class) BarMethods
-USE BaseMethod
-USE EasyPlplot
+USE EasyPlplot, ONLY: Bar, Barh, Hist
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -26,15 +27,8 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Bar
-  CALL Bar( &
-    & x=x, &
-    & y=y, &
-    & c=c, &
-    & relWidth=relWidth, &
-    & fillColor=fillColor, &
-    & fillPattern=fillPattern, &
-    & lineColor=lineColor, &
-    & lineWidth=lineWidth )
+CALL Bar(x=x, y=y, c=c, relWidth=relWidth, fillColor=fillColor, &
+         fillPattern=fillPattern, lineColor=lineColor, lineWidth=lineWidth)
 END PROCEDURE plot_Bar
 
 !----------------------------------------------------------------------------
@@ -42,15 +36,8 @@ END PROCEDURE plot_Bar
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Barh
-  CALL Barh( &
-    & x=x, &
-    & y=y, &
-    & c=c, &
-    & relWidth=relWidth, &
-    & fillColor=fillColor, &
-    & fillPattern=fillPattern, &
-    & lineColor=lineColor, &
-    & lineWidth=lineWidth )
+CALL Barh(x=x, y=y, c=c, relWidth=relWidth, fillColor=fillColor, &
+          fillPattern=fillPattern, lineColor=lineColor, lineWidth=lineWidth)
 END PROCEDURE plot_Barh
 
 !----------------------------------------------------------------------------
@@ -58,15 +45,13 @@ END PROCEDURE plot_Barh
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE plot_Hist
-  CALL Hist( &
-    & d=d, &
-    & N=N, &
-    & db=db, &
-    & relWidth=relWidth, &
-    & fillColor=fillColor, &
-    & fillPattern=fillPattern, &
-    & lineColor=lineColor, &
-    & lineWidth=lineWidth )
+CALL Hist(d=d, N=N, db=db, relWidth=relWidth, fillColor=fillColor, &
+          fillPattern=fillPattern, lineColor=lineColor, lineWidth=lineWidth)
 END PROCEDURE plot_Hist
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE BarMethods
+#endif

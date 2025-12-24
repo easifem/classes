@@ -32,67 +32,39 @@
 ! [[AbstractMatrixField_]].
 
 MODULE AbstractField_Class
-USE GlobalData
-USE BaseType
+USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stdin, INT64, Constant, &
+                      Space, Time, SpaceTime
+USE BaseType, ONLY: RealVector_, DOF_
 USE String_Class, ONLY: String
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
-USE Domain_Class
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE TxtFile_Class, ONLY: TxtFile_
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
+USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+USE tomlf, ONLY: toml_table
+USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
+USE NeumannBC_Class, ONLY: NeumannBCPointer_, NeumannBC_
+USE MeshField_Class, ONLY: MeshField_
+
 IMPLICIT NONE
 PRIVATE
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_NORMAL = 100
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT = Constant
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_SPACE = Space
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_TIME = Time
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_SPACE = Time
-INTEGER(I4B), PARAMETER, PUBLIC :: FIELD_TYPE_CONSTANT_TIME = Space
+
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "AbstractField"
 
 PUBLIC :: AbstractFieldInitiate
 PUBLIC :: AbstractFieldDisplay
 PUBLIC :: AbstractFieldImport
 PUBLIC :: AbstractFieldExport
 PUBLIC :: AbstractFieldDeallocate
-PUBLIC :: FIELD_TYPE_NUMBER
-PUBLIC :: SetAbstractFieldParam
-PUBLIC :: AbstractFieldCheckEssentialParam
 PUBLIC :: AbstractField_
-PUBLIC :: AbstractFieldInitiate2
-PUBLIC :: FIELD_TYPE_NAME
-PUBLIC :: TypeField
-PUBLIC :: TypeEngineName
-
-!----------------------------------------------------------------------------
-!                                                                TypeField
-!----------------------------------------------------------------------------
-
-TYPE :: TypeField_
-  INTEGER(I4B) :: normal = FIELD_TYPE_NORMAL
-  INTEGER(I4B) :: constant = FIELD_TYPE_CONSTANT
-  INTEGER(I4B) :: space = FIELD_TYPE_SPACE
-  INTEGER(I4B) :: time = FIELD_TYPE_TIME
-END TYPE TypeField_
-
-TYPE(TypeField_), PARAMETER :: TypeField = TypeField_()
-
-!----------------------------------------------------------------------------
-!                                                                TypeField
-!----------------------------------------------------------------------------
-
-TYPE :: EngineName_
-  CHARACTER(13) :: native_serial = "NATIVE_SERIAL"
-  CHARACTER(10) :: native_omp = "NATIVE_OMP"
-  CHARACTER(10) :: native_mpi = "NATIVE_MPI"
-  CHARACTER(7) :: lis_omp = "LIS_OMP"
-  CHARACTER(7) :: lis_mpi = "LIS_MPI"
-  CHARACTER(9) :: petsc_omp = "PETSC_OMP"
-  CHARACTER(9) :: petsc_mpi = "PETSC_MPI"
-END TYPE EngineName_
-
-TYPE(EngineName_), PARAMETER :: TypeEngineName = EngineName_()
+PUBLIC :: AbstractFieldReadFEDOFFromToml
+PUBLIC :: AbstractFieldReadTimeFEDOFFromToml
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -103,20 +75,21 @@ TYPE(EngineName_), PARAMETER :: TypeEngineName = EngineName_()
 ! summary: Abstract field is designed to handle fields in FEM
 
 TYPE, ABSTRACT :: AbstractField_
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
-  INTEGER(I4B) :: fieldType = FIELD_TYPE_NORMAL
+  LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = .FALSE.
+  !! It is true when we set the maxTotalNodeNumForBC
+  !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
+  INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
   TYPE(String) :: name
   !! name of the field
   TYPE(String) :: engine
   !! Engine of the field, for example
-  !! NATIVE_SERIAL
-  !! NATIVE_OMP,
-  !! NATIVE_MPI,
-  !! PETSC,
-  !! LIS_OMP,
-  !! LIS_MPI
+  !! NATIVE_SERIAL, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_OMP, LIS_MPI
+  INTEGER(I4B) :: maxTotalNodeNumForBC = 0_I4B
+  !! maximum total node num for applying boundary conditions
+  !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
   INTEGER(I4B) :: comm = 0_I4B
   !! communication group (MPI)
   INTEGER(I4B) :: myRank = 0_I4B
@@ -134,174 +107,195 @@ TYPE, ABSTRACT :: AbstractField_
   INTEGER(INT64) :: lis_ptr = 0_INT64
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
-  TYPE(Domain_), POINTER :: domain => NULL()
-  !! Domain contains the information of the finite element meshes.
-  TYPE(DomainPointer_), ALLOCATABLE :: domains(:)
-  !! Domain for each physical variables
-  !! The size of `domains` should be equal to the total number of
-  !! physical variables.
-  !! It is used in the case of BlockNodeField
-  !! and BlockMatrixField
+  CLASS(FEDOF_), POINTER :: fedof => NULL(), geofedof => NULL()
+  !! pointer to fedof and geometric fedof
+  TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:), geofedofs(:)
+  !! pointer to fedof
+  CLASS(TimeFEDOF_), POINTER :: timefedof => NULL()
+  !! pointer to time fedof
+  TYPE(TimeFEDOFPointer_), ALLOCATABLE :: timefedofs(:)
+  !! pointer to time fedofs
+
+  TYPE(UserFunction_), POINTER :: exact => NULL()
+  !! reference function for displacement
+  !! Reference displacement denotes the exact solution
+  LOGICAL(LGT) :: saveErrorNorm = .FALSE.
+  !! save error norm
+  CHARACTER(4) :: errorType = "NONE"
+  !! errorType
+  LOGICAL(LGT) :: plotWithResult = .FALSE.
+  !! do you want to plot exact solution with result
+  LOGICAL(LGT) :: plotErrorNorm = .FALSE.
+
+  TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
+  !! Dirichlet boundary conditions
+
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc(:)
+  !! Neumann boundary conditions on surfaces and edges
+
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc_point(:)
+  !! Neumann boundary conditions for point
+
+  REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
+  !! This array is used internally to store the nodal values of
+  !! for dirichletBC, NeumannBC,
+  !! The entries are obtained from Get method of AbstractBC
+  !! The number of rows is maxTotalNodeNumForBC
+  INTEGER(I4B), ALLOCATABLE :: nodeNum(:)
+  !! This vector is used internally to apply Dirichlet boundary condition
+  !! It stores the node numbers (fedof) where the DBC, NBC, or nbcPoint
+  !! are applied.
+
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE(aField_CheckEssentialParam), DEFERRED, PUBLIC, PASS(obj) :: &
-    & CheckEssentialParam
-  !! Check essential parameters
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => aField_Initiate1
-  !! Initiate the field by reading param and given domain
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => aField_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copying other fields, and different options
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => aField_Initiate3
-  !! Initiate  block fields (different physical variables) defined
-  !! over different order of meshes.
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => aField_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate the field by arguments
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
+  !! Initiate the field by arguments
+  GENERIC, PUBLIC :: Initiate => Initiate2, Initiate4, Initiate5
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
 
   ! IO:
   ! @IOMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => aField_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => aField_Import
-  !! Import data from hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => aField_Export
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  !! Import data From hdf5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => afield_WriteData_vtk
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => afield_WriteData_hdf5
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Import data From toml file
+  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  !! Import data From toml file
+  PROCEDURE, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
+  !! Import data From toml file
+  PROCEDURE, PASS(obj) :: ImportFromToml4 => obj_ImportFromToml4
+  !! Import data From toml file
+  PROCEDURE, PASS(obj) :: ImportFromToml5 => obj_ImportFromToml5
+  !! Import data From toml file
+  PROCEDURE, PASS(obj) :: ImportFromToml6 => obj_ImportFromToml6
+  !! Import data From toml file
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2, &
+    ImportFromToml3, ImportFromToml4, ImportFromToml5, ImportFromToml6
+  !! Generic method to import data From toml file
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
+  !! Write data in vtk file
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
+  !! Write data in hdf5 file
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: GetParam
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars  &
-    & => aField_GetTotalPhysicalVars
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
+    obj_IsInitiated
+  !! Returns isInit
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  !! Get the parameters of AbstractField
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
+    obj_GetTotalPhysicalVars
   !! Returns the total number of physical variables
-  !! INFO: This routine should be implemented by child classes
+  !! This routine should be implemented by child classes
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => aField_GetPhysicalNames
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetName => obj_GetName
+  !! Returns the name
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
   !! Returns the names of physical variables
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => aField_GetSpaceCompo
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
   !! Return space component
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => aField_GetTimeCompo
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
   !! Return time component
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => aField_GetStorageFMT
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Return storage format
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => aField_GetTotalDOF
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF =>  &
-   & aField_GetTotalVertexDOF
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
+    obj_GetTotalVertexDOF
   !! Returns the total number of vertex degree of freedoms
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => aField_GetTotalEdgeDOF
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => obj_GetTotalEdgeDOF
   !! Returns the total number of edge degree of freedoms
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => aField_GetTotalFaceDOF
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => obj_GetTotalFaceDOF
   !! Returns the total number of face degree of freedoms
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => aField_GetTotalCellDOF
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Returns the total number of cell degree of freedoms
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant  &
-    & => aField_isConstant
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj), NON_OVERRIDABLE :: isConstant => &
+    obj_isConstant
   !! It returns true if the field is constant field
-  !! INFO: This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => aField_GetPrefix
+  !!  This routine should be implemented by child classes
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
+    obj_GetFEDOFPointer1
+  !! Get the FEDOF pointer, a single pointer is returned
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer2 => &
+    obj_GetFEDOFPointer2
+  !! Get the fedof pointer, a vector of pointers is returned
+  GENERIC, PUBLIC :: GetFEDOFPointer => GetFEDOFPointer1, &
+    GetFEDOFPointer2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer1 => &
+    obj_GetTimeFEDOFPointer1
+  !! Get the timefedof pointer, a single pointer is returned
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer2 => &
+    obj_GetTimeFEDOFPointer2
+  !! Get the TimeFEDOF pointer, a vector of pointers is returned
+  GENERIC, PUBLIC :: GetTimeFEDOFPointer => GetTimeFEDOFPointer1, &
+    GetTimeFEDOFPointer2
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetEngineName => &
+    obj_GetEngineName
+  !! Get the engine name
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNBC => &
+    obj_GetTotalNBC
+  !! Get size of nbc
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalPointNBC => &
+    obj_GetTotalPointNBC
+  !! Get the size of nbc_point
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetNBCPointer => &
+    obj_GetNBCPointer
+  !! Get the pointer to nbc
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetPointNBCPointer => &
+    obj_GetPointNBCPointer
+  !! Get the pointer to nbc_point
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
+  !! Get the mesh field corresponding to abstract field
+  PROCEDURE, PASS(obj) :: &
+    GetMaxTotalNodeNumForBC1 => obj_GetMaxTotalNodeNumForBC1
+  PROCEDURE, PASS(obj) :: &
+    GetMaxTotalNodeNumForBC2 => obj_GetMaxTotalNodeNumForBC2
+  !! Get the maximum node number for applying boundary conditions
+  !! This will call GetTotalNodeNum on every dbc, nbc, nbc_point
+  !! and return the maximum value. This method is necessary for
+  !! allocating the nodeNum and nodalValue arrays
+  GENERIC, PUBLIC :: GetMaxTotalNodeNumForBC => &
+    GetMaxTotalNodeNumForBC1, &
+    GetMaxTotalNodeNumForBC2
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj), NON_OVERRIDABLE, PUBLIC :: SetParam
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
+  !! Set all the values to a constant scalar value
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    SetMaxTotalNodeNumForBC1 => obj_SetMaxTotalNodeNumForBC1, &
+    SetMaxTotalNodeNumForBC2 => obj_SetMaxTotalNodeNumForBC2
+  GENERIC, PUBLIC :: SetMaxTotalNodeNumForBC &
+    => SetMaxTotalNodeNumForBC1, SetMaxTotalNodeNumForBC2
 
 END TYPE AbstractField_
-
-!----------------------------------------------------------------------------
-!                                   CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Check the essential parameters in param.
-
-ABSTRACT INTERFACE
-  SUBROUTINE aField_CheckEssentialParam(obj, param)
-    IMPORT :: AbstractField_, ParameterList_
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE aField_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                  SetAbstractFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-10-04
-! summary:  Set AbstractField_ parameters
-
-INTERFACE
-  MODULE SUBROUTINE SetAbstractFieldParam(param, prefix, name, engine,  &
-    & fieldType, comm, local_n, global_n)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! prefix
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the variable
-    CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! field type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-    !! local size of scalar field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-    !! global size of scalar field on distributed on processors
-    !! Only needed for parallel environment
-  END SUBROUTINE SetAbstractFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Check essential param
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldCheckEssentialParam(obj, param, prefix)
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-  END SUBROUTINE AbstractFieldCheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 29 Sept 2021
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE aField_Initiate1(obj, param, dom)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(Domain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE aField_Initiate1
-END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -311,16 +305,20 @@ END INTERFACE AbstractFieldInitiate
 ! date: 29 Sept 2021
 ! summary: Initiate by copying other fields, and different options
 
-INTERFACE AbstractFieldInitiate2
-  MODULE SUBROUTINE aField_Initiate2(obj, obj2, copyFull, copyStructure, &
-    & usePointer)
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
+                                  usePointer)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE aField_Initiate2
-END INTERFACE AbstractFieldInitiate2
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+INTERFACE AbstractFieldInitiate
+  MODULE PROCEDURE obj_Initiate2
+END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
@@ -328,96 +326,822 @@ END INTERFACE AbstractFieldInitiate2
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 29 Sept 2021
-! summary: Initiate by reading options from [[ParameterList_]]
+! summary: Initiate the field by reading param and given domain
+!
+!# Introduction
+!  This method is like obj_Initiate1, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
+    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
+    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    !! Storage format of the field
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then physicalVarNames acts as scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    !! total number of nodes in each physical variable
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    !! total size of node field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
+    !! FEDOF object and geometric FEDOF object
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    !! TimeFEDOF object
+  END SUBROUTINE obj_Initiate4
+END INTERFACE
 
 INTERFACE AbstractFieldInitiate
-  MODULE SUBROUTINE aField_Initiate3(obj, param, dom)
+  MODULE PROCEDURE obj_Initiate4
+END INTERFACE AbstractFieldInitiate
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 29 Sept 2021
+! summary: Initiate the field by reading param and given domain
+!
+!# Introduction
+!  This method is like obj_Initiate3, but it works with arugments
+!  instead of parameter list.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate5( &
+    obj, name, engine, fieldType, comm, local_n, global_n, spaceCompo, &
+    isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
+    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
+    isPhysicalVarNames, fedof, geofedof, timefedof)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(DomainPointer_), TARGET, INTENT(IN) :: dom(:)
-  END SUBROUTINE aField_Initiate3
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    !! communication group
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! space components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
+    !! Vector of FEDOF pointers
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
+    !! Vector of TimeFEDOFPointers
+    !! All timefedofs should be initiated
+  END SUBROUTINE obj_Initiate5
+END INTERFACE
+
+INTERFACE AbstractFieldInitiate
+  MODULE PROCEDURE obj_Initiate5
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldDeallocate
-  MODULE SUBROUTINE aField_Deallocate(obj)
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
-  END SUBROUTINE aField_Deallocate
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractFieldDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractFieldDeallocate
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION FIELD_TYPE_NUMBER(name) RESULT(Ans)
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B) :: ans
-  END FUNCTION FIELD_TYPE_NUMBER
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE PURE FUNCTION FIELD_TYPE_NAME(id) RESULT(Ans)
-    INTEGER(I4B), INTENT(IN) :: id
-    CHARACTER(20) :: ans
-  END FUNCTION FIELD_TYPE_NAME
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldDisplay
-  MODULE SUBROUTINE aField_Display(obj, msg, unitNo)
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE aField_Display
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+INTERFACE AbstractFieldDisplay
+  MODULE PROCEDURE obj_Display
 END INTERFACE AbstractFieldDisplay
 
 !----------------------------------------------------------------------------
 !                                                         IMPORT@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldImport
-  MODULE SUBROUTINE aField_Import(obj, hdf5, group, dom, domains)
+INTERFACE
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs, geofedof, geofedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    TYPE(Domain_), TARGET, OPTIONAL, INTENT(IN) :: dom
-    TYPE(DomainPointer_), TARGET, OPTIONAL, INTENT(IN) :: domains(:)
-  END SUBROUTINE aField_Import
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+  END SUBROUTINE obj_Import
+END INTERFACE
+
+INTERFACE AbstractFieldImport
+  MODULE PROCEDURE obj_Import
 END INTERFACE AbstractFieldImport
 
 !----------------------------------------------------------------------------
 !                                                          Export@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldExport
-  MODULE SUBROUTINE aField_Export(obj, hdf5, group)
+INTERFACE
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE aField_Export
+  END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE AbstractFieldExport
+  MODULE PROCEDURE obj_Export
 END INTERFACE AbstractFieldExport
+
+!----------------------------------------------------------------------------
+!                                  AbstractFieldReadOptsFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-24
+! summary:  Read options for intiating AbstractField from toml table
+!
+!# Introduction
+! This method reads options for intiating AbstractField from toml table.
+! The arguments details are given in Initiate4 and Initiate5 methods.
+! This method will be called internally by ImportFromToml methods.
+! We do not want to initiate AbstractField from param.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadOptsFromToml( &
+    table, name, engine, fieldType, spaceCompo, isSpaceCompo, &
+    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
+    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
+    isPhysicalVarNamesScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table
+    TYPE(String), INTENT(OUT) :: name
+    TYPE(String), INTENT(OUT) :: engine
+    INTEGER(I4B), INTENT(OUT) :: fieldType
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: spaceCompo(:)
+    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompo
+    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompoScalar
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: timeCompo(:)
+    LOGICAL(LGT), INTENT(OUT) :: isTimeCompo
+    LOGICAL(LGT), INTENT(OUT) :: isTimeCompoScalar
+    INTEGER(I4B), INTENT(OUT) :: tPhysicalVarNames
+    CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: physicalVarNames(:)
+    LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNames
+    LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNamesScalar
+  END SUBROUTINE AbstractFieldReadOptsFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+!
+!# Introduction
+!
+! This method is used to import data from toml table.
+! fedof: If fedof is not initiated then it will be initiated by
+!        calling fedof%ImportFromToml(node) method.
+!        the node name is specified by fedofName
+!
+! timefedof: If timefedof is not initiated then it will be initiated by
+!            calling timefedof%ImportFromToml(node) method.
+!            the node name is specified by timefedofName.
+!            It is needed for space-time fields.
+!
+! dom: dom is needed to initiate fedof
+! timeOpt: It is needed to initiate timefedof
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
+                                        timefedof, dom, timeOpt)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
+    !! if  it is present then following operations are performed
+    !! - If timefedof is not initiated then it will be initiated by
+    !!   calling timefedof%ImportFromToml(node) method, where node
+    !!   is the table field specified by "timefedofName".
+    !!   In this case we need to provide timeOpt.
+    !!   (Read more at TimeFEDOF_Class.F90)
+    !! - If timefedof is already initiated then it will be used. In
+    !!   this case we do not need use timeOpt
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt_ is needed when timefedof is not initiated
+    !! Read more at TimeOpt_Class.F90
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+!
+!# Introduction
+!
+! In this method we call obj_ImportFromToml1 method.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    filename, printToml)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    !! name of the key
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt_ is needed when timefedof is not intiated
+    !! Read more at obj_ImportFromToml1
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    !! txt file where toml config is stored
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    !! you can pass the filename, then we will make
+    !! the file, open it and read the toml config and
+    !! close the file.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    !! if it is true then we will print the toml config
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary:  Import data From toml file for block node fields
+!
+!# Introduction
+!
+! This method is like obj_ImportFromToml1 but this method is for
+! BlockNodeField_ and BlockMatrixField_
+!
+! fedof: fedof is a vector of FEDOFPointer_ objects.
+!        If it is not initiated then it will be initiated by calling
+!        fedof(ii)%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml3( &
+    obj, table, fedof, geofedof, timefedof, dom, timeOpt)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    !! The size of fedof should be total number of physical variables.
+    !! If fedof is not allocated then we will allocate it.
+    !! If fedof(ii) not initiated then we will intiate it From
+    !! toml table, in this case we will call improt From toml method
+    !! of fedof. We will need domain in this case
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    !! The size of timefedof should be total number of physical variables.
+    !! timefedof is needed for space-time fields
+    !! If timefedof is not allocated then we will allocate it.
+    !! If timefedof(ii) not initiated then we will intiate it From
+    !! toml table, in this case we will call improt From toml method
+    !! of timefedof. We will need timeOpt in this case
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+    !! In this case all fedofs will have same domain
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt_ is needed when timefedof is not initiated
+    !! Read more at TimeOpt_Class.F90
+  END SUBROUTINE obj_ImportFromToml3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml4( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    filename, printToml)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    !! name of the key
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    !! Read the docs of obj_ImportFromToml3
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    !! Read the docs of obj_ImportFromToml3
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Read the docs of obj_ImportFromToml3
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! Read the docs of obj_ImportFromToml1
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    !! text file where toml config is stored
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    !! you can pass the filename, then we will make
+    !! the file, open it and read the toml config and
+    !! close the file.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    !! if it is true then we will print the toml config
+  END SUBROUTINE obj_ImportFromToml4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary:  Import data From toml file for block node fields
+!
+!# Introduction
+!   This methos is like obj_ImportFromToml3 but in this case
+! we can provide different domain for each physical variable.
+!
+! In this case domain is NOT optional, it is required.
+! This is because in this case we will initiate fedof
+! If fedof is already initiated then we do not need domain. Hence
+! you should call obj_ImportFromToml3 (without domain) instead of this method.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml5( &
+    obj, table, fedof, geofedof, timefedof, dom, timeOpt)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    !! Read the docs of obj_ImportFromToml3
+    !! Geometric FEDOF object
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    !! The size of domain should be total number of physical variables.
+    !! Read the docs of obj_ImportFromToml3
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    !! Read the docs of obj_ImportFromToml3
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! Read the docs of obj_ImportFromToml1
+  END SUBROUTINE obj_ImportFromToml5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml6( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    filename, printToml)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      AbstractFieldReadUserFunctionFromToml
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary:  Abstract field read user function from toml
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadUserFunctionFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadUserFunctionFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                   AbstractFieldReadFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary:  Safely read fedof From toml file,
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+! calling fedof%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml1(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+  END SUBROUTINE AbstractFieldReadFEDOFFromToml1
+END INTERFACE
+
+INTERFACE AbstractFieldReadFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml1
+END INTERFACE AbstractFieldReadFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                    AbstractFieldReadFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary: Safely read fedof From toml file for block node fields
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+!   calling fedof%ImportFromToml(node) method.
+! In this case we will initiate different fedof for each physical
+! variables
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    !! The size of fedof should be total number of physical variables
+    !! If fedof is allocated then all its ptr should be associated
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+  END SUBROUTINE AbstractFieldReadFEDOFFromToml2
+END INTERFACE
+
+INTERFACE AbstractFieldReadFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml2
+END INTERFACE AbstractFieldReadFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                    AbstractFieldReadFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary: Safely read fedof From toml file for block node fields
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+!   calling fedof%ImportFromToml(node) method.
+! In this case we will initiate different fedof for each physical
+! variables
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    !! The size of fedof should be total number of physical variables
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+  END SUBROUTINE AbstractFieldReadFEDOFFromToml3
+END INTERFACE
+
+INTERFACE AbstractFieldReadFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml3
+END INTERFACE AbstractFieldReadFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                              AbstractFieldReadGeoFEDOFFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary:  Safely read fedof From toml file,
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+! calling fedof%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1
+END INTERFACE
+
+INTERFACE AbstractFieldReadGeoFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml1
+END INTERFACE AbstractFieldReadGeoFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                 AbstractFieldReadGeoFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary: Safely read fedof From toml file for block node fields
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+!   calling fedof%ImportFromToml(node) method.
+! In this case we will initiate different fedof for each physical
+! variables
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    !! The size of fedof should be total number of physical variables
+    !! If fedof is allocated then all its ptr should be associated
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2
+END INTERFACE
+
+INTERFACE AbstractFieldReadGeoFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml2
+END INTERFACE AbstractFieldReadGeoFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                 AbstractFieldReadGeoFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary: Safely read fedof From toml file for block node fields
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! If fedof is not initiated then it will be initiated by
+!   calling fedof%ImportFromToml(node) method.
+! In this case we will initiate different fedof for each physical
+! variables
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3(table, fedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
+    !! The size of fedof should be total number of physical variables
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    !! Read docs of AbstractFieldReadFEDOFFromToml1
+  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3
+END INTERFACE
+
+INTERFACE AbstractFieldReadGeoFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml3
+END INTERFACE AbstractFieldReadGeoFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                               AbstractFieldReadTimeFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary:  Safely read timefedof From toml file,
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! - If timefedof is not present then this method does nothing
+! - If timefedof is present and it is initiated then it will do nothing
+! - If timefedof is present and it is not initiated then it will be initiated
+! by calling timefedof%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1( &
+    table, timefedof, timeOpt)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(INOUT) :: timefedof
+    !! Timefedof, read the docs above
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt is need when timefedof is being initiated
+    !! Read more at TimeOpt_Class.F90
+  END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1
+END INTERFACE
+
+INTERFACE AbstractFieldReadTimeFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml1
+END INTERFACE AbstractFieldReadTimeFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                               AbstractFieldReadTimeFEDOFFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-25
+! summary:  Safely read timefedof From toml file,
+!
+!# Introduction
+!   This method is used by ReadFromToml methods
+! - If timefedof is not present then this method does nothing
+! - If timefedof is present and it is initiated then it will do nothing
+! - If timefedof is present and it is not initiated then it will be initiated
+! by calling timefedof%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2(table, timefedof, &
+                                                        timeOpt)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(TimeFEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    !! Timefedof, read the docs above
+    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
+    !! TimeOpt is need when timefedof is being initiated
+    !! Read more at TimeOpt_Class.F90
+  END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2
+END INTERFACE
+
+INTERFACE AbstractFieldReadTimeFEDOFFromToml
+  MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml2
+END INTERFACE AbstractFieldReadTimeFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                     AbstractFieldReadDBCFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-15
+! summary: Read DBC from toml file
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadDBCFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadDBCFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     AbstractFieldReadNBCFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-24
+! summary: Read NBC from toml file
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadNBCFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadNBCFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 AbstractFieldReadPointNBCFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-24
+! summary: Read NBC from toml file
+
+INTERFACE
+  MODULE SUBROUTINE AbstractFieldReadPointNBCFromToml(obj, table)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE AbstractFieldReadPointNBCFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                     WriteData@IOMethods
 !----------------------------------------------------------------------------
 
-INTERFACE AbstractFieldWriteData
-  MODULE SUBROUTINE aField_WriteData_hdf5(obj, hdf5, group)
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData_hdf5(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE aField_WriteData_hdf5
+  END SUBROUTINE obj_WriteData_hdf5
+END INTERFACE
+
+INTERFACE AbstractFieldWriteData
+  MODULE PROCEDURE obj_WriteData_hdf5
 END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -428,11 +1152,15 @@ END INTERFACE AbstractFieldWriteData
 ! date:  2023-11-24
 ! summary:  Export data in vrkfile
 
-INTERFACE AbstractFieldWriteData
-  MODULE SUBROUTINE aField_WriteData_vtk(obj, vtk)
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData_vtk(obj, vtk)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE aField_WriteData_vtk
+  END SUBROUTINE obj_WriteData_vtk
+END INTERFACE
+
+INTERFACE AbstractFieldWriteData
+  MODULE PROCEDURE obj_WriteData_vtk
 END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -444,25 +1172,10 @@ END INTERFACE AbstractFieldWriteData
 ! summary:  Set field variables of abstract field
 
 INTERFACE
-  MODULE SUBROUTINE SetParam(obj, &
-    & isInitiated, &
-    & fieldType, &
-    & name, &
-    & engine, &
-    & comm, &
-    & myRank, &
-    & numProcs, &
-    & global_n, &
-    & local_n, &
-    & is, &
-    & ie,  &
-    & lis_ptr, &
-    & domain, &
-    & domains, &
-    & tSize, &
-    & realVec, &
-    & dof, &
-    & isPMatInitiated)
+  MODULE SUBROUTINE obj_SetParam( &
+    obj, isInitiated, fieldType, name, engine, comm, myRank, numProcs, &
+    global_n, local_n, is, ie, lis_ptr, tSize, realVec, dof, &
+    isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
@@ -476,13 +1189,175 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: is
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ie
     INTEGER(INT64), OPTIONAL, INTENT(IN) :: lis_ptr
-    TYPE(Domain_), OPTIONAL, TARGET, INTENT(IN) :: domain
-    TYPE(DomainPointer_), OPTIONAL, INTENT(IN) :: domains(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
     TYPE(RealVector_), OPTIONAL, INTENT(IN) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(IN) :: dof
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPMatInitiated
-  END SUBROUTINE SetParam
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:)
+  END SUBROUTINE obj_SetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          SetName@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-20
+! summary: Set the name of the field
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetName(obj, name)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       SetAll@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-27
+! summary: Set all the values
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetAll(obj, VALUE, scale, addContribution)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE
+    !! value to be set or add
+    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add or set
+  END SUBROUTINE obj_SetAll
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMaxTotalNodeNumForBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC1(obj, dbcVec, dbc)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBCPointer_), OPTIONAL, INTENT(INOUT) :: dbcVec(:)
+    CLASS(DirichletBC_), OPTIONAL, INTENT(INOUT) :: dbc
+    INTEGER(I4B) :: ans
+  END SUBROUTINE obj_SetMaxTotalNodeNumForBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMaxTotalNodeNumForBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+!
+!# Introduction
+!   This method if for block node fields
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC2(obj, ivar, dbcVec, dbc)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    CLASS(DirichletBCPointer_), OPTIONAL, INTENT(INOUT) :: dbcVec(:)
+    CLASS(DirichletBC_), OPTIONAL, INTENT(INOUT) :: dbc
+    INTEGER(I4B) :: ans
+  END SUBROUTINE obj_SetMaxTotalNodeNumForBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      IsInitiated@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Get obj%isInit
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalNBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary: Get the size of nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNBC(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+    !! if nbc is not allocated then ans is zero
+  END FUNCTION obj_GetTotalNBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalNBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary: Get the size of nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalPointNBC(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+    !! if nbc_point is not allocated then ans is zero
+  END FUNCTION obj_GetTotalPointNBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetNBCPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Return a poitner to nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetNBCPointer(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+  !! AbstractField
+    INTEGER(I4B), INTENT(IN) :: indx
+  !! pointer number
+    CLASS(NeumannBC_), POINTER :: ans
+  !! if nbc is not allocated then ans%ptr is null()
+  !! if nbc is allocated but nbc(ii)%ptr is not associated
+  !! then ans(ii)%ptr is null()
+  END FUNCTION obj_GetNBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetPointNBCPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Return a poitner to nbc_point
+
+INTERFACE
+  MODULE FUNCTION obj_GetPointNBCPointer(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    !! AbstractField
+    INTEGER(I4B), INTENT(IN) :: indx
+    !! pointer number
+    CLASS(NeumannBC_), POINTER :: ans
+    !! if nbc is not allocated then ans%ptr is null()
+    !! if nbc is allocated but nbc(ii)%ptr is not associated
+    !! then ans(ii)%ptr is null()
+  END FUNCTION obj_GetPointNBCPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -494,25 +1369,10 @@ END INTERFACE
 ! summary:  Get the field variables
 
 INTERFACE
-  MODULE SUBROUTINE GetParam(obj, &
-    & isInitiated, &
-    & fieldType, &
-    & name, &
-    & engine, &
-    & comm, &
-    & myRank, &
-    & numProcs, &
-    & global_n, &
-    & local_n, &
-    & is, &
-    & ie,  &
-    & lis_ptr, &
-    & domain, &
-    & domains, &
-    & tSize, &
-    & realVec, &
-    & dof, &
-    & isPMatInitiated)
+  MODULE SUBROUTINE obj_GetParam( &
+    obj, isInitiated, fieldType, name, engine, comm, myRank, numProcs, &
+    global_n, local_n, is, ie, lis_ptr, tSize, realVec, dof, &
+    isPMatInitiated, fedof, fedofs)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fieldType
@@ -526,13 +1386,13 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: is
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ie
     INTEGER(INT64), OPTIONAL, INTENT(OUT) :: lis_ptr
-    TYPE(Domain_), OPTIONAL, POINTER, INTENT(OUT) :: domain
-    TYPE(DomainPointer_), OPTIONAL, INTENT(OUT) :: domains(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tSize
     TYPE(RealVector_), OPTIONAL, INTENT(OUT) :: realVec
     TYPE(DOF_), OPTIONAL, INTENT(OUT) :: dof
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isPMatInitiated
-  END SUBROUTINE GetParam
+    CLASS(FEDOF_), OPTIONAL, POINTER, INTENT(OUT) :: fedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(OUT) :: fedofs(:)
+  END SUBROUTINE obj_GetParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -544,10 +1404,10 @@ END INTERFACE
 ! summary:  Returns the total number of physical variables
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalPhysicalVars(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalPhysicalVars(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION aField_GetTotalPhysicalVars
+  END FUNCTION obj_GetTotalPhysicalVars
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -559,10 +1419,25 @@ END INTERFACE
 ! summary:  Returns the names of physical variables
 
 INTERFACE
-  MODULE SUBROUTINE aField_GetPhysicalNames(obj, ans)
+  MODULE SUBROUTINE obj_GetPhysicalNames(obj, ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(INOUT) :: ans(:)
-  END SUBROUTINE aField_GetPhysicalNames
+  END SUBROUTINE obj_GetPhysicalNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetName@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-22
+! summary:  Returns the name of the field
+
+INTERFACE
+  MODULE FUNCTION obj_GetName(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -574,13 +1449,13 @@ END INTERFACE
 ! summary:  Returns space components
 
 INTERFACE
-  MODULE FUNCTION aField_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
       !! Total number of physical variables
-      !! This can be obtained from GetTotalPhysicalVars method
+      !! This can be obtained From GetTotalPhysicalVars method
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetSpaceCompo
+  END FUNCTION obj_GetSpaceCompo
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -592,11 +1467,11 @@ END INTERFACE
 ! summary:  Returns Time components
 
 INTERFACE
-  MODULE FUNCTION aField_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTimeCompo
+  END FUNCTION obj_GetTimeCompo
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -608,10 +1483,10 @@ END INTERFACE
 ! summary:  Returns storage format
 
 INTERFACE
-  MODULE FUNCTION aField_GetStorageFMT(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
-  END FUNCTION aField_GetStorageFMT
+  END FUNCTION obj_GetStorageFMT
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -626,11 +1501,11 @@ END INTERFACE
 ! This method is same as calling the size function.
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalDOF
+  END FUNCTION obj_GetTotalDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -642,11 +1517,11 @@ END INTERFACE
 ! summary:  Returns the total number of vertex degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalVertexDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalVertexDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalVertexDOF
+  END FUNCTION obj_GetTotalVertexDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -658,11 +1533,11 @@ END INTERFACE
 ! summary:  Returns the total number of Edge degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalEdgeDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalEdgeDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalEdgeDOF
+  END FUNCTION obj_GetTotalEdgeDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -674,11 +1549,11 @@ END INTERFACE
 ! summary:  Returns the total number of Face degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalFaceDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalFaceDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalFaceDOF
+  END FUNCTION obj_GetTotalFaceDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -690,11 +1565,11 @@ END INTERFACE
 ! summary:  Returns the total number of Cell degree of freedoms
 
 INTERFACE
-  MODULE FUNCTION aField_GetTotalCellDOF(obj, tPhysicalVars) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalCellDOF(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION aField_GetTotalCellDOF
+  END FUNCTION obj_GetTotalCellDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -705,25 +1580,170 @@ END INTERFACE
 ! date:  2023-09-22
 ! summary:  Returns true if the field is constant
 INTERFACE
-  MODULE FUNCTION aField_IsConstant(obj) RESULT(ans)
+  MODULE FUNCTION obj_IsConstant(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
-  END FUNCTION aField_IsConstant
+  END FUNCTION obj_IsConstant
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
+!                                                 GetFEDOFPointer@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-26
-! summary:  Get prefix
+! date: 2025-06-14
+! summary: Get the FEDOF pointer
+!
+! # Introduction
+!
+! This method returns the fedof pointer. It workds as follows:
+!
+! - if indx is not given then it will return fedof
+! - if indx is given then it will check if the fedofs is allocated
+! -  if fedofs is allocated then it will return the pointer fedof(indx)
+! - if fedofs is not allocated then it will return the pointer to fedof
+! - User should check if the pointer is associated or not.
 
 INTERFACE
-  MODULE FUNCTION aField_GetPrefix(obj) RESULT(ans)
+  MODULE FUNCTION obj_GetFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+  !! indx is the index of physical variable
+  !! for which FEDOF pointer is requested
+    CLASS(FEDOF_), POINTER :: ans
+  !! ans is the FEDOF pointer, it is a single pointer
+  !! to FEDOF object.
+  END FUNCTION obj_GetFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-14
+! summary: Get the FEDOF pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+  !! This is just a dummy argument to have a unique interface
+    TYPE(FEDOFPointer_), ALLOCATABLE :: ans(:)
+  !! List of FEDOF pointers
+  END FUNCTION obj_GetFEDOFPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTimeFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Get pointer to timefedof
+!
+! # Introduction
+!
+! This method returns the timefedof pointer. It workds as follows:
+!
+! - if indx is not given then it will return timefedof
+! - if indx is given then it will check if the timefedofs is allocated
+! - if timefedofs is allocated
+!   then it will return the pointer timefedof(indx)
+! - if timefedofs is not allocated
+!   then it will return the pointer to fedof
+! - User should check if the pointer is associated or not.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+    CLASS(TimeFEDOF_), POINTER :: ans
+  END FUNCTION obj_GetTimeFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Get timefedof pointers
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+    !! This is just a dummy argument to have a unique interface
+    TYPE(TimeFEDOFPointer_), ALLOCATABLE :: ans(:)
+    !! List of FEDOF pointers
+  END FUNCTION obj_GetTimeFEDOFPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetEngineName@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-19
+! summary:  Get the engine name of the field
+
+INTERFACE
+  MODULE FUNCTION obj_GetEngineName(obj) RESULT(ans)
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION aField_GetPrefix
+  END FUNCTION obj_GetEngineName
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetMeshField@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-29
+! summary: Get mesh field
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshField(obj, meshField, order, ipType)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    CLASS(MeshField_), INTENT(INOUT) :: meshField
+    INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
+  END SUBROUTINE obj_GetMeshField
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxTotalNodeNumForBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC1(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalNodeNumForBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxTotalNodeNumForBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC2(obj, ivar) RESULT(ans)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalNodeNumForBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE AbstractField_Class

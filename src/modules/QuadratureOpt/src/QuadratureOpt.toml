@@ -1,0 +1,7 @@
+[QuadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendreLobatto"
+# following is also possible
+# quadratureType = ["GaussLegendreLobatto", "GaussLegendre"]
+# quadratureType = ["GaussLegendreLobatto", "GaussLegendre", "GaussLegendreRadau"]
+

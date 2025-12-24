@@ -16,7 +16,10 @@
 !
 
 SUBMODULE(LinSolver_Class) SetMethods
-USE BaseMethod
+USE BaseType, ONLY: TypeSolverNameOpt
+USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
+
 IMPLICIT NONE
 CONTAINS
 
@@ -41,27 +44,38 @@ SUBROUTINE AllocateWorkSpace(W, IPAR, solverName, n)
   INTEGER(I4B) :: i, m
 
   SELECT CASE (solverName)
-  CASE (LIS_CG, LIS_CGNR)
+
+  CASE (TypeSolverNameOpt%CG, TypeSolverNameOpt%CGNR)
     i = 5 * n
-  CASE (LIS_BICG)
+
+  CASE (TypeSolverNameOpt%BICG)
     i = 7 * n
-  CASE (LIS_DBICG)
+
+  CASE (TypeSolverNameOpt%DBICG)
     i = 11 * n
-  CASE (LIS_BICGSTAB)
+
+  CASE (TypeSolverNameOpt%BICGSTAB)
     i = 8 * n
-  CASE (LIS_TFQMR)
+
+  CASE (TypeSolverNameOpt%TFQMR)
     i = 11 * n
-  CASE (LIS_ORTHOMIN, LIS_GMRES)
+
+  CASE (TypeSolverNameOpt%ORTHOMIN, TypeSolverNameOpt%GMRES)
     m = INPUT(default=15, option=IPAR(5))
     i = (n + 3) * (m + 2) + (m + 1) * m / 2
-  CASE (LIS_FGMRES)
+
+  CASE (TypeSolverNameOpt%FGMRES)
     m = INPUT(default=15, option=IPAR(5))
     i = 2 * n * (m + 1) + (m + 1) * m / 2 + 3 * m + 2
-  CASE (LIS_DQGMRES)
+
+  CASE (TypeSolverNameOpt%DQGMRES)
     m = INPUT(default=15, option=IPAR(5)) + 1
     i = n + m * (2 * n + 4)
+
   END SELECT
+
   IPAR(4) = i
+
   CALL Reallocate(W, i)
 END SUBROUTINE AllocateWorkSpace
 
@@ -69,34 +83,30 @@ END SUBROUTINE AllocateWorkSpace
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ls_Set
-CHARACTER(*), PARAMETER :: myName = "ls_Set"
+MODULE PROCEDURE obj_Set
+CHARACTER(*), PARAMETER :: myName = "obj_Set()"
 INTEGER(I4B) :: s(2)
 INTEGER(I4B) :: solverName
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ls_Set()')
+                        '[START]')
 #endif
 
-s = Amat%SHAPE()
-CALL obj%SetParam(Amat=Amat, &
-& localNumColumn=s(2), localNumRow=s(1), &
-& globalNumRow=s(1), globalNumColumn=s(2))
+s = amat%SHAPE()
+CALL obj%SetParam(amat=amat, localNumColumn=s(2), localNumRow=s(1), &
+                  globalNumRow=s(1), globalNumColumn=s(2))
 
 CALL obj%GetParam(solverName=solverName)
 
-CALL AllocateWorkSpace( &
-  & W=obj%W, &
-  & n=s(1), &
-  & solverName=solverName, &
-  & IPAR=obj%IPAR)
+CALL AllocateWorkSpace(w=obj%w, n=s(1), solverName=solverName, ipar=obj%ipar)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ls_Set()')
+                        '[END] ')
 #endif
-END PROCEDURE ls_Set
+
+END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
 !

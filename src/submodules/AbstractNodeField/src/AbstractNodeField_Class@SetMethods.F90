@@ -15,8 +15,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) SetMethods
-USE BaseMethod
-USE HDF5File_Method
+USE InputUtility, ONLY: Input
+USE RealVector_Method, ONLY: Set, Add
+USE BaseType, ONLY: math => TypeMathOpt
+
 IMPLICIT NONE
 CONTAINS
 
@@ -25,31 +27,23 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+#endif
+
 INTEGER(I4B) :: ii, tsize1
 
-IF (PRESENT(dof_tPhysicalVars)) THEN
-  obj%dof_tPhysicalVars = dof_tPhysicalVars
-END IF
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (PRESENT(dof_storageFMT)) THEN
-  obj%dof_storageFMT = dof_storageFMT
-END IF
-
-IF (PRESENT(dof_spaceCompo)) THEN
-  obj%dof_spaceCompo = dof_spaceCompo
-END IF
-
-IF (PRESENT(dof_timeCompo)) THEN
-  obj%dof_timeCompo = dof_timeCompo
-END IF
-
-IF (PRESENT(dof_tNodes)) THEN
-  obj%dof_tNodes = dof_tNodes
-END IF
-
-IF (PRESENT(tSize)) THEN
-  obj%tsize = tsize
-END IF
+IF (PRESENT(dof_tPhysicalVars)) obj%dof_tPhysicalVars = dof_tPhysicalVars
+IF (PRESENT(dof_storageFMT)) obj%dof_storageFMT = dof_storageFMT
+IF (PRESENT(dof_spaceCompo)) obj%dof_spaceCompo = dof_spaceCompo
+IF (PRESENT(dof_timeCompo)) obj%dof_timeCompo = dof_timeCompo
+IF (PRESENT(dof_tNodes)) obj%dof_tNodes = dof_tNodes
+IF (PRESENT(tSize)) obj%tSize = tSize
 
 IF (PRESENT(dof_names_char)) THEN
   IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
@@ -61,6 +55,11 @@ IF (PRESENT(dof_names_char)) THEN
   END DO
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
@@ -68,39 +67,206 @@ END PROCEDURE obj_SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSingle
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetSingle()"
+#endif
+
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
-areal = Input(option=scale, default=1.0_DFP)
-abool = Input(option=addContribution, default=.FALSE.)
-IF (obj%fieldType .EQ. FIELD_TYPE_CONSTANT) THEN
-  IF (abool) THEN
-    CALL add(obj%realVec, nodenum=1, VALUE=VALUE, scale=areal)
-  ELSE
-    CALL set(obj%realVec, nodenum=1, VALUE=VALUE)
-  END IF
-  RETURN
-END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
 
 IF (abool) THEN
-  CALL add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
+  CALL Add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
 ELSE
-  CALL set(obj%realVec, nodenum=indx, VALUE=VALUE)
+  areal = areal * VALUE
+  CALL Set(obj%realVec, nodenum=indx, VALUE=areal)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetSingle
 
 !----------------------------------------------------------------------------
-!                                                             SetByFunction
+!                                                                 SetSingle
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetByFunction
-CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-END PROCEDURE obj_SetByFunction
+MODULE PROCEDURE obj_SetMultiple1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple1()"
+#endif
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=math%no)
+
+IF (abool) THEN
+  areal = Input(option=scale, default=1.0_DFP)
+  CALL Add(obj%realVec, VALUE=VALUE, scale=areal, nodenum=indx)
+ELSE
+  CALL Set(obj%realVec, VALUE=VALUE, nodenum=indx)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMultiple1
 
 !----------------------------------------------------------------------------
-!
+!                                                                 SetSingle
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMultiple2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple2()"
+#endif
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=.FALSE.)
+
+IF (abool) THEN
+  areal = Input(option=scale, default=1.0_DFP)
+  CALL Add( &
+    obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
+    stride=stride)
+ELSE
+  CALL Set( &
+    obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMultiple2
+
+!----------------------------------------------------------------------------
+!                                                                 SetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMultiple3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple3()"
+#endif
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=math%no)
+
+IF (abool) THEN
+  areal = Input(option=scale, default=math%one)
+  CALL Add( &
+    obj=obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
+    iend=iend, stride=stride, istart_value=istart_value, &
+    iend_value=iend_value, stride_value=stride_value)
+ELSE
+  CALL Set( &
+    obj=obj%realVec, VALUE=VALUE, istart=istart, &
+    iend=iend, stride=stride, istart_value=istart_value, &
+    iend_value=iend_value, stride_value=stride_value)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMultiple3
+
+!----------------------------------------------------------------------------
+!                                                                 SetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMultiple4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple4()"
+#endif
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=math%no)
+
+IF (abool) THEN
+  areal = Input(option=scale, default=math%one)
+  CALL Add( &
+    obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
+    stride=stride)
+ELSE
+  CALL Set( &
+    obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMultiple4
+
+!----------------------------------------------------------------------------
+!                                                                 SetAll
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetAll
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetAll()"
+#endif
+REAL(DFP) :: areal
+LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=AddContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+IF (abool) THEN
+  CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
+ELSE
+  areal = areal * VALUE
+  CALL Set(obj%realVec, VALUE=areal)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetAll
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

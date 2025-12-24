@@ -16,11 +16,32 @@
 !
 
 SUBMODULE(AbstractKernel_Class) InitiateFieldsMethods
-USE BaseMethod, ONLY: Reallocate
-USE FieldFactory, ONLY: MatrixFieldFactory, AbstractMatrixFieldFactory,  &
-  & InitiateVectorFields, InitiateScalarFields, InitiateMatrixFields,  &
-  & InitiateSTScalarFields, InitiateSTVectorFields
+
+USE CPUTime_Class, ONLY: CPUTime_
+
+USE AbstractKernelParam, ONLY: TypeKernelProblemOpt
+
+USE AbstractField_Class, ONLY: TypeField
+
+USE KernelMatrixField_Method, ONLY: KernelInitiateTangentMatrix
+
+USE AbstractKernelParam, ONLY: TypeKernelProblemOpt
+
+USE FieldFactory, ONLY: AbstractMatrixFieldFactory, &
+                        InitiateScalarFields, &
+                        InitiateSTScalarFields, &
+                        InitiateVectorFields, &
+                        InitiateSTVectorFields, &
+                        InitiateMatrixFields
+
+USE ScalarField_Class, ONLY: ScalarFieldSafeAllocate
+USE STScalarField_Class, ONLY: STScalarFieldSafeAllocate
+USE VectorField_Class, ONLY: VectorFieldSafeAllocate
+USE STVectorField_Class, ONLY: STVectorFieldSafeAllocate
+USE MatrixField_Class, ONLY: MatrixFieldSafeAllocate
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -32,56 +53,71 @@ CHARACTER(*), PARAMETER :: myName = "obj_InitiateTangentMatrix()"
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: nsd0
 TYPE(CPUTime_) :: TypeCPUTime
+CHARACTER(*), PARAMETER :: tanmatName = "tanmat"
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 isok = ASSOCIATED(obj%tanmat)
 IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & 'Allocating AbstractKernel_::obj%tanmat as follows...'//  &
-    & CHAR_LF//'  Calling AbstractMatrixFieldFactory('//obj%engine//')')
-  obj%tanmat => AbstractMatrixFieldFactory(engine=obj%engine%chars(),  &
-    & name="MATRIX")
+                    'Allocating AbstractKernel_::obj%tanmat as follows...'// &
+                 '  Calling AbstractMatrixFieldFactory('//obj%opt%engine//')')
+#endif
+
+  obj%tanmat => AbstractMatrixFieldFactory(engine=obj%opt%engine%chars(), &
+                                           name=obj%opt%tanmatName%chars())
 END IF
 
-SELECT CASE (obj%problemType)
-CASE (KernelProblemType%scalar)
+SELECT CASE (obj%opt%problemType)
+CASE (TypeKernelProblemOpt%scalar)
   nsd0 = 1_I4B
-CASE (KernelProblemType%vector)
-  nsd0 = obj%nsd
-CASE (KernelProblemType%multiPhysics)
+
+CASE (TypeKernelProblemOpt%vector)
+  nsd0 = obj%opt%nsd
+
+CASE (TypeKernelProblemOpt%multiPhysics)
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[WIP] :: not implemented yet')
-CASE default
+                    '[WIP ERROR] :: This routine is under development')
+
+CASE DEFAULT
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: no case found for KernelProblemType')
+                    '[INTERNAL ERROR] :: no case found for KernelProblemType')
+
 END SELECT
 
-CALL KernelInitiateTangentMatrix(mat=obj%tanmat,  &
-    & linsol=obj%linsol, dom=obj%dom, nsd=nsd0, nnt=obj%nnt,  &
-    & engine=obj%engine%chars(), name="tanmat",  &
-    & matrixProp=obj%tanmatProp%chars())
+CALL KernelInitiateTangentMatrix(mat=obj%tanmat, &
+                                 linsol=obj%linsol, &
+                                 fedof=obj%fedof, &
+                                 nsd=nsd0, &
+                                 nnt=obj%opt%nnt, &
+                                 engine=obj%opt%engine%chars(), &
+                                 name=tanmatName, &
+                                 matrixProp=obj%opt%tanmatProp%chars())
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
+
 END PROCEDURE obj_InitiateTangentMatrix
 
 !----------------------------------------------------------------------------
-!                                               InitiateScalarFields
+!                                                       InitiateScalarFields
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateScalarFields
@@ -90,52 +126,57 @@ LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
-problem = ALLOCATED(obj%scalarFields)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%scalarFields'// &
-    & ' already allocated.')
-  RETURN
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%fields%scalarFields)
+IF (isok) THEN
+  tsize = SIZE(obj%fields%scalarFields)
+  problem = tsize .LT. SIZE(names)
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+            '[INTERNAL ERROR] :: AbstractKernel_::obj%fields%scalarFields'// &
+                      ' already allocated and size is not enough.')
+    RETURN
+  END IF
 END IF
 
-isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not associated.')
-  RETURN
-END IF
-
-problem = obj%nsd .EQ. 0_I4B
+problem = obj%opt%nsd .EQ. 0_I4B
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd is zero.')
   RETURN
 END IF
 
+#endif
+
 tsize = SIZE(names)
-ALLOCATE (obj%scalarFields(tsize))
-!INFO: Initiate method from FieldFactory
-CALL InitiateScalarFields(obj=obj%scalarFields, names=names,  &
-  & fieldType=typeField%normal, engine=obj%engine%chars(),  &
-  & dom=obj%dom)
+obj%fields%tScalarFields = tsize
+CALL ScalarFieldSafeAllocate(obj=obj%fields%scalarFields, newsize=tsize)
+! ScalarFieldSafeAllocate is defined in ScalarField_Class
+
+! InitiateScalarFields is defined in FieldFactory
+CALL InitiateScalarFields(obj=obj%fields%scalarFields, names=names, &
+                  fieldType=TypeField%normal, engine=obj%opt%engine%chars(), &
+                          fedof=obj%fedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateScalarFields
 
@@ -149,52 +190,59 @@ LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
-problem = ALLOCATED(obj%stScalarFields)
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%fields%stScalarFields)
+
+IF (isok) THEN
+  tsize = SIZE(obj%fields%stScalarFields)
+  problem = tsize .LT. SIZE(names)
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+          '[INTERNAL ERROR] :: AbstractKernel_::obj%fields%stScalarFields'// &
+                      ' already allocated but its size is not enough')
+    RETURN
+  END IF
+
+END IF
+
+problem = (obj%opt%nsd .EQ. 0_I4B) .OR. (obj%opt%nnt .EQ. 0_I4B)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%stScalarFields'// &
-    & ' already allocated.')
+   '[INTERNAL ERROR] :: AbstractKernel_::obj%opt%nsd or obj%opt%nnt is zero.')
   RETURN
 END IF
 
-isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not associated.')
-  RETURN
-END IF
-
-problem = (obj%nsd .EQ. 0_I4B) .OR. (obj%nnt .EQ. 0_I4B)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd or obj%nnt is zero.')
-  RETURN
-END IF
+#endif
 
 tsize = SIZE(names)
-ALLOCATE (obj%stScalarFields(tsize))
-!INFO: Initiate method from FieldFactory
-CALL InitiateSTScalarFields(obj=obj%stScalarFields, names=names,  &
-  & fieldType=typeField%normal, engine=obj%engine%chars(),  &
-  & dom=obj%dom, timeCompo=obj%nnt)
+obj%fields%tSTScalarFields = tsize
+CALL STScalarFieldSafeAllocate(obj=obj%fields%stScalarFields, newsize=tsize)
+
+! Initiate method from FieldFactory
+CALL InitiateSTScalarFields(obj=obj%fields%stScalarFields, names=names, &
+                  fieldType=TypeField%normal, engine=obj%opt%engine%chars(), &
+                            fedof=obj%fedof, timeCompo=obj%opt%nnt)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+                        '[END] ')
+#endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateSTScalarFields
 
@@ -208,53 +256,58 @@ LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
-problem = ALLOCATED(obj%vectorFields)
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%fields%vectorFields)
+
+IF (isok) THEN
+  tsize = SIZE(obj%fields%vectorFields)
+  problem = tsize .LT. SIZE(names)
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+            '[INTERNAL ERROR] :: AbstractKernel_::obj%fields%vectorFields'// &
+                      ' already allocated but its size is not enough')
+    RETURN
+  END IF
+
+END IF
+
+problem = obj%opt%nsd .EQ. 0_I4B
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%vectorFields '// &
-    & ' already allocated.')
+                  '[INTERNAL ERROR] :: AbstractKernel_::obj%opt%nsd is zero.')
   RETURN
 END IF
 
-isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not associated.')
-  RETURN
-END IF
-
-problem = obj%nsd .EQ. 0_I4B
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd is zero.')
-  RETURN
-END IF
+#endif
 
 tsize = SIZE(names)
-ALLOCATE (obj%vectorFields(tsize))
+obj%fields%tVectorFields = tsize
+CALL VectorFieldSafeAllocate(obj=obj%fields%vectorFields, newsize=tsize)
 
-!INFO: Initiate method from FieldFactory
-CALL InitiateVectorFields(obj=obj%vectorFields, names=names,  &
-  & spaceCompo=obj%nsd, fieldType=typeField%normal,  &
-  & engine=obj%engine%chars(), dom=obj%dom)
+CALL InitiateVectorFields(obj=obj%fields%vectorFields, names=names, &
+                         spaceCompo=obj%opt%nsd, fieldType=TypeField%normal, &
+                          engine=obj%opt%engine%chars(), &
+                          fedof=obj%fedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateVectorFields
 
@@ -268,53 +321,57 @@ LOGICAL(LGT) :: problem, isok
 INTEGER(I4B) :: tsize
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-problem = ALLOCATED(obj%stVectorFields)
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%fields%stVectorFields)
+IF (isok) THEN
+  tsize = SIZE(obj%fields%stVectorFields)
+  problem = tsize .LT. SIZE(names)
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+          '[INTERNAL ERROR] :: AbstractKernel_::obj%fields%stVectorFields'// &
+                      ' already allocated but its size is not enough')
+    RETURN
+  END IF
+
+END IF
+
+problem = (obj%opt%nsd .EQ. 0_I4B) .OR. (obj%opt%nnt .EQ. 0_I4B)
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%stVectorFields '// &
-    & ' already allocated.')
+           '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd or obj%nnt is zero.')
   RETURN
 END IF
 
-isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not associated.')
-  RETURN
-END IF
-
-problem = (obj%nsd .EQ. 0_I4B) .OR. (obj%nnt .EQ. 0_I4B)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd or obj%nnt is zero.')
-  RETURN
-END IF
+#endif
 
 tsize = SIZE(names)
-ALLOCATE (obj%stVectorFields(tsize))
+obj%fields%tSTVectorFields = tsize
+CALL STVectorFieldSafeAllocate(obj=obj%fields%stVectorFields, newsize=tsize)
 
-!INFO: Initiate method from FieldFactory
-CALL InitiateSTVectorFields(obj=obj%stVectorFields, names=names,  &
-  & spaceCompo=obj%nsd, fieldType=typeField%normal,  &
-  & engine=obj%engine%chars(), dom=obj%dom, timeCompo=obj%nnt)
+CALL InitiateSTVectorFields(obj=obj%fields%stVectorFields, &
+            names=names, spaceCompo=obj%opt%nsd, fieldType=TypeField%normal, &
+        engine=obj%opt%engine%chars(), fedof=obj%fedof, timeCompo=obj%opt%nnt)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateSTVectorFields
 
@@ -325,81 +382,81 @@ END PROCEDURE obj_InitiateSTVectorFields
 MODULE PROCEDURE obj_InitiateMatrixFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateMatrixFields()"
 LOGICAL(LGT) :: problem, isok
-INTEGER(I4B) :: tnames, ii
+INTEGER(I4B) :: ii, tsize
 INTEGER(I4B), ALLOCATABLE :: fieldType(:)
 TYPE(String), ALLOCATABLE :: engine(:)
-TYPE(DomainPointer_), ALLOCATABLE :: dom(:)
+TYPE(FEDOFPointer_), ALLOCATABLE :: fedof(:)
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
-problem = ALLOCATED(obj%matrixFields)
+#ifdef DEBUG_VER
+
+isok = ALLOCATED(obj%fields%matrixFields)
+
+IF (isok) THEN
+  tsize = SIZE(obj%fields%matrixFields)
+  problem = tsize .LT. SIZE(names)
+
+  IF (problem) THEN
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+            '[INTERNAL ERROR] :: AbstractKernel_::obj%fields%matrixFields'// &
+                      ' already allocated but its size is not enough')
+    RETURN
+  END IF
+END IF
+
+problem = obj%opt%nsd .EQ. 0_I4B
 IF (problem) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%matrixFields '// &
-    & ' already allocated.')
+                    '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd is zero.')
   RETURN
 END IF
 
-isok = ASSOCIATED(obj%dom)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%dom is not associated.')
-  RETURN
-END IF
+#endif
 
-problem = obj%nsd .EQ. 0_I4B
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: AbstractKernel_::obj%nsd is zero.')
-  RETURN
-END IF
+tsize = SIZE(names)
+obj%fields%tMatrixFields = tsize
+CALL MatrixFieldSafeAllocate(obj=obj%fields%matrixFields, newsize=tsize)
 
-tnames = SIZE(names)
-ALLOCATE (obj%matrixFields(tnames))
-CALL Reallocate(fieldType, tnames)
-CALL Reallocate(engine, tnames)
-ALLOCATE (dom(tnames))
-fieldType = typeField%normal
+ALLOCATE (fieldType(tsize), engine(tsize), fedof(tsize))
+DO ii = 1, tsize
+  fieldType(ii) = TypeField%normal
+END DO
 
-DO ii = 1, tnames
-  engine(ii) = obj%engine
-  dom(ii)%ptr => obj%dom
+DO ii = 1, tsize
+  engine(ii) = obj%opt%engine
+  fedof(ii)%ptr => obj%fedof
 END DO
 
 !INFO: Initiate method from FieldFactory
-CALL InitiateMatrixFields(obj=obj%matrixFields,  &
-  & names=names,  &
-  & matrixProps=matrixProp,  &
-  & spaceCompo=spaceCompo,  &
-  & timeCompo=timeCompo,  &
-  & fieldType=fieldType,  &
-  & engine=engine,  &
-  & dom=dom)
+CALL InitiateMatrixFields(obj=obj%fields%matrixFields, names=names, &
+         matrixProps=matrixProp, spaceCompo=spaceCompo, timeCompo=timeCompo, &
+                          fieldType=fieldType, engine=engine, fedof=fedof)
 
-DO ii = 1, tnames
-  dom(ii)%ptr => NULL()
+DO ii = 1, tsize
+  fedof(ii)%ptr => NULL()
   engine(ii) = ""
 END DO
-DEALLOCATE (dom)
-DEALLOCATE (fieldType)
-DEALLOCATE (engine)
+
+DEALLOCATE (fedof, fieldType, engine)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateMatrixFields
 
@@ -411,11 +468,11 @@ MODULE PROCEDURE obj_InitiateFields
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFields()"
 TYPE(CPUTime_) :: TypeCPUTime
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+IF (obj%opt%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif DEBUG_VER
 
 CALL obj%InitiateTangentMatrix()
@@ -423,14 +480,15 @@ CALL obj%InitiateMaterialProperties()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif DEBUG_VER
 
-IF (obj%showTime) THEN
+IF (obj%opt%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL obj%showTimeFile%WRITE(val=TypeCPUTime%GetStringForKernelLog( &
-  & currentTime=obj%currentTime, currentTimeStep=obj%currentTimeStep, &
-  & methodName=myName))
+                              currentTime=obj%opt%currentTime, &
+                              currentTimeStep=obj%opt%currentTimeStep, &
+                              methodName=myName))
 END IF
 END PROCEDURE obj_InitiateFields
 

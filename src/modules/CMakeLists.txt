@@ -15,8 +15,8 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-# fhash
-include(${CMAKE_CURRENT_LIST_DIR}/Fhash/CMakeLists.txt)
+# HashTable
+include(${CMAKE_CURRENT_LIST_DIR}/HashTable/CMakeLists.txt)
 
 # ExceptionHandler
 include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
@@ -78,9 +78,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElementFactory/CMakeLists.txt)
 # BinaryTree
 include(${CMAKE_CURRENT_LIST_DIR}/BinaryTree/CMakeLists.txt)
 
-# HashTable
-include(${CMAKE_CURRENT_LIST_DIR}/HashTable/CMakeLists.txt)
-
 # LinkList
 include(${CMAKE_CURRENT_LIST_DIR}/LinkList/CMakeLists.txt)
 
@@ -125,6 +122,15 @@ include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
 
 # MeshSelection
 include(${CMAKE_CURRENT_LIST_DIR}/MeshSelection/CMakeLists.txt)
+
+# TimeFEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/TimeFEDOF/CMakeLists.txt)
+
+# OneDimFEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEDOF/CMakeLists.txt)
+
+# FEDOF
+include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
 
 # GmshAPI
 include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
@@ -195,20 +201,53 @@ include(${CMAKE_CURRENT_LIST_DIR}/PolynomialFactory/CMakeLists.txt)
 # RefElement
 include(${CMAKE_CURRENT_LIST_DIR}/RefElement/CMakeLists.txt)
 
+# CoordOpt
+include(${CMAKE_CURRENT_LIST_DIR}/CoordOpt/CMakeLists.txt)
+
+# Engine
+include(${CMAKE_CURRENT_LIST_DIR}/Engine/CMakeLists.txt)
+
+# FieldOpt
+include(${CMAKE_CURRENT_LIST_DIR}/FieldOpt/CMakeLists.txt)
+
+# OneDimBasisOpt
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimBasisOpt/CMakeLists.txt)
+
+# OneDimDomain
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimDomain/CMakeLists.txt)
+
+# OneDimQuadratureOpt
+include(${CMAKE_CURRENT_LIST_DIR}/OneDimQuadratureOpt/CMakeLists.txt)
+
+# TimeOpt
+include(${CMAKE_CURRENT_LIST_DIR}/TimeOpt/CMakeLists.txt)
+
+# ErrorOpt
+include(${CMAKE_CURRENT_LIST_DIR}/ErrorOpt/CMakeLists.txt)
+
+# BasisOpt
+include(${CMAKE_CURRENT_LIST_DIR}/BasisOpt/CMakeLists.txt)
+
+# QuadratureOpt
+include(${CMAKE_CURRENT_LIST_DIR}/QuadratureOpt/CMakeLists.txt)
+
 # AbstractFE
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFE/CMakeLists.txt)
 
-# FiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/FiniteElement/CMakeLists.txt)
+# AbstractOneDimFE
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractOneDimFE/CMakeLists.txt)
 
-# MixedFiniteElement
-include(${CMAKE_CURRENT_LIST_DIR}/MixedFiniteElement/CMakeLists.txt)
+# H1FE
+include(${CMAKE_CURRENT_LIST_DIR}/H1FE/CMakeLists.txt)
 
-# FiniteElementFactory
-include(${CMAKE_CURRENT_LIST_DIR}/FiniteElementFactory/CMakeLists.txt)
+# FEFactory
+include(${CMAKE_CURRENT_LIST_DIR}/FEFactory/CMakeLists.txt)
 
 # Tree3R
 include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
+
+# UserFunction
+include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
 # AbstractBC
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractBC/CMakeLists.txt)
@@ -225,14 +264,58 @@ include(${CMAKE_CURRENT_LIST_DIR}/NitscheBC/CMakeLists.txt)
 # BoundaryCondition
 include(${CMAKE_CURRENT_LIST_DIR}/BoundaryCondition/CMakeLists.txt)
 
-# UserFunction
-include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
-
 # AbstractVector
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractVector/CMakeLists.txt)
 
 # Vector
 include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
+
+# Materials library here
+
+# AbstractMaterialModel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
+
+# AbstractSolidMechanicsModel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
+
+# AbstractPoroMechanicsModel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractPoroMechanicsModel/CMakeLists.txt)
+
+# AbstractFluidMechanicsModel
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractFluidMechanicsModel/CMakeLists.txt)
+
+# ElasticityOpt
+include(${CMAKE_CURRENT_LIST_DIR}/ElasticityOpt/CMakeLists.txt)
+
+# LinearElasticModel
+include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
+
+# LinearPoroElasticModel
+include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
+
+# NewtonianFluidModel
+include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
+
+# AbstractMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
+
+# SolidMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
+
+# fluidMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
+
+# porousMaterial
+include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
+
+# SolidMechanicsModel
+include(${CMAKE_CURRENT_LIST_DIR}/SolidMechanicsModel/CMakeLists.txt)
+
+# MaterialFactory
+include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
+
+# easifemMaterials
+include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
 
 # AbstractField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractField/CMakeLists.txt)
@@ -243,23 +326,21 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractNodeField/CMakeLists.txt)
 # AbstractMeshField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMeshField/CMakeLists.txt)
 
-# ScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt)
+# MeshField
+include(${CMAKE_CURRENT_LIST_DIR}/MeshField/CMakeLists.txt)
 
+# # ScalarMeshField
+# include(${CMAKE_CURRENT_LIST_DIR}/ScalarMeshField/CMakeLists.txt) #
 # STScalarMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/STScalarMeshField/CMakeLists.txt) #
 # VectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/VectorMeshField/CMakeLists.txt) #
 # STVectorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/STVectorMeshField/CMakeLists.txt) #
 # TensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt)
-
+# include(${CMAKE_CURRENT_LIST_DIR}/TensorMeshField/CMakeLists.txt) #
 # STTensorMeshField
-include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
+# include(${CMAKE_CURRENT_LIST_DIR}/STTensorMeshField/CMakeLists.txt)
 
 # AbstractElementField
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractElementField/CMakeLists.txt)
@@ -309,14 +390,20 @@ include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixField/CMakeLists.txt)
 # BlockMatrixFieldLis
 include(${CMAKE_CURRENT_LIST_DIR}/BlockMatrixFieldLis/CMakeLists.txt)
 
-# AbstractLinSolver
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
-
 # Field
 include(${CMAKE_CURRENT_LIST_DIR}/Field/CMakeLists.txt)
 
 # FieldFactory
 include(${CMAKE_CURRENT_LIST_DIR}/FieldFactory/CMakeLists.txt)
+
+# FieldUtility
+include(${CMAKE_CURRENT_LIST_DIR}/FieldUtility/CMakeLists.txt)
+
+# LinSolverOpt
+include(${CMAKE_CURRENT_LIST_DIR}/LinSolverOpt/CMakeLists.txt)
+
+# AbstractLinSolver
+include(${CMAKE_CURRENT_LIST_DIR}/AbstractLinSolver/CMakeLists.txt)
 
 # LinSolver
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolver/CMakeLists.txt)
@@ -327,8 +414,15 @@ include(${CMAKE_CURRENT_LIST_DIR}/LinSolverLis/CMakeLists.txt)
 # LinSolverFactory
 include(${CMAKE_CURRENT_LIST_DIR}/LinSolverFactory/CMakeLists.txt)
 
+# ----------------------------------------------------------------------------
+# Plotting
+# ----------------------------------------------------------------------------
+
 # AbstractPlot
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractPlot/CMakeLists.txt)
+
+# GnuPlot
+include(${CMAKE_CURRENT_LIST_DIR}/GnuPlot/CMakeLists.txt)
 
 # VTKPlot
 include(${CMAKE_CURRENT_LIST_DIR}/VTKPlot/CMakeLists.txt)
@@ -342,58 +436,28 @@ include(${CMAKE_CURRENT_LIST_DIR}/PLPlot/CMakeLists.txt)
 # Plot
 include(${CMAKE_CURRENT_LIST_DIR}/Plot/CMakeLists.txt)
 
-# easifemClasses
-include(${CMAKE_CURRENT_LIST_DIR}/easifemClasses/CMakeLists.txt)
-
-# Materials library here
-
-# AbstractMaterialModel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
-
-# AbstractSolidMechanicsModel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
-
-# AbstractPoroMechanicsModel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractPoroMechanicsModel/CMakeLists.txt)
-
-# AbstractFluidMechanicsModel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractFluidMechanicsModel/CMakeLists.txt)
-
-# LinearElasticModel
-include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
-
-# LinearPoroElasticModel
-include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
-
-# NewtonianFluidModel
-include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
-
-# MaterialFactory
-include(${CMAKE_CURRENT_LIST_DIR}/MaterialFactory/CMakeLists.txt)
-
-# AbstractMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
-
-# SolidMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
-
-# fluidMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
-
-# porousMaterial
-include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
-
-# SolidMechanicsModel
-include(${CMAKE_CURRENT_LIST_DIR}/SolidMechanicsModel/CMakeLists.txt)
-
-# easifemMaterials
-include(${CMAKE_CURRENT_LIST_DIR}/easifemMaterials/CMakeLists.txt)
-
 # ----------------------------------------------------------------------------
-# KERNELS
+# Kernel level utilities
 # ----------------------------------------------------------------------------
 
-# AbstractKernel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractKernel/CMakeLists.txt)
-# easifemKernels
-include(${CMAKE_CURRENT_LIST_DIR}/easifemKernels/CMakeLists.txt)
+# AssembleMassMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleMassMatrix/CMakeLists.txt)
+
+# AssembleDiffusionMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleDiffusionMatrix/CMakeLists.txt)
+
+# AssembleStiffnessMatrix
+include(${CMAKE_CURRENT_LIST_DIR}/AssembleStiffnessMatrix/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# time integration algorithms
+# ----------------------------------------------------------------------------
+
+# semi-discrete algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
+
+# composite semi-discrete algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/CSDAlgorithms/CMakeLists.txt)
+
+# time discontinous algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
