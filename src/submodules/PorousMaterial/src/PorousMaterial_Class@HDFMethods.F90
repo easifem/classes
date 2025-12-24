@@ -15,67 +15,86 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PorousMaterial_Class) GetMethods
+SUBMODULE(PorousMaterial_Class) HDFMethods
 USE Display_Method, ONLY: ToString
+USE AbstractMaterial_Class, ONLY: AbstractMaterialImport, &
+                                  AbstractMaterialExport
+USE MaterialFactory, ONLY: PoroMechanicsModelFactory
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   GetPorousMaterialPointer
+!                                                                    Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPorousMaterialPointer
+MODULE PROCEDURE obj_Import
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPorousMaterialPointer()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tsize
+TYPE(String) :: dsetname, strval
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(obj)
+CALL AbstractMaterialImport(obj=obj, hdf5=hdf5, group=group)
 
+! stressStrainModel
+isok = hdf5%PathExists(TRIM(group)//"/stressStrainModel")
+IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
-isok = materialNo .LE. tsize
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+dsetname = TRIM(group)//"/stressStrainModel/name"
+#ifdef DEBUG_VER
+isok = hdf5%PathExists(dsetname%chars())
 CALL AssertError1(isok, myName, &
-     'materialNo = '//Tostring(materialNo)//' is greater than total &
-     &materials = '//Tostring(tsize))
+                  'dataset '//dsetname//' should be present.')
 #endif
 
-ans => NULL()
-ans => obj(materialNo)%ptr
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
+obj%stressStrainModel => PoroMechanicsModelFactory(strval%chars())
+dsetname = TRIM(group)//"/stressStrainModel"
+CALL obj%stressStrainModel%IMPORT(hdf5=hdf5, group=dsetname%chars())
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetPorousMaterialPointer
+END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
-!                                                GetStressStrainModelPointer
+!                                                                     Export
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetStressStrainModelPointer
+MODULE PROCEDURE obj_Export
+CHARACTER(*), PARAMETER :: myName = "obj_Export"
+TYPE(String) :: dsetname
+
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetStressStrainModelPointer()"
+CALL e%raiseInformation(modName//"::"//myName//" - "// &
+  & "[START] Export()")
 #endif
+
+CALL AbstractMaterialExport(obj=obj, hdf5=hdf5, group=group)
+IF (ASSOCIATED(obj%stressStrainModel)) THEN
+  dsetname = TRIM(group)//"/stressStrainModel"
+  CALL obj%stressStrainModel%export(hdf5=hdf5, group=dsetname%chars())
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  & '[END] Export()')
 #endif
 
-ans => obj%stressStrainModel
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetStressStrainModelPointer
+END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                            Include Error
@@ -83,4 +102,4 @@ END PROCEDURE obj_GetStressStrainModelPointer
 
 #include "../../include/errors.F90"
 
-END SUBMODULE GetMethods
+END SUBMODULE HDFMethods

@@ -16,7 +16,8 @@
 !
 
 SUBMODULE(PorousMaterial_Class) IOMethods
-USE MaterialFactory
+USE AbstractMaterial_Class, ONLY: AbstractMaterialDisplay
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 CONTAINS
 
@@ -24,73 +25,34 @@ CONTAINS
 !                                                                    Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Porous_Display
-! CHARACTER(*), PARAMETER :: myName = "Porous_Display"
+MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = ASSOCIATED(obj%stressStrainModel)
 CALL AbstractMaterialDisplay(obj=obj, msg=msg, unitNo=unitNo)
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  CALL obj%stressStrainModel%Display(msg="stressStrainModel :", &
-  & unitNo=unitNo)
-END IF
-END PROCEDURE Porous_Display
-
-!----------------------------------------------------------------------------
-!                                                                    Import
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Porous_Import
-CHARACTER(*), PARAMETER :: myName = "Porous_Import"
-TYPE(String) :: dsetname, strval
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Import()')
-#endif
-
-CALL AbstractMaterialImport(obj=obj, hdf5=hdf5, group=group)
-
-IF (hdf5%pathExists(TRIM(group)//"/stressStrainModel")) THEN
-  dsetname = TRIM(group)//"/stressStrainModel/name"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%raiseError(modName//'::'//myName//" - "// &
-      & 'The dataset ./stressStrainModel/name should be present')
-  END IF
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-  obj%stressStrainModel => PoroMechanicsModelFactory( &
-    & TRIM(strval%chars()))
-  dsetname = TRIM(group)//"/stressStrainModel"
-  CALL obj%stressStrainModel%IMPORT(hdf5=hdf5, &
-    & group=dsetname%chars())
+CALL Display(isok, "stressStrainModel ASSOCIATED: ", unitNo=unitNo)
+IF (isok) THEN
+  CALL obj%stressStrainModel%Display(msg="stressStrainModel:", &
+                                     unitNo=unitNo)
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Import()')
+                        '[END] ')
 #endif
-END PROCEDURE Porous_Import
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                                     Export
+!
 !----------------------------------------------------------------------------
-
-MODULE PROCEDURE Porous_Export
-CHARACTER(*), PARAMETER :: myName = "Porous_Export"
-TYPE(String) :: dsetname
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Export()')
-#endif
-
-CALL AbstractMaterialExport(obj=obj, hdf5=hdf5, group=group)
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  dsetname = TRIM(group)//"/stressStrainModel"
-  CALL obj%stressStrainModel%export(hdf5=hdf5, group=dsetname%chars())
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Export()')
-#endif
-END PROCEDURE Porous_Export
 
 END SUBMODULE IOMethods

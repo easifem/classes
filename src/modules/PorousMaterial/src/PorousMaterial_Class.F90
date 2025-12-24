@@ -28,22 +28,34 @@
 ! object.
 
 MODULE PorousMaterial_Class
-USE GlobalData
-USE String_Class
-USE BaSetype
+USE GlobalData, ONLY: I4B, LGT, DFP
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class
-USE FPL, ONLY: ParameterList_
-USE AbstractMaterial_Class
-USE AbstractPoroMechanicsModel_Class
+USE HDF5File_Class, ONLY: HDF5File_
+USE AbstractMaterial_Class, ONLY: AbstractMaterial_
+USE AbstractPoroMechanicsModel_Class, ONLY: AbstractPoroMechanicsModel_
+USE MeshSelection_Class, ONLY: MeshSelectionPointer_, MeshSelection_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
+
 IMPLICIT NONE
+
 PRIVATE
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "PorousMaterial_Class"
-CHARACTER(*), PARAMETER :: myprefix = "PorousMaterial"
+#endif
+
 PUBLIC :: PorousMaterial_
-PUBLIC :: TypePorousMaterial
 PUBLIC :: PorousMaterialPointer_
-PUBLIC :: SetPorousMaterialParam
+PUBLIC :: PorousMaterialDeallocate
+PUBLIC :: PorousMaterialReallocate
+PUBLIC :: AddPorousMaterial
+PUBLIC :: GetPorousMaterialPointer
+PUBLIC :: TypePorousMaterial
+PUBLIC :: PorousMaterialImportFromToml
+PUBLIC :: PorousMaterialNamesFromToml
 
 !----------------------------------------------------------------------------
 !                                                            PorousMaterial_
@@ -62,16 +74,35 @@ TYPE, EXTENDS(AbstractMaterial_) :: PorousMaterial_
     !! Pointer to stress strain material behavior of Porouss
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    & Porous_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => Porous_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => Porous_Deallocate
-  FINAL :: Porous_Final
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => Porous_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => Porous_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => Porous_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => Porous_GetPrefix
+
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_Final
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  ! IO:
+  ! @HDFMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+
+  ! IO:
+  ! @TomlMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStressStrainModelPointer => &
+    obj_GetStressStrainModelPointer
 END TYPE PorousMaterial_
+
+!----------------------------------------------------------------------------
+!                                                         TypePorousMaterial
+!----------------------------------------------------------------------------
 
 TYPE(PorousMaterial_), PARAMETER :: TypePorousMaterial = PorousMaterial_()
 
@@ -84,69 +115,40 @@ TYPE :: PorousMaterialPointer_
 END TYPE PorousMaterialPointer_
 
 !----------------------------------------------------------------------------
-!                                  SetPorousMaterialParam@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine Sets the essential parameter for [[PorousMaterial_]]
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-24
+! summary: This routine initiates the instance of `PorousMaterial`
 !
 !# Introduction
+! This routine initiates the instance of `PorousMaterial_`.
+! It reads the arguments and sets the options of `PorousMaterial`
 !
-! This routine Sets the essential parameter for [[PorousMaterial_]].
-! It Sets values for
+!- `PorousMaterial/name`
+!- `PorousMaterial/stresStrainModel`
 !
-! - `porousMaterial/name`
-! - `porousMaterial/massDensity`
-! - `porousMaterial/stresStrainModel`
+! This routine calls the [[MaterialFactory:PorousMechanicsModelFactory]] to
+! construct the [[PorousMaterial_:stressStrainModel]].
+!
+! If the `PorousMaterial/stressStrainModel` is already associated, then
+! the routine will produce error, so make sure the
+! [[PorousMaterial_:stressStrainModel]] is nullified before calling it.
+!
+! This method does not initiate the stressStrainModel,
+! after this method call, user should get the pointer of
+! stressStrainModel and call Initiate method on it.
 
 INTERFACE
-  MODULE SUBROUTINE SetPorousMaterialParam(param, name, stressStrainModel)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
+  MODULE SUBROUTINE obj_Initiate(obj, name, stressStrainModel)
+    CLASS(PorousMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! It is the name of the material
     CHARACTER(*), OPTIONAL, INTENT(IN) :: stressStrainModel
     !! Name of the child-class of `AbstractPorousMechanicsModel_`
     !! For example `LinearElasticModel`
-  END SUBROUTINE SetPorousMaterialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine Checks the essential parameter for [[PorousMaterial_]]
-!
-!# Introduction
-!
-! This routine Checks the essential parameter for [[PorousMaterial_]].
-! It Checks the existance of
-!
-! - `porousMaterial/name`
-
-INTERFACE
-  MODULE SUBROUTINE Porous_CheckEssentialParam(obj, param)
-    CLASS(PorousMaterial_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE Porous_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine initiates the instance of `porousMaterial`
-
-INTERFACE
-  MODULE SUBROUTINE Porous_Initiate(obj, param, prefix)
-    CLASS(PorousMaterial_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-  END SUBROUTINE Porous_Initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -168,10 +170,14 @@ END INTERFACE
 !@endwarning
 
 INTERFACE
-  MODULE SUBROUTINE Porous_Deallocate(obj)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(PorousMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE Porous_Deallocate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
+
+INTERFACE PorousMaterialDeallocate
+  MODULE PROCEDURE obj_Deallocate
+END INTERFACE PorousMaterialDeallocate
 
 !----------------------------------------------------------------------------
 !                                          Final@ConstructorMethods
@@ -182,13 +188,87 @@ END INTERFACE
 ! summary: This routine deallocates the instance
 
 INTERFACE
-  MODULE SUBROUTINE Porous_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(PorousMaterial_), INTENT(INOUT) :: obj
-  END SUBROUTINE Porous_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Import@IOMethods
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector
+
+INTERFACE
+  MODULE SUBROUTINE Deallocate_Vector(obj)
+    TYPE(PorousMaterial_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE Deallocate_Vector
+END INTERFACE
+
+INTERFACE PorousMaterialDeallocate
+  MODULE PROCEDURE Deallocate_Vector
+END INTERFACE PorousMaterialDeallocate
+
+!----------------------------------------------------------------------------
+!                                              Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Deallocate the vector of pointer
+
+INTERFACE
+  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
+    TYPE(PorousMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE Deallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE PorousMaterialDeallocate
+  MODULE PROCEDURE Deallocate_Ptr_Vector
+END INTERFACE PorousMaterialDeallocate
+
+!----------------------------------------------------------------------------
+!                                              Reallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Reallocate the vector
+
+INTERFACE
+  MODULE SUBROUTINE Reallocate_Vector(obj, tsize)
+    TYPE(PorousMaterial_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tsize
+  END SUBROUTINE Reallocate_Vector
+END INTERFACE
+
+INTERFACE PorousMaterialReallocate
+  MODULE PROCEDURE Reallocate_Vector
+END INTERFACE PorousMaterialReallocate
+
+!----------------------------------------------------------------------------
+!                                              Reallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-09-09
+! summary:  Reallocate the vector of pointer
+
+INTERFACE
+  MODULE SUBROUTINE Reallocate_Ptr_Vector(obj, tsize)
+    TYPE(PorousMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tsize
+  END SUBROUTINE Reallocate_Ptr_Vector
+END INTERFACE
+
+INTERFACE PorousMaterialReallocate
+  MODULE PROCEDURE Reallocate_Ptr_Vector
+END INTERFACE PorousMaterialReallocate
+
+!----------------------------------------------------------------------------
+!                                                          Import@HDFMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -200,15 +280,15 @@ END INTERFACE
 ! summary: This routine initiates the instance from hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE Porous_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(PorousMaterial_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE Porous_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Export@IOMethods
+!                                                           Export@HDFMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -216,11 +296,11 @@ END INTERFACE
 ! summary: This routine exports the information to external hdf5 file
 
 INTERFACE
-  MODULE SUBROUTINE Porous_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(PorousMaterial_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE Porous_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -232,22 +312,228 @@ END INTERFACE
 ! summary: This routine displays the content of the instance
 
 INTERFACE
-  MODULE SUBROUTINE Porous_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(PorousMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE Porous_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
+!                                               AddPorousMaterial@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-24
+! summary:  Add a Porous material to the vector of PorousMaterialPointer_
+!
+!# Introduction
+!
+! This routine adds a Porous material to the vector of PorousMaterialPointer_.
+! It uses the [[MaterialFactory:PorousMaterialFactory]] to get the
+! correct PorousMaterial_ pointer and set it to
+! obj(materialNo)%ptr.
+! If region and PorousMaterialToMesh are provided,
+! then it sets PorousMaterialToMesh(materialNo) = region.
+!
+! Note that this method will not initiate obj(materialNo)%ptr
+! After this call user has to call Initiate method on it
+
 INTERFACE
-  MODULE FUNCTION Porous_GetPrefix(obj) RESULT(ans)
+  MODULE SUBROUTINE obj_AddPorousMaterial( &
+    obj, tMaterials, materialNo, materialName, PorousMaterialToMesh, &
+    region)
+    TYPE(PorousMaterialPointer_), INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: tMaterials
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
+    !! Name of the material
+    !! If it is provided then we call PorousMaterialFactory to
+    !! get a correct PorousMaterial_ pointer and
+    !! set it to obj(materialNo)%ptr
+    TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
+    !! If region is present then it is set to the PorousMaterialToMesh
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: PorousMaterialToMesh(:)
+    ! If PorousMaterialToMesh is provided, then we check if region is present.
+    ! If both are present, the we set
+    ! PorousMaterialToMesh(materialNo) = region
+  END SUBROUTINE obj_AddPorousMaterial
+END INTERFACE
+
+INTERFACE AddPorousMaterial
+  MODULE PROCEDURE obj_AddPorousMaterial
+END INTERFACE AddPorousMaterial
+
+!----------------------------------------------------------------------------
+!                                        GetPorousMaterialPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-08
+! summary:  Get a Porous material pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetPorousMaterialPointer(obj, materialNo) RESULT(ans)
+    TYPE(PorousMaterialPointer_), INTENT(INOUT) :: obj(:)
+    INTEGER(I4B), INTENT(IN) :: materialNo
+    CLASS(PorousMaterial_), POINTER :: ans
+  END FUNCTION obj_GetPorousMaterialPointer
+END INTERFACE
+
+INTERFACE GetPorousMaterialPointer
+  MODULE PROCEDURE obj_GetPorousMaterialPointer
+END INTERFACE GetPorousMaterialPointer
+
+!----------------------------------------------------------------------------
+!                                     GetStressStrainModelPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-02-10
+! summary: Get stressStrainModel pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetStressStrainModelPointer(obj) RESULT(ans)
     CLASS(PorousMaterial_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION Porous_GetPrefix
+    CLASS(AbstractPoroMechanicsModel_), POINTER :: ans
+  END FUNCTION obj_GetStressStrainModelPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ImportFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate PorousMaterial_ from the toml table
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, region, dom)
+    CLASS(PorousMaterial_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml table
+!
+!# Introduction
+!
+!  This routine initiates several PorousMaterialPointer_ objects
+!  from the array of toml table
+!  If the array of toml is not found then the size of obj will be set to 0
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, table, materialNames, tsize, &
+                                        region, dom)
+    TYPE(PorousMaterialPointer_), INTENT(INOUT) :: obj(:)
+    !! Should be allocated outside
+    !! The size should be atleast size of materialNames
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table to returned
+    TYPE(String), INTENT(IN) :: materialNames(:)
+    !! Material names that will be read from the toml table
+    !! It should be provided by the user
+    !! In the table we will look for nodes with these names
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! How many material read from the toml table
+    !! If tSize equals to the size of materialNames, then
+    !! all the materials are read from the toml table
+    !! Otherwise size(materialNames) - tsize materials are not
+    !! read successfully from the toml table
+    TYPE(MeshSelectionPointer_), OPTIONAL, INTENT(INOUT) :: region(:)
+    !! It should be allocated outside
+    !! The size of regions should be alteast size of materialNames
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
+    !! Domain to which the materials belong
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+INTERFACE PorousMaterialImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml2
+END INTERFACE PorousMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename, &
+                                        printToml, tsize, region, dom)
+    TYPE(PorousMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: tomlName
+    !! tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    !! Text file to read the toml file
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    !! Name of the toml file
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! See docs of `obj_ImportFromToml2`
+    TYPE(MeshSelectionPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      region(:)
+    !! It should be allocated outside
+    !! The size of region should be alteast size of materialNames
+    CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
+    !! Domain to which the materials belong
+  END SUBROUTINE obj_ImportFromToml3
+END INTERFACE
+
+INTERFACE PorousMaterialImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml3
+END INTERFACE PorousMaterialImportFromToml
+
+!----------------------------------------------------------------------------
+!                                             ReadPorousMaterialNamesFromToml
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-30
+! summary:  Read PorousMaterialNames from the toml table
+!
+!# Introduction
+!
+! This routine reads the PorousMaterialNames (a String) from the toml table
+! It will reallocate materialNames and return the size of it in tsize.
+!
+! Then you can allocate a vector of PorousMaterialPointer_ with tsize
+! Then you can call PorousMaterialImportFromToml to read the materials
+!
+! Your toml table looks something like the following (For details
+! see PorousMaterial2.toml):
+!
+! ```toml
+! PorousMaterialNames = ['Porous1', 'Porous2', 'Porous3']
+! # other data
+! ```
+!
+! To read PorousMaterial2.toml you will do the following tasks:
+!
+! 1. CALL ReadPorousMaterialNamesFromToml(table, materialNames, tsize)
+! 2. ALLOCATE(obj(tsize), region(tsize))
+! 3. CALL PorousMaterialImportFromToml(obj,table,materialNames,tsize,&
+!                                     region,dom)
+
+INTERFACE
+  MODULE SUBROUTINE PorousMaterialNamesFromToml( &
+    table, materialNames, tsize)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(String), ALLOCATABLE, INTENT(INOUT) :: materialNames(:)
+    !! materialNames to be read from the toml table
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of the materialNames
+  END SUBROUTINE PorousMaterialNamesFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------

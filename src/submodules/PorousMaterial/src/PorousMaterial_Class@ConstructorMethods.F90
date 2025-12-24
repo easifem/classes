@@ -15,104 +15,152 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(PorousMaterial_Class) ConstructorMethods
-USE MaterialFactory
-USE FPL_Method
+USE Display_Method, ONLY: ToString
+USE MaterialFactory, ONLY: PoroMechanicsModelFactory
+USE AbstractMaterial_Class, ONLY: AbstractMaterialInitiate, &
+                                  AbstractMaterialDeallocate
+
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                     setPorousMaterialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE setPorousMaterialParam
-CALL SetAbstractMaterialParam(param=param, &
-  & prefix=myprefix, name=name)
-CALL Set(obj=param, prefix=myprefix, key="stressStrainModel",  &
-  & VALUE=stressStrainModel, dataType="char")
-END PROCEDURE setPorousMaterialParam
-
-!----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Porous_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "Porous_CheckEssentialParam"
-IF (.NOT. param%isPresent(key=myprefix//"/name")) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-  & myprefix//'/name should be present in param')
-END IF
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  CALL obj%stressStrainModel%CheckEssentialParam(param)
-END IF
-END PROCEDURE Porous_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Porous_Initiate
-CHARACTER(*), PARAMETER :: myName = "Porous_Initiate"
-TYPE(String) :: prefix0, stressStrainModel
-LOGICAL(LGT) :: bool1
-! main
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] Initiate()')
+                        '[START] ')
 #endif
 
-IF (PRESENT(prefix)) THEN
-  prefix0 = prefix
-ELSE
-  prefix0 = obj%GetPrefix()
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. ASSOCIATED(obj%stressStrainModel)
+CALL AssertError1(isok, myName, &
+                 "stressStrainModel is already associated, nullify it first.")
+#endif
 
-CALL AbstractMaterialInitiate(obj=obj, param=param, prefix=prefix0%chars())
+CALL AbstractMaterialInitiate(obj=obj, name=name)
 
-! stressStrainModel
+! If strassStrainModel is not provided, then nothing to do here
+isok = PRESENT(stressStrainModel)
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'stressStrainModel not provided, Nothing to do here.')
 
-CALL GetValue(obj=param, prefix=prefix0%chars(), key="stressStrainModel",  &
-  & VALUE=stressStrainModel)
-
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & "[CONFIG ERROR] :: The "//prefix0//"/stressStrainModel is "//  &
-    & "already associated, "//  &
-    & CHAR_LF//"nullify it first.")
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
-bool1 = param%isPresent(key=prefix0//"/stressStrainModel")
-IF (bool1) THEN
-  obj%stressStrainModel => PoroMechanicsModelFactory( &
-    & stressStrainModel%chars())
-  CALL obj%stressStrainModel%Initiate(param)
-END IF
+! This code is called when stressStrainModel is defined
+! We are not triming here, it is user's responsibility
+! We may use uppercase in the SolidMechanicsModelFactory
+obj%stressStrainModel => PoroMechanicsModelFactory(stressStrainModel)
+
+! We are not initiating stressStrainModel.
+! After this method call, user should get the pointer of
+! stressStrainModel and call Initiate method on it.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] Initiate()')
+                        '[END] ')
 #endif
-END PROCEDURE Porous_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                            Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Porous_Deallocate
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractMaterialDeallocate(obj)
-IF (ASSOCIATED(obj%stressStrainModel)) THEN
-  DEALLOCATE (obj%stressStrainModel)
-  NULLIFY (obj%stressStrainModel)
+
+isok = ASSOCIATED(obj%stressStrainModel)
+IF (isok) THEN
+  CALL obj%stressStrainModel%DEALLOCATE()
+  obj%stressStrainModel => NULL()
 END IF
-END PROCEDURE Porous_Deallocate
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                                    Final
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE Porous_Final
+MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
-END PROCEDURE Porous_Final
+END PROCEDURE obj_Final
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Deallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
+END PROCEDURE Deallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Deallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
+END PROCEDURE Deallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Reallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Vector()"
+#endif
+#include "../../include/reallocate_vector.F90"
+END PROCEDURE Reallocate_Vector
+
+!----------------------------------------------------------------------------
+!                                                             Reallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Reallocate_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Ptr_Vector()"
+#endif
+#include "../../include/reallocate_vector_ptr.F90"
+END PROCEDURE Reallocate_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods
