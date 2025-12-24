@@ -45,7 +45,10 @@ PUBLIC :: AbstractMaterialDisplay
 PUBLIC :: AbstractMaterialImportFromToml
 PUBLIC :: TypeMaterial
 
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "AbstractMaterial_Class"
+#endif
+
 REAL(DFP), PARAMETER :: expandScale1 = 2
 REAL(DFP), PARAMETER :: expandScale2 = 1.2
 INTEGER(I4B), PARAMETER :: thresholdSize = 20
