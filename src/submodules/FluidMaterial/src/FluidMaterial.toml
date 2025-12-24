@@ -1,0 +1,23 @@
+[fluid]
+name = "fluid"
+propNames = ["massDensity", "viscosity"]
+stressStrainModel = "newtonianFluidModel"
+
+[fluid.massDensity]
+returnType = "Scalar"
+argType = "Constant"
+value = 1.0
+
+[fluid.viscosity]
+returnType = "Scalar"
+argType = "Constant"
+value = 0.33
+
+[fluid.newtonianFluidModel]
+name = "newtonianFluidModel"
+# elasticityType = "ISO" #TODO
+# poissonRatio = 0.1
+# youngsModulus = 1.0
+
+[fluid.region]
+# This is same as meshSelection.toml
