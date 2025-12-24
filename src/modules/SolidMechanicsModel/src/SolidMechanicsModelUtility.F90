@@ -17,15 +17,11 @@
 
 MODULE SolidMechanicsModelUtility
 USE GlobalData, ONLY: I4B, LGT, DFP
-
-USE LinearElasticModel_Class, ONLY: LinearElasticModel_prefix,  &
-  & SetLinearElasticModelParam
-
-USE LinearPoroElasticModel_Class, ONLY: LinearPoroElasticModel_Prefix,  &
-  & SetLinearPoroElasticModelParam
-
+USE LinearElasticModel_Class, ONLY: LinearElasticModel_prefix
+USE LinearElasticModel_Class, ONLY: SetLinearElasticModelParam
+USE LinearPoroElasticModel_Class, ONLY: LinearPoroElasticModel_Prefix
+USE LinearPoroElasticModel_Class, ONLY: SetLinearPoroElasticModelParam
 USE FPL, ONLY: ParameterList_
-
 USE ExceptionHandler_Class, ONLY: e
 
 PRIVATE
