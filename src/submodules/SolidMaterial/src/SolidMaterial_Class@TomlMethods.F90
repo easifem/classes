@@ -17,15 +17,13 @@
 
 SUBMODULE(SolidMaterial_Class) TomlMethods
 USE MeshSelection_Class, ONLY: MeshSelectionReallocate
-USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: ToString, Display
-
-USE MaterialFactory, ONLY: SolidMechanicsModelFactory, &
-                           SolidMaterialFactory
+USE MaterialFactory, ONLY: SolidMechanicsModelFactory
+USE MaterialFactory, ONLY: SolidMaterialFactory
 USE TomlUtility, ONLY: GetValue
-
 USE tomlf, ONLY: toml_get => get_value
 USE AbstractMaterial_Class, ONLY: AbstractMaterialImportFromToml
+USE StringUtility, ONLY: StringDeallocate => DEALLOCATE
 
 IMPLICIT NONE
 CONTAINS
@@ -262,11 +260,7 @@ CALL SolidMaterialImportFromToml(obj=obj, table=node, &
 node => NULL()
 DEALLOCATE (table)
 
-DO ii = 1, tsize
-  materialNames(ii) = ""
-END DO
-
-DEALLOCATE (materialNames)
+CALL StringDeallocate(materialNames)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
