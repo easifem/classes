@@ -17,61 +17,10 @@
 SUBMODULE(SolidMaterial_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
 USE MaterialFactory, ONLY: SolidMechanicsModelFactory
-USE FPL_Method, ONLY: Set, GetValue
-USE AbstractMaterial_Class, ONLY: SetAbstractMaterialParam, &
-                                  AbstractMaterialInitiate, &
+USE AbstractMaterial_Class, ONLY: AbstractMaterialInitiate, &
                                   AbstractMaterialDeallocate
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                     setSolidMaterialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetSolidMaterialParam
-CHARACTER(*), PARAMETER :: myName = "SetSolidMaterialParam()"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif DEBUG_VER
-
-CALL SetAbstractMaterialParam(param=param, prefix=myprefix, name=name)
-CALL Set(obj=param, prefix=myprefix, key="stressStrainModel", &
-         VALUE=stressStrainModel, dataType="char")
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetSolidMaterialParam
-
-!----------------------------------------------------------------------------
-!                                                        CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-LOGICAL(LGT) :: isok
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = param%isPresent(key=myprefix//"/name")
-CALL AssertError1(isok, myName, &
-                  myprefix//'/name should be present in param')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                 Initiate
@@ -82,7 +31,6 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
-TYPE(String) :: prefix0, stressStrainModel
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -90,38 +38,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(prefix)) THEN
-  prefix0 = prefix
-ELSE
-  prefix0 = obj%GetPrefix()
-END IF
-
 #ifdef DEBUG_VER
 isok = .NOT. ASSOCIATED(obj%stressStrainModel)
 CALL AssertError1(isok, myName, &
-       prefix0//"/stressStrainModel is already associated, nullify it first.")
+                 "stressStrainModel is already associated, nullify it first.")
 #endif
 
-CALL AbstractMaterialInitiate(obj=obj, param=param, prefix=prefix0%chars())
+CALL AbstractMaterialInitiate(obj=obj, name=name)
 
-isok = param%isPresent(key=prefix0//"/stressStrainModel")
+! If strassStrainModel is not provided, then nothing to do here
+isok = PRESENT(stressStrainModel)
 IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'stressStrainModel not provided, Nothing to do here.')
+
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
   RETURN
 END IF
 
-! stressStrainModel
-CALL GetValue(obj=param, prefix=prefix0%chars(), &
-              key="stressStrainModel", VALUE=stressStrainModel)
+! This code is called when stressStrainModel is defined
+! We are not triming here, it is user's responsibility
+! We may use uppercase in the SolidMechanicsModelFactory
+obj%stressStrainModel => SolidMechanicsModelFactory(stressStrainModel)
 
-obj%stressStrainModel => NULL()
-obj%stressStrainModel => SolidMechanicsModelFactory( &
-                         stressStrainModel%chars())
-
-CALL obj%stressStrainModel%Initiate(param)
+! We are not initiating stressStrainModel.
+! After this method call, user should get the pointer of
+! stressStrainModel and call Initiate method on it.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -184,7 +129,7 @@ END PROCEDURE Deallocate_Vector
 
 MODULE PROCEDURE Deallocate_Ptr_Vector
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName= "Deallocate_Ptr_Vector()"
+CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
 #endif
 #include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE Deallocate_Ptr_Vector
@@ -206,7 +151,7 @@ END PROCEDURE Reallocate_Vector
 
 MODULE PROCEDURE Reallocate_Ptr_Vector
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName= "Reallocate_Ptr_Vector()"
+CHARACTER(*), PARAMETER :: myName = "Reallocate_Ptr_Vector()"
 #endif
 #include "../../include/reallocate_vector_ptr.F90"
 END PROCEDURE Reallocate_Ptr_Vector

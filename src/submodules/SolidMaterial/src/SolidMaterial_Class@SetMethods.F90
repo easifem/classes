@@ -47,6 +47,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 abool = PRESENT(region) .AND. PRESENT(solidMaterialToMesh)
+
 #ifdef DEBUG_VER
 isok = .TRUE.
 tsize1 = 0
@@ -61,7 +62,8 @@ CALL AssertError1(isok, myName, &
 
 IF (abool) solidMaterialToMesh(materialNo) = region
 
-abool = PRESENT(param)
+abool = PRESENT(materialName)
+
 #ifdef DEBUG_VER
 isok = .TRUE.
 tsize1 = 0
@@ -75,16 +77,12 @@ CALL AssertError1(isok, myName, &
 
 isok = .NOT. ASSOCIATED(obj(materialNo)%ptr)
 CALL AssertError1(isok, myName, &
-      'solidMaterial('//ToString(materialNo)//')%ptr is already associated.')
-
-isok = PRESENT(materialName)
-CALL AssertError1(isok, myName, 'materialName should be present.')
+       'solidMaterial('//ToString(materialNo)//')%ptr is already associated.')
 #endif
 
 IF (abool) THEN
   obj(materialNo)%ptr => SolidMaterialFactory(TRIM(materialName))
-  !! info: Solid material factory is defined in MaterialFactory.
-  CALL obj(materialNo)%ptr%Initiate(param)
+  !! Info: Solid material factory is defined in MaterialFactory.
 END IF
 
 END PROCEDURE obj_AddSolidMaterial

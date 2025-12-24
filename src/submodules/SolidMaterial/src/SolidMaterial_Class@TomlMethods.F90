@@ -24,11 +24,7 @@ USE MaterialFactory, ONLY: SolidMechanicsModelFactory, &
                            SolidMaterialFactory
 USE TomlUtility, ONLY: GetValue
 
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_len => len, &
-                 toml_array, &
-                 toml_stat
+USE tomlf, ONLY: toml_get => get_value
 USE AbstractMaterial_Class, ONLY: AbstractMaterialImportFromToml
 
 IMPLICIT NONE
@@ -62,9 +58,11 @@ CALL GetValue(table=table, key="stressStrainModel", &
               VALUE=astr, default_value="NONE", origin=origin, &
               stat=stat, isFound=isok)
 
+! If stressStrainModel not found in the config file
+! then we simply return
 IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
          'stressStrainModel not found in the config file. Nothing to import.')
 
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -75,6 +73,8 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
+! The following code is executed when stressStrainModel is found in
+! the config file
 node => NULL()
 CALL toml_get(table, astr%chars(), node, &
               origin=origin, requested=.FALSE., stat=stat)
@@ -97,7 +97,6 @@ astr = ""
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
@@ -227,7 +226,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, stat, ii
 LOGICAL(LGT) :: isok
 TYPE(String), ALLOCATABLE :: materialNames(:)
 
@@ -260,14 +259,14 @@ CALL SolidMaterialImportFromToml(obj=obj, table=node, &
                                  materialNames=materialNames, &
                                  tsize=tsize, region=region, dom=dom)
 
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-               unitNo=stdout)
-END IF
-#endif
-
 node => NULL()
+DEALLOCATE (table)
+
+DO ii = 1, tsize
+  materialNames(ii) = ""
+END DO
+
+DEALLOCATE (materialNames)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

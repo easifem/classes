@@ -32,7 +32,6 @@ USE GlobalData, ONLY: I4B, LGT, DFP
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
-USE FPL, ONLY: ParameterList_
 USE AbstractMaterial_Class, ONLY: AbstractMaterial_
 USE AbstractSolidMechanicsModel_Class, ONLY: AbstractSolidMechanicsModel_
 USE MeshSelection_Class, ONLY: MeshSelectionPointer_, MeshSelection_
@@ -44,14 +43,14 @@ IMPLICIT NONE
 
 PRIVATE
 
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "SolidMaterial_Class"
-CHARACTER(*), PARAMETER :: myprefix = "SolidMaterial"
+#endif
 
 PUBLIC :: SolidMaterial_
 PUBLIC :: SolidMaterialPointer_
 PUBLIC :: SolidMaterialDeallocate
 PUBLIC :: SolidMaterialReallocate
-PUBLIC :: SetSolidMaterialParam
 PUBLIC :: AddSolidMaterial
 PUBLIC :: GetSolidMaterialPointer
 PUBLIC :: TypeSolidMaterial
@@ -78,8 +77,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
@@ -101,7 +98,6 @@ CONTAINS
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetStressStrainModelPointer => &
     obj_GetStressStrainModelPointer
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE SolidMaterial_
 
 !----------------------------------------------------------------------------
@@ -119,67 +115,16 @@ TYPE :: SolidMaterialPointer_
 END TYPE SolidMaterialPointer_
 
 !----------------------------------------------------------------------------
-!                                  SetSolidMaterialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine sets the essential parameter for [[SolidMaterial_]]
-!
-!# Introduction
-!
-! This routine sets the essential parameter for [[SolidMaterial_]].
-! It sets values for
-!
-! - `SolidMaterial/name`
-! - `SolidMaterial/massDensity`
-! - `SolidMaterial/stresStrainModel`
-
-INTERFACE
-  MODULE SUBROUTINE SetSolidMaterialParam(param, name, stressStrainModel)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    !! It is the name of the material
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: stressStrainModel
-    !! Name of the child-class of `AbstractSolidMechanicsModel_`
-    !! For example `LinearElasticModel`
-  END SUBROUTINE SetSolidMaterialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine Checks the essential parameter for [[SolidMaterial_]]
-!
-!# Introduction
-!
-! This routine Checks the essential parameter for [[SolidMaterial_]].
-! It Checks the existance of
-!
-! - `SolidMaterial/name`
-! - `SolidMaterial/stresStrainModel`
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(SolidMaterial_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-24
 ! summary: This routine initiates the instance of `SolidMaterial`
 !
 !# Introduction
 ! This routine initiates the instance of `SolidMaterial_`.
-! It reads the options from `param`, and sets the options of `SolidMaterial`
+! It reads the arguments and sets the options of `SolidMaterial`
 !
 !- `SolidMaterial/name`
 !- `SolidMaterial/stresStrainModel`
@@ -187,17 +132,22 @@ END INTERFACE
 ! This routine calls the [[MaterialFactory:SolidMechanicsModelFactory]] to
 ! construct the [[SolidMaterial_:stressStrainModel]].
 !
-!@warning
 ! If the `SolidMaterial/stressStrainModel` is already associated, then
 ! the routine will produce error, so make sure the
 ! [[SolidMaterial_:stressStrainModel]] is nullified before calling it.
-!@endwarning
+!
+! This method does not initiate the stressStrainModel,
+! after this method call, user should get the pointer of
+! stressStrainModel and call Initiate method on it.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param, prefix)
+  MODULE SUBROUTINE obj_Initiate(obj, name, stressStrainModel)
     CLASS(SolidMaterial_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
+    CHARACTER(*), INTENT(IN) :: name
+    !! It is the name of the material
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: stressStrainModel
+    !! Name of the child-class of `AbstractSolidMechanicsModel_`
+    !! For example `LinearElasticModel`
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -322,20 +272,39 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-11
+! date: 2025-12-24
 ! summary:  Add a solid material to the vector of SolidMaterialPointer_
+!
+!# Introduction
+!
+! This routine adds a solid material to the vector of SolidMaterialPointer_.
+! It uses the [[MaterialFactory:SolidMaterialFactory]] to get the
+! correct SolidMaterial_ pointer and set it to
+! obj(materialNo)%ptr.
+! If region and solidMaterialToMesh are provided,
+! then it sets solidMaterialToMesh(materialNo) = region.
+!
+! Note that this method will not initiate obj(materialNo)%ptr
+! After this call user has to call Initiate method on it
 
 INTERFACE
-  MODULE SUBROUTINE obj_AddSolidMaterial(obj, tMaterials, materialNo, &
-                                         materialName, solidMaterialToMesh, &
-                                         param, region)
+  MODULE SUBROUTINE obj_AddSolidMaterial( &
+    obj, tMaterials, materialNo, materialName, solidMaterialToMesh, &
+    region)
     TYPE(SolidMaterialPointer_), INTENT(INOUT) :: obj(:)
     INTEGER(I4B), INTENT(IN) :: tMaterials
     INTEGER(I4B), INTENT(IN) :: materialNo
     CHARACTER(*), OPTIONAL, INTENT(IN) :: materialName
-    TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
+    !! Name of the material
+    !! If it is provided then we call SolidMaterialFactory to
+    !! get a correct SolidMaterial_ pointer and
+    !! set it to obj(materialNo)%ptr
     TYPE(MeshSelection_), OPTIONAL, INTENT(IN) :: region
+    !! If region is present then it is set to the solidMaterialToMesh
     TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: solidMaterialToMesh(:)
+    ! If solidMaterialToMesh is provided, then we check if region is present.
+    ! If both are present, the we set
+    ! solidMaterialToMesh(materialNo) = region
   END SUBROUTINE obj_AddSolidMaterial
 END INTERFACE
 
@@ -376,17 +345,6 @@ INTERFACE
     CLASS(SolidMaterial_), INTENT(IN) :: obj
     CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
   END FUNCTION obj_GetStressStrainModelPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(SolidMaterial_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -570,7 +528,7 @@ END INTERFACE SolidMaterialImportFromToml
 
 INTERFACE
   MODULE SUBROUTINE SolidMaterialNamesFromToml(table, materialNames, &
-                                                   tsize)
+                                               tsize)
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: materialNames(:)
     !! materialNames to be read from the toml table
