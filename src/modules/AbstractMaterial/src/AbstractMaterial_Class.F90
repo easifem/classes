@@ -26,7 +26,6 @@ USE UserFunction_Class, ONLY: UserFunction_, &
                               UserFunctionPointer_
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
-USE FPL, ONLY: ParameterList_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 USE HashTables, ONLY: HashTable_
@@ -38,7 +37,6 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: AbstractMaterial_
 PUBLIC :: AbstractMaterialPointer_
-PUBLIC :: SetAbstractMaterialParam
 PUBLIC :: AbstractMaterialInitiate
 PUBLIC :: AbstractMaterialDeallocate
 PUBLIC :: AbstractMaterialImport
@@ -48,7 +46,6 @@ PUBLIC :: AbstractMaterialImportFromToml
 PUBLIC :: TypeMaterial
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMaterial_Class"
-CHARACTER(*), PARAMETER :: myprefix = "AbstractMaterial"
 REAL(DFP), PARAMETER :: expandScale1 = 2
 REAL(DFP), PARAMETER :: expandScale2 = 1.2
 INTEGER(I4B), PARAMETER :: thresholdSize = 20
@@ -91,23 +88,26 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  ! IO:
+  ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+
+  ! IO:
+  ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaterialPointer => &
     obj_GetMaterialPointer
   PROCEDURE, PUBLIC, PASS(obj) :: IsMaterialPresent => obj_IsMaterialPresent
@@ -131,38 +131,6 @@ TYPE :: AbstractMaterialPointer_
 END TYPE AbstractMaterialPointer_
 
 !----------------------------------------------------------------------------
-!                               SetAbstractMaterialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2021-12-08
-! update: 2021-12-08
-! summary: Sets parameter for abstract material
-
-INTERFACE
-  MODULE SUBROUTINE SetAbstractMaterialParam(param, prefix, name)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-    CHARACTER(*), INTENT(IN) :: name
-  END SUBROUTINE SetAbstractMaterialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-22
-! summary:  Check essential parameters
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractMaterial_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -171,10 +139,9 @@ END INTERFACE
 ! summary: Initiate the material
 
 INTERFACE AbstractMaterialInitiate
-  MODULE SUBROUTINE obj_Initiate(obj, param, prefix)
+  MODULE SUBROUTINE obj_Initiate(obj, name)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
+    CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_Initiate
 END INTERFACE AbstractMaterialInitiate
 
@@ -231,21 +198,6 @@ END INTERFACE
 INTERFACE AbstractMaterialDeallocate
   MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 END INTERFACE AbstractMaterialDeallocate
-
-!----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-18
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractMaterial_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    AddMaterial@SetMethods
@@ -336,7 +288,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Import@IOMethods
+!                                                           Import@HDFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -356,7 +308,7 @@ INTERFACE AbstractMaterialImport
 END INTERFACE AbstractMaterialImport
 
 !----------------------------------------------------------------------------
-!                                                          Export@IOMethods
+!                                                          Export@HDFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -396,7 +348,7 @@ INTERFACE AbstractMaterialDisplay
 END INTERFACE AbstractMaterialDisplay
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -423,7 +375,7 @@ INTERFACE AbstractMaterialImportFromToml
 END INTERFACE AbstractMaterialImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

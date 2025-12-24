@@ -16,13 +16,10 @@
 !
 
 SUBMODULE(AbstractMaterial_Class) TomlMethods
-USE GlobalData, ONLY: CHAR_LF, stdout
 USE Display_Method, ONLY: Display, ToString
 USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_serialize, &
-                 toml_array, &
-                 toml_get => get_value, &
-                 toml_len => len
+USE tomlf, ONLY: toml_get => get_value
+
 IMPLICIT NONE
 CONTAINS
 
@@ -47,6 +44,7 @@ SUBROUTINE ReadNameFromToml(obj, table)
 
   INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: default_value = "NOTFOUND"
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -54,20 +52,17 @@ SUBROUTINE ReadNameFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading name ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading name ...')
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=obj%name, &
-                default_value=myprefix, origin=origin, &
+                default_value=default_value, origin=origin, &
                 stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
-  IF (.NOT. isok) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-        'Cannot find/read "name" in the config file. Using default name: '// &
-                            myprefix)
-  END IF
+  CALL AssertError1(isok, myName, &
+                    'Cannot find/read "name" in the config file.')
 #endif
 
 #ifdef DEBUG_VER
@@ -107,8 +102,8 @@ SUBROUTINE ReadPropNamesFromToml(obj, table, propNames)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading propNames ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading propNames ...')
 #endif
 
   isok = ALLOCATED(propNames)
@@ -370,13 +365,7 @@ CALL AssertError1(isok, myName, &
 
 CALL obj%ImportFromToml(table=node, region=region, dom=dom)
 
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-               unitNo=stdout)
-END IF
-#endif
-
+DEALLOCATE (table)
 node => NULL()
 
 #ifdef DEBUG_VER

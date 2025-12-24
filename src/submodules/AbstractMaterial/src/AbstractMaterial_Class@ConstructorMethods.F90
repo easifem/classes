@@ -24,54 +24,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                SetAbstractMaterialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetAbstractMaterialParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetAbstractMaterialParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Set(obj=param, prefix=prefix, key="name", VALUE=name, dataType="char")
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetAbstractMaterialParam
-
-!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
@@ -80,31 +32,18 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
-CHARACTER(:), ALLOCATABLE :: prefix0
-
 ! main
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-
-! check essential param
-CALL obj%CheckEssentialParam(param)
-
-IF (PRESENT(prefix)) THEN
-  prefix0 = TRIM(prefix)
-ELSE
-  prefix0 = obj%GetPrefix()
-END IF
+! I am not deallocating here
+! because the child may set some values before calling this method
+! CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
-
-! name
-CALL GetValue(obj=param, prefix=prefix0, key="name", VALUE=obj%name)
-
-prefix0 = ''
+obj%name = name
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
