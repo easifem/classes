@@ -86,9 +86,12 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  ! IO:
+  ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
   ! IO:
   ! @TomlMethods
@@ -387,7 +390,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Import@IOMethods
+!                                                           Import@HDFMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -408,7 +411,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Export@IOMethods
+!                                                           Export@HDFMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
