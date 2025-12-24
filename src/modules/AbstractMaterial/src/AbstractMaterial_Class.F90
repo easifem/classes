@@ -91,7 +91,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
