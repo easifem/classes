@@ -20,18 +20,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
-ans = ""
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                                                   GetName
 !----------------------------------------------------------------------------
 
@@ -55,7 +43,7 @@ MODULE PROCEDURE obj_GetDataSize
 CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
 ans = 0
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+               '[WIP ERROR] :: This routine must be implemented by subclass.')
 END PROCEDURE obj_GetDataSize
 
 !----------------------------------------------------------------------------
@@ -65,7 +53,7 @@ END PROCEDURE obj_GetDataSize
 MODULE PROCEDURE obj_GetData
 CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine must be implemented by subclass.')
+               '[WIP ERROR] :: This routine must be implemented by subclass.')
 END PROCEDURE obj_GetData
 
 END SUBMODULE GetMethods

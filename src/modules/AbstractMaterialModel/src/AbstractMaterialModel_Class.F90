@@ -86,8 +86,6 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
   !! Returns the name
   PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => obj_isInitiated
@@ -184,7 +182,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -199,7 +197,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                  ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -275,21 +273,6 @@ INTERFACE
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: DATA(:)
   END SUBROUTINE obj_UpdateData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-30
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
