@@ -20,32 +20,36 @@
 ! summary: Abstract class for Material Model
 
 MODULE AbstractMaterialModel_Class
-USE GlobalData
-USE BaseType
-USE String_Class
+USE GlobalData, ONLY: I4B, LGT, DFP
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class
-USE TxtFile_Class
-USE FPL, ONLY: ParameterList_
+USE HDF5File_Class, ONLY: HDF5File_
+USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
+
 IMPLICIT NONE
+
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "AbstractMaterialModel_Class"
+
 PUBLIC :: AbstractMaterialModel_
 PUBLIC :: AbstractMaterialModelPointer_
 PUBLIC :: AbstractMaterialModelDeallocate
-PUBLIC :: TypeMaterialModel
+PUBLIC :: TypeMaterialModelOpt
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMaterialModel_Class"
+#endif
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-TYPE :: TypeMaterialModel_
+TYPE :: MaterialModelOpt_
   CHARACTER(18) :: linearElastic = "LINEARELASTICMODEL"
   CHARACTER(19) :: newtonianFluid = "NEWTONIANFLUIDMODEL"
-END TYPE TypeMaterialModel_
+END TYPE MaterialModelOpt_
 
-TYPE(TypeMaterialModel_), PARAMETER :: TypeMaterialModel=TypeMaterialModel_()
+TYPE(MaterialModelOpt_), PARAMETER :: TypeMaterialModelOpt=MaterialModelOpt_()
 
 !----------------------------------------------------------------------------
 !                                                   AbstractMaterialModel_
@@ -63,16 +67,22 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam =>  &
-    & obj_CheckEssentialParam
+  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
+    obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
   ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  ! IO:
+  ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  ! IO:
+  ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
@@ -109,21 +119,6 @@ END TYPE AbstractMaterialModel_
 TYPE :: AbstractMaterialModelPointer_
   CLASS(AbstractMaterialModel_), POINTER :: ptr => NULL()
 END TYPE AbstractMaterialModelPointer_
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-30
-! summary:  Check the essential parameters
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                               Initiate
