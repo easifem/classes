@@ -28,11 +28,17 @@ USE FPL, ONLY: ParameterList_
 USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModel_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
+
 IMPLICIT NONE
+
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "AbstractSolidMechanicsModel_Class"
+
 PUBLIC :: AbstractSolidMechanicsModel_
 PUBLIC :: AbstractSolidMechanicsModelDeallocate
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractSolidMechanicsModel_Class"
+#endif
 
 !----------------------------------------------------------------------------
 !                                              AbstractSolidMechanicsModel_
@@ -50,7 +56,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
@@ -58,15 +63,19 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
+  ! IO:
+  ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  ! IO:
+  ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => obj_GetElasticParam
   PROCEDURE, PUBLIC, PASS(obj) :: GetC => obj_GetC
   PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => obj_GetInvC
@@ -78,7 +87,6 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStress => obj_SetPlaneStress
   PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStrain => obj_SetPlaneStrain
 END TYPE AbstractSolidMechanicsModel_
