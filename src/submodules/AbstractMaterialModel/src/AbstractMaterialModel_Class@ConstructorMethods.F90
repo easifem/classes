@@ -23,28 +23,6 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of'//  &
-  & CHAR_LF//'AbstractSolidMechanicsModel_')
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & CHAR_LF//'AbstractSolidMechanicsModel_')
-END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_Deallocate
 obj%name = ""
 obj%isInit = .FALSE.

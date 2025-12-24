@@ -67,9 +67,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
@@ -121,36 +118,25 @@ TYPE :: AbstractMaterialModelPointer_
 END TYPE AbstractMaterialModelPointer_
 
 !----------------------------------------------------------------------------
-!                                                               Initiate
+!                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-30
-! summary:  Initiate an instance of AbstractMaterialModel_
+! date: 2023-11-30
+! summary: Deallocate the data stored in AbstractMaterialModel_
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
-    CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Deallocate
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-30
-! summary:  Deallocate the data stored in AbstractMaterialModel_
-
-INTERFACE AbstractMaterialModelDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractMaterialModelDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractMaterialModelDeallocate
 
 !----------------------------------------------------------------------------
-!                                                                    Import
+!                                                           Import@HDFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -166,7 +152,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                    Export
+!                                                           Export@HDFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -182,7 +168,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   Display
+!                                                           Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -221,8 +207,8 @@ END INTERFACE
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename,  &
-    & printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml)
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -232,7 +218,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 SetIsInitiated@SetMethods
+!                                                   SetIsInitiated@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -247,7 +233,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         SetName@SetMethods
+!                                                          SetName@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -262,7 +248,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        SetData@SetMethods
+!                                                          SetData@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -277,7 +263,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     UpdateData@SetMethods
+!                                                       UpdateData@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -292,7 +278,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
+!                                                        GetPrefix@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -307,7 +293,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetName@GetMethods
+!                                                          GetName@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -337,7 +323,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetDataSize@GetMethods
+!                                                      GetDataSize@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -352,7 +338,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetData@GetMethods
+!                                                          GetData@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
