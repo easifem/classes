@@ -34,164 +34,179 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
-INTEGER(I4B) :: elasticityType
-TYPE(String) :: dsetname, strval
-LOGICAL(LGT) :: isPlaneStrain, isPlaneStress, isIsotropic
-LOGICAL(LGT) :: isok
-REAL(DFP) :: poissonRatio, youngsModulus, shearModulus, lambda, stiffnessPower
-REAL(DFP), ALLOCATABLE :: C(:, :), invC(:, :)
-TYPE(ParameterList_) :: param
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-isok = .NOT. obj%isInitiated()
-CALL AssertError1(isok, myName, &
-                  'The object is already initiated, deallocate first!')
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
 #endif
-
-#ifdef DEBUG_VER
-isok = hdf5%isOpen()
-CALL AssertError1(isok, myName, &
-                  'HDF5 file is not opened')
-#endif
-
-#ifdef DEBUG_VER
-isok = hdf5%isRead()
-CALL AssertError1(isok, myName, &
-                  'HDF5 file does not have read permission')
-#endif
-
-! READ name
-dsetname = TRIM(group)//"/name"
-
-#ifdef DEBUG_VER
-isok = hdf5%pathExists(dsetname%chars())
-CALL AssertError1(isok, myName, &
-                  'The dataset name should be present')
-#endif
-
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
-
-! READ elasticityType
-dsetname = TRIM(group)//"/elasticityType"
-
-#ifdef DEBUG_VER
-isok = hdf5%pathExists(dsetname%chars())
-CALL AssertError1(isok, myName, &
-                  'The dataset elasticityType should be present')
-#endif
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-elasticityType = TypeElasticityOpt%ToNumber(strval%chars())
-
-! READ isPlaneStrain
-isPlaneStrain = .FALSE.
-dsetname = TRIM(group)//"/isPlaneStrain"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), vals=isPlaneStrain)
-
-! READ isPlaneStress
-isPlaneStress = .FALSE.
-dsetname = TRIM(group)//"/isPlaneStress"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), vals=isPlaneStress)
-
-isIsotropic = elasticityType .EQ. TypeElasticityOpt%isotropic
-
-! If isotropic then read poissonRatio, youngsModulus, shearModulus, lambda,
-IF (isIsotropic) THEN
-  dsetname = TRIM(group)//"/poissonRatio"
-
-#ifdef DEBUG_VER
-  isok = hdf5%pathExists(dsetname%chars())
-  CALL AssertError1(isok, myName, &
-                    'The dataset poissonRatio should be present')
-#endif
-
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=poissonRatio)
-
-  dsetname = TRIM(group)//"/youngsModulus"
-
-#ifdef DEBUG_VER
-  isok = hdf5%pathExists(dsetname%chars())
-  CALL AssertError1(isok, myName, &
-                    'The dataset youngsModulus should be present')
-#endif
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=youngsModulus)
-
-  dsetname = TRIM(group)//"/shearModulus"
-#ifdef DEBUG_VER
-  isok = hdf5%pathExists(dsetname%chars())
-  CALL AssertError1(isok, myName, &
-                    'The dataset shearModulus should be present')
-#endif
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=shearModulus)
-
-  dsetname = TRIM(group)//"/lambda"
-#ifdef DEBUG_VER
-  isok = hdf5%pathExists(dsetname%chars())
-  CALL AssertError1(isok, myName, &
-                    'The dataset lambda should be present')
-#endif
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=lambda)
-
-END IF
-
-! if not isotropic then read C and invC
-
-IF (.NOT. isIsotropic) THEN
-  dsetname = TRIM(group)//"/c"
-
-#ifdef DEBUG_VER
-  isok = hdf5%pathExists(dsetname%chars())
-  CALL AssertError1(isok, myName, &
-                    'The dataset c should be present')
-#endif
-
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=C)
-
-  dsetname = TRIM(group)//"/invC"
-#ifdef DEBUG_VER
-  isok = hdf5%pathExists(dsetname%chars())
-  CALL AssertError1(isok, myName, &
-                    'The dataset invC should be present')
-#endif
-
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=invC)
-END IF
-
-stiffnessPower = 0.0_DFP
-dsetname = TRIM(group)//"/stiffnessPower"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), vals=stiffnessPower)
-
-CALL param%initiate()
-
-CALL SetLinearElasticModelParam(param=param, &
-                                elasticityType=elasticityType, &
-                                isPlaneStrain=isPlaneStrain, &
-                                isPlaneStress=isPlaneStress, &
-                                poissonRatio=poissonRatio, &
-                                youngsModulus=youngsModulus, &
-                                shearModulus=shearModulus, &
-                                lambda=lambda, &
-                                stiffnessPower=stiffnessPower, &
-                                C=C, invC=invC)
-
-CALL obj%Initiate(param)
-
-CALL param%DEALLOCATE()
-
-IF (ALLOCATED(C)) DEALLOCATE (C)
-IF (ALLOCATED(invC)) DEALLOCATE (invC)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
+! INTEGER(I4B) :: elasticityType
+! TYPE(String) :: dsetname, strval
+! LOGICAL(LGT) :: isPlaneStrain, isPlaneStress, isIsotropic
+! LOGICAL(LGT) :: isok
+! REAL(DFP) :: poissonRatio, youngsModulus, shearModulus, lambda, stiffnessPower
+! REAL(DFP), ALLOCATABLE :: C(:, :), invC(:, :)
+! TYPE(ParameterList_) :: param
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[START] ')
+! #endif
+!
+! #ifdef DEBUG_VER
+! isok = .NOT. obj%isInitiated()
+! CALL AssertError1(isok, myName, &
+!                   'The object is already initiated, deallocate first!')
+! #endif
+!
+! #ifdef DEBUG_VER
+! isok = hdf5%isOpen()
+! CALL AssertError1(isok, myName, &
+!                   'HDF5 file is not opened')
+! #endif
+!
+! #ifdef DEBUG_VER
+! isok = hdf5%isRead()
+! CALL AssertError1(isok, myName, &
+!                   'HDF5 file does not have read permission')
+! #endif
+!
+! ! READ name
+! dsetname = TRIM(group)//"/name"
+!
+! #ifdef DEBUG_VER
+! isok = hdf5%pathExists(dsetname%chars())
+! CALL AssertError1(isok, myName, &
+!                   'The dataset name should be present')
+! #endif
+!
+! CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
+!
+! ! READ elasticityType
+! dsetname = TRIM(group)//"/elasticityType"
+!
+! #ifdef DEBUG_VER
+! isok = hdf5%pathExists(dsetname%chars())
+! CALL AssertError1(isok, myName, &
+!                   'The dataset elasticityType should be present')
+! #endif
+! CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
+! elasticityType = TypeElasticityOpt%ToNumber(strval%chars())
+!
+! ! READ isPlaneStrain
+! isPlaneStrain = .FALSE.
+! dsetname = TRIM(group)//"/isPlaneStrain"
+! isok = hdf5%pathExists(dsetname%chars())
+! IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), vals=isPlaneStrain)
+!
+! ! READ isPlaneStress
+! isPlaneStress = .FALSE.
+! dsetname = TRIM(group)//"/isPlaneStress"
+! isok = hdf5%pathExists(dsetname%chars())
+! IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), vals=isPlaneStress)
+!
+! isIsotropic = elasticityType .EQ. TypeElasticityOpt%isotropic
+!
+! ! If isotropic then read poissonRatio, youngsModulus, shearModulus, lambda,
+! IF (isIsotropic) THEN
+!   dsetname = TRIM(group)//"/poissonRatio"
+!
+! #ifdef DEBUG_VER
+!   isok = hdf5%pathExists(dsetname%chars())
+!   CALL AssertError1(isok, myName, &
+!                     'The dataset poissonRatio should be present')
+! #endif
+!
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=poissonRatio)
+!
+!   dsetname = TRIM(group)//"/youngsModulus"
+!
+! #ifdef DEBUG_VER
+!   isok = hdf5%pathExists(dsetname%chars())
+!   CALL AssertError1(isok, myName, &
+!                     'The dataset youngsModulus should be present')
+! #endif
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=youngsModulus)
+!
+!   dsetname = TRIM(group)//"/shearModulus"
+! #ifdef DEBUG_VER
+!   isok = hdf5%pathExists(dsetname%chars())
+!   CALL AssertError1(isok, myName, &
+!                     'The dataset shearModulus should be present')
+! #endif
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=shearModulus)
+!
+!   dsetname = TRIM(group)//"/lambda"
+! #ifdef DEBUG_VER
+!   isok = hdf5%pathExists(dsetname%chars())
+!   CALL AssertError1(isok, myName, &
+!                     'The dataset lambda should be present')
+! #endif
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=lambda)
+!
+! END IF
+!
+! ! if not isotropic then read C and invC
+!
+! IF (.NOT. isIsotropic) THEN
+!   dsetname = TRIM(group)//"/c"
+!
+! #ifdef DEBUG_VER
+!   isok = hdf5%pathExists(dsetname%chars())
+!   CALL AssertError1(isok, myName, &
+!                     'The dataset c should be present')
+! #endif
+!
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=C)
+!
+!   dsetname = TRIM(group)//"/invC"
+! #ifdef DEBUG_VER
+!   isok = hdf5%pathExists(dsetname%chars())
+!   CALL AssertError1(isok, myName, &
+!                     'The dataset invC should be present')
+! #endif
+!
+!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=invC)
+! END IF
+!
+! stiffnessPower = 0.0_DFP
+! dsetname = TRIM(group)//"/stiffnessPower"
+! isok = hdf5%pathExists(dsetname%chars())
+! IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), vals=stiffnessPower)
+!
+! CALL param%initiate()
+!
+! CALL SetLinearElasticModelParam(param=param, &
+!                                 elasticityType=elasticityType, &
+!                                 isPlaneStrain=isPlaneStrain, &
+!                                 isPlaneStress=isPlaneStress, &
+!                                 poissonRatio=poissonRatio, &
+!                                 youngsModulus=youngsModulus, &
+!                                 shearModulus=shearModulus, &
+!                                 lambda=lambda, &
+!                                 stiffnessPower=stiffnessPower, &
+!                                 C=C, invC=invC)
+!
+! CALL obj%Initiate(param)
+!
+! CALL param%DEALLOCATE()
+!
+! IF (ALLOCATED(C)) DEALLOCATE (C)
+! IF (ALLOCATED(invC)) DEALLOCATE (invC)
+!
+! #ifdef DEBUG_VER
+! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+!                         '[END] ')
+! #endif
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------

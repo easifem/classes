@@ -17,6 +17,7 @@
 
 SUBMODULE(LinearElasticModel_Class) SetMethods
 USE Display_Method, ONLY: ToString
+USE BaseType, ONLY: TypeMathOpt
 IMPLICIT NONE
 CONTAINS
 
@@ -29,19 +30,39 @@ MODULE PROCEDURE obj_SetParam
 CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(elasticityType)) obj%elasticityType = elasticityType
-IF (PRESENT(nu)) obj%nu = nu
-IF (PRESENT(G)) obj%G = G
-IF (PRESENT(youngsModulus)) obj%E = youngsModulus
-IF (PRESENT(lambda)) obj%lambda = lambda
-IF (PRESENT(C)) obj%C = C
-IF (PRESENT(invC)) obj%invC = invC
-IF (PRESENT(stiffnessPower)) obj%stiffnessPower = stiffnessPower
+isok = PRESENT(elasticityType)
+IF (isok) obj%elasticityType = elasticityType
+
+isok = PRESENT(nu)
+IF (isok) obj%nu = nu
+
+isok = PRESENT(G)
+IF (isok) obj%G = G
+
+isok = PRESENT(youngsModulus)
+IF (isok) obj%E = youngsModulus
+
+isok = PRESENT(lambda)
+IF (isok) obj%lambda = lambda
+
+isok = PRESENT(nc)
+IF (isok) obj%nc = nc
+
+isok = PRESENT(C)
+IF (isok) obj%C(1:obj%nc, 1:obj%nc) = C(1:obj%nc, 1:obj%nc)
+
+isok = PRESENT(invC)
+IF (isok) obj%invC(1:obj%nc, 1:obj%nc) = invC(1:obj%nc, 1:obj%nc)
+
+isok = PRESENT(stiffnessPower)
+IF (isok) obj%stiffnessPower = stiffnessPower
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -76,7 +97,7 @@ CASE (TypeElasticityOpt%orthotropic)
 
 #ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myName, &
+  CALL AssertError1(TypeMathOpt%no, myName, &
                     'No case found for elasticityType = '// &
                     ToString(obj%elasticityType))
 #endif
@@ -115,99 +136,120 @@ END PROCEDURE LinearElasticModelSetData_Iso
 !                                            LinearElasticModelSetData_Aniso
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelSetData_Aniso
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Isotropic linear elasticity
+
+SUBROUTINE LinearElasticModelSetData_Aniso(obj, DATA)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(IN) :: DATA(:)
+
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Aniso()"
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Aniso()"
 #endif
 
-INTEGER(I4B) :: ii, jj, kk
+  INTEGER(I4B) :: ii, jj, kk
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
-kk = 0
-DO jj = 1, 6
-  DO ii = jj, 6
-    kk = kk + 1
-    obj%C(ii, jj) = DATA(kk)
-    obj%C(jj, ii) = DATA(kk)
+  kk = 0
+  DO jj = 1, 6
+    DO ii = jj, 6
+      kk = kk + 1
+      obj%C(ii, jj) = DATA(kk)
+      obj%C(jj, ii) = DATA(kk)
+    END DO
   END DO
-END DO
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
-END PROCEDURE LinearElasticModelSetData_Aniso
+END SUBROUTINE LinearElasticModelSetData_Aniso
 
 !----------------------------------------------------------------------------
 !                                           LinearElasticModelSetData_Ortho
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelSetData_Ortho
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Ortho()"
-#endif
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Ortho linear elasticity
 
-INTEGER(I4B) :: ii
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-DO ii = 1, 6
-  obj%C(ii, ii) = DATA(ii)
-END DO
-obj%C(1, 2) = DATA(7)
-obj%C(2, 1) = DATA(7)
-
-obj%C(2, 3) = DATA(8)
-obj%C(3, 2) = DATA(8)
-
-obj%C(1, 3) = DATA(9)
-obj%C(3, 1) = DATA(9)
+SUBROUTINE LinearElasticModelSetData_Ortho(obj, DATA)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(IN) :: DATA(:)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Ortho()"
 #endif
-END PROCEDURE LinearElasticModelSetData_Ortho
+
+  INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  DO ii = 1, 6
+    obj%C(ii, ii) = DATA(ii)
+  END DO
+  obj%C(1, 2) = DATA(7)
+  obj%C(2, 1) = DATA(7)
+
+  obj%C(2, 3) = DATA(8)
+  obj%C(3, 2) = DATA(8)
+
+  obj%C(1, 3) = DATA(9)
+  obj%C(3, 1) = DATA(9)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE LinearElasticModelSetData_Ortho
 
 !----------------------------------------------------------------------------
 !                                           LinearElasticModelSetData_Trans
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelSetData_Trans
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Set data for Transverse Isotropic linear elasticity
+
+SUBROUTINE LinearElasticModelSetData_Trans(obj, DATA)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(IN) :: DATA(:)
+
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Trans()"
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Trans()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
-obj%C(1, 1) = DATA(1)
-obj%C(2, 2) = DATA(1)
-obj%C(3, 3) = DATA(2)
-obj%C(4, 4) = 0.5_DFP * (DATA(1) - DATA(4))
-obj%C(5, 5) = DATA(3)
-obj%C(6, 6) = DATA(3)
-obj%C(1, 2) = DATA(4)
-obj%C(2, 1) = DATA(4)
-obj%C(1, 3) = DATA(5)
-obj%C(3, 1) = DATA(5)
-obj%C(2, 3) = DATA(5)
-obj%C(3, 2) = DATA(5)
+  obj%C(1, 1) = DATA(1)
+  obj%C(2, 2) = DATA(1)
+  obj%C(3, 3) = DATA(2)
+  obj%C(4, 4) = 0.5_DFP * (DATA(1) - DATA(4))
+  obj%C(5, 5) = DATA(3)
+  obj%C(6, 6) = DATA(3)
+  obj%C(1, 2) = DATA(4)
+  obj%C(2, 1) = DATA(4)
+  obj%C(1, 3) = DATA(5)
+  obj%C(3, 1) = DATA(5)
+  obj%C(2, 3) = DATA(5)
+  obj%C(3, 2) = DATA(5)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
-END PROCEDURE LinearElasticModelSetData_Trans
+END SUBROUTINE LinearElasticModelSetData_Trans
 
 !----------------------------------------------------------------------------
 !                                                                 UpdateData
@@ -223,13 +265,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%GetData(DATA)
+CALL obj%GetData(DATA=DATA, tsize=tsize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_UpdateData
 
 !----------------------------------------------------------------------------

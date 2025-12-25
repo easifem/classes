@@ -29,15 +29,28 @@ MODULE PROCEDURE obj_GetElasticParam
 CHARACTER(*), PARAMETER :: myName = "obj_GetElasticParam()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%GetParam(nu=poissonRatio, G=shearModulus, &
-                  youngsModulus=youngsModulus, lambda=lambda, &
-                  C=C, invC=invC, &
-                  stiffnessPower=stiffnessPower)
+CALL obj%GetParam( &
+  nu=poissonRatio, G=shearModulus, youngsModulus=youngsModulus, &
+  lambda=lambda, C=C, invC=invC, stiffnessPower=stiffnessPower)
+
+isok = PRESENT(nrowC)
+IF (isok) nrowC = obj%nc
+
+isok = PRESENT(ncolC)
+IF (isok) ncolC = obj%nc
+
+isok = PRESENT(nrowInvC)
+IF (isok) nrowInvC = obj%nc
+
+isok = PRESENT(ncolInvC)
+IF (isok) ncolInvC = obj%nc
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -54,25 +67,39 @@ MODULE PROCEDURE obj_GetParam
 CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(elasticityType)) elasticityType = obj%elasticityType
-IF (PRESENT(nu)) nu = obj%nu
-IF (PRESENT(G)) G = obj%G
-IF (PRESENT(youngsModulus)) youngsModulus = obj%E
-IF (PRESENT(lambda)) lambda = obj%lambda
-IF (PRESENT(C)) THEN
-  C(1:obj%nc, 1:obj%nc) = obj%C(1:obj%nc, 1:obj%nc)
-END IF
+isok = PRESENT(elasticityType)
+IF (isok) elasticityType = obj%elasticityType
 
-IF (PRESENT(invC)) THEN
-  invC(1:obj%nc, 1:obj%nc) = obj%invC(1:obj%nc, 1:obj%nc)
-END IF
+isok = PRESENT(nu)
+IF (isok) nu = obj%nu
 
-IF (PRESENT(stiffnessPower)) stiffnessPower = obj%stiffnessPower
+isok = PRESENT(G)
+IF (isok) G = obj%G
+
+isok = PRESENT(youngsModulus)
+IF (isok) youngsModulus = obj%E
+
+isok = PRESENT(lambda)
+IF (isok) lambda = obj%lambda
+
+isok = PRESENT(C)
+IF (isok) C(1:obj%nc, 1:obj%nc) = obj%C(1:obj%nc, 1:obj%nc)
+
+isok = PRESENT(invC)
+IF (isok) invC(1:obj%nc, 1:obj%nc) = obj%invC(1:obj%nc, 1:obj%nc)
+
+isok = PRESENT(stiffnessPower)
+IF (isok) stiffnessPower = obj%stiffnessPower
+
+isok = PRESENT(nc)
+IF (isok) nc = obj%nc
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -88,15 +115,15 @@ MODULE PROCEDURE obj_GetC
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetC()"
 #endif
-INTEGER(I4B) :: n
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-n = obj%nc
-C(1:n, 1:n) = obj%C(1:n, 1:n)
+nrow = obj%nc
+ncol = obj%nc
+C(1:nrow, 1:nrow) = obj%C(1:nrow, 1:ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -112,15 +139,15 @@ MODULE PROCEDURE obj_GetinvC
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetinvC()"
 #endif
-INTEGER(I4B) :: n
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-n = obj%nc
-invC(1:n, 1:n) = obj%invC(1:n, 1:n)
+nrow = obj%nc
+ncol = obj%nc
+invC(1:nrow, 1:ncol) = obj%invC(1:nrow, 1:ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -149,14 +176,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetElasticityType
-
-!----------------------------------------------------------------------------
-!                                                                GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myPrefix
-END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                               GetDataSize
@@ -238,106 +257,149 @@ END PROCEDURE obj_GetData
 !                                             LinearElasticModelGetData_Iso
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelGetData_Iso
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-25
+! summary:  Get the  data from the model for Isotropic elasticity
+!
+!# Introduction
+!  This routine returns the data for Isotropic linear elasticity
+! Data(1) contains the lambda
+! Data(2) contains the G
+
+SUBROUTINE LinearElasticModelGetData_Iso(obj, DATA, tsize)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(INOUT) :: DATA(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Iso()"
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Iso()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
-DATA(1) = obj%lambda
-DATA(2) = obj%G
+  DATA(1) = obj%lambda
+  DATA(2) = obj%G
+  tsize = 2
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
-END PROCEDURE LinearElasticModelGetData_Iso
+END SUBROUTINE LinearElasticModelGetData_Iso
 
 !----------------------------------------------------------------------------
 !                                            LinearElasticModelGetData_Aniso
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelGetData_Aniso
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Aniso()"
-#endif
-INTEGER(I4B) :: ii, jj, kk
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for anisotropic elasticity
+SUBROUTINE LinearElasticModelGetData_Aniso(obj, DATA, tsize)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(INOUT) :: DATA(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Aniso()"
 #endif
 
-kk = 0
-DO jj = 1, 6
-  DO ii = jj, 6
-    kk = kk + 1
-    DATA(kk) = obj%C(ii, jj)
+  INTEGER(I4B) :: ii, jj, kk
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  tsize = 0
+  DO jj = 1, 6
+    DO ii = jj, 6
+      tsize = tsize + 1
+      DATA(tsize) = obj%C(ii, jj)
+    END DO
   END DO
-END DO
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
-END PROCEDURE LinearElasticModelGetData_Aniso
+END SUBROUTINE LinearElasticModelGetData_Aniso
 
 !----------------------------------------------------------------------------
 !                                           LinearElasticModelGetData_Ortho
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelGetData_Ortho
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Ortho()"
-#endif
-INTEGER(I4B) :: ii
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Orthotropic elasticity
+
+SUBROUTINE LinearElasticModelGetData_Ortho(obj, DATA, tsize)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(INOUT) :: DATA(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Ortho()"
 #endif
 
-DO ii = 1, 6
-  DATA(ii) = obj%C(ii, ii)
-END DO
-DATA(7) = obj%C(1, 2)
-DATA(8) = obj%C(2, 3)
-DATA(9) = obj%C(1, 3)
+  INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
-END PROCEDURE LinearElasticModelGetData_Ortho
+
+  tsize = 9
+
+  DO ii = 1, 6
+    DATA(ii) = obj%C(ii, ii)
+  END DO
+  DATA(7) = obj%C(1, 2)
+  DATA(8) = obj%C(2, 3)
+  DATA(9) = obj%C(1, 3)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE LinearElasticModelGetData_Ortho
 
 !----------------------------------------------------------------------------
 !                                           LinearElasticModelGetData_Trans
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelGetData_Trans
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the  data from the model for Trans Isotropic elasticity
+
+SUBROUTINE LinearElasticModelGetData_Trans(obj, DATA, tsize)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(INOUT) :: DATA(:)
+  INTEGER(I4B), INTENT(OUT) :: tsize
+
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Trans()"
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelGetData_Trans()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
-DATA(1) = obj%C(1, 1)
-DATA(2) = obj%C(3, 3)
-DATA(3) = obj%C(5, 5)
-DATA(4) = obj%C(1, 2)
-DATA(5) = obj%C(1, 3)
+  tsize = 5
+
+  DATA(1) = obj%C(1, 1)
+  DATA(2) = obj%C(3, 3)
+  DATA(3) = obj%C(5, 5)
+  DATA(4) = obj%C(1, 2)
+  DATA(5) = obj%C(1, 3)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
-END PROCEDURE LinearElasticModelGetData_Trans
+END SUBROUTINE LinearElasticModelGetData_Trans
 
 END SUBMODULE GetMethods
