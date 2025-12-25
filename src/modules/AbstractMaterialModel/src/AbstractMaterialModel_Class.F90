@@ -96,9 +96,9 @@ CONTAINS
   !! Returns the name
   PROCEDURE, PUBLIC, PASS(obj) :: isInitiated => obj_isInitiated
   !! Returns the init status
-  PROCEDURE, PUBLIC, PASS(obj) :: GetDataSize => obj_GetDataSize
+  PROCEDURE(obj_GetDataSize), DEFERRED, PUBLIC, PASS(obj) :: GetDataSize
   !! Get size of data
-  PROCEDURE, PUBLIC, PASS(obj) :: GetData => obj_GetData
+  PROCEDURE(obj_GetData), DEFERRED, PUBLIC, PASS(obj) :: GetData
   !! Get the data
 
   ! SET:
@@ -107,9 +107,9 @@ CONTAINS
   !! Set the status of AbstractMaterialModel
   PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   !! Set name of AbstractMaterialModel_
-  PROCEDURE, PUBLIC, PASS(obj) :: SetData => obj_SetData
+  PROCEDURE(obj_SetData), DEFERRED, PUBLIC, PASS(obj) :: SetData
   !! Set data
-  PROCEDURE, PUBLIC, PASS(obj) :: UpdateData => obj_UpdateData
+  PROCEDURE(obj_UpdateData), DEFERRED, PUBLIC, PASS(obj) :: UpdateData
   !! Get updated data
 END TYPE AbstractMaterialModel_
 
@@ -263,8 +263,9 @@ END INTERFACE
 ! date:  2023-11-30
 ! summary:  Set data
 
-INTERFACE
-  MODULE SUBROUTINE obj_SetData(obj, DATA)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_SetData(obj, DATA)
+    IMPORT :: AbstractMaterialModel_, DFP
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: DATA(:)
   END SUBROUTINE obj_SetData
@@ -278,10 +279,13 @@ END INTERFACE
 ! date:  2023-11-30
 ! summary:  Update data
 
-INTERFACE
-  MODULE SUBROUTINE obj_UpdateData(obj, DATA)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_UpdateData(obj, DATA, tsize)
+    IMPORT :: AbstractMaterialModel_, DFP, I4B
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: DATA(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of data written in data
   END SUBROUTINE obj_UpdateData
 END INTERFACE
 
@@ -323,8 +327,9 @@ END INTERFACE
 ! date:  2023-11-30
 ! summary:  Get the size of data needed by obj
 
-INTERFACE
-  MODULE FUNCTION obj_GetDataSize(obj) RESULT(ans)
+ABSTRACT INTERFACE
+  FUNCTION obj_GetDataSize(obj) RESULT(ans)
+    IMPORT :: AbstractMaterialModel_, I4B
     CLASS(AbstractMaterialModel_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetDataSize
@@ -338,10 +343,13 @@ END INTERFACE
 ! date:  2023-11-30
 ! summary:  Get the  data from the model
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetData(obj, DATA)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetData(obj, DATA, tsize)
+    IMPORT :: AbstractMaterialModel_, DFP, I4B
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: DATA(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in data
   END SUBROUTINE obj_GetData
 END INTERFACE
 

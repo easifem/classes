@@ -63,59 +63,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetName
 
 !----------------------------------------------------------------------------
-!                                                                 SetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_SetData
-
-!----------------------------------------------------------------------------
-!                                                                 UpdateData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_UpdateData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_UpdateData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_UpdateData
-
-!----------------------------------------------------------------------------
 !                                                              Include error
 !----------------------------------------------------------------------------
 

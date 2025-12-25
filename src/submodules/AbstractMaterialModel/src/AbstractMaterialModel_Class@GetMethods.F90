@@ -36,57 +36,7 @@ ans = obj%isInit
 END PROCEDURE obj_isInitiated
 
 !----------------------------------------------------------------------------
-!                                                               GetDataSize
+!
 !----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetDataSize
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = 0
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetDataSize
-
-!----------------------------------------------------------------------------
-!                                                                    GetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetData
 
 END SUBMODULE GetMethods
