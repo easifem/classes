@@ -1,14 +1,73 @@
 {
-
 	"folders": [
 		{
 			"path": "."
 		}
 	],
-
 	"settings": {
-		"cmake.installPrefix": "/home/easifem/.easifem/classes",
-		"cmake.configureOnEdit": false,
+		"fortran.preferredCase": "uppercase",
+		"fortran.linter.includePaths": [
+			"~/.easifem/easifem/build/base/include/",
+			"~/.easifem/easifem/build/classes/include/",
+			"~/.easifem/easifem/install/tomlf/include/toml-f/modules/"
+		],
+		"fortran.linter.extraArgs": [
+			"-fsyntax-only",
+			"-cpp",
+			"-fdiagnostics-show-caret",
+			"-fdiagnostics-color=never",
+			"-Wunused-variable",
+			"-Wunused-dummy-argument",
+			"-Wno-c-binding-type",
+			"-Wall",
+			"-DDEBUG_VER",
+			"-DUSE_SuperLU"
+		],
+		"fortran.formatting.formatter": "fprettify",
+		"fortran.formatting.fprettifyArgs": [
+			"--line-length",
+			"78",
+			"--indent",
+			"2",
+			"--strict-indent",
+			"--disable-indent-mod",
+			"--whitespace",
+			"2",
+			"--whitespace-comma",
+			"--whitespace-assignment",
+			"--enable-decl",
+			"--whitespace-decl",
+			"--whitespace-relational",
+			"--whitespace-logical",
+			"--whitespace-multdiv",
+			"--whitespace-print",
+			"--whitespace-intrinsics",
+			"--strip-comments",
+			"--case",
+			"2",
+			"2",
+			"2",
+			"2"
+		],
+		"fortran.linter.modOutput": "~/.easifem/easifem/lint/include/",
+		"fortran.fortls.notifyInit": true,
+		"fortran.fortls.sortKeywords": true,
+		"fortran.fortls.directories": [
+			"~/Dropbox/easifem/base/src/**",
+			"~/Dropbox/easifem/classes/src/**",
+			"~/Dropbox/easifem/diffusion/src/**",
+			"~/Dropbox/easifem/seepage/src/**",
+			"~/Dropbox/easifem/elasticity/src/**",
+			"~/Dropbox/easifem/acoustic/src/**",
+			"~/.easifem/easifem/src/tomlf/src/**"
+		],
+		"fortran.fortls.maxLineLength": 78,
+		"fortran.fortls.maxCommentLineLength": 80,
+		"fortran.fortls.extraArgs": [
+			"--hover_signature",
+			"--hover_language",
+			"fortran",
+			"--use_signature_help"
+		]
 	}
-
 }
