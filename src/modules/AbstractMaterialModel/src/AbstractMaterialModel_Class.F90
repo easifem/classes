@@ -34,6 +34,7 @@ PRIVATE
 PUBLIC :: AbstractMaterialModel_
 PUBLIC :: AbstractMaterialModelPointer_
 PUBLIC :: AbstractMaterialModelDeallocate
+PUBLIC :: AbstractMaterialModelDisplay
 PUBLIC :: TypeMaterialModelOpt
 
 #ifdef DEBUG_VER
@@ -185,6 +186,10 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
+
+INTERFACE AbstractMaterialModelDisplay
+  MODULE PROCEDURE obj_Display
+END INTERFACE AbstractMaterialModelDisplay
 
 !----------------------------------------------------------------------------
 !                                                 ImportFromToml@TomlMethods
