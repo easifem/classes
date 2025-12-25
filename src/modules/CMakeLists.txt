@@ -278,9 +278,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterialModel/CMakeLists.txt)
 # AbstractSolidMechanicsModel
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractSolidMechanicsModel/CMakeLists.txt)
 
-# AbstractPoroMechanicsModel
-include(${CMAKE_CURRENT_LIST_DIR}/AbstractPoroMechanicsModel/CMakeLists.txt)
-
 # AbstractFluidMechanicsModel
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFluidMechanicsModel/CMakeLists.txt)
 
