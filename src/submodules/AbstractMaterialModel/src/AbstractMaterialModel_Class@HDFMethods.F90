@@ -15,61 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(AbstractMaterialModel_Class) GetMethods
+SUBMODULE(AbstractMaterialModel_Class) HDFMethods
+! USE Display_Method, ONLY: Display
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                   GetName
+!                                                                   Import
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetName
-ans = obj%name(1:obj%nameSize)
-END PROCEDURE obj_GetName
-
-!----------------------------------------------------------------------------
-!                                                               isInitiated
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_isInitiated
-ans = obj%isInit
-END PROCEDURE obj_isInitiated
-
-!----------------------------------------------------------------------------
-!                                                               GetDataSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetDataSize
+MODULE PROCEDURE obj_Import
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = 0
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetDataSize
-
-!----------------------------------------------------------------------------
-!                                                                    GetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
 #ifdef DEBUG_VER
@@ -87,6 +44,38 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetData
+END PROCEDURE obj_Import
 
-END SUBMODULE GetMethods
+!----------------------------------------------------------------------------
+!                                                                    Export
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Export
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Export
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
+
+END SUBMODULE HDFMethods

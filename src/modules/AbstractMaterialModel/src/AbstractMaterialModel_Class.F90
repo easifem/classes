@@ -40,11 +40,14 @@ PUBLIC :: TypeMaterialModelOpt
 CHARACTER(*), PARAMETER :: modName = "AbstractMaterialModel_Class"
 #endif
 
+INTEGER(I4B), PARAMETER :: MAX_MATERIAL_MODEL_NAME_LENGTH = 128
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: MaterialModelOpt_
+  INTEGER(I4B) :: maxNameSize = MAX_MATERIAL_MODEL_NAME_LENGTH
   CHARACTER(18) :: linearElastic = "LINEARELASTICMODEL"
   CHARACTER(19) :: newtonianFluid = "NEWTONIANFLUIDMODEL"
 END TYPE MaterialModelOpt_
@@ -60,8 +63,10 @@ TYPE(MaterialModelOpt_), PARAMETER :: TypeMaterialModelOpt=MaterialModelOpt_()
 ! summary: abstract class for modelling the behaviour of materials
 
 TYPE, ABSTRACT :: AbstractMaterialModel_
+  PRIVATE
   LOGICAL(LGT) :: isInit = .FALSE.
-  TYPE(String) :: name
+  CHARACTER(MAX_MATERIAL_MODEL_NAME_LENGTH) :: name = ""
+  INTEGER(I4B) :: nameSize = 0
 CONTAINS
   PRIVATE
 

@@ -15,61 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(AbstractMaterialModel_Class) GetMethods
+SUBMODULE(AbstractMaterialModel_Class) TomlMethods
+USE TomlUtility, ONLY: GetValue
+USE tomlf, ONLY: toml_get => get_value
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                   GetName
+!                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetName
-ans = obj%name(1:obj%nameSize)
-END PROCEDURE obj_GetName
-
-!----------------------------------------------------------------------------
-!                                                               isInitiated
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_isInitiated
-ans = obj%isInit
-END PROCEDURE obj_isInitiated
-
-!----------------------------------------------------------------------------
-!                                                               GetDataSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetDataSize
+MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetDataSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = 0
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetDataSize
-
-!----------------------------------------------------------------------------
-!                                                                    GetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetData()"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -87,6 +45,56 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetData
+END PROCEDURE obj_ImportFromToml1
 
-END SUBMODULE GetMethods
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  'following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
+#endif
+
+CALL obj%ImportFromToml(table=node)
+
+NULLIFY (node)
+DEALLOCATE (table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
+
+END SUBMODULE TomlMethods

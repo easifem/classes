@@ -16,108 +16,40 @@
 !
 
 SUBMODULE(AbstractMaterialModel_Class) IOMethods
-USE BaseMethod
-USE TomlUtility
-USE tomlf, ONLY:  &
-  & toml_serialize,  &
-  & toml_get => get_value, &
-  & toml_stat
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                   Import
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
-END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                                                    Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
-END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                   Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-CHARACTER(*), PARAMETER :: myName = "obj_Display"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by child of '//  &
-  & 'AbstractSolidMechanicsModel_')
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Display(msg, unitNo=unitNo)
+CALL Display(obj%isInit, "isInit: ", unitNo=unitNo)
+IF (obj%isInit) THEN
+  CALL Display(obj%name, "name: ", unitNo=unitNo)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                             ImportFromToml
+!                                                              Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml1
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This method is under development.')
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
-#endif
-
-IF (PRESENT(afile)) THEN
-  CALL GetValue(table=table, afile=afile)
-ELSEIF (PRESENT(filename)) THEN
-  CALL GetValue(table=table, filename=filename)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[ARG ERROR] :: either filename or afile should be present!')
-  RETURN
-END IF
-
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE.,  &
-  & stat=stat)
-
-IF (.NOT. ASSOCIATED(node)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[CONFIG ERROR] :: following error occured while reading '//  &
-    & 'the toml file :: cannot find ['//tomlName//"] table in config.")
-END IF
-
-CALL obj%ImportFromToml(table=node)
-
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF,  &
-    & unitNo=stdout)
-END IF
-#endif
-
-NULLIFY (node)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ImportParamFromToml()')
-#endif
-END PROCEDURE obj_ImportFromToml2
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

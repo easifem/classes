@@ -18,7 +18,9 @@
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME}
-  PRIVATE ${src_path}/AbstractMaterialModel_Class@SetMethods.F90
+  PRIVATE ${src_path}/AbstractMaterialModel_Class@ConstructorMethods.F90
+          ${src_path}/AbstractMaterialModel_Class@SetMethods.F90
           ${src_path}/AbstractMaterialModel_Class@GetMethods.F90
           ${src_path}/AbstractMaterialModel_Class@IOMethods.F90
-          ${src_path}/AbstractMaterialModel_Class@ConstructorMethods.F90)
+          ${src_path}/AbstractMaterialModel_Class@HDFMethods.F90
+          ${src_path}/AbstractMaterialModel_Class@TomlMethods.F90)

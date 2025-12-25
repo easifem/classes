@@ -16,6 +16,8 @@
 !
 
 SUBMODULE(AbstractMaterialModel_Class) SetMethods
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
 CONTAINS
 
@@ -32,7 +34,32 @@ END PROCEDURE obj_SetIsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetName
-obj%name = VALUE
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%nameSize = LEN(VALUE)
+
+#ifdef DEBUG_VER
+isok = obj%nameSize .LE. TypeMaterialModelOpt%maxNameSize
+CALL AssertError1(isok, myName, &
+  "the size of value exceeds the maximum allowed size &
+  &size of value is "//ToString(obj%nameSize)//" max allowed &
+  &size is "//ToString(TypeMaterialModelOpt%maxNameSize))
+#endif
+
+obj%name(1:obj%nameSize) = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetName
 
 !----------------------------------------------------------------------------
@@ -40,9 +67,26 @@ END PROCEDURE obj_SetName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetData
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by subclass.')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 END PROCEDURE obj_SetData
 
 !----------------------------------------------------------------------------
@@ -50,9 +94,31 @@ END PROCEDURE obj_SetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_UpdateData
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_UpdateData()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine should be implemented by subclass.')
+        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_UpdateData
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
