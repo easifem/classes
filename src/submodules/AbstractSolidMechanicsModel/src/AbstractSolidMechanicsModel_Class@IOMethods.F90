@@ -16,60 +16,10 @@
 !
 
 SUBMODULE(AbstractSolidMechanicsModel_Class) IOMethods
+USE Display_Method, ONLY: Display
+USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModelDisplay
 IMPLICIT NONE
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                                   Import
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Import
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Import
-
-!----------------------------------------------------------------------------
-!                                                                    Export
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Export
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Export()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
 !                                                                   Display
@@ -85,42 +35,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
+CALL Display(msg, unitNo=unitNo)
+CALL AbstractMaterialModelDisplay(obj=obj, &
+                            msg="AbstractSolidMaterialModel: ", unitNo=unitNo)
+CALL Display(obj%isPStress, msg="isPStress: ", unitNo=unitNo)
+CALL Display(obj%isPStrain, msg="isPStrain: ", unitNo=unitNo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Display
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ImportFromToml1
 
 END SUBMODULE IOMethods

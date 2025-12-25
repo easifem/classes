@@ -34,6 +34,7 @@ IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: AbstractSolidMechanicsModel_
+PUBLIC :: AbstractSolidMechanicsModelPointer_
 PUBLIC :: AbstractSolidMechanicsModelDeallocate
 
 #ifdef DEBUG_VER
@@ -48,124 +49,76 @@ TYPE, ABSTRACT, EXTENDS(AbstractMaterialModel_) :: &
   AbstractSolidMechanicsModel_
   PRIVATE
   LOGICAL(LGT) :: isPStress = .FALSE.
-  !! PlaneStress
+  !! Is Plane Stress
   LOGICAL(LGT) :: isPStrain = .FALSE.
-  !! PlaneStrain
+  !! Is Plane Strain
+
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
-  ! IO:
-  ! @HDFMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-
-  ! IO:
-  ! @TomlMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticParam => obj_GetElasticParam
-  PROCEDURE, PUBLIC, PASS(obj) :: GetC => obj_GetC
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInvC => obj_GetInvC
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElasticityType => &
-    obj_GetElasticityType
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStrain => obj_isPlaneStrain
-  PROCEDURE, PUBLIC, PASS(obj) :: isPlaneStress => obj_isPlaneStress
+  PROCEDURE(obj_GetElasticParam), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetElasticParam
+  !! Implemented by child classes
+  PROCEDURE(obj_GetC), DEFERRED, PUBLIC, PASS(obj) :: GetC
+  !! Implemented by child classes
+  PROCEDURE(obj_GetInvC), DEFERRED, PUBLIC, PASS(obj) :: GetInvC
+  !! Implemented by child classes
+  PROCEDURE(obj_GetElasticityType), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetElasticityType
+  !! Implemented by child classes
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: isPlaneStrain => &
+    obj_isPlaneStrain
+  !! Get the PStrain
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: isPlaneStress => &
+    obj_isPlaneStress
+  !! Get the PStress
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStress => obj_SetPlaneStress
-  PROCEDURE, PUBLIC, PASS(obj) :: SetPlaneStrain => obj_SetPlaneStrain
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetPlaneStress => &
+    obj_SetPlaneStress
+  !! Set PStress
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetPlaneStrain => &
+    obj_SetPlaneStrain
+  !! Set PStrain
 END TYPE AbstractSolidMechanicsModel_
 
 !----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
+!
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: Check the essential parameter
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
+TYPE :: AbstractSolidMechanicsModelPointer_
+  CLASS(AbstractSolidMechanicsModel_), POINTER :: ptr => NULL()
+END TYPE AbstractSolidMechanicsModelPointer_
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: This routine initiates the model
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
-    CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
+!                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 27 Aug 2021
 ! summary: Deallocate data
 
-INTERFACE AbstractSolidMechanicsModelDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractSolidMechanicsModelDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractSolidMechanicsModelDeallocate
-
-!----------------------------------------------------------------------------
-!                                                           Import@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: Initiate the model by import
-
-INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
-    CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE obj_Import
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                          Export@IOMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 27 Aug 2021
-! summary: Export the model
-
-INTERFACE
-  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
-    CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE obj_Export
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods
@@ -184,21 +137,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param from the toml file
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
-    CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                GetElasticParam@GetMethods
 !----------------------------------------------------------------------------
 
@@ -206,9 +144,11 @@ END INTERFACE
 ! date: 2023-11-30
 ! summary:  Get elastic parameter
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetElasticParam(obj, poissonRatio, &
-     & shearModulus, lambda, youngsModulus, stiffnessPower, C, invC)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetElasticParam( &
+    obj, poissonRatio, shearModulus, lambda, youngsModulus, stiffnessPower, &
+    C, invC, nrowC, ncolC, nrowInvC, ncolInvC)
+    IMPORT :: AbstractSolidMechanicsModel_, DFP, I4B
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: poissonRatio
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: shearModulus
@@ -217,6 +157,7 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: stiffnessPower
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: C(:, :)
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: invC(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nrowC, ncolC, nrowInvC, ncolInvC
   END SUBROUTINE obj_GetElasticParam
 END INTERFACE
 
@@ -228,10 +169,12 @@ END INTERFACE
 ! date:  2023-11-30
 ! summary:  Get the elastic tangent matrix
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetC(obj, C)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetC(obj, C, nrow, ncol)
+    IMPORT :: AbstractSolidMechanicsModel_, DFP, I4B
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: C(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
   END SUBROUTINE obj_GetC
 END INTERFACE
 
@@ -243,10 +186,12 @@ END INTERFACE
 ! date:  2023-11-30
 ! summary:  Get inverse of elastic tangent matrix
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetInvC(obj, InvC)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetInvC(obj, InvC, nrow, ncol)
+    IMPORT :: AbstractSolidMechanicsModel_, DFP, I4B
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: invC(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
   END SUBROUTINE obj_GetInvC
 END INTERFACE
 
@@ -258,26 +203,12 @@ END INTERFACE
 ! date:  2023-11-30
 ! summary:  Get elasticity type
 
-INTERFACE
-  MODULE FUNCTION obj_GetElasticityType(obj) RESULT(Ans)
+ABSTRACT INTERFACE
+  FUNCTION obj_GetElasticityType(obj) RESULT(Ans)
+    IMPORT :: AbstractSolidMechanicsModel_, I4B
     CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetElasticityType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-30
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractSolidMechanicsModel_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
