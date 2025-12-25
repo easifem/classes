@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(AbstractMaterial_Class) TomlMethods
-USE Display_Method, ONLY: Display, ToString
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
 
