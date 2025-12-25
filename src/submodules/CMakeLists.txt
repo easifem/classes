@@ -231,9 +231,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/ElasticityOpt/CMakeLists.txt)
 # LinearElasticModel
 include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
 
-# LinearPoroElasticModel
-include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
-
 # NewtonianFluidModel
 include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
 
