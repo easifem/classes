@@ -22,11 +22,7 @@
 SUBMODULE(LinearElasticModel_Class) TomlMethods
 USE EyeUtility, ONLY: eye
 USE TomlUtility, ONLY: GetValue, GetValue_
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_len => len, &
-                 toml_array, &
-                 toml_stat
+USE tomlf, ONLY: toml_get => get_value
 IMPLICIT NONE
 CONTAINS
 
@@ -58,7 +54,7 @@ SUBROUTINE ReadNameFromToml(obj, table, name)
                           'Reading name ...')
 #endif
 
-  default_value = obj%GetPrefix()
+  default_value = "LinearElasticModel"
   CALL GetValue(table=table, key="name", VALUE=name, &
                 default_value=default_value, &
                 origin=origin, stat=stat, isFound=isok)

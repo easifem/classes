@@ -232,13 +232,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 SELECT CASE (obj%elasticityType)
 CASE (TypeElasticityOpt%isotropic)
-  CALL LinearElasticModelGetData_Iso(obj, DATA)
+  CALL LinearElasticModelGetData_Iso(obj=obj, DATA=DATA, tsize=tsize)
 CASE (TypeElasticityOpt%anisotropic)
-  CALL LinearElasticModelGetData_Aniso(obj, DATA)
+  CALL LinearElasticModelGetData_Aniso(obj=obj, DATA=DATA, tsize=tsize)
 CASE (TypeElasticityOpt%transIsotropic)
-  CALL LinearElasticModelGetData_Trans(obj, DATA)
+  CALL LinearElasticModelGetData_Trans(obj=obj, DATA=DATA, tsize=tsize)
 CASE (TypeElasticityOpt%orthotropic)
-  CALL LinearElasticModelGetData_Ortho(obj, DATA)
+  CALL LinearElasticModelGetData_Ortho(obj=obj, DATA=DATA, tsize=tsize)
 
 #ifdef DEBUG_VER
 CASE DEFAULT

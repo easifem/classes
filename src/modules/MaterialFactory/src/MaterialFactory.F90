@@ -21,7 +21,6 @@
 
 MODULE MaterialFactory
 USE AbstractSolidMechanicsModel_Class, ONLY: AbstractSolidMechanicsModel_
-USE AbstractPoroMechanicsModel_Class, ONLY: AbstractPoroMechanicsModel_
 USE AbstractFluidMechanicsModel_Class, ONLY: AbstractFluidMechanicsModel_
 USE SolidMaterial_Class, ONLY: SolidMaterial_
 USE FluidMaterial_Class, ONLY: FluidMaterial_
@@ -70,7 +69,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION PoroMechanicsModelFactory(name) RESULT(Ans)
     CHARACTER(*), INTENT(IN) :: name
-    CLASS(AbstractPoroMechanicsModel_), POINTER :: ans
+    CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
   END FUNCTION PoroMechanicsModelFactory
 END INTERFACE
 

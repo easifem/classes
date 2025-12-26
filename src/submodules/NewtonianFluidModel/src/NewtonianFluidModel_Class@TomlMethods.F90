@@ -13,29 +13,42 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
-SUBMODULE(NewtonianFluidModel_Class) SetMethods
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This submodule contains input-output methods
+
+SUBMODULE(NewtonianFluidModel_Class) TomlMethods
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE nfm_SetModelParameters
-INTEGER(I4B) :: ierr
-IF (param%IsPresent(key=myprefix//"/dynamicViscosity")) THEN
-  ierr = param%Get(key=myprefix//"/dynamicViscosity", VALUE=obj%mu)
-END IF
-END PROCEDURE nfm_SetModelParameters
-
-!----------------------------------------------------------------------------
-!                                                             SetParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE nfm_SetParam
-IF (PRESENT(dynamicViscosity)) obj%mu = dynamicViscosity
-END PROCEDURE nfm_SetParam
-
-END SUBMODULE SetMethods
+END SUBMODULE TomlMethods

@@ -18,7 +18,6 @@
 MODULE easifemMaterials
 USE AbstractMaterialModel_Class
 USE AbstractSolidMechanicsModel_Class
-USE AbstractPoroMechanicsModel_Class
 USE AbstractFluidMechanicsModel_Class
 USE LinearElasticModel_Class
 USE LinearPoroElasticModel_Class

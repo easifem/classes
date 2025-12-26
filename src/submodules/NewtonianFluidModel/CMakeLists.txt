@@ -20,5 +20,7 @@ target_sources(
   ${PROJECT_NAME}
   PRIVATE ${src_path}/NewtonianFluidModel_Class@ConstructorMethods.F90
           ${src_path}/NewtonianFluidModel_Class@IOMethods.F90
-          ${src_path}/NewtonianFluidModel_Class@GetMethod.F90
-          ${src_path}/NewtonianFluidModel_Class@SetMethod.F90)
+          ${src_path}/NewtonianFluidModel_Class@TomlMethods.F90
+          ${src_path}/NewtonianFluidModel_Class@HDFMethods.F90
+          ${src_path}/NewtonianFluidModel_Class@GetMethods.F90
+          ${src_path}/NewtonianFluidModel_Class@SetMethods.F90)

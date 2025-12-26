@@ -33,7 +33,7 @@ USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE AbstractMaterial_Class, ONLY: AbstractMaterial_
-USE AbstractPoroMechanicsModel_Class, ONLY: AbstractPoroMechanicsModel_
+USE AbstractSolidMechanicsModel_Class, ONLY: AbstractSolidMechanicsModel_
 USE MeshSelection_Class, ONLY: MeshSelectionPointer_, MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE tomlf, ONLY: toml_table
@@ -70,7 +70,7 @@ PUBLIC :: PorousMaterialNamesFromToml
 ! It is used for modeling the behavior of Porouss.
 
 TYPE, EXTENDS(AbstractMaterial_) :: PorousMaterial_
-  CLASS(AbstractPoroMechanicsModel_), POINTER :: stressStrainModel => NULL()
+  CLASS(AbstractSolidMechanicsModel_), POINTER :: stressStrainModel => NULL()
     !! Pointer to stress strain material behavior of Porouss
 CONTAINS
   PRIVATE
@@ -395,7 +395,7 @@ END INTERFACE GetPorousMaterialPointer
 INTERFACE
   MODULE FUNCTION obj_GetStressStrainModelPointer(obj) RESULT(ans)
     CLASS(PorousMaterial_), INTENT(IN) :: obj
-    CLASS(AbstractPoroMechanicsModel_), POINTER :: ans
+    CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
   END FUNCTION obj_GetStressStrainModelPointer
 END INTERFACE
 

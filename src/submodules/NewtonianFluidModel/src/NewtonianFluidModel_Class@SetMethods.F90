@@ -20,22 +20,29 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                                    SetData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE nfm_SetModelParameters
-INTEGER(I4B) :: ierr
-IF (param%IsPresent(key=myprefix//"/dynamicViscosity")) THEN
-  ierr = param%Get(key=myprefix//"/dynamicViscosity", VALUE=obj%mu)
-END IF
-END PROCEDURE nfm_SetModelParameters
+MODULE PROCEDURE obj_SetData
+obj%mu = DATA(1)
+END PROCEDURE obj_SetData
 
 !----------------------------------------------------------------------------
-!                                                             SetParam
+!                                                                    SetData
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE nfm_SetParam
-IF (PRESENT(dynamicViscosity)) obj%mu = dynamicViscosity
-END PROCEDURE nfm_SetParam
+MODULE PROCEDURE obj_UpdateData
+DATA(1) = obj%mu
+END PROCEDURE obj_UpdateData
+
+!----------------------------------------------------------------------------
+!                                                                    SetParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetParam
+LOGICAL(LGT) :: isok
+isok = PRESENT(dynamicViscosity)
+IF (isok) obj%mu = dynamicViscosity
+END PROCEDURE obj_SetParam
 
 END SUBMODULE SetMethods

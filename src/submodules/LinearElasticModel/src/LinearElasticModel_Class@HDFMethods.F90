@@ -246,7 +246,8 @@ CALL AssertError1(isok, myName, &
 
 ! WRITE name
 dsetname = TRIM(group)//"/name"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
+strval = obj%GetName()
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval%chars())
 
 ! WRITE elasticityType
 dsetname = TRIM(group)//"/elasticityType"

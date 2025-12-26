@@ -23,37 +23,35 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE nfm_GetDynamicViscosity
-DynamicViscosity = obj%Mu
-END PROCEDURE nfm_GetDynamicViscosity
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE nfm_GetModelParameters
-INTEGER(I4B) :: ierr
-IF (obj%isInitiated()) THEN
-  ierr = param%set(key=myprefix//"/name", &
-    & VALUE="NewtonianFluidModel")
-  ierr = param%set(key=myprefix//"/dynamicViscosity", VALUE=obj%Mu)
-END IF
-END PROCEDURE nfm_GetModelParameters
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE nfm_GetPrefix
-ans = myprefix
-END PROCEDURE nfm_GetPrefix
+MODULE PROCEDURE obj_GetDynamicViscosity
+ans = obj%mu
+END PROCEDURE obj_GetDynamicViscosity
 
 !----------------------------------------------------------------------------
 !                                                                 GetParam
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE nfm_GetParam
-IF (PRESENT(dynamicViscosity)) dynamicViscosity = obj%mu
-END PROCEDURE nfm_GetParam
+MODULE PROCEDURE obj_GetParam
+LOGICAL(LGT) :: isok
+isok = PRESENT(dynamicViscosity)
+IF (isok) dynamicViscosity = obj%mu
+END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
+!                                                               GetDataSize
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDataSize
+ans = 1
+END PROCEDURE obj_GetDataSize
+
+!----------------------------------------------------------------------------
+!                                                                    GetData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetData
+tsize = 1
+DATA(1) = obj%mu
+END PROCEDURE obj_GetData
 
 END SUBMODULE GetMethods

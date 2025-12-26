@@ -16,82 +16,18 @@
 !
 
 MODULE SolidMechanicsModelUtility
-USE GlobalData, ONLY: I4B, LGT, DFP
-USE LinearElasticModel_Class, ONLY: LinearElasticModel_prefix
-USE LinearElasticModel_Class, ONLY: SetLinearElasticModelParam
-USE LinearPoroElasticModel_Class, ONLY: LinearPoroElasticModel_Prefix
-USE LinearPoroElasticModel_Class, ONLY: SetLinearPoroElasticModelParam
-USE FPL, ONLY: ParameterList_
-USE ExceptionHandler_Class, ONLY: e
+! USE GlobalData, ONLY: I4B, LGT, DFP
+! USE LinearElasticModel_Class, ONLY: LinearElasticModel_prefix
+! USE LinearElasticModel_Class, ONLY: SetLinearElasticModelParam
+! USE LinearPoroElasticModel_Class, ONLY: LinearPoroElasticModel_Prefix
+! USE LinearPoroElasticModel_Class, ONLY: SetLinearPoroElasticModelParam
+! USE FPL, ONLY: ParameterList_
+! USE ExceptionHandler_Class, ONLY: e
 
 PRIVATE
 
-PUBLIC :: SetSolidMechanicsModelParam
-
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "SolidMechanicsModelUtility"
-
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                              SetSolidMechanicsModelParam
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-02
-! summary: Get data for solid mechanics model
-
-SUBROUTINE SetSolidMechanicsModelParam(param, prefix,  &
-  & elasticityType, isPlaneStrain, isPlaneStress, poissonRatio,  &
-  & youngsModulus, shearModulus, lambda, C, invC, stiffnessPower)
-  TYPE(ParameterList_), INTENT(INOUT) :: param
-  CHARACTER(*), INTENT(IN) :: prefix
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: elasticityType
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPlaneStrain
-  LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPlaneStress
-  REAL(DFP), OPTIONAL, INTENT(IN) :: poissonRatio
-  REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
-  REAL(DFP), OPTIONAL, INTENT(IN) :: shearModulus
-  REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
-  REAL(DFP), OPTIONAL, INTENT(IN) :: C(:, :)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: invC(:, :)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: stiffnessPower
-
-  ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "SetSolidMechanicsModelData()"
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
-#endif DEBUG_VER
-
-  SELECT CASE (prefix)
-  CASE (LinearElasticModel_prefix)
-
-    CALL SetLinearElasticModelParam(param=param,  &
-      & elasticityType=elasticityType, isPlaneStress=isPlaneStress,  &
-      & poissonRatio=poissonRatio, youngsModulus=youngsModulus,  &
-      & shearModulus=shearModulus, lambda=lambda, C=C, invC=invC,  &
-      & stiffnessPower=stiffnessPower, isPlaneStrain=isPlaneStrain)
-
-  CASE (LinearPoroElasticModel_prefix)
-
-    CALL SetLinearPoroElasticModelParam(param=param,  &
-      & elasticityType=elasticityType, isPlaneStress=isPlaneStress,  &
-      & poissonRatio=poissonRatio, youngsModulus=youngsModulus,  &
-      & shearModulus=shearModulus, lambda=lambda, C=C, invC=invC,  &
-      & isPlaneStrain=isPlaneStrain)
-
-  CASE DEFAULT
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: No case found for '//prefix)
-    RETURN
-  END SELECT
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
-#endif DEBUG_VER
-
-END SUBROUTINE SetSolidMechanicsModelParam
+#endif
 
 END MODULE SolidMechanicsModelUtility

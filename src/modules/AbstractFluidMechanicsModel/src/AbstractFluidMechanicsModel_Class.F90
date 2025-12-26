@@ -26,20 +26,33 @@
 
 MODULE AbstractFluidMechanicsModel_Class
 USE GlobalData, ONLY: I4B
-USE AbstractMaterialModel_Class
+USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModel_
+
 IMPLICIT NONE
+
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "AbstractFluidMechanicsModel_Class"
-INTEGER(I4B), PARAMETER, PUBLIC :: NewtonianFluidModel = 1
-INTEGER(I4B), PARAMETER, PUBLIC :: NonNewtonianFluidModel = 2
+
 PUBLIC :: AbstractFluidMechanicsModel_
+PUBLIC :: AbstractFluidMechanicsModelPointer_
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractFluidMechanicsModel_Class"
+#endif
 
 !----------------------------------------------------------------------------
 !                                                      FluidMechanicsModel_
 !----------------------------------------------------------------------------
 
 TYPE, ABSTRACT, EXTENDS(AbstractMaterialModel_) :: &
-  & AbstractFluidMechanicsModel_
+  AbstractFluidMechanicsModel_
 END TYPE AbstractFluidMechanicsModel_
+
+!----------------------------------------------------------------------------
+!                                         AbstractFluidMechanicsModelPointer_
+!----------------------------------------------------------------------------
+
+TYPE :: AbstractFluidMechanicsModelPointer_
+  CLASS(AbstractFluidMechanicsModel_), POINTER :: ptr => NULL()
+END TYPE AbstractFluidMechanicsModelPointer_
 
 END MODULE AbstractFluidMechanicsModel_Class

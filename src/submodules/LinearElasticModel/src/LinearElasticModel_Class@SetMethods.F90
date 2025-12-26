@@ -87,13 +87,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 SELECT CASE (obj%elasticityType)
 CASE (TypeElasticityOpt%isotropic)
-  CALL LinearElasticModelSetData_Iso(obj, DATA)
+  CALL LinearElasticModelSetData_Iso(obj=obj, DATA=DATA)
 CASE (TypeElasticityOpt%anisotropic)
-  CALL LinearElasticModelSetData_Aniso(obj, DATA)
+  CALL LinearElasticModelSetData_Aniso(obj=obj, DATA=DATA)
 CASE (TypeElasticityOpt%transIsotropic)
-  CALL LinearElasticModelSetData_Trans(obj, DATA)
+  CALL LinearElasticModelSetData_Trans(obj=obj, DATA=DATA)
 CASE (TypeElasticityOpt%orthotropic)
-  CALL LinearElasticModelSetData_Ortho(obj, DATA)
+  CALL LinearElasticModelSetData_Ortho(obj=obj, DATA=DATA)
 
 #ifdef DEBUG_VER
 CASE DEFAULT
@@ -113,24 +113,27 @@ END PROCEDURE obj_SetData
 !                                             LinearElasticModelSetData_Iso
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE LinearElasticModelSetData_Iso
+SUBROUTINE LinearElasticModelSetData_Iso(obj, DATA)
+  CLASS(LinearElasticModel_), INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(IN) :: DATA(:)
+
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Iso()"
+  CHARACTER(*), PARAMETER :: myName = "LinearElasticModelSetData_Iso()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
-obj%lambda = DATA(1)
-obj%G = DATA(2)
+  obj%lambda = DATA(1)
+  obj%G = DATA(2)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
-END PROCEDURE LinearElasticModelSetData_Iso
+END SUBROUTINE LinearElasticModelSetData_Iso
 
 !----------------------------------------------------------------------------
 !                                            LinearElasticModelSetData_Aniso

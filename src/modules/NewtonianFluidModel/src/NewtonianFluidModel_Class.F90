@@ -26,22 +26,23 @@
 ! to construct an instance of [[NewtonianFluidModel_]].
 
 MODULE NewtonianFluidModel_Class
-USE GlobalData
-USE String_Class
-USE BaSetype
+USE GlobalData, ONLY: I4B, DFP, LGT
+USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class
-USE FPL, ONLY: ParameterList_
-USE AbstractMaterialModel_Class
-USE AbstractFluidMechanicsModel_Class
+USE HDF5File_Class, ONLY: HDF5File_
+USE AbstractFluidMechanicsModel_Class, ONLY: AbstractFluidMechanicsModel_
+USE tomlf, ONLY: toml_table
+
 IMPLICIT NONE
+
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "NewtonianFluidModel_CLASS"
-CHARACTER(*), PARAMETER :: myprefix = "NewtonianFluidModel"
+
 PUBLIC :: NewtonianFluidModel_
-PUBLIC :: TypeNewtonianFluidModel
 PUBLIC :: NewtonianFluidModelPointer_
-PUBLIC :: SetNewtonianFluidModelParam
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "NewtonianFluidModel_CLASS"
+#endif
 
 !----------------------------------------------------------------------------
 !                                                       NewtonianFluidModel_
@@ -71,27 +72,47 @@ TYPE, EXTENDS(AbstractFluidMechanicsModel_) :: NewtonianFluidModel_
   REAL(DFP) :: mu = 0.0_DFP
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: checkEssentialParam => &
-    & nfm_checkEssentialParam
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => nfm_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => nfm_Deallocate
-  FINAL :: nfm_FINAL
-  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => nfm_Import
-  PROCEDURE, PUBLIC, PASS(obj) :: Export => nfm_Export
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => nfm_Display
-  PROCEDURE, PUBLIC, PASS(obj) :: GetdynamicViscosity =>  &
-    & nfm_GetdynamicViscosity
-  PROCEDURE, PUBLIC, PASS(obj) :: GetModelParameters => &
-    & nfm_GetModelParameters
-  PROCEDURE, PUBLIC, PASS(obj) :: SetModelParameters => &
-    & nfm_SetModelParameters
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => nfm_GetPrefix
-  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => nfm_GetParam
-  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => nfm_SetParam
-END TYPE NewtonianFluidModel_
 
-TYPE(NewtonianFluidModel_), PARAMETER :: TypeNewtonianFluidModel = &
-  & NewtonianFluidModel_()
+  ! CONSTRUCTOR:
+  ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  FINAL :: obj_FINAL
+
+  ! IO:
+  ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+
+  ! IO:
+  ! @HDFMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+
+  ! IO:
+  ! @TomlMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Import from the toml
+
+  ! GET:
+  ! @GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDynamicViscosity => &
+    obj_GetDynamicViscosity
+    !! Get the dynamic viscosity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
+  !! Get the parameters
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDataSize => obj_GetDataSize
+  !! Get size of data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetData => obj_GetData
+  !! Get the data
+
+  ! SET:
+  ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  !! Set parameter
+  PROCEDURE, PUBLIC, PASS(obj) :: SetData => obj_SetData
+  !! Set data
+  PROCEDURE, PUBLIC, PASS(obj) :: UpdateData => obj_UpdateData
+  !! Get updated data
+END TYPE NewtonianFluidModel_
 
 !----------------------------------------------------------------------------
 !
@@ -102,231 +123,47 @@ TYPE :: NewtonianFluidModelPointer_
 END TYPE NewtonianFluidModelPointer_
 
 !----------------------------------------------------------------------------
-!                             SetNewtonianFluidModelParam@ConstructorMethods
+!                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 Oct 2021
-! summary: Check the essential parameter
-!
-!# Introduction
-!
-! This routine Sets the options in `param` to construct an instance of
-! [[NewtonianFluidModelPointer_]].
-!
-!@note
-! Always construct the parameter for [[NewtonianFluidModel_]] by using
-! [[SetNewtonianFluidModelParam]]
-!@endnote
-!
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( ParameterList_ ) :: param
-! CALL FPL_INIT; CALL param%initiate()
-! CALL SetNewtonianFluidModelParam( param = param, dynamicViscosity=0.001_DFP )
-! CALL obj%initiate( param )
-! CALL param%print()
-! CALL obj%display( msg="Test-1 : " )
-! CALL param%Deallocate(); CALL FPL_FINALIZE
-! END PROGRAM main
-!```
+! summary: Deallocate data stored in the object
 
 INTERFACE
-  MODULE SUBROUTINE SetNewtonianFluidModelParam(param, dynamicViscosity)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    REAL(DFP), OPTIONAL, INTENT(IN) :: dynamicViscosity
-  END SUBROUTINE SetNewtonianFluidModelParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     checkEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2 Oct 2021
-! summary: Check the essential parameter
-!
-!# Introduction
-!
-! - This routine checks the availability of options in param
-! - These options are necessary for constructing an instance of
-!  [[NewtonianFluidModel_]].
-! - This routine is called by [[NewtonianFluidModel_:Initiate]]
-
-INTERFACE
-  MODULE SUBROUTINE nfm_checkEssentialParam(obj, param)
-    CLASS(NewtonianFluidModel_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE nfm_checkEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2 Oct 2021
-! summary: This routine initiates the the Newtonian fluid model
-!
-!# Introduction
-! This routine initiates an instance of [[NewtonianFluidModel_]]. The usage
-! is shown below.
-!
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( ParameterList_ ) :: param
-! CALL FPL_INIT; CALL param%initiate()
-! CALL SetNewtonianFluidModelParam( param = param, &
-! & dynamicViscosity=0.001_DFP )
-! CALL obj%initiate( param )
-! CALL param%print()
-! CALL obj%display( msg="Test-1 : " )
-! CALL param%Deallocate(); CALL FPL_FINALIZE
-! END PROGRAM main
-!```
-
-INTERFACE
-  MODULE SUBROUTINE nfm_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE nfm_Initiate
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
+!                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 Oct 2021
-! summary:         Deallocate data stored in the object
-!
-!# Introduction
-!
-! This routine deallocates the memory occupied by [[NewtonianFluidModel_]]
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( ParameterList_ ) :: param
-! CALL FPL_INIT; CALL param%initiate()
-! CALL SetNewtonianFluidModelParam( param = param, &
-! & dynamicViscosity=0.001_DFP )
-! CALL obj%initiate( param )
-! CALL param%print()
-! CALL obj%display( msg="Test-1 : " )
-! CALL obj%Deallocate()
-! CALL param%Deallocate(); CALL FPL_FINALIZE
-! END PROGRAM main
-!```
+! summary: Deallocate data stored in the object
 
 INTERFACE
-  MODULE SUBROUTINE nfm_Deallocate(obj)
-    CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
-  END SUBROUTINE nfm_Deallocate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                  Final@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2 Oct 2021
-! summary:         Deallocate data stored in the object
-!
-!# Introduction
-!
-! This routine deallocates the memory occupied by [[NewtonianFluidModel_]]
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( ParameterList_ ) :: param
-! CALL FPL_INIT; CALL param%initiate()
-! CALL SetNewtonianFluidModelParam( param = param, &
-! & dynamicViscosity=0.001_DFP )
-! CALL obj%initiate( param )
-! CALL param%print()
-! CALL obj%display( msg="Test-1 : " )
-! CALL obj%Deallocate()
-! CALL param%Deallocate(); CALL FPL_FINALIZE
-! END PROGRAM main
-!```
-
-INTERFACE
-  MODULE SUBROUTINE nfm_Final(obj)
+  MODULE SUBROUTINE obj_Final(obj)
     TYPE(NewtonianFluidModel_), INTENT(INOUT) :: obj
-  END SUBROUTINE nfm_Final
+  END SUBROUTINE obj_Final
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Import@IOMethods
+!                                                           Import@HDFMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 Oct 2021
 ! summary: Initiate the Newtonian fluid model from hdf5 file
-!
-!# Introduction
-!
-! This routine initiates an instance of [[NewtonianFluidModel_]] by
-! importing data from [[HDF5File_]] class. The content of [[HDF5File_]]
-! is shown below.
-!
-! ![](../|media|/NewtonianFluidModel_template.png ""){: width="400"}
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( HDF5File_ ) :: hdf5file
-! CALL hdf5file%initiate( "./TemplateNewtonianFluidModel1.hdf5", mode="READ")
-! CALL hdf5file%open()
-! CALL obj%import(hdf5file, "")
-! CALL obj%Display("Test-3 : ")
-! CALL hdf5file%close(); CALL hdf5file%Deallocate()
-! CALL obj%Deallocate()
-! END PROGRAM main
-!```
 
 INTERFACE
-  MODULE SUBROUTINE nfm_Import(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE nfm_Import
+  END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -336,48 +173,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 Oct 2021
 ! summary: Export the Newtonian fluid model to an hdf5 file
-!
-!# Introduction
-!
-! This routine exports the content of [[NewtonianFluidModel_]] in an
-! [[HDF5File_]].
-!
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( ParameterList_ ) :: param
-! TYPE( HDF5File_ ) :: hdf5file
-! CALL FPL_INIT; CALL param%initiate()
-! CALL SetNewtonianFluidModelParam( param = param, &
-! & dynamicViscosity=0.001_DFP )
-! CALL obj%initiate( param )
-! CALL hdf5file%initiate( "./TemplateNewtonianFluidModel1.", mode="NEW ")
-! CALL hdf5file%open()
-! CALL obj%export(hdf5file, "")
-! CALL hdf5file%close(); CALL hdf5file%Deallocate()
-! CALL obj%Deallocate()
-! CALL param%Deallocate(); CALL FPL_FINALIZE
-! END PROGRAM main
-!```
-!
-! The above program generates a [[HDF5File_]], which is given below
-!
-! ![](../|media|/NewtonianFluidModel_template.png ""){: width="400"}
-!
 
 INTERFACE
-  MODULE SUBROUTINE nfm_Export(obj, hdf5, group)
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(NewtonianFluidModel_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE nfm_Export
+  END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -387,39 +189,13 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 Oct 2021
 ! summary: Displays the content of Newtonian fluid model
-!
-!# Introduction
-!
-! This routine displays the content of [[NewtonianFluidModel_]]
-!
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( ParameterList_ ) :: param
-! CALL FPL_INIT; CALL param%initiate()
-! CALL SetNewtonianFluidModelParam( param = param, &
-! & dynamicViscosity=0.001_DFP )
-! CALL obj%initiate( param )
-! CALL param%print()
-! CALL obj%display( msg="Test-1 : " )
-! CALL obj%Deallocate()
-! CALL param%Deallocate(); CALL FPL_FINALIZE
-! END PROGRAM main
-!```
 
 INTERFACE
-  MODULE SUBROUTINE nfm_Display(obj, msg, unitNo)
+  MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE nfm_Display
+  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -429,120 +205,12 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2 Oct 2021
 ! summary: Returns the dynamicviscosity
-!
-!# Introduction
-!
-! This routine returns the [[NewtonianFluidModel_:mu]], &
-! & dynamicviscosity $\mu$
-!
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! USE FPL, ONLY: ParameterList_
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( HDF5File_ ) :: hdf5file
-! TYPE( ParameterList_ ) :: param
-! REAL( DFP ) :: dynamicViscosity
-! CALL hdf5file%initiate( "./TemplateNewtonianFluidModel1.hdf5", mode="READ")
-! CALL hdf5file%open()
-! CALL obj%import(hdf5file, "")
-! CALL obj%GetdynamicViscosity(dynamicViscosity=dynamicViscosity)
-! CALL Display( dynamicViscosity, "dynamicViscosity : ")
-! CALL FPL_INIT(); CALL param%initiate()
-! CALL obj%GetModelParameters(param)
-! CALL param%print()
-! CALL FPL_FINALIZE(); CALL param%Deallocate()
-! CALL hdf5file%close(); CALL hdf5file%Deallocate()
-! CALL obj%Deallocate()
-! END PROGRAM main
-!```
 
 INTERFACE
-  MODULE PURE SUBROUTINE nfm_GetdynamicViscosity(obj, dynamicViscosity)
+  MODULE FUNCTION obj_GetDynamicViscosity(obj) RESULT(ans)
     CLASS(NewtonianFluidModel_), INTENT(IN) :: obj
-    REAL(DFP), INTENT(INOUT) :: dynamicViscosity
-  END SUBROUTINE nfm_GetdynamicViscosity
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              GetModelParameters@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2 Oct 2021
-! summary: Returns the model parameters in [[ParameterList_]]
-!
-!# Introduction
-!
-! This routine returns the model parameters in [[ParameterList_]]
-!
-!
-!## Usage
-!
-!```fortran
-! PROGRAM main
-! USE easifemBase
-! USE easifemClasses
-! USE easifemMaterials
-! USE FPL, ONLY: ParameterList_
-! IMPLICIT NONE
-! TYPE( NewtonianFluidModel_ ) :: obj
-! TYPE( HDF5File_ ) :: hdf5file
-! TYPE( ParameterList_ ) :: param
-! CALL hdf5file%initiate( "./TemplateNewtonianFluidModel1.hdf5", mode="READ")
-! CALL hdf5file%open()
-! CALL obj%import(hdf5file, "")
-! CALL FPL_INIT(); CALL param%initiate()
-! CALL obj%GetModelParameters(param)
-! CALL param%print()
-! CALL FPL_FINALIZE(); CALL param%Deallocate()
-! CALL hdf5file%close(); CALL hdf5file%Deallocate()
-! CALL obj%Deallocate()
-! END PROGRAM main
-!```
-
-INTERFACE
-  MODULE SUBROUTINE nfm_GetModelParameters(obj, param)
-    CLASS(NewtonianFluidModel_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-  END SUBROUTINE nfm_GetModelParameters
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              SetModelParameters@GetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2 Oct 2021
-! summary: Sets the model parameters from param
-!
-!# Introduction
-!
-! This subroutine Sets the models parameter by reading them from param
-! If an option is not available, then it does not Set that parameter.
-
-INTERFACE
-  MODULE SUBROUTINE nfm_SetModelParameters(obj, param)
-    CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-  END SUBROUTINE nfm_SetModelParameters
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION nfm_GetPrefix(obj) RESULT(ans)
-    CLASS(NewtonianFluidModel_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION nfm_GetPrefix
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetDynamicViscosity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -554,10 +222,42 @@ END INTERFACE
 ! summary:  Get Parameters
 
 INTERFACE
-  MODULE SUBROUTINE nfm_GetParam(obj, dynamicViscosity)
+  MODULE SUBROUTINE obj_GetParam(obj, dynamicViscosity)
     CLASS(NewtonianFluidModel_), INTENT(IN) :: obj
     REAL(DFP), OPTIONAL, INTENT(INOUT) :: dynamicViscosity
-  END SUBROUTINE nfm_GetParam
+  END SUBROUTINE obj_GetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetDataSize@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-30
+! summary:  Get the size of data needed by obj
+
+INTERFACE
+  MODULE FUNCTION obj_GetDataSize(obj) RESULT(ans)
+    CLASS(NewtonianFluidModel_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetDataSize
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-26
+! summary: Get the  data from the model
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetData(obj, DATA, tsize)
+    CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in data
+  END SUBROUTINE obj_GetData
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -569,10 +269,53 @@ END INTERFACE
 ! summary:  Set Parameters
 
 INTERFACE
-  MODULE SUBROUTINE nfm_SetParam(obj, dynamicViscosity)
+  MODULE SUBROUTINE obj_SetParam(obj, dynamicViscosity)
     CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: dynamicViscosity
-  END SUBROUTINE nfm_SetParam
+  END SUBROUTINE obj_SetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          SetData@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-30
+! summary: Set data
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetData(obj, DATA)
+    CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: DATA(:)
+  END SUBROUTINE obj_SetData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       UpdateData@SetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_UpdateData(obj, DATA, tsize)
+    CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: DATA(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of data written in data
+  END SUBROUTINE obj_UpdateData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 ImportFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate param from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(NewtonianFluidModel_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------
