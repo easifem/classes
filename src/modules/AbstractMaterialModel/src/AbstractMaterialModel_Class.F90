@@ -86,7 +86,9 @@ CONTAINS
 
   ! IO:
   ! @TomlMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !TODO: Convert ImportFromToml1 to Deferred
+  PROCEDURE(obj_ImportFromToml1), DEFERRED, PUBLIC, PASS(obj) :: &
+    ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
@@ -199,8 +201,9 @@ END INTERFACE AbstractMaterialModelDisplay
 ! date:  2023-11-08
 ! summary:  Initiate param from the toml file
 
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_ImportFromToml1(obj, table)
+    IMPORT :: AbstractMaterialModel_, toml_table
     CLASS(AbstractMaterialModel_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1

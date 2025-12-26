@@ -25,32 +25,6 @@ CONTAINS
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
 MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
