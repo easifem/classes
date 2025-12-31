@@ -18,6 +18,7 @@
 SUBMODULE(GnuPlot_Class) PlotMethods
 USE InputUtility, ONLY: Input
 USE GridPointUtility, ONLY: Linspace
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 CONTAINS
 
@@ -44,23 +45,23 @@ pltstring = ''
 nplot = 0
 
 doplot = .FALSE.
-doplot(1) = CheckInput(x1, y1)
+doplot(1) = Help_CheckInput(x1, y1)
 IF (.NOT. doplot(1)) CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[ERROR] :: x1 and y1 must be present for plot1')
 nplot = nplot + 1
 CALL GetPlotCommand(1, pltstring(1), ls1, axes1)
 
-doplot(2) = CheckInput(x2, y2)
+doplot(2) = Help_CheckInput(x2, y2)
 IF (doplot(2)) THEN
   nplot = nplot + 1
   CALL GetPlotCommand(nplot, pltstring(2), ls2, axes2)
 END IF
-doplot(3) = CheckInput(x3, y3)
+doplot(3) = Help_CheckInput(x3, y3)
 IF (doplot(3)) THEN
   nplot = nplot + 1
   CALL GetPlotCommand(nplot, pltstring(3), ls3, axes3)
 END IF
-doplot(4) = CheckInput(x4, y4)
+doplot(4) = Help_CheckInput(x4, y4)
 IF (doplot(4)) THEN
   nplot = nplot + 1
   CALL GetPlotCommand(nplot, pltstring(4), ls4, axes4)
@@ -95,6 +96,28 @@ CALL obj%DEALLOCATE()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
+
+CONTAINS
+
+FUNCTION Help_CheckInput(xdata, ydata) RESULT(isok)
+  REAL(DFP), OPTIONAL, INTENT(IN) :: xdata(:), ydata(:)
+  LOGICAL(LGT) :: isok
+
+  LOGICAL(LGT) :: abool
+  INTEGER(I4B) :: nx, ny
+
+  abool = PRESENT(xdata) .AND. PRESENT(ydata)
+
+  IF (abool) THEN
+    nx = SIZE(xdata)
+    ny = SIZE(ydata)
+
+    isok = nx .EQ. ny
+  ELSE
+    isok = .FALSE.
+  END IF
+
+END FUNCTION Help_CheckInput
 
 END PROCEDURE obj_plot1
 
@@ -285,35 +308,125 @@ END PROCEDURE obj_plot3
 !                                                                    plot4
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_plot4
-CHARACTER(*), PARAMETER :: myName = "obj_plot4"
-INTEGER :: np0, ii, alloc_err
+MODULE PROCEDURE obj_plotFunc1
+CHARACTER(*), PARAMETER :: myName = "obj_plotFunc1"
+INTEGER(I4B) :: np0, ii, alloc_err
 REAL(DFP), ALLOCATABLE :: x(:)
 REAL(DFP), ALLOCATABLE :: y(:)
 
-IF (PRESENT(np)) THEN
-  np0 = np
-ELSE
-  np0 = 50
-END IF
+np0 = Input(default=50, option=np)
 
-ALLOCATE (x(1:np0), y(1:np0), stat=alloc_err)
+CALL Reallocate(x, np0)
+CALL Reallocate(y, np0)
 
-IF (alloc_err /= 0) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Failed to allocate memory for x and y')
-END IF
 !Create set of xy data
-x = Linspace(xrange(1), xrange(2), np0)
-y = [(func(x(ii)), ii=1, np0)]
+x = Linspace(xMin, xMax, np)
 
-CALL obj%plot(x, y)
+ii = yFunc%GetNumReturns()
+IF (.NOT. ii .EQ. 1) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: yFunc must be scalar function')
+END IF
 
-! cleanup memory
+DO ii = 1, np0
+  CALL yFunc%Get(y(ii), args=[x(ii)])
+END DO
+
+CALL obj%plot(x, y, ls1=lspec%chars())
+
+DEALLOCATE (x, y)
+
+END PROCEDURE obj_plotFunc1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_plotFunc2
+CHARACTER(*), PARAMETER :: myName = "obj_plotFunc2"
+INTEGER(I4B) :: np0, ii
+REAL(DFP), ALLOCATABLE :: y(:)
+
+np0 = SIZE(xVec)
+
+CALL Reallocate(y, np0)
+
+ii = yFunc%GetNumReturns()
+IF (.NOT. ii .EQ. 1) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: yFunc must be scalar function')
+END IF
+
+DO ii = 1, np0
+  CALL yFunc%Get(y(ii), args=[xVec(ii)])
+END DO
+
+CALL obj%plot(xVec, y, ls1=lspec%chars())
+
+DEALLOCATE (y)
+
+END PROCEDURE obj_plotFunc2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_plotFunc3
+CHARACTER(*), PARAMETER :: myName = "obj_plotFunc3"
+INTEGER(I4B) :: np0, ii
+REAL(DFP), ALLOCATABLE :: x(:), y(:)
+REAL(DFP) :: args(2)
+LOGICAL(LGT) :: isXFunc, isYFunc
+
+isXFunc = ASSOCIATED(xFunc)
+isYFunc = ASSOCIATED(yFunc)
+
+IF (.NOT. isXFunc .AND. .NOT. isYFunc) THEN
+  CALL obj%plot(argVec1, argVec2)
+  RETURN
+END IF
+
+np0 = SIZE(argVec1)
+
+IF (isXFunc .AND. isYFunc) THEN
+  CALL Reallocate(x, np0)
+  CALL Reallocate(y, np0)
+
+  DO ii = 1, np0
+    args = [argVec1(ii), argVec2(ii)]
+    CALL xFunc%Get(x(ii), args=args)
+    CALL yFunc%Get(y(ii), args=args)
+  END DO
+
+  CALL obj%plot(x, y, ls1=lspec%chars())
+
+ELSE IF (isXFunc) THEN
+  CALL Reallocate(x, np0)
+
+  DO ii = 1, np0
+    args = [argVec1(ii), argVec2(ii)]
+    CALL xFunc%Get(x(ii), args=args)
+  END DO
+
+  CALL obj%plot(x, argVec2, ls1=lspec%chars())
+
+ELSE
+
+  CALL Reallocate(y, np0)
+
+  DO ii = 1, np0
+    args = [argVec1(ii), argVec2(ii)]
+    CALL xFunc%Get(y(ii), args=args)
+  END DO
+
+  CALL obj%plot(argVec1, y, ls1=lspec%chars())
+
+END IF
+
 IF (ALLOCATED(x)) DEALLOCATE (x)
 IF (ALLOCATED(y)) DEALLOCATE (y)
 
-END PROCEDURE obj_plot4
+END PROCEDURE obj_plotFunc3
 
 !----------------------------------------------------------------------------
 !
@@ -364,28 +477,43 @@ END PROCEDURE obj_plotData1
 !
 !----------------------------------------------------------------------------
 
-FUNCTION CheckInput(xdata, ydata) RESULT(isok)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: xdata(:), ydata(:)
-  LOGICAL(LGT) :: isok
+MODULE PROCEDURE obj_Plot4
+CHARACTER(*), PARAMETER :: myName = "obj_plot5()"
 
-  LOGICAL(LGT) :: abool
-  INTEGER(I4B) :: nx, ny
+INTEGER :: ii, nplot
+INTEGER(I4B) :: tsize_x, tsize_y
+INTEGER(I4B), PARAMETER :: maxplot = 4
+CHARACTER(3) :: plottype
+CHARACTER(80) :: pltstring(4)
+LOGICAL(LGT) :: isok, doplot(4), isXVecs, isYVecs, &
+                isXMats, isYMats
 
-  abool = PRESENT(xdata) .AND. PRESENT(ydata)
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  & '[WIP ERROR] :: This routine is under development')
 
-  IF (abool) THEN
-    nx = SIZE(xdata)
-    ny = SIZE(ydata)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-    isok = nx .EQ. ny
-  ELSE
-    isok = .FALSE.
-  END IF
+isXVecs = ALLOCATED(obj%xVecs)
+isYVecs = ALLOCATED(obj%yVecs)
 
-END FUNCTION CheckInput
+IF (.NOT. isXVecs .OR. .NOT. isXVecs) THEN
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+    & '[WARNING] :: xVecs and yVecs pointers must be allocated'// &
+    " return with doing nothing")
+  RETURN
+END IF
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+tsize_x = SIZE(obj%xVecs)
+tsize_y = SIZE(obj%yVecs)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_Plot4
 
 END SUBMODULE PlotMethods

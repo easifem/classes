@@ -18,11 +18,14 @@
 MODULE GnuPlot_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE BaseMethod, ONLY: TOSTRING
+USE BaseType, ONLY: RealVectorPointer_, &
+                    RealMatrixPointer_
 USE ExceptionHandler_Class, ONLY: e
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: LowerCase
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
+USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: GnuPlot_
@@ -108,6 +111,14 @@ END TYPE Axis_
 !
 !----------------------------------------------------------------------------
 
+TYPE :: PlotOpt_
+  TYPE(String), ALLOCATABLE :: lspecs(:)
+END TYPE PlotOpt_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 !> author: Shion Shimizu
 ! date: 2025-12-22
 ! summary: GnuPlot_ class
@@ -164,6 +175,10 @@ TYPE :: GnuPlot_
   CHARACTER(:), ALLOCATABLE :: pm3dOpts_stmt
   CHARACTER(:), ALLOCATABLE :: cbTicks_stmt
 
+  ! DATA pointer
+  TYPE(RealMatrixPointer_), ALLOCATABLE :: xMats(:), yMats(:), zMats(:)
+  TYPE(RealVectorPointer_), ALLOCATABLE :: xVecs(:), yVecs(:), zVecs(:)
+
 CONTAINS
   PRIVATE
 
@@ -179,7 +194,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: plot2 => obj_plot2
   PROCEDURE, PUBLIC, PASS(obj) :: plot3 => obj_plot3
   PROCEDURE, PUBLIC, PASS(obj) :: plot4 => obj_plot4
-  GENERIC, PUBLIC :: plot => plot1, plot2, plot3, plot4
+  PROCEDURE, PUBLIC, PASS(obj) :: plotFunc1 => obj_plotFunc1
+  PROCEDURE, PUBLIC, PASS(obj) :: plotFunc2 => obj_plotFunc2
+  PROCEDURE, PUBLIC, PASS(obj) :: plotFunc3 => obj_plotFunc3
+  GENERIC, PUBLIC :: plot => plot1, plot2, plot3, plot4, &
+    plotFunc1, plotFunc2, plotFunc3
 
   PROCEDURE, PUBLIC, PASS(obj) :: plotData1 => obj_plotData1
   GENERIC, PUBLIC :: plotData => plotData1
@@ -384,7 +403,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_multiplot(obj, rows, cols)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: rows
     INTEGER(I4B), INTENT(IN) :: cols
   END SUBROUTINE obj_multiplot
@@ -404,7 +423,7 @@ INTERFACE
                               x2, y2, ls2, axes2, &
                               x3, y3, ls3, axes3, &
                               x4, y4, ls4, axes4)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x1(:)
     REAL(DFP), INTENT(IN), OPTIONAL :: y1(:)
     CHARACTER(*), INTENT(IN), OPTIONAL :: ls1
@@ -435,7 +454,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_plot2(obj, xv, ymat, lspec)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: xv(:)
     REAL(DFP), INTENT(IN) :: ymat(:, :)
     TYPE(String), INTENT(IN), OPTIONAL :: lspec
@@ -453,7 +472,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_plot3(obj, xmat, ymat, lspec)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: xmat(:, :)
     REAL(DFP), INTENT(IN) :: ymat(:, :)
     TYPE(String), INTENT(IN), OPTIONAL :: lspec
@@ -461,31 +480,78 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           plot4@PlotMethods
+!                                                  plot_func1@PlotMethods
 !----------------------------------------------------------------------------
 
-! TODO: Use with UserFunction class
 !> author: Shion Shimizu
 ! date:   2024-09-22
 ! summary:  plot with function
-!..............................................................................
-! fplot, plot a function in the range xrange=[xmin, xamx] with np points
-! if np is not sent, then np=50 is assumed!
-! func is the name of function to be plotted
-!..............................................................................
 
 INTERFACE
-  MODULE SUBROUTINE obj_plot4(obj, func, xrange, np)
-    CLASS(GnuPlot_) :: obj
-    INTERFACE
-      FUNCTION func(x_)
-        IMPORT DFP
-        REAL(DFP), INTENT(IN) :: x_
-        REAL(DFP) :: func
-      END FUNCTION func
-    END INTERFACE
-    REAL(DFP), INTENT(IN) :: xrange(2)
+  MODULE SUBROUTINE obj_plotFunc1(obj, yFunc, xMin, xMax, np, lspec)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    TYPE(UserFunction_), INTENT(INOUT) :: yFunc
+    ! it should be a scalar function
+    REAL(DFP), INTENT(IN) :: xMin, xMax
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: np
+    TYPE(String), INTENT(IN), OPTIONAL :: lspec
+  END SUBROUTINE obj_plotFunc1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      plot_func2@PlotMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  plot with function
+
+INTERFACE
+  MODULE SUBROUTINE obj_plotFunc2(obj, yFunc, xVec, lspec)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    TYPE(UserFunction_), INTENT(INOUT) :: yFunc
+    ! it should be a scalar function
+    REAL(DFP), INTENT(IN) :: xVec(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: lspec
+  END SUBROUTINE obj_plotFunc2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-31
+! summary:   plot with prescribed functions.
+! two arguments will be passed to the functions
+! when no function is provided two arguments vector will be used
+! as x and y.
+! two arguments vector should have the same size
+
+INTERFACE
+  MODULE SUBROUTINE obj_plotFunc3(obj, xFunc, yFunc, argVec1, argVec2, &
+                                  lspec)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    TYPE(UserFunction_), OPTIONAL, POINTER, INTENT(INOUT) :: xFunc
+    ! it should be a scalar function
+    TYPE(UserFunction_), OPTIONAL, POINTER, INTENT(INOUT) :: yFunc
+    ! it should be a scalar function
+    REAL(DFP), INTENT(IN) :: argVec1(:), argVec2(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: lspec
+  END SUBROUTINE obj_plotFunc3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         plot3@PlotMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-28
+! summary:  Plot
+
+INTERFACE
+  MODULE SUBROUTINE obj_plot4(obj)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_plot4
 END INTERFACE
 
@@ -523,7 +589,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_plot3d_vvv(obj, x, y, z, lspec, paletteName)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: y(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: z(:)
@@ -547,7 +613,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_surf1(obj, x, y, z, lspec, paletteName)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: y(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: z(:, :)
@@ -567,7 +633,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_contour1(obj, x, y, z, lspec, &
                                  paletteName, fill)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:, :)
     REAL(DFP), INTENT(IN), OPTIONAL :: y(:, :)
     REAL(DFP), INTENT(IN), OPTIONAL :: z(:, :)
@@ -588,7 +654,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_contour2(obj, x, y, z, lspec, &
                                  paletteName, fill)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN) :: y(:)
     REAL(DFP), INTENT(IN), OPTIONAL :: z(:, :)
@@ -609,7 +675,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_contour3(obj, x1, y1, z1, x2, y2, z2, &
                                  lspec1, lspec2, paletteName, fill)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(in) :: x1(:, :), x2(:, :)
     REAL(DFP), INTENT(in), OPTIONAL :: y1(:, :), y2(:, :)
     REAL(DFP), INTENT(in), OPTIONAL :: z1(:, :), z2(:, :)
@@ -634,7 +700,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetFilename(obj, name)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_SetFilename
 END INTERFACE
@@ -650,7 +716,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetCommandLine(obj, chars)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: chars
   END SUBROUTINE obj_SetCommandLine
 END INTERFACE
@@ -671,7 +737,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOptions(obj, optionStr, reset)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: optionStr
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: reset
   END SUBROUTINE obj_SetOptions
@@ -688,7 +754,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetScripts(obj, scriptStr, reset)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: scriptStr
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: reset
   END SUBROUTINE obj_SetScripts
@@ -705,7 +771,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetTerm(obj, termType, termSize, &
                                 termFont, termFontSize)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), OPTIONAL, INTENT(IN) :: termType
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: termSize(2)
     CHARACTER(*), OPTIONAL, INTENT(IN) :: termFont
@@ -729,7 +795,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetXLim(obj, lims)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: lims(2)
   END SUBROUTINE obj_SetXLim
 END INTERFACE
@@ -748,7 +814,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetX2Lim(obj, lims)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: lims(2)
   END SUBROUTINE obj_SetX2Lim
 END INTERFACE
@@ -769,7 +835,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetYLim(obj, lims)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: lims(2)
   END SUBROUTINE obj_SetYLim
 END INTERFACE
@@ -788,7 +854,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetY2Lim(obj, lims)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: lims(2)
   END SUBROUTINE obj_SetY2Lim
 END INTERFACE
@@ -809,7 +875,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetZLim(obj, lims)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: lims(2)
   END SUBROUTINE obj_SetZLim
 END INTERFACE
@@ -824,7 +890,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetAxisLim(obj, lims, direction)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: lims(2)
     CHARACTER(*), INTENT(IN), OPTIONAL :: direction
   END SUBROUTINE obj_SetAxisLim
@@ -840,7 +906,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetPlotScale(obj, scaleChar, direction, logBase)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: scaleChar
     CHARACTER(*), INTENT(IN) :: direction
     INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
@@ -853,7 +919,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetXScale(obj, scaleChar, logBase)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: scaleChar
     INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
   END SUBROUTINE obj_SetXScale
@@ -865,7 +931,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetX2Scale(obj, scaleChar, logBase)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: scaleChar
     INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
   END SUBROUTINE obj_SetX2Scale
@@ -877,7 +943,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetYScale(obj, scaleChar, logBase)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: scaleChar
     INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
   END SUBROUTINE obj_SetYScale
@@ -889,7 +955,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetY2Scale(obj, scaleChar, logBase)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: scaleChar
     INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
   END SUBROUTINE obj_SetY2Scale
@@ -901,7 +967,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetZScale(obj, scaleChar, logBase)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: scaleChar
     INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
   END SUBROUTINE obj_SetZScale
@@ -918,7 +984,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetTitle(obj, title, color, fontSize, fontName, &
                                  rotate)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: title
     CHARACTER(*), OPTIONAL, INTENT(IN) :: color
     CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
@@ -940,7 +1006,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetXLabel(obj, label, color, fontSize, fontName, &
                                   rotate)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: label
     CHARACTER(*), OPTIONAL, INTENT(IN) :: color
     CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
@@ -962,7 +1028,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetX2Label(obj, label, color, fontSize, fontName, &
                                    rotate)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: label
     CHARACTER(*), OPTIONAL, INTENT(IN) :: color
     CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
@@ -984,7 +1050,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetYLabel(obj, label, color, fontSize, fontName, &
                                   rotate)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: label
     CHARACTER(*), OPTIONAL, INTENT(IN) :: color
     CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
@@ -1006,7 +1072,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetY2Label(obj, label, color, fontSize, fontName, &
                                    rotate)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: label
     CHARACTER(*), OPTIONAL, INTENT(IN) :: color
     CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
@@ -1028,7 +1094,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetZLabel(obj, label, color, fontSize, fontName, &
                                   rotate)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: label
     CHARACTER(*), OPTIONAL, INTENT(IN) :: color
     CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
@@ -1056,7 +1122,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetAxisLabel(obj, direction, label, color, &
                                      fontSize, fontName, rotate)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: direction
     CHARACTER(*), INTENT(IN) :: label
     CHARACTER(*), OPTIONAL, INTENT(IN) :: color
@@ -1151,7 +1217,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Reset(obj)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Reset
 END INTERFACE
 
@@ -1165,7 +1231,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetUseDefaultPreset(obj, abool)
-    CLASS(GnuPlot_) :: obj
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
     LOGICAL(LGT), INTENT(IN) :: abool
   END SUBROUTINE obj_SetUseDefaultPreset
 END INTERFACE
