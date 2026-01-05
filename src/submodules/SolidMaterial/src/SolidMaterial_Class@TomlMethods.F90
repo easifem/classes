@@ -178,7 +178,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                         'Reading solidMaterialNames ...')
 #endif
 

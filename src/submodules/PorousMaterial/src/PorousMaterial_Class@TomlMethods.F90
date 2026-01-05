@@ -178,8 +178,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading PorousMaterialNames ...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading porousMaterialNames ...')
 #endif
 
 isok = ALLOCATED(materialNames)
@@ -191,12 +191,12 @@ IF (isok) THEN
   DEALLOCATE (materialNames)
 END IF
 
-CALL GetValue(table=table, key="PorousMaterialNames", VALUE=materialNames, &
+CALL GetValue(table=table, key="porousMaterialNames", VALUE=materialNames, &
               origin=origin, stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
 CALL AssertError1(isok, myName, &
-                  'Cannot find/read "PorousMaterialNames" in the config file.')
+                 'Cannot find/read "porousMaterialNames" in the config file.')
 #endif
 
 #ifdef DEBUG_VER
@@ -224,7 +224,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat, ii
+INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: isok
 TYPE(String), ALLOCATABLE :: materialNames(:)
 
@@ -247,15 +247,15 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL PorousMaterialNamesFromToml(table=node, materialNames=materialNames, &
-                                tsize=tsize)
+                                 tsize=tsize)
 CALL PorousMaterialReallocate(obj, tsize)
 
 isok = PRESENT(region)
 IF (isok) CALL MeshSelectionReallocate(region, tsize)
 
 CALL PorousMaterialImportFromToml(obj=obj, table=node, &
-                                 materialNames=materialNames, &
-                                 tsize=tsize, region=region, dom=dom)
+                                  materialNames=materialNames, &
+                                  tsize=tsize, region=region, dom=dom)
 
 node => NULL()
 DEALLOCATE (table)

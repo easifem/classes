@@ -178,8 +178,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading FluidMaterialNames ...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                        'Reading fluidMaterialNames ...')
 #endif
 
 isok = ALLOCATED(materialNames)
@@ -191,12 +191,12 @@ IF (isok) THEN
   DEALLOCATE (materialNames)
 END IF
 
-CALL GetValue(table=table, key="FluidMaterialNames", VALUE=materialNames, &
+CALL GetValue(table=table, key="fluidMaterialNames", VALUE=materialNames, &
               origin=origin, stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
 CALL AssertError1(isok, myName, &
-                  'Cannot find/read "FluidMaterialNames" in the config file.')
+                  'Cannot find/read "fluidMaterialNames" in the config file.')
 #endif
 
 #ifdef DEBUG_VER
@@ -224,7 +224,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat, ii
+INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: isok
 TYPE(String), ALLOCATABLE :: materialNames(:)
 
