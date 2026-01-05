@@ -16,10 +16,10 @@
 
 MODULE UserFunction_Class
 USE GlobalData, ONLY: DFP, LGT, I4B
-USE BaseType, ONLY: FEVariable_, &
-                    iface_ScalarFunction, &
-                    iface_VectorFunction, &
-                    iface_MatrixFunction
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: iface_ScalarFunction
+USE BaseType, ONLY: iface_VectorFunction
+USE BaseType, ONLY: iface_MatrixFunction
 USE String_Class, ONLY: String
 USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
@@ -55,6 +55,7 @@ PUBLIC :: SetUserFunctionParam
 PUBLIC :: UserFunctionImportFromToml
 PUBLIC :: UserFunctionPointer_
 PUBLIC :: UserFunctionDeallocate
+PUBLIC :: UserFunctionDisplay
 
 !----------------------------------------------------------------------------
 !
@@ -590,6 +591,42 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
+
+INTERFACE UserFunctionDisplay
+  MODULE PROCEDURE obj_Display
+END INTERFACE UserFunctionDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE UserFunctionDisplay
+  MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
+    TYPE(UserFunction_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Vector
+END INTERFACE UserFunctionDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE UserFunctionDisplay
+  MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(UserFunctionPointer_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE UserFunctionDisplay
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods

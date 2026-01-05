@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(UserFunction_Class) IOMethods
-USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Display, ToString
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 IMPLICIT NONE
 CONTAINS
@@ -25,12 +25,27 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
 LOGICAL(LGT) :: bool1
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL Display(msg, unitNo=unitNo)
 CALL Display(obj%isInit, "isInit: ", unitNo=unitNo)
 
-IF (.NOT. obj%isInit) RETURN
+IF (.NOT. obj%isInit) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
 CALL Display("name: "//obj%name, unitNo=unitNo)
 CALL Display(obj%isUserFunctionSet, "isUserFunctionSet: ", unitNo=unitNo)
@@ -81,198 +96,33 @@ IF (obj%argType .EQ. varopt%constant) THEN
   END SELECT
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!
+!                                                                     Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-TYPE(String) :: dsetname, strval
-
+MODULE PROCEDURE obj_Display_Vector
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                        "[START]")
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Vector()"
 #endif
-
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: HDF5 file is not opened')
-END IF
-
-IF (.NOT. hdf5%isRead()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: HDF5 file does not have read permission')
-END IF
-
-!> name
-dsetname = TRIM(group)//"/name"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[CONFIG ERROR] :: name should be present.')
-END IF
-
-!> isUserFunctionSet
-dsetname = TRIM(group)//"/isUserFunctionSet"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
-ELSE
-  obj%isUserFunctionSet = .FALSE.
-END IF
-
-!> isUserFunctionSet
-IF (obj%isUserFunctionSet) THEN
-  ! dsetname = TRIM(group)//"/userFunction"
-  ! ALLOCATE (obj%userFunction)
-  ! CALL obj%userFunction%IMPORT(hdf5=hdf5, group=dsetname%chars())
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-              '[WIP ERROR] :: currently import does not work for useFunction')
-END IF
-
-IF (.NOT. obj%isUserFunctionSet) THEN
-  !> returnType
-  dsetname = TRIM(group)//"/returnType"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  'dsetname '//dsetname%chars()//'is not present in HDFFile_')
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    obj%returnType = UserFunctionGetReturnType(strval%chars())
-  END IF
-
-  !> argType
-  dsetname = TRIM(group)//"/argType"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  'dsetname '//dsetname%chars()//'is not present in HDFFile_')
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    obj%argType = UserFunctionGetArgType(strval%chars())
-  END IF
-
-  !> check the argType, and decide the importer
-  IF (obj%argType .EQ. varopt%constant) THEN
-    !> scalarValue, vectorValue, matrixValue
-    SELECT CASE (obj%returnType)
-    CASE (varopt%scalar)
-      !> scalarValue
-      dsetname = TRIM(group)//"/scalarValue"
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%scalarValue)
-      END IF
-    CASE (varopt%vector)
-      !> vectorValue
-      dsetname = TRIM(group)//"/vectorValue"
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%vectorValue)
-      END IF
-    CASE (varopt%matrix)
-      !> matrixValue
-      dsetname = TRIM(group)//"/matrixValue"
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%matrixValue)
-      END IF
-    END SELECT
-  ELSE
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-               'Currently, EASIFEM Supports import of constant userFunction.')
-  END IF
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Import
+#include "../../include/display_vector.F90"
+END PROCEDURE obj_Display_Vector
 
 !----------------------------------------------------------------------------
-!
+!                                                                     Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
-TYPE(String) :: dsetname, strval
-
+MODULE PROCEDURE obj_Display_Ptr_Vector
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] Export()')
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Ptr_Vector()"
 #endif
-
-!> check
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: HDF5 file is not opened')
-END IF
-
-!> check
-IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: HDF5 file does not have write permission')
-END IF
-
-!> name
-dsetname = TRIM(group)//"/name"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
-
-!> isUserFunctionSet
-IF (obj%isUserFunctionSet) THEN
-  !> isUserFunctionSet
-  ! dsetname = TRIM(group)//"/isUserFunctionSet"
-  ! CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
-  ! !> returnType
-  ! dsetname = TRIM(group)//"/userFunction"
-  ! CALL obj%userFunction%Export(hdf5=hdf5, group=dsetname%chars())
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                 '[WIP ERROR] :: Currently export function does not work '// &
-                    ' for UserFunction.')
-END IF
-
-IF (.NOT. obj%isUserFunctionSet) THEN
-  !> isUserFunctionSet
-  dsetname = TRIM(group)//"/isUserFunctionSet"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
-
-  !> returnType
-  dsetname = TRIM(group)//"/returnType"
-  strval = NAME_RETURN_TYPE(obj%returnType)
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
-
-  !> argType
-  dsetname = TRIM(group)//"/argType"
-  strval = NAME_ARG_TYPE(obj%argType)
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
-  !>
-  IF (obj%argType .EQ. varopt%constant) THEN
-    SELECT CASE (obj%returnType)
-    CASE (varopt%Scalar)
-      !> scalarValue
-      dsetname = TRIM(group)//"/scalarValue"
-      CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%scalarValue)
-    CASE (varopt%vector)
-      !> vectorValue
-      dsetname = TRIM(group)//"/vectorValue"
-      IF (ALLOCATED(obj%vectorValue)) &
-        CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%vectorValue)
-    CASE (varopt%matrix)
-      !> matrixValue
-      dsetname = TRIM(group)//"/matrixValue"
-      IF (ALLOCATED(obj%matrixValue)) &
-        CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%matrixValue)
-    END SELECT
-  ELSE
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-               'Currently, EASIFEM Supports import of constant userFunction.')
-  END IF
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Export
+#include "../../include/display_vector_ptr.F90"
+END PROCEDURE obj_Display_Ptr_Vector
 
 !----------------------------------------------------------------------------
 !
