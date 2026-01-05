@@ -56,6 +56,7 @@ PUBLIC :: GetPorousMaterialPointer
 PUBLIC :: TypePorousMaterial
 PUBLIC :: PorousMaterialImportFromToml
 PUBLIC :: PorousMaterialNamesFromToml
+PUBLIC :: PorousMaterialDisplay
 
 !----------------------------------------------------------------------------
 !                                                            PorousMaterial_
@@ -318,6 +319,42 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
+
+INTERFACE PorousMaterialDisplay
+  MODULE PROCEDURE obj_Display
+END INTERFACE PorousMaterialDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE PorousMaterialDisplay
+  MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
+    TYPE(PorousMaterial_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Vector
+END INTERFACE PorousMaterialDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE PorousMaterialDisplay
+  MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(PorousMaterialPointer_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE PorousMaterialDisplay
 
 !----------------------------------------------------------------------------
 !                                               AddPorousMaterial@SetMethods
