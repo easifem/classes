@@ -44,6 +44,7 @@ PUBLIC :: MeshSelectionImportParamFromToml
 PUBLIC :: MeshSelectionImportFromToml
 PUBLIC :: SetMeshSelectionParam
 PUBLIC :: MeshSelectionSet
+PUBLIC :: MeshSelectionDisplay
 
 !----------------------------------------------------------------------------
 !                                                            MeshSelection_
@@ -781,6 +782,42 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
+
+INTERFACE MeshSelectionDisplay
+  MODULE PROCEDURE obj_Display
+END INTERFACE MeshSelectionDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE MeshSelectionDisplay
+  MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
+    TYPE(MeshSelection_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Vector
+END INTERFACE MeshSelectionDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE MeshSelectionDisplay
+  MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(MeshSelectionPointer_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE MeshSelectionDisplay
 
 !----------------------------------------------------------------------------
 !                                                      GetMeshID@GetMethods

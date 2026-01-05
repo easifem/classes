@@ -22,8 +22,8 @@ SUBMODULE(MeshSelection_Class) IOMethods
 USE Display_Method, ONLY: Display, ToString
 USE BoundingBox_Method, ONLY: BoundingBox_Display => Display
 USE GlobalData, ONLY: CHAR_LF, stdout
-USE IntVector_Method, ONLY: Intvector_Display => Display, &
-                            ASSIGNMENT(=), isAllocated
+USE IntVector_Method, ONLY: Intvector_Display => Display
+USE IntVector_Method, ONLY: ASSIGNMENT(=), isAllocated
 
 IMPLICIT NONE
 CONTAINS
@@ -203,6 +203,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                                     Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Vector()"
+#endif
+#include "../../include/display_vector.F90"
+END PROCEDURE obj_Display_Vector
+
+!----------------------------------------------------------------------------
+!                                                                     Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Ptr_Vector()"
+#endif
+#include "../../include/display_vector_ptr.F90"
+END PROCEDURE obj_Display_Ptr_Vector
 
 !----------------------------------------------------------------------------
 !                                                             Include Error
