@@ -17,7 +17,8 @@
 
 SUBMODULE(FluidMaterial_Class) IOMethods
 USE AbstractMaterial_Class, ONLY: AbstractMaterialDisplay
-USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Display, ToString
+!! ToString method is needed in display_vector and display_vector_ptr
 IMPLICIT NONE
 CONTAINS
 
@@ -52,7 +53,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                                 
+!                                                                     Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Vector()"
+#endif
+#include "../../include/display_vector.F90"
+END PROCEDURE obj_Display_Vector
+
+!----------------------------------------------------------------------------
+!                                                                     Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display_Ptr_Vector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display_Ptr_Vector()"
+#endif
+#include "../../include/display_vector_ptr.F90"
+END PROCEDURE obj_Display_Ptr_Vector
+
+!----------------------------------------------------------------------------
+!
 !----------------------------------------------------------------------------
 
 END SUBMODULE IOMethods

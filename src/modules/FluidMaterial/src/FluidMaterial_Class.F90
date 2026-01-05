@@ -56,6 +56,7 @@ PUBLIC :: GetFluidMaterialPointer
 PUBLIC :: TypeFluidMaterial
 PUBLIC :: FluidMaterialImportFromToml
 PUBLIC :: FluidMaterialNamesFromToml
+PUBLIC :: FluidMaterialDisplay
 
 !----------------------------------------------------------------------------
 !                                                            FluidMaterial_
@@ -399,6 +400,42 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
+
+INTERFACE FluidMaterialDisplay
+  MODULE PROCEDURE obj_Display
+END INTERFACE FluidMaterialDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE FluidMaterialDisplay
+  MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
+    TYPE(FluidMaterial_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Vector
+END INTERFACE FluidMaterialDisplay
+
+!----------------------------------------------------------------------------
+!                                                          Display@IOMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 27 Aug 2021
+! summary: This routine displays the content of the instance
+
+INTERFACE FluidMaterialDisplay
+  MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
+    TYPE(FluidMaterialPointer_), INTENT(INOUT) :: obj(:)
+    CHARACTER(*), INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+  END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE FluidMaterialDisplay
 
 !----------------------------------------------------------------------------
 !                                                  ImportFromToml@TomlMethods
