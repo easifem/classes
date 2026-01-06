@@ -677,12 +677,13 @@ IF (isfedof) fedof => obj%fedof
 
 tnode = dbc%GetTotalNodeNum(fedof)
 ALLOCATE (globalNode(tnode))
-CALL dbc%GetNodeNumber(nodeNum=globalNode, tsize=tnode, fedof=fedof, &
-    iNodeOnNode=iNodeOnNode, iNodeOnEdge=iNodeOnEdge, iNodeOnFace=iNodeOnFace)
+CALL dbc%GetNodeNumber( &
+  nodeNum=globalNode, tsize=tnode, fedof=fedof, iNodeOnNode=iNodeOnNode, &
+  iNodeOnEdge=iNodeOnEdge, iNodeOnFace=iNodeOnFace)
 
-CALL obj%GetNodeLoc_(globalNode=globalNode, ans=ans, tsize=tsize, &
-                     ivar=ivar0, spaceCompo=spaceCompo, &
-                     timeCompo=Arange(1_I4B, timeCompo(ivar0)))
+CALL obj%GetNodeLoc_( &
+  globalNode=globalNode, ans=ans, tsize=tsize, ivar=ivar0, &
+  spaceCompo=spaceCompo, timeCompo=Arange(1_I4B, timeCompo(ivar0)))
 
 IF (ALLOCATED(globalNode)) DEALLOCATE (globalNode)
 fedof => NULL()
