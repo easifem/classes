@@ -25,6 +25,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+CALL Display(msg, unitNo=unitNo)
+
 tsize = SIZE(obj)
 
 DO ii = 1, tsize

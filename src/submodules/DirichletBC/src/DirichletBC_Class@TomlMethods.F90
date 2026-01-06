@@ -16,15 +16,14 @@
 !
 
 SUBMODULE(DirichletBC_Class) TomlMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
+USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: Display, ToString
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
+USE tomlf, ONLY: toml_get => get_value, &
                  toml_len => len, &
-                 toml_array, &
-                 toml_stat
+                 toml_array
 USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -47,21 +46,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading '//tomlName//' ...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading '//tomlName//' ...')
 #endif
 
 array => NULL()
 CALL toml_get(table, tomlName, array, origin=origin, &
-              requested=.FALSE., stat=stat)
+              requested=math%no, stat=stat)
 
 isok = ASSOCIATED(array)
 
 IF (.NOT. isok) THEN
   ALLOCATE (obj(0))
+
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          tomlName//' not found, nothing to import.')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    tomlName//' not found, nothing to import.')
 #endif
 
 #ifdef DEBUG_VER
@@ -81,10 +81,9 @@ tsize1 = SIZE(obj)
 
 #ifdef DEBUG_VER
 isok = tsize .EQ. tsize1
-CALL AssertError1(isok, myName, &
-            '[CONFIG ERROR] :: The number of boundary condition '//CHAR_LF// &
-                ' in the toml config ('//ToString(tsize)//') is not same '// &
-                  ' as the size of obj ('//ToString(tsize1)//")")
+CALL AssertError1( &
+  isok, myName, 'The number of boundary condition in the toml config ('// &
+ ToString(tsize)//') is not same as the size of obj ('//ToString(tsize1)//")")
 #endif
 
 DO ii = 1, tsize
@@ -93,9 +92,9 @@ DO ii = 1, tsize
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
-  CALL AssertError1(isok, myName, &
-                    '[CONFIG ERROR] :: DirichletBC '//ToString(ii)// &
-                    ' cannot be read from the toml file.')
+  CALL AssertError1( &
+    isok, myName, 'DirichletBC '//ToString(ii)//' cannot be read from the &
+    &toml file.')
 #endif
 
   isok = ASSOCIATED(obj(ii)%ptr)
@@ -148,23 +147,16 @@ CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 #endif
 
-CALL DirichletBCImportFromToml(obj=obj, table=table, dom=dom, &
-                               tomlName=tomlName)
-
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
-               CHAR_LF, unitno=stdout)
-END IF
-#endif
+CALL DirichletBCImportFromToml( &
+  obj=obj, table=table, dom=dom, tomlName=tomlName)
 
 node => NULL()
+DEALLOCATE (table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------

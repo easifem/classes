@@ -16,7 +16,7 @@
 !
 
 SUBMODULE(DirichletBC_Class) GetMethods
-USE BaseMethod, ONLY: TOSTRING, Input
+USE BaseMethod, ONLY: ToString, Input
 IMPLICIT NONE
 CONTAINS
 
@@ -25,12 +25,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetDirichletBCPointer
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCPointer()"
+LOGICAL(LGT) :: isok
+#endif
+
 INTEGER(I4B) :: dbcNo0, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 tsize = SIZE(dbc)
@@ -38,23 +42,22 @@ tsize = SIZE(dbc)
 dbcNo0 = Input(default=tsize, option=dbcNo)
 
 #ifdef DEBUG_VER
-IF (dbcNo0 .GT. tsize) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-   & '[INTERNAL ERROR] :: dbcNo0 is out of bound for dbc')
-END IF
+isok = dbcNo0 .LE. tsize
+CALL AssertError1(isok, myName, &
+      "dbcNo0="//ToString(dbcNo0)//" is out of bound tsize="//ToString(tsize))
+#endif
 
-IF (.NOT. ASSOCIATED(dbc(dbcNo0)%ptr)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: dbc( '//TOSTRING(dbcNo0) &
-    & //')%ptr is not ASSOCIATED')
-END IF
+#ifdef DEBUG_VER
+isok = ASSOCIATED(dbc(dbcNo0)%ptr)
+CALL AssertError1(isok, myName, &
+                  "dbc("//ToString(dbcNo0)//")%ptr is not ASSOCIATED")
 #endif
 
 ans => dbc(dbcNo0)%ptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_GetDirichletBCPointer
 
@@ -65,5 +68,11 @@ END PROCEDURE obj_GetDirichletBCPointer
 MODULE PROCEDURE obj_GetPrefix
 ans = myprefix
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

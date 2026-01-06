@@ -22,6 +22,4 @@ target_sources(
   PRIVATE ${src_path}/DirichletBC_Class@ConstructorMethods.F90
           ${src_path}/DirichletBC_Class@IOMethods.F90
           ${src_path}/DirichletBC_Class@TomlMethods.F90
-          ${src_path}/DirichletBC_Class@SetMethods.F90
           ${src_path}/DirichletBC_Class@GetMethods.F90)
-

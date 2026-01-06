@@ -36,8 +36,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(obj)
 CALL Display(msg, unitNo=unitNo)
+
+tsize = SIZE(obj)
 CALL Display("dbc: SIZE["//ToString(tsize)//']', unitNo=unitNo)
 
 DO ii = 1, tsize
@@ -59,29 +60,7 @@ MODULE PROCEDURE obj_Display_Ptr_Vector
 CHARACTER(*), PARAMETER :: myName = "obj_Display_Ptr_Vector()"
 #endif
 
-INTEGER(I4B) :: tsize, ii
-LOGICAL(LGT) :: bool1
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-tsize = SIZE(obj)
-CALL Display(msg, unitNo=unitNo)
-CALL Display("dbc: SIZE["//ToString(tsize)//']', unitNo=unitNo)
-DO ii = 1, tsize
-  bool1 = ASSOCIATED(obj(ii)%ptr)
-  CALL Display(bool1, "dbc("//ToString(ii)//") ASSOCIATED: ", unitNo=unitNo)
-  IF (bool1) THEN
-    CALL obj(ii)%ptr%Display("dbc("//ToString(ii)//"): ", unitNo=unitNo)
-  END IF
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+#include "../../include/display_vector_ptr.F90"
 END PROCEDURE obj_Display_Ptr_Vector
 
 !----------------------------------------------------------------------------

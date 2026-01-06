@@ -34,13 +34,10 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    CALL obj(ii)%DEALLOCATE()
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
 END PROCEDURE obj_Deallocate_Vector
 
 !----------------------------------------------------------------------------
@@ -48,16 +45,10 @@ END PROCEDURE obj_Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
@@ -66,7 +57,7 @@ END PROCEDURE obj_Deallocate_Ptr_Vector
 
 MODULE PROCEDURE obj_AddDirichletBC
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_AddDirichletBC"
+CHARACTER(*), PARAMETER :: myName = "obj_AddDirichletBC()"
 LOGICAL(LGT) :: isok
 #endif
 
