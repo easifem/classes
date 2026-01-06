@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(NeumannBC_Class) TomlMethods
+SUBMODULE(ConstNeumannBC_Class) TomlMethods
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: Display, ToString
 USE tomlf, ONLY: toml_get => get_value
@@ -100,7 +100,7 @@ DO ii = 1, tsize
 
   isok = ASSOCIATED(obj(ii)%ptr)
   IF (.NOT. isok) ALLOCATE (obj(ii)%ptr)
-  CALL obj(ii)%ptr%ImportFromToml(table=node, dom=dom)
+  CALL obj(ii)%ptr%ImportConstBCFromToml(table=node, dom=dom)
   CALL obj(ii)%ptr%SetElemToLocalBoundary()
 END DO
 
@@ -149,7 +149,7 @@ CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 #endif
 
-CALL NeumannBCImportFromToml( &
+CALL ConstNeumannBCImportFromToml( &
   obj=obj, table=table, dom=dom, tomlName=tomlName)
 
 node => NULL()

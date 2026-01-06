@@ -15,7 +15,13 @@
 # this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
+# NeumannBC_Class
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME} PRIVATE ${src_path}/NeumannBC_Class@Methods.F90
                           ${src_path}/NeumannBC_Class@TomlMethods.F90)
+
+# ConstNeumannBC_Class
+target_sources(
+  ${PROJECT_NAME} PRIVATE ${src_path}/ConstNeumannBC_Class@Methods.F90
+                          ${src_path}/ConstNeumannBC_Class@TomlMethods.F90)
