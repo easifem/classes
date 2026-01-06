@@ -16,12 +16,46 @@
 !
 
 SUBMODULE(NitscheBC_Class) ConstructorMethods
-USE BaseMethod
+USE AbstractBC_Class, ONLY: AbstractBCDeallocate
+
 IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                            Final
+!                                                                  Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractBCDeallocate(obj=obj)
+
+isok = ALLOCATED(obj%cellElem)
+IF (isok) DEALLOCATE (obj%cellElem)
+
+isok = ALLOCATED(obj%localFacetID)
+IF (isok) DEALLOCATE (obj%localFacetID)
+
+isok = ALLOCATED(obj%cellEntity)
+IF (isok) DEALLOCATE (obj%cellEntity)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                       Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
@@ -33,13 +67,10 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    CALL obj(ii)%DEALLOCATE()
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
+#endif
+#include "../../include/deallocate_vector.F90"
 END PROCEDURE obj_Deallocate_Vector
 
 !----------------------------------------------------------------------------
@@ -47,97 +78,16 @@ END PROCEDURE obj_Deallocate_Vector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                            AddNitscheBC
+!                                                           Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_AddNitscheBC
-CHARACTER(*), PARAMETER :: myName = "obj_AddNitscheBC"
-
-IF (dbcNo .GT. SIZE(dbc)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & '[OUT OF BOUND ERROR] :: dbcNo [= '//TOSTRING(dbcNo)//  &
-  & '] is out of bound for dbc [= '// &
-  & TOSTRING(SIZE(dbc))//']')
-END IF
-
-IF (ASSOCIATED(dbc(dbcNo)%ptr)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & '[ALLOCATION ERROR] :: DBC( '//TOSTRING(dbcNo)// &
-  &  ')%ptr is already associated, deallocate and nullify it first.')
-END IF
-
-ALLOCATE (dbc(dbcNo)%ptr)
-
-CALL dbc(dbcNo)%ptr%initiate( &
-  & param=param, &
-  & boundary=boundary, &
-  & dom=dom)
-
-END PROCEDURE obj_AddNitscheBC
-
-!----------------------------------------------------------------------------
-!                                                           AppendNitscheBC
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_AppendNitscheBC
-CHARACTER(*), PARAMETER :: myName = "obj_AppendNitscheBC()"
-INTEGER(I4B) :: tsize, ii, dbcNo0
-LOGICAL(LGT) :: isExpand
-TYPE(NitscheBCPointer_), ALLOCATABLE :: temp(:)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif
-
-IF (ALLOCATED(dbc)) THEN
-  tsize = SIZE(dbc)
-ELSE
-  tsize = 0
-END IF
-
-dbcNo0 = Input(default=tsize + 1, option=dbcNo)
-
-isExpand = dbcNo0 .GT. tsize
-
-IF (isExpand) THEN
-  ALLOCATE (temp(tsize))
-  DO ii = 1, tsize; temp(ii)%ptr => dbc(ii)%ptr; END DO
-  DO ii = 1, tsize; dbc(ii)%ptr => NULL(); END DO
-  DEALLOCATE (dbc)
-  ALLOCATE (dbc(dbcNo0))
-  DO ii = 1, tsize; dbc(ii)%ptr => temp(ii)%ptr; END DO
-  DO ii = 1, tsize; temp(ii)%ptr => NULL(); END DO
-  DO ii = tsize + 1, dbcNo0; dbc(ii)%ptr => NULL(); END DO
-END IF
-
-IF (ASSOCIATED(dbc(dbcNo0)%ptr)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-  & '[ALLOCATION ERROR] :: dbc( '//TOSTRING(dbcNo0)// &
-  &  ')%ptr is already associated, deallocate and nullify it first.')
-END IF
-
-ALLOCATE (dbc(dbcNo0)%ptr)
-CALL dbc(dbcNo0)%ptr%initiate(param=param, boundary=boundary, dom=dom)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif
-
-END PROCEDURE obj_AppendNitscheBC
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -15,14 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(NeumannBC_Class) TomlMethods
+SUBMODULE(NitscheBC_Class) TomlMethods
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: Display, ToString
 USE tomlf, ONLY: toml_get => get_value, &
                  toml_len => len, &
                  toml_array
 USE TomlUtility, ONLY: GetValue
-
 IMPLICIT NONE
 
 CONTAINS
@@ -43,13 +42,15 @@ INTEGER(I4B) :: origin, stat, tsize, ii, tsize1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+                        '[START] ')
 #endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Reading '//tomlName//' ...')
 #endif
+
+tsize1 = SIZE(obj)
 
 array => NULL()
 CALL toml_get(table, tomlName, array, origin=origin, &
@@ -94,14 +95,13 @@ DO ii = 1, tsize
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
   CALL AssertError1( &
-    isok, myName, 'DirichletBC '//ToString(ii)//' cannot be read from the &
+    isok, myName, 'NitscheBC'//ToString(ii)//' cannot be read from the &
     &toml file.')
 #endif
 
   isok = ASSOCIATED(obj(ii)%ptr)
   IF (.NOT. isok) ALLOCATE (obj(ii)%ptr)
   CALL obj(ii)%ptr%ImportFromToml(table=node, dom=dom)
-  CALL obj(ii)%ptr%SetElemToLocalBoundary()
 END DO
 
 node => NULL()
@@ -109,12 +109,12 @@ array => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+                        '[END] ')
 #endif
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
-!                                                              ImportFromToml
+!                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
@@ -149,7 +149,7 @@ CALL AssertError1(isok, myName, &
                   "cannot find "//tomlName//" table in config.")
 #endif
 
-CALL NeumannBCImportFromToml( &
+CALL NitscheBCImportFromToml( &
   obj=obj, table=table, dom=dom, tomlName=tomlName)
 
 node => NULL()
@@ -162,7 +162,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
-!                                                              Include Error
+!                                                               Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

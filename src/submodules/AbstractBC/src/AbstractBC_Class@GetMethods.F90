@@ -207,9 +207,9 @@ END PROCEDURE obj_GetTotalNodeNum
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isuseFunction
+MODULE PROCEDURE obj_IsUseFunction
 ans = obj%isUserFunction
-END PROCEDURE obj_isuseFunction
+END PROCEDURE obj_IsUseFunction
 
 !----------------------------------------------------------------------------
 !
@@ -232,16 +232,6 @@ IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
 IF (PRESENT(isElemToFace)) isElemToFace = obj%isElemToFace
 IF (PRESENT(isElemToEdge)) isElemToEdge = obj%isElemToEdge
 END PROCEDURE obj_GetParam
-
-!----------------------------------------------------------------------------
-!                                                                GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[WIP ERROR] :: This routine should be implemented by child class.')
-END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

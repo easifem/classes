@@ -15,7 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(NitscheBC_Class) SetMethods
-USE BaseMethod
+USE Display_Method, ONLY: ToString
+USE BaseType, ONLY: math => TypeMathOpt
+USE DomainConnectivity_Class, ONLY: DomainConnectivity_
+USE ReallocateUtility, ONLY: Reallocate
+USE SortUtility, ONLY: QuickSort
+
 IMPLICIT NONE
 CONTAINS
 
@@ -24,38 +29,45 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCellData
-INTEGER(I4B) :: tsize
-INTEGER(I4B) :: tmeshID
-INTEGER(I4B) :: tcell
-INTEGER(I4B) :: a
-INTEGER(I4B) :: b
-INTEGER(I4B) :: ii
-INTEGER(I4B) :: jj
-INTEGER(I4B) :: maxCellEntity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetCellData()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: tsize, tMeshID, tcell, a, b, ii, jj, maxCellEntity
 LOGICAL(LGT) :: isVar
-CHARACTER(*), PARAMETER :: myName = "obj_SetCellData"
-CLASS(DomainConnectivity_), POINTER :: domCon
 INTEGER(I4B), ALLOCATABLE :: dimTag(:, :)
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
+CLASS(DomainConnectivity_), POINTER :: domCon
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 tmeshID = SIZE(meshID)
 tsize = SIZE(localID)
 
-CALL obj%GetParam(isSelectionByMeshID=isVar)
-IF (.NOT. isVar) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & "NitscheBC_::obj has isSelectionByMeshID = .FALSE. ")
-END IF
+#ifdef DEBUG_VER
+CALL obj%GetParam(isSelectionByMeshID=isok)
+CALL AssertError1(isok, myName, &
+                  "NitscheBC_::obj has isSelectionByMeshID = .FALSE. ")
+#endif
 
-IF (SIZE(tFacetElements) .NE. SIZE(meshID)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Size of tFacetElements and meshID are not same')
-END IF
+#ifdef DEBUG_VER
+a = SIZE(tFacetElements)
+b = SIZE(meshID)
+isok = a .EQ. b
+CALL AssertError1(isok, myName, &
+                 "Size of tFacetElements ("//ToString(a)//") and meshID ("// &
+                  ToString(b)//") are not same")
+#endif
 
-IF (ANY(meshID .GT. tsize)) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-    & 'Some of meshID are greater than size of localID')
-END IF
+#ifdef DEBUG_VER
+isok = ALL(meshID .LE. tsize)
+CALL AssertError1(isok, myName, &
+                  "Some of meshID are greater than size of localID")
+#endif
 
 tcell = SUM(tFacetElements)
 CALL Reallocate(obj%cellElem, tcell)
@@ -71,15 +83,12 @@ DO ii = 1, tmeshID
   b = b + tFacetElements(ii)
   obj%cellElem(a:b) = domCon%masterCellNumber()
   obj%localFacetID(a:b) = domCon%masterFacetLocalID()
-  dimTag(a:b, :) = domCon%masterDimTag(isTranspose=.TRUE.)
+  dimTag(a:b, :) = domCon%masterDimTag(isTranspose=math%yes)
 END DO
 
 CALL QuickSort( &
-  & vect1=dimTag(:, 2), &
-  & vect2=obj%cellElem, &
-  & vect3=obj%localFacetID, &
-  & low=1, &
-  & high=tcell)
+  vect1=dimTag(:, 2), vect2=obj%cellElem, vect3=obj%localFacetID, &
+  low=1, high=tcell)
 
 maxCellEntity = MAXVAL(dimTag(:, 2))
 
@@ -100,6 +109,16 @@ domCon => NULL()
 IF (ALLOCATED(intvec)) DEALLOCATE (intvec)
 IF (ALLOCATED(dimTag)) DEALLOCATE (dimTag)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetCellData
+
+!----------------------------------------------------------------------------
+!                                                              Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(DirichletBC_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
+
 IMPLICIT NONE
 CONTAINS
 
@@ -28,27 +30,7 @@ MODULE PROCEDURE obj_Display_Vector
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display_Vector()"
 #endif
-
-INTEGER(I4B) :: tsize, ii
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Display(msg, unitNo=unitNo)
-
-tsize = SIZE(obj)
-CALL Display("dbc: SIZE["//ToString(tsize)//']', unitNo=unitNo)
-
-DO ii = 1, tsize
-  CALL obj(ii)%Display("dbc("//ToString(ii)//"): ", unitNo=unitNo)
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+#include "../../include/display_vector.F90"
 END PROCEDURE obj_Display_Vector
 
 !----------------------------------------------------------------------------

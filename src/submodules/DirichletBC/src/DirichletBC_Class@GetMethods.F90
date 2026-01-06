@@ -16,8 +16,14 @@
 !
 
 SUBMODULE(DirichletBC_Class) GetMethods
-USE BaseMethod, ONLY: ToString, Input
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: ToString
+#endif
+
+USE InputUtility, ONLY: Input
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,44 +36,36 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCPointer()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: dbcNo0, tsize
+INTEGER(I4B) :: bcNo0, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(dbc)
+tsize = SIZE(bc)
 
-dbcNo0 = Input(default=tsize, option=dbcNo)
+bcNo0 = Input(default=tsize, option=bcNo)
 
 #ifdef DEBUG_VER
-isok = dbcNo0 .LE. tsize
+isok = bcNo0 .LE. tsize
 CALL AssertError1(isok, myName, &
-      "dbcNo0="//ToString(dbcNo0)//" is out of bound tsize="//ToString(tsize))
+        "bcNo0="//ToString(bcNo0)//" is out of bound tsize="//ToString(tsize))
 #endif
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(dbc(dbcNo0)%ptr)
+isok = ASSOCIATED(bc(bcNo0)%ptr)
 CALL AssertError1(isok, myName, &
-                  "dbc("//ToString(dbcNo0)//")%ptr is not ASSOCIATED")
+                  "bc("//ToString(bcNo0)//")%ptr is not ASSOCIATED")
 #endif
 
-ans => dbc(dbcNo0)%ptr
+ans => bc(bcNo0)%ptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetDirichletBCPointer
-
-!----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                              Include error

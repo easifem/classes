@@ -19,7 +19,6 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
-USE FPL, ONLY: ParameterList_
 USE AbstractBC_Class, ONLY: AbstractBC_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
@@ -27,15 +26,14 @@ USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 PRIVATE
 
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "DirichletBC_Class"
-CHARACTER(*), PARAMETER :: myprefix = "DirichletBC"
+#endif
 
 PUBLIC :: DirichletBCDeallocate
 PUBLIC :: DirichletBCDisplay
 PUBLIC :: DirichletBC_
 PUBLIC :: DirichletBCPointer_
-PUBLIC :: AddDirichletBC
-PUBLIC :: AppendDirichletBC
 PUBLIC :: GetDirichletBCPointer
 PUBLIC :: DirichletBCImportFromToml
 
@@ -50,7 +48,6 @@ PUBLIC :: DirichletBCImportFromToml
 TYPE, EXTENDS(AbstractBC_) :: DirichletBC_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
   FINAL :: obj_Final
 END TYPE DirichletBC_
 
@@ -109,59 +106,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   AddDirichletBC@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2022-04-27
-! summary: Add DirichletBC to the vector of DirichletBCPointer_
-
-INTERFACE
-  MODULE SUBROUTINE obj_AddDirichletBC(dbc, dbcNo, param, boundary, dom)
-    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    !! Dirichlet boundary to form
-    INTEGER(I4B), INTENT(IN) :: dbcNo
-    !! Dirichlet boundary number
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter for constructing [[DirichletBC_]].
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    !! Boundary region
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
-  END SUBROUTINE obj_AddDirichletBC
-END INTERFACE
-
-INTERFACE AddDirichletBC
-  MODULE PROCEDURE obj_AddDirichletBC
-END INTERFACE AddDirichletBC
-
-!----------------------------------------------------------------------------
-!                                                AppendDirichletBC@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2022-04-27
-! update: 2023-09-10
-! summary: Append DirichletBC to the vector of DirichletBCPointer_
-
-INTERFACE
-  MODULE SUBROUTINE obj_AppendDirichletBC(dbc, param, boundary, dom, dbcNo)
-    TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: dbc(:)
-    !! Dirichlet boundary to form
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter for constructing [[DirichletBC_]].
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    !! Boundary region
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
-    !! Dirichlet boundary number
-  END SUBROUTINE obj_AppendDirichletBC
-END INTERFACE
-
-INTERFACE AppendDirichletBC
-  MODULE PROCEDURE obj_AppendDirichletBC
-END INTERFACE AppendDirichletBC
-
-!----------------------------------------------------------------------------
 !                                                   GetDirichletBC@GetMethods
 !----------------------------------------------------------------------------
 
@@ -170,9 +114,9 @@ END INTERFACE AppendDirichletBC
 ! summary: Get a pointer to DirichletBC from vector of DirichletBCPointer_
 
 INTERFACE
-  MODULE FUNCTION obj_GetDirichletBCPointer(dbc, dbcNo) RESULT(ans)
-    CLASS(DirichletBCPointer_), INTENT(IN) :: dbc(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
+  MODULE FUNCTION obj_GetDirichletBCPointer(bc, bcNo) RESULT(ans)
+    CLASS(DirichletBCPointer_), INTENT(IN) :: bc(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: bcNo
     !! Dirichlet boundary nunber
     CLASS(DirichletBC_), POINTER :: ans
   END FUNCTION obj_GetDirichletBCPointer
@@ -181,21 +125,6 @@ END INTERFACE
 INTERFACE GetDirichletBCPointer
   MODULE PROCEDURE obj_GetDirichletBCPointer
 END INTERFACE GetDirichletBCPointer
-
-!----------------------------------------------------------------------------
-!                                                        GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-14
-! summary:  Get the prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(DirichletBC_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    ImportFromToml@IOMethods

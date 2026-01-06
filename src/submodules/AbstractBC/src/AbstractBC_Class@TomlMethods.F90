@@ -16,18 +16,15 @@
 !
 
 SUBMODULE(AbstractBC_Class) TomlMethods
-USE GlobalData, ONLY: CHAR_LF, stdout
 USE Display_Method, ONLY: Display, ToString
-
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
-
 USE TomlUtility, ONLY: GetValue
+USE tomlf, ONLY: toml_get => get_value
 
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_stat
 IMPLICIT NONE
+
+TYPE(AbstractBCOpt_), PARAMETER :: defaultOpt = AbstractBCOpt_()
 
 CONTAINS
 
@@ -35,64 +32,82 @@ CONTAINS
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportParamFromToml
+MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
-
-INTEGER(I4B) :: origin, stat, nodalValueType, idof
-LOGICAL(LGT) :: isNormal, isTangent, isUserFunction, isUseExternal
-TYPE(String) :: nodalValueType_string, name, astr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-CALL GetValue(table=table, key="isUserFunction", VALUE=isUserFunction, &
-              default_value=default_isUserFunction, origin=origin, stat=stat)
-
-CALL GetValue(table=table, key="isTangent", VALUE=isTangent, &
-              default_value=default_isTangent, origin=origin, stat=stat)
-
-CALL GetValue(table=table, key="isNormal", VALUE=isNormal, &
-              default_value=default_isNormal, origin=origin, stat=stat)
-
-CALL GetValue(table=table, key="isUseExternal", VALUE=isUseExternal, &
-              default_value=default_useExternal, origin=origin, stat=stat)
-
-CALL GetValue(table=table, key="nodalValueType", &
-              VALUE=nodalValueType_string, &
-              default_value=default_nodalValueType_char, &
-              origin=origin, stat=stat)
-
-nodalValueType = TypeFieldOpt%ToNumber(nodalValueType_string%chars())
-
-CALL GetValue(table=table, key="idof", VALUE=idof, &
-              default_value=default_idof, origin=origin, stat=stat)
-
-CALL GetValue(table=table, key="name", VALUE=name, &
-              default_value=obj%GetPrefix(), origin=origin, stat=stat)
-
-CALL SetAbstractBCParam(param=param, &
-                        prefix=obj%GetPrefix(), &
-                        name=name%chars(), &
-                        idof=idof, &
-                        nodalValueType=nodalValueType, &
-                        isUserFunction=isUserFunction, &
-                        isNormal=isNormal, &
-                        isTangent=isTangent, &
-                        isUseExternal=isUseExternal)
-
-name = ''
-nodalValueType_string = ''
-astr = ''
+CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
+obj%dom => dom
+CALL ReadNameFromToml(obj=obj, table=table)
+CALL ReadIdofFromToml(obj=obj, table=table)
+CALL ReadNodalValueTypeFromToml(obj=obj, table=table)
+CALL ReadIsNormalFromToml(obj=obj, table=table)
+CALL ReadIsTangentFromToml(obj=obj, table=table)
+CALL ReadIsUseExternalFromToml(obj=obj, table=table)
+CALL ReadIsUserFunctionFromToml(obj=obj, table=table)
+CALL ReadBoundaryFromToml(obj=obj, table=table, dom=dom)
+CALL ReadUserFunctionFromToml(obj=obj, table=table)
+! if .not. obj%isUserFunction, then we read nodalValueType
+CALL ReadConstantNodalValueFromToml(obj=obj, table=table)
+CALL ReadSpaceNodalValueFromToml(obj=obj, table=table)
+CALL ReadTimeNodalValueFromToml(obj=obj, table=table)
+CALL ReadSpaceTimeNodalValueFromToml(obj=obj, table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-END PROCEDURE obj_ImportParamFromToml
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+#endif
+
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  'following error occured while reading '// &
+             'the toml file :: cannot find ['//tomlName//"] table in config.")
+#endif
+
+CALL obj%ImportFromToml(table=node, dom=dom)
+
+node => NULL()
+DEALLOCATE (table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !                                                           ReadNameFromToml
@@ -119,7 +134,7 @@ SUBROUTINE ReadNameFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=obj%name, &
-                default_value=obj%GetPrefix(), origin=origin, stat=stat)
+                default_value=defaultOpt%name, origin=origin, stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -666,93 +681,6 @@ SUBROUTINE ReadSpaceTimeNodalValueFromToml(obj, table)
                           '[END] ')
 #endif
 END SUBROUTINE ReadSpaceTimeNodalValueFromToml
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-obj%dom => dom
-CALL ReadNameFromToml(obj=obj, table=table)
-CALL ReadIdofFromToml(obj=obj, table=table)
-CALL ReadNodalValueTypeFromToml(obj=obj, table=table)
-CALL ReadIsNormalFromToml(obj=obj, table=table)
-CALL ReadIsTangentFromToml(obj=obj, table=table)
-CALL ReadIsUseExternalFromToml(obj=obj, table=table)
-CALL ReadIsUserFunctionFromToml(obj=obj, table=table)
-CALL ReadBoundaryFromToml(obj=obj, table=table, dom=dom)
-CALL ReadUserFunctionFromToml(obj=obj, table=table)
-! if .not. obj%isUserFunction, then we read nodalValueType
-CALL ReadConstantNodalValueFromToml(obj=obj, table=table)
-CALL ReadSpaceNodalValueFromToml(obj=obj, table=table)
-CALL ReadTimeNodalValueFromToml(obj=obj, table=table)
-CALL ReadSpaceTimeNodalValueFromToml(obj=obj, table=table)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-#endif
-
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-CALL GetValue(table=table, afile=afile, filename=filename)
-
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(node)
-CALL AssertError1(isok, myName, &
-                  'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
-#endif
-
-CALL obj%ImportFromToml(table=node, dom=dom)
-
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-               unitNo=stdout)
-END IF
-#endif
-
-node => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

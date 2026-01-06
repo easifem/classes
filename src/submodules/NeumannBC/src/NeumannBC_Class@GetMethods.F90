@@ -16,54 +16,61 @@
 !
 
 SUBMODULE(NeumannBC_Class) GetMethods
-USE BaseMethod, ONLY: TOSTRING, Input
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: ToString
+#endif
+
+USE InputUtility, ONLY: Input
+
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                    GetNeumannBCPointer
+!                                                         GetNeumannBCPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNeumannBCPointer
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNeumannBCPointer()"
-INTEGER(I4B) :: nbcNo0, tsize
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: bcNo0, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-tsize = SIZE(nbc)
+tsize = SIZE(bc)
 
-nbcNo0 = Input(default=tsize, option=nbcNo)
+bcNo0 = Input(default=tsize, option=bcNo)
 
 #ifdef DEBUG_VER
-IF (nbcNo0 .GT. tsize) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-   & '[INTERNAL ERROR] :: nbcNo0 is out of bound for nbc')
-END IF
-
-IF (.NOT. ASSOCIATED(nbc(nbcNo0)%ptr)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: nbc( '//TOSTRING(nbcNo0) &
-    & //')%ptr is not ASSOCIATED')
-END IF
+isok = bcNo0 .LE. tsize
+CALL AssertError1(isok, myName, &
+        "bcNo0="//ToString(bcNo0)//" is out of bound tsize="//ToString(tsize))
 #endif
 
-ans => nbc(nbcNo0)%ptr
+#ifdef DEBUG_VER
+isok = ASSOCIATED(bc(bcNo0)%ptr)
+CALL AssertError1(isok, myName, &
+                  "bc("//ToString(bcNo0)//")%ptr is not ASSOCIATED")
+#endif
+
+ans => bc(bcNo0)%ptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
 END PROCEDURE obj_GetNeumannBCPointer
 
 !----------------------------------------------------------------------------
-!                                                               GetPrefix
+!                                                           Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

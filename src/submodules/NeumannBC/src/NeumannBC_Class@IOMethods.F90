@@ -16,7 +16,9 @@
 !
 
 SUBMODULE(NeumannBC_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+
 IMPLICIT NONE
 
 CONTAINS
@@ -29,25 +31,7 @@ MODULE PROCEDURE obj_Display_Vector
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display_Vector()"
 #endif
-
-INTEGER(I4B) :: tsize, ii
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-tsize = SIZE(obj)
-CALL Display(msg, unitNo=unitNo)
-CALL Display("nbc: SIZE["//ToString(tsize)//']', unitNo=unitNo)
-DO ii = 1, tsize
-  CALL obj(ii)%Display("nbc("//ToString(ii)//"): ", unitNo=unitNo)
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+#include "../../include/display_vector.F90"
 END PROCEDURE obj_Display_Vector
 
 !----------------------------------------------------------------------------
@@ -59,33 +43,11 @@ MODULE PROCEDURE obj_Display_Ptr_Vector
 CHARACTER(*), PARAMETER :: myName = "obj_Display_Ptr_Vector()"
 #endif
 
-INTEGER(I4B) :: tsize, ii
-LOGICAL(LGT) :: bool1
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-tsize = SIZE(obj)
-CALL Display(msg, unitNo=unitNo)
-CALL Display("nbc: SIZE["//ToString(tsize)//']', unitNo=unitNo)
-DO ii = 1, tsize
-  bool1 = ASSOCIATED(obj(ii)%ptr)
-  CALL Display(bool1, "nbc("//ToString(ii)//") ASSOCIATED: ", unitNo=unitNo)
-  IF (bool1) THEN
-    CALL obj(ii)%ptr%Display("nbc("//ToString(ii)//"): ", unitNo=unitNo)
-  END IF
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+#include "../../include/display_vector_ptr.F90"
 END PROCEDURE obj_Display_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                              Include Error
+!                                                               Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

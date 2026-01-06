@@ -16,14 +16,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-! Interface is given below
-
-! INTERFACE MeshSelectionDeallocate
-!   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-!     TYPE(FOO_), ALLOCATABLE :: obj(:)
-!   END SUBROUTINE Deallocate_Ptr_Vector
-! END INTERFACE MeshSelectionDeallocate
-
 INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: isok
 

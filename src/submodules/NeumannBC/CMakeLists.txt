@@ -21,6 +21,5 @@ target_sources(
   PRIVATE ${src_path}/NeumannBC_Class@ConstructorMethods.F90
           ${src_path}/NeumannBC_Class@IOMethods.F90
           ${src_path}/NeumannBC_Class@TomlMethods.F90
-          ${src_path}/NeumannBC_Class@SetMethods.F90
           ${src_path}/NeumannBC_Class@GetMethods.F90)
 

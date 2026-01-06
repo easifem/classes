@@ -16,7 +16,12 @@
 !
 
 SUBMODULE(NitscheBC_Class) GetMethods
-USE BaseMethod, ONLY: TOSTRING, Input
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: ToString
+#endif
+
+USE InputUtility, ONLY: Input
+
 IMPLICIT NONE
 CONTAINS
 
@@ -25,11 +30,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMinCellEntity
-IF (ALLOCATED(obj%cellEntity)) THEN
-  ans = LBOUND(obj%cellEntity, 1)
-ELSE
-  ans = 0
-END IF
+LOGICAL(LGT) :: isok
+
+isok = ALLOCATED(obj%cellEntity)
+ans = 0
+IF (isok) ans = LBOUND(obj%cellEntity, 1)
 END PROCEDURE obj_GetMinCellEntity
 
 !----------------------------------------------------------------------------
@@ -37,11 +42,10 @@ END PROCEDURE obj_GetMinCellEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxCellEntity
-IF (ALLOCATED(obj%cellEntity)) THEN
-  ans = UBOUND(obj%cellEntity, 1) - 1
-ELSE
-  ans = 0
-END IF
+LOGICAL(LGT) :: isok
+isok = ALLOCATED(obj%cellEntity)
+ans = 0
+IF (isok) ans = UBOUND(obj%cellEntity, 1) - 1
 END PROCEDURE obj_GetMaxCellEntity
 
 !----------------------------------------------------------------------------
@@ -49,21 +53,19 @@ END PROCEDURE obj_GetMaxCellEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsCellEntityPresent
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok, abool
 
-IF (ALLOCATED(obj%cellEntity)) THEN
-  IF (entityNum .LT. SIZE(obj%cellEntity)) THEN
+isok = ALLOCATED(obj%cellEntity)
+ans = .FALSE.
+
+IF (isok) THEN
+  tsize = SIZE(obj%cellEntity)
+  abool = entityNum .LT. tsize
+  IF (abool) THEN
     ii = obj%cellEntity(entityNum + 1) - obj%cellEntity(entityNum)
-    IF (ii .GT. 0) THEN
-      ans = .TRUE.
-    ELSE
-      ans = .FALSE.
-    END IF
-  ELSE
-    ans = .FALSE.
+    ans = ii .GT. 0
   END IF
-ELSE
-  ans = .FALSE.
 END IF
 END PROCEDURE obj_IsCellEntityPresent
 
@@ -104,46 +106,46 @@ END PROCEDURE obj_GetLocalFacetID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNitscheBCPointer
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetNitscheBCPointer"
-INTEGER(I4B) :: dbcNo0, tsize
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: bcNo0, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
-tsize = SIZE(dbc)
+tsize = SIZE(bc)
 
-dbcNo0 = Input(default=tsize, option=dbcNo)
+bcNo0 = Input(default=tsize, option=bcNo)
 
 #ifdef DEBUG_VER
-IF (dbcNo0 .GT. tsize) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-   & '[INTERNAL ERROR] :: dbcNo0 is out of bound for dbc')
-END IF
-
-IF (.NOT. ASSOCIATED(dbc(dbcNo0)%ptr)) THEN
-  CALL e%raiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR] :: dbc( '//TOSTRING(dbcNo0) &
-    & //')%ptr is not ASSOCIATED')
-END IF
+isok = bcNo0 .LE. tsize
+CALL AssertError1(isok, myName, &
+        "bcNo0="//ToString(bcNo0)//" is out of bound tsize="//ToString(tsize))
 #endif
 
-ans => dbc(dbcNo0)%ptr
+#ifdef DEBUG_VER
+isok = ASSOCIATED(bc(bcNo0)%ptr)
+CALL AssertError1(isok, myName, &
+                  "bc("//ToString(bcNo0)//")%ptr is not ASSOCIATED")
+#endif
+
+ans => bc(bcNo0)%ptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_GetNitscheBCPointer
 
 !----------------------------------------------------------------------------
-!                                                                 GetPrefix
+!                                                           Include error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPrefix
-ans = myprefix
-END PROCEDURE obj_GetPrefix
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

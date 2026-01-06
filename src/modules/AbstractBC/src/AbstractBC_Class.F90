@@ -23,7 +23,6 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE HDF5File_Class, ONLY: HDF5File_
 USE UserFunction_Class, ONLY: UserFunction_
-USE FPL, ONLY: ParameterList_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE FEDOF_Class, ONLY: FEDOF_
@@ -36,7 +35,10 @@ USE BaseType, ONLY: ElemShapeData_
 IMPLICIT NONE
 PRIVATE
 
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
+#endif
+
 CHARACTER(*), PARAMETER :: default_name = "AbstractBC"
 INTEGER(I4B), PARAMETER :: default_idof = 1_I4B
 INTEGER(I4B), PARAMETER :: default_nodalValueType = TypeFEVariableOpt%constant
@@ -49,11 +51,8 @@ LOGICAL(LGT), PARAMETER :: default_useExternal = .FALSE.
 PUBLIC :: AbstractBC_
 PUBLIC :: AbstractBCPointer_
 PUBLIC :: AbstractBCDeallocate
-PUBLIC :: AbstractBCcheckEssentialParam
-PUBLIC :: SetAbstractBCParam
 PUBLIC :: AbstractBCInitiate
 PUBLIC :: AbstractBCImportFromToml
-PUBLIC :: AbstractBCImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                              AbstractBCOpt_
@@ -72,7 +71,7 @@ TYPE :: AbstractBCOpt_
   LOGICAL(LGT) :: isNormal = .FALSE.
   LOGICAL(LGT) :: isTangent = .FALSE.
   LOGICAL(LGT) :: useExternal = .FALSE.
-END TYPE ABstractBCOpt_
+END TYPE AbstractBCOpt_
 
 !----------------------------------------------------------------------------
 !                                                                AbstractBC_
@@ -173,29 +172,25 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
-    obj_Deallocate
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate memory occupied by AbstractBC
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check essential parameter
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance of AbstractBC
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of AbstractBC with arguments
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
 
   ! IO:
-  ! @IOMethods
-
+  ! @HDFMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from HDF5File
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data to HDF5File
+
+  ! IO:
+  ! @IOMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display content of AbstractBC
 
+  ! IO:
+  ! @TomlMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
   !! Initiate from toml
@@ -206,22 +201,15 @@ CONTAINS
     ImportFromToml2
   !! Import abstract kernel from toml
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportParamFromToml => &
-    obj_ImportParamFromToml
-  !! Import parameter from toml file
-
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Set the boundary condition value
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetElemToLocalBoundary => &
     obj_SetElemToLocalBoundary
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! Returns isInit
@@ -257,19 +245,13 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsUseFunction => &
     obj_IsUseFunction
   !! Returns true if the useFunction is true
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Get the prefix of boundary condition, it should be
-  !! overridden in the derived class
 
   ! GET:
   ! @GetValueMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get the node number and nodal value of the boundary conditions
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! Get the node number and nodal value of the boundary conditions
-
   GENERIC, PUBLIC :: Get => Get1, Get2
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
@@ -291,77 +273,6 @@ TYPE :: AbstractBCPointer_
 END TYPE AbstractBCPointer_
 
 !----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-14
-! summary:  Check essential parameters
-
-INTERFACE AbstractBCcheckEssentialParam
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param, prefix)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE AbstractBCcheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                   SetAbstractBCParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-14
-! summary: Set abstract boundary condition parameters
-
-INTERFACE
-  MODULE SUBROUTINE SetAbstractBCParam(param, prefix, name, idof, &
-                                       nodalValueType, isNormal, isTangent, &
-                                       isUseExternal, isUserFunction)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: name
-    !! name of boundary condition
-    !! default is AbstractBC
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
-    !! degree of freedom number
-    !! default is 0
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodalValueType
-    !! Space, Time, SpaceTime, Constant
-    !! default is -1
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUserFunction
-    !! set true when userfucntion is used; default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
-    !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
-    !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUseExternal
-    !! default is false
-  END SUBROUTINE SetAbstractBCParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-14
-! summary:  Initiate abstract boundary condition
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, boundary, dom)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE AbstractBCInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE AbstractBCInitiate
-
-!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -370,9 +281,9 @@ END INTERFACE AbstractBCInitiate
 ! summary:  Initiate AbstractBC with arguments
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, boundary, dom, name, idof, &
-                                  nodalValueType, isNormal, isTangent, &
-                                  isUseExternal, isUserFunction)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, boundary, dom, name, idof, nodalValueType, isNormal, isTangent, &
+    isUseExternal, isUserFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     TYPE(MeshSelection_), INTENT(IN) :: boundary
@@ -396,11 +307,11 @@ INTERFACE
     !! default is false
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUseExternal
     !! default is false
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 INTERFACE AbstractBCInitiate
-  MODULE PROCEDURE obj_Initiate2
+  MODULE PROCEDURE obj_Initiate
 END INTERFACE AbstractBCInitiate
 
 !----------------------------------------------------------------------------
@@ -449,26 +360,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              ImportParamFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate param by reading the toml table
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
-    CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE obj_ImportParamFromToml
-END INTERFACE
-
-INTERFACE AbstractBCImportParamFromToml
-  MODULE PROCEDURE obj_ImportParamFromToml
-END INTERFACE AbstractBCImportParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods
@@ -819,21 +710,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToFace
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToEdge
   END SUBROUTINE obj_GetParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                       GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-14
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractBC_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
