@@ -59,38 +59,8 @@ END PROCEDURE obj_Deallocate_Ptr_Vector
 MODULE PROCEDURE obj_GetDirichletBCPointer
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCPointer()"
-LOGICAL(LGT) :: isok
 #endif
-
-INTEGER(I4B) :: bcNo0, tsize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-tsize = SIZE(bc)
-
-bcNo0 = Input(default=tsize, option=bcNo)
-
-#ifdef DEBUG_VER
-isok = bcNo0 .LE. tsize
-CALL AssertError1(isok, myName, &
-        "bcNo0="//ToString(bcNo0)//" is out of bound tsize="//ToString(tsize))
-#endif
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(bc(bcNo0)%ptr)
-CALL AssertError1(isok, myName, &
-                  "bc("//ToString(bcNo0)//")%ptr is not ASSOCIATED")
-#endif
-
-ans => bc(bcNo0)%ptr
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+#include "../../include/AbstractBC/GetBCPointer.F90"
 END PROCEDURE obj_GetDirichletBCPointer
 
 !----------------------------------------------------------------------------
