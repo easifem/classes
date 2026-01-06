@@ -683,6 +683,37 @@ SUBROUTINE ReadSpaceTimeNodalValueFromToml(obj, table)
 END SUBROUTINE ReadSpaceTimeNodalValueFromToml
 
 !----------------------------------------------------------------------------
+!                                                      ImportConstBCFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportConstBCFromToml
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportConstBCFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
+obj%dom => dom
+CALL ReadNameFromToml(obj=obj, table=table)
+CALL ReadIdofFromToml(obj=obj, table=table)
+CALL ReadNodalValueTypeFromToml(obj=obj, table=table)
+CALL ReadIsNormalFromToml(obj=obj, table=table)
+CALL ReadIsTangentFromToml(obj=obj, table=table)
+CALL ReadBoundaryFromToml(obj=obj, table=table, dom=dom)
+CALL ReadConstantNodalValueFromToml(obj=obj, table=table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_ImportConstBCFromToml
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

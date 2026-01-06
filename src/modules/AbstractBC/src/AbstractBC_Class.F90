@@ -200,6 +200,9 @@ CONTAINS
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     ImportFromToml2
   !! Import abstract kernel from toml
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportConstBCFromToml => &
+    obj_ImportConstBCFromToml
+  !! Import constant boundary condition from toml
 
   ! SET:
   ! @SetMethods
@@ -322,10 +325,14 @@ END INTERFACE AbstractBCInitiate
 ! date:  2023-02-12
 ! summary: Deallocate data
 
-INTERFACE AbstractBCDeallocate
+INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+INTERFACE AbstractBCDeallocate
+  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -404,6 +411,32 @@ END INTERFACE
 INTERFACE AbstractBCImportFromToml
   MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE AbstractBCImportFromToml
+
+!----------------------------------------------------------------------------
+!                                             ImportConstBCFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-06
+! summary: Import constant boundary condition from toml table
+!
+!# Introduction
+!
+! This method is designed for ConstDirichletBC and ConstNeumannBC.
+! These child classes require lesser data from the user.
+! Also, they simplifies and optimizes the application of such BCs in FEM.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportConstBCFromToml(obj, table, dom)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE obj_ImportConstBCFromToml
+END INTERFACE
+
+INTERFACE AbstractBCImportConstBCFromToml
+  MODULE PROCEDURE obj_ImportConstBCFromToml
+END INTERFACE AbstractBCImportConstBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                        Display@IOMethods
