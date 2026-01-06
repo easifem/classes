@@ -49,6 +49,8 @@ TYPE, EXTENDS(DirichletBC_) :: ConstDirichletBC_
 CONTAINS
   PRIVATE
   FINAL :: obj_Final
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportConstBCFromToml
+  !! Initiate ConstDirichletBC from toml table (overriding)
 END TYPE ConstDirichletBC_
 
 !----------------------------------------------------------------------------
@@ -126,6 +128,22 @@ END INTERFACE
 INTERFACE GetConstDirichletBCPointer
   MODULE PROCEDURE obj_GetConstDirichletBCPointer
 END INTERFACE GetConstDirichletBCPointer
+
+!----------------------------------------------------------------------------
+!                                                    ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-06
+! summary: Import ConstDirichletBC_ from the toml table (overriding)
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportConstBCFromToml(obj, table, dom)
+    CLASS(ConstDirichletBC_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE obj_ImportConstBCFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    ImportFromToml@IOMethods

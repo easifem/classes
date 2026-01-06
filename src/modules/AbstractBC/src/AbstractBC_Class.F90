@@ -191,8 +191,7 @@ CONTAINS
 
   ! IO:
   ! @TomlMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
-    obj_ImportFromToml1
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Initiate from toml
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
     obj_ImportFromToml2

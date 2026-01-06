@@ -17,14 +17,22 @@
 
 SUBMODULE(ConstDirichletBC_Class) TomlMethods
 USE BaseType, ONLY: math => TypeMathOpt
-USE Display_Method, ONLY: Display, ToString
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_len => len, &
-                 toml_array
+USE Display_Method, ONLY: ToString
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_len => len
+USE tomlf, ONLY: toml_array
 USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportConstBCFromToml
+CALL obj%ImportConstBCFromToml(table=table, dom=dom)
+END PROCEDURE obj_ImportConstBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
@@ -34,81 +42,7 @@ MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
-
-TYPE(toml_table), POINTER :: node
-TYPE(toml_array), POINTER :: array
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: origin, stat, tsize, ii, tsize1
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Reading '//tomlName//' ...')
-#endif
-
-array => NULL()
-CALL toml_get(table, tomlName, array, origin=origin, &
-              requested=math%no, stat=stat)
-
-isok = ASSOCIATED(array)
-
-IF (.NOT. isok) THEN
-  ALLOCATE (obj(0))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    tomlName//' not found, nothing to import.')
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-tsize = toml_len(array)
-
-isok = ALLOCATED(obj)
-IF (.NOT. isok) ALLOCATE (obj(tsize))
-
-tsize1 = SIZE(obj)
-
-#ifdef DEBUG_VER
-isok = tsize .EQ. tsize1
-CALL AssertError1( &
-  isok, myName, 'The number of boundary condition in the toml config ('// &
- ToString(tsize)//') is not same as the size of obj ('//ToString(tsize1)//")")
-#endif
-
-DO ii = 1, tsize
-  node => NULL()
-  CALL toml_get(array, ii, node)
-
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(node)
-  CALL AssertError1( &
-    isok, myName, 'ConstDirichletBC '//ToString(ii)//' cannot be read from the &
-    &toml file.')
-#endif
-
-  isok = ASSOCIATED(obj(ii)%ptr)
-  IF (.NOT. isok) ALLOCATE (obj(ii)%ptr)
-  CALL obj(ii)%ptr%ImportConstBCFromToml(table=node, dom=dom)
-END DO
-
-node => NULL()
-array => NULL()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
+#include "../../include/AbstractBC/ImportFromToml1.F90"
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
@@ -118,45 +52,11 @@ END PROCEDURE obj_ImportFromToml1
 MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-LOGICAL(LGT) :: isok
 #endif
 
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL GetValue(table=table, afile=afile, filename=filename)
-
-#ifdef DEBUG_VER
-isok = ALLOCATED(table)
-CALL AssertError1(isok, myName, "table is not allocated from GetValue")
-#endif
-
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(node)
-CALL AssertError1(isok, myName, &
-                  "cannot find "//tomlName//" table in config.")
-#endif
-
-CALL ConstDirichletBCImportFromToml( &
-  obj=obj, table=table, dom=dom, tomlName=tomlName)
-
-node => NULL()
-DEALLOCATE (table)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
+#define _IMPORT_FROM_TOML_ ConstDirichletBCImportFromToml
+#include "../../include/AbstractBC/ImportFromToml2.F90"
+#undef _IMPORT_FROM_TOML_
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------

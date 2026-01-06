@@ -50,6 +50,8 @@ TYPE, EXTENDS(NeumannBC_) :: ConstNeumannBC_
 CONTAINS
   PRIVATE
   FINAL :: obj_Final
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportConstBCFromToml
+  !! Initiate ConstNeumannBC from toml table (overriding)
 END TYPE ConstNeumannBC_
 
 !----------------------------------------------------------------------------
@@ -127,6 +129,22 @@ END INTERFACE
 INTERFACE GetConstNeumannBCPointer
   MODULE PROCEDURE obj_GetConstNeumannBCPointer
 END INTERFACE GetConstNeumannBCPointer
+
+!----------------------------------------------------------------------------
+!                                                    ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-06
+! summary: Import ConstNeumannBC_ from the toml table (overriding)
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportConstBCFromToml(obj, table, dom)
+    CLASS(ConstNeumannBC_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+  END SUBROUTINE obj_ImportConstBCFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    ImportFromToml@IOMethods
