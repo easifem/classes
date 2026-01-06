@@ -19,8 +19,6 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
-USE FPL, ONLY: ParameterList_
-USE AbstractBC_Class, ONLY: AbstractBC_
 USE DirichletBC_Class, ONLY: DirichletBC_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
@@ -36,8 +34,6 @@ PUBLIC :: ConstDirichletBCDeallocate
 PUBLIC :: ConstDirichletBCDisplay
 PUBLIC :: ConstDirichletBC_
 PUBLIC :: ConstDirichletBCPointer_
-PUBLIC :: AddConstDirichletBC
-PUBLIC :: AppendConstDirichletBC
 PUBLIC :: GetConstDirichletBCPointer
 PUBLIC :: ConstDirichletBCImportFromToml
 
@@ -47,7 +43,7 @@ PUBLIC :: ConstDirichletBCImportFromToml
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 1 Sept 2021
-! summary: This is an abstract data type for boundary conditions
+! summary: Dirichlet boundary condition class
 
 TYPE, EXTENDS(DirichletBC_) :: ConstDirichletBC_
 CONTAINS
@@ -69,7 +65,7 @@ END TYPE ConstDirichletBCPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of ConstDirichletBC_
+! summary: Deallocate a vector of ConstDirichletBC_
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Vector(obj)
@@ -87,7 +83,7 @@ END INTERFACE ConstDirichletBCDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-09-09
-! summary:  Deallocate the vector of ConstDirichletBCPointer_
+! summary: Deallocate a vector of ConstDirichletBCPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
@@ -110,70 +106,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              AddConstDirichletBC@SetMethods
+!                                             GetConstDirichletBC@GetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-01-06
-! summary: Add ConstDirichletBC to the vector of ConstDirichletBCPointer_
+!> authors: Vikas Sharma, Ph. D.
+! date: 2022-04-27
+! summary: Get a pointer to ConstDirichletBC from vector of
+!          ConstDirichletBCPointer_
 
 INTERFACE
-  MODULE SUBROUTINE obj_AddConstDirichletBC(dbc, dbcNo, param, boundary, dom)
-    TYPE(ConstDirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    !! Dirichlet boundary to form
-    INTEGER(I4B), INTENT(IN) :: dbcNo
-    !! Dirichlet boundary number
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter for constructing [[ConstDirichletBC_]].
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    !! Boundary region
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
-  END SUBROUTINE obj_AddConstDirichletBC
-END INTERFACE
-
-INTERFACE AddConstDirichletBC
-  MODULE PROCEDURE obj_AddConstDirichletBC
-END INTERFACE AddConstDirichletBC
-
-!----------------------------------------------------------------------------
-!                                           AppendConstDirichletBC@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-01-06
-! summary: Append ConstDirichletBC to the vector of ConstDirichletBCPointer_
-
-INTERFACE
-  MODULE SUBROUTINE obj_AppendConstDirichletBC( &
-    dbc, param, boundary, dom, dbcNo)
-    TYPE(ConstDirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: dbc(:)
-    !! Dirichlet boundary to form
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter for constructing [[ConstDirichletBC_]].
-    TYPE(MeshSelection_), INTENT(IN) :: boundary
-    !! Boundary region
-    CLASS(AbstractDomain_), INTENT(IN) :: dom
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
-    !! Dirichlet boundary number
-  END SUBROUTINE obj_AppendConstDirichletBC
-END INTERFACE
-
-INTERFACE AppendConstDirichletBC
-  MODULE PROCEDURE obj_AppendConstDirichletBC
-END INTERFACE AppendConstDirichletBC
-
-!----------------------------------------------------------------------------
-!                                              GetConstDirichletBC@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-01-06
-! summary: Get pointer to ConstDirichletBCPointer_
-
-INTERFACE
-  MODULE FUNCTION obj_GetConstDirichletBCPointer(dbc, dbcNo) RESULT(ans)
-    CLASS(ConstDirichletBCPointer_), INTENT(IN) :: dbc(:)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcNo
+  MODULE FUNCTION obj_GetConstDirichletBCPointer(bc, bcNo) RESULT(ans)
+    CLASS(ConstDirichletBCPointer_), INTENT(IN) :: bc(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: bcNo
     !! Dirichlet boundary nunber
     CLASS(ConstDirichletBC_), POINTER :: ans
   END FUNCTION obj_GetConstDirichletBCPointer
@@ -188,8 +132,8 @@ END INTERFACE GetConstDirichletBCPointer
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2026-01-06
-! summary:  Initiate a vector of ConstDirichletBCPointer_ from the toml table
+! date:  2023-11-08
+! summary: Initiate a vector of ConstDirichletBCPointer_ from the toml table
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
@@ -212,7 +156,7 @@ END INTERFACE ConstDirichletBCImportFromToml
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2026-01-06
+! date:  2023-11-08
 ! summary: Initiate a vector of ConstDirichletBCPointer_ from the toml file
 
 INTERFACE
@@ -236,8 +180,8 @@ END INTERFACE ConstDirichletBCImportFromToml
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2026-01-06
-! summary: Display a vector of ConstDirichletBC_
+! date:  2023-09-09
+! summary: Display the vector of ConstDirichletBC_
 
 INTERFACE
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
@@ -256,8 +200,8 @@ END INTERFACE ConstDirichletBCDisplay
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2026-01-06
-! summary: Display a vector of ConstDirichletBCPointer_
+! date:  2023-09-09
+! summary: Display the vector of ConstDirichletBCPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)

@@ -1,0 +1,19 @@
+[bc]
+name = "DirichletBC"
+# Name of the boundary condition
+
+idof = 1
+# idof denotes the degree of freedom where we apply the contraint,
+# For x, y, z components idof is 1, 2, 3 respectively.
+
+isNormal = false
+# is boundary condition applied in the normal direction
+
+isTangent = false
+# is boundary condition applied in the tangent direction
+
+value = 20.0
+# Value of boundary condition
+
+[bc.boundary]
+# You can find more details about bc.boundary in DirichletBC.toml or MeshSelection.toml

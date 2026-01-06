@@ -20,3 +20,8 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
   ${PROJECT_NAME} PRIVATE ${src_path}/DirichletBC_Class@Methods.F90
                           ${src_path}/DirichletBC_Class@TomlMethods.F90)
+
+# ConstDirichletBC
+target_sources(
+  ${PROJECT_NAME} PRIVATE ${src_path}/ConstDirichletBC_Class@Methods.F90
+                          ${src_path}/ConstDirichletBC_Class@TomlMethods.F90)
