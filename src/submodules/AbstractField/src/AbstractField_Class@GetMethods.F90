@@ -33,9 +33,6 @@ END PROCEDURE obj_IsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
-!USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-!USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
-
 CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
 INTEGER(I4B) :: ii
 LOGICAL(LGT) :: isok
@@ -158,10 +155,24 @@ END PROCEDURE obj_GetTotalDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalVertexDOF
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexDOF()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalVertexDOF
 
 !----------------------------------------------------------------------------
@@ -169,10 +180,24 @@ END PROCEDURE obj_GetTotalVertexDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEdgeDOF
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEdgeDOF()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalEdgeDOF
 
 !----------------------------------------------------------------------------
@@ -180,10 +205,24 @@ END PROCEDURE obj_GetTotalEdgeDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalFaceDOF
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFaceDOF()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalFaceDOF
 
 !----------------------------------------------------------------------------
@@ -191,10 +230,24 @@ END PROCEDURE obj_GetTotalFaceDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalCellDOF
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalCellDOF()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalCellDOF
 
 !----------------------------------------------------------------------------
@@ -202,11 +255,7 @@ END PROCEDURE obj_GetTotalCellDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isConstant
-IF (obj%fieldType .EQ. TypeField%constant) THEN
-  ans = .TRUE.
-ELSE
-  ans = .FALSE.
-END IF
+ans = obj%fieldType .EQ. TypeField%constant
 END PROCEDURE obj_isConstant
 
 !----------------------------------------------------------------------------
@@ -216,31 +265,27 @@ END PROCEDURE obj_isConstant
 MODULE PROCEDURE obj_GetFEDOFPointer1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer1()"
-#endif
-
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: isok
 #endif
 
-LOGICAL(LGT) :: indxPresent, fedofsAllocated
+LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-indxPresent = PRESENT(indx)
-fedofsAllocated = ALLOCATED(obj%fedofs)
+abool = PRESENT(indx) .AND. ALLOCATED(obj%fedofs)
 
-IF (indxPresent .AND. fedofsAllocated) THEN
+IF (abool) THEN
 
 #ifdef DEBUG_VER
   tsize = SIZE(obj%fedofs)
   isok = indx .LE. tsize
-
   CALL AssertError1(isok, myName, &
-                    "indx should be less than or equal to size of fedofs")
+                  "indx="//ToString(indx)//" should be <= size of fedofs="// &
+                    ToString(tsize))
 #endif
 
   ans => obj%fedofs(indx)%ptr
@@ -255,7 +300,6 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetFEDOFPointer1
 
 !----------------------------------------------------------------------------
@@ -276,12 +320,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 isok = ALLOCATED(obj%fedofs)
+tsize = 0
 
-IF (isok) THEN
-  tsize = SIZE(obj%fedofs)
-ELSE
-  tsize = 0
-END IF
+IF (isok) tsize = SIZE(obj%fedofs)
 
 ALLOCATE (ans(tsize))
 
@@ -310,17 +351,16 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tsize
 #endif
 
-LOGICAL(LGT) :: indxPresent, fedofsAllocated
+LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-indxPresent = PRESENT(indx)
-fedofsAllocated = ALLOCATED(obj%timefedofs)
+abool = PRESENT(indx) .AND. ALLOCATED(obj%timefedofs)
 
-IF (indxPresent .AND. fedofsAllocated) THEN
+IF (abool) THEN
 
 #ifdef DEBUG_VER
   tsize = SIZE(obj%timefedofs)
@@ -342,7 +382,6 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetTimeFEDOFPointer1
 
 !----------------------------------------------------------------------------
@@ -363,12 +402,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 isok = ALLOCATED(obj%timefedofs)
-
-IF (isok) THEN
-  tsize = SIZE(obj%timefedofs)
-ELSE
-  tsize = 0
-END IF
+tsize = 0; IF (isok) tsize = SIZE(obj%timefedofs)
 
 ALLOCATE (ans(tsize))
 
