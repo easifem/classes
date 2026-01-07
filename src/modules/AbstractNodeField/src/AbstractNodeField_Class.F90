@@ -13,18 +13,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE AbstractNodeField_Class
-USE GlobalData, ONLY: DFP, LGT, I4B, NODES_FMT
-USE Basetype, ONLY: RealVector_, DOF_, FEVariable_
+USE GlobalData, ONLY: DFP, LGT, I4B
+USE Basetype, ONLY: RealVector_
+USE Basetype, ONLY: DOF_
+USE Basetype, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
 USE ExceptionHandler_Class, ONLY: e
 USE AbstractBC_Class, ONLY: AbstractBC_
-USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
+USE DirichletBC_Class, ONLY: DirichletBC_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE TimeOpt_Class, ONLY: TimeOpt_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 
 IMPLICIT NONE
 PRIVATE
@@ -45,6 +50,9 @@ PUBLIC :: NodeFieldsWriteData
 
 CHARACTER(*), PARAMETER :: modName = "AbstractNodeField_Class"
 
+INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
+! INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
+
 !----------------------------------------------------------------------------
 !                                                         AbstractNodeField_
 !----------------------------------------------------------------------------
@@ -58,7 +66,7 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !! Total number of physical variables
   !! note: This variable is only for internal use
 
-  INTEGER(I4B) :: dof_storageFMT = NODES_FMT
+  INTEGER(I4B) :: dof_storageFMT = MYSTORAGEFORMAT
   !! Storage format
   !! note: This variable is only for internal use
 
@@ -117,6 +125,11 @@ CONTAINS
     obj_WriteData_vtk2
   GENERIC, PUBLIC :: WriteData => WriteData_vtk2
   !! Export data in VTKformat
+
+  ! GET
+  ! @GetMethods, deferred methods from AbstractField_
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
+  !! Get storage format of the field
 
   ! GET:
   ! @GetMethods
@@ -593,6 +606,27 @@ END INTERFACE AbstractNodeFieldWriteData
 INTERFACE NodeFieldsWriteData
   MODULE PROCEDURE obj_WriteData_vtk2
 END INTERFACE NodeFieldsWriteData
+
+!----------------------------------------------------------------------------
+!                                                   GetStorageFMT@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Returns the storage format of the AbstractNodeField
+!
+!# Introduction
+!
+! This method returns the storage format of the AbstractNodeField.
+! There are two types of storage formats: DOF_FMT, and NODES_FMT.
+! This method is a deferred type method in AbstractField.
+
+INTERFACE
+  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetStorageFMT
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                     GetPointer@GetMethods
