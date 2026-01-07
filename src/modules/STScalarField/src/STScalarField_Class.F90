@@ -37,7 +37,6 @@ USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "STScalarField_Class"
-INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 
 PUBLIC :: STScalarField_
