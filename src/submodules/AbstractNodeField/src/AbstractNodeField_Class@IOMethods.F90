@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
 USE DOF_Method, ONLY: DOF_Display => Display
 USE AbstractField_Class, ONLY: AbstractFieldDisplay
 
