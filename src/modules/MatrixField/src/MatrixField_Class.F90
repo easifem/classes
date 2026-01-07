@@ -194,6 +194,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => &
     obj_GetPhysicalNames
   !! Get the names of physical variables
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
+  !! Get the storage format of the matrix field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
+  !! Get the storage format of the matrix field
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
+  !! Get the storage format of the matrix field
 
   ! GET:
   !@GetMethods
@@ -772,6 +778,70 @@ INTERFACE
     CLASS(MatrixField_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(INOUT) :: ans(:)
   END SUBROUTINE obj_GetPhysicalNames
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetSpaceCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Returns total number of space components
+!
+!# Introduction
+!
+! This method returns the number of space components in each
+! physical variables. It is a deferred type method in AbstractField.
+
+INTERFACE
+  MODULE FUNCTION obj_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+      !! Total number of physical variables
+      !! This can be obtained From GetTotalPhysicalVars method
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetSpaceCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetTimeCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Return the total number of time components in each phy vars
+!
+!# Introduction
+!   This method returns the number of time components in each
+!   physical variables. It is a deferred type method in AbstractField.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetTimeCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetStorageFMT@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Returns the storage format of the MatrixField
+!
+!# Introduction
+!
+! This method returns the storage format of the MatrixField.
+! There are two types of storage formats: DOF_FMT, and NODES_FMT.
+! This method is a deferred type method in AbstractField.
+
+INTERFACE
+  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetStorageFMT
 END INTERFACE
 
 !----------------------------------------------------------------------------
