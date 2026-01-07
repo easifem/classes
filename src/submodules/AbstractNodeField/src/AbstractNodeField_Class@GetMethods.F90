@@ -15,23 +15,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) GetMethods
-USE Display_Method, ONLY: Display, ToString
-USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer
-USE RealVector_Method, ONLY: RealVector_Get => Get
-USE RealVector_Method, ONLY: GetValue_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AppendUtility, ONLY: Append
+USE ArangeUtility, ONLY: Arange
 USE BaseType, ONLY: IntVector_
 USE BaseType, ONLY: math => TypeMathOpt
-USE IntVector_Method, ONLY: IntVector_Get => Get
-USE IntVector_Method, ONLY: IntVector_DEALLOCATE => DEALLOCATE
-USE IntVector_Method, ONLY: ASSIGNMENT(=)
-USE DOF_Method, ONLY: GetNodeLoc, GetNodeLoc_
+USE DOF_Method, ONLY: GetNodeLoc_
+USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
-USE ArangeUtility, ONLY: Arange
-USE AppendUtility, ONLY: Append
-USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE IntVector_Method, ONLY: ASSIGNMENT(=)
+USE IntVector_Method, ONLY: IntVector_DEALLOCATE => DEALLOCATE
+USE IntVector_Method, ONLY: IntVector_Get => Get
+USE RealVector_Method, ONLY: GetValue_
+USE RealVector_Method, ONLY: RealVector_Get => Get
+USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
+
+INTEGER(I4B), PARAMETER :: MAX_PHYSICAL_VARS = 64
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -420,7 +423,11 @@ MODULE PROCEDURE obj_GetTotalNodeLoc2
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc2()"
 #endif
 
-INTEGER(I4B), ALLOCATABLE :: timeCompo(:)
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: timeCompo(MAX_PHYSICAL_VARS)
 INTEGER(I4B) :: tPhysicalVars, ivar0
 INTEGER(I4B) :: tsize, tspace, ttime, tnode
 LOGICAL(LGT) :: isfedof, isfedofs, isok
@@ -434,8 +441,16 @@ ivar0 = Input(default=1_I4B, option=ivar)
 tspace = 1
 
 tPhysicalVars = obj%GetTotalPhysicalVars()
-ALLOCATE (timeCompo(tPhysicalVars))
-timeCompo = obj%GetTimeCompo(tPhysicalVars)
+
+#ifdef DEBUG_VER
+isok = tPhysicalVars .LE. MAX_PHYSICAL_VARS
+CALL AssertError1(isok, myName, &
+                  "Total physical variables = "//ToString(tPhysicalVars)// &
+                  " is greater than MAX_PHYSICAL_VARS = "// &
+                  ToString(MAX_PHYSICAL_VARS))
+#endif
+
+timeCompo(1:tPhysicalVars) = obj%GetTimeCompo(tPhysicalVars)
 ttime = timeCompo(ivar0)
 
 isfedof = ASSOCIATED(obj%fedof)
@@ -546,7 +561,7 @@ MODULE PROCEDURE obj_GetNodeLoc_1
 CHARACTER(*), PARAMETER :: myName = "obj_GetNodeLoc_1()"
 #endif
 
-INTEGER(I4B) :: spaceCompo0(256), timeCompo0(256)
+INTEGER(I4B) :: spaceCompo0(MAX_PHYSICAL_VARS), timeCompo0(MAX_PHYSICAL_VARS)
 INTEGER(I4B) :: ivar0, ttime, tspace, ii, jj
 LOGICAL(LGT) :: isok
 
@@ -556,40 +571,57 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ! Check errors here
-ivar0 = Input(default=1_I4B, option=ivar)
+ivar0 = Input(default=math%one_i, option=ivar)
 
 #ifdef DEBUG_VER
 isok = PRESENT(islocal)
 IF (isok) THEN
-  CALL AssertError1(islocal, myName, &
-                    "islocal should be .true.")
+  CALL AssertError1(islocal, myName, "islocal should be .true.")
 END IF
 #endif
 
+tspace = 1
+spaceCompo0(1:tspace) = 1
 isok = PRESENT(spaceCompo)
+
 IF (isok) THEN
   tspace = SIZE(spaceCompo)
+
+#ifdef DEBUG_VER
+  isok = tspace .LE. MAX_PHYSICAL_VARS
+  CALL AssertError1(isok, myName, &
+                    "Size of spaceCompo = "//ToString(tspace)// &
+                    " is greater than MAX_PHYSICAL_VARS = "// &
+                    ToString(MAX_PHYSICAL_VARS))
+#endif
+
   spaceCompo0(1:tspace) = spaceCompo(1:tspace)
-ELSE
-  tspace = 1
-  spaceCompo0(1:tspace) = 1
 END IF
 
+ttime = 1
+timeCompo0(1:ttime) = 1
 isok = PRESENT(timeCompo)
+
 IF (isok) THEN
   ttime = SIZE(timeCompo)
+
+#ifdef DEBUG_VER
+  isok = ttime .LE. MAX_PHYSICAL_VARS
+  CALL AssertError1(isok, myName, &
+                    "Size of timeCompo = "//ToString(ttime)// &
+                    " is greater than MAX_PHYSICAL_VARS = "// &
+                    ToString(MAX_PHYSICAL_VARS))
+#endif
+
   timeCompo0(1:ttime) = timeCompo(1:ttime)
-ELSE
-  ttime = 1
-  timeCompo0(1:ttime) = 1
 END IF
 
 tsize = 0
 DO ii = 1, ttime
-  CALL GetNodeLoc_(obj=obj%dof, nodenum=globalNode, &
-                   ivar=ivar0, spaceCompo=spaceCompo0(1:tspace), &
-                   timeCompo=timeCompo0(ii), &
-                   ans=ans(tsize + 1:), tsize=jj)
+  CALL GetNodeLoc_( &
+    obj=obj%dof, nodenum=globalNode, ivar=ivar0, &
+    spaceCompo=spaceCompo0(1:tspace), timeCompo=timeCompo0(ii), &
+    ans=ans(tsize + 1:), tsize=jj)
   tsize = tsize + jj
 END DO
 
@@ -637,8 +669,9 @@ INTEGER(I4B) :: tfedofs
 #endif
 
 INTEGER(I4B), ALLOCATABLE :: globalNode(:)
-INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0, tnode, timeCompo(256), &
-                iNodeOnNode, iNodeOnEdge, iNodeOnFace
+INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0, tnode, &
+                timeCompo(MAX_PHYSICAL_VARS), iNodeOnNode, iNodeOnEdge, &
+                iNodeOnFace
 LOGICAL(LGT) :: isok, isfedof, isfedofs
 CLASS(FEDOF_), POINTER :: fedof
 
@@ -647,9 +680,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ivar0 = Input(default=1_I4B, option=ivar)
+ivar0 = Input(default=math%one_i, option=ivar)
 
 tPhysicalVars = obj%GetTotalPhysicalVars()
+
+#ifdef DEBUG_VER
+isok = tPhysicalVars .LE. MAX_PHYSICAL_VARS
+CALL AssertError1(isok, myName, &
+                  "Total physical variables = "//ToString(tPhysicalVars)// &
+                  " is greater than MAX_PHYSICAL_VARS = "// &
+                  ToString(MAX_PHYSICAL_VARS))
+#endif
+
 timeCompo(1:tPhysicalVars) = obj%GetTimeCompo(tPhysicalVars)
 spaceCompo(1) = dbc%GetDOFNo()
 
