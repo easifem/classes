@@ -40,7 +40,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
-INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 
 PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
@@ -56,7 +55,7 @@ PUBLIC :: ScalarFieldApplyBodySource
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: Native vector type
+! summary: Scalar field data type, storage format is same as AbstractNodeField_
 !
 !{!pages/docs-api/ScalarField/ScalarField_.md!}
 
@@ -116,8 +115,6 @@ CONTAINS
   !! Get Finite Element variable
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Get the size of the scalar field
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
-  !! Get the storage format of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
 
@@ -747,21 +744,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetStorageFMT@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Returns storage format
-
-INTERFACE
-  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
-    CLASS(ScalarField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetStorageFMT
 END INTERFACE
 
 !----------------------------------------------------------------------------
