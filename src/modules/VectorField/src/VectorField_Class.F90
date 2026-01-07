@@ -42,7 +42,6 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
-INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: VectorField_
@@ -136,8 +135,6 @@ CONTAINS
   !! Get the entries of Vector field
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get multiple values in FEVariable
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
-  !! Get the storage format of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
 
@@ -1235,21 +1232,6 @@ END INTERFACE
 INTERFACE VectorFieldGetFEVariable
   MODULE PROCEDURE obj_GetFeVariable
 END INTERFACE VectorFieldGetFEVariable
-
-!----------------------------------------------------------------------------
-!                                                   GetStorageFMT@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Returns storage format
-
-INTERFACE
-  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
-    CLASS(VectorField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetStorageFMT
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                    GetMeshField@GetMethods
