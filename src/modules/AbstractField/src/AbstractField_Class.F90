@@ -201,7 +201,12 @@ CONTAINS
   PROCEDURE(obj_GetPhysicalNames), DEFERRED, PUBLIC, PASS(obj) :: &
     GetPhysicalNames
   !! Returns the names of physical variables
-  !! This routine should be implemented by child classes
+  PROCEDURE(obj_GetSpaceCompo), DEFERRED, PUBLIC, PASS(obj) :: GetSpaceCompo
+  !! Return space components of each physical variables
+  PROCEDURE(obj_GetTimeCompo), DEFERRED, PUBLIC, PASS(obj) :: GetTimeCompo
+  !! Returns time component of each physical variable
+  PROCEDURE(obj_GetStorageFMT), DEFERRED, PUBLIC, PASS(obj) :: GetStorageFMT
+  !! Return storage format of the abstractfield
 
   ! GET:
   ! @GetMethods
@@ -212,15 +217,6 @@ CONTAINS
   !! Get the parameters of AbstractField
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetName => obj_GetName
   !! Returns the name
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
-  !! Return space component
-  !!  This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
-  !! Return time component
-  !!  This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
-  !! Return storage format
-  !!  This routine should be implemented by child classes
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
@@ -1416,6 +1412,76 @@ ABSTRACT INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   GetSpaceCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Returns total number of space components
+!
+!# Introduction
+!
+! This method returns the number of space components in each
+! physical variables. It is a deferred type method. It should
+! be implemented in the child classes.
+
+ABSTRACT INTERFACE
+  FUNCTION obj_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
+    IMPORT :: AbstractField_, I4B
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+      !! Total number of physical variables
+      !! This can be obtained From GetTotalPhysicalVars method
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetSpaceCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetTimeCompo@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Return the total number of time components in each phy vars
+!
+!# Introduction
+!   This method returns the number of time components in each
+!   physical variables. It is a deferred type method. It should
+!   be implemented in the child classes.
+
+ABSTRACT INTERFACE
+  FUNCTION obj_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
+    IMPORT :: AbstractField_, I4B
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetTimeCompo
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetStorageFMT@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Returns the storage format of the AbstractField
+!
+!# Introduction
+!
+! This method returns the storage format of the AbstractField.
+! There are two types of storage formats: DOF_FMT, and NODES_FMT.
+! This method is a deferred type method. It should be implemented
+! in the child classes.
+
+ABSTRACT INTERFACE
+  FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
+    IMPORT :: AbstractField_, I4B
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetStorageFMT
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                GetPhysicalNames@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1444,55 +1510,6 @@ INTERFACE
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetName
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetSpaceCompo@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Returns space components
-
-INTERFACE
-  MODULE FUNCTION obj_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-      !! Total number of physical variables
-      !! This can be obtained From GetTotalPhysicalVars method
-    INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION obj_GetSpaceCompo
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    GetTimeCompo@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Returns Time components
-
-INTERFACE
-  MODULE FUNCTION obj_GetTimeCompo(obj, tPhysicalVars) RESULT(ans)
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-    INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION obj_GetTimeCompo
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetStorageFMT@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-22
-! summary:  Returns storage format
-
-INTERFACE
-  MODULE FUNCTION obj_GetStorageFMT(obj) RESULT(ans)
-    CLASS(AbstractField_), INTENT(IN) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetStorageFMT
 END INTERFACE
 
 !----------------------------------------------------------------------------
