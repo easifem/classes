@@ -19,8 +19,8 @@
 ! summary: This module contains constructor method for [[BlockMatrixField_]]
 
 SUBMODULE(BlockMatrixFieldLis_Class) ConstructorMethods
-USE MatrixField_Class, ONLY: MatrixFieldDeallocate, &
-                             MatrixFieldInitiate
+USE MatrixField_Class, ONLY: MatrixFieldDeallocate
+USE MatrixField_Class, ONLY: MatrixFieldInitiate
 ! USE BlockMatrixField_Class, ONLY: BlockMatrixFieldInitiate
 USE CSRMatrix_Method, ONLY: GetNNZ
 
