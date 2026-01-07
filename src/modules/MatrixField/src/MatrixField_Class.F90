@@ -39,15 +39,20 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE BaseType, ONLY: CSRMatrix_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 
 IMPLICIT NONE
 
 PRIVATE
 
+#ifdef DEBUG_VER
 CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
+#endif
+
+INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
+
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
-INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 
 PUBLIC :: MatrixField_
 PUBLIC :: MatrixFieldPointer_
@@ -164,7 +169,7 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copying other object
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
@@ -552,7 +557,7 @@ END INTERFACE
 !@endtodo
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
+  MODULE SUBROUTINE obj_Initiate1( &
     obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
@@ -560,11 +565,11 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 INTERFACE MatrixFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE MatrixFieldInitiate
 
 !----------------------------------------------------------------------------

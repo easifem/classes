@@ -19,29 +19,35 @@
 ! summary: Vector field data type is defined
 
 MODULE VectorField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-USE UserFunction_Class, ONLY: UserFunction_
-USE VTKFile_Class, ONLY: VTKFile_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE TimeOpt_Class, ONLY: TimeOpt_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE BaseType, ONLY: FEVariable_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
+USE DirichletBC_Class, ONLY: DirichletBC_
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOFPointer_
+USE FEDOF_Class, ONLY: FEDOF_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
 USE MeshField_Class, ONLY: MeshField_
 USE String_Class, ONLY: String
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE UserFunction_Class, ONLY: UserFunction_
+USE VTKFile_Class, ONLY: VTKFile_
 USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 
 PRIVATE
 
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
+#endif
+
 INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: VectorField_
@@ -70,8 +76,10 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate by copying
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  !! Initiate by arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
 
@@ -189,7 +197,6 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
   !! Initiate from toml
-
 END TYPE VectorField_
 
 !----------------------------------------------------------------------------
@@ -209,7 +216,7 @@ END TYPE VectorFieldPointer_
 ! summary: Initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
+  MODULE SUBROUTINE obj_Initiate1( &
     obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
@@ -217,11 +224,11 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 INTERFACE VectorFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -237,7 +244,7 @@ END INTERFACE VectorFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4( &
+  MODULE SUBROUTINE obj_Initiate2( &
     obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
     spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
     isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
@@ -316,11 +323,11 @@ INTERFACE
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
-  END SUBROUTINE obj_Initiate4
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 INTERFACE VectorFieldInitiate
-  MODULE PROCEDURE obj_Initiate4
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE VectorFieldInitiate
 
 !----------------------------------------------------------------------------

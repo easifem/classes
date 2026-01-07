@@ -19,25 +19,33 @@
 ! summary: STScalar field data type is defined
 
 MODULE STScalarField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NodesToDOF, NODES_FMT
 USE AbstractField_Class, ONLY: AbstractField_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ScalarField_Class, ONLY: ScalarField_
-USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-USE UserFunction_Class, ONLY: UserFunction_
-USE BaseType, ONLY: FEVariable_
-USE tomlf, ONLY: toml_table
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE BaseType, ONLY: FEVariable_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
+USE DirichletBC_Class, ONLY: DirichletBC_
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOFPointer_
+USE FEDOF_Class, ONLY: FEDOF_
+USE GlobalData, ONLY: DFP, I4B, LGT, NodesToDOF, NODES_FMT
+USE HDF5File_Class, ONLY: HDF5File_
+USE ScalarField_Class, ONLY: ScalarField_
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeOpt_Class, ONLY: TimeOpt_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+USE tomlf, ONLY: toml_table
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 
 IMPLICIT NONE
 PRIVATE
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "STScalarField_Class"
-INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
+#endif
+
+INTEGER(I4B), PARAMETER :: MYCONVERSION = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: STScalarField_
 PUBLIC :: STScalarFieldPointer_
@@ -68,9 +76,9 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copy
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate an instance of ScalarField_ by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside the STScalarField_ object
@@ -88,7 +96,6 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
@@ -101,9 +108,8 @@ CONTAINS
   !! Set selected values to given STScalar
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! obj@timeCompo=obj@timeCompo+scale*value
-  !! (value is an instance of abstract noe field)
-  !! if value is space-time field, then
-  !! value@timeCompo is used
+  !! (value is an instance of AbstractNodeField)
+  !! if value is space-time field, then value@timeCompo is used
   !! This method calls Set13
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set values to a STScalar by using triplet
@@ -210,7 +216,7 @@ END TYPE STScalarFieldPointer_
 ! summary: Initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
+  MODULE SUBROUTINE obj_Initiate1( &
     obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
@@ -218,11 +224,11 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 INTERFACE STScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -238,7 +244,7 @@ END INTERFACE STScalarFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4( &
+  MODULE SUBROUTINE obj_Initiate2( &
     obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
     spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
     isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
@@ -309,11 +315,11 @@ INTERFACE
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
-  END SUBROUTINE obj_Initiate4
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 INTERFACE STScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate4
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE STScalarFieldInitiate
 
 !----------------------------------------------------------------------------

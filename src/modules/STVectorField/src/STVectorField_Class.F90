@@ -69,10 +69,10 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copy
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by copy
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored
@@ -122,7 +122,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
   !! Set values using an instance of AbstractNodeField_
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14 
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
 
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
@@ -217,7 +217,7 @@ END TYPE STVectorFieldPointer_
 ! summary: Initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
+  MODULE SUBROUTINE obj_Initiate1( &
     obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
@@ -225,11 +225,11 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 INTERFACE STVectorFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE STVectorFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -237,7 +237,7 @@ END INTERFACE STVectorFieldInitiate
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4( &
+  MODULE SUBROUTINE obj_Initiate2( &
     obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
     spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
     isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
@@ -308,11 +308,11 @@ INTERFACE
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
-  END SUBROUTINE obj_Initiate4
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 INTERFACE STVectorFieldInitiate
-  MODULE PROCEDURE obj_Initiate4
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE STVectorFieldInitiate
 
 !----------------------------------------------------------------------------

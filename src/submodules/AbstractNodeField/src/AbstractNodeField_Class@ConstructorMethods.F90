@@ -120,9 +120,9 @@ END PROCEDURE AbstractNodeFieldCheckError
 !                                                                 Initiate2
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -153,15 +153,15 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate4
+MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 LOGICAL(LGT) :: isok
 #endif
 
@@ -293,15 +293,15 @@ IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-END PROCEDURE obj_Initiate4
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate5
+MODULE PROCEDURE obj_Initiate3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 #endif
 
 INTEGER(I4B) :: ii, jj
@@ -343,10 +343,10 @@ IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-END PROCEDURE obj_Initiate5
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
-!                                                            Deallocate
+!                                                                  Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate

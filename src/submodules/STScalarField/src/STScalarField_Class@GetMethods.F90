@@ -17,35 +17,26 @@
 
 SUBMODULE(STScalarField_Class) GetMethods
 USE Display_Method, ONLY: ToString
-
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
 USE RealVector_Method, ONLY: GetValue_
-
 USE ArangeUtility, ONLY: Arange
-
-USE BaseType, ONLY: TypeFEVariableScalar, TypeFEVariableSpaceTime
-
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpaceTime
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-
 USE STScalarField_Class, ONLY: STScalarField_
 USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-
 USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-
 USE FEVariable_Method, ONLY: NodalVariable
-
-USE DOF_Method, ONLY: GetIDOF, &
-                      OPERATOR(.tnodes.), &
-                      GetNodeLoc, &
-                      GetNodeLoc_
+USE DOF_Method, ONLY: GetIDOF
+USE DOF_Method, ONLY: OPERATOR(.tnodes.)
+USE DOF_Method, ONLY: GetNodeLoc
+USE DOF_Method, ONLY: GetNodeLoc_
 
 IMPLICIT NONE
 
 INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
-
 INTEGER(I4B), PARAMETER :: TEMP_INTVEC_LEN = 128
 INTEGER(I4B) :: TEMP_INTVEC(TEMP_INTVEC_LEN)
 !$OMP THREADPRIVATE(TEMP_INTVEC)
@@ -100,9 +91,7 @@ IF (bool1) THEN
                    ans=indx, tsize=tsize)
 
   CALL obj%GetMultiple(indx=indx, VALUE=VALUE, tsize=tsize)
-
   RETURN
-
 END IF
 
 !> Get all values of timeCompo
@@ -116,7 +105,6 @@ CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=VALUE, &
                      tsize=tsize)
 
 ! END IF
-
 END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
@@ -136,7 +124,7 @@ INTEGER(I4B) :: indx(obj%timeCompo)
 CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   nrow = obj%dof.tNodes.1
   ncol = obj%timeCompo
 
@@ -159,7 +147,7 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   RETURN
 END IF
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   nrow = obj%dof.tNodes.1
   ncol = obj%timeCompo
 
@@ -186,7 +174,6 @@ DO jj = 1, ncol
   CALL obj%GetMultiple(indx=indx, VALUE=VALUE(:, jj), tsize=nrow)
 END DO
 !$OMP END PARALLEL DO
-
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
@@ -207,7 +194,7 @@ INTEGER(I4B) :: jj, mynrow
 CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   nrow = SIZE(globalNode)
   ncol = obj%timeCompo
 
@@ -231,7 +218,7 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   RETURN
 END IF
 
-IF (storageFMT .EQ. DOF_FMT) THEN
+IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   nrow = SIZE(globalNode)
   ncol = obj%timeCompo
 

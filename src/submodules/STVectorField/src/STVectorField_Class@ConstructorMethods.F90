@@ -19,9 +19,9 @@ SUBMODULE(STVectorField_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
 USE FPL_Method, ONLY: Set, GetValue
 USE String_Class, ONLY: String
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
-                                   AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldDeallocate
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
@@ -34,8 +34,16 @@ CONTAINS
 !                                                             Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
 INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL AbstractNodeFieldInitiate( &
   obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
@@ -63,15 +71,20 @@ SELECT TYPE (obj2); CLASS IS (STVectorField_)
     obj%time_idofs(ii) = obj2%time_idofs(ii)
   END DO
 END SELECT
-END PROCEDURE obj_Initiate2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate4
+MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 #endif
 
 CHARACTER(1) :: dof_names(1)
@@ -139,7 +152,7 @@ CALL AbstractNodeFieldInitiate( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate4
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

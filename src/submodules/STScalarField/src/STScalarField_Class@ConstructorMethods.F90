@@ -16,17 +16,14 @@
 !
 
 SUBMODULE(STScalarField_Class) ConstructorMethods
-USE FPL_Method, ONLY: GetValue, Set
 USE String_Class, ONLY: String
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam, &
-                                   AbstractNodeFieldInitiate, &
-                                   AbstractNodeFieldDeallocate
-
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
 USE Display_Method, ONLY: ToString
-
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif
@@ -39,9 +36,44 @@ CONTAINS
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate4
+MODULE PROCEDURE obj_Initiate1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+INTEGER(I4B) :: tsize, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
+
+SELECT TYPE (obj2); CLASS IS (STScalarField_)
+  obj%timeCompo = obj2%timeCompo
+
+  tsize = SafeSize(obj2%idofs)
+  CALL Reallocate(obj%idofs, tsize)
+  DO ii = 1, tsize
+    obj%idofs(ii) = obj2%idofs(ii)
+  END DO
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 #endif
 
 CHARACTER(1) :: dof_names(1)
@@ -102,41 +134,6 @@ CALL AbstractNodeFieldInitiate( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate4
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
-#endif
-INTEGER(I4B) :: tsize, ii
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL AbstractNodeFieldInitiate( &
-  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
-  usePointer=usePointer)
-
-SELECT TYPE (obj2); CLASS IS (STScalarField_)
-  obj%timeCompo = obj2%timeCompo
-
-  tsize = SafeSize(obj2%idofs)
-  CALL Reallocate(obj%idofs, tsize)
-  DO ii = 1, tsize
-    obj%idofs(ii) = obj2%idofs(ii)
-  END DO
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -144,9 +141,23 @@ END PROCEDURE obj_Initiate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%timeCompo = 0_I4B
 IF (ALLOCATED(obj%idofs)) DEALLOCATE (obj%idofs)
 CALL AbstractNodeFieldDeallocate(obj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -162,16 +173,10 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate_Ptr_Vector
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+#endif
+#include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE obj_Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------

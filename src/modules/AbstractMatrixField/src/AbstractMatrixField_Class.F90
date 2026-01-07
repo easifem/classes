@@ -54,31 +54,23 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data
-
   PROCEDURE(obj_Size), DEFERRED, PUBLIC, PASS(obj) :: Size
   !! Get the Size
-
   PROCEDURE(obj_Shape), DEFERRED, PUBLIC, PASS(obj) :: Shape
   !! Get the Shape
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of Abstract matrix field
-
   ! GET:
   ! @MatVecMethods
-
   PROCEDURE(obj_Matvec1), DEFERRED, PASS(obj) :: Matvec1
   !! Matrix vector multiplication, here vector is fortran array
-
   PROCEDURE(obj_Matvec2), DEFERRED, PASS(obj) :: Matvec2
   !! Matrix vector multiplication, here vector is AbstractNodeField_
-
   GENERIC, PUBLIC :: Matvec => Matvec1, Matvec2
 
   ! GET:

@@ -104,10 +104,10 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate an instance of AbstrtactNodeField
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate5 => obj_Initiate5
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside
 
@@ -288,19 +288,19 @@ END INTERFACE
 ! Currently, copyStructure and usePointer is not used
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
-                                  usePointer)
+  MODULE SUBROUTINE obj_Initiate1( &
+    obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
+  MODULE PROCEDURE obj_Initiate1
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -316,7 +316,7 @@ END INTERFACE AbstractNodeFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4( &
+  MODULE SUBROUTINE obj_Initiate2( &
     obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
     spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
     isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
@@ -381,11 +381,11 @@ INTERFACE
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
-  END SUBROUTINE obj_Initiate4
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate4
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -401,7 +401,7 @@ END INTERFACE AbstractNodeFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate5( &
+  MODULE SUBROUTINE obj_Initiate3( &
     obj, name, engine, fieldType, comm, local_n, global_n, spaceCompo, &
     isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
     isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
@@ -453,11 +453,11 @@ INTERFACE
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
     !! Vector of TimeFEDOFPointers
     !! All timefedofs should be initiated
-  END SUBROUTINE obj_Initiate5
+  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate5
+  MODULE PROCEDURE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -479,7 +479,7 @@ INTERFACE AbstractNodeFieldDeallocate
 END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                                       Display@IOMethods
+!                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -499,7 +499,7 @@ INTERFACE AbstractNodeFieldDisplay
 END INTERFACE AbstractNodeFieldDisplay
 
 !----------------------------------------------------------------------------
-!                                                         IMPORT@IOMethods
+!                                                            IMPORT@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

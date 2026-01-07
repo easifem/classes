@@ -65,13 +65,12 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate an instance of ScalarField_ by passing arguments
   FINAL :: obj_Final
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry, we call SetSingle method
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
@@ -123,15 +122,12 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
     obj_ApplyDirichletBC1
   !! Apply Dirichlet Boundary Condition
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
     obj_ApplyDirichletBC2
   !! Apply Dirichlet Boundary Condition
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC3 => &
     obj_ApplyDirichletBC3
   !! Apply Dirichlet Boundary Condition
-
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
 
@@ -148,10 +144,12 @@ CONTAINS
 
   ! SET:
   ! @BodySourceMethods
-  PROCEDURE, non_overridable, PASS(obj) :: ApplyBodySource1 => obj_ApplyBodySource1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource1 => &
+    obj_ApplyBodySource1
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
-  PROCEDURE, non_overridable, PASS(obj) :: ApplyBodySource2 => obj_ApplyBodySource2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource2 => &
+    obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
@@ -161,14 +159,12 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from HDF5 file
-
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
 
   ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
   !! Initiate from toml
-
 END TYPE ScalarField_
 
 !----------------------------------------------------------------------------
@@ -192,7 +188,7 @@ END TYPE ScalarFieldPointer_
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4( &
+  MODULE SUBROUTINE obj_Initiate2( &
     obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
     spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
     isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
@@ -271,11 +267,11 @@ INTERFACE
     !! FEDOF object
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
-  END SUBROUTINE obj_Initiate4
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 INTERFACE ScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate4
+  MODULE PROCEDURE obj_Initiate2
 END INTERFACE ScalarFieldInitiate
 
 !----------------------------------------------------------------------------

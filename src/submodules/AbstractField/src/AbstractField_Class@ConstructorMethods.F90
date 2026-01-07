@@ -28,8 +28,8 @@ CONTAINS
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+MODULE PROCEDURE obj_Initiate1
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: isok
 
@@ -123,15 +123,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
 !                                                                Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate4
+MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 #endif
 
 #ifdef DEBUG_VER
@@ -165,15 +165,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 
-END PROCEDURE obj_Initiate4
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate5
+MODULE PROCEDURE obj_Initiate3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 #endif
 
 INTEGER(I4B) :: ii, tsize
@@ -249,7 +249,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 
-END PROCEDURE obj_Initiate5
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

@@ -17,7 +17,6 @@
 
 SUBMODULE(ScalarField_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
-USE FPL_Method, ONLY: FPL_GetValue => GetValue
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 USE BaseType, ONLY: math => TypeMathOpt
 
@@ -25,12 +24,12 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                   Initiate
+!                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate4
+MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 #endif
 
 CHARACTER(1) :: dof_names(1)
@@ -65,7 +64,7 @@ CALL AbstractNodeFieldInitiate( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate4
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                                     Final
