@@ -27,30 +27,34 @@
 ! - In addition, global matrices can also be described as the field.
 ! - In this way, Fields are high level objects in finite element modeling.
 !
-! [[AbstractField_]] defines an abstract class. This class will be extended
-! to [[AbstractNodeField_]], [[AbstractElementField_]],
-! [[AbstractMatrixField_]].
+! `AbstractField_` defines an abstract class. This class will be extended
+! to `AbstractNodeField_`, `AbstractElementField_`, `AbstractMatrixField_`.
 
 MODULE AbstractField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, INT64
-USE BaseType, ONLY: RealVector_
+USE AbstractDomain_Class, ONLY: AbstractDomainPointer_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE BaseType, ONLY: DOF_
-USE String_Class, ONLY: String
-USE HDF5File_Class, ONLY: HDF5File_
-USE VTKFile_Class, ONLY: VTKFile_
+USE BaseType, ONLY: RealVector_
+USE BaseType, ONLY: math => TypeMathOpt
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
+USE DirichletBC_Class, ONLY: DirichletBC_
+USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE GlobalData, ONLY: DFP, I4B, LGT, INT64
+USE HDF5File_Class, ONLY: HDF5File_
+USE MeshField_Class, ONLY: MeshField_
+USE NeumannBC_Class, ONLY: NeumannBCPointer_
+USE NeumannBC_Class, ONLY: NeumannBC_
+USE String_Class, ONLY: String
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE TxtFile_Class, ONLY: TxtFile_
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
-USE AbstractDomain_Class, ONLY: AbstractDomain_, AbstractDomainPointer_
 USE UserFunction_Class, ONLY: UserFunction_
+USE VTKFile_Class, ONLY: VTKFile_
 USE tomlf, ONLY: toml_table
-USE DirichletBC_Class, ONLY: DirichletBCPointer_, DirichletBC_
-USE NeumannBC_Class, ONLY: NeumannBCPointer_, NeumannBC_
-USE MeshField_Class, ONLY: MeshField_
 
 IMPLICIT NONE
 PRIVATE
@@ -77,9 +81,9 @@ PUBLIC :: AbstractFieldReadTimeFEDOFFromToml
 ! summary: Abstract field is designed to handle fields in FEM
 
 TYPE, ABSTRACT :: AbstractField_
-  LOGICAL(LGT) :: isInit = .FALSE.
+  LOGICAL(LGT) :: isInit = math%no
   !! It is true if the object is initiated
-  LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = .FALSE.
+  LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = math%no
   !! It is true when we set the maxTotalNodeNumForBC
   !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
   INTEGER(I4B) :: fieldType = TypeField%normal
@@ -89,22 +93,22 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE(String) :: engine
   !! Engine of the field, for example
   !! NATIVE_SERIAL, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_OMP, LIS_MPI
-  INTEGER(I4B) :: maxTotalNodeNumForBC = 0_I4B
+  INTEGER(I4B) :: maxTotalNodeNumForBC = math%zero_i
   !! maximum total node num for applying boundary conditions
   !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
-  INTEGER(I4B) :: comm = 0_I4B
+  INTEGER(I4B) :: comm = math%zero_i
   !! communication group (MPI)
-  INTEGER(I4B) :: myRank = 0_I4B
+  INTEGER(I4B) :: myRank = math%zero_i
   !! rank of current processor (MPI)
-  INTEGER(I4B) :: numProcs = 1_I4B
+  INTEGER(I4B) :: numProcs = math%one_i
   !! Total number of processors (MPI)
-  INTEGER(I4B) :: global_n = 0_I4B
+  INTEGER(I4B) :: global_n = math%zero_i
   !! total number of nodes on all processors (MPI)
-  INTEGER(I4B) :: local_n = 0_I4B
+  INTEGER(I4B) :: local_n = math%zero_i
   !! local number of nodes on a given processor (MPI)
-  INTEGER(I4B) :: is = 0_I4B
+  INTEGER(I4B) :: is = math%zero_i
   !! starting index (MPI)
-  INTEGER(I4B) :: ie = 0_I4B
+  INTEGER(I4B) :: ie = math%zero_i
   !! end index + 1 (MPI)
   INTEGER(INT64) :: lis_ptr = 0_INT64
   !! lis_ptr is pointer returned by the LIS library
@@ -121,13 +125,13 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE(UserFunction_), POINTER :: exact => NULL()
   !! reference function for displacement
   !! Reference displacement denotes the exact solution
-  LOGICAL(LGT) :: saveErrorNorm = .FALSE.
+  LOGICAL(LGT) :: saveErrorNorm = math%no
   !! save error norm
   CHARACTER(4) :: errorType = "NONE"
   !! errorType
-  LOGICAL(LGT) :: plotWithResult = .FALSE.
+  LOGICAL(LGT) :: plotWithResult = math%no
   !! do you want to plot exact solution with result
-  LOGICAL(LGT) :: plotErrorNorm = .FALSE.
+  LOGICAL(LGT) :: plotErrorNorm = math%no
 
   TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
   !! Dirichlet boundary conditions
