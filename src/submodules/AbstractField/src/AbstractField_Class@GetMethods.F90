@@ -89,17 +89,6 @@ END IF
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
-!                                                     obj_GetPhysicalNames
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPhysicalNames
-CHARACTER(*), PARAMETER :: myName = "obj_GetNames()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  " child classes.")
-END PROCEDURE obj_GetPhysicalNames
-
-!----------------------------------------------------------------------------
 !                                                                     GetName
 !----------------------------------------------------------------------------
 

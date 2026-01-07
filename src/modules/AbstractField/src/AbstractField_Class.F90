@@ -198,6 +198,10 @@ CONTAINS
   !! Returns the total number of physical variables
   !! For block matrices the physical variables are more than one,
   !! for example, presesure and velocity.
+  PROCEDURE(obj_GetPhysicalNames), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetPhysicalNames
+  !! Returns the names of physical variables
+  !! This routine should be implemented by child classes
 
   ! GET:
   ! @GetMethods
@@ -208,9 +212,6 @@ CONTAINS
   !! Get the parameters of AbstractField
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetName => obj_GetName
   !! Returns the name
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
-  !! Returns the names of physical variables
-  !!  This routine should be implemented by child classes
   PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
   !! Return space component
   !!  This routine should be implemented by child classes
@@ -1422,8 +1423,9 @@ END INTERFACE
 ! date:  2023-09-22
 ! summary:  Returns the names of physical variables
 
-INTERFACE
-  MODULE SUBROUTINE obj_GetPhysicalNames(obj, ans)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_GetPhysicalNames(obj, ans)
+    IMPORT :: AbstractField_
     CLASS(AbstractField_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(INOUT) :: ans(:)
   END SUBROUTINE obj_GetPhysicalNames

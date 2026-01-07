@@ -53,6 +53,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalPhysicalVars
 
 !----------------------------------------------------------------------------
+!                                                        GetTotalPhysicalVars
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPhysicalNames
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalNames()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetPhysicalNames
+
+!----------------------------------------------------------------------------
 !                                                           IsSubmatInitiated
 !----------------------------------------------------------------------------
 

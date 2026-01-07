@@ -190,6 +190,10 @@ CONTAINS
   ! Deferred methods from AbstractMatrixField and AbstractField
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
     obj_GetTotalPhysicalVars
+  !! Get total number of physical variables in MatrixField
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => &
+    obj_GetPhysicalNames
+  !! Get the names of physical variables
 
   ! GET:
   !@GetMethods
@@ -747,9 +751,27 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalPhysicalVars(obj) RESULT(ans)
-    CLASS(AbstractField_), INTENT(IN) :: obj
+    CLASS(MatrixField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalPhysicalVars
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetPhysicalNames@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Returns the names of physical variables
+!
+!# Introduction
+!  This method is deferred method from AbstractField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetPhysicalNames(obj, ans)
+    CLASS(MatrixField_), INTENT(IN) :: obj
+    CHARACTER(*), INTENT(INOUT) :: ans(:)
+  END SUBROUTINE obj_GetPhysicalNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
