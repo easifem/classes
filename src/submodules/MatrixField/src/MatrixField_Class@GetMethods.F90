@@ -20,11 +20,37 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) GetMethods
-USE CSRMatrix_Method, ONLY: CSRMatrix_Size => Size, &
-                            CSRMatrix_Shape => Shape, &
-                            GetValue
+USE CSRMatrix_Method, ONLY: CSRMatrix_Size => Size
+USE CSRMatrix_Method, ONLY: CSRMatrix_Shape => Shape
+USE CSRMatrix_Method, ONLY: GetValue
 IMPLICIT NONE
+
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                        GetTotalPhysicalVars
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalPhysicalVars
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalPhysicalVars
 
 !----------------------------------------------------------------------------
 !                                                           IsSubmatInitiated
@@ -230,5 +256,7 @@ END PROCEDURE obj_Get7
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

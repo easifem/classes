@@ -187,8 +187,12 @@ CONTAINS
   !! Get the sparsity pattern in various file formats
 
   ! GET:
-  !@GetMethods
+  ! Deferred methods from AbstractMatrixField and AbstractField
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
+    obj_GetTotalPhysicalVars
 
+  ! GET:
+  !@GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IsSubmatInitiated => &
     obj_IsSubmatInitiated
   !! Returns the status of submatrix initiation
@@ -728,6 +732,24 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: filename
     CHARACTER(*), INTENT(IN) :: ext
   END SUBROUTINE obj_SPY
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetTotalPhysicalVars@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-07
+! summary: Get total number of physical variables.
+!
+!# Introduction
+! This method is deferred method from AbstractField_
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalPhysicalVars(obj) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalPhysicalVars
 END INTERFACE
 
 !----------------------------------------------------------------------------

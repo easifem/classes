@@ -191,18 +191,21 @@ CONTAINS
   GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
 
   ! GET:
+  ! @GetMethods These are deferred methods which should be implemented
+  ! by child classes
+  PROCEDURE(obj_GetTotalPhysicalVars), DEFERRED, PUBLIC, PASS(obj) :: &
+    GetTotalPhysicalVars
+  !! Returns the total number of physical variables
+  !! For block matrices the physical variables are more than one,
+  !! for example, presesure and velocity.
+
+  ! GET:
   ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! Returns isInit
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters of AbstractField
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
-    obj_GetTotalPhysicalVars
-  !! Returns the total number of physical variables
-  !! This routine should be implemented by child classes
-  !! For block matrices the physical variables are more than one,
-  !! for example, presesure and velocity.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetName => obj_GetName
   !! Returns the name
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
@@ -1403,8 +1406,9 @@ END INTERFACE
 ! date:  2023-10-03
 ! summary:  Returns the total number of physical variables
 
-INTERFACE
-  MODULE FUNCTION obj_GetTotalPhysicalVars(obj) RESULT(ans)
+ABSTRACT INTERFACE
+  FUNCTION obj_GetTotalPhysicalVars(obj) RESULT(ans)
+    IMPORT :: AbstractField_, I4B
     CLASS(AbstractField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalPhysicalVars

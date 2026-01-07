@@ -89,17 +89,6 @@ END IF
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
-!                                                       GetTotalPhysicalVars
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalPhysicalVars
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
-END PROCEDURE obj_GetTotalPhysicalVars
-
-!----------------------------------------------------------------------------
 !                                                     obj_GetPhysicalNames
 !----------------------------------------------------------------------------
 
