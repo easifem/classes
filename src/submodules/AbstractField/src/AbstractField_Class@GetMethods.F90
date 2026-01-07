@@ -111,39 +111,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetName
 
 !----------------------------------------------------------------------------
-!                                                           GetSpaceCompo
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetSpaceCompo
-CHARACTER(*), PARAMETER :: myName = "obj_GetSpaceCompo()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  " child classes.")
-END PROCEDURE obj_GetSpaceCompo
-
-!----------------------------------------------------------------------------
-!                                                           GetTimeCompo
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTimeCompo
-CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  " child classes.")
-END PROCEDURE obj_GetTimeCompo
-
-!----------------------------------------------------------------------------
-!                                                           GetStorageFMT
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetStorageFMT
-CHARACTER(*), PARAMETER :: myName = "obj_GetStorageFMT"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  " child classes.")
-END PROCEDURE obj_GetStorageFMT
-
-!----------------------------------------------------------------------------
 !                                                               GetTotalDOF
 !----------------------------------------------------------------------------
 
