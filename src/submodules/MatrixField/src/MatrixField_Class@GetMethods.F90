@@ -78,6 +78,64 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetPhysicalNames
 
 !----------------------------------------------------------------------------
+!                                                            GetSpaceCompo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSpaceCompo
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSpaceCompo()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSpaceCompo
+
+!----------------------------------------------------------------------------
+!                                                            GetTimeCompo
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeCompo
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTimeCompo
+
+!----------------------------------------------------------------------------
+!                                                               GetStorageFMT
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetStorageFMT
+ans = MYSTORAGEFORMAT
+END PROCEDURE obj_GetStorageFMT
+
+!----------------------------------------------------------------------------
 !                                                           IsSubmatInitiated
 !----------------------------------------------------------------------------
 
