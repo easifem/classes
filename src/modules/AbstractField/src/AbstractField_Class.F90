@@ -32,9 +32,9 @@
 ! [[AbstractMatrixField_]].
 
 MODULE AbstractField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stdin, INT64, Constant, &
-                      Space, Time, SpaceTime
-USE BaseType, ONLY: RealVector_, DOF_
+USE GlobalData, ONLY: DFP, I4B, LGT, INT64
+USE BaseType, ONLY: RealVector_
+USE BaseType, ONLY: DOF_
 USE String_Class, ONLY: String
 USE HDF5File_Class, ONLY: HDF5File_
 USE VTKFile_Class, ONLY: VTKFile_
@@ -55,7 +55,9 @@ USE MeshField_Class, ONLY: MeshField_
 IMPLICIT NONE
 PRIVATE
 
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
+#endif
 
 PUBLIC :: AbstractFieldInitiate
 PUBLIC :: AbstractFieldDisplay
