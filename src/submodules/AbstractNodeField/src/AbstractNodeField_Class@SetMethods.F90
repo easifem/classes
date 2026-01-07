@@ -16,7 +16,8 @@
 
 SUBMODULE(AbstractNodeField_Class) SetMethods
 USE InputUtility, ONLY: Input
-USE RealVector_Method, ONLY: Set, Add
+USE RealVector_Method, ONLY: RealVectorSet => Set
+USE RealVector_Method, ONLY: RealVectorAdd => Add
 USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
@@ -32,21 +33,36 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
 #endif
 
 INTEGER(I4B) :: ii, tsize1
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (PRESENT(dof_tPhysicalVars)) obj%dof_tPhysicalVars = dof_tPhysicalVars
-IF (PRESENT(dof_storageFMT)) obj%dof_storageFMT = dof_storageFMT
-IF (PRESENT(dof_spaceCompo)) obj%dof_spaceCompo = dof_spaceCompo
-IF (PRESENT(dof_timeCompo)) obj%dof_timeCompo = dof_timeCompo
-IF (PRESENT(dof_tNodes)) obj%dof_tNodes = dof_tNodes
-IF (PRESENT(tSize)) obj%tSize = tSize
+isok = PRESENT(dof_tPhysicalVars)
+IF (isok) obj%dof_tPhysicalVars = dof_tPhysicalVars
 
-IF (PRESENT(dof_names_char)) THEN
-  IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
+isok = PRESENT(dof_storageFMT)
+IF (isok) obj%dof_storageFMT = dof_storageFMT
+
+isok = PRESENT(dof_spaceCompo)
+IF (isok) obj%dof_spaceCompo = dof_spaceCompo
+
+isok = PRESENT(dof_timeCompo)
+IF (isok) obj%dof_timeCompo = dof_timeCompo
+
+isok = PRESENT(dof_tNodes)
+IF (isok) obj%dof_tNodes = dof_tNodes
+
+isok = PRESENT(tSize)
+IF (isok) obj%tSize = tSize
+
+isok = PRESENT(dof_names_char)
+IF (isok) THEN
+  isok = ALLOCATED(obj%dof_names_char)
+  IF (isok) DEALLOCATE (obj%dof_names_char)
+
   tsize1 = SIZE(dof_names_char)
   ALLOCATE (obj%dof_names_char(tsize1))
 
@@ -59,7 +75,6 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
@@ -83,10 +98,10 @@ abool = Input(option=addContribution, default=math%no)
 areal = Input(option=scale, default=math%one)
 
 IF (abool) THEN
-  CALL Add(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
+  CALL RealVectorAdd(obj%realVec, nodenum=indx, VALUE=VALUE, scale=areal)
 ELSE
   areal = areal * VALUE
-  CALL Set(obj%realVec, nodenum=indx, VALUE=areal)
+  CALL RealVectorSet(obj%realVec, nodenum=indx, VALUE=areal)
 END IF
 
 #ifdef DEBUG_VER
@@ -114,10 +129,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 abool = Input(option=addContribution, default=math%no)
 
 IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add(obj%realVec, VALUE=VALUE, scale=areal, nodenum=indx)
+  areal = Input(option=scale, default=math%one)
+  CALL RealVectorAdd(obj%realVec, VALUE=VALUE, scale=areal, nodenum=indx)
 ELSE
-  CALL Set(obj%realVec, VALUE=VALUE, nodenum=indx)
+  CALL RealVectorSet(obj%realVec, VALUE=VALUE, nodenum=indx)
 END IF
 
 #ifdef DEBUG_VER
@@ -142,15 +157,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-abool = Input(option=addContribution, default=.FALSE.)
+abool = Input(option=addContribution, default=math%no)
 
 IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL Add( &
+  areal = Input(option=scale, default=math%one)
+  CALL RealVectorAdd( &
     obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
     stride=stride)
 ELSE
-  CALL Set( &
+  CALL RealVectorSet( &
     obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
 END IF
 
@@ -180,12 +195,12 @@ abool = Input(option=addContribution, default=math%no)
 
 IF (abool) THEN
   areal = Input(option=scale, default=math%one)
-  CALL Add( &
+  CALL RealVectorAdd( &
     obj=obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
     iend=iend, stride=stride, istart_value=istart_value, &
     iend_value=iend_value, stride_value=stride_value)
 ELSE
-  CALL Set( &
+  CALL RealVectorSet( &
     obj=obj%realVec, VALUE=VALUE, istart=istart, &
     iend=iend, stride=stride, istart_value=istart_value, &
     iend_value=iend_value, stride_value=stride_value)
@@ -217,11 +232,11 @@ abool = Input(option=addContribution, default=math%no)
 
 IF (abool) THEN
   areal = Input(option=scale, default=math%one)
-  CALL Add( &
+  CALL RealVectorAdd( &
     obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
     stride=stride)
 ELSE
-  CALL Set( &
+  CALL RealVectorSet( &
     obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
 END IF
 
@@ -251,10 +266,10 @@ abool = Input(option=AddContribution, default=math%no)
 areal = Input(option=scale, default=math%one)
 
 IF (abool) THEN
-  CALL Add(obj%realVec, VALUE=VALUE, scale=areal)
+  CALL RealVectorAdd(obj%realVec, VALUE=VALUE, scale=areal)
 ELSE
   areal = areal * VALUE
-  CALL Set(obj%realVec, VALUE=areal)
+  CALL RealVectorSet(obj%realVec, VALUE=areal)
 END IF
 
 #ifdef DEBUG_VER
