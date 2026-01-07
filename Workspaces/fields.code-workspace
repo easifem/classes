@@ -62,5 +62,74 @@
 		{
 			"path": "../src/submodules/STVectorField"
 		}
-	]
+	],
+	"settings": {
+    "editor.fontSize": 16,
+    "editor.fontFamily": "'Iosevka Nerd Font Mono'",
+		"fortran.preferredCase": "uppercase",
+		"fortran.linter.includePaths": [
+			"/Users/easifem/.easifem/easifem/build/base/include/",
+			"/Users/easifem/.easifem/easifem/build/classes/include/",
+			"/Users/easifem/.easifem/easifem/install/tomlf/include/toml-f/modules/"
+		],
+		"fortran.linter.extraArgs": [
+			"-fsyntax-only",
+			"-cpp",
+			"-fdiagnostics-show-caret",
+			"-fdiagnostics-color=never",
+			"-Wunused-variable",
+			"-Wunused-dummy-argument",
+			"-Wno-c-binding-type",
+			"-Wall",
+			"-DDEBUG_VER",
+			"-DUSE_SuperLU"
+		],
+		"fortran.formatting.formatter": "fprettify",
+		"fortran.formatting.fprettifyArgs": [
+			"--line-length",
+			"78",
+			"--indent",
+			"2",
+			"--strict-indent",
+			"--disable-indent-mod",
+			"--whitespace",
+			"2",
+			"--whitespace-comma",
+			"--whitespace-assignment",
+			"--enable-decl",
+			"--whitespace-decl",
+			"--whitespace-relational",
+			"--whitespace-logical",
+			"--whitespace-multdiv",
+			"--whitespace-print",
+			"--whitespace-intrinsics",
+			"--strip-comments",
+			"--case",
+			"2",
+			"2",
+			"2",
+			"2"
+		],
+		"fortran.linter.modOutput": "~/.easifem/easifem/lint/include/",
+		"fortran.fortls.notifyInit": true,
+		"fortran.fortls.sortKeywords": true,
+		"fortran.fortls.directories": [
+			"/Users/easifem/Dropbox/easifem/base/src/**",
+			"/Users/easifem/Dropbox/easifem/classes/src/**",
+			"/Users/easifem/Dropbox/easifem/diffusion/src/**",
+			"/Users/easifem/Dropbox/easifem/seepage/src/**",
+			"/Users/easifem/Dropbox/easifem/elasticity/src/**",
+			"/Users/easifem/Dropbox/easifem/acoustic/src/**",
+			"/Users/easifem/.easifem/easifem/src/tomlf/src/**"
+		],
+		"fortran.fortls.maxLineLength": 78,
+		"fortran.fortls.maxCommentLineLength": 80,
+		"fortran.fortls.extraArgs": [
+			"--hover_signature",
+			"--hover_language",
+			"fortran",
+			"--use_signature_help"
+		]
+	}
+}
 }
