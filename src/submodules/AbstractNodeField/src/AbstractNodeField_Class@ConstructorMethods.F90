@@ -16,17 +16,13 @@
 
 SUBMODULE(AbstractNodeField_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
-
-USE RealVector_Method, ONLY: RealVector_Deallocate => DEALLOCATE, &
-                             RealVector_Initiate => Initiate, &
-                             RealVector_Size => Size
-
-USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE, &
-                      DOF_Initiate => Initiate
-
-USE AbstractField_Class, ONLY: AbstractFieldInitiate, &
-                               AbstractFieldDeallocate
-
+USE RealVector_Method, ONLY: RealVector_Deallocate => DEALLOCATE
+USE RealVector_Method, ONLY: RealVector_Initiate => Initiate
+USE RealVector_Method, ONLY: RealVector_Size => Size
+USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
+USE DOF_Method, ONLY: DOF_Initiate => Initiate
+USE AbstractField_Class, ONLY: AbstractFieldInitiate
+USE AbstractField_Class, ONLY: AbstractFieldDeallocate
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
@@ -37,68 +33,87 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractNodeFieldCheckError
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "AbstractNodeFieldCheckError()"
 INTEGER(I4B) :: tvar
 LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 isok = obj%dof_tPhysicalVars .NE. 0_I4B
 CALL AssertError1(isok, myName, &
                   'AbstractNodeField_::obj%dof_tPhysicalVars is 0')
+#endif
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(obj%dof_spaceCompo)
 CALL AssertError1(isok, myName, &
                   'AbstractNodeField_::obj%dof_spaceCompo is NOT ALLOCATED')
+#endif
 
+#ifdef DEBUG_VER
 tvar = SIZE(obj%dof_spaceCompo)
 isok = tvar .EQ. obj%dof_tPhysicalVars
 CALL AssertError1(isok, myName, &
                   'size of dof_spaceCompo ('//ToString(tvar)// &
                   ') is not same as dof_tPhysicalVars ('// &
                   ToString(obj%dof_tPhysicalVars)//')')
+#endif
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(obj%dof_timeCompo)
 CALL AssertError1(isok, myName, &
                   'AbstractNodeField_::obj%dof_timeCompo is NOT ALLOCATED')
+#endif
 
+#ifdef DEBUG_VER
 tvar = SIZE(obj%dof_timeCompo)
 isok = tvar .EQ. obj%dof_tPhysicalVars
 CALL AssertError1(isok, myName, &
                   'size of dof_timeCompo ('//ToString(tvar)// &
                   ') is not same as dof_tPhysicalVars ('// &
                   ToString(obj%dof_tPhysicalVars)//')')
+#endif
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(obj%dof_tNodes)
 CALL AssertError1(isok, myName, &
                   'AbstractNodeField_::obj%dof_tNodes is NOT ALLOCATED')
+#endif
 
+#ifdef DEBUG_VER
 tvar = SIZE(obj%dof_tNodes)
 isok = tvar .EQ. obj%dof_tPhysicalVars
 CALL AssertError1(isok, myName, &
                   'size of dof_tNodes ('//ToString(tvar)// &
                   ') is not same as dof_tPhysicalVars ('// &
                   ToString(obj%dof_tPhysicalVars)//')')
+#endif
 
+#ifdef DEBUG_VER
 isok = ALLOCATED(obj%dof_names_char)
 CALL AssertError1(isok, myName, &
                   'AbstractNodeField_::obj%dof_names_char is NOT ALLOCATED')
+#endif
 
+#ifdef DEBUG_VER
 tvar = SIZE(obj%dof_names_char)
 isok = tvar .EQ. obj%dof_tPhysicalVars
 CALL AssertError1(isok, myName, &
                   'size of dof_names_char ('//ToString(tvar)// &
                   ') is not same as dof_tPhysicalVars ('// &
                   ToString(obj%dof_tPhysicalVars)//')')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE AbstractNodeFieldCheckError
 
 !----------------------------------------------------------------------------
@@ -115,9 +130,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+! Should we dealllocate here?
 CALL obj%DEALLOCATE()
-CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
-                           copyStructure=copyStructure, usePointer=usePointer)
+CALL AbstractFieldInitiate( &
+  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
+  usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
   obj%dof_tPhysicalVars = obj2%dof_tPhysicalVars
@@ -136,7 +153,6 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -237,7 +253,6 @@ CALL AssertError1(isok, myName, &
 
 isok = PRESENT(tSize)
 CALL AssertError1(isok, myName, 'tSize is not present')
-
 #endif
 
 obj%dof_tPhysicalVars = tPhysicalVarNames
@@ -345,6 +360,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL AbstractFieldDeallocate(obj)
+
 obj%dof_tPhysicalVars = 0
 obj%dof_storageFMT = MYSTORAGEFORMAT
 IF (ALLOCATED(obj%dof_spaceCompo)) DEALLOCATE (obj%dof_spaceCompo)
