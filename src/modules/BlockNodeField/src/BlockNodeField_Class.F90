@@ -29,14 +29,14 @@ USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE UserFunction_Class, ONLY: UserFunction_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 
 IMPLICIT NONE
 
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class"
-INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
-INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
+INTEGER(I4B), PARAMETER :: MYCONVERSION = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: BlockNodeFieldPointer_
 PUBLIC :: BlockNodeField_
