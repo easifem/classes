@@ -136,7 +136,7 @@ INTEGER(I4B) :: indx(obj%spaceCompo)
 CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
-IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
+IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
   nrow = obj%dof.tNodes.1
   ncol = obj%spaceCompo
 
@@ -159,7 +159,7 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   RETURN
 END IF
 
-IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
+IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
   nrow = obj%dof.tNodes.1
   ncol = obj%spaceCompo
 
@@ -207,7 +207,7 @@ INTEGER(I4B) :: jj, mynrow
 CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
-IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
+IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
   nrow = SIZE(globalNode)
   ncol = obj%spaceCompo
 
@@ -231,7 +231,7 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   RETURN
 END IF
 
-IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
+IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
   nrow = SIZE(globalNode)
   ncol = obj%spaceCompo
 
@@ -459,14 +459,6 @@ VALUE = NodalVariable(v, TypeFEVariableVector, TypeFEVariableSpace)
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
-!                                                              GetStorageFMT
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetStorageFMT
-ans = MYSTORAGEFORMAT
-END PROCEDURE obj_GetStorageFMT
-
-!----------------------------------------------------------------------------
 !                                                                  MeshField
 !----------------------------------------------------------------------------
 
@@ -478,7 +470,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetMeshField()"
 LOGICAL(LGT) :: isMeshFieldInit
 CHARACTER(:), ALLOCATABLE :: name, engine
 INTEGER(I4B) :: spaceCompo(1), maxCon, tElements, iel, ii, maxNNE, &
-                xij_i, xij_j, elemCoord_i, elemCoord_j, tsol, tSolCon, &
+                xij_i, xij_j, elemCoord_i, elemCoord_j, tSolCon, &
                 refElemCoord_i, refElemCoord_j, maxFedofCon, nrow, &
                 ncol
 CLASS(AbstractMesh_), POINTER :: mesh

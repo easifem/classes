@@ -50,7 +50,8 @@ tsize = obj%fedof%GetTotalDOF()
 tnodes = obj%fedof%GetTotalVertexDOF()
 
 ALLOCATE (VALUE(tsize, 3))
-CALL obj%Get(VALUE=VALUE, nrow=nrow, ncol=ncol, storageFMT=MYSTORAGEFORMAT)
+CALL obj%Get(VALUE=VALUE, nrow=nrow, ncol=ncol, &
+             storageFMT=obj%GetStorageFMT())
 
 VALUE(:, 3) = 0.0_DFP
 ! name = obj%name%chars()//"_"//dofnames(1)

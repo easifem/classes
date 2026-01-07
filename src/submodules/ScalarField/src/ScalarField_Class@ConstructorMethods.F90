@@ -53,7 +53,7 @@ dof_tPhysicalVarNames = math%one_i
 CALL AbstractNodeFieldInitiate( &
   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
   local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
-  storageFMT=MYSTORAGEFORMAT, spaceCompo=dof_spaceCompo, &
+  storageFMT=obj%GetStorageFMT(), spaceCompo=dof_spaceCompo, &
   isSpaceCompo=math%yes, isSpaceCompoScalar=math%yes, &
   timeCompo=dof_timeCompo, isTimeCompo=math%yes, isTimeCompoScalar=math%yes, &
   tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &

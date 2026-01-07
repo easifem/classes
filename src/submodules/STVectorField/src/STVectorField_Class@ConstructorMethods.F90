@@ -127,7 +127,7 @@ dof_tPhysicalVarNames = 1_I4B
 CALL AbstractNodeFieldInitiate( &
   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
   local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
-  storageFMT=MYSTORAGEFORMAT, spaceCompo=dof_spaceCompo, &
+  storageFMT=obj%GetStorageFMT(), spaceCompo=dof_spaceCompo, &
   isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., timeCompo=dof_timeCompo, &
   isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
   tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &

@@ -207,7 +207,7 @@ CALL AssertError2(SIZE(VALUE, 2), ncol, myName, 'a=SIZE(VALUE, 2), b=ncol')
 
 #endif
 
-IF (storageFMT .EQ. MYSTORAGEFORMAT) THEN
+IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
   DO jj = 1, obj%spaceCompo
     CALL obj%Set(VALUE=VALUE(:, jj), spaceCompo=jj, scale=scale, &
                  addContribution=addContribution)
@@ -379,7 +379,7 @@ CASE (TypeFieldOpt%storageFormatNodes)
   END DO
   !$OMP END PARALLEL DO
 
-CASE (MYSTORAGEFORMAT)
+CASE (TypeFieldOpt%storageFormatDOF)
 
   !$OMP PARALLEL DO PRIVATE(ii)
   DO ii = 1, SIZE(VALUE, 2)
