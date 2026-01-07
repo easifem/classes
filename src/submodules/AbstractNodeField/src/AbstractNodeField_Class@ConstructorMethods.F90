@@ -346,7 +346,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL AbstractFieldDeallocate(obj)
 obj%dof_tPhysicalVars = 0
-obj%dof_storageFMT = NODES_FMT
+obj%dof_storageFMT = MYSTORAGEFORMAT
 IF (ALLOCATED(obj%dof_spaceCompo)) DEALLOCATE (obj%dof_spaceCompo)
 IF (ALLOCATED(obj%dof_timeCompo)) DEALLOCATE (obj%dof_timeCompo)
 IF (ALLOCATED(obj%dof_tNodes)) DEALLOCATE (obj%dof_tNodes)
