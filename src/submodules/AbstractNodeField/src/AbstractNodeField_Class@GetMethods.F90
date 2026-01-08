@@ -437,7 +437,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ivar0 = Input(default=1_I4B, option=ivar)
+ivar0 = Input(default=math%one_i, option=ivar)
 tspace = 1
 
 tPhysicalVars = obj%GetTotalPhysicalVars()
@@ -498,6 +498,7 @@ END PROCEDURE obj_GetTotalNodeLoc2
 MODULE PROCEDURE obj_GetTotalNodeLoc3
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodeLoc3()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: ii, tsize
@@ -512,6 +513,10 @@ tsize = SIZE(dbc)
 ans = 0
 
 DO ii = 1, tsize
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(dbc(ii)%ptr)
+  IF (.NOT. isok) CYCLE
+#endif
   ans = ans + obj%GetTotalNodeLoc(dbc=dbc(ii)%ptr, ivar=ivar)
 END DO
 

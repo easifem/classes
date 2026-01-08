@@ -1,4 +1,3 @@
-!
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
 ! the Free Software Foundation, either version 3 of the License, or
@@ -1154,18 +1153,18 @@ END INTERFACE
 ! summary: Returns total number of nodes for globalNode
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalNodeLoc1(obj, globalNode, ivar, spaceCompo, &
-                                       timeCompo) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+  MODULE FUNCTION obj_GetTotalNodeLoc1(
+  obj, globalNode, ivar, spaceCompo, timeCompo) RESULT(ans)
+  CLASS(AbstractNodeField_), INTENT(IN) :: obj
+  INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! Global node number
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-    !! physical varibale number
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number (this variable is cuurrently not used)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
     !! list of space components
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
     !! list of time components
-    INTEGER(I4B) :: ans
+  INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalNodeLoc1
 END INTERFACE
 
@@ -1175,15 +1174,29 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-08-26
-! summary:  Get total number of nodes corresponding to dbc
+! summary:  Get total number of nodes corresponding to nodes in AbstractBC
+!
+!# Introduction
+!
+! This method returns the total number of nodes corresponding to
+! nodes defined in AbstractBC.
+!
+! - First, it will extract time components from obj
+! - Then it will use ivar (default is 1) to extract the total time compo
+!   in ivar
+! - Then, it call GetTotalNodeNum on dbc with stored fedof or fedofs
+! - The result will be tnode * tspace * ttime
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalNodeLoc2(obj, dbc, ivar) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! AbstractNodeField
     CLASS(AbstractBC_), INTENT(INOUT) :: dbc
-    !! Global node number
+    !! Abstract boundary condition
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! Physical variable number, default is 1
     INTEGER(I4B) :: ans
+    !! Total number of nodes
   END FUNCTION obj_GetTotalNodeLoc2
 END INTERFACE
 
@@ -1194,14 +1207,22 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-08-26
 ! summary: Get total number of nodes corresponding to dbc
+!
+!# Introduction
+! This routine is like GetTotalNodeLoc2, but it is for vector of
+! AbstractBCPointer. This routine calls GetTotalNodeLoc2 for each dbc
+! In debug mode, if dbc(ii)%ptr is not associated then it will skip that dbc.
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalNodeLoc3(obj, dbc, ivar) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! AbstractNodeField
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    !! Global node number
+    !! A vector of DirichletBCPointer
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical variable number, default is 1
     INTEGER(I4B) :: ans
+    !! Total number of Nodes
   END FUNCTION obj_GetTotalNodeLoc3
 END INTERFACE
 
