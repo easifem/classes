@@ -17,6 +17,7 @@
 SUBMODULE(AbstractField_Class) IOMethods
 USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE DOF_Method, ONLY: DOF_Display => Display
 
 IMPLICIT NONE
 CONTAINS
@@ -161,6 +162,8 @@ IF (isok) THEN
   CALL Display(SIZE(obj%nodeNum), "Size of nodeNum: ", &
                unitNo=unitNo)
 END IF
+
+CALL DOF_Display(obj=obj%dof, msg="dof: ", unitNo=unitNo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -92,12 +92,6 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !! Vector of reals to contains the nodes
   !! note: This variable is only for internal use
 
-  TYPE(DOF_) :: dof
-  !! Degree of freedom object,
-  !! which contains the information about how the different
-  !! components of the fields are stored inside the realVec
-  !! note: This variable is only for internal use
-
 CONTAINS
   PRIVATE
 
@@ -1153,18 +1147,18 @@ END INTERFACE
 ! summary: Returns total number of nodes for globalNode
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalNodeLoc1(
-  obj, globalNode, ivar, spaceCompo, timeCompo) RESULT(ans)
-  CLASS(AbstractNodeField_), INTENT(IN) :: obj
-  INTEGER(I4B), INTENT(IN) :: globalNode(:)
+  MODULE FUNCTION obj_GetTotalNodeLoc1( &
+    obj, globalNode, ivar, spaceCompo, timeCompo) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! Global node number
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     !! physical varibale number (this variable is cuurrently not used)
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
     !! list of space components
-  INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
     !! list of time components
-  INTEGER(I4B) :: ans
+    INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalNodeLoc1
 END INTERFACE
 

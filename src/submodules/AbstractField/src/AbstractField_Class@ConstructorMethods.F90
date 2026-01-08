@@ -21,6 +21,7 @@ USE InputUtility, ONLY: Input
 USE FPL_Method, ONLY: CheckEssentialParam
 USE FPL_Method, ONLY: FPL_Set => Set
 USE FPL_Method, ONLY: FPL_GetValue => GetValue
+USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
 IMPLICIT NONE
 CONTAINS
 
@@ -117,6 +118,8 @@ IF (isok) THEN
     obj%nbc_point(ii)%ptr => obj2%nbc_point(ii)%ptr
   END DO
 END IF
+
+obj%dof = obj2%dof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -352,6 +355,8 @@ IF (isok) DEALLOCATE (obj%nodalValue)
 
 isok = ALLOCATED(obj%nodeNum)
 IF (isok) DEALLOCATE (obj%nodeNum)
+
+CALL DOF_Deallocate(obj%dof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

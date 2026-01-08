@@ -125,6 +125,8 @@ MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -140,13 +142,21 @@ SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
   obj%dof_tPhysicalVars = obj2%dof_tPhysicalVars
   obj%dof_storageFMT = obj2%dof_storageFMT
 
-  IF (ALLOCATED(obj2%dof_spaceCompo)) obj%dof_spaceCompo = obj2%dof_spaceCompo
-  IF (ALLOCATED(obj2%dof_timeCompo)) obj%dof_timeCompo = obj2%dof_timeCompo
-  IF (ALLOCATED(obj2%dof_tNodes)) obj%dof_tNodes = obj2%dof_tNodes
-  IF (ALLOCATED(obj2%dof_names_char)) obj%dof_names_char = obj2%dof_names_char
+  isok = ALLOCATED(obj2%dof_spaceCompo)
+  IF (isok) obj%dof_spaceCompo = obj2%dof_spaceCompo
+
+  isok = ALLOCATED(obj2%dof_timeCompo)
+  IF (isok) obj%dof_timeCompo = obj2%dof_timeCompo
+
+  isok = ALLOCATED(obj2%dof_tNodes)
+  IF (isok) obj%dof_tNodes = obj2%dof_tNodes
+
+  isok = ALLOCATED(obj2%dof_names_char)
+  IF (isok) obj%dof_names_char = obj2%dof_names_char
+
   obj%tSize = obj2%tSize
+
   obj%realVec = obj2%realVec
-  obj%dof = obj2%dof
 END SELECT
 
 #ifdef DEBUG_VER
@@ -172,7 +182,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-! We should not call this method here
+! Important: we should not call this method here
 ! CALL obj%DEALLOCATE()
 
 CALL AbstractFieldInitiate( &
@@ -304,7 +314,7 @@ MODULE PROCEDURE obj_Initiate3
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 #endif
 
-INTEGER(I4B) :: ii, jj
+! INTEGER(I4B) :: ii, jj
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -316,28 +326,28 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-CALL AbstractFieldInitiate( &
-  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
-  local_n=local_n, global_n=global_n, spaceCompo=spaceCompo, &
-  isSpaceCompo=isSpaceCompo, isSpaceCompoScalar=isSpaceCompoScalar, &
-  timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
-  isTimeCompoScalar=isTimeCompoScalar, tPhysicalVarNames=tPhysicalVarNames, &
-  physicalVarNames=physicalVarNames, isPhysicalVarNames=isPhysicalVarNames, &
-  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
-
-CALL DOF_Initiate( &
-  obj=obj%dof, tNodes=obj%dof_tNodes, names=obj%dof_names_char, &
-  spaceCompo=obj%dof_spaceCompo, timeCompo=obj%dof_timeCompo, &
-  storageFMT=obj%dof_storageFMT)
-
-CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
-
-obj%tSize = RealVector_SIZE(obj%realVec)
-
-CALL obj%GetParam(local_n=ii, global_n=jj)
-
-IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
-IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
+! CALL AbstractFieldInitiate( &
+!   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+!   local_n=local_n, global_n=global_n, spaceCompo=spaceCompo, &
+!   isSpaceCompo=isSpaceCompo, isSpaceCompoScalar=isSpaceCompoScalar, &
+!   timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
+!   isTimeCompoScalar=isTimeCompoScalar, tPhysicalVarNames=tPhysicalVarNames, &
+!   physicalVarNames=physicalVarNames, isPhysicalVarNames=isPhysicalVarNames, &
+!   fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+!
+! CALL DOF_Initiate( &
+!   obj=obj%dof, tNodes=obj%dof_tNodes, names=obj%dof_names_char, &
+!   spaceCompo=obj%dof_spaceCompo, timeCompo=obj%dof_timeCompo, &
+!   storageFMT=obj%dof_storageFMT)
+!
+! CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
+!
+! obj%tSize = RealVector_SIZE(obj%realVec)
+!
+! CALL obj%GetParam(local_n=ii, global_n=jj)
+!
+! IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
+! IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -369,7 +379,6 @@ IF (ALLOCATED(obj%dof_tNodes)) DEALLOCATE (obj%dof_tNodes)
 IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
 obj%tSize = 0
 CALL RealVector_Deallocate(obj%realVec)
-CALL DOF_Deallocate(obj%dof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

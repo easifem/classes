@@ -113,6 +113,14 @@ TYPE, ABSTRACT :: AbstractField_
   INTEGER(INT64) :: lis_ptr = 0_INT64
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
+
+  TYPE(DOF_) :: dof
+  !! Degree of freedom object,
+  !! which contains the information about how the different
+  !! components of the fields are stored inside the realVec
+  !! or column space of the matrix
+  !! note: This variable is only for internal use
+
   CLASS(FEDOF_), POINTER :: fedof => NULL(), geofedof => NULL()
   !! pointer to fedof and geometric fedof
   TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:), geofedofs(:)
