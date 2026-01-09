@@ -18,16 +18,13 @@
 !
 
 SUBMODULE(FEDOF_Class) GetMethods
-USE AbstractMesh_Class, ONLY: PARAM_MAX_CONNECTIVITY_SIZE
 USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetTotalEntities, &
                           ElemData_GetTotalGlobalVertexNodes, &
                           ElemData_GetEdge, &
                           ElemData_GetFace, &
                           ElemData_GetCell
-
-USE ReferenceElement_Method, ONLY: ReferenceElementInfo
-
+USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
 USE Display_Method, ONLY: ToString
 
 #ifdef DEBUG_VER

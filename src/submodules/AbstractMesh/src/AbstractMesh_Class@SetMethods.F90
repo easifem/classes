@@ -15,9 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) SetMethods
-
 USE GlobalData, ONLY: INT8
-
 USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE, &
                               OPERATOR(.Xmin.), &
                               OPERATOR(.Ymin.), &
@@ -25,15 +23,12 @@ USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE, &
                               OPERATOR(.Xmax.), &
                               OPERATOR(.Ymax.), &
                               OPERATOR(.Zmax.)
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE CSRMatrix_Method, ONLY: SetSparsity
-
 USE FacetData_Class, ONLY: FacetData_SetParam
-
 USE ElemData_Class, ONLY: ElemData_SetTotalMedium, &
                           ElemData_Set
+USE BaseType, ONLY: TypeMeshOpt
 
 IMPLICIT NONE
 CONTAINS
@@ -79,7 +74,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
 INTEGER(I4B) :: tsize
 LOGICAL(LGT) :: problem
 INTEGER(I4B) :: i, j, k, tNodes, ii
-INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
+INTEGER(I4B) :: n2n(TypeMeshOpt%maxNodeToNode)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -146,7 +141,7 @@ MODULE PROCEDURE obj_SetSparsity2
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
 LOGICAL(LGT) :: problem
 INTEGER(I4B) :: i, j, tNodes, tsize
-INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE)
+INTEGER(I4B) :: n2n(TypeMeshOpt%maxNodeToNode)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -201,8 +196,8 @@ MODULE PROCEDURE obj_SetSparsity3
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity3()"
 LOGICAL(LGT) :: problem, isok
 
-INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
-                temp(PARAM_MAX_NODE_TO_NODE), ll, jj, kk
+INTEGER(I4B) :: n2n(TypeMeshOpt%maxNodeToNode), tsize, ii, &
+                temp(TypeMeshOpt%maxNodeToNode), ll, jj, kk
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -272,8 +267,8 @@ MODULE PROCEDURE obj_SetSparsity4
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity4()"
 LOGICAL(LGT) :: isok
 
-INTEGER(I4B) :: n2n(PARAM_MAX_NODE_TO_NODE), tsize, ii, &
-                temp(PARAM_MAX_NODE_TO_NODE), ll, jj, kk, row
+INTEGER(I4B) :: n2n(TypeMeshOpt%maxNodeToNode), tsize, ii, &
+                temp(TypeMeshOpt%maxNodeToNode), ll, jj, kk, row
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

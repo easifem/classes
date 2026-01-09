@@ -16,33 +16,24 @@
 
 SUBMODULE(AbstractMesh_Class) GetMethods
 USE HashTables, ONLY: HashTable_, Hashkey
-
 USE GlobalData, ONLY: MaxDFP, MinDFP
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE IntegerUtility, ONLY: RemoveDuplicates, RemoveDuplicates_
-
 USE AppendUtility, ONLY: Append
-
 USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside, &
                               BoundingBox_Initiate => Initiate
-
 USE InputUtility, ONLY: Input
-
 USE Display_Method, ONLY: Display, ToString
-
 USE ReferenceElement_Method, ONLY: &
-  REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES, &
   GetEdgeConnectivity, &
   GetFaceConnectivity, &
   ElementOrder, &
   TotalEntities, &
   RefElemGetGeoParam
 
+USE BaseType, ONLY: TypeRefelemOpt
 USE FacetData_Class, ONLY: FacetData_Iselement, &
                            FacetData_GetParam
-
 USE Elemdata_Class, ONLY: INTERNAL_ELEMENT, &
                           BOUNDARY_ELEMENT, &
                           DOMAIN_BOUNDARY_ELEMENT, &
@@ -70,7 +61,6 @@ USE Elemdata_Class, ONLY: INTERNAL_ELEMENT, &
                           Elemdata_GetGlobalFaceNumber, &
                           Elemdata_GetGlobalEdgeNumber, &
                           Elemdata_Order
-
 USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetNodeType, &
                           NodeData_GetGlobalNodeNum, &
@@ -82,16 +72,12 @@ USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
                           NodeData_GetExtraGlobalNodes, &
                           NodeData_GetTotalExtraGlobalNodes, &
                           NodeData_GetNodeCoord
-
 USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
+USE BaseType, ONLY: TypeMeshOpt
 
 IMPLICIT NONE
 
-#ifdef MAX_NODES_IN_ELEM
-INTEGER(I4B), PARAMETER :: MaxNodesInElement = MAX_NODES_IN_ELEM
-#else
-INTEGER(I4B), PARAMETER :: MaxNodesInElement = 125
-#endif
+INTEGER(I4B), PARAMETER :: MaxNodesInElement = TypeMeshOpt%maxNNE
 
 CONTAINS
 
@@ -1258,7 +1244,7 @@ MODULE PROCEDURE obj_GetConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity()"
 #endif
 INTEGER(I4B) :: tsize
-INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+INTEGER(I4B) :: temp(TypeMeshOpt%maxCon)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -2105,7 +2091,7 @@ END PROCEDURE obj_GetNodeToNodes2_
 
 MODULE PROCEDURE obj_GetElementToElements
 LOGICAL(LGT) :: onlyElem
-INTEGER(I4B) :: nrow, temp(REFELEM_MAX_FACES, 3), ii, ncol, jj
+INTEGER(I4B) :: nrow, temp(TypeRefelemOpt%maxFaces, 3), ii, ncol, jj
 
 onlyElem = Input(default=.FALSE., option=onlyElem)
 
@@ -2467,8 +2453,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity_()"
 #endif
 
 INTEGER(I4B) :: iel, temp4(4), elemType, order, &
-                con(MaxNodesInElement, REFELEM_MAX_FACES), &
-                ii, tFaceNodes(REFELEM_MAX_FACES)
+                con(MaxNodesInElement, TypeRefelemOpt%maxFaces), &
+                ii, tFaceNodes(TypeRefelemOpt%maxFaces)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -2533,8 +2519,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFacetConnectivity()"
 #endif
 
 INTEGER(I4B) :: iel, temp4(4), elemType, order, &
-                con(MaxNodesInElement, REFELEM_MAX_FACES), &
-                tFaceNodes(REFELEM_MAX_FACES)
+                con(MaxNodesInElement, TypeRefelemOpt%maxFaces), &
+                tFaceNodes(TypeRefelemOpt%maxFaces)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

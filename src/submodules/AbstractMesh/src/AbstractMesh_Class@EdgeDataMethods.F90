@@ -16,16 +16,14 @@
 !
 
 SUBMODULE(AbstractMesh_Class) EdgeDataMethods
-USE ReferenceElement_Method, ONLY: &
-  PARAM_REFELEM_MAX_EDGES, &
-  PARAM_REFELEM_MAX_POINTS, &
-  RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
 USE ReferenceLine_Method, ONLY: MaxOrder_Line
 USE ReallocateUtility, ONLY: Reallocate
-USE EdgeData_Class
-USE EdgeDataBinaryTree_Class
-USE SortUtility
+USE SortUtility, ONLY: Sort
 USE GlobalData, ONLY: INT8
+USE BaseType, ONLY: TypeRefelemOpt
+USE EdgeData_Class, ONLY: EdgeData_, EdgeData_Pointer
+USE EdgeDataBinaryTree_Class, ONLY: EdgeDataBinaryTree_
 
 IMPLICIT NONE
 
@@ -38,7 +36,7 @@ CONTAINS
 MODULE PROCEDURE obj_InitiateEdgeConnectivity
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
 INTEGER(I4B) :: tElements, iel, elemType, tEdges, &
-                localEdges(MaxOrder_Line + 1, PARAM_REFELEM_MAX_EDGES), &
+                localEdges(MaxOrder_Line + 1, TypeRefelemOpt%maxEdges), &
                 edge(2), sorted_edge(2), &
                 tNodes, tsize1, tsize2, iedge
 LOGICAL(LGT) :: problem

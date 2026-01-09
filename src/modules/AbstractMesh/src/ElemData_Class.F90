@@ -17,34 +17,23 @@
 
 MODULE Elemdata_Class
 USE GlobalData, ONLY: I4B, DFP, LGT, INT8
-
 USE Display_Method, ONLY: Display
-
-USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES, &
-                                   RefElemGetGeoParam, &
-                                   ElementName, &
-                                   GetFaceElemType, &
-                                   GetEdgeConnectivity, &
-                                   PARAM_REFELEM_MAX_EDGES, &
-                                   ElementTopology, &
-                                   GetElementIndex, &
-                                   ElementOrder, ReferenceElementInfo
-
+USE BaseType, ONLY: TypeRefelemOpt
 USE AbstractMeshParam, ONLY: PARAM_MAX_NNE
-
+USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: ElementName
+USE ReferenceElement_Method, ONLY: GetFaceElemType
+USE ReferenceElement_Method, ONLY: GetEdgeConnectivity
+USE ReferenceElement_Method, ONLY: ElementTopology
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE ReferenceElement_Method, ONLY: ElementOrder
 USE InterpolationUtility, ONLY: GetTotalInDOF
-
-USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle, &
-                                      FaceShapeMetaData_Quadrangle
-
+USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle
+USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
 USE SortUtility, ONLY: Sort, QuickSort
-
 USE ReallocateUtility, ONLY: Reallocate
-
 USE ExceptionHandler_Class, ONLY: e
-
 USE BaseType, ONLY: elemopt => TypeElemNameOpt
-
 USE IntegerUtility, ONLY: OPERATOR(.IN.)
 
 IMPLICIT NONE
@@ -110,7 +99,7 @@ PUBLIC :: Elemdata_FindEdge
 PUBLIC :: Elemdata_GetGlobalFaceNumber
 PUBLIC :: Elemdata_GetGlobalEdgeNumber
 PUBLIC :: Elemdata_Order
-public :: Elemdata_GetCellOrient
+PUBLIC :: Elemdata_GetCellOrient
 
 INTEGER(I4B), PARAMETER, PUBLIC :: INTERNAL_ELEMENT = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: BOUNDARY_ELEMENT = -1
@@ -569,9 +558,9 @@ SUBROUTINE Elemdata_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
   INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: localFaceCon(:, :)
 
   INTEGER(I4B) :: tFaces, &
-                  tNodes, localFaces0(4_I4B, PARAM_REFELEM_MAX_FACES), &
-                  faceElemType(PARAM_REFELEM_MAX_FACES), &
-                  tFaceNodes(PARAM_REFELEM_MAX_FACES), &
+                  tNodes, localFaces0(4_I4B, TypeRefelemOpt%maxFaces), &
+                  faceElemType(TypeRefelemOpt%maxFaces), &
+                  tFaceNodes(TypeRefelemOpt%maxFaces), &
                   iface, face_temp(4), aint
 
 #ifdef DEBUG_VER
@@ -888,7 +877,7 @@ FUNCTION Elemdata_GetTotalFaceDOF(obj, ii, order, baseContinuity, &
   !! Total number of dof on edge
 
   ! Internal variables
-  INTEGER(I4B) :: faceElemType(PARAM_REFELEM_MAX_FACES)
+  INTEGER(I4B) :: faceElemType(TypeRefelemOpt%maxFaces)
 
   !! Get faceElemType
 
@@ -1044,7 +1033,7 @@ SUBROUTINE Elemdata_GetEdgeConnectivity(obj, ans, tsize, ii)
   INTEGER(I4B), INTENT(IN) :: ii
   !! Edge number (local)
 
-  INTEGER(I4B) :: ncol, jj, con(PARAM_MAX_NNE, PARAM_REFELEM_MAX_EDGES)
+  INTEGER(I4B) :: ncol, jj, con(PARAM_MAX_NNE, TypeRefelemOpt%maxEdges)
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Elemdata_GetEdgeConnectivity()"
@@ -1218,7 +1207,7 @@ PURE FUNCTION Elemdata_GetTotalGlobalVertexNodes(obj) RESULT(ans)
   INTEGER(I4B) :: indx
 
   indx = GetElementIndex(obj%topoName)
-  ans = ReferenceElementInfo%tPoints(indx)
+  ans = TypeRefelemOpt%tPoints(indx)
 END FUNCTION Elemdata_GetTotalGlobalVertexNodes
 
 !----------------------------------------------------------------------------
@@ -1617,8 +1606,8 @@ SUBROUTINE Elemdata_FindFace(obj, faceCon, isFace, &
 
   LOGICAL(LGT) :: isok
   INTEGER(I4B), PARAMETER :: faceopt = 1
-  INTEGER(I4B) :: tFaces, localFaces0(4, PARAM_REFELEM_MAX_FACES), &
-                  tFaceNodes(PARAM_REFELEM_MAX_FACES), iface, &
+  INTEGER(I4B) :: tFaces, localFaces0(4, TypeRefelemOpt%maxFaces), &
+                  tFaceNodes(TypeRefelemOpt%maxFaces), iface, &
                   found(4), want(4), found_size, want_size
 
   isFace = .FALSE.
@@ -1678,7 +1667,7 @@ SUBROUTINE Elemdata_FindEdge(obj, edgeCon, isEdge, localEdgeNumber, &
 
   LOGICAL(LGT) :: isok
   INTEGER(I4B), PARAMETER :: edgeOpt = 1
-  INTEGER(I4B) :: tEdges, localEdges0(2, PARAM_REFELEM_MAX_EDGES), &
+  INTEGER(I4B) :: tEdges, localEdges0(2, TypeRefelemOpt%maxEdges), &
                   iedge, found(2), want(2), aint
 
   isEdge = .FALSE.

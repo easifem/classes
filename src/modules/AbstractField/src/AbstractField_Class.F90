@@ -31,6 +31,8 @@
 ! to `AbstractNodeField_`, `AbstractElementField_`, `AbstractMatrixField_`.
 
 MODULE AbstractField_Class
+USE AbstractBC_Class, ONLY: AbstractBCPointer_
+USE AbstractBC_Class, ONLY: AbstractBC_
 USE AbstractDomain_Class, ONLY: AbstractDomainPointer_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE BaseType, ONLY: DOF_
@@ -296,6 +298,16 @@ CONTAINS
   GENERIC, PUBLIC :: GetMaxTotalNodeNumForBC => &
     GetMaxTotalNodeNumForBC1, &
     GetMaxTotalNodeNumForBC2
+
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc1 => obj_GetTotalNodeLoc1
+  !! Get size of NodeLoc(globalNode, spaceCompo, timeCompo, ivar)
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc2 => obj_GetTotalNodeLoc2
+  !! Get size of NodeLoc(AbstractBC, ivar)
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc3 => obj_GetTotalNodeLoc3
+  !! Get size of NodeLoc(Vector of AbstractBCPointer, ivar)
+  GENERIC, PUBLIC :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
+    GetTotalNodeLoc3
+  !! Generic method to get the size of NodeLoc
 
   ! SET:
   ! @SetMethods
@@ -1777,6 +1789,88 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: ivar
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxTotalNodeNumForBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary: Returns total number of nodes for globalNode
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc1( &
+    obj, globalNode, ivar, spaceCompo, timeCompo) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number (this variable is cuurrently not used)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodeLoc1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary:  Get total number of nodes corresponding to nodes in AbstractBC
+!
+!# Introduction
+!
+! This method returns the total number of nodes corresponding to
+! nodes defined in AbstractBC.
+!
+! - First, it will extract time components from obj
+! - Then it will use ivar (default is 1) to extract the total time compo
+!   in ivar
+! - Then, it call GetTotalNodeNum on dbc with stored fedof or fedofs
+! - The result will be tnode * tspace * ttime
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc2(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    !! AbstractField
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Abstract boundary condition
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! Physical variable number, default is 1
+    INTEGER(I4B) :: ans
+    !! Total number of nodes
+  END FUNCTION obj_GetTotalNodeLoc2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary: Get total number of nodes corresponding to dbc
+!
+!# Introduction
+! This routine is like GetTotalNodeLoc2, but it is for vector of
+! AbstractBCPointer. This routine calls GetTotalNodeLoc2 for each dbc
+! In debug mode, if dbc(ii)%ptr is not associated then it will skip that dbc.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc3(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractField_), INTENT(IN) :: obj
+    !! AbstractField
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! A vector of DirichletBCPointer
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical variable number, default is 1
+    INTEGER(I4B) :: ans
+    !! Total number of Nodes
+  END FUNCTION obj_GetTotalNodeLoc3
 END INTERFACE
 
 !----------------------------------------------------------------------------

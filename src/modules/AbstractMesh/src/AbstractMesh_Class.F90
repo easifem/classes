@@ -18,34 +18,21 @@
 
 MODULE AbstractMesh_Class
 USE GlobalData, ONLY: LGT, I4B, DFP
-
-USE Files, ONLY: HDF5File_, VTKFile_
-
-USE Basetype, ONLY: BoundingBox_, CSRMatrix_
-
+USE Files, ONLY: HDF5File_
+USE files, ONLY: VTKFile_
+USE Basetype, ONLY: BoundingBox_
+USE BaseType, ONLY: CSRMatrix_
+USE BaseType, ONLY: TypeMeshOpt
 USE ExceptionHandler_Class, ONLY: e
-
 USE CPUTime_Class, ONLY: CPUTime_
-
-USE ElemData_Class, ONLY: ElemData_, ElemDataPointer_
-
+USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: ElemDataPointer_
 USE ElemDataBinaryTree_Class, ONLY: ElemDataBinaryTree_
-
 USE ElemDataList_Class, ONLY: ElemDataList_
-
 USE NodeData_Class, ONLY: NodeData_, NodeDataPointer_
-
 USE NodeDataList_Class, ONLY: NodeDataList_
-
 USE NodeDataBinaryTree_Class, ONLY: NodeDataBinaryTree_
-
 USE FacetData_Class, ONLY: FacetData_
-
-USE AbstractMeshParam, ONLY: PARAM_MAX_NODE_TO_NODE, &
-                             PARAM_MAX_NODE_TO_ELEM, &
-                             PARAM_MAX_CONNECTIVITY_SIZE, &
-                             PARAM_MAX_NNE
-
 USE Kdtree2_Module, ONLY: Kdtree2_, Kdtree2Result_
 
 IMPLICIT NONE
@@ -60,10 +47,6 @@ PUBLIC :: AbstractMeshGetParam
 PUBLIC :: AbstractMeshImport
 PUBLIC :: AbstractMeshGetFacetConnectivity
 PUBLIC :: AbstractMeshPointerDeallocate
-PUBLIC :: PARAM_MAX_NODE_TO_NODE
-PUBLIC :: PARAM_MAX_NODE_TO_ELEM
-PUBLIC :: PARAM_MAX_CONNECTIVITY_SIZE
-PUBLIC :: PARAM_MAX_NNE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class"
 

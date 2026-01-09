@@ -18,8 +18,7 @@
 !
 
 SUBMODULE(OneDimFEDOF_Class) GetMethods
-USE AbstractMesh_Class, ONLY: PARAM_MAX_CONNECTIVITY_SIZE
-
+USE BaseType, ONLY: TypeMeshOpt
 IMPLICIT NONE
 
 CONTAINS
@@ -197,7 +196,7 @@ CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity_()'
 #endif
 
 INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices
-INTEGER(I4B) :: temp(PARAM_MAX_CONNECTIVITY_SIZE)
+INTEGER(I4B) :: temp(TypeMeshOpt%maxCon)
 LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 #ifdef DEBUG_VER

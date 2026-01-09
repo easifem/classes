@@ -24,6 +24,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE ElemData_Class
 USE FacetData_Class
 USE ReferenceElement_Method
+USE BaseType, ONLY: TypeRefelemOpt
 
 IMPLICIT NONE
 PRIVATE
@@ -141,8 +142,8 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements3D()"
   LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tfaces, ii, jj, &
-                  temp1(3 * PARAM_REFELEM_MAX_FACES), cint, &
-                  bndyflag(PARAM_REFELEM_MAX_FACES)
+                  temp1(3 * TypeRefelemOpt%maxFaces), cint, &
+                  bndyflag(TypeRefelemOpt%maxFaces)
   INTEGER(I4B), ALLOCATABLE :: face2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
   TYPE(CPUTime_) :: TypeCPUTime

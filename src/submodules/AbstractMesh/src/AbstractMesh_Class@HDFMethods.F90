@@ -17,38 +17,29 @@
 
 SUBMODULE(AbstractMesh_Class) HDFMethods
 USE ReallocateUtility, ONLY: Reallocate
-
-USE HDF5File_Method, ONLY: HDF5GetEntities, &
-                           HDF5ReadScalar, &
-                           HDF5ReadVector, &
-                           HDF5ReadMatrix
-
+USE HDF5File_Method, ONLY: HDF5GetEntities
+USE HDF5File_Method, ONLY: HDF5ReadScalar
+USE HDF5File_Method, ONLY: HDF5ReadVector
+USE HDF5File_Method, ONLY: HDF5ReadMatrix
 USE ArangeUtility, ONLY: Arange
-
 USE InputUtility, ONLY: Input
-
-USE ReferenceElement_Method, ONLY: GetElementIndex, &
-                                   GetTotalNodes, &
-                                   ReferenceElementInfo, &
-                                   GetVTKelementType_
-
-USE Display_Method, ONLY: Display, &
-                          EqualLine, &
-                          ToString
-
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE ReferenceElement_Method, ONLY: GetTotalNodes
+USE ReferenceElement_Method, ONLY: GetVTKelementType_
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: ToString
 USE AssertUtility, ONLY: Assert
-
-USE NodeData_Class, ONLY: INTERNAL_NODE, &
-                          BOUNDARY_NODE, &
-                          NodeData_Set, &
-                          NodeData_SetNodeCoord
-
-USE ElemData_Class, ONLY: ElemData_Set, &
-                          ElemData_Deallocate
-
+USE NodeData_Class, ONLY: INTERNAL_NODE
+USE NodeData_Class, ONLY: BOUNDARY_NODE
+USE NodeData_Class, ONLY: NodeData_Set
+USE NodeData_Class, ONLY: NodeData_SetNodeCoord
+USE ElemData_Class, ONLY: ElemData_Set
+USE ElemData_Class, ONLY: ElemData_Deallocate
 USE GlobalData, ONLY: stdout, INT8
-
-USE StringUtility, ONLY: PathJoin, PathBase
+USE StringUtility, ONLY: PathJoin
+USE StringUtility, ONLY: PathBase
+USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
 
 IMPLICIT NONE
 

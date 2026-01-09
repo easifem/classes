@@ -19,19 +19,7 @@
 
 SUBMODULE(OneDimFEDOF_Class) SetMethods
 USE Display_Method, ONLY: ToString, Display
-
 USE ReallocateUtility, ONLY: Reallocate
-
-! USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity, &
-!                             CSRMatrix_GetMatrixProp => GetMatrixProp
-!
-!
-! USE FEDomainConnectivity_Class, ONLY: FEDomainConnectivity_
-!
-! USE AbstractMeshParam, ONLY: PARAM_MAX_NODE_TO_NODE, &
-!                              PARAM_MAX_NODE_TO_ELEM, &
-!                              PARAM_MAX_CONNECTIVITY_SIZE, &
-!                              PARAM_MAX_NNE
 
 IMPLICIT NONE
 CONTAINS

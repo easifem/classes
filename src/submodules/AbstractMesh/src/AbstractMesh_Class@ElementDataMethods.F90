@@ -17,18 +17,13 @@
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
 USE ReallocateUtility, ONLY: Reallocate
-
 USE Display_Method, ONLY: ToString
-
-USE ReferenceElement_Method, ONLY: REFELEM_MAX_FACES => &
-                                   PARAM_REFELEM_MAX_FACES
-
-USE AbstractMeshUtility, ONLY: InitiateElementToElements3D, &
-                               InitiateElementToElements2D, &
-                               InitiateElementToElements1D
-
-USE NodeData_Class, ONLY: TypeNode, &
-                          NodeData_SetNodeType
+USE BaseType, ONLY: TypeRefelemOpt
+USE AbstractMeshUtility, ONLY: InitiateElementToElements3D
+USE AbstractMeshUtility, ONLY: InitiateElementToElements2D
+USE AbstractMeshUtility, ONLY: InitiateElementToElements1D
+USE NodeData_Class, ONLY: TypeNode
+USE NodeData_Class, ONLY: NodeData_SetNodeType
 
 IMPLICIT NONE
 CONTAINS

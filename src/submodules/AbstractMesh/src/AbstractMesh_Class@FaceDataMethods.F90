@@ -16,24 +16,16 @@
 !
 
 SUBMODULE(AbstractMesh_Class) FaceDataMethods
-USE ReferenceElement_Method, ONLY: &
-  REFELEM_MAX_FACES => PARAM_REFELEM_MAX_FACES, &
-  REFELEM_MAX_POINTS => PARAM_REFELEM_MAX_POINTS, &
-  RefElemGetGeoParam, IsQuadrangle
-
+USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: IsQuadrangle
+USE BaseType, ONLY: TypeRefelemOpt
 USE ReferenceTriangle_Method, ONLY: FaceShapeMetaData_Triangle
-
 USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
-
 USE ReallocateUtility, ONLY: Reallocate
-
-USE FaceData_Class
-
-USE FaceDataBinaryTree_Class
-
-USE SortUtility
-
 USE GlobalData, ONLY: INT8
+USE SortUtility, ONLY: Sort
+USE FaceData_Class
+USE FaceDataBinaryTree_Class
 
 IMPLICIT NONE
 

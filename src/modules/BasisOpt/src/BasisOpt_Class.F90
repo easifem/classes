@@ -18,14 +18,14 @@
 MODULE BasisOpt_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE String_Class, ONLY: String
-USE BaseType, ONLY: ipopt => TypeInterpolationOpt, &
-                    polyopt => TypePolynomialOpt, &
-                    fevaropt => TypeFEVariableOpt, &
-                    elemnameopt => TypeElemNameOpt, &
-                    QuadraturePoint_, &
-                    ElemShapeData_
+USE BaseType, ONLY: ipopt => TypeInterpolationOpt
+USE BaseType, ONLY: polyopt => TypePolynomialOpt
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE BaseType, ONLY: elemnameopt => TypeElemNameOpt
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE QuadratureOpt_Class, ONLY: QuadratureOpt_
-USE ReferenceElement_Method, ONLY: eleminfo => ReferenceElementInfo
 USE ExceptionHandler_Class, ONLY: e
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
@@ -33,7 +33,6 @@ USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 
 PRIVATE
-
 CHARACTER(*), PARAMETER :: modName = "BasisOpt_Class"
 INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
