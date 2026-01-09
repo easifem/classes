@@ -18,15 +18,15 @@
 !
 
 SUBMODULE(FEDOF_Class) GetMethods
-USE ElemData_Class, ONLY: ElemData_, &
-                          ElemData_GetTotalEntities, &
-                          ElemData_GetTotalGlobalVertexNodes, &
-                          ElemData_GetEdge, &
-                          ElemData_GetFace, &
-                          ElemData_GetCell
+USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: ElemData_GetTotalEntities
+USE ElemData_Class, ONLY: ElemData_GetTotalGlobalVertexNodes
+USE ElemData_Class, ONLY: ElemData_GetEdge
+USE ElemData_Class, ONLY: ElemData_GetFace
+USE ElemData_Class, ONLY: ElemData_GetCell
 USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
+USE BaseType, ONLY: TypeMeshOpt
 USE Display_Method, ONLY: ToString
-
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif
@@ -378,7 +378,7 @@ CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity_()'
 LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 INTEGER(I4B) :: ent(4)
 INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices, tcon
-INTEGER(I4B) :: con(PARAM_MAX_CONNECTIVITY_SIZE)
+INTEGER(I4B) :: con(TypeMeshOpt%maxCon)
 CHARACTER(1) :: opt0
 
 #ifdef DEBUG_VER
@@ -605,7 +605,7 @@ CHARACTER(*), PARAMETER :: myName = 'obj_GetOrders()'
 INTEGER(I4B) :: ii, jj, tNodeOrder, cellCon(1), &
                 faceCon(ReferenceElementInfo%maxEdges), &
                 edgeCon(ReferenceElementInfo%maxEdges), &
-                nodeCon(PARAM_MAX_CONNECTIVITY_SIZE)
+                nodeCon(TypeMeshOpt%maxCon)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -19,7 +19,7 @@ SUBMODULE(FEDomainConnectivity_Class) CellMethods
 USE IntegerUtility, ONLY: OPERATOR(.in.)
 USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: ToString
-USE AbstractMesh_Class, ONLY: PARAM_MAX_NNE, PARAM_MAX_NODE_TO_ELEM
+USE BaseType, ONLY: TypeMeshOpt
 
 IMPLICIT NONE
 
@@ -36,8 +36,8 @@ INTEGER(I4B) :: ii, nsd, order1, order2, iel1, jj
 ! element numbers in mesh2
 INTEGER(I4B), POINTER :: nodeToNode(:)
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: nptrs1(PARAM_MAX_NNE), nptrs2(PARAM_MAX_NNE), &
-                nptrs3(PARAM_MAX_NNE), elem2(PARAM_MAX_NODE_TO_ELEM)
+INTEGER(I4B) :: nptrs1(TypeMeshOpt%maxNNE), nptrs2(TypeMeshOpt%maxNNE), &
+                nptrs3(TypeMeshOpt%maxNNE), elem2(TypeMeshOpt%maxNodeToElem)
 
 INTEGER(I4B) :: minelem, maxelem, telem2
 
@@ -132,8 +132,8 @@ INTEGER(I4B) :: ii, nsd, order1, order2, iel1, jj
 ! element numbers in mesh2
 INTEGER(I4B), POINTER :: nodeToNode(:)
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: nptrs1(PARAM_MAX_NNE), nptrs2(PARAM_MAX_NNE), &
-                nptrs3(PARAM_MAX_NNE), elem2(PARAM_MAX_NODE_TO_ELEM)
+INTEGER(I4B) :: nptrs1(TypeMeshOpt%maxNNE), nptrs2(TypeMeshOpt%maxNNE), &
+                nptrs3(TypeMeshOpt%maxNNE), elem2(TypeMeshOpt%maxNodeToElem)
 
 INTEGER(I4B) :: minelem, maxelem, telem2
 

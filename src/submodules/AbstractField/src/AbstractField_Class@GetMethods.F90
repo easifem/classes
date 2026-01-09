@@ -17,6 +17,7 @@
 SUBMODULE(AbstractField_Class) GetMethods
 USE Display_Method, ONLY: ToString
 USE BaseType, ONLY: TypeDOFOpt
+USE InputUtility, ONLY: Input
 
 IMPLICIT NONE
 CONTAINS

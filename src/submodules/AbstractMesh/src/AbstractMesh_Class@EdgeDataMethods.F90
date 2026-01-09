@@ -16,14 +16,17 @@
 !
 
 SUBMODULE(AbstractMesh_Class) EdgeDataMethods
+USE BaseType, ONLY: TypeRefelemOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE EdgeDataBinaryTree_Class, ONLY: EdgeDataBinaryTree_
+USE EdgeData_Class, ONLY: EdgeDataInitiate => Initiate
+USE EdgeData_Class, ONLY: EdgeData_
+USE EdgeData_Class, ONLY: EdgeData_Pointer
+USE GlobalData, ONLY: INT8
+USE ReallocateUtility, ONLY: Reallocate
 USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
 USE ReferenceLine_Method, ONLY: MaxOrder_Line
-USE ReallocateUtility, ONLY: Reallocate
 USE SortUtility, ONLY: Sort
-USE GlobalData, ONLY: INT8
-USE BaseType, ONLY: TypeRefelemOpt
-USE EdgeData_Class, ONLY: EdgeData_, EdgeData_Pointer
-USE EdgeDataBinaryTree_Class, ONLY: EdgeDataBinaryTree_
 
 IMPLICIT NONE
 
@@ -34,12 +37,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateEdgeConnectivity
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
+#endif
+
 INTEGER(I4B) :: tElements, iel, elemType, tEdges, &
                 localEdges(MaxOrder_Line + 1, TypeRefelemOpt%maxEdges), &
                 edge(2), sorted_edge(2), &
                 tNodes, tsize1, tsize2, iedge
-LOGICAL(LGT) :: problem
+LOGICAL(LGT) :: isok
 TYPE(EdgeDataBinaryTree_) :: edgeTree
 TYPE(EdgeData_) :: edgeValue
 TYPE(EdgeData_), POINTER :: edgePtr
@@ -49,29 +55,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-problem = obj%isEdgeConnectivityInitiated
-IF (problem) RETURN
+isok = obj%isEdgeConnectivityInitiated
+IF (isok) RETURN
 
-problem = .NOT. ALLOCATED(obj%elementData)
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%elementData)
+CALL AssertError1(isok, myName, &
+                  'AbstractMesh_::obj%elementData not allocated')
+#endif
 
 tElements = obj%GetTotalElements()
 
 CALL edgeTree%Initiate()
 
-obj%isEdgeConnectivityInitiated = .TRUE.
+obj%isEdgeConnectivityInitiated = math%yes
 
 DO iel = 1, tElements
-  problem = .NOT. obj%elementData(iel)%ptr%isActive
-  IF (problem) CYCLE
+  isok = .NOT. obj%elementData(iel)%ptr%isActive
+  IF (isok) CYCLE
+
   elemType = obj%elementData(iel)%ptr%name
   CALL RefElemGetGeoParam(elemType=elemType, tEdges=tEdges, tNodes=tNodes, &
-                          edgeCon=localEdges, edgeOpt=1_I4B)
+                          edgeCon=localEdges, edgeOpt=math%one_i)
 
   CALL Reallocate(obj%elementData(iel)%ptr%globalEdges, tEdges)
   CALL Reallocate(obj%elementData(iel)%ptr%edgeOrient, tEdges)
@@ -99,7 +104,7 @@ DO iel = 1, tElements
       obj%elementData(iel)%ptr%globalEdges(iedge) = tsize2
       edgePtr%id = tsize2
     ELSE
-      CALL Initiate(edgeValue, sorted_edge)
+      CALL EdgeDataInitiate(edgeValue, sorted_edge)
       edgePtr => edgeTree%GetValuePointer(edgeValue)
       obj%elementData(iel)%ptr%globalEdges(iedge) = edgePtr%id
     END IF
@@ -117,5 +122,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_InitiateEdgeConnectivity
+
+!----------------------------------------------------------------------------
+!                                                           Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE EdgeDataMethods

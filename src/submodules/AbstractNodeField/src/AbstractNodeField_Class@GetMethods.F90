@@ -30,10 +30,7 @@ USE RealVector_Method, ONLY: GetValue_
 USE RealVector_Method, ONLY: RealVector_Get => Get
 USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
-
-INTEGER(I4B), PARAMETER :: MAX_PHYSICAL_VARS = 64
 
 CONTAINS
 

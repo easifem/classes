@@ -16,25 +16,25 @@
 !
 
 MODULE Elemdata_Class
-USE GlobalData, ONLY: I4B, DFP, LGT, INT8
-USE Display_Method, ONLY: Display
 USE BaseType, ONLY: TypeRefelemOpt
-USE AbstractMeshParam, ONLY: PARAM_MAX_NNE
-USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
-USE ReferenceElement_Method, ONLY: ElementName
-USE ReferenceElement_Method, ONLY: GetFaceElemType
-USE ReferenceElement_Method, ONLY: GetEdgeConnectivity
-USE ReferenceElement_Method, ONLY: ElementTopology
-USE ReferenceElement_Method, ONLY: GetElementIndex
-USE ReferenceElement_Method, ONLY: ElementOrder
-USE InterpolationUtility, ONLY: GetTotalInDOF
-USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle
-USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
-USE SortUtility, ONLY: Sort, QuickSort
-USE ReallocateUtility, ONLY: Reallocate
-USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: elemopt => TypeElemNameOpt
+USE BaseType, ONLY: TypeMeshOpt
+USE Display_Method, ONLY: Display
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: I4B, DFP, LGT, INT8
 USE IntegerUtility, ONLY: OPERATOR(.IN.)
+USE InterpolationUtility, ONLY: GetTotalInDOF
+USE ReallocateUtility, ONLY: Reallocate
+USE ReferenceElement_Method, ONLY: ElementName
+USE ReferenceElement_Method, ONLY: ElementOrder
+USE ReferenceElement_Method, ONLY: ElementTopology
+USE ReferenceElement_Method, ONLY: GetEdgeConnectivity
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE ReferenceElement_Method, ONLY: GetFaceElemType
+USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
+USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
+USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle
+USE SortUtility, ONLY: Sort, QuickSort
 
 IMPLICIT NONE
 
@@ -1033,7 +1033,7 @@ SUBROUTINE Elemdata_GetEdgeConnectivity(obj, ans, tsize, ii)
   INTEGER(I4B), INTENT(IN) :: ii
   !! Edge number (local)
 
-  INTEGER(I4B) :: ncol, jj, con(PARAM_MAX_NNE, TypeRefelemOpt%maxEdges)
+  INTEGER(I4B) :: ncol, jj, con(TypeMeshOpt%maxNNE, TypeRefelemOpt%maxEdges)
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Elemdata_GetEdgeConnectivity()"

@@ -18,8 +18,8 @@
 !
 
 SUBMODULE(FEDOF_Class) SetSparsityMethods
-USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity, &
-                            CSRMatrix_GetMatrixProp => GetMatrixProp
+USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity
+USE CSRMatrix_Method, ONLY: CSRMatrix_GetMatrixProp => GetMatrixProp
 USE Display_Method, ONLY: ToString, Display
 USE FEDomainConnectivity_Class, ONLY: FEDomainConnectivity_
 USE BaseType, ONLY: TypeMeshOpt

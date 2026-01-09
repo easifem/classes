@@ -21,23 +21,21 @@ SUBMODULE(FEDOF_Class) ConstructorMethods
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
-USE ElemData_Class, ONLY: ElemData_, &
-                          ElemData_GetTotalEntities, &
-                          ElemData_GetEdge, &
-                          ElemData_GetFace, &
-                          ElemData_GetCell, &
-                          ElemData_GetTotalEdgeDOF, &
-                          ElemData_GetTotalFaceDOF, &
-                          ElemData_GetTotalCellDOF
-
+USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: ElemData_GetTotalEntities
+USE ElemData_Class, ONLY: ElemData_GetEdge
+USE ElemData_Class, ONLY: ElemData_GetFace
+USE ElemData_Class, ONLY: ElemData_GetCell
+USE ElemData_Class, ONLY: ElemData_GetTotalEdgeDOF
+USE ElemData_Class, ONLY: ElemData_GetTotalFaceDOF
+USE ElemData_Class, ONLY: ElemData_GetTotalCellDOF
 USE StringUtility, ONLY: UpperCase
 USE AbstractFE_Class, ONLY: AbstractFEDeallocate
-USE BaseType, ONLY: TypeInterpolationOpt, &
-                    TypePolynomialOpt
-USE ReferenceElement_Method, ONLY: eleminfo => ReferenceElementInfo, &
-                                   GetElementIndex
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE FEFactoryUtility, ONLY: FEFactory
-
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif

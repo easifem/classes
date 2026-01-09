@@ -24,18 +24,11 @@ USE ElemData_Class, ONLY: ElemData_, &
                           ElemData_GetEdgeConnectivity, &
                           ElemData_GetElementToElements, &
                           ElemData_GetFace
-
 USE IntegerUtility, ONLY: GetIntersection
-
-USE ReferenceElement_Method, ONLY: ReferenceElementInfo
-USE ReferenceElement_Method, ONLY: PARAM_REFELEM_MAX_FACES
-USE AbstractMesh_Class, ONLY: PARAM_MAX_NODE_TO_ELEM
-
+USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
+USE basetype, ONLY: TypeMeshOpt
 USE ReallocateUtility, ONLY: Reallocate
-
 USE Display_Method, ONLY: ToString
-
-USE GlobalData, ONLY: CHAR_LF
 
 IMPLICIT NONE
 CONTAINS
@@ -162,8 +155,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetEdgeOrder()"
 #endif
 
 INTEGER(I4B) :: tsize, ii, iel, ent(4), jj, &
-                kk, edgeCon(2), n2e1(PARAM_MAX_NODE_TO_ELEM), &
-                n2e2(PARAM_REFELEM_MAX_FACES), n2e(PARAM_MAX_NODE_TO_ELEM), &
+                kk, edgeCon(2), n2e1(TypeMeshOpt%maxNodeToElem), &
+        n2e2(ReferenceElementInfo%maxFaces), n2e(TypeMeshOpt%maxNodeToElem), &
                 tsize1, tsize2
 LOGICAL(LGT) :: isok
 TYPE(ElemData_), POINTER :: elemdata
