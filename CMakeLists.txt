@@ -21,9 +21,9 @@ project(${PROJECT_NAME})
 
 enable_language(Fortran C CXX)
 
-set(VERSION_MAJOR "25")
+set(VERSION_MAJOR "26")
 set(VERSION_MINOR "04")
-set(VERSION_BugFix "1")
+set(VERSION_BugFix "0")
 set(PROJECT_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BugFix})
 
 set(CMAKE_PROJECT_DESCRIPTION
