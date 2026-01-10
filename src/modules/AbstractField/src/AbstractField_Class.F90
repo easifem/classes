@@ -299,11 +299,14 @@ CONTAINS
     GetMaxTotalNodeNumForBC1, &
     GetMaxTotalNodeNumForBC2
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc1 => obj_GetTotalNodeLoc1
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc1 => &
+    obj_GetTotalNodeLoc1
   !! Get size of NodeLoc(globalNode, spaceCompo, timeCompo, ivar)
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc2 => obj_GetTotalNodeLoc2
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc2 => &
+    obj_GetTotalNodeLoc2
   !! Get size of NodeLoc(AbstractBC, ivar)
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodeLoc3 => obj_GetTotalNodeLoc3
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc3 => &
+    obj_GetTotalNodeLoc3
   !! Get size of NodeLoc(Vector of AbstractBCPointer, ivar)
   GENERIC, PUBLIC :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
     GetTotalNodeLoc3
