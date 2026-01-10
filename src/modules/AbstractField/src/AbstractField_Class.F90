@@ -338,8 +338,8 @@ CONTAINS
     obj_GetDirichletBCIndex_
   !! Get the Dirichlet BC indices
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDirichletBCIndex => &
-    obj_GetTotalDirichletBCIndex
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalDirichletBCIndex => obj_GetTotalDirichletBCIndex
   !! Get the Dirichlet BC indices
 
   ! SET:
