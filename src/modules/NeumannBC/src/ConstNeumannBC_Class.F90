@@ -21,6 +21,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE MeshSelection_Class, ONLY: MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE NeumannBC_Class, ONLY: NeumannBC_
+USE NeumannBC_Class, ONLY: NeumannBCPointer_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
@@ -156,7 +157,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
-    TYPE(ConstNeumannBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(NeumannBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
@@ -181,7 +182,7 @@ END INTERFACE ConstNeumannBCImportFromToml
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2( &
     obj, dom, tomlName, afile, filename, printToml)
-    TYPE(ConstNeumannBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(NeumannBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile

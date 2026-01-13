@@ -34,7 +34,9 @@ MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
+#define _POLYMORPHIC_TYPE_ DirichletBC_
 #include "../../include/AbstractBC/ImportFromToml1.F90"
+#undef _POLYMORPHIC_TYPE_
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------

@@ -701,7 +701,7 @@ obj%isInit = .TRUE.
 obj%dom => dom
 CALL ReadNameFromToml(obj=obj, table=table)
 CALL ReadIdofFromToml(obj=obj, table=table)
-CALL ReadNodalValueTypeFromToml(obj=obj, table=table)
+obj%nodalValueType = TypeFieldOpt%constant
 CALL ReadIsNormalFromToml(obj=obj, table=table)
 CALL ReadIsTangentFromToml(obj=obj, table=table)
 CALL ReadBoundaryFromToml(obj=obj, table=table, dom=dom)

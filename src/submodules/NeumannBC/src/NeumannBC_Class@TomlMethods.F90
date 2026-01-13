@@ -36,8 +36,10 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 #define _POST_IMPORT_FROM_TOML_CALL_STMT_ SetElemToLocalBoundary()
+#define _POLYMORPHIC_TYPE_ NeumannBC_
 #include "../../include/AbstractBC/ImportFromToml1.F90"
 #undef _POST_IMPORT_FROM_TOML_CALL_STMT_
+#undef _POLYMORPHIC_TYPE_
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------

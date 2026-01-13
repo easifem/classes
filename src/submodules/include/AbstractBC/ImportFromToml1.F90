@@ -114,7 +114,7 @@ DO ii = 1, tsize
 #endif
 
   isok = ASSOCIATED(obj(ii)%ptr)
-  IF (.NOT. isok) ALLOCATE (obj(ii)%ptr)
+  IF (.NOT. isok) ALLOCATE (_POLYMORPHIC_TYPE_ :: obj(ii)%ptr)
   CALL obj(ii)%ptr%ImportFromToml(table=node, dom=dom)
 
 #ifdef _POST_IMPORT_FROM_TOML_CALL_STMT_
