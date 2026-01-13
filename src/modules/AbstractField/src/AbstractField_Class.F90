@@ -334,13 +334,21 @@ CONTAINS
     obj_GetDirichletBCIndex
   !! Get the Dirichlet BC indices
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetDirichletBCIndex_ => &
-    obj_GetDirichletBCIndex_
-  !! Get the Dirichlet BC indices
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetDirichletBCIndex1_ => &
+    obj_GetDirichletBCIndex1_
+  !! Get the Dirichlet BC indices from dbc stored internally
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetDirichletBCIndex2_ => &
+    obj_GetDirichletBCIndex2_
+  !! Get the Dirichlet BC indices from given DirichletBCPointer_
+  GENERIC, PUBLIC :: GetDirichletBCIndex_ => GetDirichletBCIndex1_, &
+    GetDirichletBCIndex2_
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetTotalDirichletBCIndex => obj_GetTotalDirichletBCIndex
-  !! Get the Dirichlet BC indices
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+    GetTotalDirichletBCIndex1 => obj_GetTotalDirichletBCIndex1, &
+    GetTotalDirichletBCIndex2 => obj_GetTotalDirichletBCIndex2
+  !! Get the size of Dirichlet BC indices
+  GENERIC, PUBLIC :: GetTotalDirichletBCIndex => &
+    GetTotalDirichletBCIndex1, GetTotalDirichletBCIndex2
 
   ! SET:
   ! @SetMethods
@@ -2051,11 +2059,28 @@ END INTERFACE
 ! summary:  This function returns the location of globalNode from bc
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalDirichletBCIndex(obj, ivar) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalDirichletBCIndex1(obj, ivar) RESULT(ans)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalDirichletBCIndex
+  END FUNCTION obj_GetTotalDirichletBCIndex1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetTotalDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDirichletBCIndex2(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDirichletBCIndex2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2083,12 +2108,30 @@ END INTERFACE
 ! summary:  This function returns the location of globalNode from bc
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetDirichletBCIndex_(obj, ans, tsize, ivar)
+  MODULE SUBROUTINE obj_GetDirichletBCIndex1_(obj, ans, tsize, ivar)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
-  END SUBROUTINE obj_GetDirichletBCIndex_
+  END SUBROUTINE obj_GetDirichletBCIndex1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDirichletBCIndex2_(obj, dbc, ans, tsize, ivar)
+    CLASS(AbstractField_), INTENT(INOUT) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetDirichletBCIndex2_
 END INTERFACE
 
 !----------------------------------------------------------------------------

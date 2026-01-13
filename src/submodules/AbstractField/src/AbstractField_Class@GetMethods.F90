@@ -15,11 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) GetMethods
-USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: TypeDOFOpt
-USE InputUtility, ONLY: Input
-USE DOF_Method, ONLY: GetNodeLoc_
 USE ArangeUtility, ONLY: Arange
+USE BaseType, ONLY: TypeDOFOpt
+USE DOF_Method, ONLY: GetNodeLoc_
+USE Display_Method, ONLY: ToString
+USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
@@ -1120,9 +1120,9 @@ END PROCEDURE obj_GetNodeLoc_3
 !                                                    GetTotalDirichletBCIndex
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetTotalDirichletBCIndex
+MODULE PROCEDURE obj_GetTotalDirichletBCIndex1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDirichletBCIndex()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDirichletBCIndex1()"
 #endif
 
 LOGICAL(LGT) :: isok
@@ -1140,7 +1140,29 @@ IF (isok) ans = obj%GetTotalNodeLoc(dbc=obj%dbc, ivar=ivar)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetTotalDirichletBCIndex
+END PROCEDURE obj_GetTotalDirichletBCIndex1
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalDirichletBCIndex
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalDirichletBCIndex2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDirichletBCIndex2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%GetTotalNodeLoc(dbc=dbc, ivar=ivar)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalDirichletBCIndex2
 
 !----------------------------------------------------------------------------
 !                                                         GetDirichletBCIndex
@@ -1172,9 +1194,9 @@ END PROCEDURE obj_GetDirichletBCIndex
 !                                                       GetDirichletBCIndex_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetDirichletBCIndex_
+MODULE PROCEDURE obj_GetDirichletBCIndex1_
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCIndex_()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCIndex1_()"
 #endif
 
 LOGICAL(LGT) :: isok
@@ -1193,7 +1215,30 @@ IF (isok) CALL obj%GetNodeLoc_(dbc=obj%dbc, ivar=ivar, ans=ans, tsize=tsize)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetDirichletBCIndex_
+END PROCEDURE obj_GetDirichletBCIndex1_
+
+!----------------------------------------------------------------------------
+!                                                       GetDirichletBCIndex_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDirichletBCIndex2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDirichletBCIndex2_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetNodeLoc_(dbc=dbc, ivar=ivar, ans=ans, tsize=tsize)
+!! Here we are calling GetNodeLoc_3
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetDirichletBCIndex2_
 
 !----------------------------------------------------------------------------
 !                                                             Include error
