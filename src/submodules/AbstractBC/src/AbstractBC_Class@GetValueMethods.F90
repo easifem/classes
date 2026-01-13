@@ -497,12 +497,13 @@ SUBROUTINE Get1ConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
   ! Edge nodes
   iNodeOnEdge = nrow + 1
   DO ii = 1, obj%tElemToEdge
-    CALL obj%GetElemToEdge(indx=ii, localEdgeNumber=localEdgeNumber, &
-                           localCellNumber=localCellNumber)
+    CALL obj%GetElemToEdge( &
+      indx=ii, localEdgeNumber=localEdgeNumber, &
+      localCellNumber=localCellNumber)
 
     CALL fedof%GetEdgeDOF( &
       globalElement=localCellNumber, localEdgeNumber=localEdgeNumber, &
-      ans=nodenum(nrow + 1:), tsize=mysize, islocal=math%yes)
+      ans=nodeNum(nrow + 1:), tsize=mysize, islocal=math%yes)
 
     nrow = nrow + mysize
   END DO
