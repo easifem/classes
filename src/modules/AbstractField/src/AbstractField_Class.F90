@@ -298,34 +298,34 @@ CONTAINS
   GENERIC, PUBLIC :: GetMaxTotalNodeNumForBC => &
     GetMaxTotalNodeNumForBC1, GetMaxTotalNodeNumForBC2
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc1 => &
+  PROCEDURE, PASS(obj) :: GetTotalNodeLoc1 => &
     obj_GetTotalNodeLoc1
   !! Get size of NodeLoc(globalNode, spaceCompo, timeCompo, ivar)
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc2 => &
+  PROCEDURE, PASS(obj) :: GetTotalNodeLoc2 => &
     obj_GetTotalNodeLoc2
   !! Get size of NodeLoc(AbstractBC, ivar)
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc3 => &
+  PROCEDURE, PASS(obj) :: GetTotalNodeLoc3 => &
     obj_GetTotalNodeLoc3
   !! Get size of NodeLoc(Vector of AbstractBCPointer, ivar)
   GENERIC, PUBLIC :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
     GetTotalNodeLoc3
   !! Generic method to get the size of NodeLoc
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
+  PROCEDURE, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
   !! Get location of global node number
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
+  PROCEDURE, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
   !! Get location of global node number from AbstractBC
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
+  PROCEDURE, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
   !! Get location of global node number from DirichletBCPointer
   GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2, &
     GetNodeLoc3
   !! Generic method for getting location of nodes
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc_1 => obj_GetNodeLoc_1
+  PROCEDURE, PASS(obj) :: GetNodeLoc_1 => obj_GetNodeLoc_1
   !! Like GetNodeLoc1 but without allocation
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc_2 => obj_GetNodeLoc_2
+  PROCEDURE, PASS(obj) :: GetNodeLoc_2 => obj_GetNodeLoc_2
   !! Like GetNodeLoc1 but without allocation
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc_3 => obj_GetNodeLoc_3
+  PROCEDURE, PASS(obj) :: GetNodeLoc_3 => obj_GetNodeLoc_3
   !! Like GetNodeLoc1 but without allocation
   GENERIC, PUBLIC :: GetNodeLoc_ => GetNodeLoc_1, GetNodeLoc_2, &
     GetNodeLoc_3
@@ -334,16 +334,16 @@ CONTAINS
     obj_GetDirichletBCIndex
   !! Get the Dirichlet BC indices
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetDirichletBCIndex1_ => &
+  PROCEDURE, PASS(obj) :: GetDirichletBCIndex1_ => &
     obj_GetDirichletBCIndex1_
   !! Get the Dirichlet BC indices from dbc stored internally
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetDirichletBCIndex2_ => &
+  PROCEDURE, PASS(obj) :: GetDirichletBCIndex2_ => &
     obj_GetDirichletBCIndex2_
   !! Get the Dirichlet BC indices from given DirichletBCPointer_
   GENERIC, PUBLIC :: GetDirichletBCIndex_ => GetDirichletBCIndex1_, &
     GetDirichletBCIndex2_
 
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+  PROCEDURE, PASS(obj) :: &
     GetTotalDirichletBCIndex1 => obj_GetTotalDirichletBCIndex1, &
     GetTotalDirichletBCIndex2 => obj_GetTotalDirichletBCIndex2
   !! Get the size of Dirichlet BC indices
