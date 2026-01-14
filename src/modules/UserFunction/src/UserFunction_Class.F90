@@ -21,7 +21,6 @@ USE BaseType, ONLY: iface_ScalarFunction
 USE BaseType, ONLY: iface_VectorFunction
 USE BaseType, ONLY: iface_MatrixFunction
 USE String_Class, ONLY: String
-USE FPL, ONLY: ParameterList_
 USE HDF5File_Class, ONLY: HDF5File_
 USE TxtFile_Class, ONLY: TxtFile_
 USE ExceptionHandler_Class, ONLY: e
@@ -29,10 +28,14 @@ USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 PRIVATE
+
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "UserFunction_Class"
-CHARACTER(*), PARAMETER :: myprefix = "UserFunction"
+#endif
+
 CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) = &
                            ["Scalar", "Vector", "Matrix"]
+
 CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) = &
                            ["Constant         ", &
                             "Space            ", &
@@ -51,7 +54,6 @@ INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SPACETIME = 4
 PUBLIC :: UserFunction_
 PUBLIC :: UserFunctionGetReturnType
 PUBLIC :: UserFunctionGetArgType
-PUBLIC :: SetUserFunctionParam
 PUBLIC :: UserFunctionImportFromToml
 PUBLIC :: UserFunctionPointer_
 PUBLIC :: UserFunctionDeallocate
@@ -110,29 +112,22 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Deallocate data
 
   FINAL :: obj_Final
 
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate the userFunction from the ParameterList_
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the user function from the arguments
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
   PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   !! Set name of the function
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => obj_GetScalarValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => obj_GetVectorValue
   PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue1 => obj_GetVectorValue1
@@ -160,16 +155,22 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
+
+  ! IO:
+  ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import from HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export to HDF5File
+
+  ! IO:
+  ! @TomlMethods
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
-    & ImportFromToml2
+    ImportFromToml2
   !! Import abstract kernel from toml
 END TYPE UserFunction_
 
@@ -212,56 +213,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
-! summary: Check the essential parameter
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(UserFunction_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                    setUserFunctionParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
-! summary: Sets user funciton parameter
-
-INTERFACE
-  MODULE SUBROUTINE SetUserFunctionParam(param, name, returnType, argType, &
-                                         numArgs, numReturns, luaScript, &
-                                         luaFunctionName, returnShape)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! parameter to be constructed
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the function
-    INTEGER(I4B), INTENT(IN) :: returnType
-    !! Scalar, Vector, Matrix
-    INTEGER(I4B), INTENT(IN) :: argType
-    !! Constant, Space, Time, SpaceTime
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numArgs
-    !! number of argument
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numReturns
-    !! number of returns
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
-    !! lua script
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
-    !! lua function name
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: returnShape(2)
-    !! Shape of return type
-    !! Only used when returnType is Matrix
-  END SUBROUTINE SetUserFunctionParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -337,24 +289,9 @@ END INTERFACE
 ! summary: Initiate the user function
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
-! summary: Initiate the user function
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, name, returnType, argType, &
-                                  numArgs, numReturns, luaScript, &
-                                  luaFunctionName, returnShape)
+  MODULE SUBROUTINE obj_Initiate( &
+    obj, name, returnType, argType, numArgs, numReturns, luaScript, &
+    luaFunctionName, returnShape)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     !! User function object
     CHARACTER(*), INTENT(IN) :: name
@@ -374,7 +311,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: returnShape(2)
     !! Shape of return type
     !! Only used when returnType is Matrix
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -604,12 +541,16 @@ END INTERFACE UserFunctionDisplay
 ! date: 27 Aug 2021
 ! summary: This routine displays the content of the instance
 
-INTERFACE UserFunctionDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(UserFunction_), INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Vector
+END INTERFACE
+
+INTERFACE UserFunctionDisplay
+  MODULE PROCEDURE obj_Display_Vector
 END INTERFACE UserFunctionDisplay
 
 !----------------------------------------------------------------------------
@@ -620,12 +561,16 @@ END INTERFACE UserFunctionDisplay
 ! date: 27 Aug 2021
 ! summary: This routine displays the content of the instance
 
-INTERFACE UserFunctionDisplay
+INTERFACE
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(UserFunctionPointer_), INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Ptr_Vector
+END INTERFACE
+
+INTERFACE UserFunctionDisplay
+  MODULE PROCEDURE obj_Display_Ptr_Vector
 END INTERFACE UserFunctionDisplay
 
 !----------------------------------------------------------------------------
@@ -668,8 +613,8 @@ END INTERFACE UserFunctionImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE UserFunctionImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile,  &
-    & filename, printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
+                                        filename, printToml)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -715,7 +660,7 @@ END INTERFACE
 
 ! INTERFACE
 !   MODULE SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
-!                  luaScript, luaFunctionName, scalarFunction, vectorFunction, &
+!             luaScript, luaFunctionName, scalarFunction, vectorFunction, &
 !                             matrixFunction)
 !     CLASS(UserFunction_), INTENT(INOUT) :: obj
 !     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarValue

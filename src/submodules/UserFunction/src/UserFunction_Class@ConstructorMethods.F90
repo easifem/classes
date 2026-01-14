@@ -17,10 +17,10 @@
 
 SUBMODULE(UserFunction_Class) ConstructorMethods
 USE StringUtility, ONLY: UpperCase
-USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 CONTAINS
@@ -119,156 +119,6 @@ FUNCTION GetDefaultNumReturns(returnType) RESULT(ans)
 END FUNCTION GetDefaultNumReturns
 
 !----------------------------------------------------------------------------
-!                                                      SetUserFunctionParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetUserFunctionParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetUserFunctionParam()"
-#endif
-
-INTEGER(I4B) :: numArgs0, numReturns0, returnShape0(2)
-LOGICAL(LGT) :: isok, abool
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="returnType", &
-         VALUE=returnType)
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="argType", &
-         VALUE=argType)
-CALL Set(obj=param, dataType="char", prefix=myprefix, key="name", &
-         VALUE=name)
-
-isok = PRESENT(numArgs)
-
-IF (isok) THEN
-  numArgs0 = numArgs
-ELSE
-  numArgs0 = GetDefaultNumArgs(argType)
-END IF
-
-isok = PRESENT(numReturns)
-
-IF (isok) THEN
-  numReturns0 = numReturns
-ELSE
-  numReturns0 = GetDefaultNumReturns(returnType)
-END IF
-
-returnShape0 = 0
-
-SELECT CASE (returnType)
-CASE (varopt%Matrix)
-
-#ifdef DEBUG_VER
-  isok = PRESENT(returnShape)
-  CALL AssertError1(isok, myName, &
-             'When returnType is Matrix, then returnShape should be present.')
-#endif
-
-#ifdef DEBUG_VER
-  isok = numReturns0 .EQ. returnShape(1) * returnShape(2)
-  CALL AssertError1(isok, myName, &
-       'When returnType is Matrix, then numReturns should be equal to the &
-       &total number of elements of returned matrix.')
-#endif
-
-  returnShape0 = returnShape
-
-CASE (varopt%Scalar)
-  isok = numReturns0 .EQ. 1
-
-#ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    'When returnType is Scalar, then numReturns should be 1.')
-#endif
-
-END SELECT
-
-CALL Set(obj=param, dataType=[1_I4B], prefix=myprefix, key="returnShape", &
-         VALUE=returnShape0)
-
-! CALL checerror_numargs(argType, numArgs0, myName)
-
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="numArgs", &
-         VALUE=numArgs0)
-
-CALL Set(obj=param, dataType=1_I4B, prefix=myprefix, key="numReturns", &
-         VALUE=numReturns0)
-
-abool = PRESENT(luaScript)
-
-IF (abool) THEN
-
-#ifdef DEBUG_VER
-  isok = PRESENT(luaFunctionName)
-  CALL AssertError1(isok, myName, &
-      'When luaScript is given, you should also mention the luaFunctionName.')
-#endif
-
-  CALL Set(obj=param, dataType=.TRUE., prefix=myprefix, key="isLuaScript", &
-           VALUE=.TRUE.)
-
-  CALL Set(obj=param, dataType="char", prefix=myprefix, key="luaScript", &
-           VALUE=luaScript)
-
-  CALL Set(obj=param, dataType="char", prefix=myprefix, &
-           key="luaFunctionName", VALUE=luaFunctionName)
-
-ELSE
-
-  CALL Set(obj=param, dataType=.TRUE., prefix=myprefix, key="isLuaScript", &
-           VALUE=.FALSE.)
-
-  CALL Set(obj=param, dataType="char", prefix=myprefix, key="luaScript", &
-           VALUE="empty")
-
-  CALL Set(obj=param, dataType="char", prefix=myprefix, &
-           key="luaFunctionName", VALUE="empty")
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetUserFunctionParam
-
-!----------------------------------------------------------------------------
-!                                                        CheckEssentiaParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-CHARACTER(:), ALLOCATABLE :: astr
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-astr = "/isLuaScript/luaScript/numReturns/numArgs/returnType/argType"// &
-       "/luaFunctionName/returnShape/name"
-
-CALL CheckEssentialParam(obj=param, &
-                         keys=astr, &
-                         prefix=myprefix, &
-                         myName=myName, &
-                         modName=modName)
-!note: CheckEssentialParam param is defined in easifemClasses FPL_Method
-astr = ""
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
 !                                                             Deallocate
 !----------------------------------------------------------------------------
 
@@ -315,61 +165,12 @@ CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-CALL obj%CheckEssentialParam(param)
-
-CALL GetValue(obj=param, prefix=myprefix, key="name", VALUE=obj%name)
-
-CALL GetValue(obj=param, prefix=myprefix, key="returnType", &
-              VALUE=obj%returnType)
-
-CALL GetValue(obj=param, prefix=myprefix, key="argType", VALUE=obj%argType)
-
-CALL GetValue(obj=param, prefix=myprefix, key="isLuaScript", &
-              VALUE=obj%isLuaScript)
-
-CALL GetValue(obj=param, prefix=myprefix, key="luaScript", &
-              VALUE=obj%luaScript)
-
-CALL GetValue(obj=param, prefix=myprefix, key="luaFunctionName", &
-              VALUE=obj%luaFunctionName)
-
-CALL GetValue(obj=param, prefix=myprefix, key="numArgs", &
-              VALUE=obj%numArgs)
-
-CALL GetValue(obj=param, prefix=myprefix, key="numReturns", &
-              VALUE=obj%numReturns)
-
-CALL GetValue(obj=param, prefix=myprefix, key="returnShape", &
-              VALUE=obj%returnShape)
-obj%isInit = .TRUE.
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
 !                                                                    Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate2
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 LOGICAL(LGT) :: abool
 #endif
 
@@ -454,7 +255,7 @@ obj%luaFunctionName = luaFunctionName
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate2
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                         checkerror_numargs

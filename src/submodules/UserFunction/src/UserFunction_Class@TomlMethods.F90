@@ -44,6 +44,7 @@ SUBROUTINE ReadNameFromToml(obj, table)
 
   INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: default_name = "UserFunction"
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -56,13 +57,14 @@ SUBROUTINE ReadNameFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=obj%name, &
-                default_value=myprefix, origin=origin, &
+                default_value=default_name, origin=origin, &
                 stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
   IF (.NOT. isok) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-       'Cannot find/read "name" in the config file. Using default='//myprefix)
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+              'Cannot find/read "name" in the config file. Using default='// &
+                      default_name)
   END IF
 #endif
 
