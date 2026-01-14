@@ -114,7 +114,6 @@ SUBROUTINE checkerror_lua(obj, args)
 
 #ifdef DEBUG_VER
   IF (.NOT. isargs) THEN
-
     isok = nargs .EQ. 0_I4B
     CALL AssertError1(isok, myName, &
                       'UserFunction_::numArgs('//ToString(obj%numArgs)// &
