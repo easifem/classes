@@ -102,7 +102,7 @@ DO iel = 1, tElements
 
   DO ips = 1, elemsd%nips
     args(1:elemsd%nsd) = elemsd%coord(1:elemsd%nsd, ips)
-    CALL bodySource%GetScalarValue(val=forceVecQuad(ips), args=args)
+    CALL bodySource%Get(val=forceVecQuad(ips), args=args)
   END DO
 
   CALL FEVariable_Set( &
