@@ -240,7 +240,7 @@ CASE (TypeFEVariableOpt%scalar)
 
   DO ii = 1, tsize
     args(1:nsd) = xij(1:nsd, ii)
-    CALL func%GetScalarValue(args=args, val=ans(ii))
+    CALL func%Get(args=args, val=ans(ii))
   END DO
 
 CASE (TypeFEVariableOpt%vector)
@@ -248,7 +248,7 @@ CASE (TypeFEVariableOpt%vector)
   icompo0 = Input(default=1_I4B, option=icompo)
 
 #ifdef DEBUG_VER
-  isok = tReturns .GE. icompo0
+  isok = tReturns >= icompo0
   CALL AssertError1(isok, myName, &
                     "WIP: the user function must return " &
                     //ToString(icompo0)//" values")
@@ -256,8 +256,7 @@ CASE (TypeFEVariableOpt%vector)
 
   DO ii = 1, tsize
     args(1:nsd) = xij(1:nsd, ii)
-    CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
-                             n=tReturns)
+    CALL func%Get_(args=args, val=temp_ans, tsize=tReturns)
     ans(ii) = temp_ans(icompo0)
   END DO
 
@@ -314,30 +313,33 @@ SELECT CASE (returnType)
 CASE (TypeFEVariableOpt%scalar)
   DO ii = 1, nips
     args(1:nsd) = cellElemsd%coord(1:nsd, ii)
-    CALL func%GetScalarValue(args=args, val=funcValue(ii))
+    CALL func%Get(args=args, val=funcValue(ii))
 
     ainterpol = DOT_PRODUCT(cellElemsd%N(1:offset, ii), ans(1:offset))
 
     funcValue(ii) = funcValue(ii) - ainterpol
   END DO
+
 CASE (TypeFEVariableOpt%vector)
   icompo0 = Input(default=1_I4B, option=icompo)
   tReturns = func%GetNumReturns()
   DO ii = 1, nips
     args(1:nsd) = cellElemsd%coord(1:nsd, ii)
-    CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
-                             n=tReturns)
+    CALL func%Get_(args=args, val=temp_ans, tsize=tReturns)
     funcValue(ii) = temp_ans(icompo0)
 
     ainterpol = DOT_PRODUCT(cellElemsd%N(1:offset, ii), ans(1:offset))
 
     funcValue(ii) = funcValue(ii) - ainterpol
   END DO
+
+CASE DEFAULT
+
 END SELECT
 
 #ifdef DEBUG_VER
 mysize = SIZE(temp)
-isok = mysize .GE. cellElemsd%nns
+isok = mysize >= cellElemsd%nns
 CALL AssertError1(isok, myName, &
       'Size of temp='//ToString(mysize)//' is lesser than cellElemsd%nns='// &
                   ToString(cellElemsd%nns))
@@ -349,7 +351,7 @@ CALL obj%GetDOFValueFromQuadrature( &
 
 #ifdef DEBUG_VER
 mysize = SIZE(ans)
-isok = mysize .GE. offset + tsize
+isok = mysize >= offset + tsize
 CALL AssertError1(isok, myName, &
          'Size of ans='//ToString(mysize)//' is lesser than offset+tsize='// &
                   ToString(offset + tsize))
