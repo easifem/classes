@@ -40,9 +40,9 @@ CASE ("V")
   ans = varopt%Vector
 CASE ("M")
   ans = varopt%Matrix
+CASE DEFAULT
+  ans = -1
 END SELECT
-
-name0 = ""
 END PROCEDURE UserFunctionGetReturnType
 
 !----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ CASE ("OT", "SO")
   ans = varopt%SolutionDependent
 CASE ("SP")
   n = LEN_TRIM(name)
-  IF (n .GT. 5) THEN
+  IF (n > 5) THEN
     ans = varopt%SpaceTime
   ELSE
     ans = varopt%Space
@@ -84,13 +84,13 @@ FUNCTION GetDefaultNumArgs(argType) RESULT(ans)
 
   SELECT CASE (argType)
   CASE (varopt%Constant)
-    ans = DEFAULT_NUM_ARG_CONSTANT
+    ans = funcopt%constFuncArgs
   CASE (varopt%Space)
-    ans = DEFAULT_NUM_ARG_SPACE
+    ans = funcopt%spaceFuncArgs
   CASE (varopt%Time)
-    ans = DEFAULT_NUM_ARG_TIME
+    ans = funcopt%timeFuncArgs
   CASE (varopt%SpaceTime)
-    ans = DEFAULT_NUM_ARG_SPACETIME
+    ans = funcopt%spaceTimeFuncArgs
   CASE DEFAULT
     ans = -1
   END SELECT
@@ -107,15 +107,14 @@ FUNCTION GetDefaultNumReturns(returnType) RESULT(ans)
 
   SELECT CASE (returnType)
   CASE (varopt%Scalar)
-    ans = DEFAULT_NUM_ARG_SCALAR
+    ans = funcopt%scalarFuncNumReturns
   CASE (varopt%Vector)
-    ans = DEFAULT_NUM_ARG_VECTOR
+    ans = funcopt%vectorFuncNumReturns
   CASE (varopt%Matrix)
-    ans = DEFAULT_NUM_ARG_MATRIX
+    ans = funcopt%matrixFuncNumReturns
   CASE DEFAULT
     ans = -1
   END SELECT
-
 END FUNCTION GetDefaultNumReturns
 
 !----------------------------------------------------------------------------
@@ -144,8 +143,8 @@ obj%numArgs = 0
 obj%numReturns = 0
 obj%scalarValue = 0.0_DFP
 obj%name = ""
-IF (ALLOCATED(obj%vectorValue)) DEALLOCATE (obj%vectorValue)
-IF (ALLOCATED(obj%matrixValue)) DEALLOCATE (obj%matrixValue)
+obj%vectorValue = 0.0_DFP
+obj%matrixValue = 0.0_DFP
 obj%scalarFunction => NULL()
 obj%vectorFunction => NULL()
 obj%matrixFunction => NULL()
@@ -171,7 +170,6 @@ END PROCEDURE obj_Final
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
-LOGICAL(LGT) :: abool
 #endif
 
 LOGICAL(LGT) :: isok
@@ -207,13 +205,13 @@ END IF
 
 ! obj%returnShape = returnShape
 #ifdef DEBUG_VER
-abool = obj%returnType .EQ. varopt%matrix
-IF (abool) THEN
+isok = obj%returnType == varopt%matrix
+IF (isok) THEN
   isok = PRESENT(returnShape)
   CALL AssertError1(isok, myName, &
              'When returnType is Matrix, then returnShape should be present.')
 
-  isok = obj%numReturns .EQ. returnShape(1) * returnShape(2)
+  isok = obj%numReturns == (returnShape(1) * returnShape(2))
   CALL AssertError1(isok, myName, &
        'When returnType is Matrix, then numReturns should be equal to the &
        &total number of elements of returned matrix.')
@@ -221,23 +219,25 @@ END IF
 #endif
 
 #ifdef DEBUG_VER
-abool = obj%returnType .EQ. varopt%scalar
-IF (abool) THEN
-  isok = obj%numReturns .EQ. 1
+isok = obj%returnType == varopt%scalar
+IF (isok) THEN
+  isok = obj%numReturns == 1
   CALL AssertError1(isok, myName, &
                     'When returnType is Scalar, then numReturns should be 1.')
 END IF
 #endif
 
-IF (PRESENT(returnShape)) obj%returnShape = returnShape
+isok = PRESENT(returnShape)
+IF (isok) obj%returnShape = returnShape
 
-! obj%isLuaScript = isLuaScript
 obj%isLuaScript = PRESENT(luaScript)
 IF (.NOT. obj%isLuaScript) THEN
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
+
   RETURN
 END IF
 
@@ -256,60 +256,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate
-
-!----------------------------------------------------------------------------
-!                                                         checkerror_numargs
-!----------------------------------------------------------------------------
-
-SUBROUTINE checerror_numargs(argType, numArgs0, myname)
-  INTEGER(I4B), INTENT(IN) :: argType, numArgs0
-  CHARACTER(*), INTENT(IN) :: myName
-
-  LOGICAL(LGT) :: isok
-
-  SELECT CASE (argType)
-  CASE (varopt%Constant)
-
-    isok = numArgs0 .EQ. 0
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                       '[CONFIG ERROR] :: When argType is Constant, then '// &
-                        'numArgs should be 0.')
-      RETURN
-    END IF
-
-  CASE (varopt%Time)
-
-    isok = numArgs0 .EQ. 1
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[CONFIG ERROR] :: When argType is Time, then '// &
-                        'numArgs should be 1.')
-      RETURN
-    END IF
-
-  CASE (varopt%Space)
-
-    isok = numArgs0 .EQ. 3
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[CONFIG ERROR] :: When argType is Space, then '// &
-                        'numArgs should be 3.')
-      RETURN
-    END IF
-
-  CASE (varopt%SpaceTime)
-
-    isok = numArgs0 .EQ. 4
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[CONFIG ERROR] :: When argType is SpaceTime, then '// &
-                        'numArgs should be 4.')
-      RETURN
-    END IF
-
-  END SELECT
-END SUBROUTINE checerror_numargs
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate

@@ -220,13 +220,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL checkerror(obj=obj, val=val, args=args, myname=myname)
 #endif
 
-IF (ALLOCATED(obj%matrixValue)) THEN
-  s = SHAPE(obj%matrixValue)
-  CALL Reallocate(val, s(1), s(2))
-  val(1:s(1), 1:s(2)) = obj%matrixValue
-  RETURN
-END IF
-
 IF (obj%isUserFunctionSet) THEN
   s = obj%returnShape(1:2)
   CALL Reallocate(val, obj%returnShape(1), obj%returnShape(2))
@@ -239,10 +232,16 @@ IF (obj%isLuaScript) THEN
   RETURN
 END IF
 
+s = obj%returnShape(1:2)
+CALL Reallocate(val, s(1), s(2))
+val(1:s(1), 1:s(2)) = obj%matrixValue
+RETURN
 END PROCEDURE obj_GetMatrixValue
 
 !----------------------------------------------------------------------------
-!
+!                                                               Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMatrixValueMethods

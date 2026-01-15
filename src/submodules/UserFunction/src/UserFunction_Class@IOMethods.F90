@@ -58,7 +58,7 @@ END IF
 
 CALL Display(NAME_RETURN_TYPE(obj%returnType), "returnType: ", &
              unitNo=unitNo)
-IF (obj%returnType .EQ. varopt%matrix) THEN
+IF (obj%returnType == varopt%matrix) THEN
   CALL Display(obj%returnShape, "shape of returnType: ", unitNo=unitNo)
 END IF
 
@@ -77,22 +77,24 @@ CALL Display(bool1, msg="vectorFunction ASSOCIATED: ", unitno=unitno)
 bool1 = ASSOCIATED(obj%matrixFunction)
 CALL Display(bool1, msg="matrixFunction ASSOCIATED: ", unitno=unitno)
 
-IF (obj%argType .EQ. varopt%constant) THEN
+IF (obj%argType == varopt%constant) THEN
+
   SELECT CASE (obj%returnType)
+
   CASE (varopt%Scalar)
     CALL Display(obj%scalarValue, "scalarValue: ", unitNo=unitNo)
+
   CASE (varopt%Vector)
-    IF (ALLOCATED(obj%vectorValue)) THEN
-      CALL Display(obj%vectorValue, "vectorValue: ", unitNo=unitNo)
-    ELSE
-      CALL Display("vectorValue: NOT ALLOCATED", unitNo=unitNo)
-    END IF
+    CALL Display(obj%vectorValue(1:obj%numReturns), "vectorValue: ", &
+                 unitNo=unitNo)
+
   CASE (varopt%Matrix)
-    IF (ALLOCATED(obj%matrixValue)) THEN
-      CALL Display(obj%matrixValue, "matrixValue: ", unitNo=unitNo)
-    ELSE
-      CALL Display("matrixValue: NOT ALLOCATED", unitNo=unitNo)
-    END IF
+    CALL Display(obj%matrixValue(1:obj%returnShape(1), &
+                                 1:obj%returnShape(2)), "matrixValue: ", &
+                 unitNo=unitNo)
+
+  CASE DEFAULT
+
   END SELECT
 END IF
 

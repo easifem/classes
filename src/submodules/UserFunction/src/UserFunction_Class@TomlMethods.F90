@@ -48,8 +48,8 @@ SUBROUTINE ReadNameFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading name ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading name ...')
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=obj%name, &
@@ -58,9 +58,10 @@ SUBROUTINE ReadNameFromToml(obj, table)
 
 #ifdef DEBUG_VER
   IF (.NOT. isok) THEN
-    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-              'Cannot find/read "name" in the config file. Using default='// &
-                      default_name)
+    CALL e%RaiseDebug( &
+      modName//'::'//myName//' - '// &
+      'Cannot find/read "name" in the config file. Using default='// &
+      default_name)
   END IF
 #endif
 
@@ -93,13 +94,13 @@ SUBROUTINE ReadReturnTypeFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading returnType ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading returnType ...')
 #endif
 
-  CALL GetValue(table=table, key="returnType", VALUE=astr, &
-                default_value="NA", origin=origin, &
-                stat=stat, isFound=isok)
+  CALL GetValue( &
+    table=table, key="returnType", VALUE=astr, default_value="NA", &
+    origin=origin, stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &
@@ -139,16 +140,17 @@ SUBROUTINE ReadReturnShapeFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading returnShape ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading returnShape ...')
 #endif
 
   ! If returnType is not Matrix, then do nothing and return
-  isok = obj%returnType .NE. varopt%matrix
+  isok = obj%returnType /= varopt%matrix
   IF (isok) THEN
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                     'returnType is not Matrix, so returnShape is not needed.')
+
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
 #endif
@@ -166,10 +168,11 @@ SUBROUTINE ReadReturnShapeFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  isok = tsize .EQ. 2
-  CALL AssertError1(isok, myName, &
-                  'returnShape should be a vector of integers of size 2. '// &
-                    'However, it is of size '//ToString(tsize))
+  isok = tsize == 2
+  CALL AssertError1( &
+    isok, myName, &
+    'returnShape should be a vector of integers of size 2. However, &
+    &it is of size '//ToString(tsize))
 #endif
 
 #ifdef DEBUG_VER
@@ -201,8 +204,8 @@ SUBROUTINE ReadArgTypeFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading argType ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading argType ...')
 #endif
 
   CALL GetValue(table=table, key="argType", VALUE=astr, &
@@ -245,13 +248,14 @@ SUBROUTINE ReadNumArgsFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading numArgs ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading numArgs ...')
 #endif
 
   default_value = GetDefaultNumArgs(obj%argType)
-  CALL GetValue(table=table, key="numArgs", VALUE=obj%numArgs, &
-          default_value=default_value, origin=origin, stat=stat, isFound=isok)
+  CALL GetValue( &
+    table=table, key="numArgs", VALUE=obj%numArgs, &
+    default_value=default_value, origin=origin, stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -281,14 +285,15 @@ SUBROUTINE ReadNumReturnsFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading numReturns ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading numReturns ...')
 #endif
 
   default_value = GetDefaultNumReturns(obj%returnType)
 
-  CALL GetValue(table=table, key="numReturns", VALUE=obj%numReturns, &
-          default_value=default_value, origin=origin, stat=stat, isFound=isok)
+  CALL GetValue( &
+    table=table, key="numReturns", VALUE=obj%numReturns, &
+    default_value=default_value, origin=origin, stat=stat, isFound=isok)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -318,8 +323,8 @@ SUBROUTINE ReadLuaScriptFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading luaScript ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading luaScript ...')
 #endif
 
   CALL GetValue(table=table, key="luaScript", VALUE=obj%luaScript, &
@@ -376,8 +381,8 @@ SUBROUTINE ReadScalarValueFromToml(obj, table)
 
   IF (obj%isLuaScript) THEN
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            'isLuaScropt is true, so nothing to do here...')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'isLuaScropt is true, so nothing to do here...')
 #endif
 
 #ifdef DEBUG_VER
@@ -388,11 +393,11 @@ SUBROUTINE ReadScalarValueFromToml(obj, table)
     RETURN
   END IF
 
-  isok = obj%returnType .EQ. varopt%scalar
+  isok = obj%returnType == varopt%scalar
   IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                           'returnType is not scalar, so nothing to do here.')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'returnType is not scalar, so nothing to do here.')
 #endif
 
 #ifdef DEBUG_VER
@@ -416,8 +421,8 @@ SUBROUTINE ReadScalarValueFromToml(obj, table)
   CALL obj%Set(scalarValue=areal)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading value ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading value ...')
 #endif
 
 #ifdef DEBUG_VER
@@ -451,8 +456,8 @@ SUBROUTINE ReadVectorValueFromToml(obj, table)
 
   IF (obj%isLuaScript) THEN
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            'isLuaScropt is true, so nothing to do here...')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'isLuaScropt is true, so nothing to do here...')
 #endif
 
 #ifdef DEBUG_VER
@@ -463,11 +468,11 @@ SUBROUTINE ReadVectorValueFromToml(obj, table)
     RETURN
   END IF
 
-  isok = obj%returnType .EQ. varopt%Vector
+  isok = obj%returnType == varopt%Vector
   IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                           'returnType is not Vector, so nothing to do here.')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'returnType is not Vector, so nothing to do here.')
 #endif
 
 #ifdef DEBUG_VER
@@ -479,8 +484,8 @@ SUBROUTINE ReadVectorValueFromToml(obj, table)
   END IF
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading value ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading value ...')
 #endif
 
   CALL GetValue(table=table, key="value", VALUE=areal, &
@@ -527,8 +532,8 @@ SUBROUTINE ReadMatrixValueFromToml(obj, table)
 
   IF (obj%isLuaScript) THEN
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            'isLuaScropt is true, so nothing to do here...')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'isLuaScropt is true, so nothing to do here...')
 #endif
 
 #ifdef DEBUG_VER
@@ -539,11 +544,11 @@ SUBROUTINE ReadMatrixValueFromToml(obj, table)
     RETURN
   END IF
 
-  isok = obj%returnType .EQ. varopt%matrix
+  isok = obj%returnType == varopt%matrix
   IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                           'returnType is not Matrix, so nothing to do here.')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'returnType is not Matrix, so nothing to do here.')
 #endif
 
 #ifdef DEBUG_VER
@@ -555,8 +560,8 @@ SUBROUTINE ReadMatrixValueFromToml(obj, table)
   END IF
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading value ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading value ...')
 #endif
 
   CALL GetValue(table=table, key="value", VALUE=areal, &
@@ -639,9 +644,10 @@ CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
-CALL AssertError1(isok, myName, &
-        'Following error occured while reading toml file :: cannot find ['// &
-                  tomlName//"] table in config.")
+CALL AssertError1( &
+  isok, myName, &
+  'Following error occured while reading toml file :: cannot find ['// &
+  tomlName//"] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node)
@@ -665,17 +671,16 @@ FUNCTION GetDefaultNumArgs(argType) RESULT(ans)
 
   SELECT CASE (argType)
   CASE (varopt%Constant)
-    ans = DEFAULT_NUM_ARG_CONSTANT
+    ans = funcopt%constFuncArgs
   CASE (varopt%Space)
-    ans = DEFAULT_NUM_ARG_SPACE
+    ans = funcopt%spaceFuncArgs
   CASE (varopt%Time)
-    ans = DEFAULT_NUM_ARG_TIME
+    ans = funcopt%timeFuncArgs
   CASE (varopt%SpaceTime)
-    ans = DEFAULT_NUM_ARG_SPACETIME
+    ans = funcopt%spaceTimeFuncArgs
   CASE DEFAULT
     ans = -1
   END SELECT
-
 END FUNCTION GetDefaultNumArgs
 
 !----------------------------------------------------------------------------
@@ -688,15 +693,14 @@ FUNCTION GetDefaultNumReturns(returnType) RESULT(ans)
 
   SELECT CASE (returnType)
   CASE (varopt%Scalar)
-    ans = DEFAULT_NUM_ARG_SCALAR
+    ans = funcopt%scalarFuncNumReturns
   CASE (varopt%Vector)
-    ans = DEFAULT_NUM_ARG_VECTOR
+    ans = funcopt%vectorFuncNumReturns
   CASE (varopt%Matrix)
-    ans = DEFAULT_NUM_ARG_MATRIX
+    ans = funcopt%matrixFuncNumReturns
   CASE DEFAULT
     ans = -1
   END SELECT
-
 END FUNCTION GetDefaultNumReturns
 
 !----------------------------------------------------------------------------

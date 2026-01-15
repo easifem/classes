@@ -20,8 +20,20 @@ USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
 USE ISO_C_BINDING, ONLY: C_PTR
-USE LuaInterface
 USE ReallocateUtility, ONLY: Reallocate
+USE LuaInterface, ONLY: lual_newstate
+USE LuaInterface, ONLY: lual_openlibs
+USE LuaInterface, ONLY: lual_dofile
+USE LuaInterface, ONLY: lua_getglobal
+USE LuaInterface, ONLY: lua_isfunction
+USE LuaInterface, ONLY: lua_close
+USE LuaInterface, ONLY: lua_pushnumber
+USE LuaInterface, ONLY: lua_pcall
+USE LuaInterface, ONLY: lua_ok
+USE LuaInterface, ONLY: lua_tonumber
+USE LuaInterface, ONLY: lua_pop
+USE LuaInterface, ONLY: lua_close
+USE LuaInterface, ONLY: lua_number
 
 IMPLICIT NONE
 CONTAINS
@@ -30,7 +42,7 @@ CONTAINS
 !                                                                 checkerror
 !----------------------------------------------------------------------------
 
-SUBROUTINE checkerror(obj, n, val, args, myname)
+SUBROUTINE CheckError(obj, n, val, args, myName)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: n
     !! number of return values
@@ -38,59 +50,54 @@ SUBROUTINE checkerror(obj, n, val, args, myname)
   REAL(DFP), INTENT(INOUT) :: val(n)
     !! returned value
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: myName
 
+  ! Internal variables
+#ifdef DEBUG_VER
   LOGICAL(LGT) :: isok
+#endif
 
-  isok = obj%returnType .EQ. varopt%vector
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myname//' - '// &
-              '[CONFIG ERROR] :: The user function is not configured for '// &
-                      ' returnType = Vector')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  isok = obj%returnType == varopt%vector
+  CALL AssertError1(isok, myName, &
+                'The user function is not configured for returnType = Vector')
+#endif
 
-  isok = obj%numReturns .EQ. n
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myname//' - '// &
-                      '[CONFIG ERROR] :: error in numReturns.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  isok = obj%numReturns == n
+  CALL AssertError1(isok, myName, &
+                    'The user function numReturns should be equal to n.')
+#endif
 
-  isok = ALLOCATED(obj%vectorValue)
-  IF (isok) THEN
-    isok = n .LE. SIZE(obj%vectorValue)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myname//' - '// &
-                '[INTERNAL ERROR] :: n should be <= size of obj%vectorValue.')
-      RETURN
-    END IF
-  END IF
+#ifdef DEBUG_VER
+  isok = n <= SIZE(obj%vectorValue)
+  CALL AssertError1(isok, myName, &
+            'The user function numReturns should be less than or equal to &
+            &size of obj%vectorValue.')
+#endif
 
+#ifdef DEBUG_VER
   IF (obj%isUserFunctionSet) THEN
-
     isok = ASSOCIATED(obj%vectorFunction)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myname//' - '// &
-         '[CONFIG ERROR] :: UserFunction_::obj%isUserFunctionSet is true '// &
-                        CHAR_LF//' but obj%vectorFunction is not ASSOCIATED.')
-      RETURN
-    END IF
-
+    CALL AssertError1(isok, myName, &
+         'UserFunction_::obj%isUserFunctionSet is true but &
+         &obj%vectorFunction is not ASSOCIATED.')
   END IF
+#endif
 
+#ifdef DEBUG_VER
   IF (obj%isLuaScript) THEN
-    CALL checkerror_lua(obj=obj, n=n, val=val, args=args, myname=myname)
+    CALL checkerror_lua(obj=obj, n=n, val=val, args=args, myName=myName)
   END IF
-
-END SUBROUTINE checkerror
+#endif
+END SUBROUTINE CheckError
 
 !----------------------------------------------------------------------------
 !                                                           checkerror
 !----------------------------------------------------------------------------
 
 #ifdef USE_LUA
-SUBROUTINE checkerror_lua(obj, n, val, args, myname)
+SUBROUTINE CheckError_Lua(obj, n, val, args, myname)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: n
     !! number of return values
@@ -100,38 +107,34 @@ SUBROUTINE checkerror_lua(obj, n, val, args, myname)
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
   CHARACTER(*), INTENT(IN) :: myname
 
+#ifdef DEBUG_VER
   LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: nargs, nresults
+  INTEGER(I4B) :: nargs, nresults, tsize
 
   nargs = obj%numArgs
   nresults = obj%numReturns
 
-  IF (PRESENT(args)) THEN
+  isok = PRESENT(args)
+  IF (isok) THEN
 
-    isok = nargs .EQ. SIZE(args)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myname//' - '// &
-                        '[CONFIG ERROR] :: UserFunction_::numArgs( '// &
-                        CHAR_LF//ToString(obj%numArgs)// &
-                        ' ) should be same as size of args ('// &
-                        CHAR_LF//ToString(SIZE(args))//').')
-      RETURN
-    END IF
+    tsize = SIZE(args)
+    isok = nargs == tsize
+    CALL AssertError1( &
+      isok, myName, &
+      'UserFunction_::numArgs( '//ToString(obj%numArgs)//' ) should be same &
+      &as size of args ('//ToString(tsize)//').')
 
   ELSE
 
-    isok = nargs .EQ. 0_I4B
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myname//' - '// &
-                     '[CONFIG ERROR] :: UserFunction_::numArgs( '//CHAR_LF// &
-                    ToString(obj%numArgs)//' ) should be equal to 0 when '// &
-                        CHAR_LF//'args is not present.')
-      RETURN
-    END IF
-
+    isok = nargs == 0_I4B
+    CALL AssertError1( &
+      isok, myName, &
+      'UserFunction_::numArgs( '//ToString(obj%numArgs)// &
+      ' ) should be equal to 0 when args is not present.')
   END IF
 
-END SUBROUTINE checkerror_lua
+#endif
+END SUBROUTINE CheckError_Lua
 
 !----------------------------------------------------------------------------
 !
@@ -139,7 +142,7 @@ END SUBROUTINE checkerror_lua
 
 #else
 
-SUBROUTINE checkerror_lua(obj, n, val, args, myname)
+SUBROUTINE CheckError_Lua(obj, n, val, args, myName)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: n
     !! number of return values
@@ -147,17 +150,15 @@ SUBROUTINE checkerror_lua(obj, n, val, args, myname)
   REAL(DFP), INTENT(INOUT) :: val(n)
     !! returned value
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: myName
 
-  LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: nargs, nresults
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+          'This subroutine should not be called when USE_LUA is not defined.')
+#endif
 
-  CALL e%RaiseError(modName//'::'//myname//' - '// &
-                '[WIP ERROR] :: Currently  lua script cannot be used for '// &
-                    ' UserFunction. ')
-  RETURN
+END SUBROUTINE CheckError_Lua
 
-END SUBROUTINE checkerror_lua
 #endif
 
 !----------------------------------------------------------------------------
@@ -166,7 +167,7 @@ END SUBROUTINE checkerror_lua
 
 #ifdef USE_LUA
 
-SUBROUTINE getvalue_lua(obj, n, val, args, myname)
+SUBROUTINE GetValue_Lua(obj, n, val, args, myName)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: n
     !! number of return values
@@ -174,7 +175,7 @@ SUBROUTINE getvalue_lua(obj, n, val, args, myname)
   REAL(DFP), INTENT(INOUT) :: val(n)
     !! returned value
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
+  CHARACTER(*), INTENT(IN) :: myName
 
   LOGICAL(LGT) :: isok
   TYPE(C_PTR) :: l
@@ -188,16 +189,20 @@ SUBROUTINE getvalue_lua(obj, n, val, args, myname)
   CALL lual_openlibs(l)
   rc = lual_dofile(l, obj%luaScript%chars())
   rc = lua_getglobal(l, obj%luaFunctionName%chars())
-  isok = lua_isfunction(l, -1) .EQ. 1
+  isok = lua_isfunction(l, -1) == 1
 
   IF (.NOT. isok) THEN
     CALL lua_close(l)
-    CALL e%RaiseError(modName//'::'//myname//' - '// &
-                '[CONFIG ERROR] :: UserFunction_::obj%isLuaScript is TRUE'// &
-                      CHAR_LF//'In the lua script'//obj%luaScript%chars()// &
-               CHAR_LF//'lua function named '//obj%luaFunctionName%chars()// &
-                      CHAR_LF//' is not a function.')
-    RETURN
+
+#ifdef DEBUG_VER
+    CALL AssertError1( &
+      isok, myName, &
+      'UserFunction_::obj%isLuaScript is TRUE'// &
+      CHAR_LF//'In the lua script'//obj%luaScript%chars()// &
+      CHAR_LF//'lua function named '//obj%luaFunctionName%chars()// &
+      CHAR_LF//' is not a function.')
+#endif
+
   END IF
 
   DO iarg = 1, nargs
@@ -206,13 +211,13 @@ SUBROUTINE getvalue_lua(obj, n, val, args, myname)
 
   rc = lua_pcall(l, nargs, nresults, 0)
 
-  IF (rc .NE. lua_ok) THEN
-    CALL e%RaiseError(modName//'::'//myname//' - '// &
-                '[CONFIG ERROR] :: UserFunction_::obj%isLuaScript is TRUE'// &
-                 CHAR_LF//'Some error occured while calling lua_pcall(); '// &
-                      CHAR_LF//ToString(rc))
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  isok = rc == lua_ok
+  CALL AssertError1( &
+    isok, myName, &
+    'UserFunction_::obj%isLuaScript is TRUE. Some error occured while &
+    &calling lua_pcall(); '//ToString(rc))
+#endif
 
   DO iarg = 1, nresults
     val(iarg) = REAL(lua_tonumber(l, iarg), kind=DFP)
@@ -220,8 +225,7 @@ SUBROUTINE getvalue_lua(obj, n, val, args, myname)
 
   CALL lua_pop(l, nresults)
   CALL lua_close(l)
-
-END SUBROUTINE getvalue_lua
+END SUBROUTINE GetValue_Lua
 
 !----------------------------------------------------------------------------
 ! getvalue_lua
@@ -229,7 +233,7 @@ END SUBROUTINE getvalue_lua
 
 #else
 
-SUBROUTINE getvalue_lua(obj, n, val, args, myname)
+SUBROUTINE GetValue_Lua(obj, n, val, args, myName)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: n
     !! number of return values
@@ -237,9 +241,8 @@ SUBROUTINE getvalue_lua(obj, n, val, args, myname)
   REAL(DFP), INTENT(INOUT) :: val(n)
     !! returned value
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
-
-END SUBROUTINE getvalue_lua
+  CHARACTER(*), INTENT(IN) :: myName
+END SUBROUTINE GetValue_Lua
 
 #endif
 
@@ -247,10 +250,12 @@ END SUBROUTINE getvalue_lua
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetVectorValue1
+MODULE PROCEDURE obj_GetVectorValue
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myname = "obj_GetVectorValue1()"
+CHARACTER(*), PARAMETER :: myname = "obj_GetVectorValue()"
 #endif
+
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myname//' - '// &
@@ -258,46 +263,75 @@ CALL e%RaiseInformation(modName//'::'//myname//' - '// &
 #endif
 
 CALL Reallocate(val, obj%numReturns)
-CALL obj%GetVectorValue(n=obj%numReturns, val=val, args=args)
+CALL obj%Get_(tsize=tsize, val=val, args=args)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myname//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetVectorValue1
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetVectorValue
-LOGICAL(LGT) :: isok
-CHARACTER(*), PARAMETER :: myname = "obj_GetVectorValue()"
-
-#ifdef DEBUG_VER
-CALL checkerror(obj=obj, n=n, val=val, args=args, myname=myname)
-#endif
-
-isok = ALLOCATED(obj%vectorValue)
-IF (isok) THEN
-  val(1:n) = obj%vectorValue(1:n)
-  RETURN
-END IF
-
-IF (obj%isUserFunctionSet) THEN
-  val(1:n) = obj%vectorFunction(x=args)
-  RETURN
-END IF
-
-IF (obj%isLuaScript) THEN
-  CALL getvalue_lua(obj=obj, n=n, val=val, args=args, myname=myname)
-  RETURN
-END IF
-
 END PROCEDURE obj_GetVectorValue
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVectorValue_
+CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_()"
+
+#ifdef DEBUG_VER
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = obj%numReturns
+
+#ifdef DEBUG_VER
+isok = SIZE(val) >= tsize
+CALL AssertError1(isok, myName, &
+             'The size of val should be greater than or equal to numReturns.')
+#endif
+
+#ifdef DEBUG_VER
+CALL CheckError(obj=obj, n=tsize, val=val, args=args, myname=myname)
+#endif
+
+IF (obj%isUserFunctionSet) THEN
+  val(1:tsize) = obj%vectorFunction(x=args)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (obj%isLuaScript) THEN
+  CALL GetValue_Lua(obj=obj, n=tsize, val=val, args=args, myName=myName)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+val(1:tsize) = obj%vectorValue(1:tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVectorValue_
+
+!----------------------------------------------------------------------------
+!                                                               Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetVectorValueMethods

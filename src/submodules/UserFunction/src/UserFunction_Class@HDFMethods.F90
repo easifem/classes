@@ -27,6 +27,8 @@ CONTAINS
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 TYPE(String) :: dsetname, strval
+REAL(DFP), ALLOCATABLE :: vectorValue(:), matrixValue(:, :)
+INTEGER(I4B) :: tsize, nrow, ncol
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
@@ -91,31 +93,45 @@ IF (.NOT. obj%isUserFunctionSet) THEN
   END IF
 
   !> check the argType, and decide the importer
-  IF (obj%argType .EQ. varopt%constant) THEN
+  IF (obj%argType == varopt%constant) THEN
+
     !> scalarValue, vectorValue, matrixValue
     SELECT CASE (obj%returnType)
+
     CASE (varopt%scalar)
-      !> scalarValue
       dsetname = TRIM(group)//"/scalarValue"
       IF (hdf5%pathExists(dsetname%chars())) THEN
         CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%scalarValue)
       END IF
+
     CASE (varopt%vector)
-      !> vectorValue
       dsetname = TRIM(group)//"/vectorValue"
       IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%vectorValue)
+        CALL hdf5%READ(dsetname=dsetname%chars(), vals=vectorValue)
+        tsize = SIZE(vectorValue)
+        obj%vectorValue(1:tsize) = vectorValue(1:tsize)
+        DEALLOCATE (vectorValue)
       END IF
+
     CASE (varopt%matrix)
-      !> matrixValue
       dsetname = TRIM(group)//"/matrixValue"
       IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%matrixValue)
+        CALL hdf5%READ(dsetname=dsetname%chars(), vals=matrixValue)
+        nrow = SIZE(matrixValue, 1)
+        ncol = SIZE(matrixValue, 2)
+        obj%matrixValue(1:nrow, 1:ncol) = matrixValue(1:nrow, 1:ncol)
+        DEALLOCATE (matrixValue)
       END IF
+
+    CASE DEFAULT
+
     END SELECT
+
   ELSE
+
     CALL e%RaiseError(modName//'::'//myName//" - "// &
                'Currently, EASIFEM Supports import of constant userFunction.')
+
   END IF
 END IF
 
@@ -182,27 +198,32 @@ IF (.NOT. obj%isUserFunctionSet) THEN
   strval = NAME_ARG_TYPE(obj%argType)
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
   !>
-  IF (obj%argType .EQ. varopt%constant) THEN
+  IF (obj%argType == varopt%constant) THEN
+
     SELECT CASE (obj%returnType)
+
     CASE (varopt%Scalar)
-      !> scalarValue
       dsetname = TRIM(group)//"/scalarValue"
       CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%scalarValue)
+
     CASE (varopt%vector)
-      !> vectorValue
       dsetname = TRIM(group)//"/vectorValue"
-      IF (ALLOCATED(obj%vectorValue)) &
-        CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%vectorValue)
+      CALL hdf5%WRITE(dsetname=dsetname%chars(), &
+                      vals=obj%vectorValue(1:obj%numReturns))
+
     CASE (varopt%matrix)
-      !> matrixValue
       dsetname = TRIM(group)//"/matrixValue"
-      IF (ALLOCATED(obj%matrixValue)) &
-        CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%matrixValue)
+      CALL hdf5%WRITE(dsetname=dsetname%chars(), &
+             vals=obj%matrixValue(1:obj%returnShape(1), 1:obj%returnShape(2)))
+
+    CASE DEFAULT
     END SELECT
+
   ELSE
     CALL e%RaiseError(modName//'::'//myName//" - "// &
                'Currently, EASIFEM Supports import of constant userFunction.')
   END IF
+
 END IF
 
 #ifdef DEBUG_VER

@@ -25,6 +25,8 @@ USE HDF5File_Class, ONLY: HDF5File_
 USE TxtFile_Class, ONLY: TxtFile_
 USE ExceptionHandler_Class, ONLY: e
 USE tomlf, ONLY: toml_table
+USE BaseType, ONLY: funcopt => TypeUserFunctionOpt
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 PRIVATE
@@ -43,14 +45,6 @@ CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) = &
                             "SpaceTime        ", &
                             "SolutionDependent"]
 
-INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SCALAR = 1
-INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_VECTOR = 3
-INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_MATRIX = 6
-INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_CONSTANT = 0
-INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SPACE = 3
-INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_TIME = 1
-INTEGER(I4B), PARAMETER :: DEFAULT_NUM_ARG_SPACETIME = 4
-
 PUBLIC :: UserFunction_
 PUBLIC :: UserFunctionGetReturnType
 PUBLIC :: UserFunctionGetArgType
@@ -64,38 +58,39 @@ PUBLIC :: UserFunctionDisplay
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-20
-! summary:  User defined function
+! date: 2023-11-20
+! summary: User defined function
 
 TYPE :: UserFunction_
   PRIVATE
   TYPE(String) :: name
   !! name of the function
-  LOGICAL(LGT) :: isInit = .FALSE.
-  LOGICAL(LGT) :: isUserFunctionSet = .FALSE.
-  LOGICAL(LGT) :: isLuaScript = .FALSE.
+  LOGICAL(LGT) :: isInit = math%no
+  LOGICAL(LGT) :: isUserFunctionSet = math%no
+  LOGICAL(LGT) :: isLuaScript = math%no
   TYPE(String) :: luaScript
   TYPE(String) :: luaFunctionName
-  INTEGER(I4B) :: returnType = 0
+  INTEGER(I4B) :: returnType = math%zero_i
   !! scalar, vector, matrix
-  INTEGER(I4B) :: argType = 0
+  INTEGER(I4B) :: argType = math%zero_i
   !! constant, space. time, spacetime
-  INTEGER(I4B) :: numArgs = 0
+  INTEGER(I4B) :: numArgs = math%zero_i
   !! Number of arguments
   !! number of args is 1 for scalar argType scalar
   !! number of args is required for lua script
-  INTEGER(I4B) :: numReturns = 0
+  INTEGER(I4B) :: numReturns = math%zero_i
   !! Number of return types
   !! number of return type is 1 for scalar return
   !! This variable is needed for lua script
-  INTEGER(I4B) :: returnShape(2) = 0
+  INTEGER(I4B) :: returnShape(2) = math%zero_i
   !! Shape of return
   !! Only used when returnType is matrix
-  REAL(DFP) :: scalarValue = 0.0
+  REAL(DFP) :: scalarValue = math%zero
   !! Scalar constant value
-  REAL(DFP), ALLOCATABLE :: vectorValue(:)
+  REAL(DFP) :: vectorValue(funcopt%vectorFuncNumReturns) = math%zero
   !! Vector constant value
-  REAL(DFP), ALLOCATABLE :: matrixValue(:, :)
+  REAL(DFP) :: matrixValue(funcopt%matrixFuncNumReturns, &
+                           funcopt%matrixFuncNumReturns) = math%zero
   !! Matrix constant value
   PROCEDURE(iface_ScalarFunction), POINTER, NOPASS :: scalarFunction => &
     NULL()
@@ -106,17 +101,15 @@ TYPE :: UserFunction_
   PROCEDURE(iface_MatrixFunction), POINTER, NOPASS :: matrixFunction => &
     NULL()
   !! matrix function pointer
-CONTAINS
 
+CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate data
-
   FINAL :: obj_Final
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the user function from the arguments
 
@@ -128,15 +121,6 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetScalarValue => obj_GetScalarValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue => obj_GetVectorValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetVectorValue1 => obj_GetVectorValue1
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable_ => obj_GetFEVariable_
-  GENERIC, PUBLIC :: Get => GetScalarValue, GetVectorValue1, &
-    GetMatrixValue, GetFEVariable
-  GENERIC, PUBLIC :: Get_ => GetFEVariable_
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => obj_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => obj_GetReturnType
   PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
@@ -150,6 +134,31 @@ CONTAINS
   !! Returns isInit
   PROCEDURE, PUBLIC, PASS(obj) :: GetNumArgs => obj_GetNumArgs
   !! Get the number of Args
+
+  ! GET:
+  ! @GetScalarValueMethods
+  PROCEDURE, PASS(obj) :: GetScalarValue => obj_GetScalarValue
+  GENERIC, PUBLIC :: Get => GetScalarValue
+  GENERIC, PUBLIC :: Get_ => GetScalarValue
+
+  ! GET:
+  ! @GetVectorValueMethods
+  PROCEDURE, PASS(obj) :: GetVectorValue => obj_GetVectorValue
+  PROCEDURE, PASS(obj) :: GetVectorValue_ => obj_GetVectorValue_
+  GENERIC, PUBLIC :: Get => GetVectorValue
+  GENERIC, PUBLIC :: Get_ => GetVectorValue_
+
+  ! GET:
+  ! @GetMatrixValueMethods
+  PROCEDURE, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
+  GENERIC, PUBLIC :: Get => GetMatrixValue
+
+  ! GET:
+  ! @GetFEVariableMethods
+  PROCEDURE, PASS(obj) :: GetFEVariable => obj_GetFEVariable
+  PROCEDURE, PASS(obj) :: GetFEVariable_ => obj_GetFEVariable_
+  GENERIC, PUBLIC :: Get => GetFEVariable
+  GENERIC, PUBLIC :: Get_ => GetFEVariable_
 
   ! IO:
   ! @IOMethods
@@ -339,11 +348,11 @@ END INTERFACE
 ! summary: Returns the vector value
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetVectorValue1(obj, val, args)
+  MODULE SUBROUTINE obj_GetVectorValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE obj_GetVectorValue1
+  END SUBROUTINE obj_GetVectorValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -355,15 +364,15 @@ END INTERFACE
 ! summary: Returns the vector value no allocation
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetVectorValue(obj, n, val, args)
+  MODULE SUBROUTINE obj_GetVectorValue_(obj, val, tsize, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: n
-    !! number of return values
-    !! it should be equal to obj%numReturns
-    REAL(DFP), INTENT(INOUT) :: val(n)
+    REAL(DFP), INTENT(INOUT) :: val(:)
     !! returned value
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! number of return values
+    !! data written in val
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE obj_GetVectorValue
+  END SUBROUTINE obj_GetVectorValue_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -771,7 +780,7 @@ SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
     END IF
 #endif
 
-    CALL Reallocate(obj%vectorValue, tsize)
+    ! CALL Reallocate(obj%vectorValue, tsize)
     obj%vectorValue(1:tsize) = vectorValue(1:tsize)
 
   END IF
@@ -802,7 +811,7 @@ SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
     END IF
 #endif
 
-    CALL Reallocate(obj%matrixValue, myshape(1), myshape(2))
+    ! CALL Reallocate(obj%matrixValue, myshape(1), myshape(2))
     obj%matrixValue(1:myshape(1), 1:myshape(2)) = matrixValue
   END IF
 
