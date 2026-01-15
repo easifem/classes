@@ -330,12 +330,12 @@ END IF
 ! make vertex values
 DO ii = 1, 2
   args(4) = times(ii)
-  CALL func%GetScalarValue(args=args, val=vertexValue(ii))
+  CALL func%Get(args=args, val=vertexValue(ii))
 END DO
 
 DO ipt = 1, nipt
   args(4) = elemsd%coord(1, ipt)
-  CALL func%GetScalarValue(args=args, val=funcValue(ipt))
+  CALL func%Get(args=args, val=funcValue(ipt))
   vertexInterpol = DOT_PRODUCT(elemsd%N(1:2, ipt), vertexValue(1:2))
   funcValue(ipt) = funcValue(ipt) - scale * vertexInterpol
 END DO
