@@ -60,7 +60,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource1()"
 INTEGER(I4B) :: iel, tElements, maxNNS, maxNNT, maxNNSGeo, tcellCon, xij_i, &
                 xij_j, maxNips, ips, maxNipt, ipt, &
                 forceVec_i, forceVec_j, forceVec_k, &
-                spaceCompo(1), itcompo
+                spaceCompo(1), itcompo, tsize
 INTEGER(I4B), ALLOCATABLE :: cellcon(:)
 REAL(DFP) :: args(4)
 REAL(DFP), ALLOCATABLE :: xij(:, :), forceVec(:, :, :), forceVecQuad(:, :, :),  &
@@ -130,9 +130,8 @@ DO iel = 1, tElements
     args(4) = timeelemsd%coord(1, ipt)
     DO ips = 1, elemsd%nips
       args(1:elemsd%nsd) = elemsd%coord(1:elemsd%nsd, ips)
-      CALL bodySource%GetVectorValue( &
-        val=forceVecQuad(1:elemsd%nsd, ips, ipt), &
-        args=args, n=elemsd%nsd)
+      CALL bodySource%Get_( &
+        val=forceVecQuad(:, ips, ipt), args=args, tsize=tsize)
     END DO
   END DO
 
@@ -283,7 +282,7 @@ LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
                 tcellCon, tforceVec, xij_i, xij_j, maxNips, ips, &
-                spaceCompo(1), force_i, force_j
+                spaceCompo(1), force_i, force_j, tsize
 REAL(DFP) :: args(4)
 
 TYPE(QuadraturePoint_) :: quad
@@ -340,8 +339,8 @@ DO iel = 1, tElements
 
   DO ips = 1, elemsd%nips
     args(1:elemsd%nsd) = elemsd%coord(1:elemsd%nsd, ips)
-    CALL bodySource%GetVectorValue(val=forceVecQuad(1:elemsd%nsd, ips), &
-                                   args=args, n=elemsd%nsd)
+    CALL bodySource%Get_( &
+      val=forceVecQuad(:, ips), args=args, tsize=tsize)
   END DO
 
   CALL FEVariable_Set( &
