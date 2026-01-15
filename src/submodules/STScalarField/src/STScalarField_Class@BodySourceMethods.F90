@@ -121,7 +121,7 @@ DO iel = 1, tElements
     args(4) = timeelemsd%coord(1, ipt)
     DO ips = 1, elemsd%nips
       args(1:elemsd%nsd) = elemsd%coord(1:elemsd%nsd, ips)
-      CALL bodySource%GetScalarValue(val=forceVecQuad(ips, ipt), args=args)
+      CALL bodySource%Get(val=forceVecQuad(ips, ipt), args=args)
     END DO
   END DO
 
@@ -325,7 +325,7 @@ DO iel = 1, tElements
 
   DO ips = 1, elemsd%nips
     args(1:elemsd%nsd) = elemsd%coord(1:elemsd%nsd, ips)
-    CALL bodySource%GetScalarValue(val=forceVecQuad(ips), args=args)
+    CALL bodySource%Get(val=forceVecQuad(ips), args=args)
   END DO
 
   CALL FEVariable_Set( &
