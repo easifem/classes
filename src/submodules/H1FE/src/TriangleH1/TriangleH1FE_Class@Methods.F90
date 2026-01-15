@@ -296,7 +296,7 @@ CASE (TypeFEVariableOpt%scalar)
 
     DO ii = 1, tVertices
       args(1:nsd) = xijLine(1:nsd, ii)
-      CALL func%GetScalarValue(args=args, val=vertexVal(ii))
+      CALL func%Get(args=args, val=vertexVal(ii))
     END DO
 
     scale = 1.0_DFP
@@ -305,7 +305,7 @@ CASE (TypeFEVariableOpt%scalar)
   args = times
   DO ii = 1, nips
     args(1:nsd) = facetElemsd%coord(1:nsd, ii)
-    CALL func%GetScalarValue(args=args, val=funcValue(ii))
+    CALL func%Get(args=args, val=funcValue(ii))
 
     vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tVertices, ii), &
                                  vertexVal(1:tVertices))
@@ -330,8 +330,7 @@ CASE (TypeFEVariableOpt%vector)
 
     DO ii = 1, tVertices
       args(1:nsd) = xijLine(1:nsd, ii)
-      CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
-                               n=tReturns)
+      CALL func%Get_(args=args, val=temp_ans, tsize=tReturns)
       vertexVal(ii) = temp_ans(icompo0)
     END DO
 
@@ -341,8 +340,7 @@ CASE (TypeFEVariableOpt%vector)
   args = times
   DO ii = 1, nips
     args(1:nsd) = facetElemsd%coord(1:nsd, ii)
-    CALL func%GetVectorValue(args=args, val=temp_ans(1:tReturns), &
-                             n=tReturns)
+    CALL func%Get_(args=args, val=temp_ans, tsize=tReturns)
     funcValue(ii) = temp_ans(icompo0)
 
     vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tVertices, ii), &
@@ -350,6 +348,8 @@ CASE (TypeFEVariableOpt%vector)
 
     funcValue(ii) = funcValue(ii) - scale * vertexInterpol
   END DO
+
+CASE DEFAULT
 
 END SELECT
 
@@ -471,7 +471,7 @@ DO jj = 1, tTimeVertices
   args(4) = times(jj)
   DO ii = 1, tSpaceVertices
     args(1:nsd) = xijLine(1:nsd, ii)
-    CALL func%GetScalarValue(args=args, val=ans(ii, jj))
+    CALL func%Get(args=args, val=ans(ii, jj))
   END DO
 END DO
 
@@ -487,7 +487,7 @@ DO jj = 1, tTimeVertices
   args(4) = times(jj)
   DO ips = 1, nips
     args(1:nsd) = facetElemsd%coord(1:nsd, ips)
-    CALL func%GetScalarValue(args=args, val=funcValue(ips, 1))
+    CALL func%Get(args=args, val=funcValue(ips, 1))
     vertexInterpol = DOT_PRODUCT(facetElemsd%N(1:tSpaceVertices, ips), &
                                  ans(1:tSpaceVertices, jj))
     funcValue(ips, 1) = funcValue(ips, 1) - scale * vertexInterpol
@@ -510,7 +510,7 @@ DO jj = 1, tSpaceVertices
 
   DO ipt = 1, nipt
     args(4) = timeElemsd%coord(1, ipt)
-    CALL func%GetScalarValue(args=args, val=funcValue(ipt, 1))
+    CALL func%Get(args=args, val=funcValue(ipt, 1))
 
     vertexInterpol = DOT_PRODUCT(timeElemsd%N(1:tTimeVertices, ipt), &
                                  ans(jj, 1:tTimeVertices))
@@ -535,7 +535,7 @@ DO ipt = 1, nipt
 
   DO ips = 1, nips
     args(1:nsd) = facetElemsd%coord(1:nsd, ips)
-    CALL func%GetScalarValue(args=args, val=funcValue(ips, ipt))
+    CALL func%Get(args=args, val=funcValue(ips, ipt))
 
     vertexInterpol = math%zero
 
