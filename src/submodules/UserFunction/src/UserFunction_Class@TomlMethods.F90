@@ -16,16 +16,12 @@
 
 SUBMODULE(UserFunction_Class) TomlMethods
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
-USE GlobalData, ONLY: CHAR_LF, stdout
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE TomlUtility, ONLY: GetValue
+USE TomlUtility, ONLY: GetValue_
+USE tomlf, ONLY: toml_get => get_value
 
-USE TomlUtility, ONLY: GetValue, GetValue_
-
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_len => len, &
-                 toml_array, &
-                 toml_stat
 IMPLICIT NONE
 CONTAINS
 
@@ -650,14 +646,8 @@ CALL AssertError1(isok, myName, &
 
 CALL obj%ImportFromToml(table=node)
 
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-               unitNo=stdout)
-END IF
-#endif
-
 NULLIFY (node)
+DEALLOCATE (table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

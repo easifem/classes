@@ -97,7 +97,8 @@ TYPE :: EquationParser_
   INTEGER(I4B) :: stackPtr = 0
   CHARACTER(len=TypeUserFunctionOpt%maxlen) :: funcString = ''
   CHARACTER(len=TypeUserFunctionOpt%maxlen) :: funcStringOrig = ''
-  CHARACTER(len=TypeUserFunctionOpt%maxlen), ALLOCATABLE :: variableNames(:)
+  CHARACTER(len=TypeUserFunctionOpt%maxVarLen), ALLOCATABLE :: &
+    variableNames(:)
 
 CONTAINS
 
@@ -158,9 +159,9 @@ INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj, funcStr, var)
     CLASS(EquationParser_), INTENT(INOUT) :: obj
   !! equation parser object to be initialized
-    CHARACTER(LEN=*), INTENT(in) :: FuncStr
+    CHARACTER(LEN=*), INTENT(IN) :: FuncStr
   !! Function string
-    CHARACTER(LEN=*), DIMENSION(:), INTENT(in) :: Var
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: Var
   !! Array with variable names
   END SUBROUTINE obj_Initiate
 END INTERFACE
