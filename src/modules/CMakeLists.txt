@@ -246,6 +246,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/FEFactory/CMakeLists.txt)
 # Tree3R
 include(${CMAKE_CURRENT_LIST_DIR}/Tree3R/CMakeLists.txt)
 
+# EquationParser
+include(${CMAKE_CURRENT_LIST_DIR}/EquationParser/CMakeLists.txt)
+
 # UserFunction
 include(${CMAKE_CURRENT_LIST_DIR}/UserFunction/CMakeLists.txt)
 
