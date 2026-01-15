@@ -51,7 +51,7 @@ LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
                 tcellCon, xij_i, xij_j, maxNips, ips, &
-                spaceCompo(1), force_i, force_j
+                spaceCompo(1), force_i, force_j, tsize
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 TYPE(FEVariable_) :: forceVar
@@ -106,8 +106,8 @@ DO iel = 1, tElements
 
   DO ips = 1, elemsd%nips
     args(1:elemsd%nsd) = elemsd%coord(1:elemsd%nsd, ips)
-    CALL bodySource%GetVectorValue(val=forceVecQuad(1:elemsd%nsd, ips), &
-                                   args=args, n=elemsd%nsd)
+    CALL bodySource%Get_( &
+      val=forceVecQuad(:, ips), args=args, tsize=tsize)
   END DO
 
   CALL FEVariable_Set( &
