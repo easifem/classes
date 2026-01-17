@@ -80,6 +80,7 @@ CHARACTER(*), PARAMETER :: modName = "EquationParser"
 PUBLIC :: EquationParser
 PUBLIC :: EquationParser_Pointer
 PUBLIC :: EquationParser_
+PUBLIC :: EquationParserPointer_
 
 !----------------------------------------------------------------------------
 !                                                            EquationParser_
@@ -132,6 +133,18 @@ CONTAINS
     ImportFromToml2
   !! Import equation parser from toml
 END TYPE EquationParser_
+
+!----------------------------------------------------------------------------
+!                                                      EquationParserPointer_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: a vector of pointers to EquationParser_ objects
+
+TYPE :: EquationParserPointer_
+  TYPE(EquationParser_), POINTER :: ptr => NULL()
+END TYPE EquationParserPointer_
 
 !----------------------------------------------------------------------------
 !                                                          Deallocate@Methods
