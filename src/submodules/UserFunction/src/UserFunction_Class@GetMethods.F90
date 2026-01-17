@@ -24,7 +24,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetName
-ans = obj%name%chars()
+ans = TRIM(obj%name)
 END PROCEDURE obj_GetName
 
 !----------------------------------------------------------------------------

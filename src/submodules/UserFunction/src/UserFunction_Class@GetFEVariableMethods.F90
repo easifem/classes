@@ -591,9 +591,8 @@ SUBROUTINE Matrix_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
+                          '[END] ')
 #endif
-
 END SUBROUTINE Matrix_SpaceTime_GetVariable
 
 !----------------------------------------------------------------------------

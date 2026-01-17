@@ -55,23 +55,23 @@ ELSE
 END IF
 
 !> isUserFunctionSet
-dsetname = TRIM(group)//"/isUserFunctionSet"
+dsetname = TRIM(group)//"/isExternalFunc"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isExternalFunc)
 ELSE
-  obj%isUserFunctionSet = .FALSE.
+  obj%isExternalFunc = .FALSE.
 END IF
 
-!> isUserFunctionSet
-IF (obj%isUserFunctionSet) THEN
+!> isExternalFunc
+IF (obj%isExternalFunc) THEN
   ! dsetname = TRIM(group)//"/userFunction"
   ! ALLOCATE (obj%userFunction)
   ! CALL obj%userFunction%IMPORT(hdf5=hdf5, group=dsetname%chars())
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-              '[WIP ERROR] :: currently import does not work for useFunction')
+            '[WIP ERROR] :: currently import does not work for external func')
 END IF
 
-IF (.NOT. obj%isUserFunctionSet) THEN
+IF (.NOT. obj%isExternalFunc) THEN
   !> returnType
   dsetname = TRIM(group)//"/returnType"
   IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
@@ -170,8 +170,8 @@ END IF
 dsetname = TRIM(group)//"/name"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
 
-!> isUserFunctionSet
-IF (obj%isUserFunctionSet) THEN
+!> isExternalFunc
+IF (obj%isExternalFunc) THEN
   !> isUserFunctionSet
   ! dsetname = TRIM(group)//"/isUserFunctionSet"
   ! CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
@@ -183,10 +183,10 @@ IF (obj%isUserFunctionSet) THEN
                     ' for UserFunction.')
 END IF
 
-IF (.NOT. obj%isUserFunctionSet) THEN
+IF (.NOT. obj%isExternalFunc) THEN
   !> isUserFunctionSet
-  dsetname = TRIM(group)//"/isUserFunctionSet"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
+  dsetname = TRIM(group)//"/isExternalFunc"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isExternalFunc)
 
   !> returnType
   dsetname = TRIM(group)//"/returnType"

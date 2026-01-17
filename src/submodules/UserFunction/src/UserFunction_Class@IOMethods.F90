@@ -47,12 +47,12 @@ IF (.NOT. obj%isInit) THEN
   RETURN
 END IF
 
-CALL Display("name: "//obj%name, unitNo=unitNo)
-CALL Display(obj%isUserFunctionSet, "isUserFunctionSet: ", unitNo=unitNo)
+CALL Display("name: "//TRIM(obj%name), unitNo=unitNo)
+CALL Display(obj%isExternalFunc, "isExternalFunc: ", unitNo=unitNo)
 CALL Display(obj%isLuaScript, "isLuaScript: ", unitNo=unitNo)
 IF (obj%isLuaScript) THEN
-  CALL Display(obj%luaScript%chars(), "luaScript: ", unitNo=unitNo)
-  CALL Display(obj%luaFunctionName%chars(), "luaFunctionName: ", &
+  CALL Display(TRIM(obj%luaScript), "luaScript: ", unitNo=unitNo)
+  CALL Display(TRIM(obj%luaFunctionName), "luaFunctionName: ", &
                unitNo=unitNo)
 END IF
 

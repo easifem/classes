@@ -26,6 +26,125 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                        ImportParamFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ImportFromToml()')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = .TRUE.
+CALL ReadNamefromToml(obj=obj, table=table)
+CALL ReadReturnTypeFromToml(obj=obj, table=table)
+CALL ReadReturnShapeFromToml(obj=obj, table=table)
+CALL ReadArgTypeFromToml(obj=obj, table=table)
+CALL ReadNumArgsFromToml(obj=obj, table=table)
+CALL ReadNumReturnsFromToml(obj=obj, table=table)
+CALL ReadLuaScriptFromToml(obj=obj, table=table)
+CALL ReadScalarValueFromToml(obj=obj, table=table)
+CALL ReadVectorValueFromToml(obj=obj, table=table)
+CALL ReadMatrixValueFromToml(obj=obj, table=table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                        ImportParamFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
+#endif
+
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+              stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1( &
+  isok, myName, &
+  'Following error occured while reading toml file :: cannot find ['// &
+  tomlName//"] table in config.")
+#endif
+
+CALL obj%ImportFromToml(table=node)
+
+NULLIFY (node)
+DEALLOCATE (table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                         GetDefaultNumArgs
+!----------------------------------------------------------------------------
+
+FUNCTION GetDefaultNumArgs(argType) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: argType
+  INTEGER(I4B) :: ans
+
+  SELECT CASE (argType)
+  CASE (varopt%Constant)
+    ans = funcopt%constFuncArgs
+  CASE (varopt%Space)
+    ans = funcopt%spaceFuncArgs
+  CASE (varopt%Time)
+    ans = funcopt%timeFuncArgs
+  CASE (varopt%SpaceTime)
+    ans = funcopt%spaceTimeFuncArgs
+  CASE DEFAULT
+    ans = -1
+  END SELECT
+END FUNCTION GetDefaultNumArgs
+
+!----------------------------------------------------------------------------
+!                                                     GetDefaultNumReturns
+!----------------------------------------------------------------------------
+
+FUNCTION GetDefaultNumReturns(returnType) RESULT(ans)
+  INTEGER(I4B), INTENT(IN) :: returnType
+  INTEGER(I4B) :: ans
+
+  SELECT CASE (returnType)
+  CASE (varopt%Scalar)
+    ans = funcopt%scalarFuncNumReturns
+  CASE (varopt%Vector)
+    ans = funcopt%vectorFuncNumReturns
+  CASE (varopt%Matrix)
+    ans = funcopt%matrixFuncNumReturns
+  CASE DEFAULT
+    ans = -1
+  END SELECT
+END FUNCTION GetDefaultNumReturns
+
+!----------------------------------------------------------------------------
 !                                                          ReadNameFromToml
 !----------------------------------------------------------------------------
 
@@ -38,9 +157,10 @@ SUBROUTINE ReadNameFromToml(obj, table)
   CHARACTER(*), PARAMETER :: myName = "ReadNameFromToml()"
 #endif
 
+  CHARACTER(*), PARAMETER :: default_name = "UserFunction"
+  TYPE(String) :: astr
   INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isok
-  CHARACTER(*), PARAMETER :: default_name = "UserFunction"
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -52,9 +172,13 @@ SUBROUTINE ReadNameFromToml(obj, table)
                     'Reading name ...')
 #endif
 
-  CALL GetValue(table=table, key="name", VALUE=obj%name, &
+  CALL GetValue(table=table, key="name", VALUE=astr, &
                 default_value=default_name, origin=origin, &
                 stat=stat, isFound=isok)
+
+  obj%name = astr%chars()
+
+  astr = ""
 
 #ifdef DEBUG_VER
   IF (.NOT. isok) THEN
@@ -316,6 +440,7 @@ SUBROUTINE ReadLuaScriptFromToml(obj, table)
 
   INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isok
+  TYPE(String) :: astr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -327,9 +452,11 @@ SUBROUTINE ReadLuaScriptFromToml(obj, table)
                     'Reading luaScript ...')
 #endif
 
-  CALL GetValue(table=table, key="luaScript", VALUE=obj%luaScript, &
+  CALL GetValue(table=table, key="luaScript", VALUE=astr, &
                 default_value="NA", origin=origin, stat=stat, &
                 isFound=obj%isLuaScript)
+
+  obj%luaScript = astr%chars()
 
   IF (.NOT. obj%isLuaScript) THEN
 #ifdef DEBUG_VER
@@ -340,9 +467,12 @@ SUBROUTINE ReadLuaScriptFromToml(obj, table)
   END IF
 
   CALL GetValue(table=table, key="luaFunctionName", &
-                VALUE=obj%luaFunctionName, &
-                default_value="NA", origin=origin, stat=stat, &
+                VALUE=astr, default_value="NA", origin=origin, stat=stat, &
                 isFound=isok)
+
+  obj%luaFunctionName = astr%chars()
+
+  astr = ""
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &
@@ -418,7 +548,7 @@ SUBROUTINE ReadScalarValueFromToml(obj, table)
       &value is needed when returnType is scalar.')
 #endif
 
-  CALL obj%Set(scalarValue=areal)
+  CALL obj%SetScalarConstantVal(val=areal)
 
 #ifdef DEBUG_VER
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
@@ -429,7 +559,6 @@ SUBROUTINE ReadScalarValueFromToml(obj, table)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE ReadScalarValueFromToml
 
 !----------------------------------------------------------------------------
@@ -498,7 +627,7 @@ SUBROUTINE ReadVectorValueFromToml(obj, table)
       &value is needed when returnType is Vector.')
 #endif
 
-  CALL obj%Set(VectorValue=areal)
+  CALL obj%SetVectorConstantVal(val=areal)
 
   IF (ALLOCATED(areal)) DEALLOCATE (areal)
 
@@ -574,7 +703,7 @@ SUBROUTINE ReadMatrixValueFromToml(obj, table)
       &value is needed when returnType is Matrix.')
 #endif
 
-  CALL obj%Set(matrixValue=areal)
+  CALL obj%SetMatrixConstantVal(val=areal)
 
   IF (ALLOCATED(areal)) DEALLOCATE (areal)
 
@@ -583,125 +712,6 @@ SUBROUTINE ReadMatrixValueFromToml(obj, table)
                           '[END] ')
 #endif
 END SUBROUTINE ReadMatrixValueFromToml
-
-!----------------------------------------------------------------------------
-!                                                        ImportParamFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ImportFromToml()')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
-CALL ReadNamefromToml(obj=obj, table=table)
-CALL ReadReturnTypeFromToml(obj=obj, table=table)
-CALL ReadReturnShapeFromToml(obj=obj, table=table)
-CALL ReadArgTypeFromToml(obj=obj, table=table)
-CALL ReadNumArgsFromToml(obj=obj, table=table)
-CALL ReadNumReturnsFromToml(obj=obj, table=table)
-CALL ReadLuaScriptFromToml(obj=obj, table=table)
-CALL ReadScalarValueFromToml(obj=obj, table=table)
-CALL ReadVectorValueFromToml(obj=obj, table=table)
-CALL ReadMatrixValueFromToml(obj=obj, table=table)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                        ImportParamFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-LOGICAL(LGT) :: isok
-#endif
-
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-CALL GetValue(table=table, afile=afile, filename=filename)
-
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(node)
-CALL AssertError1( &
-  isok, myName, &
-  'Following error occured while reading toml file :: cannot find ['// &
-  tomlName//"] table in config.")
-#endif
-
-CALL obj%ImportFromToml(table=node)
-
-NULLIFY (node)
-DEALLOCATE (table)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_ImportFromToml2
-
-!----------------------------------------------------------------------------
-!                                                         GetDefaultNumArgs
-!----------------------------------------------------------------------------
-
-FUNCTION GetDefaultNumArgs(argType) RESULT(ans)
-  INTEGER(I4B), INTENT(IN) :: argType
-  INTEGER(I4B) :: ans
-
-  SELECT CASE (argType)
-  CASE (varopt%Constant)
-    ans = funcopt%constFuncArgs
-  CASE (varopt%Space)
-    ans = funcopt%spaceFuncArgs
-  CASE (varopt%Time)
-    ans = funcopt%timeFuncArgs
-  CASE (varopt%SpaceTime)
-    ans = funcopt%spaceTimeFuncArgs
-  CASE DEFAULT
-    ans = -1
-  END SELECT
-END FUNCTION GetDefaultNumArgs
-
-!----------------------------------------------------------------------------
-!                                                     GetDefaultNumReturns
-!----------------------------------------------------------------------------
-
-FUNCTION GetDefaultNumReturns(returnType) RESULT(ans)
-  INTEGER(I4B), INTENT(IN) :: returnType
-  INTEGER(I4B) :: ans
-
-  SELECT CASE (returnType)
-  CASE (varopt%Scalar)
-    ans = funcopt%scalarFuncNumReturns
-  CASE (varopt%Vector)
-    ans = funcopt%vectorFuncNumReturns
-  CASE (varopt%Matrix)
-    ans = funcopt%matrixFuncNumReturns
-  CASE DEFAULT
-    ans = -1
-  END SELECT
-END FUNCTION GetDefaultNumReturns
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

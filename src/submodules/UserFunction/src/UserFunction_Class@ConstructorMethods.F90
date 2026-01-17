@@ -46,7 +46,7 @@ END SELECT
 END PROCEDURE UserFunctionGetReturnType
 
 !----------------------------------------------------------------------------
-!                                                  UserFunctionGetArgType
+!                                                      UserFunctionGetArgType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserFunctionGetArgType
@@ -132,7 +132,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = .FALSE.
-obj%isUserFunctionSet = .FALSE.
+obj%isExternalFunc = .FALSE.
 obj%isLuaScript = .FALSE.
 obj%luaScript = ""
 obj%luaFunctionName = ""

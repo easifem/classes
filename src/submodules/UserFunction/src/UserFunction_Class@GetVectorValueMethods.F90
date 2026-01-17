@@ -77,7 +77,7 @@ SUBROUTINE CheckError(obj, n, val, args, myName)
 #endif
 
 #ifdef DEBUG_VER
-  IF (obj%isUserFunctionSet) THEN
+  IF (obj%isExternalFunc) THEN
     isok = ASSOCIATED(obj%vectorFunction)
     CALL AssertError1(isok, myName, &
          'UserFunction_::obj%isUserFunctionSet is true but &
@@ -187,8 +187,8 @@ SUBROUTINE GetValue_Lua(obj, n, val, args, myName)
 
   l = lual_newstate()
   CALL lual_openlibs(l)
-  rc = lual_dofile(l, obj%luaScript%chars())
-  rc = lua_getglobal(l, obj%luaFunctionName%chars())
+  rc = lual_dofile(l, TRIM(obj%luaScript))
+  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
   isok = lua_isfunction(l, -1) == 1
 
   IF (.NOT. isok) THEN
@@ -198,8 +198,8 @@ SUBROUTINE GetValue_Lua(obj, n, val, args, myName)
     CALL AssertError1( &
       isok, myName, &
       'UserFunction_::obj%isLuaScript is TRUE'// &
-      CHAR_LF//'In the lua script'//obj%luaScript%chars()// &
-      CHAR_LF//'lua function named '//obj%luaFunctionName%chars()// &
+      CHAR_LF//'In the lua script'//TRIM(obj%luaScript)// &
+      CHAR_LF//'lua function named '//TRIM(obj%luaFunctionName)// &
       CHAR_LF//' is not a function.')
 #endif
 
@@ -299,8 +299,8 @@ CALL AssertError1(isok, myName, &
 CALL CheckError(obj=obj, n=tsize, val=val, args=args, myname=myname)
 #endif
 
-IF (obj%isUserFunctionSet) THEN
-  val(1:tsize) = obj%vectorFunction(x=args)
+IF (obj%isExternalFunc) THEN
+  CALL obj%vectorFunction(args=args, nargs=obj%numArgs, ans=val, tsize=tsize)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -16,7 +16,12 @@
 !
 
 SUBMODULE(UserFunction_Class) SetMethods
+USE BaseType, ONLY: varopt => TypeFEVariableOpt
+USE GlobalData, ONLY: CHAR_LF
+USE Display_Method, ONLY: ToString
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -40,5 +45,255 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetName
+
+!----------------------------------------------------------------------------
+!                                                  SetScalarFunctionPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetScalarFunctionPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetScalarFunctionPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%returnType, varopt%scalar, myName, &
+                  'a=obj%returnType and b=scalar')
+#endif
+
+obj%isExternalFunc = math%yes
+obj%scalarFunction => func
+obj%engineID = funcopt%externalEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetScalarFunctionPointer
+
+!----------------------------------------------------------------------------
+!                                                  SetVectorFunctionPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetVectorFunctionPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetVectorFunctionPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%returnType, varopt%vector, myName, &
+                  'a=obj%returnType and b=vector')
+#endif
+
+obj%isExternalFunc = math%yes
+obj%vectorFunction => func
+obj%engineID = funcopt%externalEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetVectorFunctionPointer
+
+!----------------------------------------------------------------------------
+!                                                   SetMatrixFunctionPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMatrixFunctionPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixFunctionPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%returnType, varopt%matrix, myName, &
+                  'a=obj%returnType and b=matrix')
+#endif
+
+obj%isExternalFunc = math%yes
+obj%matrixFunction => func
+obj%engineID = funcopt%externalEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMatrixFunctionPointer
+
+!----------------------------------------------------------------------------
+!                                                                SetLuaScript
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetLuaScript
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetLuaScript()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%isInit
+CALL AssertError1(isok, myName, &
+                  'UserFunction_::obj is not initiated.')
+#endif
+
+obj%isLuaScript = math%yes
+obj%luaScript = luaScript
+obj%luaFunctionName = luaFunctionName
+obj%engineID = funcopt%luaEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_SetLuaScript
+
+!----------------------------------------------------------------------------
+!                                                        SetScalarConstantVal
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetScalarConstantVal
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetScalarConstantVal()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%isInit
+CALL AssertError1(isok, myName, &
+                  'UserFunction_::obj is not initiated.')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%returnType, varopt%scalar, myName, &
+                  'a=obj%returnType and b=scalar')
+#endif
+
+obj%scalarValue = val
+obj%engineID = funcopt%constEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_SetScalarConstantVal
+
+!----------------------------------------------------------------------------
+!                                                        SetVectorConstantVal
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetVectorConstantVal
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetVectorConstantVal()"
+INTEGER(I4B) :: tsize
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%isInit
+CALL AssertError1(isok, myName, &
+                  'UserFunction_::obj is not initiated.')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%returnType, varopt%vector, myName, &
+                  'a=obj%returnType and b=vector')
+#endif
+
+#ifdef DEBUG_VER
+tsize = SIZE(val)
+CALL AssertError3(obj%numReturns, tsize, myName, &
+                  'a = obj%numReturns and b=size(val)')
+#endif
+
+obj%vectorValue(1:obj%numReturns) = val(1:obj%numReturns)
+obj%engineID = funcopt%constEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_SetVectorConstantVal
+
+!----------------------------------------------------------------------------
+!                                                        SetMatrixConstantVal
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMatrixConstantVal
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixConstantVal()"
+INTEGER(I4B) :: myshape(2)
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%isInit
+CALL AssertError1(isok, myName, &
+                  'UserFunction_::obj is not initiated.')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%returnType, varopt%matrix, myName, &
+                  'a=obj%argType and b=matrix')
+#endif
+
+#ifdef DEBUG_VER
+myshape = SHAPE(val)
+CALL AssertError3(obj%returnShape(1), myshape(1), myName, &
+                  'shape mismatch: a=obj%returnShape(1) and b=rows of val')
+
+CALL AssertError3(obj%returnShape(2), myshape(2), myName, &
+                  'shape mismatch: a=obj%returnShape(2) and b=cols of val')
+#endif
+
+obj%matrixValue(1:obj%returnShape(1), 1:obj%returnShape(2)) = &
+  val(1:obj%returnShape(1), 1:obj%returnShape(2))
+
+obj%engineID = funcopt%constEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_SetMatrixConstantVal
+
+!----------------------------------------------------------------------------
+!                                                               Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

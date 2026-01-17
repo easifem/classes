@@ -17,9 +17,9 @@
 MODULE UserFunction_Class
 USE GlobalData, ONLY: DFP, LGT, I4B
 USE BaseType, ONLY: FEVariable_
-USE BaseType, ONLY: iface_ScalarFunction
-USE BaseType, ONLY: iface_VectorFunction
-USE BaseType, ONLY: iface_MatrixFunction
+USE BaseType, ONLY: InterfaceScalarSubroutine
+USE BaseType, ONLY: InterfaceVectorSubroutine
+USE BaseType, ONLY: InterfaceMatrixSubroutine
 USE String_Class, ONLY: String
 USE HDF5File_Class, ONLY: HDF5File_
 USE TxtFile_Class, ONLY: TxtFile_
@@ -27,6 +27,8 @@ USE ExceptionHandler_Class, ONLY: e
 USE tomlf, ONLY: toml_table
 USE BaseType, ONLY: funcopt => TypeUserFunctionOpt
 USE BaseType, ONLY: math => TypeMathOpt
+USE EquationParser_Class, ONLY: EquationParser_
+USE EquationParser_Class, ONLY: EquationParserPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -63,13 +65,20 @@ PUBLIC :: UserFunctionDisplay
 
 TYPE :: UserFunction_
   PRIVATE
-  TYPE(String) :: name
+  CHARACTER(funcopt%maxlen) :: name = ""
   !! name of the function
   LOGICAL(LGT) :: isInit = math%no
-  LOGICAL(LGT) :: isUserFunctionSet = math%no
+  !! True if the user function is initiated
+  LOGICAL(LGT) :: isExternalFunc = math%no
+  !! True if user function is set
   LOGICAL(LGT) :: isLuaScript = math%no
-  TYPE(String) :: luaScript
-  TYPE(String) :: luaFunctionName
+  !! True if lua script is used
+  CHARACTER(funcopt%maxlen) :: luaScript = ""
+  !! lua script file name
+  CHARACTER(funcopt%maxlen) :: luaFunctionName = ""
+  !! lua function name
+  INTEGER(I4B) :: engineID = math%zero_i
+  !! ID for the engine, used internally.
   INTEGER(I4B) :: returnType = math%zero_i
   !! scalar, vector, matrix
   INTEGER(I4B) :: argType = math%zero_i
@@ -92,13 +101,22 @@ TYPE :: UserFunction_
   REAL(DFP) :: matrixValue(funcopt%matrixFuncNumReturns, &
                            funcopt%matrixFuncNumReturns) = math%zero
   !! Matrix constant value
-  PROCEDURE(iface_ScalarFunction), POINTER, NOPASS :: scalarFunction => &
+  TYPE(EquationParser_) :: scalarEqParser
+  !! Equation parser for scalar function
+
+  TYPE(EquationParserPointer_) :: vectorEqParser(funcopt%vectorFuncNumReturns)
+  !! Equation parser for vector function
+
+  TYPE(EquationParserPointer_) :: matrixEqParser(funcopt%matrixFuncNumReturns)
+  !! equation parser for matrix function
+
+  PROCEDURE(InterfaceScalarSubroutine), POINTER, NOPASS :: scalarFunction => &
     NULL()
   !! Scalar function pointer
-  PROCEDURE(iface_VectorFunction), POINTER, NOPASS :: vectorFunction => &
+  PROCEDURE(InterfaceVectorSubroutine), POINTER, NOPASS :: vectorFunction => &
     NULL()
   !! vector function pointer
-  PROCEDURE(iface_MatrixFunction), POINTER, NOPASS :: matrixFunction => &
+  PROCEDURE(InterfaceMatrixSubroutine), POINTER, NOPASS :: matrixFunction => &
     NULL()
   !! matrix function pointer
 
@@ -115,7 +133,26 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Set => obj_Set
+  PROCEDURE, PUBLIC, PASS(obj) :: SetScalarFunctionPointer => &
+    obj_SetScalarFunctionPointer
+  !! Set the scalar function pointer
+  PROCEDURE, PUBLIC, PASS(obj) :: SetVectorFunctionPointer => &
+    obj_SetVectorFunctionPointer
+  !! Set the Vector function pointer
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMatrixFunctionPointer => &
+    obj_SetMatrixFunctionPointer
+  !! Set the Matrix function pointer
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLuaScript => obj_SetLuaScript
+  !! Set the lua script in user function
+  PROCEDURE, PUBLIC, PASS(obj) :: SetScalarConstantVal => &
+    obj_SetScalarConstantVal
+  !! Set the constant value for a scalar user function
+  PROCEDURE, PUBLIC, PASS(obj) :: SetVectorConstantVal => &
+    obj_SetVectorConstantVal
+  !! Set the constant value for a vector user function
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMatrixConstantVal => &
+    obj_SetMatrixConstantVal
+  !! Set the constant value for a Matrix user function
   PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   !! Set name of the function
 
@@ -664,221 +701,113 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                    SetLuaScript@SetMethods
 !----------------------------------------------------------------------------
 
-! INTERFACE
-!   MODULE SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
-!             luaScript, luaFunctionName, scalarFunction, vectorFunction, &
-!                             matrixFunction)
-!     CLASS(UserFunction_), INTENT(INOUT) :: obj
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: scalarValue
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: vectorValue(:)
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: matrixValue(:, :)
-!     CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
-!     CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
-!     PROCEDURE(iface_ScalarFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-!       scalarFunction
-!     PROCEDURE(iface_VectorFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-!       vectorFunction
-!     PROCEDURE(iface_MatrixFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-!       matrixFunction
-!   END SUBROUTINE obj_Set
-! END INTERFACE
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the lua script in user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLuaScript(obj, luaScript, luaFunctionName)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: luaScript
+    CHARACTER(*), INTENT(IN) :: luaFunctionName
+  END SUBROUTINE obj_SetLuaScript
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            SetScalarConstantVal@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a scalar user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetScalarConstantVal(obj, val)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: val
+  END SUBROUTINE obj_SetScalarConstantVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetVectorConstantVal@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a vector user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetVectorConstantVal(obj, val)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: val(:)
+  END SUBROUTINE obj_SetVectorConstantVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetMatrixConstantVal@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a Matrix user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMatrixConstantVal(obj, val)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: val(:, :)
+  END SUBROUTINE obj_SetMatrixConstantVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        SetScalarFunctionPointer@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the value in user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetScalarFunctionPointer(obj, func)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    PROCEDURE(InterfaceScalarSubroutine), POINTER, INTENT(INOUT) :: func
+  END SUBROUTINE obj_SetScalarFunctionPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        SetVectorFunctionPointer@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the value in user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetVectorFunctionPointer(obj, func)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    PROCEDURE(InterfaceVectorSubroutine), POINTER, INTENT(IN) :: func
+  END SUBROUTINE obj_SetVectorFunctionPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        SetMatrixFunctionPointer@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the value in user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMatrixFunctionPointer(obj, func)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    PROCEDURE(InterfaceMatrixSubroutine), POINTER, INTENT(IN) :: func
+  END SUBROUTINE obj_SetMatrixFunctionPointer
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
-
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                            Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
-! summary: Sets the user function
-
-SUBROUTINE obj_Set(obj, scalarValue, vectorValue, matrixValue, &
-                   luaScript, luaFunctionName, scalarFunction, &
-                   vectorFunction, matrixFunction)
-  USE BaseType, ONLY: varopt => TypeFEVariableOpt
-  USE GlobalData, ONLY: CHAR_LF
-  USE Display_Method, ONLY: ToString
-  USE ReallocateUtility, ONLY: Reallocate
-
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), OPTIONAL, INTENT(IN) :: scalarValue
-  REAL(DFP), OPTIONAL, INTENT(IN) :: vectorValue(:)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: matrixValue(:, :)
-  CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
-  CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
-  PROCEDURE(iface_ScalarFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-    scalarFunction
-  PROCEDURE(iface_VectorFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-    vectorFunction
-  PROCEDURE(iface_MatrixFunction), POINTER, OPTIONAL, INTENT(IN) :: &
-    matrixFunction
-
-  ! Internal variables
-  CHARACTER(*), PARAMETER :: myName = "obj_Set()"
-  LOGICAL(LGT) :: isNotOK
-  INTEGER(I4B) :: tsize, myshape(2)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START]')
-#endif
-
-  isNotOK = .NOT. obj%isInit
-  IF (isNotOK) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   '[INTERNAL ERROR] :: UserFunction_::obj is not initiated.')
-    RETURN
-  END IF
-
-  IF (PRESENT(scalarValue)) THEN
-
-#ifdef DEBUG_VER
-    isNotOK = obj%returnType .NE. varopt%scalar
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-         '[INTERNAL ERROR] :: UserFunction_::obj%argType is NOT Constant '// &
-                        ' or UserFunction_::obj%returnType is not Scalar')
-      RETURN
-    END IF
-#endif
-
-    obj%scalarValue = scalarValue
-
-  END IF
-
-  IF (PRESENT(vectorValue)) THEN
-
-#ifdef DEBUG_VER
-    isNotOK = obj%returnType .NE. varopt%vector
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: UserFunction_::obj%argType '// &
-                        CHAR_LF//' is NOT Constant '// &
-                   CHAR_LF//'or UserFunction_::obj%returnType is not Vector.')
-      RETURN
-    END IF
-#endif
-
-    tsize = SIZE(vectorValue)
-
-#ifdef DEBUG_VER
-    isNotOK = tsize .NE. obj%numReturns
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: UserFunction_::obj%numReturns '// &
-                     CHAR_LF//ToString(obj%numReturns)//'is NOT equal to '// &
-                 CHAR_LF//' the size of vectorValue ('//ToString(tsize)//').')
-      RETURN
-    END IF
-#endif
-
-    ! CALL Reallocate(obj%vectorValue, tsize)
-    obj%vectorValue(1:tsize) = vectorValue(1:tsize)
-
-  END IF
-
-  IF (PRESENT(matrixValue)) THEN
-
-#ifdef DEBUG_VER
-    isNotOK = obj%returnType .NE. varopt%matrix
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: UserFunction_::obj%argType '// &
-                        CHAR_LF//'is NOT Constant '// &
-                    CHAR_LF//'or UserFunction_::obj%returnType is not Matrix')
-      RETURN
-    END IF
-#endif
-
-    myshape = SHAPE(matrixValue)
-
-#ifdef DEBUG_VER
-    isNotOK = ALL(myshape .NE. obj%returnShape)
-
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                   '[INTERNAL ERROR] :: UserFunction_::obj%returnType is '// &
-            'Matrix, but shape of matrixValue is not same as obj%returnShape')
-      RETURN
-    END IF
-#endif
-
-    ! CALL Reallocate(obj%matrixValue, myshape(1), myshape(2))
-    obj%matrixValue(1:myshape(1), 1:myshape(2)) = matrixValue
-  END IF
-
-  IF (PRESENT(luaScript)) THEN
-    obj%isLuaScript = .TRUE.
-    obj%luaScript = luaScript
-
-    isNotOK = .NOT. PRESENT(luaFunctionName)
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                 '[INTERNAL ERROR] :: both luaScript and luaFunctionName '// &
-                        'should be present.')
-      RETURN
-    END IF
-
-    obj%luaFunctionName = luaFunctionName
-  END IF
-
-  IF (PRESENT(scalarFunction)) THEN
-
-#ifdef DEBUG_VER
-    isNotOK = obj%returnType .NE. varopt%scalar
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Scalar')
-      RETURN
-    END IF
-#endif
-
-    obj%isUserFunctionSet = .TRUE.
-    obj%scalarFunction => scalarFunction
-  END IF
-
-  IF (PRESENT(vectorFunction)) THEN
-
-#ifdef DEBUG_VER
-    isNotOK = obj%returnType .NE. varopt%vector
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Vector')
-      RETURN
-    END IF
-#endif
-
-    obj%isUserFunctionSet = .TRUE.
-    obj%vectorFunction => vectorFunction
-  END IF
-
-  IF (PRESENT(matrixFunction)) THEN
-
-#ifdef DEBUG_VER
-    isNotOK = obj%returnType .NE. varopt%matrix
-    IF (isNotOK) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[INTERNAL ERROR] :: UserFunction_::obj%returnType is not Matrix')
-      RETURN
-    END IF
-#endif
-
-    obj%isUserFunctionSet = .TRUE.
-    obj%matrixFunction => matrixFunction
-  END IF
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END]')
-#endif
-END SUBROUTINE obj_Set
 
 END MODULE UserFunction_Class

@@ -50,7 +50,7 @@ SUBROUTINE checkerror(obj, args)
 #endif
 
 #ifdef DEBUG_VER
-  IF (obj%isUserFunctionSet) THEN
+  IF (obj%isExternalFunc) THEN
     isok = ASSOCIATED(obj%scalarFunction)
     CALL AssertError1(isok, myName, &
        'UserFunction_::obj%isUserFunctionSet is true but obj%scalarFunction &
@@ -190,15 +190,15 @@ SUBROUTINE getvalue_lua(obj, val, args)
 
   l = lual_newstate()
   CALL lual_openlibs(l)
-  rc = lual_dofile(l, obj%luaScript%chars())
-  rc = lua_getglobal(l, obj%luaFunctionName%chars())
-  isok = lua_isfunction(l, -1) .EQ. 1
+  rc = lual_dofile(l, TRIM(obj%luaScript))
+  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
+  isok = lua_isfunction(l, -1) == 1
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &
                 'UserFunction_::obj%isLuaScript is TRUE In the lua script'// &
-                    obj%luaScript%chars()//'lua function named '// &
-                    obj%luaFunctionName%chars()//' is not a function.')
+                    TRIM(obj%luaScript)//'lua function named '// &
+                    TRIM(obj%luaFunctionName)//' is not a function.')
 #endif
 
   DO iarg = 1, nargs
@@ -255,8 +255,8 @@ CALL checkerror(obj=obj, args=args)
 
 val = obj%scalarValue
 
-IF (obj%isUserFunctionSet) THEN
-  val = obj%scalarFunction(x=args)
+IF (obj%isExternalFunc) THEN
+  CALL obj%scalarFunction(args=args, nargs=obj%numArgs, ans=val)
   RETURN
 END IF
 

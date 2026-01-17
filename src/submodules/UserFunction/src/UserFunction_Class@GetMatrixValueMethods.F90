@@ -47,7 +47,7 @@ SUBROUTINE checkerror(obj, val, args, myname)
     RETURN
   END IF
 
-  IF (obj%isUserFunctionSet) THEN
+  IF (obj%isExternalFunc) THEN
     isok = ASSOCIATED(obj%matrixFunction)
     IF (.NOT. isok) THEN
       CALL e%RaiseError(modName//'::'//myname//' - '// &
@@ -148,16 +148,16 @@ SUBROUTINE getvalue_lua(obj, val, args, myname)
 
   l = lual_newstate()
   CALL lual_openlibs(l)
-  rc = lual_dofile(l, obj%luaScript%chars())
-  rc = lua_getglobal(l, obj%luaFunctionName%chars())
-  isok = lua_isfunction(l, -1) .EQ. 1
+  rc = lual_dofile(l, TRIM(obj%luaScript))
+  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
+  isok = lua_isfunction(l, -1) == 1
 
   IF (.NOT. isok) THEN
     CALL lua_close(l)
     CALL e%RaiseError(modName//'::'//myname//' - '// &
                 '[CONFIG ERROR] :: UserFunction_::obj%isLuaScript is TRUE'// &
-                      CHAR_LF//'In the lua script'//obj%luaScript%chars()// &
-               CHAR_LF//'lua function named '//obj%luaFunctionName%chars()// &
+                      CHAR_LF//'In the lua script'//TRIM(obj%luaScript)// &
+                 CHAR_LF//'lua function named '//TRIM(obj%luaFunctionName)// &
                       CHAR_LF//' is not a function.')
     RETURN
   END IF
@@ -220,10 +220,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL checkerror(obj=obj, val=val, args=args, myname=myname)
 #endif
 
-IF (obj%isUserFunctionSet) THEN
+IF (obj%isExternalFunc) THEN
   s = obj%returnShape(1:2)
   CALL Reallocate(val, obj%returnShape(1), obj%returnShape(2))
-  val(1:s(1), 1:s(2)) = obj%matrixFunction(x=args)
+  ! val(1:s(1), 1:s(2)) = obj%matrixFunction(x=args)
+  CALL obj%matrixFunction(args=args, nargs=obj%numArgs, ans=val, &
+                          nrow=s(1), ncol=s(2))
   RETURN
 END IF
 
