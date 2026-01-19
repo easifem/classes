@@ -23,39 +23,6 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetPm3dOpts
-obj%pm3dOpts_stmt = "set pm3d "//TRIM(opts)
-END PROCEDURE obj_SetPm3dOpts
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetCBTicks
-obj%cbTicks_stmt = "set cbtics "//TRIM(opts)
-END PROCEDURE obj_SetCBTicks
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetCntrLevels
-obj%cntrLevels_stmt = "set cntrparam levels "//TRIM(opts)
-END PROCEDURE obj_SetCntrLevels
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetCBLim
-obj%hasCBRange = .TRUE.
-obj%CBRange = avec
-END PROCEDURE obj_SetCBLim
-
-!----------------------------------------------------------------------------
 !                                                           set_filename
 !----------------------------------------------------------------------------
 
@@ -191,6 +158,15 @@ END PROCEDURE obj_SetZLim
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_SetCBLim
+obj%cbAxis%tick%isConfigured = .TRUE.
+obj%cbAxis%tick%lims = lims
+END PROCEDURE obj_SetCBLim
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_SetAxisLim
 CHARACTER(*), PARAMETER :: myName = "obj_SetAxisLim"
 
@@ -251,6 +227,14 @@ END PROCEDURE obj_SetY2Scale
 MODULE PROCEDURE obj_SetZScale
 CALL Help_SetPlotScale(obj%zaxis%tick, scaleChar, logBase)
 END PROCEDURE obj_SetZScale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetCBScale
+CALL Help_SetPlotScale(obj%cbAxis%tick, scaleChar, logBase)
+END PROCEDURE obj_SetCBScale
 
 !----------------------------------------------------------------------------
 !
@@ -349,6 +333,15 @@ CALL Help_SetLabel(obj%zaxis%label, label, color, fontSize, fontName, rotate)
 END PROCEDURE obj_SetZLabel
 
 !----------------------------------------------------------------------------
+!                                                                 set_zlabel
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetCBLabel
+CALL Help_SetLabel(obj%cbAxis%label, label, color, fontSize, &
+                   fontName, rotate)
+END PROCEDURE obj_SetCBLabel
+
+!----------------------------------------------------------------------------
 !                                                                 set_label
 !----------------------------------------------------------------------------
 
@@ -418,12 +411,12 @@ obj%filename = defaultOpt%filename
 
 IF (ALLOCATED(obj%options)) DEALLOCATE (obj%options)
 IF (ALLOCATED(obj%scripts)) DEALLOCATE (obj%scripts)
-obj%dataStyle = ""
 
-obj%pause_seconds = 0.0_DFP
-obj%status = 0
-obj%hasanimation = .FALSE.
-obj%hasmultiplot = .FALSE.
+obj%opts%dataStyle = ""
+
+obj%pauseSeconds = 0.0_DFP
+obj%setMultiplot = .FALSE.
+obj%showAnimation = .FALSE.
 
 obj%commandline = defaultOpt%commandline
 obj%runAfterWrite = .TRUE.

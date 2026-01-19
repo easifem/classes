@@ -45,7 +45,9 @@ INTEGER(I4B), PARAMETER :: NOT_INITIALIZED = -32000
 TYPE GnuplotOpt_
   CHARACTER(4) :: termType = 'wxt'
   CHARACTER(15) :: termFont = 'Times New Roman'
+  CHARACTER(3) :: paletteName = "jet"
   INTEGER(I4B) :: termFontSize = 10
+  INTEGER(I4B) :: numLevels = 10
   INTEGER(I4B) :: termSize(2) = [640, 480]
   CHARACTER(18) :: filename = "gnuplot_script"
   CHARACTER(11) :: dataStyle = "linespoints"
@@ -53,6 +55,7 @@ TYPE GnuplotOpt_
                    '# -------------------------------------------'
   CHARACTER(17) :: commandLine = "gnuplot --persist"
   REAL(DFP) :: pauseSeconds = 2.0_DFP
+  LOGICAL(LGT) :: fill = .FALSE.
 END TYPE GnuplotOpt_
 
 TYPE(GnuplotOpt_), PARAMETER :: defaultOpt = GnuplotOpt_()
@@ -111,9 +114,20 @@ END TYPE Axis_
 !
 !----------------------------------------------------------------------------
 
-TYPE :: PlotOpt_
+!> author: Shion Shimizu
+! date: 2025-12-31
+! summary:  options for plotting (plot, contour etc)
+
+!TODO: implement import from toml
+TYPE :: PlotOpts_
   TYPE(String), ALLOCATABLE :: lspecs(:)
-END TYPE PlotOpt_
+  LOGICAL(LGT) :: fill = .FALSE.
+  INTEGER(I4B) :: numLevels
+  REAL(DFP), ALLOCATABLE :: levels(:)
+  TYPE(String) :: paletteName
+  TYPE(String) :: dataStyle
+  ! datastyle: lines, points, linespoints
+END TYPE PlotOpts_
 
 !----------------------------------------------------------------------------
 !
@@ -126,54 +140,46 @@ END TYPE PlotOpt_
 TYPE :: GnuPlot_
   TYPE(TxtFile_) :: pltfile
 
+  TYPE(PlotOpts_) :: opts
+
   LOGICAL(LGT) :: runAfterWrite = .TRUE.
 
   LOGICAL(LGT) :: pauseAfterDraw = .FALSE.
 
-  TYPE(Axis_) :: xaxis, yaxis, zaxis, x2axis, y2axis
   TYPE(Label_) :: title
+  TYPE(Axis_) :: xaxis, yaxis, zaxis, x2axis, y2axis, &
+                 cbAxis
 
   TYPE(String) :: filename
   ! the name of physical file
   ! to write the gnuplot script
-
   TYPE(String) :: commandline
 
   TYPE(String), ALLOCATABLE :: options(:)
   ! vector of strings for gnuplot options
   TYPE(String), ALLOCATABLE :: scripts(:)
   ! vector of strings for gnuplot scripts
-  TYPE(String) :: dataStyle, termType, termFont
-  ! datastyle: lines, points, linespoints
+
+  ! terminal
+  LOGICAL(LGT) :: useDefaultTerm = .TRUE.
+  TYPE(String) :: termType, termFont
   ! termtype: wxt, qt, pngcairo, svg etc
   ! termfont: Times New Roman etc
   INTEGER(I4B) :: termFontSize
   INTEGER(I4B) :: termSize(2)
 
-  LOGICAL(LGT) :: hasanimation = .FALSE.
+  ! animation
+  LOGICAL(LGT) :: showAnimation = .FALSE.
+  INTEGER(I4B) :: frameIndex
+  REAL(DFP) :: pauseSeconds = 0.0_DFP
 
   ! multiplot parameters
-  LOGICAL(LGT) :: hasmultiplot = .FALSE.
-  INTEGER :: multiplot_rows
-  INTEGER :: multiplot_cols
-  INTEGER :: multiplot_total_plots
-  ! animation
-  REAL(DFP) :: pause_seconds = 0
-  ! keep plot on screen for this value in seconds
-  INTEGER(I4B) :: frame_number
-  ! frame number in animation
-  ! use for debugging and error handling
-  INTEGER(I4B) :: status = 0
-  !Status from plot procedures
-  LOGICAL(LGT) :: useDefaultTerm = .TRUE.
+  LOGICAL(LGT) :: setMultiplot = .FALSE.
+  INTEGER(I4B) :: multiplotDims(2) ! row and col
+  INTEGER :: multiplotIndex
+
   ! TODO: separate some configs
   LOGICAL(LGT) :: useDefaultPreset = .TRUE.
-
-  LOGICAL(LGT) :: hasCBRange = .FALSE.
-  REAL(DFP) :: CBRange(2)
-  CHARACTER(:), ALLOCATABLE :: cntrLevels_stmt
-  CHARACTER(:), ALLOCATABLE :: pm3dOpts_stmt
-  CHARACTER(:), ALLOCATABLE :: cbTicks_stmt
 
   ! DATA pointer
   TYPE(RealMatrixPointer_), ALLOCATABLE :: xMats(:), yMats(:), zMats(:)
@@ -191,6 +197,7 @@ CONTAINS
   !! plot lines
   PROCEDURE, PUBLIC, PASS(obj) :: multiplot => obj_multiplot
   PROCEDURE, PUBLIC, PASS(obj) :: plot1 => obj_plot1
+  PROCEDURE, PUBLIC, PASS(obj) :: addPlot => obj_addPlot
   PROCEDURE, PUBLIC, PASS(obj) :: plot2 => obj_plot2
   PROCEDURE, PUBLIC, PASS(obj) :: plot3 => obj_plot3
   PROCEDURE, PUBLIC, PASS(obj) :: plot4 => obj_plot4
@@ -218,11 +225,6 @@ CONTAINS
   GENERIC, PUBLIC :: contour => contour1, contour2, contour3
 
   !! @SET methods
-  PROCEDURE, PUBLIC, PASS(obj) :: cntrLevels => obj_setCntrLevels
-  PROCEDURE, PUBLIC, PASS(obj) :: cbTicks => obj_setCBTicks
-  PROCEDURE, PUBLIC, PASS(obj) :: pm3dOpts => obj_setPm3dOpts
-  PROCEDURE, PUBLIC, PASS(obj) :: cblim => obj_setCBLim
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetTerm => obj_SetTerm
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetTitle => obj_SetTitle
@@ -232,7 +234,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetX2Label => obj_setx2label
   PROCEDURE, PUBLIC, PASS(obj) :: Setylabel => obj_setylabel
   PROCEDURE, PUBLIC, PASS(obj) :: SetY2Label => obj_sety2label
-  PROCEDURE, PUBLIC, PASS(obj) :: SetZLabel => obj_setzlabel
+  PROCEDURE, PUBLIC, PASS(obj) :: SetZLabel => obj_SetZLabel
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCBLabel => obj_SetCBLabel
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetAxisLim => obj_SetAxisLim
   PROCEDURE, PUBLIC, PASS(obj) :: SetXLim => obj_SetXLim
@@ -240,6 +243,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetYLim => obj_SetYLim
   PROCEDURE, PUBLIC, PASS(obj) :: SetY2Lim => obj_SetY2Lim
   PROCEDURE, PUBLIC, PASS(obj) :: SetZLim => obj_SetZLim
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCBLim => obj_SetCBLim
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetPlotScale => obj_SetPlotScale
   PROCEDURE, PUBLIC, PASS(obj) :: SetXScale => obj_SetXScale
@@ -247,6 +251,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetYScale => obj_SetYScale
   PROCEDURE, PUBLIC, PASS(obj) :: SetY2Scale => obj_SetY2Scale
   PROCEDURE, PUBLIC, PASS(obj) :: SetZScale => obj_SetZScale
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCBScale => obj_SetCBScale
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetFilename => obj_SetFilename
   PROCEDURE, PUBLIC, PASS(obj) :: SetCommandLine => obj_SetCommandLine
@@ -346,66 +351,17 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     CntrLevels@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_setCntrLevels(obj, opts)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: opts
-  END SUBROUTINE obj_setCntrLevels
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetPm3dOpts@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_setCBLim(obj, avec)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: avec(2)
-  END SUBROUTINE obj_setCBLim
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetCBTicks@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_setCBTicks(obj, opts)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: opts
-  END SUBROUTINE obj_setCBTicks
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     SetPm3dOpts@SetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_setPm3dOpts(obj, opts)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: opts
-  END SUBROUTINE obj_setPm3dOpts
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                  multiplot@MultiPlotMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
 ! date:   2024-09-22
 ! summary:  initialize the multiplot
-!..............................................................................
-! obj subroutine sets flag and number of rows and columns in case
-! of multiplot layout
-!..............................................................................
 
 INTERFACE
-  MODULE SUBROUTINE obj_multiplot(obj, rows, cols)
+  MODULE SUBROUTINE obj_multiplot(obj, dims)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    INTEGER(I4B), INTENT(IN) :: rows
-    INTEGER(I4B), INTENT(IN) :: cols
+    INTEGER(I4B), INTENT(IN) :: dims(2)
   END SUBROUTINE obj_multiplot
 END INTERFACE
 
@@ -441,6 +397,21 @@ INTERFACE
     CHARACTER(*), INTENT(IN), OPTIONAL :: ls4
     CHARACTER(*), INTENT(IN), OPTIONAL :: axes4
   END SUBROUTINE obj_plot1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_AddPlot(obj, x, y, ls, axes, append)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: y(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: ls
+    CHARACTER(*), INTENT(IN), OPTIONAL :: axes
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: append
+  END SUBROUTINE obj_AddPlot
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -881,6 +852,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                        set_zlim@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-31
+! summary:  set colorbar limits
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCBLim(obj, lims)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: lims(2)
+  END SUBROUTINE obj_SetCBLim
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       set_axis@SetMethods
 !----------------------------------------------------------------------------
 
@@ -971,6 +957,18 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: scaleChar
     INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
   END SUBROUTINE obj_SetZScale
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCBScale(obj, scaleChar, logBase)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: scaleChar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: logBase
+  END SUBROUTINE obj_SetCBScale
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1104,6 +1102,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                   set_zblabel@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-31
+! summary:  Set colorbar label
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetCBLabel(obj, label, color, fontSize, fontName, &
+                                   rotate)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: label
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+  END SUBROUTINE obj_SetCBLabel
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       set_label@SetMethods
 !----------------------------------------------------------------------------
 
@@ -1143,11 +1161,13 @@ END INTERFACE
 ! Get the command script for plot
 
 INTERFACE
-  MODULE SUBROUTINE GetPlotCommand(order, plotCommand, lspec, axes_set)
+  MODULE SUBROUTINE GetPlotCommand(order, plotCommand, lspec, axes_set, &
+                                   dataBlockName)
     INTEGER(I4B), INTENT(IN) :: order
     CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
     CHARACTER(*), INTENT(IN), OPTIONAL :: axes_set
     CHARACTER(*), INTENT(OUT) :: plotCommand
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: dataBlockName
   END SUBROUTINE GetPlotCommand
 END INTERFACE
 

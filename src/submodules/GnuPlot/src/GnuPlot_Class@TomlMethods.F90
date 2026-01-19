@@ -159,23 +159,6 @@ END SUBROUTINE ImportFileNameFromToml
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportDataStyleFromToml(obj, table)
-  TYPE(GnuPlot_), INTENT(INOUT) :: obj
-  TYPE(toml_table), INTENT(INOUT) :: table
-
-  INTEGER(I4B) :: stat, origin
-  LOGICAL(LGT) :: isok
-
-  CALL GetValue(table=table, key="dataStyle", &
-                VALUE=obj%dataStyle, default_value=defaultOpt%dataStyle, &
-                origin=origin, stat=stat, isfound=isok)
-
-END SUBROUTINE ImportDataStyleFromToml
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
 SUBROUTINE ImportTickSettingsFromToml(obj, table)
   TYPE(Tick_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
@@ -279,6 +262,8 @@ SUBROUTINE ImportAxisSettingsFromToml(obj, table)
 
   CALL Help_GetAxisSettings(obj%zaxis, "z")
 
+  CALL Help_GetAxisSettings(obj%cbAxis, "cb")
+
 CONTAINS
 
   SUBROUTINE Help_GetAxisSettings(ax, direction)
@@ -329,6 +314,8 @@ SUBROUTINE ImportAxisNamesFromToml(obj, table)
   CALL Help_GetAxisName(obj%y2axis, "y2")
 
   CALL Help_GetAxisName(obj%zaxis, "z")
+
+  CALL Help_GetAxisName(obj%cbAxis, "cb")
 
 CONTAINS
 
@@ -384,6 +371,47 @@ SUBROUTINE ImportTermOptsFromToml(obj, table)
 END SUBROUTINE ImportTermOptsFromToml
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportPlotOptsFromToml(obj, table)
+  CLASS(GnuPlot_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B) :: stat, origin
+
+  LOGICAL(LGT) :: isok
+  TYPE(toml_table), POINTER :: node
+  CHARACTER(*), PARAMETER :: tomlName = "plotOpts"
+
+  CALL toml_get(table, tomlName, node, origin=origin, &
+                requested=.FALSE., stat=stat)
+
+  isok = ASSOCIATED(node)
+  IF (.NOT. isok) RETURN
+
+  CALL GetValue(table=node, key="fill", VALUE=obj%opts%fill, &
+                default_value=defaultOpt%fill, origin=origin, &
+                stat=stat, isfound=isok)
+
+  CALL GetValue(table=node, key="numLevels", VALUE=obj%opts%numLevels, &
+                default_value=defaultOpt%numLevels, origin=origin, &
+                stat=stat, isfound=isok)
+
+  CALL GetValue(table=node, key="paletteName", &
+                VALUE=obj%opts%paletteName, &
+                default_value=defaultOpt%paletteName, &
+                origin=origin, stat=stat, isfound=isok)
+
+  CALL GetValue(table=node, key="dataStyle", &
+                VALUE=obj%opts%dataStyle, &
+                default_value=defaultOpt%dataStyle, &
+                origin=origin, stat=stat, isfound=isok)
+
+  node => NULL()
+
+END SUBROUTINE ImportPlotOptsFromToml
+
+!----------------------------------------------------------------------------
 !                                                          ImportFromToml1
 !----------------------------------------------------------------------------
 
@@ -403,8 +431,6 @@ CALL ImportCommandLineFromToml(obj, table)
 
 CALL ImportTermOptsFromToml(obj, table)
 
-CALL ImportDataStyleFromToml(obj, table)
-
 CALL ImportUseDefaultPresetFromToml(obj, table)
 
 CALL ImportOptionsFromToml(obj, table)
@@ -414,6 +440,8 @@ CALL ImportScriptsFromToml(obj, table)
 CALL ImportAxisNamesFromToml(obj, table)
 
 CALL ImportAxisSettingsFromToml(obj, table)
+
+CALL ImportPlotOptsFromToml(obj, table)
 
 CALL ImportRunAfterWriteFromToml(obj, table)
 

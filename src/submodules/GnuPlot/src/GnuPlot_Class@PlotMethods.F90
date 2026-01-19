@@ -19,6 +19,8 @@ SUBMODULE(GnuPlot_Class) PlotMethods
 USE InputUtility, ONLY: Input
 USE GridPointUtility, ONLY: Linspace
 USE ReallocateUtility, ONLY: Reallocate
+USE StringUtility, ONLY: PathDir
+USE CSVFile_Class, ONLY: CSVFile_
 IMPLICIT NONE
 CONTAINS
 
@@ -310,7 +312,7 @@ END PROCEDURE obj_plot3
 
 MODULE PROCEDURE obj_plotFunc1
 CHARACTER(*), PARAMETER :: myName = "obj_plotFunc1"
-INTEGER(I4B) :: np0, ii, alloc_err
+INTEGER(I4B) :: np0, ii
 REAL(DFP), ALLOCATABLE :: x(:)
 REAL(DFP), ALLOCATABLE :: y(:)
 
@@ -478,15 +480,11 @@ END PROCEDURE obj_plotData1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Plot4
-CHARACTER(*), PARAMETER :: myName = "obj_plot5()"
+CHARACTER(*), PARAMETER :: myName = "obj_plot4()"
 
-INTEGER :: ii, nplot
 INTEGER(I4B) :: tsize_x, tsize_y
 INTEGER(I4B), PARAMETER :: maxplot = 4
-CHARACTER(3) :: plottype
-CHARACTER(80) :: pltstring(4)
-LOGICAL(LGT) :: isok, doplot(4), isXVecs, isYVecs, &
-                isXMats, isYMats
+LOGICAL(LGT) :: isXVecs, isYVecs, isXMats, isYMats
 
 CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[WIP ERROR] :: This routine is under development')
@@ -515,5 +513,98 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_Plot4
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AddPlot
+CHARACTER(*), PARAMETER :: myName = "obj_AddPlot()"
+
+CHARACTER(3) :: plottype
+CHARACTER(80) :: pltstring(4)
+LOGICAL(LGT) :: isok, isFirst, append0
+CHARACTER(:), ALLOCATABLE :: dataFileName, path
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+append0 = Input(default=.TRUE., option=append)
+
+plottype = ''
+pltstring = ''
+
+isok = SIZE(x) .EQ. SIZE(y)
+IF (.NOT. isok) THEN
+  CALL e%raiseWarning(modName//'::'//myName//' - '// &
+  & '[WARNING] :: x and y have different sizes. Return with doing nothing')
+  RETURN
+END IF
+
+isFirst = .NOT. obj%pltfile%isopen()
+IF (isFirst) THEN
+  obj%multiplotIndex = 1
+ELSE
+  obj%multiplotIndex = obj%multiplotIndex + 1
+END IF
+
+dataFileName = "data"//tostring(obj%multiplotIndex)//".csv"
+
+CALL GetPlotCommand(obj%multiplotIndex, pltstring(1), ls, axes, &
+                    dataBlockName='"'//dataFileName//'"')
+
+CALL obj%Initiate()
+
+isok = obj%multiplotIndex .EQ. 1
+IF (isok) THEN
+  CALL obj%WritePlotSetup()
+  CALL obj%pltfile%WRITE('set datafile separator ","')
+  CALL obj%pltfile%WriteBlank()
+END IF
+
+path = PathDir(obj%filename%chars())
+! Here datafile is created
+CALL Help_WriteDataFile(path//"/"//dataFileName, x, y)
+
+CALL obj%pltfile%WRITE(TRIM(pltstring(1)), advance="NO")
+CALL obj%pltfile%WRITE(" \", advance="YES")
+
+IF (.NOT. append0) CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_AddPlot
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE Help_WriteDataFile(fileName, x, y)
+  CHARACTER(*), INTENT(IN) :: fileName
+  REAL(DFP), INTENT(IN) :: x(:), y(:)
+
+  TYPE(CSVFile_) :: datafile
+  INTEGER(I4B) :: ii
+
+  CALL datafile%Initiate(filename=fileName, status="REPLACE", &
+                         action="WRITE", delimiter=",")
+  CALL datafile%OPEN()
+
+  DO ii = 1, SIZE(x)
+    CALL datafile%WRITE([x(ii), y(ii)], orient="ROW")
+  END DO
+
+  CALL datafile%DEALLOCATE()
+
+END SUBROUTINE Help_WriteDataFile
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE PlotMethods

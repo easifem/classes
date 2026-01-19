@@ -43,7 +43,7 @@ ELSE
   xyz_data = .FALSE.
 END IF
 
-obj%datastyle = 'lines'
+obj%opts%datastyle = 'lines'
 CALL obj%Initiate()
 
 CALL obj%WritePlotSetup()

@@ -28,8 +28,8 @@ MODULE PROCEDURE obj_Initiate
 
 IF (obj%pltfile%IsOpen()) RETURN
 
-IF (obj%hasanimation) THEN
-  obj%frame_number = obj%frame_number + 1
+IF (obj%showAnimation) THEN
+  obj%frameIndex = obj%frameIndex + 1
 END IF
 
 CALL obj%pltfile%Initiate(filename=obj%filename//".plt", &
@@ -42,8 +42,8 @@ CALL Help_WriteTerm(obj)
 
 IF (obj%useDefaultPreset) CALL Help_WriteDefaultPreset(obj%pltfile)
 
-IF (obj%hasmultiplot) CALL Help_WriteMultiPlotConfig( &
-  obj%pltfile, obj%multiplot_rows, obj%multiplot_cols)
+IF (obj%setMultiplot) CALL Help_WriteMultiPlotConfig( &
+  obj%pltfile, obj%multiplotDims(1), obj%multiplotDims(2))
 
 IF (obj%runAfterWrite .AND. LEN(obj%commandline%chars()) .EQ. 0) &
   obj%commandline = defaultOpt%commandLine
@@ -58,12 +58,12 @@ END PROCEDURE obj_Initiate
 MODULE PROCEDURE obj_Deallocate
 LOGICAL(LGT) :: finished
 
-IF (obj%hasanimation) THEN
-  CALL obj%pltfile%WRITE("pause "//tostring(obj%pause_seconds))
+IF (obj%showAnimation) THEN
+  CALL obj%pltfile%WRITE("pause "//tostring(obj%pauseSeconds))
   RETURN
 END IF
 
-IF (obj%hasmultiplot) THEN
+IF (obj%setMultiplot) THEN
   CALL CheckMultiPlot(obj, finished)
   IF (.NOT. finished) RETURN
 END IF
@@ -84,7 +84,7 @@ END IF
 
 IF (obj%pltfile%IsOpen()) THEN
   CALL obj%pltfile%DEALLOCATE()
-  obj%hasanimation = .FALSE.
+  obj%showAnimation = .FALSE.
 END IF
 
 IF (obj%runAfterWrite) &
@@ -205,17 +205,17 @@ SUBROUTINE CheckMultiPlot(obj, finished)
   LOGICAL(LGT), INTENT(out) :: finished
   INTEGER(I4B) :: ntotal, ncurrent
 
-  ncurrent = obj%multiplot_total_plots
-  ntotal = obj%multiplot_rows * obj%multiplot_cols - 1
+  ncurrent = obj%multiplotIndex
+  ntotal = obj%multiplotDims(1) * obj%multiplotDims(2) - 1
   finished = ncurrent .GT. ntotal
 
   IF (.NOT. finished) THEN
-    obj%multiplot_total_plots = obj%multiplot_total_plots + 1
+    obj%multiplotIndex = obj%multiplotIndex + 1
     RETURN
   END IF
 
   CALL obj%pltfile%WRITE("unset multiplot")
-  obj%hasmultiplot = .FALSE.
+  obj%setMultiplot = .FALSE.
 
 END SUBROUTINE CheckMultiPlot
 

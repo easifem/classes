@@ -16,6 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(Gnuplot_Class) UtilityMethods
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
 CONTAINS
 
@@ -64,36 +65,37 @@ END PROCEDURE GetAxesSetting
 MODULE PROCEDURE GetPlotCommand
 CHARACTER(10) :: axes_setting
 LOGICAL(LGT) :: acase
-
+TYPE(String) :: dataBlock0
 !check the axes set
 axes_setting = ""
 IF (PRESENT(axes_set)) &
   CALL GetAxesSetting(axes_set, axes_setting)
 
 acase = PRESENT(lspec)
+dataBlock0 = Input(default='"-"', option=dataBlockName)
 
 SELECT CASE (order)
 CASE (1)
 
   IF (acase) THEN
 
-    plotCommand = 'plot "-" '//TRIM(lspec)//axes_setting
+    plotCommand = 'plot '//dataBlock0//' '//TRIM(lspec)//axes_setting
 
     RETURN
   END IF
 
-  plotCommand = 'plot "-" '//axes_setting
+  plotCommand = 'plot '//dataBlock0//' '//axes_setting
 
 CASE DEFAULT
 
   IF (acase) THEN
 
-    plotCommand = ', "-" '//TRIM(lspec)//axes_setting
+    plotCommand = ', '//dataBlock0//' '//TRIM(lspec)//axes_setting
 
     RETURN
   END IF
 
-  plotCommand = ', "-" '//axes_setting
+  plotCommand = ', '//dataBlock0//' '//axes_setting
 
 END SELECT
 
@@ -104,6 +106,14 @@ END PROCEDURE GetPlotCommand
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WritePlotSetup
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_WritePlotSetup()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[START] ')
+#endif
 
 !----------------------------------
 !                      data style
@@ -139,6 +149,8 @@ CALL Help_WriteLabelSetup(obj%x2axis%label, &
                           direction="x2", isTitle=.FALSE.)
 CALL Help_WriteLabelSetup(obj%y2axis%label, &
                           direction="y2", isTitle=.FALSE.)
+CALL Help_WriteLabelSetup(obj%cbAxis%label, &
+                          direction="cb", isTitle=.FALSE.)
 
 !----------------------------------
 !                  write Tick Setup
@@ -153,13 +165,21 @@ CALL Help_WriteTickSetup(tick=obj%zaxis%tick, direction="z")
 CALL Help_WriteTickSetup(tick=obj%x2axis%tick, direction="x2")
 CALL Help_WriteTickSetup(tick=obj%y2axis%tick, direction="y2")
 
+!! colorbar axis
+CALL Help_WriteTickSetup(tick=obj%cbAxis%tick, direction="cb")
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  & '[END]')
+#endif
+
 CONTAINS
 
 SUBROUTINE Help_WriteDataStyle()
 
-  IF (obj%datastyle%LEN() .GT. 0) THEN
+  IF (obj%opts%datastyle%LEN() .GT. 0) THEN
     CALL obj%pltfile%WRITE("# data style")
-    CALL obj%pltfile%WRITE("set style data "//obj%datastyle%chars())
+    CALL obj%pltfile%WRITE("set style data "//obj%opts%datastyle)
     CALL obj%pltfile%WriteBlank()
   END IF
 
