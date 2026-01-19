@@ -20,6 +20,7 @@ USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
+USE EquationParser_Class, ONLY: EquationParser_Pointer
 IMPLICIT NONE
 
 CONTAINS
@@ -289,6 +290,128 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 END PROCEDURE obj_SetMatrixConstantVal
+
+!----------------------------------------------------------------------------
+!                                                     SetScalarEquationParser
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetScalarEquationParser
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetScalarEquationParser()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%scalarEqParser%Initiate(funcStr=funcStr, var=var)
+obj%engineID = funcopt%equationParserEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetScalarEquationParser
+
+!----------------------------------------------------------------------------
+!                                                    SetVectorEquationParser
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetVectorEquationParser
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVectorEquationParser()"
+#endif
+
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+INTEGER(I4B) :: tfuncStrs
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+tfuncStrs = SIZE(funcStr)
+CALL AssertError2(tfuncStrs, obj%numReturns, myName, &
+                  "a=size(funcStr), b=obj%numReturns")
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError3(tfuncStrs, funcopt%vectorFuncNumReturns, myName, &
+                  "a=size(funcStr), b=obj%vectorFuncNumReturns")
+#endif
+
+DO ii = 1, obj%numReturns
+  isok = ASSOCIATED(obj%vectorEqParser(ii)%ptr)
+  IF (isok) CALL obj%vectorEqParser(ii)%ptr%DEALLOCATE()
+
+  obj%vectorEqParser(ii)%ptr => EquationParser_Pointer( &
+                                funcStr=funcStr(ii)%chars(), var=var)
+END DO
+
+obj%engineID = funcopt%equationParserEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetVectorEquationParser
+
+!----------------------------------------------------------------------------
+!                                                    SetMatrixEquationParser
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMatrixEquationParser
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixEquationParser()"
+#endif
+
+INTEGER(I4B) :: ii, jj
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+INTEGER(I4B) :: funcSize
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+funcSize = SIZE(funcStr, 1)
+CALL AssertError2(obj%returnShape(1), funcSize, myName, &
+                  "a=obj%returnShape(1), a=Rows in funcStr")
+#endif
+
+#ifdef DEBUG_VER
+funcSize = SIZE(funcStr, 2)
+CALL AssertError2(obj%returnShape(2), funcSize, myName, &
+                  "a=obj%returnShape(2), b=Cols in funcStr")
+#endif
+
+DO jj = 1, obj%returnShape(2)
+  DO ii = 1, obj%returnShape(1)
+    isok = ASSOCIATED(obj%matrixEqParser(ii, jj)%ptr)
+    IF (isok) CALL obj%matrixEqParser(ii, jj)%ptr%DEALLOCATE()
+
+    obj%matrixEqParser(ii, jj)%ptr => EquationParser_Pointer( &
+                                     funcStr=funcStr(ii, jj)%chars(), var=var)
+  END DO
+END DO
+
+obj%engineID = funcopt%equationParserEngine
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMatrixEquationParser
 
 !----------------------------------------------------------------------------
 !                                                               Include Error

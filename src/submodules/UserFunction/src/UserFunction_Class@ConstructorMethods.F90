@@ -126,6 +126,9 @@ MODULE PROCEDURE obj_Deallocate
 CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
 
+INTEGER(I4B) :: ii, jj
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -148,6 +151,21 @@ obj%matrixValue = 0.0_DFP
 obj%scalarFunction => NULL()
 obj%vectorFunction => NULL()
 obj%matrixFunction => NULL()
+CALL obj%scalarEqParser%DEALLOCATE()
+
+DO ii = 1, funcopt%vectorFuncNumReturns
+  isok = ASSOCIATED(obj%vectorEqParser(ii)%ptr)
+  IF (isok) &
+    CALL obj%vectorEqParser(ii)%ptr%DEALLOCATE()
+END DO
+
+DO jj = 1, funcopt%matrixFuncNumReturns
+  DO ii = 1, funcopt%matrixFuncNumReturns
+    isok = ASSOCIATED(obj%matrixEqParser(ii, jj)%ptr)
+    IF (isok) &
+      CALL obj%matrixEqParser(ii, jj)%ptr%DEALLOCATE()
+  END DO
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -170,6 +188,7 @@ END PROCEDURE obj_Final
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+INTEGER(I4B) :: tsize
 #endif
 
 LOGICAL(LGT) :: isok
@@ -211,45 +230,22 @@ IF (isok) THEN
   CALL AssertError1(isok, myName, &
              'When returnType is Matrix, then returnShape should be present.')
 
-  isok = obj%numReturns == (returnShape(1) * returnShape(2))
-  CALL AssertError1(isok, myName, &
-       'When returnType is Matrix, then numReturns should be equal to the &
-       &total number of elements of returned matrix.')
+  tsize = returnShape(1) * returnShape(2)
+  CALL AssertError2(tsize, obj%numReturns, myName, &
+                    'a=returnShaoe(1)*returnShape(2), b=obj%numReturns')
 END IF
 #endif
 
 #ifdef DEBUG_VER
 isok = obj%returnType == varopt%scalar
 IF (isok) THEN
-  isok = obj%numReturns == 1
-  CALL AssertError1(isok, myName, &
-                    'When returnType is Scalar, then numReturns should be 1.')
+  CALL AssertError2(obj%numReturns, math%one_i, myName, &
+                    'a=obj%numReturns, b=1')
 END IF
 #endif
 
 isok = PRESENT(returnShape)
 IF (isok) obj%returnShape = returnShape
-
-obj%isLuaScript = PRESENT(luaScript)
-IF (.NOT. obj%isLuaScript) THEN
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-  RETURN
-END IF
-
-obj%luaScript = luaScript
-
-#ifdef DEBUG_VER
-isok = PRESENT(luaFunctionName)
-CALL AssertError1(isok, myName, &
-           'When luaScript is given, then luaFunctionName should be present.')
-#endif
-
-obj%luaFunctionName = luaFunctionName
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

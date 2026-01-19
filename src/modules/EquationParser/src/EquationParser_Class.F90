@@ -171,11 +171,11 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj, funcStr, var)
     CLASS(EquationParser_), INTENT(INOUT) :: obj
-  !! equation parser object to be initialized
-    CHARACTER(LEN=*), INTENT(IN) :: FuncStr
-  !! Function string
-    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: Var
-  !! Array with variable names
+    !! equation parser object to be initialized
+    CHARACTER(LEN=*), INTENT(IN) :: funcStr
+    !! Function string
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: var
+    !! Array with variable names
   END SUBROUTINE obj_Initiate
 END INTERFACE
 

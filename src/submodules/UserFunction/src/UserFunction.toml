@@ -14,7 +14,7 @@ numReturns = 1
 # It is 3, when returnType is "Vector"
 # It is 9, when returnType is "Matrix"
 
-returnShape = [2,3]
+returnShape = [2, 3]
 # returnShape is needed when returnType is Matrix
 
 argType = "Space"
@@ -63,3 +63,14 @@ value = 1.0
 luaScript = "./wavelets.lua"
 luaFunctionName = "Wavelet"
 
+equationParser = true
+vars = ["x", "y", "z", "t"] # space time
+# vars = ["x", "y", "z"] # space only
+# vars = ["t"] # time only
+expression = "x*y*z*t" # for scalar return type
+# expression = ["x*t", "y*t", "z*t"] # for vector return 
+# expression = [
+#                ["x*t", "y*t", "z*t"],
+#                ["y*t", "z*t", "x*t"],
+#                ["z*t", "x*t", "y*t"]
+#              ] # for matrix return type

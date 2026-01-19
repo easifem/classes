@@ -19,8 +19,21 @@ SUBMODULE(UserFunction_Class) GetScalarValueMethods
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE ISO_C_BINDING, ONLY: C_PTR
-USE LuaInterface
+USE LuaInterface, ONLY: lual_newstate
+USE LuaInterface, ONLY: lual_openlibs
+USE LuaInterface, ONLY: lual_dofile
+USE LuaInterface, ONLY: lua_getglobal
+USE LuaInterface, ONLY: lua_isfunction
+USE LuaInterface, ONLY: lua_close
+USE LuaInterface, ONLY: lua_pushnumber
+USE LuaInterface, ONLY: lua_pcall
+USE LuaInterface, ONLY: lua_ok
+USE LuaInterface, ONLY: lua_tonumber
+USE LuaInterface, ONLY: lua_pop
+USE LuaInterface, ONLY: lua_close
+USE LuaInterface, ONLY: lua_number
 
 IMPLICIT NONE
 CONTAINS
@@ -29,13 +42,13 @@ CONTAINS
 !                                                                CheckError
 !----------------------------------------------------------------------------
 
-SUBROUTINE checkerror(obj, args)
+SUBROUTINE CheckError(obj, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
 
 #ifdef DEBUG_VER
   LOGICAL(LGT) :: isok
-  CHARACTER(*), PARAMETER :: myName = "checkerror()"
+  CHARACTER(*), PARAMETER :: myName = "CheckError()"
 #endif
 
 #ifdef DEBUG_VER
@@ -44,9 +57,8 @@ SUBROUTINE checkerror(obj, args)
 #endif
 
 #ifdef DEBUG_VER
-  isok = obj%returnType .EQ. varopt%Scalar
-  CALL AssertError1(isok, myName, &
-                'The user function is not configured for returnType = Scalar')
+  CALL AssertError2(obj%returnType, varopt%scalar, myName, &
+                    'a=obj%returnType, b=scalar')
 #endif
 
 #ifdef DEBUG_VER
@@ -59,14 +71,14 @@ SUBROUTINE checkerror(obj, args)
 #endif
 
   IF (obj%isLuaScript) THEN
-    CALL checkerror_lua(obj=obj, args=args)
+    CALL CheckError_Lua(obj=obj, args=args)
   END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE checkerror
+END SUBROUTINE CheckError
 
 !----------------------------------------------------------------------------
 !
@@ -74,14 +86,14 @@ END SUBROUTINE checkerror
 
 #ifdef USE_LUA
 
-SUBROUTINE checkerror_lua(obj, args)
+SUBROUTINE CheckError_Lua(obj, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
 
 #ifdef DEBUG_VER
-  LOGICAL(LGT) :: isok, isargs
-  INTEGER(I4B) :: nargs, nresults
-  CHARACTER(*), PARAMETER :: myName = "checkerror_lua()"
+  CHARACTER(*), PARAMETER :: myName = "CheckError_Lua()"
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: tsize
 #endif
 
 #ifdef DEBUG_VER
@@ -90,34 +102,20 @@ SUBROUTINE checkerror_lua(obj, args)
 #endif
 
 #ifdef DEBUG_VER
-  nargs = obj%numArgs
-  nresults = obj%numReturns
+  CALL AssertError2(obj%numReturns, math%one_i, myName, &
+                    'a=obj%numReturns, b=1')
 #endif
 
 #ifdef DEBUG_VER
-  isok = nresults .EQ. 1_I4B
-  CALL AssertError1(isok, myName, &
-                    'UserFunction_::obj%numReturns should be 1 but it is '// &
-                    ToString(nresults))
-#endif
+  isok = PRESENT(args)
+  IF (isok) THEN
+    tsize = SIZE(args)
+    CALL AssertError3(obj%numArgs, tsize, myName, &
+                      'a=obj%numArgs and b=size(args)')
+  ELSE
 
-#ifdef DEBUG_VER
-  isargs = PRESENT(args)
-  IF (isargs) THEN
-    isok = nargs .LE. SIZE(args)
-    CALL AssertError1(isok, myName, &
-                      'UserFunction_::numArgs('//ToString(obj%numArgs)// &
-                     ') should be <= size of args ('//ToString(SIZE(args))// &
-                      ').')
-  END IF
-#endif
-
-#ifdef DEBUG_VER
-  IF (.NOT. isargs) THEN
-    isok = nargs .EQ. 0_I4B
-    CALL AssertError1(isok, myName, &
-                      'UserFunction_::numArgs('//ToString(obj%numArgs)// &
-                      ') should be equal to 0 when args is not present.')
+    CALL AssertError2(obj%numArgs, math%zero_i, myName, &
+                      'a=obj%numArgs and b=0')
   END IF
 #endif
 
@@ -125,7 +123,7 @@ SUBROUTINE checkerror_lua(obj, args)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE checkerror_lua
+END SUBROUTINE CheckError_Lua
 
 !----------------------------------------------------------------------------
 !                                                           checkerror_lua
@@ -133,13 +131,12 @@ END SUBROUTINE checkerror_lua
 
 #else
 
-SUBROUTINE checkerror_lua(obj, args)
+SUBROUTINE CheckError_Lua(obj, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
 
 #ifdef DEBUG_VER
-  LOGICAL(LGT), PARAMETER :: isok = .FALSE.
-  CHARACTER(*), PARAMETER :: myName = "checkerror_lua()"
+  CHARACTER(*), PARAMETER :: myName = "CheckError_Lua()"
 #endif
 
 #ifdef DEBUG_VER
@@ -148,8 +145,8 @@ SUBROUTINE checkerror_lua(obj, args)
 #endif
 
 #ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    'Currently  lua script cannot be used for UserFunction. ')
+  CALL AssertError1(math%no, myName, &
+                    'Currently lua script cannot be used for UserFunction.')
 #endif
 
 #ifdef DEBUG_VER
@@ -157,7 +154,7 @@ SUBROUTINE checkerror_lua(obj, args)
                           '[END] ')
 #endif
 
-END SUBROUTINE checkerror_lua
+END SUBROUTINE CheckError_Lua
 
 #endif
 
@@ -167,13 +164,13 @@ END SUBROUTINE checkerror_lua
 
 #ifdef USE_LUA
 
-SUBROUTINE getvalue_lua(obj, val, args)
+SUBROUTINE GetValue_Lua(obj, val, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   REAL(DFP), INTENT(INOUT) :: val
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
 
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "getvalue_lua()"
+  CHARACTER(*), PARAMETER :: myName = "GetValue_Lua()"
 #endif
 
   LOGICAL(LGT) :: isok
@@ -195,10 +192,11 @@ SUBROUTINE getvalue_lua(obj, val, args)
   isok = lua_isfunction(l, -1) == 1
 
 #ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                'UserFunction_::obj%isLuaScript is TRUE In the lua script'// &
-                    TRIM(obj%luaScript)//'lua function named '// &
-                    TRIM(obj%luaFunctionName)//' is not a function.')
+  CALL AssertError1( &
+    isok, myName, &
+    'UserFunction_::obj%isLuaScript is TRUE In the lua script'// &
+    TRIM(obj%luaScript)//'lua function named '// &
+    TRIM(obj%luaFunctionName)//' is not a function.')
 #endif
 
   DO iarg = 1, nargs
@@ -208,10 +206,8 @@ SUBROUTINE getvalue_lua(obj, val, args)
   rc = lua_pcall(l, nargs, nresults, 0)
 
 #ifdef DEBUG_VER
-  isok = rc .EQ. lua_ok
-  CALL AssertError1(isok, myName, &
-                    'UserFunction_::obj%isLuaScript is TRUE Some error &
-                    &occured while calling lua_pcall(); '//ToString(rc))
+  CALL AssertError2(rc, lua_ok, myName, &
+                    'a=lua_pcall(l, nargs, ...), b=lua_ok')
 #endif
 
   val = REAL(lua_tonumber(l, -1), kind=DFP)
@@ -222,16 +218,16 @@ SUBROUTINE getvalue_lua(obj, val, args)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
-END SUBROUTINE getvalue_lua
+END SUBROUTINE GetValue_Lua
 
 #else
 
-SUBROUTINE getvalue_lua(obj, val, args)
+SUBROUTINE GetValue_Lua(obj, val, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   REAL(DFP), INTENT(INOUT) :: val
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-END SUBROUTINE getvalue_lua
+  val = 0.0_DFP
+END SUBROUTINE GetValue_Lua
 
 #endif
 
@@ -250,19 +246,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL checkerror(obj=obj, args=args)
+CALL CheckError(obj=obj, args=args)
 #endif
 
-val = obj%scalarValue
+SELECT CASE (obj%engineID)
+CASE (funcopt%constEngine)
+  val = obj%scalarValue
 
-IF (obj%isExternalFunc) THEN
+CASE (funcopt%externalEngine)
   CALL obj%scalarFunction(args=args, nargs=obj%numArgs, ans=val)
-  RETURN
-END IF
 
-IF (obj%isLuaScript) THEN
-  CALL getvalue_lua(obj=obj, val=val, args=args)
-END IF
+CASE (funcopt%specialFuncEngine)
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "engineID=specialFuncEngine is notsupported yet")
+#endif
+
+CASE (funcopt%luaEngine)
+  CALL GetValue_Lua(obj=obj, val=val, args=args)
+
+CASE (funcopt%equationParserEngine)
+  val = obj%scalarEqParser%Evaluate(val=args(1:obj%numArgs))
+
+CASE (funcopt%symengineEngine)
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "engineID=specialFuncEngine is notsupported yet")
+#endif
+
+CASE DEFAULT
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "No case found for given engineID")
+#endif
+
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

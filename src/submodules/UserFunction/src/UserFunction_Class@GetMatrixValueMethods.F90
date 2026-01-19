@@ -20,131 +20,339 @@ USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
 USE ISO_C_BINDING, ONLY: C_PTR
-USE LuaInterface
 USE ReallocateUtility, ONLY: Reallocate
+USE LuaInterface, ONLY: lual_newstate
+USE LuaInterface, ONLY: lual_openlibs
+USE LuaInterface, ONLY: lual_dofile
+USE LuaInterface, ONLY: lua_getglobal
+USE LuaInterface, ONLY: lua_isfunction
+USE LuaInterface, ONLY: lua_close
+USE LuaInterface, ONLY: lua_pushnumber
+USE LuaInterface, ONLY: lua_pcall
+USE LuaInterface, ONLY: lua_ok
+USE LuaInterface, ONLY: lua_tonumber
+USE LuaInterface, ONLY: lua_pop
+USE LuaInterface, ONLY: lua_close
+USE LuaInterface, ONLY: lua_number
 
 IMPLICIT NONE
 
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                        Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMatrixValue
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myname = "obj_GetMatrixValue()"
+#endif
+
+INTEGER(I4B) :: nrow, ncol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nrow = obj%returnShape(1)
+ncol = obj%returnShape(2)
+CALL Reallocate(val, nrow, ncol)
+CALL obj%Get_(val=val, nrow=nrow, ncol=ncol, args=args)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMatrixValue
+
+!----------------------------------------------------------------------------
+!                                                                       Get_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMatrixValue_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMatrixValue_()"
+#endif
+
+INTEGER(I4B) :: ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nrow = 0
+ncol = 0
+
+#ifdef DEBUG_VER
+CALL CheckError(obj=obj, val=val, args=args)
+#endif
+
+SELECT CASE (obj%engineID)
+
+CASE (funcopt%constEngine)
+
+#ifdef DEBUG_VER
+  CALL CheckError_ConstEngine(obj=obj)
+#endif
+  nrow = obj%returnShape(1)
+  ncol = obj%returnShape(2)
+  val(1:nrow, 1:ncol) = obj%matrixValue(1:nrow, 1:ncol)
+
+CASE (funcopt%externalEngine)
+
+#ifdef DEBUG_VER
+  CALL CheckError_ExternalEngine(obj=obj)
+#endif
+  CALL obj%matrixFunction(args=args, nargs=obj%numArgs, ans=val, &
+                          nrow=nrow, ncol=ncol)
+
+CASE (funcopt%specialFuncEngine)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
+#endif
+
+CASE (funcopt%luaEngine)
+
+  CALL GetValue_LuaEngine(obj=obj, val=val, args=args, nrow=nrow, ncol=ncol)
+
+CASE (funcopt%equationParserEngine)
+
+#ifdef DEBUG_VER
+  CALL CheckError_EquationParserEngine(obj=obj)
+#endif
+
+  nrow = obj%returnShape(1)
+  ncol = obj%returnShape(2)
+
+  DO jj = 1, ncol
+    DO ii = 1, nrow
+      val(ii, jj) = obj%matrixEqParser(ii, jj)%ptr%Evaluate( &
+                    val=args(1:obj%numArgs))
+    END DO
+  END DO
+
+CASE (funcopt%symengineEngine)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
+#endif
+
+CASE DEFAULT
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for engineID.")
+#endif
+
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMatrixValue_
+
+!----------------------------------------------------------------------------
 !                                                                 CheckError
 !----------------------------------------------------------------------------
 
-SUBROUTINE checkerror(obj, val, args, myname)
+SUBROUTINE CheckError(obj, val, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
+  REAL(DFP), INTENT(INOUT) :: val(:, :)
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "CheckError()"
+  INTEGER(I4B) :: tsize
   LOGICAL(LGT) :: isok
+#endif
 
-  isok = obj%returnType .EQ. varopt%matrix
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myname//' - '// &
-              '[CONFIG ERROR] :: The user function is not configured for '// &
-                      ' returnType = Vector')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-  IF (obj%isExternalFunc) THEN
-    isok = ASSOCIATED(obj%matrixFunction)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myname//' - '// &
-                 '[CONFIG ERROR] :: UserFunction_::obj%isUserFunctionSet '// &
-                 CHAR_LF//'is true but obj%matrixFunction is not ASSOCIATED.')
-      RETURN
-    END IF
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError2(obj%returnType, varopt%matrix, myName, &
+                    "a=obj%returnType, b=matrix")
+#endif
 
-  IF (obj%isLuaScript) THEN
-    CALL checkerror_lua(obj=obj, val=val, args=args, myname=myname)
-  END IF
+#ifdef DEBUG_VER
+  tsize = SIZE(val, 1)
+  CALL AssertError3(obj%returnShape(1), tsize, myName, &
+                    'a=obj%returnShape(1), b=SIZE(val, 1)')
+#endif
 
-END SUBROUTINE checkerror
+#ifdef DEBUG_VER
+  tsize = SIZE(val, 2)
+  CALL AssertError3(obj%returnShape(2), tsize, myName, &
+                    'a=obj%returnShape(2), b=SIZE(val, 2)')
+#endif
 
-!----------------------------------------------------------------------------
-!                                                           checkerror
-!----------------------------------------------------------------------------
-
-#ifdef USE_LUA
-SUBROUTINE checkerror_lua(obj, val, args, myname)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
-
-  INTEGER(I4B) :: nargs, nresults
-  LOGICAL(LGT) :: isok
-
-  nargs = obj%numArgs
-  nresults = obj%numReturns
-
-  IF (PRESENT(args)) THEN
-    isok = nargs .EQ. SIZE(args)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myname//' - '// &
-                        '[CONFIG ERROR] :: UserFunction_::numArgs( '// &
-     CHAR_LF//ToString(obj%numArgs)//' ) should be same as size of args ('// &
-                        CHAR_LF//ToString(SIZE(args))//').')
-      RETURN
-    END IF
+#ifdef DEBUG_VER
+  isok = PRESENT(args)
+  IF (isok) THEN
+    tsize = SIZE(args)
+    CALL AssertError3(obj%numArgs, tsize, myName, &
+                      'a=obj%numArgs, b=SIZE(args)')
 
   ELSE
 
-    isok = nargs .EQ. 0_I4B
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myname//' - '// &
-                     '[CONFIG ERROR] :: UserFunction_::numArgs( '//CHAR_LF// &
-                    ToString(obj%numArgs)//' ) should be equal to 0 when '// &
-                        CHAR_LF//'args is not present.')
-      RETURN
-    END IF
-
+    CALL AssertError2(obj%numArgs, math%zero_i, myName, &
+                      'a=obj%numArgs, b=0')
   END IF
-
-END SUBROUTINE checkerror_lua
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-#else
-
-SUBROUTINE checkerror_lua(obj, val, args, myname)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-  REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
-
-  CALL e%RaiseError(modName//'::'//myname//' - '// &
-                '[WIP ERROR] :: Currently  lua script cannot be used for '// &
-                    ' UserFunction. ')
-  RETURN
-END SUBROUTINE checkerror_lua
-
 #endif
+
+#ifdef DEBUG_VER
+  tsize = obj%returnShape(1) * obj%returnShape(2)
+  CALL AssertError2(tsize, obj%numReturns, myName, &
+                  'a=obj%returnShape(1)*obj%returnShape(2), b=obj%numReturns')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE CheckError
+
+!----------------------------------------------------------------------------
+!                                                     CheckError_ConstEngine
+!----------------------------------------------------------------------------
+
+SUBROUTINE CheckError_ConstEngine(obj)
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+  !! User function
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "CheckError_ConstEngine()"
+  INTEGER(I4B) :: tsize
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  tsize = SIZE(obj%matrixValue, 1)
+  CALL AssertError3(obj%returnShape(1), tsize, myName, &
+                    'a=obj%returnShape(1), b=SIZE(obj%matrixValue, 1)')
+#endif
+
+#ifdef DEBUG_VER
+  tsize = SIZE(obj%matrixValue, 2)
+  CALL AssertError3(obj%returnShape(2), tsize, myName, &
+                    'a=obj%returnShape(2), b=SIZE(obj%matrixValue, 2)')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE CheckError_ConstEngine
+
+!----------------------------------------------------------------------------
+!                                                   CheckError_ExternalEngine
+!----------------------------------------------------------------------------
+
+SUBROUTINE CheckError_ExternalEngine(obj)
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+  !! User function
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "CheckError_ExternalEngine()"
+  LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  IF (obj%isExternalFunc) THEN
+    isok = ASSOCIATED(obj%matrixFunction)
+    CALL AssertError1(isok, myName, &
+         'UserFunction_::obj%isExternalSet is true but &
+         &obj%matrixFunction is not ASSOCIATED.')
+  END IF
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE CheckError_ExternalEngine
+
+!----------------------------------------------------------------------------
+!                                            CheckError_EquationParserEngine
+!----------------------------------------------------------------------------
+
+SUBROUTINE CheckError_EquationParserEngine(obj)
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+  !! User function
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "CheckError_EquationParserEngine()"
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: ii, jj
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  DO jj = 1, obj%returnShape(2)
+    DO ii = 1, obj%returnShape(1)
+      isok = ASSOCIATED(obj%matrixEqParser(ii, jj)%ptr)
+      CALL AssertError1( &
+        isok, myName, &
+        "matrixEqParser("//ToString(ii)//","//ToString(jj)// &
+        ") is not ASSOCIATED.")
+    END DO
+  END DO
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE CheckError_EquationParserEngine
 
 !----------------------------------------------------------------------------
 !                                                               Getvalue
 !----------------------------------------------------------------------------
 
 #ifdef USE_LUA
-SUBROUTINE getvalue_lua(obj, val, args, myname)
+SUBROUTINE GetValue_LuaEngine(obj, val, nrow, ncol, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
+  REAL(DFP), INTENT(INOUT) :: val(:, :)
+  INTEGER(I4B), INTENT(OUT) :: nrow, ncol
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
+
+  ! Internal variables
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetValue_LuaEngine()"
+#endif
 
   TYPE(C_PTR) :: l
-  INTEGER(I4B) :: rc, nargs, nresults, iarg, s(2)
+  INTEGER(I4B) :: rc, iarg
   LOGICAL(LGT) :: isok
-  REAL(DFP), ALLOCATABLE :: dummyvec(:)
+  REAL(DFP) :: dummyvec( &
+               funcopt%matrixFuncNumReturns * funcopt%matrixFuncNumReturns)
 
-  nargs = obj%numArgs
-  nresults = obj%numReturns
-
-  CALL Reallocate(dummyvec, nresults)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   l = lual_newstate()
   CALL lual_openlibs(l)
@@ -152,93 +360,56 @@ SUBROUTINE getvalue_lua(obj, val, args, myname)
   rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
   isok = lua_isfunction(l, -1) == 1
 
-  IF (.NOT. isok) THEN
-    CALL lua_close(l)
-    CALL e%RaiseError(modName//'::'//myname//' - '// &
-                '[CONFIG ERROR] :: UserFunction_::obj%isLuaScript is TRUE'// &
-                      CHAR_LF//'In the lua script'//TRIM(obj%luaScript)// &
-                 CHAR_LF//'lua function named '//TRIM(obj%luaFunctionName)// &
-                      CHAR_LF//' is not a function.')
-    RETURN
-  END IF
+  IF (.NOT. isok) CALL lua_close(l)
 
-  DO iarg = 1, nargs
+#ifdef DEBUG_VER
+  CALL AssertError1( &
+    isok, myName, 'In the lua script'//TRIM(obj%luaScript)// &
+    CHAR_LF//'lua function named '//TRIM(obj%luaFunctionName)// &
+    CHAR_LF//' is not a function.')
+#endif
+
+  DO iarg = 1, obj%numArgs
     CALL lua_pushnumber(l, REAL(args(iarg), kind=lua_number))
   END DO
 
-  rc = lua_pcall(l, nargs, nresults, 0)
-  isok = rc .EQ. lua_ok
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myname//' - '// &
-                '[CONFIG ERROR] :: UserFunction_::obj%isLuaScript is TRUE'// &
-                 CHAR_LF//'Some error occured while calling lua_pcall(); '// &
-                      CHAR_LF//ToString(rc))
-    RETURN
-  END IF
+  rc = lua_pcall(l, obj%numArgs, obj%numReturns, 0)
 
-  DO iarg = 1, nresults
+#ifdef DEBUG_VER
+  CALL AssertError2(rc, lua_ok, myName, 'a=rc, b=lua_ok')
+#endif
+
+  DO iarg = 1, obj%numReturns
     dummyvec(iarg) = REAL(lua_tonumber(l, iarg), kind=DFP)
   END DO
-  CALL lua_pop(l, nresults)
+
+  CALL lua_pop(l, obj%numReturns)
   CALL lua_close(l)
 
-  s = obj%returnShape(1:2)
-  CALL Reallocate(val, s(1), s(2))
-  val(1:s(1), 1:s(2)) = RESHAPE(dummyvec, s)
-  DEALLOCATE (dummyvec)
+  nrow = obj%returnShape(1)
+  ncol = obj%returnShape(2)
 
-END SUBROUTINE getvalue_lua
+  val(1:nrow, 1:ncol) = RESHAPE(dummyvec(1:obj%numReturns), obj%returnShape)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE GetValue_LuaEngine
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 #else
-SUBROUTINE getvalue_lua(obj, val, args, myname)
+SUBROUTINE GetValue_LuaEngine(obj, val, nrow, ncol, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
+  REAL(DFP), INTENT(INOUT) :: val(:, :)
+  INTEGER(I4B), INTENT(OUT) :: nrow, ncol
   REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  CHARACTER(*), INTENT(IN) :: myname
-END SUBROUTINE getvalue_lua
+END SUBROUTINE GetValue_LuaEngine
 
 #endif
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMatrixValue
-CHARACTER(*), PARAMETER :: myname = "obj_GetMatrixValue()"
-INTEGER(I4B) :: s(2)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL checkerror(obj=obj, val=val, args=args, myname=myname)
-#endif
-
-IF (obj%isExternalFunc) THEN
-  s = obj%returnShape(1:2)
-  CALL Reallocate(val, obj%returnShape(1), obj%returnShape(2))
-  ! val(1:s(1), 1:s(2)) = obj%matrixFunction(x=args)
-  CALL obj%matrixFunction(args=args, nargs=obj%numArgs, ans=val, &
-                          nrow=s(1), ncol=s(2))
-  RETURN
-END IF
-
-IF (obj%isLuaScript) THEN
-  CALL getvalue_lua(obj=obj, val=val, args=args, myname=myname)
-  RETURN
-END IF
-
-s = obj%returnShape(1:2)
-CALL Reallocate(val, s(1), s(2))
-val(1:s(1), 1:s(2)) = obj%matrixValue
-RETURN
-END PROCEDURE obj_GetMatrixValue
 
 !----------------------------------------------------------------------------
 !                                                               Include error

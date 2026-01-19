@@ -27,7 +27,7 @@ SUBROUTINE AssertError2(a, b, myName, msg)
 
   IF (a .NE. b) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-  '[INTERNAL ERROR] :: Size error, '//msg//" found a="//ToString(a)//" b = " &
+  '[INTERNAL ERROR] :: Size error, msg: '//msg//", found a="//ToString(a)//", b = " &
                       //ToString(b))
     RETURN
   END IF
@@ -47,8 +47,8 @@ SUBROUTINE AssertError3(a, b, myName, msg)
 
   IF (a > b) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-       '[INTERNAL ERROR] :: a > b error, '//msg//" a="//ToString(a)//" b = " &
-                      //ToString(b))
+                      '[INTERNAL ERROR] :: a > b error, msg: '//msg// &
+                      ", a="//ToString(a)//", b = "//ToString(b))
     RETURN
   END IF
 END SUBROUTINE AssertError3

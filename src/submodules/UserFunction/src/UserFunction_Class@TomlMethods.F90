@@ -51,6 +51,9 @@ CALL ReadLuaScriptFromToml(obj=obj, table=table)
 CALL ReadScalarValueFromToml(obj=obj, table=table)
 CALL ReadVectorValueFromToml(obj=obj, table=table)
 CALL ReadMatrixValueFromToml(obj=obj, table=table)
+CALL ReadScalarEquationParserFromToml(obj=obj, table=table)
+CALL ReadVectorEquationParserFromToml(obj=obj, table=table)
+CALL ReadMatrixEquationParserFromToml(obj=obj, table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -440,7 +443,7 @@ SUBROUTINE ReadLuaScriptFromToml(obj, table)
 
   INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isok
-  TYPE(String) :: astr
+  TYPE(String) :: luaScript, luaFunctionName
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -452,11 +455,9 @@ SUBROUTINE ReadLuaScriptFromToml(obj, table)
                     'Reading luaScript ...')
 #endif
 
-  CALL GetValue(table=table, key="luaScript", VALUE=astr, &
+  CALL GetValue(table=table, key="luaScript", VALUE=luaScript, &
                 default_value="NA", origin=origin, stat=stat, &
                 isFound=obj%isLuaScript)
-
-  obj%luaScript = astr%chars()
 
   IF (.NOT. obj%isLuaScript) THEN
 #ifdef DEBUG_VER
@@ -467,18 +468,18 @@ SUBROUTINE ReadLuaScriptFromToml(obj, table)
   END IF
 
   CALL GetValue(table=table, key="luaFunctionName", &
-                VALUE=astr, default_value="NA", origin=origin, stat=stat, &
+        VALUE=luaFunctionName, default_value="NA", origin=origin, stat=stat, &
                 isFound=isok)
-
-  obj%luaFunctionName = astr%chars()
-
-  astr = ""
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &
-                 'Cannot find/read "luaFunctionName" in the config file. '// &
-                    'luaFunctionName is needed when luaScript is present.')
+                 'Cannot find/read "luaFunctionName" in the config file. &
+                 &luaFunctionName field is needed when luaScript is present. &
+                  &May be you are using luaFunction instead of luaFunctionName.')
 #endif
+
+  CALL obj%SetLuaScript(luaScript=luaScript%chars(), &
+                        luaFunctionName=luaFunctionName%chars())
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -502,26 +503,11 @@ SUBROUTINE ReadScalarValueFromToml(obj, table)
   INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isok
   REAL(DFP) :: areal
-  REAL(DFP), PARAMETER :: default_value = 0.0_DFP
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
-
-  IF (obj%isLuaScript) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                      'isLuaScropt is true, so nothing to do here...')
-#endif
-
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-
-    RETURN
-  END IF
 
   isok = obj%returnType == varopt%scalar
   IF (.NOT. isok) THEN
@@ -538,21 +524,22 @@ SUBROUTINE ReadScalarValueFromToml(obj, table)
     RETURN
   END IF
 
-  CALL GetValue(table=table, key="value", VALUE=areal, &
-          default_value=default_value, origin=origin, stat=stat, isFound=isok)
-
-#ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-      'returnType is Scalar and argType is Constant. Therefore, value &
-      &should be present. Cannot find/read "value" in the config file. &
-      &value is needed when returnType is scalar.')
-#endif
-
-  CALL obj%SetScalarConstantVal(val=areal)
-
 #ifdef DEBUG_VER
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                     'Reading value ...')
+#endif
+
+  CALL GetValue( &
+    table=table, key="value", VALUE=areal, &
+    default_value=math%zero, origin=origin, stat=stat, isFound=isok)
+
+  IF (isok) CALL obj%SetScalarConstantVal(val=areal)
+
+#ifdef DEBUG_VER
+  IF (.NOT. isok) THEN
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'value not found in toml, so nothing to do here')
+  END IF
 #endif
 
 #ifdef DEBUG_VER
@@ -583,20 +570,6 @@ SUBROUTINE ReadVectorValueFromToml(obj, table)
                           '[START] ')
 #endif
 
-  IF (obj%isLuaScript) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                      'isLuaScropt is true, so nothing to do here...')
-#endif
-
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-
-    RETURN
-  END IF
-
   isok = obj%returnType == varopt%Vector
   IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
@@ -620,14 +593,16 @@ SUBROUTINE ReadVectorValueFromToml(obj, table)
   CALL GetValue(table=table, key="value", VALUE=areal, &
                 origin=origin, stat=stat, isFound=isok)
 
+  IF (isok) THEN
+
 #ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-      'returnType is Vector and argType is Constant. Therefore, value &
-      &should be present. Cannot find/read "value" in the config file. &
-      &value is needed when returnType is Vector.')
+    isok = ALLOCATED(areal)
+    CALL AssertError1(isok, myName, &
+                   "could not allocated areal while reading value from toml.")
 #endif
 
-  CALL obj%SetVectorConstantVal(val=areal)
+    CALL obj%SetVectorConstantVal(val=areal)
+  END IF
 
   IF (ALLOCATED(areal)) DEALLOCATE (areal)
 
@@ -712,6 +687,500 @@ SUBROUTINE ReadMatrixValueFromToml(obj, table)
                           '[END] ')
 #endif
 END SUBROUTINE ReadMatrixValueFromToml
+
+!----------------------------------------------------------------------------
+!                                                      ImportVarNamesFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportVarNamesFromToml(vars, table)
+  CHARACTER(funcopt%maxVarLen), ALLOCATABLE, INTENT(INOUT) :: &
+    vars(:)
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportVarNamesFromToml()"
+#endif
+
+  INTEGER(I4B) :: origin, stat, tsize, ii
+  LOGICAL(LGT) :: isok, isScalar
+  CHARACTER(*), PARAMETER :: key = "vars"
+  TYPE(String), ALLOCATABLE :: strs(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading vars from toml ...')
+#endif
+
+  CALL GetValue(table=table, key=key, VALUE=strs, stat=stat, origin=origin, &
+                isFound=isok, isScalar=isScalar)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    "Cannot find key "//key//" in the toml table")
+#endif
+
+  IF (isScalar) THEN
+    tsize = 1
+  ELSE
+    tsize = SIZE(strs)
+  END IF
+
+  ALLOCATE (vars(tsize))
+
+  DO ii = 1, tsize
+    vars(ii) = strs(ii)%Chars()
+    strs(ii) = ""
+  END DO
+
+  DEALLOCATE (strs)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportVarNamesFromToml
+
+!----------------------------------------------------------------------------
+!                                                ImportScalarFuncStrFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportScalarFuncStrFromToml(funcStr, table)
+  CHARACTER(*), INTENT(INOUT) :: funcStr
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportScalarFuncStrFromToml()"
+#endif
+
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isok
+  TYPE(String) :: strs
+  CHARACTER(*), PARAMETER :: key = "expression"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading expression from toml ...')
+#endif
+
+  CALL GetValue(table=table, key=key, VALUE=strs, stat=stat, origin=origin, &
+                isFound=isok, default_value="NA")
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    "Cannot find key "//key//" in the toml table")
+#endif
+
+  funcStr = strs%Chars()
+  strs = ""
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportScalarFuncStrFromToml
+
+!----------------------------------------------------------------------------
+!                                                ImportVectorFuncStrFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportVectorFuncStrFromToml(funcStr, table)
+  TYPE(String), ALLOCATABLE, INTENT(INOUT) :: funcStr(:)
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportVectorFuncStrFromToml()"
+#endif
+
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isok, isScalar
+  CHARACTER(*), PARAMETER :: key = "expression"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading expression from toml ...')
+#endif
+
+  CALL GetValue(table=table, key=key, VALUE=funcStr, stat=stat, &
+                origin=origin, isFound=isok, isScalar=isScalar)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    "Cannot find key "//key//" in the toml table")
+#endif
+
+#ifdef DEBUG_VER
+  isok = ALLOCATED(funcStr)
+  CALL AssertError1(isok, myName, &
+                    "error in allocating funcStr while reading expression")
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportVectorFuncStrFromToml
+
+!----------------------------------------------------------------------------
+!                                                ImportMatrixFuncStrFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportMatrixFuncStrFromToml(funcStr, table)
+  TYPE(String), ALLOCATABLE, INTENT(INOUT) :: funcStr(:, :)
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportVectorFuncStrFromToml()"
+#endif
+
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: key = "expression"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START]')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading expression from toml ...')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    '[WIP ERROR] :: This routine is under development')
+#endif
+! TODO: Implement GetValue in toml utility.
+  ! CALL GetValue(table=table, key=key, VALUE=funcStr, stat=stat, &
+  !               origin=origin, isFound=isok)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    "Cannot find key "//key//" in the toml table")
+#endif
+
+#ifdef DEBUG_VER
+  isok = ALLOCATED(funcStr)
+  CALL AssertError1(isok, myName, &
+                    "error in allocating funcStr while reading expression")
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE ImportMatrixFuncStrFromToml
+
+!----------------------------------------------------------------------------
+!                                            ReadScalarEquationParserFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadScalarEquationParserFromToml(obj, table)
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadScalarEquationParserFromToml()"
+#endif
+
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: stat, origin, tsize
+  CHARACTER(funcopt%maxVarLen), ALLOCATABLE :: vars(:)
+  CHARACTER(funcopt%maxlen) :: funcStr
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  isok = obj%returnType == varopt%scalar
+  IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'returnType is not scalar, so nothing to do here.')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
+
+  ! Read equationParser
+  CALL GetValue( &
+    table=table, key="equationParser", VALUE=obj%isEquationParser, &
+    default_value=math%no, isFound=isok, stat=stat, origin=origin)
+
+  IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'equationParser not found, so nothing to do here')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
+
+  ! this code is executed when equationParser is true
+  ! here we will read vars
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportVarNamesFromToml() ...')
+#endif
+
+  CALL ImportVarNamesFromToml(vars=vars, table=table)
+
+! Check if vars is allocated
+#ifdef DEBUG_VER
+  isok = ALLOCATED(vars)
+  CALL AssertError1(isok, myName, &
+                    "vars read from toml is not allocated")
+#endif
+
+  ! Check the size of vars should be same as the numArgs
+#ifdef DEBUG_VER
+  tsize = SIZE(vars)
+  CALL AssertError2(tsize, obj%numArgs, myName, &
+                    "a=Size(vars) read from toml, b=obj%numArgs")
+#endif
+
+  ! if equationParser is true then read expression
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportScalarFuncStrFromToml() ...')
+#endif
+
+  CALL ImportScalarFuncStrFromToml(funcStr=funcStr, table=table)
+
+  CALL obj%SetScalarEquationParser(funcStr=funcStr, var=vars)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadScalarEquationParserFromToml
+
+!----------------------------------------------------------------------------
+!                                            ReadVectorEquationParserFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadVectorEquationParserFromToml(obj, table)
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadVectorEquationParserFromToml()"
+#endif
+
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: stat, origin, tsize
+  CHARACTER(funcopt%maxVarLen), ALLOCATABLE :: vars(:)
+  TYPE(String), ALLOCATABLE :: funcStr(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  isok = obj%returnType == varopt%vector
+  IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'returnType is not vector, so nothing to do here.')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
+
+  ! Read equationParser
+  CALL GetValue( &
+    table=table, key="equationParser", VALUE=obj%isEquationParser, &
+    default_value=math%no, isFound=isok, stat=stat, origin=origin)
+
+  IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'equationParser not found, so nothing to do here')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
+
+  ! this code is executed when equationParser is true
+  ! here we will read vars
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportVarNamesFromToml() ...')
+#endif
+
+  CALL ImportVarNamesFromToml(vars=vars, table=table)
+
+! Check if vars is allocated
+#ifdef DEBUG_VER
+  isok = ALLOCATED(vars)
+  CALL AssertError1(isok, myName, &
+                    "vars read from toml is not allocated")
+#endif
+
+  ! Check the size of vars should be same as the numArgs
+#ifdef DEBUG_VER
+  tsize = SIZE(vars)
+  CALL AssertError2(tsize, obj%numArgs, myName, &
+                    "a=Size(vars) read from toml, b=obj%numArgs")
+#endif
+
+  ! if equationParser is true then read expression
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportScalarFuncStrFromToml() ...')
+#endif
+
+  CALL ImportVectorFuncStrFromToml(funcStr=funcStr, table=table)
+
+  CALL obj%SetVectorEquationParser(funcStr=funcStr, var=vars)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadVectorEquationParserFromToml
+
+!----------------------------------------------------------------------------
+!                                           ReadMatrixEquationParserFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ReadMatrixEquationParserFromToml(obj, table)
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadMatrixEquationParserFromToml()"
+#endif
+
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: stat, origin, tsize
+  CHARACTER(funcopt%maxVarLen), ALLOCATABLE :: vars(:)
+  TYPE(String), ALLOCATABLE :: funcStr(:, :)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  isok = obj%returnType == varopt%matrix
+  IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'returnType is not matrix, so nothing to do here.')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
+
+  ! Read equationParser
+  CALL GetValue( &
+    table=table, key="equationParser", VALUE=obj%isEquationParser, &
+    default_value=math%no, isFound=isok, stat=stat, origin=origin)
+
+  IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'equationParser not found, so nothing to do here')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
+
+  ! this code is executed when equationParser is true
+  ! here we will read vars
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportVarNamesFromToml() ...')
+#endif
+
+  CALL ImportVarNamesFromToml(vars=vars, table=table)
+
+! Check if vars is allocated
+#ifdef DEBUG_VER
+  isok = ALLOCATED(vars)
+  CALL AssertError1(isok, myName, &
+                    "vars read from toml is not allocated")
+#endif
+
+  ! Check the size of vars should be same as the numArgs
+#ifdef DEBUG_VER
+  tsize = SIZE(vars)
+  CALL AssertError2(tsize, obj%numArgs, myName, &
+                    "a=Size(vars) read from toml, b=obj%numArgs")
+#endif
+
+  ! if equationParser is true then read expression
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Calling ImportScalarFuncStrFromToml() ...')
+#endif
+
+  CALL ImportMatrixFuncStrFromToml(funcStr=funcStr, table=table)
+
+  CALL obj%SetMatrixEquationParser(funcStr=funcStr, var=vars)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ReadMatrixEquationParserFromToml
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

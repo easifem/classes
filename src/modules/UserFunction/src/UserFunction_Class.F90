@@ -73,6 +73,8 @@ TYPE :: UserFunction_
   !! True if user function is set
   LOGICAL(LGT) :: isLuaScript = math%no
   !! True if lua script is used
+  LOGICAL(LGT) :: isEquationParser = math%no
+  !! are we using equation parser
   CHARACTER(funcopt%maxlen) :: luaScript = ""
   !! lua script file name
   CHARACTER(funcopt%maxlen) :: luaFunctionName = ""
@@ -107,7 +109,9 @@ TYPE :: UserFunction_
   TYPE(EquationParserPointer_) :: vectorEqParser(funcopt%vectorFuncNumReturns)
   !! Equation parser for vector function
 
-  TYPE(EquationParserPointer_) :: matrixEqParser(funcopt%matrixFuncNumReturns)
+  TYPE(EquationParserPointer_) :: matrixEqParser( &
+                                  funcopt%matrixFuncNumReturns, &
+                                  funcopt%matrixFuncNumReturns)
   !! equation parser for matrix function
 
   PROCEDURE(InterfaceScalarSubroutine), POINTER, NOPASS :: scalarFunction => &
@@ -136,23 +140,32 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetScalarFunctionPointer => &
     obj_SetScalarFunctionPointer
   !! Set the scalar function pointer
-  PROCEDURE, PUBLIC, PASS(obj) :: SetVectorFunctionPointer => &
-    obj_SetVectorFunctionPointer
-  !! Set the Vector function pointer
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMatrixFunctionPointer => &
-    obj_SetMatrixFunctionPointer
-  !! Set the Matrix function pointer
-  PROCEDURE, PUBLIC, PASS(obj) :: SetLuaScript => obj_SetLuaScript
-  !! Set the lua script in user function
   PROCEDURE, PUBLIC, PASS(obj) :: SetScalarConstantVal => &
     obj_SetScalarConstantVal
   !! Set the constant value for a scalar user function
+  PROCEDURE, PUBLIC, PASS(obj) :: SetScalarEquationParser => &
+    obj_SetScalarEquationParser
+  !! Set the scalar equation parser
+  PROCEDURE, PUBLIC, PASS(obj) :: SetVectorFunctionPointer => &
+    obj_SetVectorFunctionPointer
+  !! Set the Vector function pointer
   PROCEDURE, PUBLIC, PASS(obj) :: SetVectorConstantVal => &
     obj_SetVectorConstantVal
   !! Set the constant value for a vector user function
+  PROCEDURE, PUBLIC, PASS(obj) :: SetVectorEquationParser => &
+    obj_SetVectorEquationParser
+  !! Set the Vector equation parser
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMatrixFunctionPointer => &
+    obj_SetMatrixFunctionPointer
+  !! Set the Matrix function pointer
   PROCEDURE, PUBLIC, PASS(obj) :: SetMatrixConstantVal => &
     obj_SetMatrixConstantVal
   !! Set the constant value for a Matrix user function
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMatrixEquationParser => &
+    obj_SetMatrixEquationParser
+  !! Set the Matrix equation parser
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLuaScript => obj_SetLuaScript
+  !! Set the lua script in user function
   PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   !! Set name of the function
 
@@ -188,7 +201,9 @@ CONTAINS
   ! GET:
   ! @GetMatrixValueMethods
   PROCEDURE, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
+  PROCEDURE, PASS(obj) :: GetMatrixValue_ => obj_GetMatrixValue_
   GENERIC, PUBLIC :: Get => GetMatrixValue
+  GENERIC, PUBLIC :: Get_ => GetMatrixValue_
 
   ! GET:
   ! @GetFEVariableMethods
@@ -336,8 +351,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
-    obj, name, returnType, argType, numArgs, numReturns, luaScript, &
-    luaFunctionName, returnShape)
+    obj, name, returnType, argType, numArgs, numReturns, returnShape)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     !! User function object
     CHARACTER(*), INTENT(IN) :: name
@@ -350,10 +364,6 @@ INTERFACE
     !! number of argument
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: numReturns
     !! number of returns
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaScript
-    !! lua script
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: luaFunctionName
-    !! lua function name
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: returnShape(2)
     !! Shape of return type
     !! Only used when returnType is Matrix
@@ -426,6 +436,23 @@ INTERFACE
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
   END SUBROUTINE obj_GetMatrixValue
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Get_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Returns the Matrix value
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMatrixValue_(obj, val, nrow, ncol, args)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: val(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+  END SUBROUTINE obj_GetMatrixValue_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -643,11 +670,15 @@ END INTERFACE
 ! date:  2023-11-08
 ! summary:  Initiate param from the toml file
 
-INTERFACE UserFunctionImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+INTERFACE UserFunctionImportFromToml
+  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE UserFunctionImportFromToml
 
 !----------------------------------------------------------------------------
@@ -658,16 +689,16 @@ END INTERFACE UserFunctionImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE UserFunctionImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
-                                        filename, printToml)
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE UserFunctionImportFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Export@IOMethods
@@ -732,36 +763,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             SetVectorConstantVal@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-01-16
-! summary: Set the constant value for a vector user function
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetVectorConstantVal(obj, val)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: val(:)
-  END SUBROUTINE obj_SetVectorConstantVal
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             SetMatrixConstantVal@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-01-16
-! summary: Set the constant value for a Matrix user function
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMatrixConstantVal(obj, val)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: val(:, :)
-  END SUBROUTINE obj_SetMatrixConstantVal
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                        SetScalarFunctionPointer@SetMethods
 !----------------------------------------------------------------------------
 
@@ -774,6 +775,39 @@ INTERFACE
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     PROCEDURE(InterfaceScalarSubroutine), POINTER, INTENT(INOUT) :: func
   END SUBROUTINE obj_SetScalarFunctionPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetScalarEquationParser@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a scalar user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetScalarEquationParser(obj, funcStr, var)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    CHARACTER(LEN=*), INTENT(IN) :: funcStr
+    !! Function string
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: var
+    !! Array with variable names
+  END SUBROUTINE obj_SetScalarEquationParser
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetVectorConstantVal@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a vector user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetVectorConstantVal(obj, val)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: val(:)
+  END SUBROUTINE obj_SetVectorConstantVal
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -792,6 +826,39 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                         SetVectorEquationParser@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a Vector user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetVectorEquationParser(obj, funcStr, var)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: funcStr(:)
+    !! Function string
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: var
+    !! Array with variable names
+  END SUBROUTINE obj_SetVectorEquationParser
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             SetMatrixConstantVal@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a Matrix user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMatrixConstantVal(obj, val)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: val(:, :)
+  END SUBROUTINE obj_SetMatrixConstantVal
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                        SetMatrixFunctionPointer@SetMethods
 !----------------------------------------------------------------------------
 
@@ -804,6 +871,24 @@ INTERFACE
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     PROCEDURE(InterfaceMatrixSubroutine), POINTER, INTENT(IN) :: func
   END SUBROUTINE obj_SetMatrixFunctionPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMatrixEquationParser@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-01-16
+! summary: Set the constant value for a Matrix user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMatrixEquationParser(obj, funcStr, var)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: funcStr(:, :)
+    !! Function string
+    CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: var
+    !! Array with variable names
+  END SUBROUTINE obj_SetMatrixEquationParser
 END INTERFACE
 
 !----------------------------------------------------------------------------
