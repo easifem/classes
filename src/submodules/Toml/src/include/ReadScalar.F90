@@ -17,16 +17,21 @@
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: stat0, origin0
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL toml_get(table, key, VALUE, origin=origin0, stat=stat0)
 
 isok = (stat0 .EQ. toml_stat%success)
-
-IF (isok) THEN
-  IF (PRESENT(isFound)) isFound = .TRUE.
-ELSE
-  IF (PRESENT(isFound)) isFound = .FALSE.
-  VALUE = default_value
-END IF
-
+IF (PRESENT(isFound)) isFound = isok
+IF (.NOT. isok) VALUE = default_value
 IF (PRESENT(stat)) stat = stat0
 IF (PRESENT(origin)) origin = origin0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+

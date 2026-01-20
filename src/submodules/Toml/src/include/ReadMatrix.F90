@@ -14,18 +14,23 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-CHARACTER(*), PARAMETER :: myName = "toml_get"
-TYPE(toml_array), POINTER :: array, row_array
-INTEGER(I4B) :: ncol, nrow, stat0, iostat, ii, temp_ncol, temp_nrow, jj
-TYPE(String) :: filename, ext, astr
-TYPE(CSVFile_) :: acsvfile
-TYPE(TxtFile_) :: atxtfile
-CHARACTER(512) :: iomsg
-LOGICAL(LGT) :: isFound0, bool1, isok
-INTEGER(I4B), ALLOCATABLE :: tempintvec1(:), tempintvec2(:), &
-                             tempintvec3(:), tempintvec4(:)
+  TYPE(toml_array), POINTER :: array, row_array
+  INTEGER(I4B) :: ncol, nrow, stat0, iostat, ii, temp_ncol, temp_nrow, jj
+  TYPE(String) :: filename, ext, astr
+  TYPE(CSVFile_) :: acsvfile
+  TYPE(TxtFile_) :: atxtfile
+  CHARACTER(512) :: iomsg
+  LOGICAL(LGT) :: isFound0, bool1, isok
+  CHARACTER(:), ALLOCATABLE :: tempStr
+  INTEGER(I4B), ALLOCATABLE :: tempintvec1(:), tempintvec2(:), &
+                               tempintvec3(:), tempintvec4(:)
 
-isFound0 = .FALSE.
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  isFound0 = math%no
 
 !----------------------------------------------------------------------------
 ! READ from TOML array
@@ -33,63 +38,81 @@ isFound0 = .FALSE.
 ! the data is given in toml file itself as toml array
 !----------------------------------------------------------------------------
 
-array => NULL()
-CALL toml_get(table, key, array, origin=origin, stat=stat0, &
-              requested=.FALSE.)
+  array => NULL()
+  CALL toml_get(table, key, array, origin=origin, stat=stat0, &
+                requested=math%no)
 
-isok = ASSOCIATED(array)
+  isok = ASSOCIATED(array)
 
-IF (isok) THEN
-  nrow = toml_len(array)
-  DO ii = 1, nrow
-    row_array => NULL()
-    CALL toml_get(array, ii, row_array)
-    isok = ASSOCIATED(row_array)
-    IF (.NOT. isok) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: While reading 2D array, '// &
-                     ' it is seems the '//tostring(ii)//'th row is empty '// &
-                        '(cannot read it).')
-    END IF
+  IF (isok) THEN
+    nrow = toml_len(array)
+    DO ii = 1, nrow
+      row_array => NULL()
+      CALL toml_get(array, ii, row_array)
 
-    temp_ncol = toml_len(row_array)
-    IF (ii .EQ. 1) THEN
-      ncol = temp_ncol
-      CALL Reallocate(VALUE, nrow, ncol)
-      isFound0 = .TRUE.
-    ELSE
-      IF (temp_ncol .NE. ncol) THEN
-        CALL e%RaiseError(modName//'::'//myName//' - '// &
+#ifdef DEBUG_VER
+      isok = ASSOCIATED(row_array)
+      CALL AssertError1( &
+        isok, myName, &
+        'While reading 2D array, it is seems the '//ToString(ii)// &
+        'th row is empty (cannot read it).')
+#endif
+
+      temp_ncol = toml_len(row_array)
+
+      IF (ii .EQ. 1) THEN
+        ncol = temp_ncol
+        CALL Reallocate(VALUE, nrow, ncol)
+        isFound0 = math%yes
+      ELSE
+        IF (temp_ncol .NE. ncol) THEN
+          CALL e%RaiseError(modName//'::'//myName//' - '// &
                         '[INTERNAL ERROR] :: Staggered matrix is not allowed')
+        END IF
       END IF
-    END IF
 
-    DO jj = 1, ncol
-      CALL toml_get(row_array, jj, VALUE(ii, jj))
+      DO jj = 1, ncol
+        CALL toml_get(row_array, jj, VALUE(ii, jj))
+      END DO
+
     END DO
-  END DO
 
-  IF (PRESENT(isFound)) isFound = isFound0
-  IF (PRESENT(stat)) stat = stat0
-  NULLIFY (array, row_array)
-  RETURN
-END IF
+    IF (PRESENT(isFound)) isFound = isFound0
+    IF (PRESENT(stat)) stat = stat0
+    NULLIFY (array, row_array)
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
 !----------------------------------------------------------------------------
 ! READ a scalar value from toml
 ! In this case shape of matrix is (1,1), this value is given in toml file
 !----------------------------------------------------------------------------
 
-CALL toml_get(table, key, temp, origin=origin, stat=stat0)
+  CALL toml_get(table, key, temp, origin=origin, stat=stat0)
+  isok = stat0 .EQ. toml_stat%success
 
-IF (stat0 .EQ. toml_stat%success) THEN
-  CALL Reallocate(VALUE, 1, 1)
-  VALUE(1, 1) = temp
-  isFound0 = .TRUE.
-  IF (PRESENT(isFound)) isFound = isFound0
-  IF (PRESENT(stat)) stat = stat0
-  RETURN
-END IF
+  IF (isok) THEN
+    CALL Reallocate(VALUE, 1, 1)
+    VALUE(1, 1) = temp
+
+    isFound0 = math%yes
+
+    IF (PRESENT(isFound)) isFound = isFound0
+    IF (PRESENT(stat)) stat = stat0
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
 !----------------------------------------------------------------------------
 ! READ from a txt file or csv file
@@ -100,14 +123,26 @@ END IF
 ! no header csv file is expected
 !----------------------------------------------------------------------------
 
-isFound0 = .FALSE.
-IF (PRESENT(isFound)) isFound = isFound0
-IF (PRESENT(stat)) stat = stat0
+  isFound0 = math%no
+  IF (PRESENT(isFound)) isFound = isFound0
+  IF (PRESENT(stat)) stat = stat0
 
-CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
+  CALL toml_get(table, key, tempStr, origin=origin, stat=stat0)
 
-IF (stat0 .EQ. toml_stat%success) THEN
+  isok = stat0 .EQ. toml_stat%success
+
+  IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
+
+  filename = tempStr
+  tempStr = ""
   ext = filename%extension()
+
   SELECT CASE (ext%chars())
   CASE (".csv")
 
@@ -128,7 +163,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
         VALUE(:, ii) = tempvalvec
       END DO
 
-      isFound0 = .TRUE.
+      isFound0 = math%yes
       CALL acsvfile%DEALLOCATE()
       IF (PRESENT(isFound)) isFound = isFound0
       IF (PRESENT(stat)) stat = stat0
@@ -180,13 +215,13 @@ IF (stat0 .EQ. toml_stat%success) THEN
       DEALLOCATE (tempintvec1, tempintvec2, tempintvec3, tempintvec4, &
                   tempvalvec)
 
-    CASE default
+    CASE DEFAULT
       CALL e%RaiseError(modName//'::'//myName//' - '// &
                        '[INTERNAL ERROR] :: Number of columns in csv file'// &
                         'should be 2, 3 or 5')
     END SELECT
 
-    isFound0 = .TRUE.
+    isFound0 = math%yes
     CALL acsvfile%DEALLOCATE()
     IF (PRESENT(isFound)) isFound = isFound0
     IF (PRESENT(stat)) stat = stat0
@@ -194,13 +229,13 @@ IF (stat0 .EQ. toml_stat%success) THEN
     ext = ""
     RETURN
 
-  CASE default
+  CASE DEFAULT
     CALL atxtfile%Initiate(filename=filename%Chars(), &
                            action="READ", status="OLD", &
                            comment="#")
     CALL atxtfile%OPEN()
     CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg, &
-                       ignoreComment=.TRUE.)
+                       ignoreComment=math%yes)
     bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
     IF (bool1) THEN
       CALL e%RaiseError(modName//'::'//myName//' - '// &
@@ -209,7 +244,7 @@ IF (stat0 .EQ. toml_stat%success) THEN
       IF (PRESENT(isFound)) isFound = isFound0
       RETURN
     END IF
-    isFound0 = .TRUE.
+    isFound0 = math%yes
     CALL atxtfile%DEALLOCATE()
 
     IF (PRESENT(stat)) stat = stat0
@@ -217,4 +252,8 @@ IF (stat0 .EQ. toml_stat%success) THEN
     filename = ""
     ext = ""
   END SELECT
-END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif

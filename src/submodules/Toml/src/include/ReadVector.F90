@@ -14,19 +14,27 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-CHARACTER(*), PARAMETER :: myName = "toml_get"
+!----------------------------------------------------------------------------
+!                                                              Include Start
+!----------------------------------------------------------------------------
+
 TYPE(toml_array), POINTER :: array
 INTEGER(I4B) :: tsize, stat0, iostat, ii, ncol
 TYPE(String) :: filename, ext
 TYPE(TxtFile_) :: atxtfile
 TYPE(CSVFile_) :: acsvfile
 CHARACTER(512) :: iomsg
-LOGICAL(LGT) :: isFound0, bool1, isok
+LOGICAL(LGT) :: isFound0, isok
 INTEGER(I4B), ALLOCATABLE :: tempintvec1(:), tempintvec2(:)
+CHARACTER(:), ALLOCATABLE :: astr
 
-isFound0 = .FALSE.
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-IF (PRESENT(isScalar)) isScalar = .FALSE.
+isFound0 = math%no
+IF (PRESENT(isScalar)) isScalar = math%no
 
 !----------------------------------------------------------------------------
 ! READ from TOML array (1D)
@@ -35,14 +43,17 @@ IF (PRESENT(isScalar)) isScalar = .FALSE.
 !----------------------------------------------------------------------------
 array => NULL()
 CALL toml_get(table, key, array, origin=origin, stat=stat0, &
-              requested=.FALSE.)
+              requested=math%no)
 
 isok = ASSOCIATED(array)
 
 IF (isok) THEN
   tsize = toml_len(array)
+
   CALL Reallocate(VALUE, tsize)
-  isFound0 = .TRUE.
+
+  isFound0 = math%yes
+
   DO ii = 1, tsize
     CALL toml_get(array, ii, VALUE(ii))
   END DO
@@ -50,6 +61,12 @@ IF (isok) THEN
   IF (PRESENT(stat)) stat = stat0
   IF (PRESENT(isFound)) isFound = isFound0
   NULLIFY (array)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -63,14 +80,21 @@ CALL toml_get(table, key, temp, origin=origin, stat=stat0)
 IF (stat0 .EQ. toml_stat%success) THEN
   CALL Reallocate(VALUE, 1)
   VALUE(1) = temp
-  isFound0 = .TRUE.
+
+  isFound0 = math%yes
   IF (PRESENT(isFound)) isFound = isFound0
   IF (PRESENT(stat)) stat = stat0
-  IF (PRESENT(isScalar)) isScalar = .TRUE.
+  IF (PRESENT(isScalar)) isScalar = math%yes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
-isFound0 = .FALSE.
+isFound0 = math%no
 IF (PRESENT(isFound)) isFound = isFound0
 IF (PRESENT(stat)) stat = stat0
 
@@ -83,100 +107,125 @@ IF (PRESENT(stat)) stat = stat0
 ! no header csv file is expected
 !----------------------------------------------------------------------------
 
-CALL toml_get(table, key, filename%raw, origin=origin, stat=stat0)
+CALL toml_get(table, key, astr, origin=origin, stat=stat0)
 
-IF (stat0 .EQ. toml_stat%success) THEN
+isok = (stat0 .EQ. toml_stat%success)
 
-  ext = filename%Extension()
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
-  SELECT CASE (ext%Chars())
+filename = astr
+astr = ""
+ext = filename%Extension()
 
-  CASE (".csv")
-    CALL acsvfile%Initiate(filename=filename%Chars(), &
-                           action="READ", status="OLD", &
-                           delimiter=",", comment="#")
-    CALL acsvfile%OPEN()
-    ! CALL acsvfile%SetHeaderIndx(1)
-    CALL acsvfile%READ()
-    ncol = acsvfile%Getncols()
-    SELECT CASE (ncol)
-    CASE (1)
-      ! a column values is imported as VALUE
-      CALL acsvfile%Get(1, val=VALUE)
+SELECT CASE (ext%Chars())
 
-    CASE (2)
-      ! first column is treated as index of VALUE
-      ! second column is treated as value at that index
-      CALL acsvfile%Get(1, val=tempintvec1) ! index
-      CALL acsvfile%Get(2, val=tempvalvec) ! value
+CASE (".csv")
+  CALL acsvfile%Initiate(filename=filename%Chars(), &
+                         action="READ", status="OLD", &
+                         delimiter=",", comment="#")
+  CALL acsvfile%OPEN()
+  ! CALL acsvfile%SetHeaderIndx(1)
+  CALL acsvfile%READ()
+  ncol = acsvfile%Getncols()
+  SELECT CASE (ncol)
+  CASE (1)
+    ! a column values is imported as VALUE
+    CALL acsvfile%Get(1, val=VALUE)
 
-      tsize = MAXVAL(tempintvec1)
-      CALL Reallocate(VALUE, tsize)
-      tsize = SIZE(tempintvec1)
-      DO ii = 1, tsize
-        VALUE(tempintvec1(ii)) = tempvalvec(ii)
-      END DO
+  CASE (2)
+    ! first column is treated as index of VALUE
+    ! second column is treated as value at that index
+    CALL acsvfile%Get(1, val=tempintvec1) ! index
+    CALL acsvfile%Get(2, val=tempvalvec) ! value
 
-    CASE (3)
-      ! first and second columns must be integers
-      ! which determine the start and end index of VALUE
-      ! third column is value for this range
-      CALL acsvfile%Get(1, val=tempintvec1) ! start
-      CALL acsvfile%Get(2, val=tempintvec2) ! end
-      CALL acsvfile%Get(3, val=tempvalvec) ! value
+    tsize = MAXVAL(tempintvec1)
+    CALL Reallocate(VALUE, tsize)
+    tsize = SIZE(tempintvec1)
+    DO ii = 1, tsize
+      VALUE(tempintvec1(ii)) = tempvalvec(ii)
+    END DO
 
-      tsize = MAXVAL(tempintvec2)
-      CALL Reallocate(VALUE, tsize)
+  CASE (3)
+    ! first and second columns must be integers
+    ! which determine the start and end index of VALUE
+    ! third column is value for this range
+    CALL acsvfile%Get(1, val=tempintvec1) ! start
+    CALL acsvfile%Get(2, val=tempintvec2) ! end
+    CALL acsvfile%Get(3, val=tempvalvec) ! value
 
-      tsize = SIZE(tempintvec1)
-      DO ii = 1, tsize
-        VALUE(tempintvec1(ii):tempintvec2(ii)) = tempvalvec(ii)
-      END DO
+    tsize = MAXVAL(tempintvec2)
+    CALL Reallocate(VALUE, tsize)
 
-    CASE default
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                       '[INTERNAL ERROR] :: Number of columns in csv file'// &
-                        'should be 1, 2 or 3')
-    END SELECT
-
-    isFound0 = .TRUE.
-    CALL acsvfile%DEALLOCATE()
-    IF (PRESENT(isFound)) isFound = isFound0
-    IF (PRESENT(stat)) stat = stat0
-    filename = ""
-    ext = ""
-    RETURN
+    tsize = SIZE(tempintvec1)
+    DO ii = 1, tsize
+      VALUE(tempintvec1(ii):tempintvec2(ii)) = tempvalvec(ii)
+    END DO
 
   CASE DEFAULT
 
-    CALL atxtfile%Initiate(filename=filename%Chars(), &
-                           action="READ", status="OLD", &
-                           comment="#")
-    CALL atxtfile%OPEN()
-    CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg, &
-                       ignoreComment=.TRUE.)
-
-    bool1 = iostat .NE. 0 .AND. (.NOT. atxtfile%isEOF())
-    IF (bool1) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: Error while reading txtfile, errmsg= '// &
-                        CHAR_LF//TRIM(iomsg))
-      IF (PRESENT(isFound)) isFound = isFound0
-      IF (PRESENT(stat)) stat = stat0
-      filename = ""
-      RETURN
-    END IF
-
-    isFound0 = .TRUE.
-    CALL atxtfile%DEALLOCATE()
-
-    IF (PRESENT(isFound)) isFound = isFound0
-    IF (PRESENT(stat)) stat = stat0
-    filename = ""
-    ext = ""
-    RETURN
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      'Number of columns in csv file should be 1, 2 or 3')
+#endif
 
   END SELECT
 
-END IF
+  isFound0 = math%yes
 
+  CALL acsvfile%DEALLOCATE()
+  IF (PRESENT(isFound)) isFound = isFound0
+  IF (PRESENT(stat)) stat = stat0
+  filename = ""
+  ext = ""
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+
+CASE DEFAULT
+
+  CALL atxtfile%Initiate(filename=filename%Chars(), &
+                         action="READ", status="OLD", &
+                         comment="#")
+  CALL atxtfile%OPEN()
+  CALL atxtfile%READ(val=VALUE, iostat=iostat, iomsg=iomsg, &
+                     ignoreComment=math%yes)
+
+#ifdef DEBUG_VER
+  isok = (iostat .EQ. 0) .OR. (atxtfile%IsEOF())
+  CALL AssertError1(isok, myName, &
+                    'Error while reading txtfile, errmsg= '//TRIM(iomsg))
+#endif
+
+  isFound0 = math%yes
+  CALL atxtfile%DEALLOCATE()
+
+  IF (PRESENT(isFound)) isFound = isFound0
+  IF (PRESENT(stat)) stat = stat0
+  filename = ""
+  ext = ""
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+!----------------------------------------------------------------------------
+!                                                                Include end
+!----------------------------------------------------------------------------

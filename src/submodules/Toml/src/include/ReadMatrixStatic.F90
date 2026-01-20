@@ -14,7 +14,6 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-CHARACTER(*), PARAMETER :: myName = "toml_get"
 TYPE(toml_array), POINTER :: array, row_array
 INTEGER(I4B) :: stat0, iostat, ii, temp_ncol, temp_nrow, jj, &
                 row_ind1, row_ind2, column_ind1, column_ind2, tsize
@@ -24,6 +23,11 @@ TYPE(CSVFile_) :: acsvfile
 TYPE(TxtFile_) :: atxtfile
 CHARACTER(512) :: iomsg
 LOGICAL(LGT) :: isFound0, bool1, isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 isFound0 = .FALSE.
 
@@ -251,3 +255,9 @@ IF (stat0 .EQ. toml_stat%success) THEN
   END SELECT
 
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
