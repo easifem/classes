@@ -37,7 +37,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_Real32
@@ -48,7 +48,7 @@ CHARACTER(*), PARAMETER :: myName = "GetValue_Real32()"
 END PROCEDURE GetValue_Real32
 
 !----------------------------------------------------------------------------
-!                                                                        Get
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_Real64
@@ -57,106 +57,6 @@ CHARACTER(*), PARAMETER :: myName = "GetValue_Real64()"
 #endif
 #include "./include/ReadScalar.F90"
 END PROCEDURE GetValue_Real64
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real32_r1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real32_r1()"
-#endif
-REAL(REAL32) :: temp
-REAL(REAL32), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadVector.F90"
-END PROCEDURE GetValue_Real32_r1
-
-!----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real32_r1_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real32_r1_static()"
-#endif
-REAL(REAL32) :: temp
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE GetValue_Real32_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real64_r1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real64_r1()"
-#endif
-REAL(REAL64) :: temp
-REAL(REAL64), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadVector.F90"
-END PROCEDURE GetValue_Real64_r1
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real64_r1_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real64_r1_static()"
-#endif
-REAL(REAL64) :: temp
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE GetValue_Real64_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real32_r2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real32_r2()"
-#endif
-REAL(REAL32) :: temp
-REAL(REAL32), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadMatrix.F90"
-END PROCEDURE GetValue_Real32_r2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real32_r2_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real32_r2_static()"
-#endif
-REAL(REAL32) :: temp
-#include "./include/ReadMatrixStatic.F90"
-END PROCEDURE GetValue_Real32_r2_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real64_r2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real64_r2()"
-#endif
-REAL(REAL64) :: temp
-REAL(REAL64), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadMatrix.F90"
-END PROCEDURE GetValue_Real64_r2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real64_r2_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real64_r2_static()"
-#endif
-REAL(REAL64) :: temp
-#include "./include/ReadMatrixStatic.F90"
-END PROCEDURE GetValue_Real64_r2_static
 
 !----------------------------------------------------------------------------
 !                                                              Include error

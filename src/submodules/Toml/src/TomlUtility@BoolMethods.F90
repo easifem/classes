@@ -55,12 +55,12 @@ END PROCEDURE GetValue_Bool
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_Bool_r1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Bool_r1()"
-#endif
-LOGICAL(LGT) :: temp
-LOGICAL(LGT), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadVector.F90"
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "GetValue_Bool_r1()"
+! #endif
+! LOGICAL(LGT) :: temp
+! LOGICAL(LGT), ALLOCATABLE :: tempvalvec(:)
+! #include "./include/ReadVector.F90"
 END PROCEDURE GetValue_Bool_r1
 
 !----------------------------------------------------------------------------
@@ -68,11 +68,11 @@ END PROCEDURE GetValue_Bool_r1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_Bool_r1_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Bool_r1_static()"
-#endif
-LOGICAL(LGT) :: temp
-#include "./include/ReadVectorStatic.F90"
+! #ifdef DEBUG_VER
+! CHARACTER(*), PARAMETER :: myName = "GetValue_Bool_r1_static()"
+! #endif
+! LOGICAL(LGT) :: temp
+! #include "./include/ReadVectorStatic.F90"
 END PROCEDURE GetValue_Bool_r1_static
 
 !----------------------------------------------------------------------------

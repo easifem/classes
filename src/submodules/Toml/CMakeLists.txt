@@ -22,6 +22,30 @@ target_sources(
         ${src_path}/TomlUtility@BasicMethods.F90
         ${src_path}/TomlUtility@StringMethods.F90
         ${src_path}/TomlUtility@IntMethods.F90
+        ${src_path}/TomlUtility@Int8VectorMethods.F90
+        ${src_path}/TomlUtility@Int8StaticVectorMethods.F90
+        ${src_path}/TomlUtility@Int8MatrixMethods.F90
+        ${src_path}/TomlUtility@Int8StaticMatrixMethods.F90
+        ${src_path}/TomlUtility@Int16VectorMethods.F90
+        ${src_path}/TomlUtility@Int16StaticVectorMethods.F90
+        ${src_path}/TomlUtility@Int16MatrixMethods.F90
+        ${src_path}/TomlUtility@Int16StaticMatrixMethods.F90
+        ${src_path}/TomlUtility@Int32VectorMethods.F90
+        ${src_path}/TomlUtility@Int32StaticVectorMethods.F90
+        ${src_path}/TomlUtility@Int32MatrixMethods.F90
+        ${src_path}/TomlUtility@Int32StaticMatrixMethods.F90
+        ${src_path}/TomlUtility@Int64VectorMethods.F90
+        ${src_path}/TomlUtility@Int64StaticVectorMethods.F90
+        ${src_path}/TomlUtility@Int64MatrixMethods.F90
+        ${src_path}/TomlUtility@Int64StaticMatrixMethods.F90
         ${src_path}/TomlUtility@RealMethods.F90
+        ${src_path}/TomlUtility@Real32VectorMethods.F90
+        ${src_path}/TomlUtility@Real32StaticVectorMethods.F90
+        ${src_path}/TomlUtility@Real32MatrixMethods.F90
+        ${src_path}/TomlUtility@Real32StaticMatrixMethods.F90
+        ${src_path}/TomlUtility@Real64VectorMethods.F90
+        ${src_path}/TomlUtility@Real64StaticVectorMethods.F90
+        ${src_path}/TomlUtility@Real64MatrixMethods.F90
+        ${src_path}/TomlUtility@Real64StaticMatrixMethods.F90
         ${src_path}/TomlUtility@BoolMethods.F90
 )

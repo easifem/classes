@@ -37,7 +37,7 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    GetValue
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_Int8
@@ -48,7 +48,7 @@ CHARACTER(*), PARAMETER :: myName = "GetValue_Int8()"
 END PROCEDURE GetValue_Int8
 
 !----------------------------------------------------------------------------
-!                                                                    GetValue
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_Int16
@@ -59,7 +59,7 @@ CHARACTER(*), PARAMETER :: myName = "GetValue_Int16()"
 END PROCEDURE GetValue_Int16
 
 !----------------------------------------------------------------------------
-!                                                                   GetValue
+!                                                                    GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetValue_Int32
@@ -79,206 +79,6 @@ CHARACTER(*), PARAMETER :: myName = "GetValue_Int64()"
 #endif
 #include "./include/ReadScalar.F90"
 END PROCEDURE GetValue_Int64
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int8_r1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int8_r1()"
-#endif
-INTEGER(INT8) :: temp
-INTEGER(INT8), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadVector.F90"
-END PROCEDURE GetValue_Int8_r1
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int8_r1_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int8_r1_static()"
-#endif
-INTEGER(INT8) :: temp
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE GetValue_Int8_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                    GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int16_r1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int16_r1()"
-#endif
-INTEGER(INT16) :: temp
-INTEGER(INT16), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadVector.F90"
-END PROCEDURE GetValue_Int16_r1
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int16_r1_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int16_r1_static()"
-#endif
-INTEGER(INT16) :: temp
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE GetValue_Int16_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int32_r1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int32_r1()"
-#endif
-INTEGER(INT32) :: temp
-INTEGER(INT32), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadVector.F90"
-END PROCEDURE GetValue_Int32_r1
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int32_r1_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int32_r1_static()"
-#endif
-INTEGER(INT32) :: temp
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE GetValue_Int32_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int64_r1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int64_r1()"
-#endif
-INTEGER(INT64) :: temp
-INTEGER(INT64), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadVector.F90"
-END PROCEDURE GetValue_Int64_r1
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int64_r1_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int64_r1_static()"
-#endif
-INTEGER(INT64) :: temp
-#include "./include/ReadVectorStatic.F90"
-END PROCEDURE GetValue_Int64_r1_static
-
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int8_r2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int8_r2()"
-#endif
-INTEGER(INT8) :: temp
-INTEGER(INT8), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadMatrix.F90"
-END PROCEDURE GetValue_Int8_r2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int8_r2_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int8_r2_static()"
-#endif
-INTEGER(INT8) :: temp
-#include "./include/ReadMatrixStatic.F90"
-END PROCEDURE GetValue_Int8_r2_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int16_r2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int16_r2()"
-#endif
-INTEGER(INT16) :: temp
-INTEGER(INT16), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadMatrix.F90"
-END PROCEDURE GetValue_Int16_r2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int16_r2_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int16_r2_static()"
-#endif
-INTEGER(INT16) :: temp
-#include "./include/ReadMatrixStatic.F90"
-END PROCEDURE GetValue_Int16_r2_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int32_r2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int32_r2()"
-#endif
-INTEGER(INT32) :: temp
-INTEGER(INT32), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadMatrix.F90"
-END PROCEDURE GetValue_Int32_r2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int32_r2_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int32_r2_static()"
-#endif
-INTEGER(INT32) :: temp
-#include "./include/ReadMatrixStatic.F90"
-END PROCEDURE GetValue_Int32_r2_static
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int64_r2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int64_r2()"
-#endif
-INTEGER(INT64) :: temp
-INTEGER(INT64), ALLOCATABLE :: tempvalvec(:)
-#include "./include/ReadMatrix.F90"
-END PROCEDURE GetValue_Int64_r2
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Int64_r2_static
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Int64_r2_static()"
-#endif
-INTEGER(INT64) :: temp
-#include "./include/ReadMatrixStatic.F90"
-END PROCEDURE GetValue_Int64_r2_static
 
 !----------------------------------------------------------------------------
 !                                                              Include error
