@@ -384,7 +384,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION txt_GetTotalDataBounds(obj, ignoreComment, ignoreBlank, &
-                                   commentSymbol, separator) RESULT(ans)
+                                         commentSymbol, separator) RESULT(ans)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreComment
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: ignoreBlank
