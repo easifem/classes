@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,7 +14,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(GnuPlot_Class) MultiPlotMethods
 
@@ -27,21 +27,16 @@ CONTAINS
 
 MODULE PROCEDURE obj_multiplot
 CHARACTER(*), PARAMETER :: myName = "obj_multiplot"
-IF (obj%hasanimation) THEN
+IF (obj%showAnimation) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[ERROR] :: animation is not supported in multiplot mode')
 END IF
 
-IF (rows > 0) THEN
-  obj%multiplot_rows = rows
-END IF
+obj%multiplotDims(1) = dims(1)
+obj%multiplotDims(2) = dims(2)
 
-IF (cols > 0) THEN
-  obj%multiplot_cols = cols
-END IF
-
-obj%hasmultiplot = .TRUE.
-obj%multiplot_total_plots = 0
+obj%setMultiplot = .TRUE.
+obj%multiplotIndex = 1
 
 CALL obj%Initiate()
 

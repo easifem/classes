@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,7 +14,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(GnuPlot_Class) ConstructorMethods
 USE BaseMethod, ONLY: Display
@@ -28,24 +28,25 @@ MODULE PROCEDURE obj_Initiate
 
 IF (obj%pltfile%IsOpen()) RETURN
 
-IF (obj%hasanimation) THEN
-  obj%frame_number = obj%frame_number + 1
+IF (obj%showAnimation) THEN
+  obj%frameIndex = obj%frameIndex + 1
 END IF
 
-obj%plotEngine = PLOT_ENGINE_GNUPLOT
-CALL obj%pltfile%Initiate(filename=obj%txtfilename, &
+CALL obj%pltfile%Initiate(filename=obj%filename//".plt", &
                           status="REPLACE")
 CALL obj%pltfile%OPEN()
 
-CALL WriteSignature(obj%pltfile)
-CALL WriteDefaultConfig(obj%pltfile, obj%preset_configuration)
-IF (obj%hasmultiplot) CALL writeMultiPlotConfig(obj%pltfile, &
-                                       obj%multiplot_rows, obj%multiplot_cols)
+CALL Help_WriteSignature(obj%pltfile)
 
-obj%hasfileopen = .TRUE.
+CALL Help_WriteTerm(obj)
 
-IF (obj%execute .AND. LEN(obj%commandline) .EQ. 0) &
-  obj%commandline = defaultCommandLine
+IF (obj%useDefaultPreset) CALL Help_WriteDefaultPreset(obj%pltfile)
+
+IF (obj%setMultiplot) CALL Help_WriteMultiPlotConfig( &
+  obj%pltfile, obj%multiplotDims(1), obj%multiplotDims(2))
+
+IF (obj%runAfterWrite .AND. LEN(obj%commandline%chars()) .EQ. 0) &
+  obj%commandline = defaultOpt%commandLine
 
 END PROCEDURE obj_Initiate
 
@@ -53,22 +54,22 @@ END PROCEDURE obj_Initiate
 !                                                                 Deallocate
 !----------------------------------------------------------------------------
 
+! TODO: fix mismatch of subroutine name
 MODULE PROCEDURE obj_Deallocate
 LOGICAL(LGT) :: finished
 
-IF (obj%hasanimation) THEN
-  CALL obj%pltfile%WRITE("pause "//tostring(obj%pause_seconds))
+IF (obj%showAnimation) THEN
+  CALL obj%pltfile%WRITE("pause "//tostring(obj%pauseSeconds))
   RETURN
 END IF
 
-IF (obj%hasmultiplot) THEN
+IF (obj%setMultiplot) THEN
   CALL CheckMultiPlot(obj, finished)
   IF (.NOT. finished) RETURN
 END IF
 
-obj%plotEngine = PLOT_ENGINE_PLPLOT
-
-IF (obj%PAUSE) THEN
+IF (obj%pauseAfterDraw) THEN
+  CALL obj%pltfile%WriteBlank()
   CALL obj%pltfile%WRITE("pause mouse keypress")
   CALL obj%pltfile%WRITE("if (exists('MOUSE_CHAR') && MOUSE_CHAR eq 'c' || MOUSE_KEY == -1) {")
   CALL obj%pltfile%WRITE("    print 'Exiting...'")
@@ -76,19 +77,18 @@ IF (obj%PAUSE) THEN
   CALL obj%pltfile%WRITE("   } else {")
   call obj%pltfile%WRITE("    print 'Press c or q to quit, any other key to refresh'")
   CALL obj%pltfile%WRITE("   replot")
-  CALL obj%pltfile%WRITE("   load '"//obj%txtfilename//"'")
+  CALL obj%pltfile%WRITE("   load '"//obj%filename//".plt'")
   CALL obj%pltfile%WRITE("  }")
   obj%commandline = "gnuplot "
 END IF
 
 IF (obj%pltfile%IsOpen()) THEN
   CALL obj%pltfile%DEALLOCATE()
-  obj%hasfileopen = .FALSE.
-  obj%hasanimation = .FALSE.
+  obj%showAnimation = .FALSE.
 END IF
 
-IF (obj%execute) &
-  CALL execute_command_line(obj%commandline//" "//obj%txtfilename)
+IF (obj%runAfterWrite) &
+  CALL execute_command_line(obj%commandline//" "//obj%filename//".plt")
 
 END PROCEDURE obj_Deallocate
 
@@ -106,85 +106,95 @@ END PROCEDURE obj_Finalize
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-CALL Display("# PLOT ENGINE : GNUPLOT", msg, unitno)
+CALL Display("#GNUPLOT CLASS", msg, unitno)
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE WriteSignature(obj)
-  TYPE(TxtFile_) :: obj
+SUBROUTINE Help_WriteSignature(obj)
+  TYPE(TxtFile_), INTENT(INOUT) :: obj
 
   CALL obj%WRITE("# "//modName//" in EASIFEM")
   CALL obj%WriteBlank()
 
-END SUBROUTINE WriteSignature
+END SUBROUTINE Help_WriteSignature
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE WriteDefaultConfig(obj, preset)
-  TYPE(TxtFile_) :: obj
-  LOGICAL(LGT) :: preset
+SUBROUTINE Help_WriteTerm(obj)
+  TYPE(GnuPlot_), INTENT(INOUT) :: obj
 
-  CALL obj%WRITE("# global setting")
-  CALL obj%WriteBlank()
-
-  CALL obj%WRITE("set term "//gnuplot_term_type// &
-                 " size "//gnuplot_term_size//" enhanced font "// &
-                 '"'//gnuplot_term_font//'"')
-
-  IF (preset) THEN
-    CALL obj%WriteBlank()
-    CALL obj%WRITE('# ogpf extra configuration')
-    CALL obj%WRITE(commentLineGnuplot)
-
-    ! color definition
-    CALL obj%WRITE('# color definitions')
-    CALL obj%WRITE('set style line 1 lc rgb "#800000" lt 1 lw 2')
-    CALL obj%WRITE('set style line 2 lc rgb "#ff0000" lt 1 lw 2')
-    CALL obj%WRITE('set style line 3 lc rgb "#ff4500" lt 1 lw 2')
-    CALL obj%WRITE('set style line 4 lc rgb "#ffa500" lt 1 lw 2')
-    CALL obj%WRITE('set style line 5 lc rgb "#006400" lt 1 lw 2')
-    CALL obj%WRITE('set style line 6 lc rgb "#0000ff" lt 1 lw 2')
-    CALL obj%WRITE('set style line 7 lc rgb "#9400d3" lt 1 lw 2')
-    CALL obj%WriteBlank()
-    ! axes setting
-    CALL obj%WRITE('# Axes')
-    CALL obj%WRITE('set border linewidth 1.15')
-    CALL obj%WRITE('set tics nomirror')
-    CALL obj%WriteBlank()
-
-    CALL obj%WRITE('# grid')
-    CALL obj%WRITE('# Add light grid to plot')
-    CALL obj%WRITE('set style line 102 lc rgb "#d6d7d9" lt 0 lw 1')
-    CALL obj%WRITE('set grid back ls 102')
-    CALL obj%WriteBlank()
-    ! set the plot style
-    CALL obj%WRITE('# plot style')
-    CALL obj%WRITE('set style data linespoints')
-    CALL obj%WriteBlank()
-
-    CALL obj%WRITE(commentLineGnuplot)
-    CALL obj%WriteBlank()
+  IF (obj%useDefaultTerm) THEN
+    CALL obj%pltfile%WRITE("set term "//defaultOpt%termType//" size " &
+                           //tostring(defaultOpt%termSize(1))//"," &
+                           //tostring(defaultOpt%termSize(2)) &
+                           //" enhanced font "// &
+                           '"'//defaultOpt%termFont//','// &
+                           tostring(defaultOpt%termFontSize)//'"')
+  ELSE
+    CALL obj%pltfile%WRITE("set term "//obj%termType//" size " &
+                           //tostring(obj%termSize(1))//"," &
+                           //tostring(obj%termSize(2)) &
+                           //" enhanced font "// &
+                           '"'//obj%termFont//','// &
+                           tostring(obj%termFontSize)//'"')
   END IF
 
-END SUBROUTINE WriteDefaultConfig
+  CALL obj%pltfile%WriteBlank()
+
+END SUBROUTINE Help_WriteTerm
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE WriteMultiPlotConfig(obj, nrow, ncol)
-  TYPE(TxtFile_) :: obj
+SUBROUTINE Help_WriteDefaultPreset(obj)
+  TYPE(TxtFile_), INTENT(INOUT) :: obj
+
+  ! color definition
+  CALL obj%WRITE('# color definitions')
+  CALL obj%WRITE('set style line 1 lc rgb "#800000" lt 1 lw 2')
+  CALL obj%WRITE('set style line 2 lc rgb "#ff0000" lt 1 lw 2')
+  CALL obj%WRITE('set style line 3 lc rgb "#ff4500" lt 1 lw 2')
+  CALL obj%WRITE('set style line 4 lc rgb "#ffa500" lt 1 lw 2')
+  CALL obj%WRITE('set style line 5 lc rgb "#006400" lt 1 lw 2')
+  CALL obj%WRITE('set style line 6 lc rgb "#0000ff" lt 1 lw 2')
+  CALL obj%WRITE('set style line 7 lc rgb "#9400d3" lt 1 lw 2')
+  CALL obj%WriteBlank()
+  ! axes setting
+  CALL obj%WRITE('# Axes')
+  CALL obj%WRITE('set border linewidth 1.15')
+  CALL obj%WRITE('set tics nomirror')
+  CALL obj%WriteBlank()
+
+  CALL obj%WRITE('# grid')
+  CALL obj%WRITE('# Add light grid to plot')
+  CALL obj%WRITE('set style line 102 lc rgb "#d6d7d9" lt 0 lw 1')
+  CALL obj%WRITE('set grid back ls 102')
+  CALL obj%WriteBlank()
+  ! set the plot style
+  CALL obj%WRITE('# plot style')
+  CALL obj%WRITE('set style data linespoints')
+  CALL obj%WriteBlank()
+
+END SUBROUTINE Help_WriteDefaultPreset
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE Help_WriteMultiPlotConfig(obj, nrow, ncol)
+  TYPE(TxtFile_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: nrow, ncol
 
   CALL obj%WRITE("set multiplot layout "// &
                  tostring(nrow)//", "//tostring(ncol))
 
-END SUBROUTINE WriteMultiPlotConfig
+END SUBROUTINE Help_WriteMultiPlotConfig
 
 !----------------------------------------------------------------------------
 !
@@ -195,18 +205,22 @@ SUBROUTINE CheckMultiPlot(obj, finished)
   LOGICAL(LGT), INTENT(out) :: finished
   INTEGER(I4B) :: ntotal, ncurrent
 
-  ncurrent = obj%multiplot_total_plots
-  ntotal = obj%multiplot_rows * obj%multiplot_cols - 1
+  ncurrent = obj%multiplotIndex
+  ntotal = obj%multiplotDims(1) * obj%multiplotDims(2) - 1
   finished = ncurrent .GT. ntotal
 
   IF (.NOT. finished) THEN
-    obj%multiplot_total_plots = obj%multiplot_total_plots + 1
+    obj%multiplotIndex = obj%multiplotIndex + 1
     RETURN
   END IF
 
   CALL obj%pltfile%WRITE("unset multiplot")
-  obj%hasmultiplot = .FALSE.
+  obj%setMultiplot = .FALSE.
 
 END SUBROUTINE CheckMultiPlot
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE ConstructorMethods

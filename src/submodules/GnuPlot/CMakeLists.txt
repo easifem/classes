@@ -17,13 +17,16 @@
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/GnuPlot_Class@ConstructorMethods.F90
-          ${src_path}/GnuPlot_Class@UtilityMethods.F90
-          ${src_path}/GnuPlot_Class@PlotMethods.F90
-          ${src_path}/GnuPlot_Class@Plot3DMethods.F90
-          ${src_path}/GnuPlot_Class@SurfacePlotMethods.F90
-          ${src_path}/GnuPlot_Class@MultiPlotMethods.F90
-          ${src_path}/GnuPlot_Class@AnimationMethods.F90
-          ${src_path}/GnuPlot_Class@ContourMethods.F90
-          ${src_path}/GnuPlot_Class@SetMethods.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/GnuPlot_Class@AnimationMethods.F90
+        ${src_path}/GnuPlot_Class@ConstructorMethods.F90
+        ${src_path}/GnuPlot_Class@ContourMethods.F90
+        ${src_path}/GnuPlot_Class@MultiPlotMethods.F90
+        ${src_path}/GnuPlot_Class@Plot3DMethods.F90
+        ${src_path}/GnuPlot_Class@PlotMethods.F90
+        ${src_path}/GnuPlot_Class@SetMethods.F90
+        ${src_path}/GnuPlot_Class@SurfacePlotMethods.F90
+        ${src_path}/GnuPlot_Class@TomlMethods.F90
+        ${src_path}/GnuPlot_Class@UtilityMethods.F90
+)

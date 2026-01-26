@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,7 +14,6 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
 SUBMODULE(GnuPlot_Class) AnimationMethods
 
@@ -27,22 +27,22 @@ CONTAINS
 
 MODULE PROCEDURE obj_animationStart
 CHARACTER(*), PARAMETER :: myName = "obj_animationStart"
-IF (obj%hasmultiplot) THEN
+IF (obj%setMultiplot) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[ERROR] :: animation is not supported in multiplot mode')
 END IF
 
 IF (PRESENT(pauseSeconds)) THEN
-  obj%pause_seconds = pauseSeconds
+  obj%pauseSeconds = pauseSeconds
 ELSE
-  obj%pause_seconds = defaultPause
+  obj%pauseSeconds = defaultOpt%pauseSeconds
 END IF
 
-obj%frame_number = 0
+obj%frameIndex = 0
 
 CALL obj%Initiate()
 
-obj%hasanimation = .TRUE.
+obj%showAnimation = .TRUE.
 
 END PROCEDURE obj_animationStart
 
@@ -52,8 +52,9 @@ END PROCEDURE obj_animationStart
 
 MODULE PROCEDURE obj_animationShow
 CHARACTER(*), PARAMETER :: myName = "obj_animationShow"
-obj%frame_number = 0
-obj%hasanimation = .FALSE.
+
+obj%frameIndex = 0
+obj%showAnimation = .FALSE.
 
 CALL obj%DEALLOCATE()
 
