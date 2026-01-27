@@ -291,7 +291,7 @@ SUBROUTINE GetVectorValueFromCSV(VALUE, isFound, isScalar, filename)
   CHARACTER(*), PARAMETER :: myName = "GetVectorValueFromCSV()"
 #endif
   TYPE(CSVFile_) :: afile
-  INTEGER(I4B) :: ncol, version, fileRow, fileCol
+  INTEGER(I4B) :: version, fileRow, fileCol
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -310,25 +310,42 @@ SUBROUTINE GetVectorValueFromCSV(VALUE, isFound, isScalar, filename)
   CALL GetMetaDataFromCSV(afile, version, fileRow, fileCol)
 
   CALL afile%READ()
-  ncol = afile%Getncols()
 
-  ! read version 1
-  IF (.NOT. isFound) &
-    CALL GetVectorValueFromCSV1(VALUE, isFound, isScalar, afile, ncol)
+  SELECT CASE (version)
+  CASE (1)
+#ifdef DEBUG_VER
+    CALL AssertError2(fileCol, math%one_i, myName, &
+                      "error reading version 1, a=fileCol, b=1")
+#endif
+    CALL GetVectorValueFromCSV1(VALUE, isFound, isScalar, afile)
 
-  ! read version 2
-  IF (.NOT. isFound) &
-    CALL GetVectorValueFromCSV2(VALUE, isFound, isScalar, afile, ncol)
+  CASE (2)
+#ifdef DEBUG_VER
+    CALL AssertError2(fileCol, math%two_i, myName, &
+                      "error reading version 2, a=fileCol, b=2")
+#endif
+    CALL GetVectorValueFromCSV2(VALUE, isFound, isScalar, afile)
 
-  ! read version 3
-  IF (.NOT. isFound) &
-    CALL GetVectorValueFromCSV3(VALUE, isFound, isScalar, afile, ncol)
+  CASE (3)
+#ifdef DEBUG_VER
+    CALL AssertError2(fileCol, math%three_i, myName, &
+                      "error reading version 3, a=fileCol, b=3")
+#endif
+    CALL GetVectorValueFromCSV3(VALUE, isFound, isScalar, afile)
+
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "No case found for ncol, it should equal 1, 2, or 3")
+#endif
+
+  END SELECT
 
   CALL afile%DEALLOCATE()
 
 #ifdef DEBUG_VER
   CALL AssertError1(isFound, myName, &
-                    "No case found for ncol, it should equal 1, 2, or 3")
+                    "some error has occured while reading csvfile.")
 #endif
 
 #ifdef DEBUG_VER
@@ -543,41 +560,26 @@ END SUBROUTINE GetMetaDataFromCSV
 !----------------------------------------------------------------------------
 
 ! Here we are reading version 1
-SUBROUTINE GetVectorValueFromCSV1(VALUE, isFound, isScalar, afile, ncol)
+SUBROUTINE GetVectorValueFromCSV1(VALUE, isFound, isScalar, afile)
   _DATA_TYPE_, ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
   LOGICAL(LGT), INTENT(INOUT) :: isFound
   LOGICAL(LGT), INTENT(INOUT) :: isScalar
   TYPE(CSVFile_), INTENT(INOUT) :: afile
-  INTEGER(I4B), INTENT(IN) :: ncol
 
   ! Define internal variables
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "GetVectorValueFromCSV1()"
 #endif
-  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-  isFound = math%no
-  isScalar = math%yes
-
-  isok = ncol .NE. 1
-
-  IF (isok) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
-
-  ! The following code is executed when ncol is equal to 1
   ! here we are getting the first column
   CALL afile%Get(1, val=VALUE)
   isFound = math%yes
+  isScalar = math%no
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -593,18 +595,16 @@ END SUBROUTINE GetVectorValueFromCSV1
 ! first column is treated as row index of VALUE
 ! second column is treated as column index of VALUE
 ! third column is treated as value at this location
-SUBROUTINE GetVectorValueFromCSV2(VALUE, isFound, isScalar, afile, ncol)
+SUBROUTINE GetVectorValueFromCSV2(VALUE, isFound, isScalar, afile)
   _DATA_TYPE_, ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
   LOGICAL(LGT), INTENT(INOUT) :: isFound
   LOGICAL(LGT), INTENT(INOUT) :: isScalar
   TYPE(CSVFile_), INTENT(INOUT) :: afile
-  INTEGER(I4B), INTENT(IN) :: ncol
 
   ! Define internal variables
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "GetVectorValueFromCSV2()"
 #endif
-  LOGICAL(LGT) :: isok
   INTEGER(I4B) :: ii, tsize
   _DATA_TYPE_, ALLOCATABLE :: tempvalvec(:)
   INTEGER(I4B), ALLOCATABLE :: tempintvec1(:)
@@ -613,18 +613,6 @@ SUBROUTINE GetVectorValueFromCSV2(VALUE, isFound, isScalar, afile, ncol)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
-
-  isFound = math%no
-  isScalar = math%no
-
-  isok = ncol .EQ. 2
-  IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
 
   ! The following code is executed when number of columns are 2
   ! First column is treated as index of VALUE
@@ -636,6 +624,7 @@ SUBROUTINE GetVectorValueFromCSV2(VALUE, isFound, isScalar, afile, ncol)
   tsize = SIZE(tempintvec1)
   CALL Reallocate(VALUE, ii)
   isFound = math%yes
+  isScalar = math%no
 
   DO ii = 1, tsize
     VALUE(tempintvec1(ii)) = tempvalvec(ii)
@@ -650,7 +639,7 @@ SUBROUTINE GetVectorValueFromCSV2(VALUE, isFound, isScalar, afile, ncol)
 END SUBROUTINE GetVectorValueFromCSV2
 
 !----------------------------------------------------------------------------
-!                                                      GetVectorValueFromCSV2
+!                                                     GetVectorValueFromCSV2
 !----------------------------------------------------------------------------
 
 ! Here we read version 3
@@ -659,12 +648,11 @@ END SUBROUTINE GetVectorValueFromCSV2
 !     first and second integers are treated
 !     as start and end index of VALUE
 ! Third column is value for VALUE(start:end)
-SUBROUTINE GetVectorValueFromCSV3(VALUE, isFound, isScalar, afile, ncol)
+SUBROUTINE GetVectorValueFromCSV3(VALUE, isFound, isScalar, afile)
   _DATA_TYPE_, ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
   LOGICAL(LGT), INTENT(INOUT) :: isFound
   LOGICAL(LGT), INTENT(INOUT) :: isScalar
   TYPE(CSVFile_), INTENT(INOUT) :: afile
-  INTEGER(I4B), INTENT(IN) :: ncol
 
   ! Define internal variables
 #ifdef DEBUG_VER
@@ -672,7 +660,6 @@ SUBROUTINE GetVectorValueFromCSV3(VALUE, isFound, isScalar, afile, ncol)
 #endif
   _DATA_TYPE_, ALLOCATABLE :: tempvalvec(:)
 
-  LOGICAL(LGT) :: isok
   INTEGER(I4B) :: ii, tsize
   INTEGER(I4B), ALLOCATABLE :: tempintvec1(:), tempintvec2(:)
 
@@ -680,21 +667,6 @@ SUBROUTINE GetVectorValueFromCSV3(VALUE, isFound, isScalar, afile, ncol)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
-
-  isFound = math%no
-  isScalar = math%no
-
-  isok = ncol .EQ. 3
-
-  IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
-
-  ! the following code is executed when ncol is 3
 
   CALL afile%Get(1, val=tempintvec1) ! start
   CALL afile%Get(2, val=tempintvec2) ! end
@@ -705,8 +677,9 @@ SUBROUTINE GetVectorValueFromCSV3(VALUE, isFound, isScalar, afile, ncol)
 
   CALL Reallocate(VALUE, ii)
   isFound = math%yes
+  isScalar = math%no
 
-  DO ii = 1, SIZE(tempintvec1)
+  DO ii = 1, tsize
     VALUE(tempintvec1(ii):tempintvec2(ii)) = tempvalvec(ii)
   END DO
 
