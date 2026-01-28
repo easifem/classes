@@ -291,7 +291,7 @@ SUBROUTINE GetVectorValueFromCSV(VALUE, isFound, isScalar, filename)
   CHARACTER(*), PARAMETER :: myName = "GetVectorValueFromCSV()"
 #endif
   TYPE(CSVFile_) :: afile
-  INTEGER(I4B) :: version, fileRow, fileCol
+  INTEGER(I4B) :: version, fileRow, fileCol, nrow, ncol
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -310,6 +310,19 @@ SUBROUTINE GetVectorValueFromCSV(VALUE, isFound, isScalar, filename)
   CALL GetMetaDataFromCSV(afile, version, fileRow, fileCol)
 
   CALL afile%READ()
+
+  ncol = afile%Getncols()
+  nrow = afile%Getnrows()
+
+#ifdef DEBUG_VER
+  CALL AssertError2(fileCol, ncol, myName, &
+                    "error reading csvfile, a=fileCol, b=ncol")
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError2(fileRow, nrow, myName, &
+                    "error reading csvfile, a=fileRow, b=nrow")
+#endif
 
   SELECT CASE (version)
   CASE (1)
@@ -336,7 +349,7 @@ SUBROUTINE GetVectorValueFromCSV(VALUE, isFound, isScalar, filename)
   CASE DEFAULT
 #ifdef DEBUG_VER
     CALL AssertError1(math%no, myName, &
-                      "No case found for ncol, it should equal 1, 2, or 3")
+                      "No case found for version, it should equal 1, 2, or 3")
 #endif
 
   END SELECT

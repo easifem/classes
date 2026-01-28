@@ -86,6 +86,207 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE _METHOD_NAME_
 
 !----------------------------------------------------------------------------
+!                                                         GetMetaDataFromCSV
+!----------------------------------------------------------------------------
+
+SUBROUTINE GetMetaDataFromCSV(afile, version, nrow, ncol)
+  TYPE(CSVFile_), INTENT(INOUT) :: afile
+  INTEGER(I4B), INTENT(OUT) :: version
+  INTEGER(I4B), INTENT(OUT) :: nrow
+  INTEGER(I4B), INTENT(OUT) :: ncol
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetMetaDataFromCSV()"
+  CHARACTER(*), PARAMETER :: three_dashes = "---", &
+                             version_char = "version", &
+                             nrow_char = "nrow", &
+                             ncol_char = "ncol"
+  CHARACTER(3) :: dashes
+#endif
+
+  CHARACTER(*), PARAMETER :: sep = ",", colon = ":"
+  TYPE(String) :: astr
+  TYPE(String), ALLOCATABLE :: tokens(:), two_tokens(:)
+  INTEGER(I4B) :: iostat
+  CHARACTER(1024) :: iomsg
+  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading first line of csv file metadata...')
+#endif
+
+! skip line 1
+  CALL afile%ReadLine(val=astr, iostat=iostat, iomsg=iomsg)
+
+#ifdef DEBUG_VER
+  isok = .NOT. afile%IsEOF()
+  CALL AssertError1(isok, myName, &
+                    "It seems the csvfile has reached end of file")
+#endif
+
+#ifdef DEBUG_VER
+  isok = iostat .LE. 0
+  CALL AssertError1(isok, myName, &
+                    "error while reading csvfile, iomsg: "//TRIM(iomsg))
+#endif
+
+#ifdef DEBUG_VER
+  dashes(1:3) = astr%slice(2, 4)
+  isok = dashes .EQ. three_dashes
+  CALL AssertError1(isok, myName, &
+    "first line in csvfile should have three dashes ---, but it has "//dashes)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading second line of csv file metadata...')
+#endif
+
+! read line 2, and process it
+  CALL afile%ReadLine(val=astr, iostat=iostat, iomsg=iomsg, &
+                      ignoreComment=math%no, ignoreBlank=math%no)
+
+#ifdef DEBUG_VER
+  dashes(1:1) = astr%slice(1, 1)
+  isok = dashes(1:1) .EQ. "#"
+  CALL AssertError1(isok, myName, &
+                    "Second line should be a comment starting with #")
+#endif
+
+#ifdef DEBUG_VER
+  ii = astr%SCAN(set=version_char)
+  isok = ii .NE. math%zero_i
+  CALL AssertError1(isok, myName, version_char//" not found in line 2")
+#endif
+
+#ifdef DEBUG_VER
+  ii = astr%SCAN(set=nrow_char)
+  isok = ii .NE. math%zero_i
+  CALL AssertError1(isok, myName, nrow_char//" not found in line 2")
+#endif
+
+#ifdef DEBUG_VER
+  ii = astr%SCAN(set=ncol_char)
+  isok = ii .NE. math%zero_i
+  CALL AssertError1(isok, myName, ncol_char//" not found in line 2")
+#endif
+
+  CALL astr%split(tokens=tokens, sep=sep)
+  tsize = SIZE(tokens)
+
+#ifdef DEBUG_VER
+  isok = tsize .GE. 3
+  CALL AssertError1(isok, myName, &
+                    "version, nrow, ncol should be present in line 3")
+#endif
+
+! handle token 1
+  CALL tokens(1)%split(tokens=two_tokens, sep=colon)
+
+#ifdef DEBUG_VER
+  astr = two_tokens(1)%slice(2, two_tokens(1)%LEN())
+  two_tokens(1) = astr%ADJUSTL()
+  astr = two_tokens(1)%TRIM()
+
+  isok = astr//"" == version_char
+  CALL AssertError1(isok, myName, &
+                    "first of tokens(1) should be version, but it is "//astr)
+#endif
+
+#ifdef DEBUG_VER
+  isok = two_tokens(2)%is_integer()
+  CALL AssertError1(isok, myName, &
+     "second of token(1) should be integer number, but it is "//two_tokens(2))
+#endif
+
+  version = two_tokens(2)%to_number(ii)
+
+! handle token 2
+  CALL tokens(2)%split(tokens=two_tokens, sep=colon)
+
+#ifdef DEBUG_VER
+  astr = two_tokens(1)%ADJUSTL()
+  two_tokens(1) = astr%TRIM()
+  isok = two_tokens(1)//"" == nrow_char
+  CALL AssertError1(isok, myName, &
+                "first of tokens(2) should be nrow, but it is"//two_tokens(1))
+#endif
+
+#ifdef DEBUG_VER
+  isok = two_tokens(2)%is_integer()
+  CALL AssertError1(isok, myName, &
+     "second of token(2) should be integer number, but it is "//two_tokens(2))
+#endif
+
+  nrow = two_tokens(2)%to_number(ii)
+
+! handle token 3
+  CALL tokens(3)%split(tokens=two_tokens, sep=colon)
+
+#ifdef DEBUG_VER
+  astr = two_tokens(1)%ADJUSTL()
+  two_tokens(1) = astr%TRIM()
+  isok = two_tokens(1)//"" == ncol_char
+  CALL AssertError1(isok, myName, &
+                "first of tokens(3) should be ncol, but it is"//two_tokens(1))
+#endif
+
+#ifdef DEBUG_VER
+  isok = two_tokens(2)%is_integer()
+  CALL AssertError1(isok, myName, &
+    "second of tokens(3) should be integer number, but it is "//two_tokens(2))
+#endif
+
+  ncol = two_tokens(2)%to_number(ii)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading third line of csv file metadata')
+#endif
+
+! skip line 3
+  CALL afile%ReadLine(val=astr, iostat=iostat, iomsg=iomsg)
+
+#ifdef DEBUG_VER
+  isok = .NOT. afile%IsEOF()
+  CALL AssertError1(isok, myName, &
+                    "It seems the csvfile has reached end of file")
+#endif
+
+#ifdef DEBUG_VER
+  isok = iostat .LE. 0
+  CALL AssertError1(isok, myName, &
+                    "error while reading csvfile, iomsg: "//TRIM(iomsg))
+#endif
+
+#ifdef DEBUG_VER
+  dashes(1:3) = astr%slice(2, 4)
+  isok = dashes .EQ. three_dashes
+  CALL AssertError1(isok, myName, &
+    "first line in csvfile should have three dashes ---, but it has "//dashes)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading second line of csv file metadata...')
+#endif
+
+  DEALLOCATE (tokens, two_tokens)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE GetMetaDataFromCSV
+
+!----------------------------------------------------------------------------
 !                                                                  GetValue1
 !----------------------------------------------------------------------------
 
@@ -309,7 +510,7 @@ SUBROUTINE GetMatrixValueFromCSV(VALUE, isFound, filename, nrow, ncol)
   CHARACTER(*), PARAMETER :: myName = "GetMatrixValueFromCSV()"
 #endif
   TYPE(CSVFile_) :: afile
-  INTEGER(I4B) :: fileRow, fileCol
+  INTEGER(I4B) :: fileRow, fileCol, version
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -323,22 +524,64 @@ SUBROUTINE GetMatrixValueFromCSV(VALUE, isFound, filename, nrow, ncol)
                       action="READ", status="OLD", &
                       delimiter=",", comment="#")
   CALL afile%OPEN()
+
+  ! read the meta data of the file
+  CALL GetMetaDataFromCSV(afile, version, fileRow, fileCol)
+
   CALL afile%READ()
-  fileCol = afile%Getncols()
-  fileRow = afile%Getnrows()
 
-  CALL GetMatrixValueFromCSV1(VALUE, isFound, afile, fileRow, fileCol, &
-                              nrow, ncol)
+  ncol = afile%Getncols()
+  nrow = afile%Getnrows()
 
-  IF (.NOT. isFound) CALL GetMatrixValueFromCSV2(VALUE, isFound, afile, &
-                                                 fileRow, fileCol, nrow, ncol)
-  IF (.NOT. isFound) CALL GetMatrixValueFromCSV3(VALUE, isFound, afile, &
-                                                 fileRow, fileCol, nrow, ncol)
+#ifdef DEBUG_VER
+  CALL AssertError2(fileCol, ncol, myName, &
+                    "error reading csvfile, a=fileCol, b=ncol")
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError2(fileRow, nrow, myName, &
+                    "error reading csvfile, a=fileRow, b=nrow")
+#endif
+
+  SELECT CASE (version)
+  CASE (1)
+#ifdef DEBUG_VER
+    CALL AssertError2(fileCol, math%two_i, myName, &
+                      "error reading version 1, a=fileCol, b=2")
+#endif
+
+    CALL GetMatrixValueFromCSV1(VALUE, isFound, afile, fileRow, fileCol, &
+                                nrow, ncol)
+
+  CASE (2)
+#ifdef DEBUG_VER
+    CALL AssertError2(fileCol, math%three_i, myName, &
+                      "error reading version 2, a=fileCol, b=3")
+#endif
+
+    CALL GetMatrixValueFromCSV2(VALUE, isFound, afile, &
+                                fileRow, fileCol, nrow, ncol)
+
+  CASE (3)
+#ifdef DEBUG_VER
+    CALL AssertError2(fileCol, 5_I4B, myName, &
+                      "error reading version 3, a=fileCol, b=5")
+#endif
+
+    CALL GetMatrixValueFromCSV3(VALUE, isFound, afile, &
+                                fileRow, fileCol, nrow, ncol)
+
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "No case found for version, it should equal 1, 2, or 3")
+#endif
+  END SELECT
 
   CALL afile%DEALLOCATE()
 
 #ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, &
+  CALL AssertError1(isFound, myName, &
                     "No case found for ncol, it should ne 2, 3, or 5")
 #endif
 
@@ -364,8 +607,6 @@ SUBROUTINE GetMatrixValueFromCSV1(VALUE, isFound, afile, fileRow, fileCol, &
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "GetMatrixValueFromCSV()"
 #endif
-  LOGICAL(LGT) :: isok
-  TYPE(String) :: astr
   INTEGER(I4B) :: ii, jj
 
 #ifdef DEBUG_VER
@@ -373,25 +614,8 @@ SUBROUTINE GetMatrixValueFromCSV1(VALUE, isFound, afile, fileRow, fileCol, &
                           '[START] ')
 #endif
 
-  isFound = math%no
-  nrow = 0
-  ncol = 0
-  CALL afile%Get(icol=1, irow=1, val=astr)
-
-  isok = astr%Is_Integer()
-
-  IF (isok) THEN
-    astr = ""
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
-
-  ! The following code is executed when astr is not an integer
-
   ! Each column in csv is imported as a column of VALUE
+  isFound = math%yes
   nrow = fileRow
   ncol = fileCol
 
@@ -400,9 +624,6 @@ SUBROUTINE GetMatrixValueFromCSV1(VALUE, isFound, afile, fileRow, fileCol, &
       CALL afile%Get(irow=ii, icol=jj, val=VALUE(ii, jj))
     END DO
   END DO
-
-  isFound = math%yes
-  astr = ""
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -437,17 +658,8 @@ SUBROUTINE GetMatrixValueFromCSV2(VALUE, isFound, afile, fileRow, fileCol, &
                           '[START] ')
 #endif
 
-  isFound = math%no
+  isFound = math%yes
   nrow = 0; ncol = 0
-
-  isok = fileCol .EQ. 3
-  IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
 
   ! first column is treated as row index of VALUE
   ! second column is treated as column index of VALUE
@@ -501,19 +713,8 @@ SUBROUTINE GetMatrixValueFromCSV3(VALUE, isFound, afile, fileRow, fileCol, &
                           '[START] ')
 #endif
 
-  isFound = math%no
+  isFound = math%yes
   nrow = 0; ncol = 0
-
-  isok = fileCol .EQ. 5
-  IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            '[END] ')
-#endif
-    RETURN
-  END IF
-
-  ! the following code is executed when fileCol is 5
 
   DO ii = 1, fileRow
     CALL afile%Get(icol=1, irow=ii, val=row_ind1) ! start
