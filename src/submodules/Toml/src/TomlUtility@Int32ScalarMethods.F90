@@ -14,24 +14,14 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: stat0, origin0
+#define _SUBMODULE_NAME_ Int32ScalarMethods
+#define _METHOD_NAME_ GetValue_Int32
+#define _MY_NAME_ "GetValue_Int32()"
+#define _DATA_TYPE_ INTEGER(INT32)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
+#include "./include/ScalarMethodsSubmodule.F90"
 
-CALL toml_get(table, key, VALUE, origin=origin0, stat=stat0)
-
-isok = (stat0 .EQ. toml_stat%success)
-IF (PRESENT(isFound)) isFound = isok
-IF (.NOT. isok) VALUE = default_value
-IF (PRESENT(stat)) stat = stat0
-IF (PRESENT(origin)) origin = origin0
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
+#undef _SUBMODULE_NAME_
+#undef _METHOD_NAME_
+#undef _MY_NAME_
+#undef _DATA_TYPE_

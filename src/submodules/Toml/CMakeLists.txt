@@ -16,36 +16,85 @@
 #
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+
+target_sources(${PROJECT_NAME} PRIVATE ${src_path}/TomlUtility@BasicMethods.F90)
+
 target_sources(
     ${PROJECT_NAME}
     PRIVATE
-        ${src_path}/TomlUtility@BasicMethods.F90
-        ${src_path}/TomlUtility@StringMethods.F90
-        ${src_path}/TomlUtility@IntMethods.F90
+        ${src_path}/TomlUtility@BoolScalarMethods.F90
+        ${src_path}/TomlUtility@BoolVectorMethods.F90
+        ${src_path}/TomlUtility@BoolStaticVectorMethods.F90
+    # ${src_path}/TomlUtility@BoolMatrixMethods.F90
+    # ${src_path}/TomlUtility@BoolStaticMatrixMethods.F90
+)
+
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TomlUtility@Int8ScalarMethods.F90
         ${src_path}/TomlUtility@Int8VectorMethods.F90
         ${src_path}/TomlUtility@Int8StaticVectorMethods.F90
         ${src_path}/TomlUtility@Int8MatrixMethods.F90
         ${src_path}/TomlUtility@Int8StaticMatrixMethods.F90
+)
+
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TomlUtility@Int16ScalarMethods.F90
         ${src_path}/TomlUtility@Int16VectorMethods.F90
         ${src_path}/TomlUtility@Int16StaticVectorMethods.F90
         ${src_path}/TomlUtility@Int16MatrixMethods.F90
         ${src_path}/TomlUtility@Int16StaticMatrixMethods.F90
+)
+
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TomlUtility@Int32ScalarMethods.F90
         ${src_path}/TomlUtility@Int32VectorMethods.F90
         ${src_path}/TomlUtility@Int32StaticVectorMethods.F90
         ${src_path}/TomlUtility@Int32MatrixMethods.F90
         ${src_path}/TomlUtility@Int32StaticMatrixMethods.F90
+)
+
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TomlUtility@Int64ScalarMethods.F90
         ${src_path}/TomlUtility@Int64VectorMethods.F90
         ${src_path}/TomlUtility@Int64StaticVectorMethods.F90
         ${src_path}/TomlUtility@Int64MatrixMethods.F90
         ${src_path}/TomlUtility@Int64StaticMatrixMethods.F90
-        ${src_path}/TomlUtility@RealMethods.F90
+)
+
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TomlUtility@Real32ScalarMethods.F90
         ${src_path}/TomlUtility@Real32VectorMethods.F90
         ${src_path}/TomlUtility@Real32StaticVectorMethods.F90
         ${src_path}/TomlUtility@Real32MatrixMethods.F90
         ${src_path}/TomlUtility@Real32StaticMatrixMethods.F90
+)
+
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TomlUtility@Real64ScalarMethods.F90
         ${src_path}/TomlUtility@Real64VectorMethods.F90
         ${src_path}/TomlUtility@Real64StaticVectorMethods.F90
         ${src_path}/TomlUtility@Real64MatrixMethods.F90
         ${src_path}/TomlUtility@Real64StaticMatrixMethods.F90
-        ${src_path}/TomlUtility@BoolMethods.F90
+)
+
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TomlUtility@StringScalarMethods.F90
+        ${src_path}/TomlUtility@StringVectorMethods.F90
+        ${src_path}/TomlUtility@StringStaticVectorMethods.F90
+        ${src_path}/TomlUtility@StringMatrixMethods.F90
+        ${src_path}/TomlUtility@StringStaticMatrixMethods.F90
 )

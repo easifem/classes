@@ -13,25 +13,15 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
-SUBMODULE(TomlUtility) RealMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString, Display
-USE tomlf, ONLY: toml_error, &
-                 toml_load, &
-                 toml_parser_config, &
-                 toml_serialize, &
-                 toml_get => get_value, &
-                 toml_len => len, &
-                 toml_context, &
-                 toml_terminal, &
-                 toml_load, &
-                 toml_array, &
-                 toml_stat
-USE CSVFile_Class, ONLY: CSVFile_
-USE String_Class, ONLY: StringReallocate => Reallocate
-USE BaseType, ONLY: math => TypeMathOpt
+! #define _SUBMODULE_NAME_ Int8ScalarMethods
+! #define _METHOD_NAME_ GetValue_Int8
+! #define _MY_NAME_ "GetValue_Int8()"
+! #define _DATA_TYPE_ INTEGER(INT8)
+
+SUBMODULE(TomlUtility) _SUBMODULE_NAME_
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_stat
 IMPLICIT NONE
 
 CONTAINS
@@ -40,28 +30,41 @@ CONTAINS
 !                                                                   GetValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE GetValue_Real32
+MODULE PROCEDURE _METHOD_NAME_
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real32()"
+CHARACTER(*), PARAMETER :: myName = _MY_NAME_
 #endif
-#include "./include/ReadScalar.F90"
-END PROCEDURE GetValue_Real32
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: stat0, origin0
 
-!----------------------------------------------------------------------------
-!                                                                   GetValue
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE GetValue_Real64
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "GetValue_Real64()"
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
-#include "./include/ReadScalar.F90"
-END PROCEDURE GetValue_Real64
+
+CALL toml_get(table, key, VALUE, origin=origin0, stat=stat0)
+
+isok = (stat0 .EQ. toml_stat%success)
+IF (PRESENT(isFound)) isFound = isok
+IF (.NOT. isok) VALUE = default_value
+IF (PRESENT(stat)) stat = stat0
+IF (PRESENT(origin)) origin = origin0
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE _METHOD_NAME_
 
 !----------------------------------------------------------------------------
 !                                                              Include error
 !----------------------------------------------------------------------------
 
-#include "../../include/errors.F90"
+#include "../../../include/errors.F90"
 
-END SUBMODULE RealMethods
+END SUBMODULE _SUBMODULE_NAME_
+
+! #undef _SUBMODULE_NAME_
+! #undef _METHOD_NAME_
+! #undef _MY_NAME_
+! #undef _DATA_TYPE_

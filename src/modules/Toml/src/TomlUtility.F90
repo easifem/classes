@@ -297,6 +297,55 @@ END INTERFACE GetValue_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
+! date:  2025-05-29
+! summary:  GetValue Integer Vectors
+
+! INTERFACE
+!   MODULE SUBROUTINE GetValue_Bool_r2(table, key, VALUE, origin, stat, &
+!                                      isFound)
+!     TYPE(toml_table), INTENT(INOUT) :: table
+!     CHARACTER(*), INTENT(IN) :: key
+!     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+!     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+!   END SUBROUTINE GetValue_Bool_r2
+! END INTERFACE
+
+! INTERFACE GetValue
+!   MODULE PROCEDURE GetValue_Bool_r2
+! END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the value of vector of Bool without allocation
+
+! INTERFACE
+!   MODULE SUBROUTINE GetValue_Bool_r2_static(table, key, VALUE, nrow, ncol, &
+!                                             origin, stat, isFound)
+!     TYPE(toml_table), INTENT(INOUT) :: table
+!     CHARACTER(*), INTENT(IN) :: key
+!     LOGICAL(LGT), INTENT(INOUT) :: VALUE(:, :)
+!     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+!     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+!   END SUBROUTINE GetValue_Bool_r2_static
+! END INTERFACE
+
+! INTERFACE GetValue_
+!   MODULE PROCEDURE GetValue_Bool_r2_static
+! END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  GetValue of vector of Strings
 

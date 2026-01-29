@@ -58,10 +58,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 IF (PRESENT(origin)) origin0 = origin
 IF (PRESENT(stat)) stat0 = stat
+isFound0 = math%no
 
 ! the following call get value from the toml array
-CALL GetVectorValue1(table, key, VALUE, origin0, stat0, isFound0, &
-                     isScalar0, tsize)
+IF (.NOT. isFound0) &
+  CALL GetVectorValue1(table, key, VALUE, origin0, stat0, isFound0, &
+                       isScalar0, tsize)
 
 ! if the above routine failed then we try to read the
 ! single value by using the following call
