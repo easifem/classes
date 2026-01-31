@@ -1,0 +1,44 @@
+[extra.ford]
+project = "BasisOpt"
+summary = """
+BasisOpt class contains the options for making basis functions.
+"""
+
+project_download = "https://github.com/easifem/class"
+project_github = "https://github.com/easifem/class"
+project_website = "https://www.easifem.com"
+src_dir = ["./src"]
+# media_dir = "./media"
+# page_dir = "./pages"
+output_dir = "./docsFord"
+# exclude_dir = ""
+# exclude = ""
+
+author = "Vikas Sharma"
+author_description = "Assistant Professor, Graduate School of Agriculture, Kyoto University, Kyoto, Japan"
+email = "sharma.vikas.5a@kyoto-u.ac.jp"
+github = "https://github.com/vickysharma0812"
+twitter = "https://twitter.com/vickysharma0812"
+website = "http://vikas.easifem.com"
+preprocess = false
+display = ["public", "protected", "private"]
+extra_filetypes = [
+  { extension = "c", comment = "//" },
+  { extension = "sh", comment = "#", lexer = "bash" },
+  { extension = "py", comment = "#", lexer = "python" },
+]
+macro = ["DEBUG_VER"]
+doc_license = "mit"
+extensions = ["f90", "F90"]
+# favicon =
+graph = false
+predocmark_alt = ">"
+predocmark = "<"
+docmark_alt = ""
+docmark = "!"
+fpp_extensions = "F90"
+creation_date = "%Y-%m-%d"
+sort = "alpha"
+incl_src = false
+source = false
+externalize = true
