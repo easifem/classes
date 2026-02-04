@@ -21,6 +21,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 # CPUTime
 include(${CMAKE_CURRENT_LIST_DIR}/CPUTime/CMakeLists.txt)
 
+# MarkdownData
+include(${CMAKE_CURRENT_LIST_DIR}/MarkdownData/CMakeLists.txt)
+
 # AbstractFile
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractFile/CMakeLists.txt)
 
@@ -29,6 +32,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/FortranFile/CMakeLists.txt)
 
 # TxtFile
 include(${CMAKE_CURRENT_LIST_DIR}/TxtFile/CMakeLists.txt)
+
+# FortranModuleFile
+include(${CMAKE_CURRENT_LIST_DIR}/FortranModuleFile/CMakeLists.txt)
 
 # CSVFile
 include(${CMAKE_CURRENT_LIST_DIR}/CSVFile/CMakeLists.txt)
