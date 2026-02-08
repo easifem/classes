@@ -2,6 +2,7 @@
 preview = true
 select = ["C", "E", "S", "MOD"]
 ignore = [
+  "superfluous-implicit-none",
   "implicit-external-procedures",
   "interface-implicit-typing",
 ]
