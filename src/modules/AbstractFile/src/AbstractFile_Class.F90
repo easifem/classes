@@ -42,12 +42,9 @@ USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
-!LIst of Public Members
+
 CHARACTER(*), PARAMETER :: modName = 'AbstractFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
-!! TYPE(ExceptionHandler_), PRIVATE :: e
-  !! The exception handler for the object
-  !! LIst of type bound procedures (methods) for the Base File Type object
 
 PUBLIC :: AbstractFile_
 PUBLIC :: AbstractFilePointer_
@@ -58,7 +55,7 @@ PUBLIC :: AbstractFileDeallocate
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:         2 May 2021
+! date: 2 May 2021
 ! summary: A n abstract type which means it has no basic implementation
 
 TYPE, ABSTRACT :: AbstractFile_

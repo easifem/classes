@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(FortranFile_Class) EnquireMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -24,49 +23,49 @@ CONTAINS
 !                                                                isFormatted
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_isFormatted
-  ans = obj%formatstat
-END PROCEDURE ff_isFormatted
+MODULE PROCEDURE obj_IsFormatted
+ans = obj%formatstat
+END PROCEDURE obj_IsFormatted
 
 !----------------------------------------------------------------------------
 !                                                                   isDirect
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_isDirect
-  ans = obj%accessstat
-END PROCEDURE ff_isDirect
+MODULE PROCEDURE obj_IsDirect
+ans = obj%accessstat
+END PROCEDURE obj_IsDirect
 
 !----------------------------------------------------------------------------
 !                                                                   isPadded
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_isPadded
-  ans = obj%padstat
-END PROCEDURE ff_isPadded
+MODULE PROCEDURE obj_IsPadded
+ans = obj%padstat
+END PROCEDURE obj_IsPadded
 
 !----------------------------------------------------------------------------
 !                                                                   isNew
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_isNew
-  ans = obj%newstat
-END PROCEDURE ff_isNew
+MODULE PROCEDURE obj_IsNew
+ans = obj%newstat
+END PROCEDURE obj_IsNew
 
 !----------------------------------------------------------------------------
 !                                                               isOverwrite
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_isOverwrite
-  ans = obj%overwrite
-END PROCEDURE ff_isOverwrite
+MODULE PROCEDURE obj_IsOverwrite
+ans = obj%overwrite
+END PROCEDURE obj_IsOverwrite
 
 !----------------------------------------------------------------------------
 !                                                               isInitiated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_isInitiated
-  ans = obj%initstat
-END PROCEDURE ff_isInitiated
+MODULE PROCEDURE obj_IsInitiated
+ans = obj%initstat
+END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
 !

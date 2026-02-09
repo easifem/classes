@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(FortranFile_Class) GetMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -24,17 +23,17 @@ CONTAINS
 !                                                                 getUnitNo
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_getUnitNo
-  ans = obj%unitno
-END PROCEDURE ff_getUnitNo
+MODULE PROCEDURE obj_GetUnitNo
+ans = obj%unitno
+END PROCEDURE obj_GetUnitNo
 
 !----------------------------------------------------------------------------
 !                                                                 getRecLen
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE ff_getRecLen
-  ans = obj%reclval
-END PROCEDURE ff_getRecLen
+MODULE PROCEDURE obj_GetRecLen
+ans = obj%reclval
+END PROCEDURE obj_GetRecLen
 
 !----------------------------------------------------------------------------
 !
