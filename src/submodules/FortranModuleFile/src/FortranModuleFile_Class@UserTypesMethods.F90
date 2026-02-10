@@ -15,14 +15,16 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(FortranModuleFile_Class) ReadUserTypesMethods
+SUBMODULE(FortranModuleFile_Class) UserTypesMethods
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: fileopt => TypeFileOpt
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
 USE GlobalData, ONLY: CHAR_LF
 USE GlobalData, ONLY: CHAR_SPACE
 USE InputUtility, ONLY: Input
+USE MarkdownFile_Class, ONLY: MarkdownFile_
 
 IMPLICIT NONE
 
@@ -66,11 +68,13 @@ DO itype = 1, tsize
 
   ALLOCATE (atype)
 
+  atype%headerLine = aline
   CALL UserTypeDataSetIsAbstract(atype, caseType)
   CALL UserTypeDataSetIsChild(atype, caseType)
   CALL UserTypeDataSetName(obj=atype, aline=aline)
   CALL UserTypeDataSetMd(obj=obj, val=atype, lineLoc=lineLoc)
 
+  !! make fields
   tfields = obj%GetTotalFieldsInUserType()
   ALLOCATE (atype%fields(tfields))
 
@@ -80,6 +84,18 @@ DO itype = 1, tsize
       val=afield, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok)
 
     atype%fields(ifield)%ptr => afield
+  END DO
+
+  !! make methods
+  tfields = obj%GetTotalMethodsInUserType()
+  ALLOCATE (atype%methods(tfields))
+
+  DO ifield = 1, tfields
+    ALLOCATE (afield)
+    CALL obj%ReadFieldInUserType( &
+      val=afield, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok)
+
+    atype%methods(ifield)%ptr => afield
   END DO
 
   obj%userTypes(itype)%ptr => atype
@@ -102,8 +118,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFieldsInUserType()"
 #endif
 
 CHARACTER(*), PARAMETER :: commentString = "!"
-TYPE(String) :: aline, keywords(7), exitkeywords(2)
-INTEGER(I4B) :: numLineRead, ikey, tkeys, lineLoc, numLineRead0, texitkeys, &
+INTEGER(I4B), PARAMETER :: tkeys = 7, texitkeys = 2
+TYPE(String) :: aline, keywords(tkeys), exitkeywords(texitkeys)
+INTEGER(I4B) :: numLineRead, ikey, lineLoc, numLineRead0, &
                 iline
 LOGICAL(LGT) :: isFound, keyfound, exitkeyfound
 
@@ -112,18 +129,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tkeys = 0
-keywords(1) = "TYPE("; tkeys = tkeys + 1
-keywords(2) = "CLASS("; tkeys = tkeys + 1
-keywords(3) = "INTEGER("; tkeys = tkeys + 1
-keywords(4) = "REAL("; tkeys = tkeys + 1
-keywords(5) = "LOGICAL("; tkeys = tkeys + 1
-keywords(6) = "CHARACTER("; tkeys = tkeys + 1
-keywords(7) = "PROCEDURE("; tkeys = tkeys + 1
+keywords(1) = "TYPE("
+keywords(2) = "CLASS("
+keywords(3) = "INTEGER("
+keywords(4) = "REAL("
+keywords(5) = "LOGICAL("
+keywords(6) = "CHARACTER("
+keywords(7) = "PROCEDURE("
 
-texitkeys = 0
-exitkeywords(1) = "CONTAINS"; texitkeys = texitkeys + 1
-exitkeywords(2) = "END TYPE"; texitkeys = texitkeys + 1
+exitkeywords(1) = "CONTAINS"
+exitkeywords(2) = "END TYPE"
 
 numLineRead = 0
 
@@ -156,12 +171,8 @@ loop1: DO
   ! Check exit keywords
   loop3: DO ikey = 1, texitkeys
     exitkeyfound = aline%start_with(prefix=exitkeywords(ikey)%chars())
-    IF (exitkeyfound) THEN
-      EXIT loop3
-    END IF
+    IF (exitkeyfound) EXIT loop1
   END DO loop3
-
-  IF (exitkeyfound) EXIT loop1
 
 END DO loop1
 
@@ -175,6 +186,79 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetTotalFieldsInUserType
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalMethodsInUserType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalMethodsInUserType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMethodsInUserType()"
+#endif
+
+CHARACTER(*), PARAMETER :: commentString = "!"
+INTEGER(I4B), PARAMETER :: tkeys = 1, texitkeys = 1
+TYPE(String) :: aline, keywords(tkeys), exitkeywords(texitkeys)
+INTEGER(I4B) :: numLineRead, ikey, lineLoc, numLineRead0, &
+                iline
+LOGICAL(LGT) :: isFound, keyfound, exitkeyfound
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+keywords(1) = "PROCEDURE"
+exitkeywords(1) = "END TYPE"
+
+numLineRead = 0
+
+ans = 0
+
+loop1: DO
+
+  CALL obj%ReadFortranLine( &
+    aline=aline, lineLoc=lineLoc, numLineRead=numLineRead0, &
+    isFound=isFound, readSingleLine=math%no)
+
+  numLineRead = numLineRead + numLineRead0
+
+  ! exit if not found, if isFound is false, with above option,
+  ! it means that there is fortran source code found
+  IF (.NOT. isFound) EXIT loop1
+
+  ! Check the keywords
+  loop2: DO ikey = 1, tkeys
+    keyfound = aline%start_with(prefix=keywords(ikey)%chars())
+    IF (keyfound) THEN
+      ans = ans + 1
+      EXIT loop2
+    END IF
+
+  END DO loop2
+
+  IF (keyfound) CYCLE loop1
+
+  ! Check exit keywords
+  loop3: DO ikey = 1, texitkeys
+    exitkeyfound = aline%start_with(prefix=exitkeywords(ikey)%chars())
+    IF (exitkeyfound) EXIT loop1
+  END DO loop3
+
+END DO loop1
+
+! here we are going to back where we came from in the fortran file
+DO iline = 1, numLineRead
+  CALL obj%BACKSPACE()
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalMethodsInUserType
+
+!----------------------------------------------------------------------------
 
 !----------------------------------------------------------------------------
 !                                                          GetTotalUserTypes
@@ -442,7 +526,8 @@ SUBROUTINE UserTypeDataSetName(obj, aline)
 #endif
 
   threeParts = aline%Partition(sep=sep)
-  obj%name = threeParts(3)%TRIM()
+  threeParts(2) = threeParts(3)%ADJUSTL()
+  obj%name = threeParts(2)%TRIM()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -518,9 +603,116 @@ SUBROUTINE UserTypeDataSetMd(obj, val, lineLoc)
 END SUBROUTINE UserTypeDataSetMd
 
 !----------------------------------------------------------------------------
+!                                                       GenerateMarkdownDocs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE UserTypeData_GenerateMarkdownDocs
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "UserTypeData_GenerateMarkdownDocs()"
+#endif
+
+TYPE(MarkdownFile_) :: md
+TYPE(UserTypeEntry_), POINTER :: field
+TYPE(String) :: filename, aline
+INTEGER(I4B) :: iostat, linelen, tsize, ii
+CHARACTER(fileopt%maxStrLen) :: iomsg
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! Create an index_.md using md, check md%content, senetize it
+aline = obj%name%ADJUSTL()
+filename = aline%TRIM()//".md"
+CALL md%Initiate( &
+  filename=filename%Chars(), status=fileopt%replace, action=fileopt%WRITE)
+
+CALL md%OPEN()
+
+aline = obj%md%GetFrontmatter()
+CALL md%WriteFrontmatter(val=aline)
+
+aline = obj%md%GetContent()
+linelen = aline%LEN_TRIM()
+isok = linelen .NE. 0
+
+IF (isok) THEN
+  CALL md%WRITE(val=fileopt%space, iostat=iostat, iomsg=iomsg)
+  CALL md%WRITE(val=aline, iostat=iostat, iomsg=iomsg)
+
+ELSE
+  linelen = obj%name%LEN_TRIM()
+  isok = linelen .NE. 0
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, "name is empty")
+#endif
+
+  CALL md%WriteH1(val=obj%name)
+END IF
+
+! ## Subheading for fields
+isok = ALLOCATED(obj%fields)
+IF (isok) THEN
+  aline = "Fields"
+  CALL md%WriteH2(val=aline)
+
+  CALL md%StartCodeFence(lang="fortran")
+  CALL md%WRITE(val=obj%headerLine, iostat=iostat, iomsg=iomsg)
+
+  tsize = SIZE(obj%fields)
+  DO ii = 1, tsize
+    isok = ASSOCIATED(obj%fields(ii)%ptr)
+    IF (.NOT. isok) CYCLE
+
+    field => obj%fields(ii)%ptr
+
+    CALL md%WRITE(val=field%name, iostat=iostat, iomsg=iomsg)
+    CALL md%WRITE(val=field%doc, iostat=iostat, iomsg=iomsg)
+  END DO
+
+  aline = "END TYPE "//obj%name
+  CALL md%WRITE(val=aline, iostat=iostat, iomsg=iomsg)
+  CALL md%EndCodeFence()
+END IF
+
+! ## Subheading for methods
+isok = ALLOCATED(obj%methods)
+IF (isok) THEN
+  aline = "Methods"
+  CALL md%WriteH2(val=aline)
+
+  CALL md%StartCodeFence(lang="fortran")
+  CALL md%WRITE(val=obj%headerLine, iostat=iostat, iomsg=iomsg)
+
+  tsize = SIZE(obj%methods)
+  DO ii = 1, tsize
+    isok = ASSOCIATED(obj%methods(ii)%ptr)
+    IF (.NOT. isok) CYCLE
+
+    field => obj%methods(ii)%ptr
+
+    CALL md%WRITE(val=field%name, iostat=iostat, iomsg=iomsg)
+    CALL md%WRITE(val=field%doc, iostat=iostat, iomsg=iomsg)
+  END DO
+
+  aline = "END TYPE "//obj%name
+  CALL md%WRITE(val=aline, iostat=iostat, iomsg=iomsg)
+  CALL md%EndCodeFence()
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE UserTypeData_GenerateMarkdownDocs
+
+!----------------------------------------------------------------------------
 !                                                             Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
 
-END SUBMODULE ReadUserTypesMethods
+END SUBMODULE UserTypesMethods

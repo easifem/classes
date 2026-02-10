@@ -33,6 +33,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/FortranFile/CMakeLists.txt)
 # TxtFile
 include(${CMAKE_CURRENT_LIST_DIR}/TxtFile/CMakeLists.txt)
 
+# MarkdownFile
+include(${CMAKE_CURRENT_LIST_DIR}/MarkdownFile/CMakeLists.txt)
+
 # FortranModuleFile
 include(${CMAKE_CURRENT_LIST_DIR}/FortranModuleFile/CMakeLists.txt)
 

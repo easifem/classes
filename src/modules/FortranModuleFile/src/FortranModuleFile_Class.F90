@@ -76,10 +76,11 @@ END TYPE UserTypeEntry_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-02-02
-! summary: data type which contains pointer to UserTypeEntry_
+! summary: This data type contains pointer to UserTypeEntry_
 
 TYPE :: UserTypeEntryPointer_
   TYPE(UserTypeEntry_), POINTER :: ptr => NULL()
+  !! pointer to UserTypeEntry
 END TYPE UserTypeEntryPointer_
 
 !----------------------------------------------------------------------------
@@ -100,16 +101,25 @@ TYPE :: UserTypeData_
   !! it is true when user type is a child class, i.e., extends is present
   LOGICAL(LGT) :: isAbstract = .FALSE.
   !! it is true when user type is an abstract class
+  TYPE(String) :: headerLine
+  !! type definition declaration line.
+  !! for example "type :: UserTypeData_"
   TYPE(String) :: name
-  !! name of data type
+  !! name of user defined datatype
+  !! for example "UserTypeData_"
   TYPE(MarkdownData_) :: md
   !! Information of module
   TYPE(UserTypeEntryPointer_), ALLOCATABLE :: fields(:)
-  !! fields name for user data type
+  !! fields defined inside a user defined datatype
+  TYPE(UserTypeEntryPointer_), ALLOCATABLE :: methods(:)
+  !! methods defined inside a user defined datatype
 
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => UserTypeData_Display
   !! display the content of UserTypeData_
+  PROCEDURE, PUBLIC, PASS(obj) :: GenerateMarkdownDocs => &
+    UserTypeData_GenerateMarkdownDocs
+  !! Generate markdown documentation files
 END TYPE UserTypeData_
 
 !----------------------------------------------------------------------------
@@ -131,6 +141,11 @@ END TYPE UserTypeDataPointer_
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-02-01
 ! summary: This class contains data of a fortran module file
+!
+!# FortranModuleFile_
+!
+! This class contains data of a fortran module file. This class can
+! read a fortran module and create markdown files for documentation.
 
 TYPE, EXTENDS(TxtFile_) :: FortranModuleFile_
   TYPE(String) :: moduleName
@@ -171,6 +186,8 @@ CONTAINS
   !! Skip the blanklines and reach to a nonblank line in backward mode
   PROCEDURE, PUBLIC, PASS(obj) :: ReadModuleName => obj_ReadModuleName
   !! read the module name from the source file
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadModuleDir => obj_ReadModuleDir
+  !! Get moduleDir from moduleName
   PROCEDURE, PUBLIC, PASS(obj) :: ReadUseStatements => obj_ReadUseStatements
   !! read use statements in the module file
   PROCEDURE, PUBLIC, PASS(obj) :: ReadUserTypes => obj_ReadUserTypes
@@ -180,10 +197,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFieldsInUserType => &
     obj_GetTotalFieldsInUserType
   !! get total fields in the user types
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMethodsInUserType => &
+    obj_GetTotalMethodsInUserType
+  !! get total Methods in user defined datatypes
   PROCEDURE, PUBLIC, PASS(obj) :: ReadFortranLine => obj_ReadFortranLine
   !! Read a fortran line, check if line ends with &,
   !! if true read next line too
-  PROCEDURE, PUBLIC, PASS(obj) :: ReadDocCommentLine => obj_ReadDocCommentLine
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadDocCommentLine => &
+    obj_ReadDocCommentLine
   !! Read a doc comment, usually starts with !!,
   !! keep on appending the docs until a non docstring is found
   PROCEDURE, PUBLIC, PASS(obj) :: ReadFieldInUserType => &
@@ -215,7 +236,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                     ReadModuleName@ReadModuleFileMethods
+!                                       ReadModuleName@ReadModuleFileMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -233,6 +254,30 @@ INTERFACE
     LOGICAL(LGT), INTENT(OUT) :: isFound
   !! it is set to when keyword is  found
   END SUBROUTINE obj_ReadModuleName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       ReadModuleDir@ReadModuleFileMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-02
+! summary: read module dir from the moduleName
+!
+!# ReadModuleDir
+!
+! Read moduleDir from moduleName. Following rules are used
+!
+! - `foo_Class` will result in foo
+! - `foo_Method` will result in foo
+! - `foo_Methods` will result in foo
+! - `fooUtility` will result in `fooUtility`
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadModuleDir(obj)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! Fortran module file
+  END SUBROUTINE obj_ReadModuleDir
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -523,6 +568,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                 GetTotalMethodsInUserTypes@UserTypeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-03
+! summary: Get total number of Methods in a user defined data types
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMethodsInUserType(obj) RESULT(ans)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalMethodsInUserType
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                            ReadFortranLine@ReadLineMethods
 !----------------------------------------------------------------------------
 
@@ -696,6 +756,24 @@ INTERFACE
   MODULE SUBROUTINE obj_GenerateMarkdownDocs(obj)
     CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_GenerateMarkdownDocs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GenerateMarkdownDocs@UserTypesMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-04
+! summary: Generate markdown docs for data stored inside UserTypeData_
+!
+!# GenerateMarkdownDocs
+!
+! Generate markdown docs for data stored inside UserTypeData_.
+
+INTERFACE
+  MODULE SUBROUTINE UserTypeData_GenerateMarkdownDocs(obj)
+    CLASS(UserTypeData_), INTENT(INOUT) :: obj
+  END SUBROUTINE UserTypeData_GenerateMarkdownDocs
 END INTERFACE
 
 !----------------------------------------------------------------------------

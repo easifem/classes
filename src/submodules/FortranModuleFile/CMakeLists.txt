@@ -24,7 +24,7 @@ target_sources(
         ${src_path}/FortranModuleFile_Class@ReadMarkdownDataMethods.F90
         ${src_path}/FortranModuleFile_Class@SearchMethods.F90
         ${src_path}/FortranModuleFile_Class@ReadUseStatementsMethods.F90
-        ${src_path}/FortranModuleFile_Class@ReadUserTypesMethods.F90
+        ${src_path}/FortranModuleFile_Class@UserTypesMethods.F90
         ${src_path}/FortranModuleFile_Class@ReadLineMethods.F90
         ${src_path}/FortranModuleFile_Class@MarkdownMethods.F90
 )

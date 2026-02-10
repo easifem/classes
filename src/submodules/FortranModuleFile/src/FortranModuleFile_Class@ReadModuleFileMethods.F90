@@ -64,15 +64,17 @@ CALL obj%ReadMarkdownData( &
 CALL obj%ReadModuleName(lineLoc=lineLoc, numLineRead=numLineRead, &
                         isFound=isok)
 
+CALL obj%ReadModuleDir()
+
 CALL obj%ReadUseStatements(lineLoc=lineLoc, numLineRead=numLineRead)
 
 CALL obj%ReadUserTypes(lineLoc=lineLoc, numLineRead=numLineRead)
 
 #ifdef DEBUG_VER
-CALL obj%Display("debug: ")
+! CALL obj%Display("debug: ")
 
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  '[WIP] :: This routine is under development')
 #endif
 
 #ifdef DEBUG_VER
@@ -131,6 +133,53 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_ReadModuleName
+
+!----------------------------------------------------------------------------
+!                                                            ReadModuleDir
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadModuleDir
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadModuleDir()"
+#endif
+
+INTEGER(I4B) :: linelen
+LOGICAL(LGT) :: isok
+TYPE(String) :: threeParts(3)
+CHARACTER(*), PARAMETER :: underscore = "_"
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+linelen = obj%moduleName%LEN_TRIM()
+
+isok = linelen .EQ. 0
+IF (isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+threeParts = obj%moduleName%partition(sep=underscore)
+
+#ifdef DEBUG_VER
+linelen = threeParts(1)%LEN_TRIM()
+isok = linelen .NE. 0
+CALL AssertError1(isok, myName, &
+                  "error in getting moduleDir from moduleName.")
+#endif
+
+obj%moduleDir = threeParts(1)%Chars()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadModuleDir
 
 !----------------------------------------------------------------------------
 !                                                             Include Error

@@ -58,6 +58,10 @@ CONTAINS
   !! Display the content of MarkdownData_
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of markdown data from agruments
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFrontmatter => obj_GetFrontmatter
+  !! Get frontmatter
+  PROCEDURE, PUBLIC, PASS(obj) :: GetContent => obj_GetContent
+  !! Get content
 END TYPE MarkdownData_
 
 !----------------------------------------------------------------------------
@@ -113,6 +117,36 @@ INTERFACE
     TYPE(String), INTENT(IN) :: content
     !! content of markdown data
   END SUBROUTINE obj_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetFrontMatter@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-09
+! summary: Get the value of frontmatter
+
+INTERFACE
+  MODULE FUNCTION obj_GetFrontmatter(obj) RESULT(ans)
+    CLASS(MarkdownData_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION obj_GetFrontmatter
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetContent@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-09
+! summary: Get the value of content
+
+INTERFACE
+  MODULE FUNCTION obj_GetContent(obj) RESULT(ans)
+    CLASS(MarkdownData_), INTENT(IN) :: obj
+    TYPE(String) :: ans
+  END FUNCTION obj_GetContent
 END INTERFACE
 
 !----------------------------------------------------------------------------
