@@ -38,6 +38,9 @@ USE TxtFile_Class, ONLY: TxtFile_
 USE String_Class, ONLY: String
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE MarkdownData_Class, ONLY: MarkdownData_
+USE UserTypeData_Class, ONLY: UserTypeData_
+USE UserTypeData_Class, ONLY: UserTypeDataPointer_
+USE UserTypeData_Class, ONLY: UserTypeEntry_
 IMPLICIT NONE
 
 PRIVATE
@@ -46,93 +49,6 @@ PUBLIC :: FortranModuleFile_
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "FortranModuleFile_Class()"
 #endif
-
-!----------------------------------------------------------------------------
-!                                                             UserTypeEntry_
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-02
-! summary: data type for keeping a single entry of the field
-!
-!# UserTypeEntry_
-!
-! `UserTypeEntry_` handle a single entry defined in the UserType.
-! it can be used to handle documentation of fields as well as methods
-
-TYPE :: UserTypeEntry_
-  TYPE(String) :: name
-  !! name of the field
-  TYPE(String) :: doc
-  !! documentation of field
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => UserTypeEntry_Display
-  !! display the content of UserTypeData_
-END TYPE UserTypeEntry_
-
-!----------------------------------------------------------------------------
-!                                                      UserTypeEntryPointer_
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-02
-! summary: This data type contains pointer to UserTypeEntry_
-
-TYPE :: UserTypeEntryPointer_
-  TYPE(UserTypeEntry_), POINTER :: ptr => NULL()
-  !! pointer to UserTypeEntry
-END TYPE UserTypeEntryPointer_
-
-!----------------------------------------------------------------------------
-!                                                              UserTypeData_
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-02
-! summary: User type for storing user data types
-!
-!# UserTypeData_
-!
-! `UserTypeData_` contains data for handling documentation of easifem
-! data types
-
-TYPE :: UserTypeData_
-  LOGICAL(LGT) :: isChild = .FALSE.
-  !! it is true when user type is a child class, i.e., extends is present
-  LOGICAL(LGT) :: isAbstract = .FALSE.
-  !! it is true when user type is an abstract class
-  TYPE(String) :: headerLine
-  !! type definition declaration line.
-  !! for example "type :: UserTypeData_"
-  TYPE(String) :: name
-  !! name of user defined datatype
-  !! for example "UserTypeData_"
-  TYPE(MarkdownData_) :: md
-  !! Information of module
-  TYPE(UserTypeEntryPointer_), ALLOCATABLE :: fields(:)
-  !! fields defined inside a user defined datatype
-  TYPE(UserTypeEntryPointer_), ALLOCATABLE :: methods(:)
-  !! methods defined inside a user defined datatype
-
-CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: Display => UserTypeData_Display
-  !! display the content of UserTypeData_
-  PROCEDURE, PUBLIC, PASS(obj) :: GenerateMarkdownDocs => &
-    UserTypeData_GenerateMarkdownDocs
-  !! Generate markdown documentation files
-END TYPE UserTypeData_
-
-!----------------------------------------------------------------------------
-!                                                       UserTypeDataPointer_
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-02
-! summary: data type to contain a pointer to [UserTypeData_](./UserTypeData_)
-
-TYPE :: UserTypeDataPointer_
-  TYPE(UserTypeData_), POINTER :: ptr => NULL()
-END TYPE UserTypeDataPointer_
 
 !----------------------------------------------------------------------------
 !                                                         FortranModuleFile_
@@ -158,8 +74,6 @@ TYPE, EXTENDS(TxtFile_) :: FortranModuleFile_
   !! lists of use modules used in the module, separated by CHAR_LF
   TYPE(UserTypeDataPointer_), ALLOCATABLE :: userTypes(:)
   !! list of user defined data types in the module
-  ! TYPE(ProcedureDataPointer_), ALLOCATABLE :: userTypes(:)
-  ! !! list of user defined data types in the module
 
 CONTAINS
   PRIVATE
@@ -677,46 +591,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    Display@UserTypeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-03
-! summary: Display the content of UserTypeData_
-!
-!# Display
-!
-! This method displays the content of UserTypeData_
-
-INTERFACE
-  MODULE SUBROUTINE UserTypeData_Display(obj, msg, unitNo)
-    CLASS(UserTypeData_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE UserTypeData_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Display@UserTypeEntryMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-03
-! summary: Display the content of UserTypeEntry_
-!
-!# Display
-!
-! This method displays the content of UserTypeEntry_
-
-INTERFACE
-  MODULE SUBROUTINE UserTypeEntry_Display(obj, msg, unitNo)
-    CLASS(UserTypeEntry_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
-  END SUBROUTINE UserTypeEntry_Display
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
@@ -756,24 +630,6 @@ INTERFACE
   MODULE SUBROUTINE obj_GenerateMarkdownDocs(obj)
     CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_GenerateMarkdownDocs
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      GenerateMarkdownDocs@UserTypesMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-04
-! summary: Generate markdown docs for data stored inside UserTypeData_
-!
-!# GenerateMarkdownDocs
-!
-! Generate markdown docs for data stored inside UserTypeData_.
-
-INTERFACE
-  MODULE SUBROUTINE UserTypeData_GenerateMarkdownDocs(obj)
-    CLASS(UserTypeData_), INTENT(INOUT) :: obj
-  END SUBROUTINE UserTypeData_GenerateMarkdownDocs
 END INTERFACE
 
 !----------------------------------------------------------------------------

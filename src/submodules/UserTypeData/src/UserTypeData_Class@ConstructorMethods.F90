@@ -14,65 +14,90 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
-SUBMODULE(MarkdownData_Class) ConstructorMethods
+
+SUBMODULE(UserTypeData_Class) ConstructorMethods
 USE ExceptionHandler_Class, ONLY: e
+
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = __FILE__
+#endif
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    Initiate
+!                                                              AllocateFields
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate
+MODULE PROCEDURE obj_AllocateFields
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+CHARACTER(*), PARAMETER :: myName = "obj_AllocateFields()"
+LOGICAL(LGT) :: isok
 #endif
 
-TYPE(String) :: temp
+INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-temp = frontmatter%ADJUSTL()
-obj%frontmatter = temp%TRIM()
+#ifdef DEBUG_VER
+isok = .NOT. ALLOCATED(obj%fields)
+CALL AssertError1(isok, myName, &
+                  "obj%fields is already allocated")
+#endif
 
-temp = content%ADJUSTL()
-obj%content = temp%TRIM()
+ALLOCATE (obj%fields(tsize))
+
+DO ii = 1, tsize
+  obj%fields(ii)%ptr => NULL()
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate
+END PROCEDURE obj_AllocateFields
 
 !----------------------------------------------------------------------------
-!                                                                       Copy
+!                                                            AllocateMethods
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Copy
+MODULE PROCEDURE obj_AllocateMethods
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+CHARACTER(*), PARAMETER :: myName = "obj_AllocateMethods()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%Initiate(frontmatter=obj2%frontmatter, content=obj2%content)
+#ifdef DEBUG_VER
+isok = .NOT. ALLOCATED(obj%methods)
+CALL AssertError1(isok, myName, &
+                  "obj%methods is already allocated")
+#endif
+
+ALLOCATE (obj%methods(tsize))
+
+DO ii = 1, tsize
+  obj%methods(ii)%ptr => NULL()
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Copy
+END PROCEDURE obj_AllocateMethods
 
 !----------------------------------------------------------------------------
-!                                                             Include errors
+!                                                             Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

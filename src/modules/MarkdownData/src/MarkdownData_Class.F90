@@ -62,6 +62,8 @@ CONTAINS
   !! Get frontmatter
   PROCEDURE, PUBLIC, PASS(obj) :: GetContent => obj_GetContent
   !! Get content
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
+  !! copy the content into markdown data
 END TYPE MarkdownData_
 
 !----------------------------------------------------------------------------
@@ -147,6 +149,21 @@ INTERFACE
     CLASS(MarkdownData_), INTENT(IN) :: obj
     TYPE(String) :: ans
   END FUNCTION obj_GetContent
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     Copy@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-10
+! summary: Copy contents into MarkdownData
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(MarkdownData_), INTENT(INOUT) :: obj
+    CLASS(MarkdownData_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------

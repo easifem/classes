@@ -68,7 +68,8 @@ DO itype = 1, tsize
 
   ALLOCATE (atype)
 
-  atype%headerLine = aline
+  CALL atype%SetHeaderLine(aline)
+
   CALL UserTypeDataSetIsAbstract(atype, caseType)
   CALL UserTypeDataSetIsChild(atype, caseType)
   CALL UserTypeDataSetName(obj=atype, aline=aline)
@@ -76,26 +77,26 @@ DO itype = 1, tsize
 
   !! make fields
   tfields = obj%GetTotalFieldsInUserType()
-  ALLOCATE (atype%fields(tfields))
+  CALL atype%AllocateFields(tfields)
 
   DO ifield = 1, tfields
     ALLOCATE (afield)
     CALL obj%ReadFieldInUserType( &
       val=afield, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok)
 
-    atype%fields(ifield)%ptr => afield
+    CALL atype%SetFieldPointer(indx=ifield, val=afield)
   END DO
 
   !! make methods
   tfields = obj%GetTotalMethodsInUserType()
-  ALLOCATE (atype%methods(tfields))
+  CALL atype%AllocateMethods(tfields)
 
   DO ifield = 1, tfields
     ALLOCATE (afield)
     CALL obj%ReadFieldInUserType( &
       val=afield, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok)
 
-    atype%methods(ifield)%ptr => afield
+    CALL atype%SetMethodPointer(indx=ifield, val=afield)
   END DO
 
   obj%userTypes(itype)%ptr => atype
@@ -360,7 +361,7 @@ IF (.NOT. isFound) THEN
   RETURN
 END IF
 
-val%name = aline
+CALL val%SetName(aline)
 
 ! Now we will read the docstring for the field
 CALL obj%ReadDocCommentLine( &
@@ -369,7 +370,7 @@ CALL obj%ReadDocCommentLine( &
 
 numLineRead = numLineRead + numLineRead0
 
-val%doc = aline
+CALL val%SetDoc(aline)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -377,77 +378,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ReadFieldInUserType
-
-!----------------------------------------------------------------------------
-!                                                                    Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE UserTypeData_Display
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "UserTypeData_Display()"
-#endif
-
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tsize, ii
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Display(msg, "msg: ", unitNo=unitNo)
-CALL obj%name%Display(msg="name: ", unitNo=unitNo)
-
-CALL Display(obj%isChild, msg="isChild: ", unitNo=unitNo)
-CALL Display(obj%isAbstract, msg="isAbstract: ", unitNo=unitNo)
-
-isok = ALLOCATED(obj%fields)
-CALL Display(isok, "fields ALLOCATED: ", unitNo=unitNo)
-IF (isok) THEN
-  tsize = SIZE(obj%fields)
-  CALL Display(tsize, "SIZE(obj%fields): ", unitNo=unitNo)
-
-  DO ii = 1, tsize
-    isok = ASSOCIATED(obj%fields(ii)%ptr)
-    CALL Display(isok, "obj%fields("//ToString(ii)//")%ptr ASSOCIATED: ", &
-                 unitNo=unitNo)
-
-    IF (isok) CALL obj%fields(ii)%ptr%Display( &
-      msg="obj%fields("//ToString(ii)//")%ptr: ", &
-      unitNo=unitNo)
-
-  END DO
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE UserTypeData_Display
-
-!----------------------------------------------------------------------------
-!                                                                    Display
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE UserTypeEntry_Display
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "UserTypeEntry_Display()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Display(msg, "msg: ", unitNo=unitNo)
-CALL obj%name%Display(msg="name: ", unitNo=unitNo)
-CALL obj%doc%Display(msg="doc: ", unitNo=unitNo)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE UserTypeEntry_Display
 
 !----------------------------------------------------------------------------
 !                                                         UserTypeSetIsChild
@@ -467,9 +397,9 @@ SUBROUTINE UserTypeDataSetIsChild(obj, caseType)
                           '[START] ')
 #endif
 
-  obj%isChild = math%no
+  CALL obj%SetIsChild(math%no)
   isok = caseType .EQ. math%two_i
-  IF (isok) obj%isChild = math%yes
+  IF (isok) CALL obj%SetIsChild(math%yes)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -495,10 +425,10 @@ SUBROUTINE UserTypeDataSetIsAbstract(obj, caseType)
                           '[START] ')
 #endif
 
-  obj%isAbstract = math%no
+  CALL obj%SetIsAbstract(math%no)
 
   isok = caseType .EQ. math%three_i
-  IF (isok) obj%isAbstract = math%yes
+  IF (isok) CALL obj%SetIsAbstract(math%yes)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -526,8 +456,7 @@ SUBROUTINE UserTypeDataSetName(obj, aline)
 #endif
 
   threeParts = aline%Partition(sep=sep)
-  threeParts(2) = threeParts(3)%ADJUSTL()
-  obj%name = threeParts(2)%TRIM()
+  CALL obj%SetName(threeParts(3))
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -556,6 +485,7 @@ SUBROUTINE UserTypeDataSetMd(obj, val, lineLoc)
   CHARACTER(1024) :: fixstr
   INTEGER(I4B) :: numLineRead0, lineLoc0, caseType, iline, tline, iostat
   LOGICAL(LGT) :: isFound, isok
+  TYPE(MarkdownData_) :: md
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -577,7 +507,8 @@ SUBROUTINE UserTypeDataSetMd(obj, val, lineLoc)
 
   IF (isFound) THEN
     CALL obj%ReadMarkdownData( &
-      md=val%md, lineLoc=lineLoc0, numLineRead=numLineRead0)
+      md=md, lineLoc=lineLoc0, numLineRead=numLineRead0)
+    CALL val%SetMd(md)
   END IF
 
   ! now we need to go back where we came from
@@ -601,113 +532,6 @@ SUBROUTINE UserTypeDataSetMd(obj, val, lineLoc)
                           '[END] ')
 #endif
 END SUBROUTINE UserTypeDataSetMd
-
-!----------------------------------------------------------------------------
-!                                                       GenerateMarkdownDocs
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE UserTypeData_GenerateMarkdownDocs
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "UserTypeData_GenerateMarkdownDocs()"
-#endif
-
-TYPE(MarkdownFile_) :: md
-TYPE(UserTypeEntry_), POINTER :: field
-TYPE(String) :: filename, aline
-INTEGER(I4B) :: iostat, linelen, tsize, ii
-CHARACTER(fileopt%maxStrLen) :: iomsg
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-! Create an index_.md using md, check md%content, senetize it
-aline = obj%name%ADJUSTL()
-filename = aline%TRIM()//".md"
-CALL md%Initiate( &
-  filename=filename%Chars(), status=fileopt%replace, action=fileopt%WRITE)
-
-CALL md%OPEN()
-
-aline = obj%md%GetFrontmatter()
-CALL md%WriteFrontmatter(val=aline)
-
-aline = obj%md%GetContent()
-linelen = aline%LEN_TRIM()
-isok = linelen .NE. 0
-
-IF (isok) THEN
-  CALL md%WRITE(val=fileopt%space, iostat=iostat, iomsg=iomsg)
-  CALL md%WRITE(val=aline, iostat=iostat, iomsg=iomsg)
-
-ELSE
-  linelen = obj%name%LEN_TRIM()
-  isok = linelen .NE. 0
-
-#ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, "name is empty")
-#endif
-
-  CALL md%WriteH1(val=obj%name)
-END IF
-
-! ## Subheading for fields
-isok = ALLOCATED(obj%fields)
-IF (isok) THEN
-  aline = "Fields"
-  CALL md%WriteH2(val=aline)
-
-  CALL md%StartCodeFence(lang="fortran")
-  CALL md%WRITE(val=obj%headerLine, iostat=iostat, iomsg=iomsg)
-
-  tsize = SIZE(obj%fields)
-  DO ii = 1, tsize
-    isok = ASSOCIATED(obj%fields(ii)%ptr)
-    IF (.NOT. isok) CYCLE
-
-    field => obj%fields(ii)%ptr
-
-    CALL md%WRITE(val=field%name, iostat=iostat, iomsg=iomsg)
-    CALL md%WRITE(val=field%doc, iostat=iostat, iomsg=iomsg)
-  END DO
-
-  aline = "END TYPE "//obj%name
-  CALL md%WRITE(val=aline, iostat=iostat, iomsg=iomsg)
-  CALL md%EndCodeFence()
-END IF
-
-! ## Subheading for methods
-isok = ALLOCATED(obj%methods)
-IF (isok) THEN
-  aline = "Methods"
-  CALL md%WriteH2(val=aline)
-
-  CALL md%StartCodeFence(lang="fortran")
-  CALL md%WRITE(val=obj%headerLine, iostat=iostat, iomsg=iomsg)
-
-  tsize = SIZE(obj%methods)
-  DO ii = 1, tsize
-    isok = ASSOCIATED(obj%methods(ii)%ptr)
-    IF (.NOT. isok) CYCLE
-
-    field => obj%methods(ii)%ptr
-
-    CALL md%WRITE(val=field%name, iostat=iostat, iomsg=iomsg)
-    CALL md%WRITE(val=field%doc, iostat=iostat, iomsg=iomsg)
-  END DO
-
-  aline = "END TYPE "//obj%name
-  CALL md%WRITE(val=aline, iostat=iostat, iomsg=iomsg)
-  CALL md%EndCodeFence()
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE UserTypeData_GenerateMarkdownDocs
 
 !----------------------------------------------------------------------------
 !                                                             Include Error
