@@ -18,9 +18,8 @@
 SUBMODULE(FortranModuleFile_Class) SearchMethods
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: fileopt => TypeFileOpt
 USE Display_Method, ONLY: Display
-USE GlobalData, ONLY: CHAR_LF
-USE GlobalData, ONLY: CHAR_SPACE
 USE InputUtility, ONLY: Input
 
 IMPLICIT NONE
@@ -38,7 +37,7 @@ CHARACTER(*), PARAMETER :: myName = "SearchKeywordInCommentAtStart()"
 
 CHARACTER(*), PARAMETER :: commentString = "!"
 INTEGER(I4B) :: iostat
-CHARACTER(1024) :: fixstr
+CHARACTER(fileopt%fortranLineLen) :: fixstr
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -64,7 +63,12 @@ DO
 
   ! skip if line is not comment
   isok = aline%start_with(prefix=commentString)
-  IF (.NOT. isok) EXIT
+  IF (.NOT. isok) THEN
+    CALL obj%BACKSPACE()
+    lineLoc = lineLoc - 1
+    numLineRead = numLineRead - 1
+    EXIT
+  END IF
 
   ! Skip if the line does not contains the keyword
   isFound = aline%start_with(prefix=keyword)
@@ -204,8 +208,7 @@ CHARACTER(*), PARAMETER :: myName = "SearchKeywordInSourceAtStart()"
 #endif
 
 CHARACTER(*), PARAMETER :: commentString = "!"
-INTEGER(I4B) :: iostat
-CHARACTER(1024) :: fixstr
+INTEGER(I4B) :: numLineRead0
 LOGICAL(LGT) :: isok, readSingleLine0
 
 #ifdef DEBUG_VER
@@ -218,21 +221,13 @@ isFound = math%no
 readSingleLine0 = Input(option=readSingleLine, default=math%no)
 
 DO
-  CALL obj%ReadLine(val=aline, iostat=iostat, iomsg=fixstr)
-  lineLoc = lineLoc + 1
-  numLineRead = numLineRead + 1
+  CALL obj%ReadFortranLine( &
+    aline=aline, lineLoc=lineLoc, numLineRead=numLineRead0, isfound=isok, &
+    readSingleLine=math%no)
+  numLineRead = numLineRead + numLineRead0
 
-  ! Exit if end of file is reached
-  isok = obj%isEOF()
-  IF (isok) EXIT
-
-  ! Skip if the line is blank line
-  isok = aline%LEN_TRIM() .EQ. 0
-  IF (isok) CYCLE
-
-  ! skip if line is not Source
-  isok = aline%start_with(prefix=commentString)
-  IF (isok) CYCLE
+  ! exit if isok is false
+  IF (.NOT. isok) EXIT
 
   ! exit if the line contains the keyword
   isFound = aline%start_with(prefix=keyword)
@@ -259,8 +254,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SearchUserTypes()"
 
 CHARACTER(*), PARAMETER :: commentString = "!"
 TYPE(String) :: keywords(3)
-INTEGER(I4B) :: iostat, ikey, tkeys
-CHARACTER(1024) :: fixstr
+INTEGER(I4B) :: ikey, tkeys, numLineRead0
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -277,21 +271,13 @@ isFound = math%no
 numLineRead = 0
 
 loop1: DO
-  CALL obj%ReadLine(val=aline, iostat=iostat, iomsg=fixstr)
-  numLineRead = numLineRead + 1
-  lineLoc = lineLoc + 1
+  CALL obj%ReadFortranLine( &
+    aline=aline, lineLoc=lineLoc, numLineRead=numLineRead0, isfound=isok, &
+    readSingleLine=math%no)
+  numLineRead = numLineRead + numLineRead0
 
-  ! Exit if end of file is reached
-  isok = obj%isEOF()
-  IF (isok) EXIT
-
-  ! Skip if the line is blank line
-  isok = aline%LEN_TRIM() .EQ. 0
-  IF (isok) CYCLE loop1
-
-  ! Skip if line is comment
-  isok = aline%start_with(prefix=commentString)
-  IF (isok) CYCLE loop1
+  ! Exit if isok is false
+  IF (.NOT. isok) EXIT loop1
 
   loop2: DO ikey = 1, tkeys
     isFound = aline%start_with(prefix=keywords(ikey)%chars())
@@ -390,6 +376,138 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SearchUserTypesBack
+
+!----------------------------------------------------------------------------
+!                                                           SearchProcedures
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SearchProcedures
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SearchProcedures()"
+#endif
+
+CHARACTER(*), PARAMETER :: commentString = "!"
+INTEGER(I4B), PARAMETER :: tkeys = 2
+TYPE(String) :: keywords(tkeys)
+INTEGER(I4B) :: ikey, numLineRead0
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+keywords(1) = "INTERFACE"
+keywords(2) = "ABSTRACT INTERFACE"
+
+isFound = math%no
+numLineRead = 0
+
+loop1: DO
+  CALL obj%ReadFortranLine(aline=aline, lineLoc=lineLoc, &
+                           numLineRead=numLineRead0, isfound=isok, &
+                           readSingleLine=math%no)
+  numLineRead = numLineRead + numLineRead0
+
+  ! Exit if the above method returns not isok
+  IF (.NOT. isok) EXIT loop1
+
+  loop2: DO ikey = 1, tkeys
+    isFound = aline%start_with(prefix=keywords(ikey)%chars())
+    IF (isFound) THEN
+      caseType = ikey
+      EXIT loop1
+    END IF
+  END DO loop2
+
+END DO loop1
+
+DO ikey = 1, tkeys
+  keywords(ikey) = ""
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SearchProcedures
+
+!----------------------------------------------------------------------------
+!                                                        SearchProceduresBack
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SearchProceduresBack
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SearchProceduresBack()"
+#endif
+
+CHARACTER(*), PARAMETER :: commentString = "!"
+INTEGER(I4B), PARAMETER :: tkeys = 2
+TYPE(String) :: keywords(tkeys)
+INTEGER(I4B) :: iostat, ikey
+CHARACTER(fileopt%fortranLineLen) :: fixstr
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+keywords(1) = "INTERFACE"
+keywords(2) = "ABSTRACT INTERFACE"
+
+isFound = math%no
+numLineRead = 0
+
+isok = lineLoc .NE. 0
+IF (isok) THEN
+  lineLoc = lineLoc - 1
+  CALL obj%BACKSPACE()
+END IF
+
+loop1: DO
+
+  !! change it to ReadFortranLine
+  CALL obj%ReadLine(val=aline, iostat=iostat, iomsg=fixstr)
+  numLineRead = numLineRead + 1
+
+  ! Exit if current line location is zero
+  isok = lineLoc .NE. 0
+  IF (.NOT. isok) THEN
+    CALL obj%BACKSPACE()
+    lineLoc = 0
+    EXIT loop1
+  END IF
+
+  loop2: DO ikey = 1, tkeys
+    isFound = aline%start_with(prefix=keywords(ikey)%chars())
+    IF (isFound) THEN
+      caseType = ikey
+      CALL obj%BACKSPACE()
+      EXIT loop1
+    END IF
+  END DO loop2
+
+  ! If line does not contains the keywords then we go back
+  ! decrease the lineLoc. it includes following cases
+  ! ! Skip if the line is blank line
+  ! isok = aline%LEN_TRIM() .EQ. 0
+  ! ! Skip if line is comment
+  ! isok = aline%start_with(prefix=commentString)
+  CALL obj%BACKSPACE()
+  CALL obj%BACKSPACE()
+  lineLoc = lineLoc - 1
+END DO loop1
+
+DO ikey = 1, tkeys
+  keywords(ikey) = ""
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SearchProceduresBack
 
 !----------------------------------------------------------------------------
 !                                                             Include Error

@@ -18,6 +18,7 @@
 SUBMODULE(FortranModuleFile_Class) ReadMarkdownDataMethods
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: fileopt => TypeFileOpt
 USE Display_Method, ONLY: Display
 USE GlobalData, ONLY: CHAR_LF
 USE GlobalData, ONLY: CHAR_SPACE
@@ -41,7 +42,7 @@ CHARACTER(*), PARAMETER :: commentString = "!", &
 
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: iostat, linelen, numLineRead0
-CHARACTER(1024) :: fixstr
+CHARACTER(fileopt%fortranLineLen) :: fixstr
 TYPE(String) :: aline, frontmatter, content
 
 #ifdef DEBUG_VER

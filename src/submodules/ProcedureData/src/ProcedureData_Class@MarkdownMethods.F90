@@ -15,17 +15,27 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(FortranModuleFile_Class) MarkdownMethods
+SUBMODULE(ProcedureData_Class) MarkdownMethods
 USE ExceptionHandler_Class, ONLY: e
-USE MarkdownFile_Class, ONLY: MarkdownFile_
+USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: fileopt => TypeFileOpt
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE GlobalData, ONLY: CHAR_LF
+USE GlobalData, ONLY: CHAR_SPACE
+USE InputUtility, ONLY: Input
+USE MarkdownFile_Class, ONLY: MarkdownFile_
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = __FILE__
+#endif
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                       GenerateMarkdownDocs
+!                                                        GenerateMarkdownDocs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GenerateMarkdownDocs
@@ -34,10 +44,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_GenerateMarkdownDocs()"
 #endif
 
 TYPE(MarkdownFile_) :: md
-TYPE(UserTypeData_), POINTER :: usertype
-TYPE(ProcedureData_), POINTER :: proc
 TYPE(String) :: filename, aline
-INTEGER(I4B) :: iostat, linelen, ii, tsize
+INTEGER(I4B) :: iostat, linelen
 CHARACTER(fileopt%maxStrLen) :: iomsg
 LOGICAL(LGT) :: isok
 
@@ -46,10 +54,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-! Create a directory named "moduleDir" to keep the markdown files
-
 ! Create an index_.md using md, check md%content, senetize it
-filename = "_index.md"
+filename = obj%name//".md"
 CALL md%Initiate( &
   filename=filename%Chars(), status=fileopt%replace, action=fileopt%WRITE)
 
@@ -63,67 +69,31 @@ linelen = aline%LEN_TRIM()
 isok = linelen .NE. 0
 
 IF (isok) THEN
+  CALL md%WRITE(val=fileopt%space, iostat=iostat, iomsg=iomsg)
   CALL md%WRITE(val=aline, iostat=iostat, iomsg=iomsg)
 
 ELSE
-  linelen = obj%moduleName%LEN_TRIM()
+  linelen = obj%name%LEN_TRIM()
   isok = linelen .NE. 0
 
 #ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    "moduleName is empty")
+  CALL AssertError1(isok, myName, "name is empty")
 #endif
 
-  CALL md%WriteH1(val=obj%moduleDir)
+  CALL md%WriteH1(val=obj%name)
 END IF
 
-! ## Subheading for module used
-linelen = obj%moduleUsed%LEN_TRIM()
-isok = linelen .NE. 0
+! ## Subheading for args
+isok = ALLOCATED(obj%args)
 IF (isok) THEN
-  aline = "Used modules"
+  aline = "Interface"
   CALL md%WriteH2(val=aline)
+
   CALL md%StartCodeFence(lang="fortran")
-  CALL md%WRITE(val=obj%moduleUsed, iostat=iostat, iomsg=iomsg)
+  CALL md%WRITE(val=obj%code, iostat=iostat, iomsg=iomsg)
+  !! check error
   CALL md%EndCodeFence()
 END IF
-
-! ## Subheading for userTypes
-isok = ALLOCATED(obj%userTypes)
-IF (isok) THEN
-  tsize = SIZE(obj%userTypes)
-  aline = "User types"
-  CALL md%WriteH2(val=aline)
-  DO ii = 1, tsize
-    isok = ASSOCIATED(obj%userTypes(ii)%ptr)
-    IF (.NOT. isok) CYCLE
-    usertype => obj%userTypes(ii)%ptr
-    aline = "["//usertype%GetName()//"]("//"./"//usertype%GetName()//")"
-    CALL md%WriteList(val=aline)
-
-    CALL usertype%GenerateMarkdownDocs()
-  END DO
-END IF
-
-! ## Subheading for procs
-isok = ALLOCATED(obj%procs)
-IF (isok) THEN
-  tsize = SIZE(obj%procs)
-  aline = "Procedures"
-  CALL md%WriteH2(val=aline)
-  DO ii = 1, tsize
-    isok = ASSOCIATED(obj%procs(ii)%ptr)
-    IF (.NOT. isok) CYCLE
-    proc => obj%procs(ii)%ptr
-    aline = "["//proc%GetName()//"]("//"./"//proc%GetName()//")"
-    CALL md%WriteList(val=aline)
-
-    CALL proc%GenerateMarkdownDocs()
-  END DO
-END IF
-
-userType => NULL()
-proc => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

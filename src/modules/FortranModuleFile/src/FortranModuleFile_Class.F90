@@ -41,6 +41,9 @@ USE MarkdownData_Class, ONLY: MarkdownData_
 USE UserTypeData_Class, ONLY: UserTypeData_
 USE UserTypeData_Class, ONLY: UserTypeDataPointer_
 USE UserTypeData_Class, ONLY: UserTypeEntry_
+USE ProcedureData_Class, ONLY: ProcedureData_
+USE ProcedureData_Class, ONLY: ProcedureDataPointer_
+USE ProcedureData_Class, ONLY: ProcedureEntry_
 IMPLICIT NONE
 
 PRIVATE
@@ -74,6 +77,8 @@ TYPE, EXTENDS(TxtFile_) :: FortranModuleFile_
   !! lists of use modules used in the module, separated by CHAR_LF
   TYPE(UserTypeDataPointer_), ALLOCATABLE :: userTypes(:)
   !! list of user defined data types in the module
+  TYPE(ProcedureDataPointer_), ALLOCATABLE :: procs(:)
+  !! list of procedure defined in the module
 
 CONTAINS
   PRIVATE
@@ -95,6 +100,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SearchUserTypesBack => &
     obj_SearchUserTypesBack
   !! Search user types in the fortran source files in backward mode
+  PROCEDURE, PUBLIC, PASS(obj) :: SearchProcedures => obj_SearchProcedures
+  !! Search procedures in the fortran source files
+  PROCEDURE, PUBLIC, PASS(obj) :: SearchProceduresBack => &
+    obj_SearchProceduresBack
+  !! Search procedures in the fortran source files in backward mode
   PROCEDURE, PUBLIC, PASS(obj) :: SkipBlankLinesBack => &
     obj_SkipBlankLinesBack
   !! Skip the blanklines and reach to a nonblank line in backward mode
@@ -104,16 +114,6 @@ CONTAINS
   !! Get moduleDir from moduleName
   PROCEDURE, PUBLIC, PASS(obj) :: ReadUseStatements => obj_ReadUseStatements
   !! read use statements in the module file
-  PROCEDURE, PUBLIC, PASS(obj) :: ReadUserTypes => obj_ReadUserTypes
-  !! read user types from the module file
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalUserTypes => obj_GetTotalUserTypes
-  !! get total user types
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFieldsInUserType => &
-    obj_GetTotalFieldsInUserType
-  !! get total fields in the user types
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMethodsInUserType => &
-    obj_GetTotalMethodsInUserType
-  !! get total Methods in user defined datatypes
   PROCEDURE, PUBLIC, PASS(obj) :: ReadFortranLine => obj_ReadFortranLine
   !! Read a fortran line, check if line ends with &,
   !! if true read next line too
@@ -121,14 +121,39 @@ CONTAINS
     obj_ReadDocCommentLine
   !! Read a doc comment, usually starts with !!,
   !! keep on appending the docs until a non docstring is found
-  PROCEDURE, PUBLIC, PASS(obj) :: ReadFieldInUserType => &
-    obj_ReadFieldInUserType
-  !! Read a user type entry within the usertype block
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of fortran module file
   PROCEDURE, PUBLIC, PASS(obj) :: GenerateMarkdownDocs => &
     obj_GenerateMarkdownDocs
   !! Generate Markdown documentation for data stored in fortran module files
+
+  !@UserTypesMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadUserTypes => obj_ReadUserTypes
+  !! read user types from the module file
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFieldsInUserType => &
+    obj_GetTotalFieldsInUserType
+  !! get total fields in the user types
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMethodsInUserType => &
+    obj_GetTotalMethodsInUserType
+  !! get total Methods in user defined datatypes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalUserTypes => obj_GetTotalUserTypes
+  !! get total user types
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadFieldInUserType => &
+    obj_ReadFieldInUserType
+  !! Read a user type entry within the usertype block
+
+  !@ProceduresMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadProcedures => obj_ReadProcedures
+  !! read module procedures from the module file
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalArgsInProcedure => &
+    obj_GetTotalArgsInProcedure
+  !! get total number of arguments in a procedure
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalProcedures => &
+    obj_GetTotalProcedures
+  !! get total number of procedures in a module
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadArgInProcedure => &
+    obj_ReadArgInProcedure
+  !! Read an argument details in the procedure
 END TYPE FortranModuleFile_
 
 !----------------------------------------------------------------------------
@@ -140,6 +165,7 @@ END TYPE FortranModuleFile_
 ! summary: Parse the module source file
 !
 !# Introduction
+!
 ! This method parse the module source file. It reads the source file
 ! and prepare the data structure for FortranModuleFile.
 
@@ -156,6 +182,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-02-02
 ! summary: read module name from the source file
+!
+!# ReadModuleName
+!
+! This method reads the module name from the source file.
 
 INTERFACE
   MODULE SUBROUTINE obj_ReadModuleName(obj, lineLoc, numLineRead, isFound)
@@ -325,6 +355,11 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-02-02
 ! summary: This method searches user types in the fortran module
+!
+!# SearchUserTypes
+!
+! This method searches user types in the fortrain module.
+!
 
 INTERFACE
   MODULE SUBROUTINE obj_SearchUserTypes( &
@@ -383,6 +418,68 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              SearchProcedures@SearchMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-02
+! summary: This method searches procedures in the fortran module
+!
+!# SearchProcedures
+!
+! This method searches procedures in the fortrain module.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SearchProcedures( &
+    obj, aline, lineLoc, numLineRead, isFound, caseType)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! Fortran module file
+    TYPE(String), INTENT(INOUT) :: aline
+    !! the line which contains keyword will ne returned
+    INTEGER(I4B), INTENT(INOUT) :: lineLoc
+    !! location of current line which is being read
+    INTEGER(I4B), INTENT(OUT) :: numLineRead
+    !! Total number of lines read
+    LOGICAL(LGT), INTENT(OUT) :: isFound
+    !! it true when keyword is found
+    INTEGER(I4B), INTENT(OUT) :: caseType
+    !! type of procedures
+  END SUBROUTINE obj_SearchProcedures
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          SearchProceduresBack@SearchMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-02
+! summary: This method searches procedures in the fortran module in back mode
+!
+!# SearchProceduresBack
+!
+! This method searches for procedures in the fortran module in backmode.
+! This means that after calling this method lineLoc will decrease.
+! The numLineRead denotes the number of lines read in backward order.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SearchProceduresBack( &
+    obj, aline, lineLoc, numLineRead, isFound, caseType)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! Fortran module file
+    TYPE(String), INTENT(INOUT) :: aline
+    !! the line which contains keyword will ne returned
+    INTEGER(I4B), INTENT(INOUT) :: lineLoc
+    !! location of current line which is being read
+    INTEGER(I4B), INTENT(OUT) :: numLineRead
+    !! Total number of lines read
+    LOGICAL(LGT), INTENT(OUT) :: isFound
+    !! it true when keyword is found
+    INTEGER(I4B), INTENT(OUT) :: caseType
+    !! type of procedures
+  END SUBROUTINE obj_SearchProceduresBack
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                          SkipBlankLinesBack@SearchMethods
 !----------------------------------------------------------------------------
 
@@ -427,73 +524,6 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: numLineRead
   !! Total number of lines read
   END SUBROUTINE obj_ReadUseStatements
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         ReadUserTypes@ReadUserTypesMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-02
-! summary: read user types from the module files
-
-INTERFACE
-  MODULE SUBROUTINE obj_ReadUserTypes(obj, lineLoc, numLineRead)
-    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
-  !! Fortran module file
-    INTEGER(I4B), INTENT(INOUT) :: lineLoc
-  !! location of current line which is being read
-    INTEGER(I4B), INTENT(OUT) :: numLineRead
-  !! Total number of lines read
-  END SUBROUTINE obj_ReadUserTypes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetTotalUserTypes@UserTypeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-02
-! summary: Get total number of user types
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalUserTypes(obj, lineLoc) RESULT(ans)
-    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
-    !! Fortran module file
-    INTEGER(I4B), INTENT(IN) :: lineLoc
-    !! line location before calling this routine
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalUserTypes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   GetTotalFieldsInUserTypes@UserTypeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-03
-! summary: Get total number of fields in a usertype
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalFieldsInUserType(obj) RESULT(ans)
-    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalFieldsInUserType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 GetTotalMethodsInUserTypes@UserTypeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-03
-! summary: Get total number of Methods in a user defined data types
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalMethodsInUserType(obj) RESULT(ans)
-    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetTotalMethodsInUserType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -563,34 +593,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        ReadFieldInUserType@UserTypeMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-02-03
-! summary: Read field entry in usertype definition block
-!
-!# ReadFieldInUserType
-!
-! This method reads a field declared in the usertype definition.
-
-INTERFACE
-  MODULE SUBROUTINE obj_ReadFieldInUserType(obj, val, lineLoc, numLineRead, &
-                                            isFound)
-    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
-    !! fortran module file object
-    TYPE(UserTypeEntry_), INTENT(INOUT) :: val
-    !! val will be formed by this routine
-    INTEGER(I4B), INTENT(INOUT) :: lineLoc
-    !! location in the line before and after the reading
-    INTEGER(I4B), INTENT(OUT) :: numLineRead
-    !! number of lines read by this routine
-    LOGICAL(LGT), INTENT(OUT) :: isFound
-    !! Set to true if the line is read properly
-  END SUBROUTINE obj_ReadFieldInUserType
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
@@ -630,6 +632,194 @@ INTERFACE
   MODULE SUBROUTINE obj_GenerateMarkdownDocs(obj)
     CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_GenerateMarkdownDocs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         ReadUserTypes@ReadUserTypesMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-02
+! summary: read user types from the module files
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadUserTypes(obj, lineLoc, numLineRead)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+  !! Fortran module file
+    INTEGER(I4B), INTENT(INOUT) :: lineLoc
+  !! location of current line which is being read
+    INTEGER(I4B), INTENT(OUT) :: numLineRead
+  !! Total number of lines read
+  END SUBROUTINE obj_ReadUserTypes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalUserTypes@UserTypesMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-02
+! summary: Get total number of user types
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalUserTypes(obj, lineLoc) RESULT(ans)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! Fortran module file
+    INTEGER(I4B), INTENT(IN) :: lineLoc
+    !! line location before calling this routine
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalUserTypes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 GetTotalFieldsInUserTypes@UserTypesMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-03
+! summary: Get total number of fields in a usertype
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalFieldsInUserType(obj) RESULT(ans)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalFieldsInUserType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 GetTotalMethodsInUserTypes@UserTypesMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-03
+! summary: Get total number of Methods in a user defined data types
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalMethodsInUserType(obj) RESULT(ans)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalMethodsInUserType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                        ReadFieldInUserType@UserTypesMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-03
+! summary: Read field entry in usertype definition block
+!
+!# ReadFieldInUserType
+!
+! This method reads a field declared in the usertype definition.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadFieldInUserType(obj, val, lineLoc, numLineRead, &
+                                            isFound)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! fortran module file object
+    TYPE(UserTypeEntry_), INTENT(INOUT) :: val
+    !! val will be formed by this routine
+    INTEGER(I4B), INTENT(INOUT) :: lineLoc
+    !! location in the line before and after the reading
+    INTEGER(I4B), INTENT(OUT) :: numLineRead
+    !! number of lines read by this routine
+    LOGICAL(LGT), INTENT(OUT) :: isFound
+    !! Set to true if the line is read properly
+  END SUBROUTINE obj_ReadFieldInUserType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       ReadProcedures@ReadProceduresMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-02
+! summary: read procedures from the module file
+!
+!# ReadProcedures
+!
+! This method reads the procedures from a module file.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadProcedures(obj, lineLoc, numLineRead)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! Fortran module file
+    INTEGER(I4B), INTENT(INOUT) :: lineLoc
+    !! location of current line which is being read
+    INTEGER(I4B), INTENT(OUT) :: numLineRead
+    !! Total number of lines read
+  END SUBROUTINE obj_ReadProcedures
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetTotalProcedures@ProceduresMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-02
+! summary: Get total number of procedures defined in the module file
+!
+!# GetTotalProcedures
+!
+! This method returns the total number of procedures in the module file
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalProcedures(obj, lineLoc) RESULT(ans)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! Fortran module file
+    INTEGER(I4B), INTENT(IN) :: lineLoc
+    !! line location before calling this routine
+    INTEGER(I4B) :: ans
+    !! total number of procedures in module
+  END FUNCTION obj_GetTotalProcedures
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                 GetTotalArgsInProcedures@ProceduresMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-03
+! summary: Get total number of Args in the procedure
+!
+!# GetTotalArgsInProcedures
+!
+! This method returns the total number of arguments in the procedure.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalArgsInProcedure(obj) RESULT(ans)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalArgsInProcedure
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       ReadArgInProcedure@ProceduresMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-03
+! summary: Read Arg entry in a procedure block
+!
+!# ReadArgInProcedure
+!
+! This method reads an entry for argument for a procedure.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadArgInProcedure(obj, val, lineLoc, numLineRead, &
+                                           isFound)
+    CLASS(FortranModuleFile_), INTENT(INOUT) :: obj
+    !! fortran module file object
+    TYPE(ProcedureEntry_), INTENT(INOUT) :: val
+    !! val will be formed by this routine
+    INTEGER(I4B), INTENT(INOUT) :: lineLoc
+    !! location in the line before and after the reading
+    INTEGER(I4B), INTENT(OUT) :: numLineRead
+    !! number of lines read by this routine
+    LOGICAL(LGT), INTENT(OUT) :: isFound
+    !! Set to true if the line is read properly
+  END SUBROUTINE obj_ReadArgInProcedure
 END INTERFACE
 
 !----------------------------------------------------------------------------

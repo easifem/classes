@@ -19,13 +19,9 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
     ${PROJECT_NAME}
     PRIVATE
-        ${src_path}/FortranModuleFile_Class@IOMethods.F90
-        ${src_path}/FortranModuleFile_Class@ReadModuleFileMethods.F90
-        ${src_path}/FortranModuleFile_Class@ReadMarkdownDataMethods.F90
-        ${src_path}/FortranModuleFile_Class@SearchMethods.F90
-        ${src_path}/FortranModuleFile_Class@ReadUseStatementsMethods.F90
-        ${src_path}/FortranModuleFile_Class@UserTypesMethods.F90
-        ${src_path}/FortranModuleFile_Class@ProceduresMethods.F90
-        ${src_path}/FortranModuleFile_Class@ReadLineMethods.F90
-        ${src_path}/FortranModuleFile_Class@MarkdownMethods.F90
+        ${src_path}/ProcedureData_Class@IOMethods.F90
+        ${src_path}/ProcedureData_Class@MarkdownMethods.F90
+        ${src_path}/ProcedureData_Class@GetMethods.F90
+        ${src_path}/ProcedureData_Class@SetMethods.F90
+        ${src_path}/ProcedureData_Class@ConstructorMethods.F90
 )

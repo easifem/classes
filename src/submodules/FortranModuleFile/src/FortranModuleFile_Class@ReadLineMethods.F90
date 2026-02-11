@@ -18,6 +18,7 @@
 SUBMODULE(FortranModuleFile_Class) ReadLineMethods
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: fileopt => TypeFileOpt
 USE Display_Method, ONLY: Display
 USE GlobalData, ONLY: CHAR_LF
 USE GlobalData, ONLY: CHAR_SPACE
@@ -38,7 +39,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ReadFortranLine()"
 
 CHARACTER(*), PARAMETER :: commentString = "!", linebreak = "&"
 INTEGER(I4B) :: iostat
-CHARACTER(1024) :: fixstr
+CHARACTER(fileopt%fortranLineLen) :: fixstr
 LOGICAL(LGT) :: isok, inFortranLine
 TYPE(String) :: fmtline
 

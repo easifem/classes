@@ -63,6 +63,10 @@ CALL obj%ReadMarkdownData( &
 
 CALL obj%ReadModuleName(lineLoc=lineLoc, numLineRead=numLineRead, &
                         isFound=isok)
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, &
+                  "module name not found")
+#endif
 
 CALL obj%ReadModuleDir()
 
@@ -70,9 +74,9 @@ CALL obj%ReadUseStatements(lineLoc=lineLoc, numLineRead=numLineRead)
 
 CALL obj%ReadUserTypes(lineLoc=lineLoc, numLineRead=numLineRead)
 
-#ifdef DEBUG_VER
-! CALL obj%Display("debug: ")
+CALL obj%ReadProcedures(lineLoc=lineLoc, numLineRead=numLineRead)
 
+#ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   '[WIP] :: This routine is under development')
 #endif

@@ -18,9 +18,8 @@
 SUBMODULE(FortranModuleFile_Class) ReadUseStatementsMethods
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: fileopt => TypeFileOpt
 USE Display_Method, ONLY: Display
-USE GlobalData, ONLY: CHAR_LF
-USE GlobalData, ONLY: CHAR_SPACE
 USE InputUtility, ONLY: Input
 
 IMPLICIT NONE
@@ -36,34 +35,47 @@ MODULE PROCEDURE obj_ReadUseStatements
 CHARACTER(*), PARAMETER :: myName = "obj_ReadUseStatements()"
 #endif
 
-INTEGER(I4B) :: numLineRead0
-TYPE(String) :: aline
+INTEGER(I4B), PARAMETER :: tkeys = 8
 CHARACTER(*), PARAMETER :: keyword = "USE"
-CHARACTER(*), PARAMETER :: implicitNoneKeyword = "IMPLICIT NONE"
+INTEGER(I4B) :: numLineRead0, ikey
+TYPE(String) :: aline
 LOGICAL(LGT) :: isok, abool
+TYPE(String) :: exitkeywords(tkeys)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+exitkeywords(1) = "IMPLICIT"
+exitkeywords(2) = "PRIVATE"
+exitkeywords(3) = "PUBLIC"
+exitkeywords(4) = "TYPE"
+exitkeywords(5) = "CLASS"
+exitkeywords(6) = "INTEGER"
+exitkeywords(7) = "REAL"
+exitkeywords(8) = "LOGICAL"
+
 numLineRead = 0
 
-DO
+loop1: DO
   CALL obj%SearchKeywordInSourceAtStart( &
     aline=aline, keyword=keyword, lineLoc=lineLoc, &
     numLineRead=numLineRead0, isFound=isok, readSingleLine=math%yes)
 
   numLineRead = numLineRead + numLineRead0
 
-  IF (isok) THEN
-    CALL AppendToModuleUsed(moduleUsed=obj%moduleUsed, aline=aline)
-  ELSE
-    abool = aline%TRIM() .EQ. implicitNoneKeyword
-    IF (abool) EXIT
+  IF (.NOT. isok) THEN
+    loop2: DO ikey = 1, tkeys
+      abool = aline%start_with(exitkeywords(ikey)%Chars())
+      IF (abool) EXIT loop1
+    END DO loop2
   END IF
 
-END DO
+  IF (isok) &
+    CALL AppendToModuleUsed(moduleUsed=obj%moduleUsed, aline=aline)
+
+END DO loop1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -97,13 +109,13 @@ SUBROUTINE AppendToModuleUsed(moduleUsed, aline)
                           '[START] ')
 #endif
 
-  threeParts = aline%Partition(sep=CHAR_SPACE)
+  threeParts = aline%Partition(sep=fileopt%space)
 
   indx = threeParts(3)%COUNT(onlyString)
   isok = indx .EQ. 0
 
   IF (isok) THEN
-    moduleUsed = moduleUsed//CHAR_LF//threeParts(3)%TRIM()
+    moduleUsed = moduleUsed//fileopt%lf//threeParts(3)%TRIM()
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
@@ -113,7 +125,7 @@ SUBROUTINE AppendToModuleUsed(moduleUsed, aline)
 
   astr = threeParts(3)
   threeParts = astr%Partition(sep=onlySep)
-  moduleUsed = moduleUsed//CHAR_LF//threeParts(1)%TRIM()
+  moduleUsed = moduleUsed//fileopt%lf//threeParts(1)%TRIM()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &

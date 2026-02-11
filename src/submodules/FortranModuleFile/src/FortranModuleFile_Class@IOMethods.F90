@@ -64,6 +64,23 @@ IF (isok) THEN
   END DO
 END IF
 
+isok = ALLOCATED(obj%procs)
+CALL Display(isok, "procs ALLOCATED: ", unitNo=unitNo)
+IF (isok) THEN
+  tsize = SIZE(obj%procs)
+  CALL Display(tsize, "size of procs: ", unitNo=unitNo)
+  DO ii = 1, tsize
+    isok = ASSOCIATED(obj%procs(ii)%ptr)
+    CALL Display(isok, "procs("//ToString(ii)//")%ptr ASSOCIATED: ", &
+                 unitNo=unitNo)
+    IF (isok) &
+      CALL obj%procs(ii)%ptr%Display( &
+      msg="procs("//ToString(ii)//")%ptr ASSOCIATED: ", &
+      unitNo=unitNo)
+
+  END DO
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

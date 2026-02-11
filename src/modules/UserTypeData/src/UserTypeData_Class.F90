@@ -33,7 +33,6 @@
 ! from the source files.
 
 MODULE UserTypeData_Class
-USE TxtFile_Class, ONLY: TxtFile_
 USE String_Class, ONLY: String
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE MarkdownData_Class, ONLY: MarkdownData_
