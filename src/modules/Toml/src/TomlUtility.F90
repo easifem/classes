@@ -14,6 +14,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-12
+! summary: module for working with toml files
+!
+!# TomlUtility
+!
+! This module provides utilities for working with TOML files.
+! It uses the `tomlf` package.
+! This module provides following routines:
+! - [GetValue](./GetValue.md): Getting values from a toml table
+! - [GetValue_](./GetValue.md): Gettting values from a toml table
+! without allocation.
 
 MODULE TomlUtility
 USE tomlf, ONLY: toml_table
@@ -41,7 +53,7 @@ PUBLIC :: TomlArrayLength
 ! date: 2025-05-21
 ! summary:  Get the value of scalar Boolean
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Bool( &
     table, key, VALUE, default_value, origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -52,10 +64,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Bool
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Bool
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -66,7 +74,7 @@ END INTERFACE GetValue
 ! date:  2024-08-02
 ! summary:  GetValue of String
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_String( &
     table, key, VALUE, default_value, origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -84,10 +92,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     !! If key is found then isFound is set to true
   END SUBROUTINE GetValue_String
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_String
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -98,7 +102,7 @@ END INTERFACE GetValue
 ! date: 2025-05-17
 ! summary:  Get the value of scalar integer
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int8( &
     table, key, VALUE, default_value, origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -109,10 +113,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int8
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int8
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -123,7 +123,7 @@ END INTERFACE GetValue
 ! date: 2025-05-17
 ! summary:  Get the value of scalar integer
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int16(table, key, VALUE, default_value, &
                                    origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -134,10 +134,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int16
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int16
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -148,7 +144,7 @@ END INTERFACE GetValue
 ! date: 2025-05-17
 ! summary:  Get the value of scalar integer
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int32(table, key, VALUE, default_value, &
                                    origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -159,10 +155,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int32
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int32
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -173,7 +165,7 @@ END INTERFACE GetValue
 ! date:  2025-05-17
 ! summary:  Get the value of scalar integer
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int64(table, key, VALUE, default_value, &
                                    origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -184,10 +176,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int64
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int64
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -198,7 +186,7 @@ END INTERFACE GetValue
 ! date:  2025-05-17
 ! summary:  Get the value of scalar real
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real32(table, key, VALUE, default_value, &
                                     origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -209,10 +197,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Real32
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Real32
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -223,7 +207,7 @@ END INTERFACE GetValue
 ! date: 2025-05-17
 ! summary:  Get the value of scalar real
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real64(table, key, VALUE, default_value, &
                                     origin, stat, isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -234,10 +218,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Real64
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Real64
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -248,7 +228,7 @@ END INTERFACE GetValue
 ! date:  2025-05-29
 ! summary:  GetValue Integer Vectors
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Bool_r1(table, key, VALUE, origin, stat, &
                                      isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -260,10 +240,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
     !! It is true if the value is a scalar
   END SUBROUTINE GetValue_Bool_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Bool_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -274,7 +250,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the value of vector of Bool without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Bool_r1_static(table, key, VALUE, tsize, &
                                             origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -286,10 +262,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Bool_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Bool_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -349,7 +321,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  GetValue of vector of Strings
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_String_r1(table, key, VALUE, origin, stat, &
                                        isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -360,10 +332,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_String_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_String_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -374,7 +342,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the value of vector of Strings without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_String_r1_static(table, key, VALUE, tsize, &
                                               origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -386,10 +354,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_String_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_String_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -400,7 +364,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int8_r1(table, key, VALUE, origin, stat, &
                                      isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -411,10 +375,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int8_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int8_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -425,7 +385,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the value of scalar integer without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int8_r1_static(table, key, VALUE, tsize, &
                                             origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -437,10 +397,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int8_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int8_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -451,7 +407,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int16_r1(table, key, VALUE, origin, stat, &
                                       isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -462,10 +418,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int16_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int16_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -476,7 +428,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the value of scalar integer without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int16_r1_static(table, key, VALUE, &
                                        tsize, origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -488,10 +440,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int16_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int16_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -502,7 +450,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int32_r1(table, key, VALUE, origin, stat, &
                                       isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -513,10 +461,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int32_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int32_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -527,7 +471,7 @@ END INTERFACE GetValue
 ! date:   2023-11-15
 ! summary:  Get the value of scalar integer without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int32_r1_static(table, key, VALUE, tsize, &
                                              origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -539,10 +483,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int32_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int32_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -553,7 +493,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int64_r1(table, key, VALUE, origin, stat, &
                                       isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -564,10 +504,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int64_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int64_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -578,7 +514,7 @@ END INTERFACE GetValue
 ! date: 2024-08-02
 ! summary:  Get Value without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int64_r1_static(table, key, VALUE, tsize, &
                                              origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -590,10 +526,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Int64_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int64_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -604,7 +536,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get the real vectors
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real32_r1(table, key, VALUE, origin, stat, &
                                        isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -615,10 +547,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Real32_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Real32_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -629,7 +557,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the real vectors without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Real32_r1_static(table, key, VALUE, tsize, &
                                               origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -641,10 +569,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Real32_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Real32_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -655,7 +579,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get the real vectors
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real64_r1(table, key, VALUE, origin, stat, &
                                        isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -666,10 +590,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Real64_r1
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Real64_r1
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -680,7 +600,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the real vectors without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Real64_r1_static(table, key, VALUE, tsize, &
                                               origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -692,10 +612,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
   END SUBROUTINE GetValue_Real64_r1_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Real64_r1_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -706,7 +622,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get values for integer matrix
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int8_r2(table, key, VALUE, origin, stat, &
                                      isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -716,10 +632,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int8_r2
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int8_r2
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -730,7 +642,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the values of integer matrix without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int8_r2_static(table, key, VALUE, origin, stat, &
                                             isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -741,10 +653,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int8_r2_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int8_r2_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -755,7 +663,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get value of integer matrix
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int16_r2(table, key, VALUE, origin, stat, &
                                       isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -765,10 +673,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int16_r2
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int16_r2
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -779,7 +683,7 @@ END INTERFACE GetValue
 ! date:  2023-11-15
 ! summary:  Get the values of integer matrix without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int16_r2_static(table, key, VALUE, origin, &
                                              stat, isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -790,10 +694,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int16_r2_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int16_r2_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -804,7 +704,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get values of integer matrix
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int32_r2(table, key, VALUE, origin, stat, &
                                       isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -814,10 +714,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int32_r2
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int32_r2
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -828,7 +724,7 @@ END INTERFACE GetValue
 ! date:  2023-11-15
 ! summary:  Get the values of integer matrix without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int32_r2_static(table, key, VALUE, origin, &
                                              stat, isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -839,10 +735,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int32_r2_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int32_r2_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -853,7 +745,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get values of integer matrix
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int64_r2(table, key, VALUE, origin, stat, &
                                       isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -863,10 +755,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int64_r2
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Int64_r2
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -877,7 +765,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the values of integer matrix without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int64_r2_static(table, key, VALUE, origin, &
                                              stat, isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -888,10 +776,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Int64_r2_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Int64_r2_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -902,7 +786,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get values of a real matrix
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real32_r2(table, key, VALUE, origin, stat, &
                                        isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -912,10 +796,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Real32_r2
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Real32_r2
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -926,7 +806,7 @@ END INTERFACE GetValue
 ! date:  2023-11-15
 ! summary:  Get the values of real matrix without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Real32_r2_static(table, key, VALUE, origin, &
                                               stat, isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -937,10 +817,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Real32_r2_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Real32_r2_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -951,7 +827,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get values of a real matrix
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real64_r2(table, key, VALUE, origin, stat, &
                                        isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -961,10 +837,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Real64_r2
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_Real64_r2
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -975,7 +847,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the values of real matrix without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Real64_r2_static(table, key, VALUE, origin, &
                                               stat, isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -986,10 +858,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_Real64_r2_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_Real64_r2_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -1000,7 +868,7 @@ END INTERFACE GetValue_
 ! date:  2023-11-15
 ! summary:  Get values of a real matrix
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_String_r2(table, key, VALUE, origin, stat, &
                                        isFound)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -1010,10 +878,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_String_r2
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_String_r2
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -1024,7 +888,7 @@ END INTERFACE GetValue
 ! date: 2023-11-15
 ! summary:  Get the values of real matrix without allocation
 
-INTERFACE
+INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_String_r2_static(table, key, VALUE, origin, &
                                               stat, isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
@@ -1035,10 +899,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_String_r2_static
-END INTERFACE
-
-INTERFACE GetValue_
-  MODULE PROCEDURE GetValue_String_r2_static
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
@@ -1079,16 +939,12 @@ END INTERFACE
 ! date:  2023-11-08
 ! summary:  Initiate table from toml file
 
-INTERFACE
+INTERFACE GetValue
   MODULE SUBROUTINE GetValue_from_file_master(table, afile, filename)
     TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
   END SUBROUTINE GetValue_from_file_master
-END INTERFACE
-
-INTERFACE GetValue
-  MODULE PROCEDURE GetValue_from_file_master
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
@@ -1099,7 +955,7 @@ END INTERFACE GetValue
 ! date:  2023-11-08
 ! summary:  Get the length of the toml array
 
-INTERFACE
+INTERFACE TomlArrayLength
   MODULE FUNCTION ArrayLength(table, key, origin, stat) RESULT(ans)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
@@ -1107,10 +963,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
   END FUNCTION ArrayLength
-END INTERFACE
-
-INTERFACE TomlArrayLength
-  MODULE PROCEDURE ArrayLength
 END INTERFACE TomlArrayLength
 
 !----------------------------------------------------------------------------

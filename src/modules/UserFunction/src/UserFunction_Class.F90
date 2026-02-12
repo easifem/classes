@@ -14,6 +14,21 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-12
+! summary: A module to handle the user defined functions
+!
+!# UserFunction
+!
+! This module defines `UserFunction_` class to handle user defined functions
+!  in Fortran. User defied function can define following functions:
+!
+! - Scalar valued
+! - Vector valued
+! - Matrix valued
+!
+! All these funnctions can be constant, space, time or space-time dependent.
+
 MODULE UserFunction_Class
 USE GlobalData, ONLY: DFP, LGT, I4B
 USE BaseType, ONLY: FEVariable_
@@ -29,8 +44,8 @@ USE BaseType, ONLY: funcopt => TypeUserFunctionOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE EquationParser_Class, ONLY: EquationParser_
 USE EquationParser_Class, ONLY: EquationParserPointer_
-
 IMPLICIT NONE
+
 PRIVATE
 
 #ifdef DEBUG_VER
@@ -106,7 +121,8 @@ TYPE :: UserFunction_
   TYPE(EquationParser_) :: scalarEqParser
   !! Equation parser for scalar function
 
-  TYPE(EquationParserPointer_) :: vectorEqParser(funcopt%vectorFuncNumReturns)
+  TYPE(EquationParserPointer_) :: &
+    vectorEqParser(funcopt%vectorFuncNumReturns)
   !! Equation parser for vector function
 
   TYPE(EquationParserPointer_) :: matrixEqParser( &
@@ -114,14 +130,14 @@ TYPE :: UserFunction_
                                   funcopt%matrixFuncNumReturns)
   !! equation parser for matrix function
 
-  PROCEDURE(InterfaceScalarSubroutine), POINTER, NOPASS :: scalarFunction => &
-    NULL()
+  PROCEDURE(InterfaceScalarSubroutine), POINTER, NOPASS :: &
+    scalarFunction => NULL()
   !! Scalar function pointer
-  PROCEDURE(InterfaceVectorSubroutine), POINTER, NOPASS :: vectorFunction => &
-    NULL()
+  PROCEDURE(InterfaceVectorSubroutine), POINTER, NOPASS :: &
+    vectorFunction => NULL()
   !! vector function pointer
-  PROCEDURE(InterfaceMatrixSubroutine), POINTER, NOPASS :: matrixFunction => &
-    NULL()
+  PROCEDURE(InterfaceMatrixSubroutine), POINTER, NOPASS :: &
+    matrixFunction => NULL()
   !! matrix function pointer
 
 CONTAINS
