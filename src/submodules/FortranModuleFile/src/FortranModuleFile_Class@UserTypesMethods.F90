@@ -50,39 +50,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = obj%GetTotalUserTypes(lineLoc=lineLoc)
-
 numLineRead = 0
 
+tsize = obj%GetTotalUserTypes(lineLoc=lineLoc)
 ALLOCATE (obj%userTypes(tsize))
 
 DO itype = 1, tsize
-
   CALL obj%SearchUserTypes( &
     aline=aline, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok, &
     caseType=caseType)
-
   numLineRead = numLineRead + numLineRead0
 
   IF (.NOT. isok) EXIT
 
   ALLOCATE (atype)
 
-  CALL atype%SetHeaderLine(aline)
-
-  CALL UserTypeDataSetIsAbstract(atype, caseType)
-  CALL UserTypeDataSetIsChild(atype, caseType)
-  CALL UserTypeDataSetName(obj=atype, aline=aline)
+  CALL atype%ParseLine1(aline)
   CALL UserTypeDataSetMd(obj=obj, val=atype, lineLoc=lineLoc)
 
   !! make fields
   tfields = obj%GetTotalFieldsInUserType()
   CALL atype%AllocateFields(tfields)
-
   DO ifield = 1, tfields
     ALLOCATE (afield)
     CALL obj%ReadFieldInUserType( &
       val=afield, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok)
+    numLineRead = numLineRead + numLineRead0
 
     CALL atype%SetFieldPointer(indx=ifield, val=afield)
   END DO
@@ -90,14 +83,24 @@ DO itype = 1, tsize
   !! make methods
   tfields = obj%GetTotalMethodsInUserType()
   CALL atype%AllocateMethods(tfields)
-
   DO ifield = 1, tfields
     ALLOCATE (afield)
     CALL obj%ReadFieldInUserType( &
       val=afield, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok)
+    numLineRead = numLineRead + numLineRead0
 
     CALL atype%SetMethodPointer(indx=ifield, val=afield)
   END DO
+
+  ! Read END INTERFACE
+  CALL obj%ReadFortranLine( &
+    aline=aline, numLineRead=numLineRead0, lineLoc=lineLoc, isFound=isok, &
+    readSingleLine=math%no)
+  numLineRead = numLineRead + numLineRead0
+  ! check error
+  IF (.NOT. isok) EXIT
+  ! send the line to procedure for parsing
+  CALL atype%ParseLine2(aline)
 
   obj%userTypes(itype)%ptr => atype
 
@@ -132,9 +135,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 keywords(1) = "TYPE("
 keywords(2) = "CLASS("
-keywords(3) = "INTEGER("
-keywords(4) = "REAL("
-keywords(5) = "LOGICAL("
+keywords(3) = "INTEGER"
+keywords(4) = "REAL"
+keywords(5) = "LOGICAL"
 keywords(6) = "CHARACTER("
 keywords(7) = "PROCEDURE("
 
@@ -198,7 +201,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMethodsInUserType()"
 #endif
 
 CHARACTER(*), PARAMETER :: commentString = "!"
-INTEGER(I4B), PARAMETER :: tkeys = 1, texitkeys = 1
+INTEGER(I4B), PARAMETER :: tkeys = 2, texitkeys = 1
 TYPE(String) :: aline, keywords(tkeys), exitkeywords(texitkeys)
 INTEGER(I4B) :: numLineRead, ikey, lineLoc, numLineRead0, &
                 iline
@@ -210,6 +213,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 keywords(1) = "PROCEDURE"
+keywords(2) = "GENERIC"
+
 exitkeywords(1) = "END TYPE"
 
 numLineRead = 0
@@ -230,7 +235,7 @@ loop1: DO
 
   ! Check the keywords
   loop2: DO ikey = 1, tkeys
-    keyfound = aline%start_with(prefix=keywords(ikey)%chars())
+    keyfound = aline%start_with(prefix=keywords(ikey)%Chars())
     IF (keyfound) THEN
       ans = ans + 1
       EXIT loop2
@@ -242,7 +247,7 @@ loop1: DO
 
   ! Check exit keywords
   loop3: DO ikey = 1, texitkeys
-    exitkeyfound = aline%start_with(prefix=exitkeywords(ikey)%chars())
+    exitkeyfound = aline%start_with(prefix=exitkeywords(ikey)%Chars())
     IF (exitkeyfound) EXIT loop1
   END DO loop3
 
@@ -258,8 +263,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetTotalMethodsInUserType
-
-!----------------------------------------------------------------------------
 
 !----------------------------------------------------------------------------
 !                                                          GetTotalUserTypes
@@ -326,7 +329,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalUserTypes
 
 !----------------------------------------------------------------------------
-!                                                       ReadFieldInUserType
+!                                                        ReadFieldInUserType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ReadFieldInUserType
@@ -334,22 +337,39 @@ MODULE PROCEDURE obj_ReadFieldInUserType
 CHARACTER(*), PARAMETER :: myName = "obj_ReadFieldInUserType()"
 #endif
 
-TYPE(String) :: aline
-INTEGER(I4B) :: numLineRead0
 CHARACTER(*), PARAMETER :: docString = "!!"
+INTEGER(I4B), PARAMETER :: tskips = 3
+TYPE(String) :: aline
+INTEGER(I4B) :: numLineRead0, ikey
+LOGICAL(LGT) :: isskip
+TYPE(String) :: skipKeywords(tskips)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+skipKeywords(1) = "PUBLIC"
+skipKeywords(2) = "PRIVATE"
+skipKeywords(3) = "CONTAINS"
+
 numLineRead = 0
 
-CALL obj%ReadFortranLine( &
-  aline=aline, lineLoc=lineLoc, numLineRead=numLineRead0, &
-  isFound=isFound, readSingleLine=math%no)
+loop1: DO
+  CALL obj%ReadFortranLine( &
+    aline=aline, lineLoc=lineLoc, numLineRead=numLineRead0, &
+    isFound=isFound, readSingleLine=math%no)
+  numLineRead = numLineRead + numLineRead0
 
-numLineRead = numLineRead + numLineRead0
+  IF (.NOT. isFound) EXIT loop1
+
+  loop2: DO ikey = 1, tskips
+    isskip = aline%start_with(skipKeywords(ikey)%Chars())
+    IF (isskip) EXIT loop2
+  END DO loop2
+
+  IF (.NOT. isskip) EXIT loop1
+END DO loop1
 
 ! exit if not found, if isFound is false, with above option,
 ! it means that there is fortran source code found
@@ -378,91 +398,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_ReadFieldInUserType
-
-!----------------------------------------------------------------------------
-!                                                         UserTypeSetIsChild
-!----------------------------------------------------------------------------
-
-SUBROUTINE UserTypeDataSetIsChild(obj, caseType)
-  TYPE(UserTypeData_), INTENT(INOUT) :: obj
-  INTEGER(I4B), INTENT(IN) :: caseType
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "UserTypeDataSetIsChild()"
-#endif
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL obj%SetIsChild(math%no)
-  isok = caseType .EQ. math%two_i
-  IF (isok) CALL obj%SetIsChild(math%yes)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END SUBROUTINE UserTypeDataSetIsChild
-
-!----------------------------------------------------------------------------
-!                                                  UserTypeDataSetIsAbstract
-!----------------------------------------------------------------------------
-
-SUBROUTINE UserTypeDataSetIsAbstract(obj, caseType)
-  TYPE(UserTypeData_), INTENT(INOUT) :: obj
-  INTEGER(I4B), INTENT(IN) :: caseType
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "UserTypeDataSetIsAbstract()"
-#endif
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL obj%SetIsAbstract(math%no)
-
-  isok = caseType .EQ. math%three_i
-  IF (isok) CALL obj%SetIsAbstract(math%yes)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END SUBROUTINE UserTypeDataSetIsAbstract
-
-!----------------------------------------------------------------------------
-!                                                       UserTypeDataSetName
-!----------------------------------------------------------------------------
-
-SUBROUTINE UserTypeDataSetName(obj, aline)
-  TYPE(UserTypeData_), INTENT(INOUT) :: obj
-  TYPE(String), INTENT(INOUT) :: aline
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "UserTypeDataSetName()"
-#endif
-  TYPE(String) :: threeParts(3)
-  CHARACTER(*), PARAMETER :: sep = "::"
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  threeParts = aline%Partition(sep=sep)
-  CALL obj%SetName(threeParts(3))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END SUBROUTINE UserTypeDataSetName
 
 !----------------------------------------------------------------------------
 !                                                         ReadUserTypePredoc

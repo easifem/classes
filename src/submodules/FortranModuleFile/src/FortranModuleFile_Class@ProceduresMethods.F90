@@ -74,15 +74,9 @@ DO itype = 1, tsize
   CALL atype%ParseLine1(aline)
 
   ! the following will read the fortran line just after interface line
-  ! This can start with
-  ! MODULE SUBROUTINE
-  ! MODULE FUNCTION
-  ! MODULE PROCEDURE
-  ! SUBROUTINE <- for ABSTRACT INTERFACE
-  ! FUNCTION <- for ABSTRACT INTERFACE
-  CALL obj%ReadFortranLine(aline=aline, numLineRead=numLineRead0, &
-                           lineLoc=lineLoc, isFound=isok, &
-                           readSingleLine=math%no)
+  CALL obj%ReadFortranLine( &
+    aline=aline, numLineRead=numLineRead0, lineLoc=lineLoc, isFound=isok, &
+    readSingleLine=math%no)
   numLineRead = numLineRead + numLineRead0
 
   ! check error
@@ -109,6 +103,7 @@ DO itype = 1, tsize
     ALLOCATE (afield)
     CALL obj%ReadArgInProcedure( &
       val=afield, lineLoc=lineLoc, numLineRead=numLineRead0, isFound=isok)
+    numLineRead = numLineRead + numLineRead0
 
     CALL atype%SetArgPointer(indx=ifield, val=afield)
   END DO
@@ -124,9 +119,9 @@ DO itype = 1, tsize
   CALL atype%ParseLine3(aline)
 
   ! Read END INTERFACE
-  CALL obj%ReadFortranLine(aline=aline, numLineRead=numLineRead0, &
-                           lineLoc=lineLoc, isFound=isok, &
-                           readSingleLine=math%no)
+  CALL obj%ReadFortranLine( &
+    aline=aline, numLineRead=numLineRead0, lineLoc=lineLoc, isFound=isok, &
+    readSingleLine=math%no)
   numLineRead = numLineRead + numLineRead0
   ! check error
   IF (.NOT. isok) EXIT

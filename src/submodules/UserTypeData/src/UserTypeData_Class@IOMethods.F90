@@ -69,6 +69,25 @@ IF (isok) THEN
   END DO
 END IF
 
+isok = ALLOCATED(obj%methods)
+CALL Display(isok, "methods ALLOCATED: ", unitNo=unitNo)
+IF (isok) THEN
+  tsize = SIZE(obj%methods)
+  CALL Display(tsize, "SIZE(obj%methods): ", unitNo=unitNo)
+
+  DO ii = 1, tsize
+    isok = ASSOCIATED(obj%methods(ii)%ptr)
+    CALL Display(isok, "obj%methods("//ToString(ii)//")%ptr ASSOCIATED: ", &
+                 unitNo=unitNo)
+
+    IF (isok) CALL UserTypeEntry_Display( &
+      obj=obj%methods(ii)%ptr, &
+      msg="obj%methods("//ToString(ii)//")%ptr: ", &
+      unitNo=unitNo)
+
+  END DO
+END IF
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

@@ -106,6 +106,8 @@ TYPE :: UserTypeData_
   TYPE(String) :: headerLine
   !! type definition declaration line.
   !! for example "type :: UserTypeData_"
+  TYPE(String) :: code
+  !! contains code related to the UserType
   TYPE(String) :: name
   !! name of user defined datatype
   !! for example "UserTypeData_"
@@ -143,6 +145,10 @@ CONTAINS
   !! allocate the fields
   PROCEDURE, PUBLIC, PASS(obj) :: AllocateMethods => obj_AllocateMethods
   !! allocate the Methods
+  PROCEDURE, PUBLIC, PASS(obj) :: ParseLine1 => obj_ParseLine1
+  !! Read first line of UserType
+  PROCEDURE, PUBLIC, PASS(obj) :: ParseLine2 => obj_ParseLine2
+  !! Read last line of UserType
 END TYPE UserTypeData_
 
 !----------------------------------------------------------------------------
@@ -445,6 +451,74 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: tsize
     !! total number of Methods
   END SUBROUTINE obj_AllocateMethods
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ParseLine1@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-11
+! summary: Parse the first line of UserTypeData
+!
+!# ParseLine1
+!
+! Process the first line of user type. It reads the following
+! lines.
+!
+! - template 1
+!
+!```fortran
+!TYPE :: UserTypeData_
+!```
+!
+! - template 2
+!
+!```fortran
+!TYPE, EXTENDS(ParentClass_) :: ChildClass_
+!```
+!
+! - template 3
+!
+!```fortran
+!TYPE, ABSTRACT :: Class_
+!```
+!
+! - template 4
+!
+!```fortran
+! TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
+!```
+
+INTERFACE
+  MODULE SUBROUTINE obj_ParseLine1(obj, aline)
+    CLASS(UserTypeData_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: aline
+  END SUBROUTINE obj_ParseLine1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ParseLine2@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-11
+! summary: Parse last line of UserType
+!
+!# ParseLine2
+!
+! Process the last line of UserType.
+!
+!```fortran
+!END TYPE Class_
+!```
+!
+
+INTERFACE
+  MODULE SUBROUTINE obj_ParseLine2(obj, aline)
+    CLASS(UserTypeData_), INTENT(INOUT) :: obj
+    TYPE(String), INTENT(IN) :: aline
+  END SUBROUTINE obj_ParseLine2
 END INTERFACE
 
 !----------------------------------------------------------------------------
