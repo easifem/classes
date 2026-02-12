@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -14,64 +15,41 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
-
-SUBMODULE(FortranFile_Class) SetMethods
+SUBMODULE(MarkdownData_Class) IOMethods
+USE Display_Method, ONLY: Display
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 SetStatus
+!                                                                 Display
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetStatus
+MODULE PROCEDURE obj_Display
 #ifdef DEBUG_VER
-CHARACTER(LEN=*), PARAMETER :: myName = 'obj_SetStatus()'
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
-
-TYPE(String) :: new_status
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-new_status = status
-new_status = new_status%upper()
-
-SELECT CASE (new_status%chars())
-CASE (fileopt%old)
-  !!File already exists
-  obj%newstat = math%no
-  obj%overwrite = math%no
-
-CASE (fileopt%new)
-  !!File does not exist and will be created
-  obj%newstat = math%yes
-  obj%overwrite = math%yes
-
-! CASE ('SCRATCH', 'REPLACE', 'UNKNOWN')
-CASE (fileopt%scratch, fileopt%replace, fileopt%unknown)
-  obj%newstat = math%yes
-  obj%overwrite = math%yes
-
-CASE DEFAULT
-
-#ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, &
-                    'value ('//status//') for input argument STATUS!')
-#endif
-END SELECT
+CALL Display(msg, unitNo=unitNo)
+CALL obj%frontmatter%Display("frontmatter: ", unitNo=unitNo)
+CALL obj%content%Display("content: ", unitNo=unitNo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetStatus
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                             Include error
+!                                                             Include errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
 
-END SUBMODULE SetMethods
+END SUBMODULE IOMethods

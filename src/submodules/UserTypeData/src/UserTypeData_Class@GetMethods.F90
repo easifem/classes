@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,30 +14,30 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-!
 
-SUBMODULE(FortranFile_Class) GetMethods
+SUBMODULE(UserTypeData_Class) GetMethods
+USE ExceptionHandler_Class, ONLY: e
+
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = __FILE__
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 getUnitNo
+!                                                                    GetName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetUnitNo
-ans = obj%unitno
-END PROCEDURE obj_GetUnitNo
+MODULE PROCEDURE obj_GetName
+ans = obj%name
+END PROCEDURE obj_GetName
 
 !----------------------------------------------------------------------------
-!                                                                 getRecLen
+!                                                             Include Error
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetRecLen
-ans = obj%reclval
-END PROCEDURE obj_GetRecLen
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods
