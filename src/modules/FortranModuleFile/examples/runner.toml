@@ -1,3 +1,0 @@
-BuildDir = "/tmp/easifem-tests/FortranModuleFile"
-BuildType = "Debug"
-TargetLibs = ["easifemClasses"]
