@@ -46,7 +46,71 @@ PUBLIC :: GetValue_
 PUBLIC :: TomlArrayLength
 
 !----------------------------------------------------------------------------
-!                                                            GetValue@Methods
+!                                                      GetValue@BasicMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate toml table from toml file (This is private method)
+
+INTERFACE
+  MODULE SUBROUTINE GetValue_from_file(table, afile)
+    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
+    TYPE(TxtFile_), INTENT(INOUT) :: afile
+  END SUBROUTINE GetValue_from_file
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetValue@BasicMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate toml table from toml file (This is private method)
+
+INTERFACE
+  MODULE SUBROUTINE GetValue_from_filename(table, filename)
+    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: filename
+  END SUBROUTINE GetValue_from_filename
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetValue@BasicMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate table from toml file
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_from_file_master(table, afile, filename)
+    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+  END SUBROUTINE GetValue_from_file_master
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                      GetValue@BasicMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Get the length of the toml array
+
+INTERFACE TomlArrayLength
+  MODULE FUNCTION ArrayLength(table, key, origin, stat) RESULT(ans)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(I4B) :: ans
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+  END FUNCTION ArrayLength
+END INTERFACE TomlArrayLength
+
+!----------------------------------------------------------------------------
+!                                                 GetValue@BoolScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -67,35 +131,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-02
-! summary:  GetValue of String
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_String( &
-    table, key, VALUE, default_value, origin, stat, isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    !! Toml table
-    CHARACTER(*), INTENT(IN) :: key
-    !! key
-    TYPE(String), INTENT(INOUT) :: VALUE
-    !! value in String
-    CHARACTER(*), INTENT(IN) :: default_value
-    !! default value
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    !! origin, necessary for debugging
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    !! To check the status of getting the value
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-    !! If key is found then isFound is set to true
-  END SUBROUTINE GetValue_String
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                            GetValue@Methods
+!                                                  GetValue@Int8ScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -116,7 +152,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                            GetValue@Methods
+!                                                 GetValue@Int16ScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -137,7 +173,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                 GetValue@Int32ScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -158,7 +194,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Int64ScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -179,7 +215,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                               GetValue@Real32ScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -200,7 +236,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                               GetValue@Real64ScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -221,7 +257,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                 GetValue@BoolVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -243,7 +279,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                            GetValue@BoolStaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -314,50 +350,7 @@ END INTERFACE GetValue_
 ! END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  GetValue of vector of Strings
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_String_r1(table, key, VALUE, origin, stat, &
-                                       isFound, isScalar)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    TYPE(String), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
-  END SUBROUTINE GetValue_String_r1
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                           GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary:  Get the value of vector of Strings without allocation
-
-INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_String_r1_static(table, key, VALUE, tsize, &
-                                              origin, stat, isFound, isScalar)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    TYPE(String), INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
-  END SUBROUTINE GetValue_String_r1_static
-END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                  GetValue@Int8VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -378,7 +371,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                            GetValue@Int8StaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -400,7 +393,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Int16VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -421,7 +414,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                         GetValue@Methods
+!                                          GetValue@Int16StaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -429,8 +422,8 @@ END INTERFACE GetValue
 ! summary:  Get the value of scalar integer without allocation
 
 INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Int16_r1_static(table, key, VALUE, &
-                                       tsize, origin, stat, isFound, isScalar)
+  MODULE SUBROUTINE GetValue_Int16_r1_static( &
+    table, key, VALUE, tsize, origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT16), INTENT(INOUT) :: VALUE(:)
@@ -443,7 +436,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Int32VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -464,7 +457,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                           GetValue@Int32StaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -486,7 +479,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Int64VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -507,7 +500,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                         GetValue@Methods
+!                                           GetValue@Int64StaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -529,7 +522,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                               GetValue@Real32VectorMehtods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -550,7 +543,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                         GetValue@Methods
+!                                         GetValue@Real32StaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -558,8 +551,8 @@ END INTERFACE GetValue
 ! summary:  Get the real vectors without allocation
 
 INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Real32_r1_static(table, key, VALUE, tsize, &
-                                              origin, stat, isFound, isScalar)
+  MODULE SUBROUTINE GetValue_Real32_r1_static( &
+    table, key, VALUE, tsize, origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL32), INTENT(INOUT) :: VALUE(:)
@@ -572,7 +565,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                          GetValue@Methods
+!                                               GetValue@Real64VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -593,7 +586,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                         GetValue@Real64StaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -601,8 +594,8 @@ END INTERFACE GetValue
 ! summary:  Get the real vectors without allocation
 
 INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Real64_r1_static(table, key, VALUE, tsize, &
-                                              origin, stat, isFound, isScalar)
+  MODULE SUBROUTINE GetValue_Real64_r1_static( &
+    table, key, VALUE, tsize, origin, stat, isFound, isScalar)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     REAL(REAL64), INTENT(INOUT) :: VALUE(:)
@@ -615,7 +608,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                  GetValue@Int8MatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -635,7 +628,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!
+!                                           GetValue_@Int8StaticMatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -643,8 +636,8 @@ END INTERFACE GetValue
 ! summary:  Get the values of integer matrix without allocation
 
 INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Int8_r2_static(table, key, VALUE, origin, stat, &
-                                            isFound, nrow, ncol)
+  MODULE SUBROUTINE GetValue_Int8_r2_static( &
+    table, key, VALUE, origin, stat, isFound, nrow, ncol)
     TYPE(toml_table), INTENT(INOUT) :: table
     CHARACTER(*), INTENT(IN) :: key
     INTEGER(INT8), INTENT(INOUT) :: VALUE(:, :)
@@ -656,7 +649,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Int16MatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -676,7 +669,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!
+!                                          GetValue@Int16StaticMatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -697,7 +690,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Int32MatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -717,7 +710,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!
+!                                                GetValue_@Int32StaticMatrix
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -738,7 +731,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                 GetValue@Int64MatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -758,7 +751,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!
+!                                         GetValue_@Int64StaticMatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -779,7 +772,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Real32MatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -799,7 +792,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!
+!                                         GetValue_@Real32StaticMatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -820,7 +813,7 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                                GetValue@Real64MatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -840,7 +833,7 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!
+!                                        GetValue_@Real64StaticMatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -861,12 +854,141 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                           GetValue@Methods
+!                                               GetValue@StringScalarMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-08-02
+! summary:  GetValue of String
+!
+!# GetValue
+!
+! Get value of string scalar from toml file.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_test_1.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_String( &
+    table, key, VALUE, default_value, origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! Toml table
+    CHARACTER(*), INTENT(IN) :: key
+    !! key
+    TYPE(String), INTENT(INOUT) :: VALUE
+    !! value in String
+    CHARACTER(*), INTENT(IN) :: default_value
+    !! default value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    !! origin, necessary for debugging
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    !! To check the status of getting the value
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    !! If key is found then isFound is set to true
+  END SUBROUTINE GetValue_String
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                               GetValue@StringVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
-! summary:  Get values of a real matrix
+! summary:  GetValue of vector of Strings
+!
+!# GetValue
+!
+! Get a value of string vector from the toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r1_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r1_test_2.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_String_r1(table, key, VALUE, origin, stat, &
+                                       isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    TYPE(String), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+  END SUBROUTINE GetValue_String_r1
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                          GetValue@StringStaticVectorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the value of vector of Strings without allocation
+!
+!# GetValue_
+!
+! Get the value of string vector without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r1_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r1_static_test_2.F90" %}}
+!```
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_String_r1_static( &
+    table, key, VALUE, tsize, origin, stat, isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    TYPE(String), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+  END SUBROUTINE GetValue_String_r1_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                GetValue@StringMatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get values of a matrix of Strings
+!
+!# GetValue
+!
+! Get values of a matrix of Strings.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r2_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r2_test_2.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_String_r2(table, key, VALUE, origin, stat, &
@@ -881,12 +1003,28 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!
+!                                        GetValue_@StringStaticMatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-15
-! summary:  Get the values of real matrix without allocation
+! summary:  Get the values of matrix of strings without allocation
+!
+!# GetValue_
+!
+! Get the values of matrix of strings without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r2_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_String_r2_static_test_2.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_String_r2_static(table, key, VALUE, origin, &
@@ -900,70 +1038,6 @@ INTERFACE GetValue_
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_String_r2_static
 END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
-!                                                        GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate toml table from toml file (This is private method)
-
-INTERFACE
-  MODULE SUBROUTINE GetValue_from_file(table, afile)
-    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
-    TYPE(TxtFile_), INTENT(INOUT) :: afile
-  END SUBROUTINE GetValue_from_file
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate toml table from toml file (This is private method)
-
-INTERFACE
-  MODULE SUBROUTINE GetValue_from_filename(table, filename)
-    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: filename
-  END SUBROUTINE GetValue_from_filename
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate table from toml file
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_from_file_master(table, afile, filename)
-    TYPE(toml_table), ALLOCATABLE, INTENT(INOUT) :: table
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-  END SUBROUTINE GetValue_from_file_master
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                        GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Get the length of the toml array
-
-INTERFACE TomlArrayLength
-  MODULE FUNCTION ArrayLength(table, key, origin, stat) RESULT(ans)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(I4B) :: ans
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-  END FUNCTION ArrayLength
-END INTERFACE TomlArrayLength
 
 !----------------------------------------------------------------------------
 !
