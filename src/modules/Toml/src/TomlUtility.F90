@@ -110,33 +110,22 @@ INTERFACE TomlArrayLength
 END INTERFACE TomlArrayLength
 
 !----------------------------------------------------------------------------
-!                                                 GetValue@BoolScalarMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-05-21
-! summary:  Get the value of scalar Boolean
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Bool( &
-    table, key, VALUE, default_value, origin, stat, isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    LOGICAL(LGT), INTENT(INOUT) :: VALUE
-    LOGICAL(LGT), INTENT(IN) :: default_value
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Bool
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                  GetValue@Int8ScalarMethods
+!                                                 GetValue@Int8ScalarMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-05-17
 ! summary:  Get the value of scalar integer
+!
+!# GetValue
+!
+! Get the value of scalar integer from toml file.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_test_1.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int8( &
@@ -152,210 +141,46 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                                 GetValue@Int16ScalarMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-05-17
-! summary:  Get the value of scalar integer
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Int16(table, key, VALUE, default_value, &
-                                   origin, stat, isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT16), INTENT(INOUT) :: VALUE
-    INTEGER(INT16), INTENT(IN) :: default_value
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int16
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                 GetValue@Int32ScalarMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-05-17
-! summary:  Get the value of scalar integer
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Int32(table, key, VALUE, default_value, &
-                                   origin, stat, isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT32), INTENT(INOUT) :: VALUE
-    INTEGER(INT32), INTENT(IN) :: default_value
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int32
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                GetValue@Int64ScalarMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2025-05-17
-! summary:  Get the value of scalar integer
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Int64(table, key, VALUE, default_value, &
-                                   origin, stat, isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT64), INTENT(INOUT) :: VALUE
-    INTEGER(INT64), INTENT(IN) :: default_value
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int64
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                               GetValue@Real32ScalarMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2025-05-17
-! summary:  Get the value of scalar real
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Real32(table, key, VALUE, default_value, &
-                                    origin, stat, isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    REAL(REAL32), INTENT(INOUT) :: VALUE
-    REAL(REAL32), INTENT(IN) :: default_value
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Real32
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                               GetValue@Real64ScalarMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-05-17
-! summary:  Get the value of scalar real
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Real64(table, key, VALUE, default_value, &
-                                    origin, stat, isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    REAL(REAL64), INTENT(INOUT) :: VALUE
-    REAL(REAL64), INTENT(IN) :: default_value
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Real64
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                 GetValue@BoolVectorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2025-05-29
-! summary:  GetValue Integer Vectors
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Bool_r1(table, key, VALUE, origin, stat, &
-                                     isFound, isScalar)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
-    !! It is true if the value is a scalar
-  END SUBROUTINE GetValue_Bool_r1
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                            GetValue@BoolStaticVectorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary:  Get the value of vector of Bool without allocation
-
-INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Bool_r1_static(table, key, VALUE, tsize, &
-                                            origin, stat, isFound, isScalar)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    LOGICAL(LGT), INTENT(INOUT) :: VALUE(:)
-    INTEGER(I4B), INTENT(OUT) :: tsize
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
-  END SUBROUTINE GetValue_Bool_r1_static
-END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
-!                                                           GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2025-05-29
-! summary:  GetValue Integer Vectors
-
-! INTERFACE
-!   MODULE SUBROUTINE GetValue_Bool_r2(table, key, VALUE, origin, stat, &
-!                                      isFound)
-!     TYPE(toml_table), INTENT(INOUT) :: table
-!     CHARACTER(*), INTENT(IN) :: key
-!     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-!     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-!   END SUBROUTINE GetValue_Bool_r2
-! END INTERFACE
-
-! INTERFACE GetValue
-!   MODULE PROCEDURE GetValue_Bool_r2
-! END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                           GetValue@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary:  Get the value of vector of Bool without allocation
-
-! INTERFACE
-!   MODULE SUBROUTINE GetValue_Bool_r2_static(table, key, VALUE, nrow, ncol, &
-!                                             origin, stat, isFound)
-!     TYPE(toml_table), INTENT(INOUT) :: table
-!     CHARACTER(*), INTENT(IN) :: key
-!     LOGICAL(LGT), INTENT(INOUT) :: VALUE(:, :)
-!     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-!     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-!   END SUBROUTINE GetValue_Bool_r2_static
-! END INTERFACE
-
-! INTERFACE GetValue_
-!   MODULE PROCEDURE GetValue_Bool_r2_static
-! END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
 !                                                  GetValue@Int8VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
+!
+!# GetValue
+!
+! Get the value of integer vector from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_5.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int8_r1(table, key, VALUE, origin, stat, &
@@ -377,6 +202,40 @@ END INTERFACE GetValue
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-15
 ! summary:  Get the value of scalar integer without allocation
+!
+!# GetValue_
+!
+! Get the value of integer vector from toml file without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_5.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int8_r1_static(table, key, VALUE, tsize, &
@@ -393,12 +252,186 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
+!                                                  GetValue@Int8MatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get values for integer matrix
+!
+!# GetValue
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_5.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Int8_r2(table, key, VALUE, origin, stat, &
+                                     isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int8_r2
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                           GetValue_@Int8StaticMatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the values of integer matrix without allocation
+!
+!# GetValue_
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_5.F90" %}}
+!```
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_Int8_r2_static( &
+    table, key, VALUE, origin, stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT8), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int8_r2_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                 GetValue@Int16ScalarMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-17
+! summary:  Get the value of scalar integer
+!
+!# GetValue
+!
+! Get the value of scalar integer from toml file.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_test_1.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Int16(table, key, VALUE, default_value, &
+                                   origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT16), INTENT(INOUT) :: VALUE
+    INTEGER(INT16), INTENT(IN) :: default_value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int16
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
 !                                                GetValue@Int16VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
+!
+!# GetValue
+!
+! Get the value of integer vector from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_5.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int16_r1(table, key, VALUE, origin, stat, &
@@ -420,6 +453,40 @@ END INTERFACE GetValue
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-15
 ! summary:  Get the value of scalar integer without allocation
+!
+!# GetValue_
+!
+! Get the value of integer vector from toml file without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_5.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int16_r1_static( &
@@ -436,12 +503,185 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
+!                                                GetValue@Int16MatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get value of integer matrix
+!
+!# GetValue
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_5.F90" %}}
+!```
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Int16_r2(table, key, VALUE, origin, stat, &
+                                      isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT16), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int16_r2
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                          GetValue@Int16StaticMatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get the values of integer matrix without allocation
+!
+!# GetValue
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_5.F90" %}}
+!```
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_Int16_r2_static(table, key, VALUE, origin, &
+                                             stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT16), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int16_r2_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                 GetValue@Int32ScalarMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-17
+! summary:  Get the value of scalar integer
+!
+!# GetValue
+!
+! Get the value of scalar integer from toml file.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_test_1.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Int32(table, key, VALUE, default_value, &
+                                   origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT32), INTENT(INOUT) :: VALUE
+    INTEGER(INT32), INTENT(IN) :: default_value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int32
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
 !                                                GetValue@Int32VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
+!
+!# GetValue
+!
+! Get the value of integer vector from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_5.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int32_r1(table, key, VALUE, origin, stat, &
@@ -461,8 +701,42 @@ END INTERFACE GetValue
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:   2023-11-15
+! date: 2023-11-15
 ! summary:  Get the value of scalar integer without allocation
+!
+!# GetValue_
+!
+! Get the value of integer vector from toml file without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_5.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int32_r1_static(table, key, VALUE, tsize, &
@@ -479,12 +753,186 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
+!                                                GetValue@Int32MatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get values of integer matrix
+!
+!# GetValue
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_5.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Int32_r2(table, key, VALUE, origin, stat, &
+                                      isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int32_r2
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                GetValue_@Int32StaticMatrix
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get the values of integer matrix without allocation
+!
+!# GetValue
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_5.F90" %}}
+!```
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_Int32_r2_static(table, key, VALUE, origin, &
+                                             stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT32), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int32_r2_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                GetValue@Int64ScalarMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-17
+! summary:  Get the value of scalar integer
+!
+!# GetValue
+!
+! Get the value of scalar integer from toml file.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_test_1.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Int64(table, key, VALUE, default_value, &
+                                   origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT64), INTENT(INOUT) :: VALUE
+    INTEGER(INT64), INTENT(IN) :: default_value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int64
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
 !                                                GetValue@Int64VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  GetValue Integer Vectors
+!
+!# GetValue
+!
+! Get the value of integer vector from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_5.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Int64_r1(table, key, VALUE, origin, stat, &
@@ -500,12 +948,46 @@ INTERFACE GetValue
 END INTERFACE GetValue
 
 !----------------------------------------------------------------------------
-!                                           GetValue@Int64StaticVectorMethods
+!                                         GetValue_@Int64StaticVectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2024-08-02
-! summary:  Get Value without allocation
+! date: 2023-11-15
+! summary:  Get the value of scalar integer without allocation
+!
+!# GetValue_
+!
+! Get the value of integer vector from toml file without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_5.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Int64_r1_static(table, key, VALUE, tsize, &
@@ -522,12 +1004,186 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
+!                                                 GetValue@Int64MatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get values of integer matrix
+!
+!# GetValue
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_5.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Int64_r2(table, key, VALUE, origin, stat, &
+                                      isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int64_r2
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                         GetValue_@Int64StaticMatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the values of integer matrix without allocation
+!
+!# GetValue_
+!
+! Get the value of integer matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_5.F90" %}}
+!```
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_Int64_r2_static(table, key, VALUE, origin, &
+                                             stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    INTEGER(INT64), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Int64_r2_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                               GetValue@Real32ScalarMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-17
+! summary:  Get the value of scalar real
+!
+!# GetValue
+!
+! Get the value of scalar Real from toml file.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_test_1.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Real32(table, key, VALUE, default_value, &
+                                    origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    REAL(REAL32), INTENT(INOUT) :: VALUE
+    REAL(REAL32), INTENT(IN) :: default_value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Real32
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
 !                                               GetValue@Real32VectorMehtods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  Get the real vectors
+!
+!# GetValue
+!
+! Get the value of real vector from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_5.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real32_r1(table, key, VALUE, origin, stat, &
@@ -549,6 +1205,40 @@ END INTERFACE GetValue
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-15
 ! summary:  Get the real vectors without allocation
+!
+!# GetValue_
+!
+! Get the value of real vector from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_5.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Real32_r1_static( &
@@ -565,12 +1255,186 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
+!                                                GetValue@Real32MatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get values of a real matrix
+!
+!# GetValue
+!
+! Get the value of Real matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_test_5.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Real32_r2(table, key, VALUE, origin, stat, &
+                                       isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Real32_r2
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                         GetValue_@Real32StaticMatrixMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-15
+! summary:  Get the values of real matrix without allocation
+!
+!# GetValue_
+!
+! Get the value of Real matrix from toml file without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_r2_static_test_5.F90" %}}
+!```
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_Real32_r2_static(table, key, VALUE, origin, &
+                                              stat, isFound, nrow, ncol)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    REAL(REAL32), INTENT(INOUT) :: VALUE(:, :)
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Real32_r2_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                               GetValue@Real64ScalarMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-17
+! summary:  Get the value of scalar real
+!
+!# GetValue
+!
+! Get the value of scalar Real from toml file.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Real_test_1.F90" %}}
+!```
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Real64(table, key, VALUE, default_value, &
+                                    origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    REAL(REAL64), INTENT(INOUT) :: VALUE
+    REAL(REAL64), INTENT(IN) :: default_value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Real64
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
 !                                               GetValue@Real64VectorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  Get the real vectors
+!
+!# GetValue
+!
+! Get the value of real vector from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_test_5.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real64_r1(table, key, VALUE, origin, stat, &
@@ -592,6 +1456,40 @@ END INTERFACE GetValue
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-15
 ! summary:  Get the real vectors without allocation
+!
+!# GetValue_
+!
+! Get the value of real vector from toml file without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r1_static_test_5.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Real64_r1_static( &
@@ -608,217 +1506,46 @@ INTERFACE GetValue_
 END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
-!                                                  GetValue@Int8MatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get values for integer matrix
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Int8_r2(table, key, VALUE, origin, stat, &
-                                     isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int8_r2
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                           GetValue_@Int8StaticMatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary:  Get the values of integer matrix without allocation
-
-INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Int8_r2_static( &
-    table, key, VALUE, origin, stat, isFound, nrow, ncol)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT8), INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int8_r2_static
-END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
-!                                                GetValue@Int16MatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get value of integer matrix
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Int16_r2(table, key, VALUE, origin, stat, &
-                                      isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT16), ALLOCATABLE, INTENT(OUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int16_r2
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                          GetValue@Int16StaticMatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get the values of integer matrix without allocation
-
-INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Int16_r2_static(table, key, VALUE, origin, &
-                                             stat, isFound, nrow, ncol)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT16), INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int16_r2_static
-END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
-!                                                GetValue@Int32MatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get values of integer matrix
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Int32_r2(table, key, VALUE, origin, stat, &
-                                      isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int32_r2
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                                GetValue_@Int32StaticMatrix
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get the values of integer matrix without allocation
-
-INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Int32_r2_static(table, key, VALUE, origin, &
-                                             stat, isFound, nrow, ncol)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT32), INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int32_r2_static
-END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
-!                                                 GetValue@Int64MatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get values of integer matrix
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Int64_r2(table, key, VALUE, origin, stat, &
-                                      isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int64_r2
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                         GetValue_@Int64StaticMatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary:  Get the values of integer matrix without allocation
-
-INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Int64_r2_static(table, key, VALUE, origin, &
-                                             stat, isFound, nrow, ncol)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    INTEGER(INT64), INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Int64_r2_static
-END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
-!                                                GetValue@Real32MatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get values of a real matrix
-
-INTERFACE GetValue
-  MODULE SUBROUTINE GetValue_Real32_r2(table, key, VALUE, origin, stat, &
-                                       isFound)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Real32_r2
-END INTERFACE GetValue
-
-!----------------------------------------------------------------------------
-!                                         GetValue_@Real32StaticMatrixMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-15
-! summary:  Get the values of real matrix without allocation
-
-INTERFACE GetValue_
-  MODULE SUBROUTINE GetValue_Real32_r2_static(table, key, VALUE, origin, &
-                                              stat, isFound, nrow, ncol)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CHARACTER(*), INTENT(IN) :: key
-    REAL(REAL32), INTENT(INOUT) :: VALUE(:, :)
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
-    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
-    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
-  END SUBROUTINE GetValue_Real32_r2_static
-END INTERFACE GetValue_
-
-!----------------------------------------------------------------------------
 !                                                GetValue@Real64MatrixMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-15
 ! summary:  Get values of a real matrix
+!
+!# GetValue
+!
+! Get the value of real matrix from toml file.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_test_5.F90" %}}
+!```
 
 INTERFACE GetValue
   MODULE SUBROUTINE GetValue_Real64_r2(table, key, VALUE, origin, stat, &
@@ -839,6 +1566,40 @@ END INTERFACE GetValue
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-15
 ! summary:  Get the values of real matrix without allocation
+!
+!# GetValue_
+!
+! Get the value of real matrix from toml file without allocation.
+!
+!## Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_1.F90" %}}
+!```
+!
+!## Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_2.F90" %}}
+!```
+!
+!## Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_3.F90" %}}
+!```
+!
+!## Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_4.F90" %}}
+!```
+!
+!## Example 5
+!
+!```fortran
+!{{% fortran-code file="examples/GetValue_Int_r2_static_test_5.F90" %}}
+!```
 
 INTERFACE GetValue_
   MODULE SUBROUTINE GetValue_Real64_r2_static(table, key, VALUE, origin, &
@@ -1038,6 +1799,120 @@ INTERFACE GetValue_
     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
   END SUBROUTINE GetValue_String_r2_static
 END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                 GetValue@BoolScalarMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-05-21
+! summary:  Get the value of scalar Boolean
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Bool( &
+    table, key, VALUE, default_value, origin, stat, isFound)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL(LGT), INTENT(INOUT) :: VALUE
+    LOGICAL(LGT), INTENT(IN) :: default_value
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+  END SUBROUTINE GetValue_Bool
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                 GetValue@BoolVectorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-29
+! summary:  GetValue Integer Vectors
+
+INTERFACE GetValue
+  MODULE SUBROUTINE GetValue_Bool_r1(table, key, VALUE, origin, stat, &
+                                     isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+    !! It is true if the value is a scalar
+  END SUBROUTINE GetValue_Bool_r1
+END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                            GetValue@BoolStaticVectorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the value of vector of Bool without allocation
+
+INTERFACE GetValue_
+  MODULE SUBROUTINE GetValue_Bool_r1_static(table, key, VALUE, tsize, &
+                                            origin, stat, isFound, isScalar)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CHARACTER(*), INTENT(IN) :: key
+    LOGICAL(LGT), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+    INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+    LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isScalar
+  END SUBROUTINE GetValue_Bool_r1_static
+END INTERFACE GetValue_
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2025-05-29
+! summary:  GetValue Integer Vectors
+
+! INTERFACE
+!   MODULE SUBROUTINE GetValue_Bool_r2(table, key, VALUE, origin, stat, &
+!                                      isFound)
+!     TYPE(toml_table), INTENT(INOUT) :: table
+!     CHARACTER(*), INTENT(IN) :: key
+!     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+!     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+!   END SUBROUTINE GetValue_Bool_r2
+! END INTERFACE
+
+! INTERFACE GetValue
+!   MODULE PROCEDURE GetValue_Bool_r2
+! END INTERFACE GetValue
+
+!----------------------------------------------------------------------------
+!                                                           GetValue@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-15
+! summary:  Get the value of vector of Bool without allocation
+
+! INTERFACE
+!   MODULE SUBROUTINE GetValue_Bool_r2_static(table, key, VALUE, nrow, ncol, &
+!                                             origin, stat, isFound)
+!     TYPE(toml_table), INTENT(INOUT) :: table
+!     CHARACTER(*), INTENT(IN) :: key
+!     LOGICAL(LGT), INTENT(INOUT) :: VALUE(:, :)
+!     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: origin
+!     INTEGER(I4B), OPTIONAL, INTENT(INOUT) :: stat
+!     LOGICAL(LGT), OPTIONAL, INTENT(INOUT) :: isFound
+!   END SUBROUTINE GetValue_Bool_r2_static
+! END INTERFACE
+
+! INTERFACE GetValue_
+!   MODULE PROCEDURE GetValue_Bool_r2_static
+! END INTERFACE GetValue_
 
 !----------------------------------------------------------------------------
 !
