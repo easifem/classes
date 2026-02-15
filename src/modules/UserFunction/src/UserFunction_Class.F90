@@ -76,7 +76,13 @@ PUBLIC :: UserFunctionDisplay
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-20
-! summary: User defined function
+! summary: A data type for User defined function
+!
+!# UserFunction_
+!
+! This data type is designed to handle the user defined function.
+! It is often used for applying boundary conditions, material properties.
+!
 
 TYPE :: UserFunction_
   PRIVATE
@@ -255,17 +261,31 @@ END TYPE UserFunction_
 !                                                       UserFunctionPointer_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: --
+! summary: data type for keeping the pointer to UserFunction_
+!
+!# UserFunctionPointer_
+!
+! This data type contains a pointer to UserFunction. It is often used to
+! define a vector or array of UserFunction pointers.
+!
 TYPE :: UserFunctionPointer_
   CLASS(UserFunction_), POINTER :: ptr => NULL()
 END TYPE UserFunctionPointer_
 
 !----------------------------------------------------------------------------
-!                                   GetReturnTypeFromName@ConstructorMethods
+!                               UserFunctionGetReturnType@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 27 Oct 2021
+! date: 2026-02-13
 ! summary: Returns the Integer number for given return type name (String)
+!
+!# UserFunctionGetReturnType
+!
+! This function returns the integer code for return type for a given
+! return type in string format. This integer number is used internally.
 
 INTERFACE
   MODULE PURE FUNCTION UserFunctionGetReturnType(name) RESULT(Ans)
@@ -275,12 +295,17 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      etArgTypeFromName@ConstructorMethods
+!                                  UserFunctionGetArgType@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 27 Oct 2021
+! date: 2026-02-13
 ! summary: Returns the integer for arg type
+!
+!# UserFunctionGetArgType
+!
+! This function returns integer number of argType from the string.
+! This integer number is used internally for argType.
 
 INTERFACE
   MODULE PURE FUNCTION UserFunctionGetArgType(name) RESULT(Ans)
@@ -294,17 +319,17 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
+! date: 2026-02-13
 ! summary: Deallocate the data in UserFunction.
+!
+!# Deallocate
+!
+! This method deallocate the data stored in the obj.
 
-INTERFACE
+INTERFACE UserFunctionDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE UserFunctionDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE UserFunctionDeallocate
 
 !----------------------------------------------------------------------------
@@ -313,16 +338,18 @@ END INTERFACE UserFunctionDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
-! summary:  Deallocate a vector of UserFunction_
+! summary: Deallocate a vector of UserFunction_
+!
+!# UserFunctionDeallocate
+!
+! This method deallocates the vector of UserFunction.
+!
 
-INTERFACE
+INTERFACE UserFunctionDeallocate
   MODULE SUBROUTINE obj_Deallocate_Vector(obj)
-    CLASS(UserFunction_), ALLOCATABLE :: obj(:)
+    CLASS(UserFunction_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! vector of UserFunction to be deallocated.
   END SUBROUTINE obj_Deallocate_Vector
-END INTERFACE
-
-INTERFACE UserFunctionDeallocate
-  MODULE PROCEDURE obj_Deallocate_Vector
 END INTERFACE UserFunctionDeallocate
 
 !----------------------------------------------------------------------------
@@ -331,16 +358,16 @@ END INTERFACE UserFunctionDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
-! summary:  Deallocate vector of UserFunctionPointer_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
-    TYPE(UserFunctionPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector
-END INTERFACE
+! summary: Deallocate vector of UserFunctionPointer_
+!
+!# UserFunctionDeallocate
+!
+! This method deallocates the vector of UserFunctionPointer_.
 
 INTERFACE UserFunctionDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(UserFunctionPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE UserFunctionDeallocate
 
 !----------------------------------------------------------------------------
@@ -362,8 +389,92 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
+! date: 2026-02-13
 ! summary: Initiate the user function
+!
+!# Initiate
+!
+! Initiate an instance of UserFunction.
+!
+!## Examples for scalar functions
+!
+!### Example 1
+!
+! This is a simple example, just introduce you to the basics of
+! Initiate method for scalar and vector function. Here you will learn about
+! how to initiate a user function. After initiating the function you
+! have to set the value in it, which is explained in other examples.
+!
+! Example for scalar function:
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/Initiate_test_1.F90" %}}
+!```
+!
+! Example for vector function
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Initiate_test_1.F90" %}}
+!```
+!
+!### Example 2
+!
+! In this function we set a constant value of function:
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/Initiate_test_2.F90" %}}
+!```
+!
+! For vector function see the example below.
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Initiate_test_2.F90" %}}
+!```
+!
+!### Example 3
+!
+! In this example we set the value of user function by specifying
+! a procedure pointer.
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/Initiate_test_3.F90" %}}
+!```
+!
+! For vector function see the example below.
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Initiate_test_3.F90" %}}
+!```
+!
+!### Example 4
+!
+! In this example we initiate and set the value of Scalar function by using
+! a lua file and lua function.
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/Initiate_test_4.F90" %}}
+!```
+!
+! For vector function see the example below.
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Initiate_test_4.F90" %}}
+!```
+!
+!### Example 5
+!
+! In this example we set the value of Scalar function by using
+! a mathematical expression in string format.
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/Initiate_test_5.F90" %}}
+!```
+!
+! For vector function see the example below.
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Initiate_test_5.F90" %}}
+!```
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
@@ -373,8 +484,10 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: name
     !! name of the function
     INTEGER(I4B), INTENT(IN) :: returnType
+    !! Return type
     !! Scalar, Vector, Matrix
     INTEGER(I4B), INTENT(IN) :: argType
+    !! Argument type
     !! Constant, Space, Time, SpaceTime
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: numArgs
     !! number of argument
@@ -387,13 +500,24 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 Get@GetScalarValueMethods
+!                                                  Get@GetScalarValueMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
+! date: 2026-02-13
 ! summary: Returns the scalar value
-
+!
+! Get
+!
+! This method returns the value of scalar function.
+!
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/Initiate_test_2.F90" %}}
+!```
+!
 INTERFACE
   MODULE SUBROUTINE obj_GetScalarValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
@@ -409,6 +533,17 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the vector value
+!
+!# Get
+!
+! This method returns the vector value.
+!
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Get_test_2.F90" %}}
+!```
 
 INTERFACE
   MODULE SUBROUTINE obj_GetVectorValue(obj, val, args)
@@ -425,7 +560,17 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the vector value no allocation
-
+!
+!# Get_
+!
+! Get the vector value without allocation.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Get_test_1.F90" %}}
+!```
+!
 INTERFACE
   MODULE SUBROUTINE obj_GetVectorValue_(obj, val, tsize, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
@@ -445,6 +590,11 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the Matrix value
+!
+!# Get
+!
+! Methods for getting the matrix value.
+!
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMatrixValue(obj, val, args)
@@ -461,7 +611,9 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the Matrix value
-
+!
+!# Method for getting matrix value without allocation.
+!
 INTERFACE
   MODULE SUBROUTINE obj_GetMatrixValue_(obj, val, nrow, ncol, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
@@ -478,6 +630,11 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the Matrix value
+!
+!# Get
+!
+! Method for getting value in FEVariable_.
+!
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFEVariable(obj, fevar, xij, times)
@@ -495,6 +652,11 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the Matrix value
+!
+!# Get_
+!
+! Method for gettting value in FEVariable_ without allocation.
+!
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFEVariable_(obj, fevar, xij, times)
@@ -512,6 +674,10 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the argument type
+!
+!# GetArgType
+!
+! This method returns the argument type of the UserFunction.
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetArgType(obj) RESULT(ans)
@@ -527,6 +693,10 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Returns the return type
+!
+!# GetReturnType
+!
+! This function returns the return type of the user function.
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetReturnType(obj) RESULT(ans)
@@ -542,6 +712,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-23
 ! summary:  Get name of the function
+!
+!# GetName
+!
+! This function returns the name of the function.
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetName(obj) RESULT(ans)
@@ -553,6 +727,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                   GetNumReturn@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-13
+! summary: Get the number of returns
+!
+!# GetNumReturn
+!
+! This function returns the number of returns by the function.
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetNumReturns(obj) RESULT(ans)
@@ -568,6 +750,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-12
 ! summary:  Get the number of arguments
+!
+!# GetNumArgs
+!
+! This method returns the number of arguments in userfunction.
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetNumArgs(obj) RESULT(ans)
@@ -579,6 +765,15 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                 GetReturnShape@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-13
+! summary: Get the shape of return
+!
+!# GetReturnShape
+!
+! This function returns the shape of returned value.
+!
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetReturnShape(obj) RESULT(ans)
@@ -593,7 +788,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-29
-! summary:  Returns isInit
+! summary: Returns isInit status
+!
+!# IsInitiated
+!
+! Returns the status of isInit.
+!
 
 INTERFACE
   MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
@@ -609,17 +809,18 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-20
 ! summary:  Display the content of UserFunction
+!
+!# Display
+!
+! Display the content of UserFunction.
+!
 
-INTERFACE
+INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(UserFunction_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
-END INTERFACE
-
-INTERFACE UserFunctionDisplay
-  MODULE PROCEDURE obj_Display
 END INTERFACE UserFunctionDisplay
 
 !----------------------------------------------------------------------------
@@ -630,16 +831,12 @@ END INTERFACE UserFunctionDisplay
 ! date: 27 Aug 2021
 ! summary: This routine displays the content of the instance
 
-INTERFACE
+INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(UserFunction_), INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Vector
-END INTERFACE
-
-INTERFACE UserFunctionDisplay
-  MODULE PROCEDURE obj_Display_Vector
 END INTERFACE UserFunctionDisplay
 
 !----------------------------------------------------------------------------
@@ -650,16 +847,12 @@ END INTERFACE UserFunctionDisplay
 ! date: 27 Aug 2021
 ! summary: This routine displays the content of the instance
 
-INTERFACE
+INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(UserFunctionPointer_), INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Ptr_Vector
-END INTERFACE
-
-INTERFACE UserFunctionDisplay
-  MODULE PROCEDURE obj_Display_Ptr_Vector
 END INTERFACE UserFunctionDisplay
 
 !----------------------------------------------------------------------------
@@ -679,31 +872,165 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate param from the toml file
+! summary:  Initiate user functions from the toml table
+!
+!# ImportFromToml
+!
+! This method initiate a userfunction by importing data from the
+! toml file. This method is called by the obj_ImportFromToml2 method.
+!
 
-INTERFACE
+INTERFACE UserFunctionImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-INTERFACE UserFunctionImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE UserFunctionImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlUtility
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
+!
+!# ImportFromToml
+!
+! This method initiates an instance of UserFunction from toml file.
+!
+!## Examples for scalar function
+!
+! The following example is for scalar function, it reads the following
+! toml file.
+!
+!```toml
+!
+! [test1]
+! name = "func"
+! returnType = "Scalar"
+! argType = "Constant"
+! numArgs = 0
+! numReturns = 1
+! value = 1.0
+!
+! [test2]
+! name = "func"
+! returnType = "Scalar"
+! argType = "Constant"
+! value = 1.0
+!
+! [test3]
+! name = "func"
+! returnType = "Scalar"
+! argType = "Space"
+! numArgs = 1
+! luaScript = "./scalarfuncs.lua"
+! luaFunctionName = "Func1"
+!
+! [test4]
+! name = "func"
+! returnType = "Scalar"
+! argType = "Space"
+! numArgs = 1
+! equationParser = true
+! vars = ["x"]
+! expression = "2.0*x"
+!```
+!
+!### Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/ImportFromToml_test_1.F90" %}}
+!```
+!
+!### Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/ImportFromToml_test_2.F90" %}}
+!```
+!
+!### Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/ImportFromToml_test_3.F90" %}}
+!```
+!
+!### Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/ImportFromToml_test_4.F90" %}}
+!```
+!
+!## Examples for vector function
+!
+! The following examples uses the following toml file.
+!
+!```toml
+!
+! [test1]
+! name = "func"
+! returnType = "Vector"
+! argType = "Constant"
+! numArgs = 0
+! numReturns = 3
+! value = [1.0, 1.0, 1.0]
+!
+! [test2]
+! name = "func"
+! returnType = "Vector"
+! argType = "Constant"
+! value = [1.0, 1.0, 1.0]
+! # default numReturns is 3
+!
+! [test3]
+! name = "func"
+! returnType = "Vector"
+! argType = "Space"
+! numArgs = 1
+! numReturns = 2
+! luaScript = "./vectorfuncs.lua"
+! luaFunctionName = "Func1"
+!
+! [test4]
+! name = "func"
+! returnType = "Vector"
+! argType = "Space"
+! numArgs = 1
+! numReturns = 2
+! equationParser = true
+! vars = ["x"]
+! expression = ["2.0*x", "2.0*x"]
+!```
+!
+!### Example 1
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/ImportFromToml_test_1.F90" %}}
+!```
+!
+!### Example 2
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/ImportFromToml_test_2.F90" %}}
+!```
+!
+!### Example 3
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/ImportFromToml_test_3.F90" %}}
+!```
+!
+!### Example 4
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/ImportFromToml_test_4.F90" %}}
+!```
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2( &
