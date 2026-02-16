@@ -103,68 +103,84 @@ bool1 = ALLOCATED(obj%volumeBox)
 CALL Display(bool1, "VolumeBox ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%pointMeshID)
+CALL Display(bool1, "PointMeshID ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%pointMeshID, "PointMeshID : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%curveMeshID)
+CALL Display(bool1, "CurveMeshID ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%curveMeshID, "CurveMeshID : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%surfaceMeshID)
+CALL Display(bool1, "SurfaceMeshID ALLOCATED :")
 IF (bool1) THEN
-  CALL Intvector_Display(obj%surfaceMeshID, "SurfaceMeshID : ", unitNo=unitNo)
+  CALL Intvector_Display(obj%surfaceMeshID, "SurfaceMeshID : ", &
+                         unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%volumeMeshID)
+CALL Display(bool1, "VolumeMeshID ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%volumeMeshID, "VolumeMeshID : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%pointElemNum)
+CALL Display(bool1, "PointElemNum ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%pointElemNum, "PointElemNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%curveElemNum)
+CALL Display(bool1, "CurveElemNum ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%curveElemNum, "CurveElemNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%surfaceElemNum)
+CALL Display(bool1, "SurfaceElemNum ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%surfaceElemNum, "SurfaceElemNum : ", &
                          unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%volumeElemNum)
+CALL Display(bool1, "VolumeElemNum ALLOCATED :")
 IF (bool1) THEN
-  CALL Intvector_Display(obj%volumeElemNum, "VolumeElemNum : ", unitNo=unitNo)
+  CALL Intvector_Display(obj%volumeElemNum, "VolumeElemNum : ", &
+                         unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%pointNodeNum)
+CALL Display(bool1, "PointNodeNum ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%pointNodeNum, "PointNodeNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%curveNodeNum)
+CALL Display(bool1, "CurveNodeNum ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%curveNodeNum, "CurveNodeNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%surfaceNodeNum)
+CALL Display(bool1, "SurfaceNodeNum ALLOCATED :")
 IF (bool1) THEN
   CALL Intvector_Display(obj%surfaceNodeNum, "SurfaceNodeNum : ", &
                          unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%volumeNodeNum)
+CALL Display(bool1, "VolumeNodeNum ALLOCATED :")
 IF (bool1) THEN
-  CALL Intvector_Display(obj%volumeNodeNum, "VolumeNodeNum : ", unitNo=unitNo)
+  CALL Intvector_Display(obj%volumeNodeNum, "VolumeNodeNum : ", &
+                         unitNo=unitNo)
 END IF
 
 bool1 = ALLOCATED(obj%pointBox)
+CALL Display(bool1, "PointBox ALLOCATED :")
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%pointBox)
     CALL BoundingBox_Display(obj%pointBox(ii), &
@@ -174,26 +190,32 @@ IF (bool1) THEN
 END IF
 
 bool1 = ALLOCATED(obj%curveBox)
+CALL Display(bool1, "CurveBox ALLOCATED :")
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%curveBox)
     CALL BoundingBox_Display(obj%curveBox(ii), &
-                             "curveBox("//tostring(ii)//") : ", unitNo=unitNo)
+                             "curveBox("//tostring(ii)//") : ", &
+                             unitNo=unitNo)
   END DO
 END IF
 
 bool1 = ALLOCATED(obj%surfaceBox)
+CALL Display(bool1, "SurfaceBox ALLOCATED :")
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%surfaceBox)
     CALL BoundingBox_Display(obj%surfaceBox(ii), &
-                           "surfaceBox("//tostring(ii)//") : ", unitNo=unitNo)
+                             "surfaceBox("//tostring(ii)//") : ", &
+                             unitNo=unitNo)
   END DO
 END IF
 
 bool1 = ALLOCATED(obj%volumeBox)
+CALL Display(bool1, "VolumeBox ALLOCATED :")
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%volumeBox)
     CALL BoundingBox_Display(obj%volumeBox(ii), &
-                            "volumeBox("//tostring(ii)//") : ", unitNo=unitNo)
+                             "volumeBox("//tostring(ii)//") : ", &
+                             unitNo=unitNo)
   END DO
 END IF
 
@@ -201,7 +223,6 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------

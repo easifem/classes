@@ -67,14 +67,10 @@ END TYPE DirichletBCPointer_
 ! date:  2023-09-09
 ! summary: Deallocate a vector of DirichletBC_
 
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
-    TYPE(DirichletBC_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE obj_Deallocate_Vector
-END INTERFACE
-
 INTERFACE DirichletBCDeallocate
-  MODULE PROCEDURE obj_Deallocate_Vector
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
+    TYPE(DirichletBC_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -85,14 +81,10 @@ END INTERFACE DirichletBCDeallocate
 ! date:  2023-09-09
 ! summary: Deallocate a vector of DirichletBCPointer_
 
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
-    TYPE(DirichletBCPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector
-END INTERFACE
-
 INTERFACE DirichletBCDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE DirichletBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -113,17 +105,13 @@ END INTERFACE
 ! date: 2022-04-27
 ! summary: Get a pointer to DirichletBC from vector of DirichletBCPointer_
 
-INTERFACE
+INTERFACE GetDirichletBCPointer
   MODULE FUNCTION obj_GetDirichletBCPointer(bc, bcNo) RESULT(ans)
     CLASS(DirichletBCPointer_), INTENT(IN) :: bc(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: bcNo
     !! Dirichlet boundary nunber
     CLASS(DirichletBC_), POINTER :: ans
   END FUNCTION obj_GetDirichletBCPointer
-END INTERFACE
-
-INTERFACE GetDirichletBCPointer
-  MODULE PROCEDURE obj_GetDirichletBCPointer
 END INTERFACE GetDirichletBCPointer
 
 !----------------------------------------------------------------------------
@@ -134,7 +122,7 @@ END INTERFACE GetDirichletBCPointer
 ! date:  2023-11-08
 ! summary: Initiate a vector of DirichletBCPointer_ from the toml table
 
-INTERFACE
+INTERFACE DirichletBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom, tomlName)
     TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
@@ -144,10 +132,6 @@ INTERFACE
     !! domain
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-INTERFACE DirichletBCImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -158,7 +142,7 @@ END INTERFACE DirichletBCImportFromToml
 ! date:  2023-11-08
 ! summary: Initiate a vector of DirichletBCPointer_ from the toml file
 
-INTERFACE
+INTERFACE DirichletBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2( &
     obj, dom, tomlName, afile, filename, printToml)
     TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
@@ -168,10 +152,6 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE
-
-INTERFACE DirichletBCImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE DirichletBCImportFromToml
 
 !----------------------------------------------------------------------------
@@ -182,16 +162,12 @@ END INTERFACE DirichletBCImportFromToml
 ! date:  2023-09-09
 ! summary: Display the vector of DirichletBC_
 
-INTERFACE
+INTERFACE DirichletBCDisplay
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
-    TYPE(DirichletBC_) :: obj(:)
+    TYPE(DirichletBC_), INTENT(IN) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Vector
-END INTERFACE
-
-INTERFACE DirichletBCDisplay
-  MODULE PROCEDURE obj_Display_Vector
 END INTERFACE DirichletBCDisplay
 
 !----------------------------------------------------------------------------
@@ -202,16 +178,12 @@ END INTERFACE DirichletBCDisplay
 ! date:  2023-09-09
 ! summary: Display the vector of DirichletBCPointer_
 
-INTERFACE
+INTERFACE DirichletBCDisplay
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
-    TYPE(DirichletBCPointer_) :: obj(:)
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display_Ptr_Vector
-END INTERFACE
-
-INTERFACE DirichletBCDisplay
-  MODULE PROCEDURE obj_Display_Ptr_Vector
 END INTERFACE DirichletBCDisplay
 
 !----------------------------------------------------------------------------

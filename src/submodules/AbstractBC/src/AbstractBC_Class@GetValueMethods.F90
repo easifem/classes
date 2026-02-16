@@ -63,8 +63,8 @@ iNodeOnNode = 1
 iNodeOnFace = tsize + 1
 
 DO ii = 1, tsize
-  CALL fedof%GetVertexDOF(globalNode=nodenum(ii), ans=indx, islocal=math%no, &
-                          tsize=jj)
+  CALL fedof%GetVertexDOF( &
+    globalNode=nodenum(ii), ans=indx, islocal=math%no, tsize=jj)
   nodenum(ii) = indx(1)
 END DO
 

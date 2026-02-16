@@ -182,8 +182,9 @@ DO ii = 1, obj%tElemToFace
   CALL obj%GetElemToFace(indx=ii, localCellNumber=localCellNumber, &
                          localFaceNumber=localFaceNumber)
 
-  mysize = fedof%GetTotalFaceDOF(globalElement=localCellNumber, &
-                                 localFaceNumber=localFaceNumber, islocal=yes)
+  mysize = fedof%GetTotalFaceDOF( &
+           globalElement=localCellNumber, &
+           localFaceNumber=localFaceNumber, islocal=yes)
   ans = ans + mysize
 END DO
 
@@ -191,8 +192,9 @@ DO ii = 1, obj%tElemToEdge
   CALL obj%GetElemToEdge(indx=ii, localCellNumber=localCellNumber, &
                          localEdgeNumber=localEdgeNumber)
 
-  mysize = fedof%GetTotalEdgeDOF(globalElement=localCellNumber, &
-                                 localEdgeNumber=localEdgeNumber, islocal=yes)
+  mysize = fedof%GetTotalEdgeDOF( &
+           globalElement=localCellNumber, &
+           localEdgeNumber=localEdgeNumber, islocal=yes)
 
   ans = ans + mysize
 END DO

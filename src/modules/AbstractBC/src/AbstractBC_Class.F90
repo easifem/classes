@@ -13,6 +13,22 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-15
+! summary: This module defines abstract data type for boundary conditions
+!
+!# AbstractBC
+!
+! This module defines AbstractBC class, an abstract class for handling
+! boundary condition.
+!
+! `AbstractBC` class handles the boundary condition in finite element
+!  methods. Currently, it has following subclasses.
+!
+! - [DirichletBC](../DirichletBC)
+! - [NeumannBC](../NeumannBC)
+! - [NitscheBC](../NitscheBC)
 
 MODULE AbstractBC_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
@@ -31,6 +47,7 @@ USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: FEVariable_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 PRIVATE
@@ -50,6 +67,7 @@ LOGICAL(LGT), PARAMETER :: default_useExternal = .FALSE.
 
 PUBLIC :: AbstractBC_
 PUBLIC :: AbstractBCPointer_
+PUBLIC :: TypeAbstractBCOpt
 PUBLIC :: AbstractBCDeallocate
 PUBLIC :: AbstractBCInitiate
 PUBLIC :: AbstractBCImportFromToml
@@ -64,14 +82,20 @@ PUBLIC :: AbstractBCImportFromToml
 
 TYPE :: AbstractBCOpt_
   CHARACTER(10) :: name = "AbstractBC"
-  INTEGER(I4B) :: idof = 1_I4B
+  INTEGER(I4B) :: idof = math%one_i
   INTEGER(I4B) :: nodalValueType = TypeFEVariableOpt%constant
   CHARACTER(4) :: nodalValueType_char = "NONE"
-  LOGICAL(LGT) :: isUserFunction = .FALSE.
-  LOGICAL(LGT) :: isNormal = .FALSE.
-  LOGICAL(LGT) :: isTangent = .FALSE.
-  LOGICAL(LGT) :: useExternal = .FALSE.
+  LOGICAL(LGT) :: isUserFunction = math%no
+  LOGICAL(LGT) :: isNormal = math%no
+  LOGICAL(LGT) :: isTangent = math%no
+  LOGICAL(LGT) :: isUseExternal = math%no
 END TYPE AbstractBCOpt_
+
+!----------------------------------------------------------------------------
+!                                                           TypeAbstractBCOpt
+!----------------------------------------------------------------------------
+
+TYPE(AbstractBCOpt_), PARAMETER :: TypeAbstractBCOpt = AbstractBCOpt_()
 
 !----------------------------------------------------------------------------
 !                                                                AbstractBC_
@@ -80,34 +104,35 @@ END TYPE AbstractBCOpt_
 !> authors: Vikas Sharma, Ph. D.
 ! date: 1 Sept 2021
 ! summary: This is an abstract data type for boundary conditions
+!
+!# AbstractBC_
+!
+! This is an abstract data type for boundary condition.
 
 TYPE, ABSTRACT :: AbstractBC_
   PRIVATE
-
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
-  LOGICAL(LGT) :: isNormal = default_isNormal
+  LOGICAL(LGT) :: isNormal = TypeAbstractBCOpt%isNormal
   !! True if the boundary condition is normal to the boundary
-  LOGICAL(LGT) :: isTangent = default_isTangent
+  LOGICAL(LGT) :: isTangent = TypeAbstractBCOpt%isTangent
   !! True if the boundary condition is tangent to the boundary
-  LOGICAL(LGT) :: isUseExternal = default_useExternal
+  LOGICAL(LGT) :: isUseExternal = TypeAbstractBCOpt%isUseExternal
   !! if true then nodal values are used externally
   !! depending upon the context.
   !! Basically we do not use the nodal value stored in the
   !! instance of AbstractBC_
   LOGICAL(LGT) :: isUserFunction = default_isUserFunction
   !! True if userFunction is set
-  LOGICAL(LGT) :: isElemToFace = .FALSE.
+  LOGICAL(LGT) :: isElemToFace = math%no
   !! When elemToFace is set then isElemToFace is true
-  LOGICAL(LGT) :: isElemToEdge = .FALSE.
+  LOGICAL(LGT) :: isElemToEdge = math%no
   !! When elemToEdge is set then isElemToEdge is true
-
   TYPE(String) :: name
   !! name of boundary condition
-
-  INTEGER(I4B) :: idof = default_idof
+  INTEGER(I4B) :: idof = TypeAbstractBCOpt%idof
   !! degree of freedom number
-  INTEGER(I4B) :: nodalValueType = default_nodalValueType
+  INTEGER(I4B) :: nodalValueType = TypeAbstractBCOpt%nodalValueType
   !! Constant, Space, SpaceTime, Time
   INTEGER(I4B) :: nrow = 0
   !! number of rows in nodalValue
@@ -125,11 +150,9 @@ TYPE, ABSTRACT :: AbstractBC_
   !! number of col in elemToFace
   INTEGER(I4B) :: tElemToEdge = 0
   !! number of col in elemToEdge
-
   INTEGER(I4B), ALLOCATABLE :: nodenum(:)
   !! node numbers, where dirichlet boundary condition will be imposed
   !! info: to be used soon
-
   INTEGER(I4B), ALLOCATABLE :: elemToFace(:, :)
   !! each col contains the following data:
   !! localCellNum, localFaceNum
@@ -138,10 +161,8 @@ TYPE, ABSTRACT :: AbstractBC_
   !! is applied, then this data will be stored in two consequtive rows:
   !! col1:       localCellNum1, localFace1
   !! col2:       localCellNum1, localFace2
-  !!
   !! if the value of localFace is zero, then it means
   !! boundary condition is not applied on that face
-
   INTEGER(I4B), ALLOCATABLE :: elemToEdge(:, :)
   !! It is used for 3D mesh
   !! each cols contains the following data:
@@ -151,15 +172,12 @@ TYPE, ABSTRACT :: AbstractBC_
   !! is applied, then this data will be stored in two consequtive rows:
   !! col1:       localCellNum1, localEdge1
   !! col2:       localCellNum1, localEdge2
-  !!
   !! if the value of localEdge is zero, then it means
   !! boundary condition is not applied on that edge
-
   REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
   !! nodal values are kept here,
   !! nodalValues( :, its ) denotes nodal values at time step its
   !! nodalValue is used when useFunction and useExternal is false
-
   CLASS(UserFunction_), POINTER :: func => NULL()
   !! User function
   TYPE(MeshSelection_) :: boundary
@@ -169,12 +187,11 @@ TYPE, ABSTRACT :: AbstractBC_
 
 CONTAINS
   PRIVATE
-
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate memory occupied by AbstractBC
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of AbstractBC with arguments
 
   ! IO:
@@ -207,8 +224,8 @@ CONTAINS
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Set the boundary condition value
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetElemToLocalBoundary => &
-    obj_SetElemToLocalBoundary
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    SetElemToLocalBoundary => obj_SetElemToLocalBoundary
 
   ! GET:
   ! @GetMethods
@@ -263,12 +280,15 @@ CONTAINS
   !! @NBCMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetNBCValue => obj_GetNBCValue
   !! Get the Neumann boundary condition value at a given nodes
-
 END TYPE AbstractBC_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-15
+! summary: A data type to contain the pointer to AbstractBC
 
 TYPE :: AbstractBCPointer_
   CLASS(AbstractBC_), POINTER :: ptr => NULL()
@@ -281,8 +301,13 @@ END TYPE AbstractBCPointer_
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-26
 ! summary:  Initiate AbstractBC with arguments
+!
+!# Initiate
+!
+! This method contstructs an instance of AbstractBC.
+!
 
-INTERFACE
+INTERFACE AbstractBCInitiate
   MODULE SUBROUTINE obj_Initiate( &
     obj, boundary, dom, name, idof, nodalValueType, isNormal, isTangent, &
     isUseExternal, isUserFunction)
@@ -310,10 +335,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUseExternal
     !! default is false
   END SUBROUTINE obj_Initiate
-END INTERFACE
-
-INTERFACE AbstractBCInitiate
-  MODULE PROCEDURE obj_Initiate
 END INTERFACE AbstractBCInitiate
 
 !----------------------------------------------------------------------------
@@ -322,16 +343,16 @@ END INTERFACE AbstractBCInitiate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-02-12
-! summary: Deallocate data
+! summary: Deallocate data stored in AbstractBC.
+!
+!# Deallocate
+!
+! Deallocate the data stored in AbstractBC.
 
-INTERFACE
+INTERFACE AbstractBCDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE AbstractBCDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractBCDeallocate
 
 !----------------------------------------------------------------------------
@@ -341,13 +362,21 @@ END INTERFACE AbstractBCDeallocate
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-14
 ! summary:  Import AbstractBC from HDF5File
+!
+!# Import
+!
+! Import the data for AbstractBC from hdf file.
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    !! Abstract boundary condition
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5File which will be used for importing data
     CHARACTER(*), INTENT(IN) :: group
+    !! group where the data is kept
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    !! pointer to AbstractDomain_
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -368,34 +397,173 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                  ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate param from the toml file
+! summary:  Initiate an instance from toml table
+!
+!# ImportFromToml
+!
+! This method initiates an instance of AbstractBC from toml table.
+!
+! ``` toml
+! [bc]
+! name = "DirichletBC"
+! # Name of the boundary condition
+! idof = 1
+! # idof denotes the degree of freedom where
+! # we apply the contraint,
+! # For x component idof is 1
+! # For y component idof is 2
+! # For z component idof is 3
+! nodalValueType = "Constant" # Time, SpaceTime, Space
+! # Other option: Constant, Time, Space,  SpaceTime
+! # nodalValuetype denotes the type of boundary condition
+! # It can take following values
+! # Constant: It means the boundary condition is constant in
+! #           space and time.
+! # Space:    It means the boundary condition is variable in
+! #           space but constant in time.
+! # Time:     It means the boundary condition is variable in
+! #           in time but constant in Space
+! # SpaceTime:It means the boundary condition is variable in
+! #           both space and time.
+! value = 20.0
+! # Value of boundary condition
+! # The shape of value depends upon the nodalValueType as explained below.
+! # For nodalValueType="Constant", value should be a scalar real value
+! # For nodalValueType="Space", value should be a vector of real values
+! # value=[1.0, 2.0, 3.0, 4.0]
+! # For nodalValueType="Time", value should  be a vector of real values
+! # value=[1.0, 2.0, 3.0, 4.0]
+! # For nodalValueType="SpaceTime", value should be two dimensional array of
+! # real values
+! # value=[[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]]
+! isUserFunction = false
+! isNormal = false
+! isTangent = false
+! useExternal = false
+! [bc.function]
+! name = "boundaryFunction"
+! # name of the function
+! returnType = "Scalar"
+! # returnType must be "Scalar"
+! numReturns = 1
+! # number of returns must be 1
+! argType = "Space"
+! # argumen type of function, It can take following values
+! # "Constant", when the user function is constant
+! # "Space", when the user function is space dependent only.
+! # "Time", when the user function is time dependent only.
+! # "SpaceTime", when the user function is space-time dependent.
+! numArgs = 3
+! # number of arguments
+! # number of arguments should be 0, when argType is "Constant"
+! # number of arguments should be 1, when argType is "Time"
+! # number of arguments should be 3, when argType is "Space"
+! # number of arguments should be 4, when argType is "SpaceTime"
+! value = 1.0
+! # if lua script and luaFunctionName are absent then this
+! # variable must be given.
+! # When this is given, then argType must be Constant, and
+! # numArgs should be 0.
+! luaScript = "./hello.lua"
+! # name of the lua script which contains the functions
+! luaFunctionName = "hello"
+! # which function in the lua script to be used for boundary condition
+! [bc.boundary]
+! isSelectionByMeshID = false
+! # set isSelectionByMeshID to true when mesh selection is by meshID
+! # if this variable is set to true then we should provide following
+! # table
+! [bc.boundary.meshID]
+! point = [1, 2, 3]
+! # id of mesh of points
+! # you can also give the filename
+! line = [1, 2, 3, 4]
+! # id of mesh of lines
+! # you can also give the filename
+! surface = [1, 2, 3]
+! # id of mesh of surfaces
+! # you can also give the filename "filename.txt"
+! volume = [1, 2, 3]
+! # id of mesh of volumes
+! # you can also give the filename "filename.txt"
+! isSelectionByElemNum = false
+! # set isSelectionByElemNum to true when mesh selection is by
+! # specifying element number
+! # if this variable is set to true then we should provide following
+! # table
+! [bc.boundary.elemNum]
+! point = [1, 2, 3]
+! # element number for points
+! line = [1, 2, 3]
+! # element number of lines
+! surface = [1, 2, 3]
+! # element number of surfaces
+! volume = [1, 2, 3]
+! # element number of volume
+! isSelectionByBox = false
+! # set isSelectionByBox to true when mesh selection is by
+! # specifying the bounding boxes
+! # if this variable is set to true then we should provide following
+! # table
+! [bc.boundary.box]
+! point = [
+!  {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 0.0,zmax = 1.0},
+!  {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 2.0,zmax = 3.0},
+! ]
+! # boxes for mesh of points
+! line = [
+!   {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 0.0,zmax = 1.0},
+!   {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 2.0,zmax = 3.0 },
+! ]
+! # boxes for mesh of lines
+! surface = [
+!   {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 0.0,zmax = 1.0},
+!   {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 2.0,zmax = 3.0 },
+! ]
+! # boxes for mesh of surfaces
+! volume = [
+!   {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 0.0,zmax = 1.0},
+!   {xmin = 0.0,xmax = 1.0,ymin = 0.0,ymax = 1.0,zmin = 2.0,zmax = 3.0 },
+! ]
+! # boxes for mesh of volumes
+! isSelectionByNodeNum = false
+! # set isSelectionByNodeNum to true when mesh selection is by
+! # by specifying the node number.
+! # if this variable is set to true then we should provide following
+! # table
+! [bc.boundary.nodeNum]
+! point = [1, 2, 3]
+! line = [1, 2, 3]
+! surface = [1, 2, 3]
+! volume = [1, 2, 3]
+! ```
 
-INTERFACE
+INTERFACE AbstractBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-INTERFACE AbstractBCImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE AbstractBCImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
+! summary:  Initiate an instance from the toml file
+!
+!# ImportFromToml
+!
+! This methods initiates an instance of AbstractBC from toml file.
 
-INTERFACE
+INTERFACE AbstractBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, &
                                         filename, printToml)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
@@ -405,36 +573,28 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE
-
-INTERFACE AbstractBCImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE AbstractBCImportFromToml
 
 !----------------------------------------------------------------------------
-!                                             ImportConstBCFromToml@IOMethods
+!                                            ImportConstBCFromToml@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-01-06
 ! summary: Import constant boundary condition from toml table
 !
-!# Introduction
+!# AbstractBCImportConstBCFromToml
 !
 ! This method is designed for ConstDirichletBC and ConstNeumannBC.
 ! These child classes require lesser data from the user.
 ! Also, they simplifies and optimizes the application of such BCs in FEM.
 
-INTERFACE
+INTERFACE AbstractBCImportConstBCFromToml
   MODULE SUBROUTINE obj_ImportConstBCFromToml(obj, table, dom)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportConstBCFromToml
-END INTERFACE
-
-INTERFACE AbstractBCImportConstBCFromToml
-  MODULE PROCEDURE obj_ImportConstBCFromToml
 END INTERFACE AbstractBCImportConstBCFromToml
 
 !----------------------------------------------------------------------------
@@ -443,7 +603,11 @@ END INTERFACE AbstractBCImportConstBCFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-02-12
-! summary: Display the content
+! summary: Display the content of AbstractBC
+!
+!# Display
+!
+! This method displays the content of AbstractBC.
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
@@ -460,6 +624,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-26
 ! summary: Returns isInit
+!
+!# IsInitiated
+!
+! This method returns IsInitiated.
 
 INTERFACE
   MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
@@ -475,6 +643,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-26
 ! summary: Returns isElemToEdge
+!
+!# IsElemToEdgeInitiated
+!
+! Returns the status of isElemToEdge.
 
 INTERFACE
   MODULE FUNCTION obj_IsElemToEdgeInitiated(obj) RESULT(ans)
@@ -490,6 +662,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-26
 ! summary: Returns isElemToFace
+!
+!# IsElemToFaceInitiated
+!
+! Returns the status of isElemToFace.
 
 INTERFACE
   MODULE FUNCTION obj_IsElemToFaceInitiated(obj) RESULT(ans)
@@ -505,6 +681,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-26
 ! summary: Returns tElemToEdge
+!
+!# GetTotalElemToEdge
+!
+! This method returns tElemToEdge, total element to edge.
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalElemToEdge(obj) RESULT(ans)
@@ -520,6 +700,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-26
 ! summary: Returns tElemToFace
+!
+!# GetTotalElemToFace
+!
+! Returns tElemToFace, total element to face.
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalElemToFace(obj) RESULT(ans)
@@ -535,14 +719,22 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-08
 ! summary:  Get data from ElemToFace
+!
+!# GetElemToFace
+!
+! Get data from elemToFace.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetElemToFace(obj, indx, localCellNumber, &
-                                      localFaceNumber)
+  MODULE SUBROUTINE obj_GetElemToFace( &
+    obj, indx, localCellNumber, localFaceNumber)
     CLASS(AbstractBC_), INTENT(IN) :: obj
+    !! Abstract boundary condition.
     INTEGER(I4B), INTENT(IN) :: indx
+    !! indx
     INTEGER(I4B), INTENT(OUT) :: localCellNumber
+    !! local cell number
     INTEGER(I4B), INTENT(OUT) :: localFaceNumber
+    !! local face number
   END SUBROUTINE obj_GetElemToFace
 END INTERFACE
 
@@ -553,14 +745,20 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-08
 ! summary:  Get data from ElemToEdge
+!
+!# GetElemToEdge
+!
+! Get data from ElemToEdge.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetElemToEdge(obj, indx, localCellNumber, &
-                                      localEdgeNumber)
+  MODULE SUBROUTINE obj_GetElemToEdge( &
+    obj, indx, localCellNumber, localEdgeNumber)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     INTEGER(I4B), INTENT(OUT) :: localCellNumber
+    !! local cell number
     INTEGER(I4B), INTENT(OUT) :: localEdgeNumber
+    !! local edge number
   END SUBROUTINE obj_GetElemToEdge
 END INTERFACE
 
@@ -569,13 +767,18 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 31 Aug 2021
+! date: 2026-02-16
 ! summary: This routine returns MeshID
+!
+!# GetMeshID
+!
+! Get the mesh id.
 
 INTERFACE
   MODULE FUNCTION obj_GetMeshID(obj, dim) RESULT(ans)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the mesh
     INTEGER(I4B), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetMeshID
 END INTERFACE
@@ -583,6 +786,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                               GetMeshIDPointer@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-16
+! summary: Get the pointer to MeshID
+!
+!# GetMeshIDPointer
+!
+! Get the pointer to MeshID.
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMeshIDPointer(obj, dim, ans, tsize)
@@ -594,14 +805,14 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary:  Get the nodenum and nodalValue
 !
-!# Introduction
+!# Get
 !
 ! This method calls GetH1Lagrange or GetH1Hierarchical methods
 
@@ -626,14 +837,14 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary:  Get the nodenum and nodalValue
 !
-!# Introduction
+!# Get
 !
 ! This method calls GetH1Lagrange or GetH1Hierarchical methods
 
@@ -699,6 +910,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-02-12
 ! summary: Get degree of freedom number
+!
+!# GetDOFNo
+!
+! Get degree of freedom number.
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetDOFNo(obj) RESULT(ans)
@@ -708,24 +923,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetQuery@GetMethods
+!                                                        GetParam@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-26
 ! summary:  Get field values of abstract boundary condition
+!
+!# GetParam
+!
+! Get field values of abstract boundary condition.
 
 INTERFACE
-  MODULE PURE SUBROUTINE obj_GetParam(obj, isInitiated, isSelectionByBox, &
-                                      isSelectionByMeshID, &
-                                      isSelectionByElemNum, &
-                                      isSelectionByNodeNum, &
-                                      idof, isTangent, isNormal, &
-                                      useFunction, &
-                                      nodalValueType, &
-                                      isUseExternal, &
-                                      isUserFunction, isElemToFace, &
-                                      isElemToEdge)
+  MODULE PURE SUBROUTINE obj_GetParam( &
+    obj, isInitiated, isSelectionByBox, isSelectionByMeshID, &
+    isSelectionByElemNum, isSelectionByNodeNum, idof, isTangent, isNormal, &
+    useFunction, nodalValueType, isUseExternal, isUserFunction, &
+    isElemToFace, isElemToEdge)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
@@ -751,6 +965,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-26
 ! summary:  Returns true if useFunction is true
+!
+!# IsUseFunction
+!
+! Returns the status of useFunction.
 
 INTERFACE
   MODULE PURE FUNCTION obj_IsUseFunction(obj) RESULT(ans)
@@ -766,26 +984,28 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-26
 ! summary:  Set fields of abstract boundary condition
+!
+!# Set
+!
+! This method set fields of abstract boundary condition.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set(obj, constantNodalValue, spaceNodalValue, &
-                            timeNodalValue, spaceTimeNodalValue, userFunction)
+  MODULE SUBROUTINE obj_Set( &
+    obj, constantNodalValue, spaceNodalValue, &
+    timeNodalValue, spaceTimeNodalValue, userFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
     !! constant nodal value
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
     !! space nodal value
     !! size should be same as the number of boundary nodes
-
     REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
     !! time nodal value
     !! size is total number of time nodes
-
     REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
     !! space time nodal value
     !! rowsize is total number of boundary nodes
     !! colsize is total number of time nodes
-
     TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
     !! user function
   END SUBROUTINE obj_Set
@@ -796,8 +1016,69 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-07-19
-! summary:  Set the element to local boundary data
+! date: 2024-07-19
+! summary: Set the element to local boundary data
+!
+!# GetElemToLocalBoundary
+!
+!This method sets the element to face and element to edge data.
+!In particular it set the following data in an instance of `AbstractBC_`:
+!
+!- `elemToFace`
+!- `elemToEdge`
+!- `tElemToFace`
+!- `tElemToEdge`
+!
+!## Purpose
+!
+!This procedure sets up the mapping data between boundary elements and
+!their corresponding local cell elements in the domain.
+!It identifies which cells are connected to boundary faces or edges,
+!and stores this information in the `elemToFace` and `elemToEdge` arrays.
+!
+!## Description
+!
+!The method establishes two key mappings required for applying
+!boundary conditions:
+!
+!1. **Element to Face Mapping**: For each boundary face element,
+!identifies the corresponding cell element and local face number
+!within that cell.
+!
+!2. **Element to Edge Mapping**: For 3D problems, identifies
+!the mapping between boundary edge elements and the corresponding
+!cell elements and local edge numbers.
+!
+!These mappings are essential for enforcing boundary conditions in
+!finite element analysis, especially for hierarchical elements where
+!conditions need to be applied to specific faces or edges of elements.
+
+!## Implementation Details
+!
+!The procedure:
+!
+!1. Calls `set_elem_to_faces` to establish the element-to-face connectivity
+!2. Calls `set_elem_to_edges` to establish the element-to-edge connectivity
+!(for 3D problems)
+!
+! The implementation populates:
+!
+!- `obj%elemToFace`: A 2×N array where each column contains
+![localCellNumber, localFaceNumber]
+!- `obj%elemToEdge`: A 2×N array where each column contains
+![localCellNumber, localEdgeNumber]
+!
+!The results are stored in the `AbstractBC_` object and can be
+!accessed when applying boundary conditions.
+!
+!## Notes
+!
+!- This method is particularly important for hierarchical finite elements
+!where boundary conditions must be applied to specific faces or edges.
+!- For face elements, the method works in domains of dimension 2 or higher.
+!- For edge elements, the method only works in 3D domains.
+!- Once called, the object's `isElemToFace` and/or `isElemToEdge` flags
+!are set to `.TRUE.`.
 
 INTERFACE
   MODULE SUBROUTINE obj_SetElemToLocalBoundary(obj)
@@ -813,7 +1094,7 @@ END INTERFACE
 ! date: 2025-07-27
 ! summary: Get the nodenum and nodalValue
 !
-!# Introduction
+!# GetNBCValue
 !
 ! This method calls GetH1Lagrange or GetH1Hierarchical methods
 
@@ -865,7 +1146,7 @@ END INTERFACE
 ! date: 2025-07-27
 ! summary: Get the nodeNum
 !
-!# Introduction
+!# GetNodeNumber
 !
 ! This method returns the nodeNum and tsize
 ! It calls GetH1Lagrange or GetH1Hierarchical methods
