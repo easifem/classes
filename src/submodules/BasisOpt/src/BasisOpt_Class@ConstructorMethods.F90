@@ -16,7 +16,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) ConstructorMethods
-! USE FPL_Method, ONLY: GetValue, CheckEssentialParam, Set
 USE StringUtility, ONLY: UpperCase
 USE InterpolationUtility, ONLY: RefElemDomain
 USE ReferenceElement_Method, ONLY: ElementTopology, &
@@ -51,18 +50,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
+
 obj%elemType = elemType
+
 obj%nsd = nsd
+
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
+
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
+
 obj%topoType = ElementTopology(elemType)
-obj%fetype = fetype
+
+IF (PRESENT(feType)) obj%feType = feType
+
 obj%xidim = XiDimension(obj%topoType)
+
 mystr = RefElemDomain(elemType=obj%topoType, &
                       baseContinuity=obj%baseContinuity, &
                       baseInterpol=obj%baseInterpolation)
+
 obj%refelemDomain = mystr%Slice(1, 1)
 mystr = ""
+
 CALL RefCoord_(elemType=obj%topoType, ans=obj%refelemCoord, &
                nrow=ii, ncol=jj, refelem=obj%refelemDomain)
 

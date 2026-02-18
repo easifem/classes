@@ -56,18 +56,9 @@ PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractBC_Class"
 #endif
 
-CHARACTER(*), PARAMETER :: default_name = "AbstractBC"
-INTEGER(I4B), PARAMETER :: default_idof = 1_I4B
-INTEGER(I4B), PARAMETER :: default_nodalValueType = TypeFEVariableOpt%constant
-CHARACTER(*), PARAMETER :: default_nodalValueType_char = "NONE"
-LOGICAL(LGT), PARAMETER :: default_isUserFunction = .FALSE.
-LOGICAL(LGT), PARAMETER :: default_isNormal = .FALSE.
-LOGICAL(LGT), PARAMETER :: default_isTangent = .FALSE.
-LOGICAL(LGT), PARAMETER :: default_useExternal = .FALSE.
-
 PUBLIC :: AbstractBC_
 PUBLIC :: AbstractBCPointer_
-PUBLIC :: TypeAbstractBCOpt
+PUBLIC :: TypeBCOpt
 PUBLIC :: AbstractBCDeallocate
 PUBLIC :: AbstractBCInitiate
 PUBLIC :: AbstractBCImportFromToml
@@ -80,22 +71,22 @@ PUBLIC :: AbstractBCImportFromToml
 ! date: 2025-11-11
 ! summary: Options for AbstractBC
 
-TYPE :: AbstractBCOpt_
+TYPE :: BCOpt_
   CHARACTER(10) :: name = "AbstractBC"
   INTEGER(I4B) :: idof = math%one_i
   INTEGER(I4B) :: nodalValueType = TypeFEVariableOpt%constant
-  CHARACTER(4) :: nodalValueType_char = "NONE"
+  CHARACTER(8) :: nodalValueType_char = "CONSTANT"
   LOGICAL(LGT) :: isUserFunction = math%no
   LOGICAL(LGT) :: isNormal = math%no
   LOGICAL(LGT) :: isTangent = math%no
   LOGICAL(LGT) :: isUseExternal = math%no
-END TYPE AbstractBCOpt_
+END TYPE BCOpt_
 
 !----------------------------------------------------------------------------
-!                                                           TypeAbstractBCOpt
+!                                                                  TypeBCOpt
 !----------------------------------------------------------------------------
 
-TYPE(AbstractBCOpt_), PARAMETER :: TypeAbstractBCOpt = AbstractBCOpt_()
+TYPE(BCOpt_), PARAMETER :: TypeBCOpt = BCOpt_()
 
 !----------------------------------------------------------------------------
 !                                                                AbstractBC_
@@ -113,16 +104,16 @@ TYPE, ABSTRACT :: AbstractBC_
   PRIVATE
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is true if the object is initiated
-  LOGICAL(LGT) :: isNormal = TypeAbstractBCOpt%isNormal
+  LOGICAL(LGT) :: isNormal = TypeBCOpt%isNormal
   !! True if the boundary condition is normal to the boundary
-  LOGICAL(LGT) :: isTangent = TypeAbstractBCOpt%isTangent
+  LOGICAL(LGT) :: isTangent = TypeBCOpt%isTangent
   !! True if the boundary condition is tangent to the boundary
-  LOGICAL(LGT) :: isUseExternal = TypeAbstractBCOpt%isUseExternal
+  LOGICAL(LGT) :: isUseExternal = TypeBCOpt%isUseExternal
   !! if true then nodal values are used externally
   !! depending upon the context.
   !! Basically we do not use the nodal value stored in the
   !! instance of AbstractBC_
-  LOGICAL(LGT) :: isUserFunction = default_isUserFunction
+  LOGICAL(LGT) :: isUserFunction = TypeBCOpt%isUserFunction
   !! True if userFunction is set
   LOGICAL(LGT) :: isElemToFace = math%no
   !! When elemToFace is set then isElemToFace is true
@@ -130,9 +121,9 @@ TYPE, ABSTRACT :: AbstractBC_
   !! When elemToEdge is set then isElemToEdge is true
   TYPE(String) :: name
   !! name of boundary condition
-  INTEGER(I4B) :: idof = TypeAbstractBCOpt%idof
+  INTEGER(I4B) :: idof = TypeBCOpt%idof
   !! degree of freedom number
-  INTEGER(I4B) :: nodalValueType = TypeAbstractBCOpt%nodalValueType
+  INTEGER(I4B) :: nodalValueType = TypeBCOpt%nodalValueType
   !! Constant, Space, SpaceTime, Time
   INTEGER(I4B) :: nrow = 0
   !! number of rows in nodalValue
@@ -305,7 +296,6 @@ END TYPE AbstractBCPointer_
 !# Initiate
 !
 ! This method contstructs an instance of AbstractBC.
-!
 
 INTERFACE AbstractBCInitiate
   MODULE SUBROUTINE obj_Initiate( &

@@ -25,6 +25,9 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE InputUtility, ONLY: Input
+#ifdef DEBUG_VER
+USE ElemShapeData_Method, ONLY: ElemShapeData_Display => Display
+#endif
 
 IMPLICIT NONE
 
@@ -322,8 +325,8 @@ END SUBROUTINE Get1WithUserFunction
 !                                                     Get1WithoutUserFunction
 !----------------------------------------------------------------------------
 
-SUBROUTINE Get1WithoutUserFunction(obj, fedof, geofedof, nodeNum, nodalValue, &
-                                   nrow, ncol)
+SUBROUTINE Get1WithoutUserFunction( &
+  obj, fedof, geofedof, nodeNum, nodalValue, nrow, ncol)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
   CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -371,10 +374,12 @@ SUBROUTINE Get1WithoutUserFunction(obj, fedof, geofedof, nodeNum, nodalValue, &
       obj=obj, fedof=fedof, geofedof=geofedof, nodenum=nodenum, &
       nodalvalue=nodalvalue, nrow=nrow, ncol=ncol)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
+
+#ifdef DEBUG_VER
     CALL AssertError1(math%no, myname, &
-             'No case found for nodalValueType'//ToString(obj%nodalValueType))
+                      'No case found for nodalValueType'// &
+                      ToString(obj%nodalValueType))
 #endif
 
   END SELECT
@@ -511,7 +516,8 @@ SUBROUTINE Get1ConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
 #ifdef DEBUG_VER
   isok = obj%tElemToEdge .EQ. 0
   CALL AssertError1(isok, myName, &
-                   "Edge DOF extraction is not implemented for userfunction.")
+                   "Edge DOF extraction is not implemented for&
+                  &userfunction.")
 #endif
 
   DEALLOCATE (massMat, ans, ipiv)
@@ -617,7 +623,7 @@ SUBROUTINE Get1TimeValue( &
 
 !   INTEGER(I4B) :: iel, localFaceNumber, localCellNumber, mysize, &
 !                   iNodeOnNode, iNodeOnFace, iNodeOnEdge, ii, jj, indx(1), &
-!                   localEdgeNumber, elemCoord_i, elemCoord_j, max_fedof_con, &
+!                 localEdgeNumber, elemCoord_i, elemCoord_j, max_fedof_con, &
 !                   itimes
 !
 !   REAL(DFP) :: elemCoord(3, 8)
@@ -721,7 +727,7 @@ SUBROUTINE Get1TimeValue( &
 ! #ifdef DEBUG_VER
 !   isok = obj%tElemToEdge .EQ. 0
 !   CALL AssertError1(isok, myName, &
-!                    "Edge DOF extraction is not implemented for userfunction.")
+!                "Edge DOF extraction is not implemented for userfunction.")
 ! #endif
 !
 !   DEALLOCATE (massMat, ans, ipiv)

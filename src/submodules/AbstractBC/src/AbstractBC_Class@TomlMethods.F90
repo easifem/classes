@@ -24,8 +24,6 @@ USE tomlf, ONLY: toml_get => get_value
 
 IMPLICIT NONE
 
-TYPE(AbstractBCOpt_), PARAMETER :: defaultOpt = AbstractBCOpt_()
-
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -134,7 +132,7 @@ SUBROUTINE ReadNameFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=obj%name, &
-                default_value=defaultOpt%name, origin=origin, stat=stat)
+                default_value=TypeBCOpt%name, origin=origin, stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -166,7 +164,7 @@ SUBROUTINE ReadIdofFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="idof", VALUE=obj%idof, &
-                default_value=default_idof, origin=origin, stat=stat)
+                default_value=TypeBCOpt%idof, origin=origin, stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -199,7 +197,7 @@ SUBROUTINE ReadNodalValueTypeFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="nodalValueType", VALUE=astr, &
-                default_value=default_nodalValueType_char, &
+                default_value=TypeBCOpt%nodalValueType_char, &
                 origin=origin, stat=stat)
 
   obj%nodalValueType = TypeFieldOpt%ToNumber(astr%chars())
@@ -235,7 +233,7 @@ SUBROUTINE ReadIsNormalFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="isNormal", VALUE=obj%isNormal, &
-                default_value=default_isNormal, origin=origin, stat=stat)
+                default_value=TypeBCOpt%isNormal, origin=origin, stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -268,7 +266,7 @@ SUBROUTINE ReadIsTangentFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="isTangent", VALUE=obj%isTangent, &
-                default_value=default_isTangent, origin=origin, stat=stat)
+                default_value=TypeBCOpt%isTangent, origin=origin, stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -300,7 +298,8 @@ SUBROUTINE ReadIsUseExternalFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="isUseExternal", VALUE=obj%isUseExternal, &
-                default_value=default_useExternal, origin=origin, stat=stat)
+                default_value=TypeBCOpt%isUseExternal, origin=origin, &
+                stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -331,8 +330,10 @@ SUBROUTINE ReadIsUserFunctionFromToml(obj, table)
                           'Reading isUserFunction ...')
 #endif
 
-  CALL GetValue(table=table, key="isUserFunction", VALUE=obj%isUserFunction, &
-               default_value=default_isUserFunction, origin=origin, stat=stat)
+  CALL GetValue( &
+    table=table, key="isUserFunction", VALUE=obj%isUserFunction, &
+    default_value=TypeBCOpt%isUserFunction, origin=origin, &
+    stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -373,8 +374,9 @@ SUBROUTINE ReadBoundaryFromToml(obj, table, dom)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
-  CALL AssertError1(isok, myName, 'following error occured while reading &
-                   &the toml file :: cannot find [boundary] table in config.')
+  CALL AssertError1(isok, myName, &
+   'following error occured while reading &
+  &the toml file :: cannot find [boundary] table in config.')
 #endif
 
   CALL obj%boundary%ImportFromToml(table=node, dom=dom)
@@ -420,8 +422,9 @@ SUBROUTINE ReadUserFunctionFromToml(obj, table)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
-  CALL AssertError1(isok, myName, 'following error occured while reading &
-                   &the toml file :: cannot find [function] table in config.')
+  CALL AssertError1(isok, myName, &
+  'following error occured while reading &
+  &the toml file :: cannot find [function] table in config.')
 #endif
 
   ALLOCATE (obj%func)
@@ -477,7 +480,8 @@ SUBROUTINE ReadConstantNodalValueFromToml(obj, table)
   END IF
 
   CALL GetValue(table=table, key="value", VALUE=areal, &
-                origin=origin, stat=stat, default_value=0.0_DFP, isFound=isok)
+                origin=origin, stat=stat, default_value=0.0_DFP, &
+                isFound=isok)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &

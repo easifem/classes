@@ -375,7 +375,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromConstant()"
 
 INTEGER(I4B), PARAMETER :: tVertices = 2
 INTEGER(I4B) :: ii, nips
-
 REAL(DFP) :: scale, vertexVal(tVertices), vertexInterpol
 
 #ifdef DEBUG_VER
@@ -386,6 +385,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 nips = facetElemsd%nips
 scale = math%zero
 vertexVal = math%zero
+
+#ifdef DEBUG_VER
+CALL AssertError3(tVertices, facetElemsd%nns, myName, &
+                  "a=tVertices, b=facetElemsd%nns")
+#endif
 
 IF (onlyFaceBubble) THEN
   vertexVal = math%one

@@ -405,9 +405,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+CALL AssertError1(math%no, myName, &
+                  "This method should be implemented by the child class.")
 #endif
 
 #ifdef DEBUG_VER

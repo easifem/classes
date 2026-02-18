@@ -21,6 +21,7 @@ USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
                     TypeFEVariableOpt, TypeInterpolationOpt
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
                                         InterpolationPoint_Triangle_, &
                                         GetHierarchicalDOF_Triangle
@@ -125,12 +126,14 @@ CALL AssertError1(isok, myName, &
 
 isok = PRESENT(cellOrder)
 IF (isok) THEN
-CALL obj%opt%SetCellOrder(cellOrder=cellOrder, tCell=tCell, errCheck=errCheck)
+  CALL obj%opt%SetCellOrder(cellOrder=cellOrder, tCell=tCell, &
+                            errCheck=errCheck)
 END IF
 
 isok = PRESENT(faceOrder)
 IF (isok) THEN
-CALL obj%opt%SetFaceOrder(faceOrder=faceOrder, tFace=tFace, errCheck=errCheck)
+  CALL obj%opt%SetFaceOrder(faceOrder=faceOrder, tFace=tFace, &
+                            errCheck=errCheck)
 END IF
 
 CALL obj%opt%GetCellOrder(ans=cellOrder0, tsize=ii)
@@ -185,7 +188,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%TriangleH1LagFE_GetLocalFacetElemShapeData( &
+CALL obj%opt%TriangleH1HieFE_GetLocalFacetElemShapeData( &
   elemsd=elemsd, facetElemsd=facetElemsd, quad=quad, facetQuad=facetQuad, &
   localFaceNumber=localFaceNumber)
 

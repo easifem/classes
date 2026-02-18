@@ -79,8 +79,9 @@ END PROCEDURE obj_GetTotalEdgeDOF1
 
 MODULE PROCEDURE obj_GetEdgeDOF2
 INTEGER(I4B) :: globalEdge
-globalEdge = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
-                             islocal=islocal, localEdgeNumber=localEdgeNumber)
+globalEdge = obj%mesh%GetGlobalEdgeNumber( &
+             globalElement=globalElement, islocal=islocal, &
+             localEdgeNumber=localEdgeNumber)
 CALL obj%GetEdgeDOF(globalEdge=globalEdge, ans=ans, tsize=tsize, &
                     islocal=islocal)
 END PROCEDURE obj_GetEdgeDOF2
@@ -91,8 +92,9 @@ END PROCEDURE obj_GetEdgeDOF2
 
 MODULE PROCEDURE obj_GetTotalEdgeDOF2
 INTEGER(I4B) :: globalEdge
-globalEdge = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
-                             islocal=islocal, localEdgeNumber=localEdgeNumber)
+globalEdge = obj%mesh%GetGlobalEdgeNumber( &
+             globalElement=globalElement, islocal=islocal, &
+             localEdgeNumber=localEdgeNumber)
 ans = obj%GetTotalEdgeDOF(globalEdge=globalEdge, islocal=islocal)
 END PROCEDURE obj_GetTotalEdgeDOF2
 

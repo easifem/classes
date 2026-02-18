@@ -107,27 +107,32 @@ obj%isInit = .TRUE.
 obj%boundary = boundary
 obj%dom => dom
 
-obj%name = Input(option=name, default=default_name)
-obj%idof = Input(option=idof, default=default_idof)
+obj%name = Input(option=name, default=TypeBCOpt%name)
+obj%idof = Input(option=idof, default=TypeBCOpt%idof)
 obj%nodalValueType = Input(option=nodalValueType, &
-                           default=default_nodalValueType)
+                           default=TypeBCOpt%nodalValueType)
 
-obj%isNormal = Input(option=isNormal, default=default_isNormal)
-obj%isTangent = Input(option=isTangent, default=default_isTangent)
-obj%isUseExternal = Input(option=isUseExternal, default=default_useExternal)
+obj%isNormal = Input(option=isNormal, default=TypeBCOpt%isNormal)
+obj%isTangent = Input(option=isTangent, default=TypeBCOpt%isTangent)
+obj%isUseExternal = Input(option=isUseExternal, &
+                          default=TypeBCOpt%isUseExternal)
 obj%isUserFunction = Input(option=isUserFunction, &
-                           default=default_isUserFunction)
+                           default=TypeBCOpt%isUserFunction)
 
 #ifdef DEBUG_VER
-isok = obj%isNormal .AND. (obj%idof .EQ. 0)
-CALL AssertError1(isok, myName, &
-                  'When isNormal is true, idof CANNOT be greater than 0.')
+IF (obj%isNormal) THEN
+  isok = obj%idof .EQ. 0
+  CALL AssertError1(isok, myName, &
+                    'When isNormal is true, idof CANNOT be greater than 0.')
+END IF
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%isTangent .AND. (obj%idof .EQ. 0)
-CALL AssertError1(isok, myName, &
-                  'When isTangent is true, idof CANNOT be greater than 0.')
+IF (obj%isTangent) THEN
+  isok = obj%idof .EQ. 0
+  CALL AssertError1(isok, myName, &
+                    'When isTangent is true, idof CANNOT be greater than 0.')
+END IF
 #endif
 
 #ifdef DEBUG_VER
