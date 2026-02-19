@@ -401,7 +401,8 @@ DO jj = 1, obj%returnShape(2)
     IF (isok) CALL obj%matrixEqParser(ii, jj)%ptr%DEALLOCATE()
 
     obj%matrixEqParser(ii, jj)%ptr => EquationParser_Pointer( &
-                                     funcStr=funcStr(ii, jj)%chars(), var=var)
+                                      funcStr=funcStr(ii, jj)%Chars(), &
+                                      var=var)
   END DO
 END DO
 

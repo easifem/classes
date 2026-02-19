@@ -18,25 +18,29 @@
 
 SUBMODULE(QuadratureOpt_Class) GetMethods
 USE Display_Method, ONLY: Display, ToString
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
-                                  QuadraturePoint_ToInteger, &
-                                  QuadraturePoint_Initiate => Initiate, &
-                                  GetTotalQuadraturePoints, &
-                                  InitiateFacetQuadrature, &
-                                  GetQuadratureWeights_
+
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToInteger
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
+USE QuadraturePoint_Method, ONLY: InitiateFacetQuadrature
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+
 USE InputUtility, ONLY: Input
 USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: math => TypeMathOpt
 
-USE LineInterpolationUtility, ONLY: QuadraturePoint_Line_, &
-                                    QuadratureNumber_Line
+USE LineInterpolationUtility, ONLY: QuadraturePoint_Line_
+USE LineInterpolationUtility, ONLY: QuadraturePoint_Line
+USE LineInterpolationUtility, ONLY: QuadratureNumber_Line
 
-USE TriangleInterpolationUtility, ONLY: QuadraturePoint_Triangle_, &
-                                        QuadratureNumber_Triangle, &
-                                        FacetConnectivity_Triangle
+USE TriangleInterpolationUtility, ONLY: QuadraturePoint_Triangle_
+USE TriangleInterpolationUtility, ONLY: QuadratureNumber_Triangle
+USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle
 
-USE QuadrangleInterpolationUtility, ONLY: QuadraturePoint_Quadrangle_, &
-                                          QuadratureNumber_Quadrangle, &
-                                          FacetConnectivity_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: QuadraturePoint_Quadrangle_
+USE QuadrangleInterpolationUtility, ONLY: QuadratureNumber_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: FacetConnectivity_Quadrangle
 
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -110,6 +114,7 @@ END PROCEDURE obj_GetParam
 MODULE PROCEDURE Line_GetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "Line_GetQuadraturePoints()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: nips(1), nrow, ncol
@@ -120,9 +125,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
+isok = obj%isOrder .AND. obj%isNips
+IF (isok) THEN
+  CALL AssertError1(math%no, myName, &
+                    "Both isOrder and isNips is set.")
 END IF
 #endif
 
@@ -182,6 +188,7 @@ END PROCEDURE Line_GetFacetQuadraturePoints
 MODULE PROCEDURE Triangle_GetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "Triangle_GetQuadraturePoints()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: nips(1), nrow, ncol
@@ -192,9 +199,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
+isok = obj%isOrder .AND. obj%isNips
+IF (isok) THEN
+  CALL AssertError1(math%no, myName, &
+                    "Both isOrder and isNips is set.")
 END IF
 #endif
 
@@ -204,6 +212,12 @@ IF (obj%isOrder) THEN
 ELSE
   nips(1) = obj%nips(1)
 END IF
+
+#ifdef DEBUG_VER
+isok = obj%xidim .NE. 0
+CALL AssertError1(isok, myName, &
+                  "obj%xidim is zero")
+#endif
 
 nrow = obj%xidim + 1
 CALL Reallocate(quad%points, nrow, nips(1))
@@ -229,6 +243,7 @@ END PROCEDURE Triangle_GetQuadraturePoints
 MODULE PROCEDURE Triangle_GetFacetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "Triangle_GetFacetQuadraturePoints()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: nips(1), nrow, ncol, faceCon(2, 3)
@@ -242,9 +257,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
+isok = obj%isOrder .AND. obj%isNips
+IF (isok) THEN
+  CALL AssertError1(math%no, myName, &
+                    "Both isOrder and isNips is set.")
 END IF
 #endif
 
@@ -253,6 +269,12 @@ IF (obj%isOrder) THEN
   nips(1) = QuadratureNumber_Line(order=obj%order(1), &
                                   quadtype=obj%quadratureType(1))
 END IF
+
+#ifdef DEBUG_VER
+isok = obj%xidim .NE. 0
+CALL AssertError1(isok, myName, &
+                  "obj%xidim is zero.")
+#endif
 
 nrow = obj%xidim + 1
 CALL Reallocate(quad%points, nrow, nips(1))
@@ -292,6 +314,7 @@ END PROCEDURE Triangle_GetFacetQuadraturePoints
 MODULE PROCEDURE Quadrangle_GetFacetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "Quadrangle_GetFacetQuadraturePoints()"
+LOGICAL(LGT) :: isok
 #endif
 
 REAL(DFP), PARAMETER :: reflineCoord(1, 2) = &
@@ -305,9 +328,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
+isok = obj%isOrder .AND. obj%isNips
+IF (isok) THEN
+  CALL AssertError1(math%no, myName, &
+                    "Both isOrder and isNips is set.")
 END IF
 #endif
 
@@ -316,6 +340,12 @@ IF (obj%isOrder) THEN
   nips(1) = QuadratureNumber_Line(order=obj%order(1), &
                                   quadType=obj%quadratureType(1))
 END IF
+
+#ifdef DEBUG_VER
+isok = obj%xidim .NE. 0
+CALL AssertError1(isok, myName, &
+                  "obj%xidim is zero.")
+#endif
 
 nrow = obj%xidim + 1
 CALL Reallocate(quad%points, nrow, nips(1))
@@ -355,6 +385,7 @@ END PROCEDURE Quadrangle_GetFacetQuadraturePoints
 MODULE PROCEDURE Quadrangle_GetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "Quadrangle_GetQuadraturePoints()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: nips(2), nrow, ncol
@@ -365,9 +396,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-IF (obj%isOrder .AND. obj%isNips) THEN
-  CALL AssertError1(.TRUE., myName, &
-                    "Both isOrder and isNips is set, I am confuse what to do")
+isok = obj%isOrder .AND. obj%isNips
+IF (isok) THEN
+  CALL AssertError1(math%no, myName, &
+                    "Both isOrder and isNips is set.")
 END IF
 #endif
 
@@ -378,6 +410,12 @@ IF (obj%isOrder) THEN
          quadType2=obj%quadratureType(2))
 
 END IF
+
+#ifdef DEBUG_VER
+isok = obj%xidim .NE. 0
+CALL AssertError1(isok, myName, &
+                  "obj%xidim is zero.")
+#endif
 
 nrow = obj%xidim + 1
 CALL Reallocate(quad%points, nrow, nips(1) * nips(2))

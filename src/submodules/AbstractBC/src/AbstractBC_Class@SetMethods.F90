@@ -20,18 +20,94 @@ USE Display_Method, ONLY: Display, ToString
 USE GlobalData, ONLY: CHAR_LF
 USE ReallocateUtility, ONLY: Reallocate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                      SetConstantNodalValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetConstantNodalValue
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetConstantNodalValue()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Reallocate(obj%nodalValue, math%one_i, math%one_i)
+obj%nodalValue = val
+obj%isUserFunction = math%no
+obj%isUseExternal = math%no
+obj%nodalValueType = fevaropt%constant
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetConstantNodalValue
+
+!----------------------------------------------------------------------------
+!                                                             SetUserFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetUserFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetUserFunction()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+obj%func => val
+obj%isUserFunction = math%yes
+obj%isUseExternal = math%no
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+END PROCEDURE obj_SetUserFunction
+
+!----------------------------------------------------------------------------
+!                                                           SetNodalValueType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetNodalValueType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetNodalValueType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+obj%nodalValueType = val
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_SetNodalValueType
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set()"
-LOGICAL(LGT) :: abool
+#endif
 
+LOGICAL(LGT) :: abool
 INTEGER(I4B) :: acase
 
 #ifdef DEBUG_VER
@@ -40,8 +116,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL set_check_error(obj, constantNodalValue, spaceNodalValue, &
-                     timeNodalValue, spaceTimeNodalValue, userFunction)
+CALL SetCheckError(obj, constantNodalValue, spaceNodalValue, &
+                   timeNodalValue, spaceTimeNodalValue, userFunction)
 #endif
 
 abool = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)
@@ -99,23 +175,27 @@ CASE (5)
   obj%func => userFunction
 
 CASE DEFAULT
+
+#ifdef DEBUG_VER
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[CONFIG ERROR] :: Invalid case')
+#endif
+
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-
 END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
-!
+!                                                               SetCheckError
 !----------------------------------------------------------------------------
 
-SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
-                           timeNodalValue, spaceTimeNodalValue, userFunction)
+SUBROUTINE SetCheckError(obj, constantNodalValue, spaceNodalValue, &
+                         timeNodalValue, spaceTimeNodalValue, &
+                         userFunction)
   CLASS(AbstractBC_), INTENT(INOUT) :: obj
   REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
   REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
@@ -123,13 +203,23 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
   REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
   TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
 
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myname = "SetCheckError()"
+#endif
+
   LOGICAL(LGT) :: isConstVal, isSpaceVal, isTimeVal, isSTVal, &
-                  isUserFunction, bool1, bool2, notFunc_notExt
+                  isUserFunction, bool1, bool2, notFunc_notExt, isok
 
-  CHARACTER(*), PARAMETER :: myname = "set_check_error()"
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
+#ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
                     "AbstractBC_ object is not initiated")
+#endif
 
   notFunc_notExt = (.NOT. obj%isUserFunction) .AND. (.NOT. obj%isUseExternal)
 
@@ -139,67 +229,75 @@ SUBROUTINE set_check_error(obj, constantNodalValue, spaceNodalValue, &
   isTimeVal = PRESENT(timeNodalValue)
   isSTVal = PRESENT(spaceTimeNodalValue)
 
-  IF (notFunc_notExt .AND. isUserFunction) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-               "[CONFIG ERROR] :: AbstractBC_::obj is initiated "//CHAR_LF// &
-             "with useFunction=.FALSE. and isUseExternal=.FALSE."//CHAR_LF// &
-                      "So you cannot provide userFunction.")
-    RETURN
+#ifdef DEBUG_VER
+  isok = notFunc_notExt .AND. isUserFunction
+  IF (isok) THEN
+    CALL AssertError1(math%no, myName, &
+                      "AbstractBC_::obj is initiated with &
+                      &useFunction=.FALSE. and isUseExternal=.FALSE. &
+                      &So you cannot provide userFunction.")
   END IF
+#endif
 
+#ifdef DEBUG_VER
   bool1 = notFunc_notExt .AND. isConstVal
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%constant)
   IF (bool2) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
-                      "with nodalValueType=Constant "//CHAR_LF// &
-                      'So, constantNodalValue cannot be present.')
-    RETURN
+    CALL AssertError1(math%no, myName, &
+                    "AbstractBC_::obj is not initiated &
+                    &with nodalValueType=Constant &
+                    &So, constantNodalValue cannot be present.")
   END IF
+#endif
 
   !! spaceNodalValue
+#ifdef DEBUG_VER
   bool1 = notFunc_notExt .AND. isSpaceVal
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%space)
   IF (bool2) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
-                      "with nodalValueType=Space"//CHAR_LF// &
-                      'So, spaceNodalValue cannot be present.')
-    RETURN
+    CALL AssertError1(math%no, myName, &
+                      "AbstractBC_::obj is not initiated &
+                        &with nodalValueType=Space. So, spaceNodalValue &
+                        &cannot be present.")
   END IF
+#endif
 
+#ifdef DEBUG_VER
   bool1 = notFunc_notExt .AND. isTimeVal
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%time)
   IF (bool2) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    "[CONFIG ERROR] :: AbstractBC_::obj is not initiated "// &
-                      "with nodalValueType=Time"//CHAR_LF// &
-                      'So, timeNodalValue cannot be present.')
-    RETURN
+    CALL AssertError1(math%no, myName, &
+                      "AbstractBC_::obj is not initiated &
+                      &with nodalValueType=Time. So, timeNodalValue &
+                      &cannot be present.")
   END IF
+#endif
 
+#ifdef DEBUG_VER
   bool1 = notFunc_notExt .AND. isSTVal
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFeVariableOpt%spacetime)
   IF (bool2) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-               "[CONFIG ERROR] :: AbstractBC_::obj is not initiated with "// &
-                      " nodalValueType=SpaceTime"// &
-                      CHAR_LF// &
-                      'So, spaceTimeNodalValue cannot be present')
-    RETURN
+    CALL AssertError1(math%no, myName, &
+                      "AbstractBC_::obj is not initiated with &
+                      &nodalValueType=SpaceTime So, spaceTimeNodalValue &
+                      &cannot be present")
   END IF
+#endif
 
+#ifdef DEBUG_VER
   IF (isUserFunction) THEN
-
     bool1 = obj%isUserFunction
-    IF (.NOT. bool1) THEN
-      CALL e%RaiseError(modName//'::'//myName//" - "// &
-           "[CONFIG ERROR] :: AbstractBC_::obj is not correctly initiated"// &
-                        " for userFunction")
-      RETURN
-    END IF
+    CALL AssertError1(bool1, myName, &
+                      "AbstractBC_::obj is not correctly initiated &
+                      &for userFunction")
   END IF
-END SUBROUTINE set_check_error
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE SetCheckError
 
 !----------------------------------------------------------------------------
 !                                                 SetElemToLocalBoundary
@@ -257,8 +355,8 @@ SUBROUTINE set_elem_to_faces(obj)
   IF (obj%isElemToFace) THEN
 
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                  'obj%isElemToFace is already .true., so nothing to do here')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'obj%isElemToFace is already .true., so nothing to do')
 #endif
 
 #ifdef DEBUG_VER
@@ -343,7 +441,7 @@ SUBROUTINE set_elem_to_faces(obj)
                                 islocal=yes, opt="V")
 
     isok = indx(3) .EQ. 0
-    IF (isok) CYCLE
+    IF (isok) CYCLE boundary_loop
 
     !info: select a vertex node of boundary element, say, bndy_con(1)
     !      and get all elements connected to this node in cell mesh
@@ -420,7 +518,20 @@ SUBROUTINE set_elem_to_edges(obj)
                           '[START] ')
 #endif
 
-  IF (obj%isElemToEdge) RETURN
+  IF (obj%isElemToEdge) THEN
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'obj%isElemToEdge is already .true., so nothing to do')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   obj%isElemToEdge = .TRUE.
 
@@ -463,10 +574,11 @@ SUBROUTINE set_elem_to_edges(obj)
   boundary_loop: DO ii = 1, tsize
 
     CALL bmesh%GetConnectivity_(globalElement=bndy2cell(ii), &
-                            ans=bndy_con, tsize=indx(3), islocal=yes, opt="V")
+                                ans=bndy_con, tsize=indx(3), &
+                                islocal=yes, opt="V")
 
     isok = indx(3) .NE. 0
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE boundary_loop
 
     !INFO: select a node, bndy_con(1)
     CALL cmesh%GetNodeToElements_(ans=n2e, tsize=indx(4), &

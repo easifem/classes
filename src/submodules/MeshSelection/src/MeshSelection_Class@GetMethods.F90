@@ -38,6 +38,7 @@ CASE (2)
   IF (isAllocated(obj%surfaceMeshID)) ans = obj%surfaceMeshID
 CASE (3)
   IF (isAllocated(obj%volumeMeshID)) ans = obj%volumeMeshID
+CASE DEFAULT
 END SELECT
 IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
 END PROCEDURE obj_GetMeshID
@@ -67,8 +68,8 @@ CASE (3)
   tsize = SIZE(obj%volumeMeshID)
   ans => GetPointer(obj%volumeMeshID, tsize)
 
+CASE DEFAULT
 END SELECT
-
 END PROCEDURE obj_GetMeshIDPointer
 
 !----------------------------------------------------------------------------
@@ -96,8 +97,9 @@ CASE (3)
   tsize = SIZE(obj%volumeElemNum)
   ans => GetPointer(obj%volumeElemNum, tsize)
 
-END SELECT
+CASE DEFAULT
 
+END SELECT
 END PROCEDURE obj_GetElemNumPointer
 
 !----------------------------------------------------------------------------

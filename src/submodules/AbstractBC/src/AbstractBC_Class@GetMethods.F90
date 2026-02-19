@@ -16,6 +16,7 @@
 
 SUBMODULE(AbstractBC_Class) GetMethods
 USE Display_Method, ONLY: ToString, Display
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 
 IMPLICIT NONE
 
@@ -234,6 +235,41 @@ IF (PRESENT(isUseExternal)) isUseExternal = obj%isUseExternal
 IF (PRESENT(isElemToFace)) isElemToFace = obj%isElemToFace
 IF (PRESENT(isElemToEdge)) isElemToEdge = obj%isElemToEdge
 END PROCEDURE obj_GetParam
+
+!----------------------------------------------------------------------------
+!                                                      GetConstantNodalValue
+!---------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConstantNodalValue
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConstantNodalValue()"
+LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%nodalValueType .EQ. fevaropt%constant
+CALL AssertError1(isok, myName, &
+                  "nodalValueType is not constant")
+#endif
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%nodalValue)
+CALL AssertError1(isok, myName, &
+                  "nodalValue is not allocated")
+#endif
+
+ans = obj%nodalValue(1, 1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetConstantNodalValue
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

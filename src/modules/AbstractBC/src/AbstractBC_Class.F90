@@ -217,6 +217,16 @@ CONTAINS
   !! Set the boundary condition value
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     SetElemToLocalBoundary => obj_SetElemToLocalBoundary
+  !! Set element to local boundary
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    SetUserFunction => obj_SetUserFunction
+  !! Set pointer to user function
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    SetConstantNodalValue => obj_SetConstantNodalValue
+  !! Set constant nodal value
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    SetNodalValueType => obj_SetNodalValueType
+  !! Set nodal value type
 
   ! GET:
   ! @GetMethods
@@ -255,6 +265,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsUseFunction => &
     obj_IsUseFunction
   !! Returns true if the useFunction is true
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetConstantNodalValue => &
+    obj_GetConstantNodalValue
+  !! Get the constant nodal value
 
   ! GET:
   ! @GetValueMethods
@@ -1002,6 +1015,66 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                 SetUserFunction@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Set UserFunction in abstract boundary condition
+!
+!# SetUserFunction
+!
+! This method sets the UserFunction of abstract boundary condition.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetUserFunction(obj, val)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    TYPE(UserFunction_), TARGET, INTENT(IN) :: val
+    !! user function
+  END SUBROUTINE obj_SetUserFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetConstantNodalValue@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Set constant nodal value in abstract boundary condition
+!
+!# SetConstantNodalValue
+!
+! This method sets the ConstantNodalValue of abstract boundary condition.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetConstantNodalValue(obj, val)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: val
+    !! user function
+  END SUBROUTINE obj_SetConstantNodalValue
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                SetNodalValueType@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-26
+! summary:  Set nodalValueType in abstract boundary condition
+!
+!# SetNodalValueType
+!
+! This method sets the nodalValueType of abstract boundary condition.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetNodalValueType(obj, val)
+    CLASS(AbstractBC_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: val
+    !! nodal value type
+  END SUBROUTINE obj_SetNodalValueType
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                           SetElemToLocalBoundary@SetMethods
 !----------------------------------------------------------------------------
 
@@ -1159,6 +1232,26 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: iNodeOnEdge
     !! starting point of nodes on edge
   END SUBROUTINE obj_GetNodeNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetConstantNodalValue@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-19
+! summary: Get constant nodal values
+!
+!# GetConstantNodalValue
+!
+! Get the constant nodal values, it works only when nodalValueType is
+! constant. Otherwise, it is an error.
+!
+INTERFACE
+  MODULE FUNCTION obj_GetConstantNodalValue(obj) RESULT(ans)
+    CLASS(AbstractBC_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetConstantNodalValue
 END INTERFACE
 
 !----------------------------------------------------------------------------

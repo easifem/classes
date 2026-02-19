@@ -21,13 +21,13 @@ SUBMODULE(FEDOF_Class) TomlMethods
 ! USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
 USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value !, toml_serialize
+USE tomlf, ONLY: toml_get => get_value
 USE String_Class, ONLY: String
 USE FEFactoryUtility, ONLY: FEFactory
 USE ReferenceElement_Method, ONLY: GetElementIndex
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -39,8 +39,10 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
+INTEGER(I4B), PARAMETER :: topoListSize = 8
 INTEGER(I4B), ALLOCATABLE :: order(:)
-INTEGER(I4B) :: totalTopo, topoList(8), nsd, ii, jj, elemType, tsize
+INTEGER(I4B) :: totalTopo, topoList(topoListSize), nsd, ii, jj, elemType, &
+                tsize
 LOGICAL(LGT) :: islocal, isFound
 
 #ifdef DEBUG_VER

@@ -297,7 +297,8 @@ SUBROUTINE Get1WithUserFunction(obj, fedof, geofedof, nodeNum, nodalValue, &
 #ifdef DEBUG_VER
   isok = obj%tElemToEdge .EQ. 0
   CALL AssertError1(isok, myName, &
-                   "Edge DOF extraction is not implemented for userfunction.")
+                   "Edge DOF extraction is not implemented&
+                  & for userfunction.")
 #endif
 
   IF (ALLOCATED(massMat)) DEALLOCATE (massMat)
@@ -412,13 +413,13 @@ SUBROUTINE Get1ConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
   CHARACTER(*), PARAMETER :: myName = "Get1ConstantValue()"
 #endif
 
+  INTEGER(I4B), PARAMETER :: five = 5, three = 3, eight = 8
   INTEGER(I4B) :: iel, localFaceNumber, localCellNumber, mysize, &
-                  iNodeOnNode, iNodeOnFace, iNodeOnEdge, ii, jj, indx(5), &
-                  localEdgeNumber
-
-  REAL(DFP) :: elemCoord(3, 8), constValue
-  REAL(DFP), ALLOCATABLE :: massMat(:, :), ans(:), funcValue(:)
+                  iNodeOnNode, iNodeOnFace, iNodeOnEdge, ii, jj, &
+                  indx(five), localEdgeNumber
   INTEGER(I4B), ALLOCATABLE :: ipiv(:)
+  REAL(DFP) :: elemCoord(three, eight), constValue
+  REAL(DFP), ALLOCATABLE :: massMat(:, :), ans(:), funcValue(:)
   LOGICAL(LGT) :: isok
   CLASS(AbstractMesh_), POINTER :: cellMesh
   CLASS(AbstractFE_), POINTER :: feptr, geofeptr

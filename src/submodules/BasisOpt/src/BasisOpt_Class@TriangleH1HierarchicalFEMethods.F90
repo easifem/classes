@@ -39,6 +39,7 @@ USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
 USE ReallocateUtility, ONLY: Reallocate
 USE SwapUtility, ONLY: SWAP_
 USE ReverseUtility, ONLY: Reverse
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 
@@ -51,9 +52,11 @@ CONTAINS
 MODULE PROCEDURE TriangleH1HieFE_GetLocalElemShapeData
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "TriangleH1HieFE_GetLocalElemShapeData()"
+LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: nips, tdof, indx(10), ii, jj
+INTEGER(I4B), PARAMETER :: indxSize = 10
+INTEGER(I4B) :: nips, tdof, indx(indxSize), ii, jj
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -63,16 +66,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 nips = GetTotalQuadraturePoints(obj=quad)
 tdof = obj%GetTotalDOF()
 
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling Elemsd_Allocate()')
+#endif
+
 CALL Elemsd_Allocate(obj=elemsd, nsd=obj%nsd, xidim=obj%xidim, &
                      nns=tdof, nips=nips)
 
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling GetQuadratureWeights_()')
+#endif
+
 CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
 
-CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%temp, nips, tdof, math%three_i, &
+                isExpand=math%yes, expandFactor=math%two_i)
 
-! HeirarchicalBasis_Triangle3_(&
-! order, pe1, pe2, pe3, xij, refTriangle, edgeOrient1, edgeOrient2, &
-! edgeOrient3, faceOrient, ans, nrow, ncol)
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling HeirarchicalBasis_Triangle_()')
+#endif
+
+#ifdef DEBUG_VER
+isok = quad%txi .NE. math%zero_i
+CALL AssertError1(isok, myName, &
+                  "quad%txi is zero.")
+#endif
+
 CALL HeirarchicalBasis_Triangle_( &
   order=obj%cellOrder(1), pe1=obj%faceOrder(1, 1), pe2=obj%faceOrder(1, 2), &
   pe3=obj%faceOrder(1, 3), xij=quad%points(1:quad%txi, 1:nips), &
@@ -81,12 +103,19 @@ CALL HeirarchicalBasis_Triangle_( &
   faceOrient=obj%cellOrient, ans=obj%temp(:, :, 1), &
   nrow=indx(3), ncol=indx(4))
 
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Setting elemsd%N')
+#endif
+
 DO CONCURRENT(ii=1:indx(4), jj=1:indx(3))
   elemsd%N(ii, jj) = obj%temp(jj, ii, 1)
 END DO
 
-! order, pe1, pe2, pe3, xij, edgeOrient1, edgeOrient2, edgeOrient3, &
-! faceOrient, refTriangle, ans, tsize1, tsize2, tsize3)
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling HeirarchicalBasisGradient_Triangle_()')
+#endif
 CALL HeirarchicalBasisGradient_Triangle_( &
   order=obj%cellOrder(1), pe1=obj%faceOrder(1, 1), pe2=obj%faceOrder(1, 2), &
   pe3=obj%faceOrder(1, 3), xij=quad%points(1:quad%txi, 1:nips), &

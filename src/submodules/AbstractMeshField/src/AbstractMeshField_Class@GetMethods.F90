@@ -63,8 +63,9 @@ CASE (fevaropt%scalar)
     ans(1) = obj%ss(obj%indxShape(iel))
     ans(2) = obj%ss(obj%indxShape(iel) + 1)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
+
+#ifdef DEBUG_VER
     CALL AssertError1(.FALSE., myName, &
                       "No case found for vartype="//ToString(obj%vartype))
 #endif
@@ -93,8 +94,9 @@ CASE (fevaropt%vector)
     ans(2) = obj%ss(obj%indxShape(iel) + 1)
     ans(3) = obj%ss(obj%indxShape(iel) + 2)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
+
+#ifdef DEBUG_VER
     CALL AssertError1(.FALSE., myName, &
                       "No case found for vartype="//ToString(obj%vartype))
 #endif
@@ -126,16 +128,18 @@ CASE (fevaropt%matrix)
     ans(3) = obj%ss(obj%indxShape(iel) + 2)
     ans(4) = obj%ss(obj%indxShape(iel) + 3)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
+
+#ifdef DEBUG_VER
     CALL AssertError1(.FALSE., myName, &
                       "No case found for vartype="//ToString(obj%vartype))
 #endif
 
   END SELECT
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     "No case found for rank="//ToString(obj%rank))
 #endif
@@ -448,11 +452,13 @@ CASE (typefield%spaceTime)
   s(3) = nns
   s(4) = nnt
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     'No case found for varType: '//ToString(varType))
 #endif
+
 END SELECT
 
 #ifdef DEBUG_VER
@@ -493,8 +499,9 @@ CASE (typefield%matrix)
   CALL TensorMeshFieldGetShapeAndSize(varType=varType, s=s, tsize=tsize, &
                                       dim1=dim1, dim2=dim2, nns=nns, nnt=nnt)
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     'No case found for rank: '//ToString(rank))
 #endif

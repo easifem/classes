@@ -274,8 +274,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
-    obj, isHomogeneous, quadratureType, order, isOrder, nips, isNips, alpha, &
-    beta, lambda, topoType, nsd, xidim, refelemDomain, refelemCoord)
+    obj, isHomogeneous, quadratureType, order, isOrder, nips, isNips, &
+    alpha, beta, lambda, topoType, nsd, xidim, refelemDomain, refelemCoord)
     CLASS(QuadratureOpt_), INTENT(INOUT) :: obj
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isHomogeneous
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(:)

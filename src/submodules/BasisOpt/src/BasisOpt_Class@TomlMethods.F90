@@ -181,22 +181,26 @@ SUBROUTINE QuadOptFromToml(obj, table)
 
 #ifdef DEBUG_VER
   IF (.NOT. isFound) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-       'quadOptName not found in toml, proceeding with default value: '//astr)
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'quadOptName not found in toml, using default: '//astr)
   END IF
 #endif
 
   !! Get the node from toml table with name quadOptName
   node => NULL()
-  CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-                stat=stat)
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=.FALSE., stat=stat)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
   IF (.NOT. isok) THEN
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'Node with name '//astr//' is not associated'// &
+                      ' quadOpt will not be imported.')
+
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            'Node with name '//astr//' is not associated'// &
-                            ' quadOpt will not be imported.')
+                            '[END] ')
+
     RETURN
   END IF
 #endif
