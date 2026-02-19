@@ -25,6 +25,7 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE InputUtility, ONLY: Input
+
 #ifdef DEBUG_VER
 USE ElemShapeData_Method, ONLY: ElemShapeData_Display => Display
 #endif
@@ -237,7 +238,6 @@ SUBROUTINE Get1WithUserFunction(obj, fedof, geofedof, nodeNum, nodalValue, &
 
     CALL obj%func%Get(val=ans(1), args=args)
     nodalValue(ii, 1) = ans(1)
-
   END DO
 
   CALL obj%SetElemToLocalBoundary()
@@ -841,23 +841,23 @@ SUBROUTINE Get1CheckErrorUserFunction(obj, myName, times)
                     "Return type of user function should be scalar.")
 #endif
 
-#ifdef DEBUG_VER
-  bool1 = obj%nodalValueType .EQ. TypeFEVariableOpt%time
-  isok = .TRUE.
-  IF (bool1) isok = PRESENT(times)
-  CALL AssertError1(isok, myName, &
-       "When `nodalValueType` is Time `IsUserFunction` is TRUE, then `times`&
-       &is needed in the passing argument, but it is not present")
-#endif
-
-#ifdef DEBUG_VER
-  bool1 = obj%nodalValueType .EQ. TypeFEVariableOpt%spaceTime
-  isok = .TRUE.
-  IF (bool1) isok = PRESENT(times)
-  CALL AssertError1(isok, myName, &
-       "When `nodalValueType` is spaceTime `IsUserFunction` is TRUE, then &
-       &`times` is needed in the passing argument, but it is not present")
-#endif
+! These two conditions are not necessary as we use default time = 0
+! #ifdef DEBUG_VER
+!   bool1 = obj%nodalValueType .EQ. TypeFEVariableOpt%time
+!   isok = .TRUE.
+!   IF (bool1) isok = PRESENT(times)
+!   CALL AssertError1(isok, myName, &
+!     "When `nodalValueType` is Time `IsUserFunction` is TRUE, then `times`&
+!     &is needed in the passing argument, but it is not present")
+! #endif
+! #ifdef DEBUG_VER
+!   bool1 = obj%nodalValueType .EQ. TypeFEVariableOpt%spaceTime
+!   isok = .TRUE.
+!   IF (bool1) isok = PRESENT(times)
+!   CALL AssertError1(isok, myName, &
+!        "When `nodalValueType` is spaceTime `IsUserFunction` is TRUE, then &
+!        &`times` is needed in the passing argument, but it is not present")
+! #endif
 
 #ifdef DEBUG_VER
   aint = obj%func%GetNumArgs()

@@ -161,7 +161,8 @@ SUBROUTINE ImportIsUserFunctionFromToml(obj, table, isUserFunction)
 #endif
 
   CALL GetValue(table=table, key="isUserFunction", VALUE=isUserFunction, &
-               default_value=default_isUserFunction, origin=origin, stat=stat)
+                default_value=default_isUserFunction, origin=origin, &
+                stat=stat)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -196,8 +197,9 @@ SUBROUTINE ImportUserFunctionValueFromToml(obj, table)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
-  CALL AssertError1(isok, myName, 'following error occured while reading &
-                   &the toml file :: cannot find [function] table in config.')
+  CALL AssertError1(isok, myName, &
+                    'following error occured while reading the toml file &
+                    &:: cannot find [function] table in config.')
 #endif
 
   CALL func%ImportFromToml(table=node)
@@ -285,8 +287,9 @@ CASE (TypeFieldOpt%space)
 
   CALL ImportSpaceValueFromToml(obj=obj, table=table)
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     'No case found for nodalValueType')
 #endif
