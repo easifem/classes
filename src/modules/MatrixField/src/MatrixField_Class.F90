@@ -326,7 +326,8 @@ CONTAINS
   !! Building precondition matrix
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrecondition => obj_GetPrecondition
   !! Get the precondition matrix
-  PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => obj_ReversePermutation
+  PROCEDURE, PUBLIC, PASS(obj) :: ReversePermutation => &
+    obj_ReversePermutation
 
   ! GET:
   ! @DiagonalMethods
