@@ -35,6 +35,7 @@ USE TimeOpt_Class, ONLY: TimeOpt_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE MeshField_Class, ONLY: MeshField_
+USE NeumannBC_Class, ONLY: NeumannBCPointer_
 
 IMPLICIT NONE
 PRIVATE
@@ -138,9 +139,15 @@ CONTAINS
 
   ! SET:
   ! @SurfaceNBCMethods
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplySurfaceNeumannBC => &
-    obj_ApplySurfaceNeumannBC
-  !! Apply Surface neumann boundary condition
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplySurfaceNeumannBC1 => obj_ApplySurfaceNeumannBC1
+  !! Apply Surface neumann boundary condition using internal nbc list
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplySurfaceNeumannBC2 => obj_ApplySurfaceNeumannBC2
+  !! Apply Surface neumann boundary condition using externally given list
+  GENERIC, PUBLIC :: ApplySurfaceNeumannBC => ApplySurfaceNeumannBC1, &
+    ApplySurfaceNeumannBC2
+  !! Generic method for applying surface neumann boundary conditions
 
   ! SET:
   ! @BodySourceMethods
@@ -836,7 +843,7 @@ END INTERFACE
 ! summary: Add Contribution of neumann boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC( &
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC1( &
     obj, nbcField, scale, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
@@ -847,7 +854,32 @@ INTERFACE
     !! Scale for neumann boundary condition
     REAL(DFP), OPTIONAL, INTENT(IN) :: times
     !! times
-  END SUBROUTINE obj_ApplySurfaceNeumannBC
+  END SUBROUTINE obj_ApplySurfaceNeumannBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ApplyNeumannBC@NBCMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-06
+! summary: Add Contribution of neumann boundary condition
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC2( &
+    obj, nbc, nbcField, scale, times)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! Scalar field
+    TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbc(:)
+    !! list of neumann boundary conditions
+    CLASS(ScalarField_), INTENT(INOUT) :: nbcField
+    !! Scalar field where we will keep the neumann boundary condition
+    !! extension to the entire domain
+    REAL(DFP), INTENT(IN) :: scale
+    !! Scale for neumann boundary condition
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    !! times
+  END SUBROUTINE obj_ApplySurfaceNeumannBC2
 END INTERFACE
 
 !----------------------------------------------------------------------------

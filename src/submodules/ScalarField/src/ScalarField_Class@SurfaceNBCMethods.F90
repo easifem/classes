@@ -45,9 +45,9 @@ CONTAINS
 !                                                       ApplySurfaceNeumannBC
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ApplySurfaceNeumannBC
+MODULE PROCEDURE obj_ApplySurfaceNeumannBC1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ApplySurfaceNeumannBC()"
+CHARACTER(*), PARAMETER :: myName = "obj_ApplySurfaceNeumannBC1()"
 #endif
 
 LOGICAL(LGT) :: isok
@@ -131,7 +131,99 @@ NULLIFY (nbc, mesh)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_ApplySurfaceNeumannBC
+END PROCEDURE obj_ApplySurfaceNeumannBC1
+
+!----------------------------------------------------------------------------
+!                                                       ApplySurfaceNeumannBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplySurfaceNeumannBC2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplySurfaceNeumannBC2()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: tbc, ibc, maxNNEGeo, maxNNE
+INTEGER(I4B), ALLOCATABLE :: facetCon(:)
+REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:), forceVec(:)
+CLASS(NeumannBC_), POINTER :: nbcptr
+CLASS(AbstractMesh_), POINTER :: mesh
+TYPE(FEVariable_) :: forceVar
+TYPE(QuadraturePoint_) :: quad, facetQuad
+TYPE(ElemShapeData_) :: elemsd, facetElemsd, geoElemsd, geoFacetElemsd
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tbc = SIZE(nbc)
+isok = tbc .GT. 0
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+CALL nbcField%SetAll(VALUE=math%zero)
+
+DO ibc = 1, tbc
+  nbcptr => obj%GetNBCPointer(ibc)
+  isok = ASSOCIATED(nbcptr)
+  IF (.NOT. isok) CYCLE
+
+  CALL nbcField%ApplyDirichletBC(dbc=nbcptr, times=times)
+END DO
+nbcptr => NULL()
+
+maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
+maxNNE = obj%fedof%GetMaxTotalConnectivity()
+
+CALL Reallocate(xij, 3, maxNNEGeo)
+CALL Reallocate(facetCon, maxNNE)
+CALL Reallocate(forceVec, maxNNE)
+CALL Reallocate(nbcValue, maxNNE)
+
+forceVar = NodalVariable(tsize=maxNNE, rank=TypeFEVariableScalar, &
+                         vartype=TypeFEVariableSpace)
+
+mesh => obj%fedof%GetMeshPointer()
+
+DO ibc = 1, tbc
+  nbcptr => obj%GetNBCPointer(ibc)
+
+  isok = ASSOCIATED(nbcptr)
+  IF (.NOT. isok) CYCLE
+
+  CALL ScalarFieldAssembleSurfaceSource( &
+    obj=obj, nbc=nbcptr, fedof=obj%fedof, geofedof=obj%geofedof, &
+    mesh=mesh, nbcField=nbcField, scale=scale, xij=xij, &
+    forceVec=forceVec, nbcValue=nbcValue, forceVar=forceVar, quad=quad, &
+    facetQuad=facetQuad, elemsd=elemsd, facetElemsd=facetElemsd, &
+    geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, &
+    facetCon=facetCon)
+END DO
+
+DEALLOCATE (facetCon, xij, nbcValue, forceVec)
+
+CALL FEVariable_Deallocate(forceVar)
+CALL QuadraturePoint_Deallocate(quad)
+CALL QuadraturePoint_Deallocate(facetQuad)
+CALL ElemShapeData_Deallocate(elemsd)
+CALL ElemShapeData_Deallocate(facetElemsd)
+CALL ElemShapeData_Deallocate(geoElemsd)
+CALL ElemShapeData_Deallocate(geoFacetElemsd)
+
+NULLIFY (nbcptr, mesh)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplySurfaceNeumannBC2
 
 !----------------------------------------------------------------------------
 !                        ScalarFieldAssembleSurfaceSource@ScalarFieldMethods
@@ -195,8 +287,9 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
 
   isok = isElemToEdge .OR. isElemToFace
   IF (.NOT. isok) THEN
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-          'isElemToEdge and isElemToFace are both .false. So, nothing to do.')
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'isElemToEdge isElemToFace are both .false. &
+                      &Nothing to do.')
 
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
