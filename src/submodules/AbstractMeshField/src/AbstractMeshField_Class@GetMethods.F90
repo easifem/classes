@@ -18,8 +18,12 @@ SUBMODULE(AbstractMeshField_Class) GetMethods
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class@GetMethods"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -276,39 +280,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Get_
 
 !----------------------------------------------------------------------------
-!                                                                  GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = ""
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetPrefix
-
-!----------------------------------------------------------------------------
 !                                              ScalarMeshFieldGetShapeAndSize
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ScalarMeshFieldGetShapeAndSize
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "ScalarMeshFieldGetShapeAndSize"
+CHARACTER(*), PARAMETER :: myName = "ScalarMeshFieldGetShapeAndSize()"
 LOGICAL(LGT) :: isok
 #endif
 
@@ -359,8 +336,8 @@ CASE (typefield%spaceTime)
   s(1) = nns
   s(2) = nnt
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     'No case found for varType: '//ToString(varType))
 #endif
@@ -438,8 +415,8 @@ CASE (typefield%spaceTime)
   s(2) = nns
   s(3) = nnt
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     'No case found for varType: '//ToString(varType))
 #endif
@@ -564,8 +541,9 @@ CASE (typefield%scalar)
 
 CASE (typefield%vector)
 
-  CALL VectorMeshFieldGetShapeAndSize(varType=varType, s=s, tsize=tsize, &
-                                      spaceCompo=spaceCompo, nns=nns, nnt=nnt)
+  CALL VectorMeshFieldGetShapeAndSize( &
+    varType=varType, s=s, tsize=tsize, spaceCompo=spaceCompo, nns=nns, &
+    nnt=nnt)
 
 CASE (typefield%matrix)
 

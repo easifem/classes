@@ -16,19 +16,23 @@
 
 SUBMODULE(AbstractMeshField_Class) SetMethods
 USE Display_Method, ONLY: ToString
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE, &
-                             FEVariable_SIZE => Size, &
-                             FEVariable_Shape => Shape
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_SIZE => Size
+USE FEVariable_Method, ONLY: FEVariable_Shape => Shape
 USE ReallocateUtility, ONLY: Reallocate
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE UserFunction_Class, ONLY: UserFunctionPointer_
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class@SetMethods"
+#endif
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             MasterSet
+!                                                                   MasterSet
 !----------------------------------------------------------------------------
 
 SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
@@ -58,7 +62,8 @@ SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
   myint1 = indxVal(indx + 1) - indxVal(indx)
   isok = myint1 .EQ. tsize
   CALL AssertError1(isok, myName, &
-                 "Size mismatch in val array assignment: Expected size = "// &
+                 "Size mismatch in val array assignment: &
+                &Expected size = "// &
                     ToString(tsize)//", Actual size = "//ToString(myint1))
 #endif
 
@@ -66,7 +71,8 @@ SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
   myint1 = indxShape(indx + 1) - indxShape(indx)
   isok = myint1 .EQ. tshape
   CALL AssertError1(isok, myName, &
-                  "Size mismatch in ss array assignment: Expected size = "// &
+                  "Size mismatch in ss array assignment: &
+                  &Expected size = "// &
                     ToString(tshape)//", Actual size = "//ToString(myint1))
 #endif
 
@@ -99,8 +105,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 iel = 1
 isok = obj%fieldType .EQ. typefield%Constant
-IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
-                                            islocal=islocal)
+IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber( &
+                      globalElement=globalElement, islocal=islocal)
 
 tsize = FEVariable_SIZE(fevar)
 tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
@@ -108,7 +114,8 @@ tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
 #ifdef DEBUG_VER
 isok = tshape .NE. 0
 CALL AssertError1(isok, myName, &
-        "tshape is zero from GetTotalRow(rank=obj%rank, varType=obj%varType)")
+        "tshape is zero from GetTotalRow(&
+        &rank=obj%rank, varType=obj%varType)")
 #endif
 
 s(1:tshape) = FEVariable_Shape(fevar)
@@ -147,7 +154,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 bool1 = obj%fieldType .EQ. typefield%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
-  CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+  CALL obj%Set(fevar=fevar, globalElement=1, islocal=math%yes)
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -162,19 +169,18 @@ nns = mesh%GetMaxNNE()
 nsd = mesh%GetNSD()
 ALLOCATE (nptrs(nns), xij(nsd, nns))
 
-!$OMP PARALLEL DO PRIVATE(iel, tsize, nptrs, xij, fevar)
 DO iel = 1, telem
-  CALL mesh%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
+  CALL mesh%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                              ans=nptrs, tsize=tsize)
 
-  CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
-                        ncol=ncol, globalNode=nptrs(1:tsize), islocal=.FALSE.)
+  CALL mesh%GetNodeCoord( &
+    nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
+    ncol=ncol, globalNode=nptrs(1:tsize), islocal=math%no)
 
   CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
 
-  CALL obj%Set(fevar=fevar, globalElement=iel, islocal=.TRUE.)
+  CALL obj%Set(fevar=fevar, globalElement=iel, islocal=math%yes)
 END DO
-!$OMP END PARALLEL DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
@@ -185,11 +191,11 @@ mesh => NULL()
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
+#endif
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
-!                                                               Set
+!                                                                         Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set3
@@ -273,8 +279,6 @@ MODULE PROCEDURE obj_Set5
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
 #endif
 
-LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
-
 INTEGER(I4B) :: iel, nns, nsd, tsize, nrow, ncol
 
 LOGICAL(LGT) :: isok
@@ -315,15 +319,15 @@ ALLOCATE (nptrs(nns), xij(nsd, nns))
 
 iel = mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
-CALL mesh%GetConnectivity_(globalElement=iel, islocal=yes, ans=nptrs, &
+CALL mesh%GetConnectivity_(globalElement=iel, islocal=math%yes, ans=nptrs, &
                            tsize=tsize)
 
 CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
-                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=no)
+                       ncol=ncol, globalNode=nptrs(1:tsize), islocal=math%no)
 
 CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
 
-CALL obj%Set(fevar=fevar, globalElement=iel, islocal=yes)
+CALL obj%Set(fevar=fevar, globalElement=iel, islocal=math%yes)
 
 CALL FEVariable_Deallocate(fevar)
 DEALLOCATE (xij, nptrs)
@@ -402,7 +406,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
 LOGICAL(LGT) :: isok
 #endif
 
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 INTEGER(I4B) :: tsize, ii, telements, jj
 
 #ifdef DEBUG_VER
@@ -424,7 +427,7 @@ END DO
 telements = obj%mesh%GetTotalElements()
 
 DO ii = 1, telements
-  jj = obj%mesh%GetMaterial(globalElement=ii, islocal=yes, &
+  jj = obj%mesh%GetMaterial(globalElement=ii, islocal=math%yes, &
                             medium=medium)
 
   ! Check if material index is out of bound or not
@@ -437,7 +440,7 @@ DO ii = 1, telements
                     ToString(ii))
 #endif
 
-  CALL obj%Set(func=func(jj)%ptr, globalElement=ii, islocal=yes, &
+  CALL obj%Set(func=func(jj)%ptr, globalElement=ii, islocal=math%yes, &
                times=times)
 END DO
 

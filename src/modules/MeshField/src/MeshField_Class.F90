@@ -17,19 +17,14 @@
 
 MODULE MeshField_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
-USE FPL, ONLY: ParameterList_
 USE ExceptionHandler_Class, ONLY: e
 USE UserFunction_Class, ONLY: UserFunction_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractMeshField_Class, ONLY: AbstractMeshField_
 USE FEDOF_Class, ONLY: FEDOF_
-
 IMPLICIT NONE
 
 PRIVATE
-
-CHARACTER(*), PARAMETER :: modName = "MeshField_Class"
-CHARACTER(*), PARAMETER :: myprefix = "MeshField"
 
 PUBLIC :: MeshField_
 PUBLIC :: MeshFieldPointer_
@@ -54,9 +49,6 @@ PUBLIC :: SetQuadraturePoints
 ! summary:  Mesh Field
 
 TYPE, EXTENDS(AbstractMeshField_) :: MeshField_
-CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 END TYPE MeshField_
 
 !----------------------------------------------------------------------------
@@ -75,14 +67,10 @@ END TYPE MeshFieldPointer_
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
-    TYPE(MeshField_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE obj_Deallocate_Vector
-END INTERFACE
-
 INTERFACE MeshFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_Vector
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
+    TYPE(MeshField_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE MeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -93,38 +81,11 @@ END INTERFACE MeshFieldDeallocate
 ! date:  2023-09-12
 ! summary:  Deallocate the vector of NeumannBC_
 
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
-    TYPE(MeshFieldPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector
-END INTERFACE
-
 INTERFACE MeshFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(MeshFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE MeshFieldDeallocate
-
-!----------------------------------------------------------------------------
-!                              SetAbstractMeshFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE SetScalarMeshFieldParam( &
-    param, name, fieldType, varType, engine, defineOn, nns)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: fieldType
-    INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(*), INTENT(IN) :: engine
-    INTEGER(I4B), INTENT(IN) :: defineOn
-    !! Nodal, Quadrature
-    INTEGER(I4B), INTENT(IN) :: nns
-    !! Number of node in space
-  END SUBROUTINE SetScalarMeshFieldParam
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                              SetAbstractMeshFieldParam@ConstructorMethods
@@ -157,31 +118,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-30
-! summary: Set parameters for space-time scalar mesh field
-
-INTERFACE
-  MODULE SUBROUTINE SetSTScalarMeshFieldParam( &
-    param, name, fieldType, varType, engine, defineOn, nns, nnt)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: fieldType
-    INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(*), INTENT(IN) :: engine
-    INTEGER(I4B), INTENT(IN) :: defineOn
-    !! Nodal, Quadrature
-    INTEGER(I4B), INTENT(IN) :: nns
-    !! Number of node in space
-    INTEGER(I4B), INTENT(IN) :: nnt
-    !! Number of node in time
-  END SUBROUTINE SetSTScalarMeshFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                SetSTScalarMeshFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-30
 ! summary: Set space-time scalar mesh field
 
 INTERFACE
@@ -201,31 +137,6 @@ INTERFACE
     !! Number of node in time
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE STScalarMeshFieldInitiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 SetVectorMeshFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-30
-! summary:  Set parameters for vector mesh field
-
-INTERFACE
-  MODULE SUBROUTINE SetVectorMeshFieldParam( &
-    param, name, fieldType, varType, engine, defineOn, spaceCompo, nns)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: fieldType
-    INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(*), INTENT(IN) :: engine
-    INTEGER(I4B), INTENT(IN) :: defineOn
-    !! Nodal, Quadrature
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    !! space compo
-    INTEGER(I4B), INTENT(IN) :: nns
-    !! Number of node in space
-  END SUBROUTINE SetVectorMeshFieldParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -261,31 +172,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                SetSTVectorMeshFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-30
-! summary:  Set parameters for space-time vector mesh field
-
-INTERFACE
-  MODULE SUBROUTINE SetSTVectorMeshFieldParam( &
-    param, name, fieldType, varType, engine, defineOn, spaceCompo, nns, nnt)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: fieldType
-    INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(*), INTENT(IN) :: engine
-    INTEGER(I4B), INTENT(IN) :: defineOn
-    !! Nodal, Quadrature
-    INTEGER(I4B), INTENT(IN) :: spaceCompo
-    INTEGER(I4B), INTENT(IN) :: nns
-    INTEGER(I4B), INTENT(IN) :: nnt
-    !! Number of node in space
-  END SUBROUTINE SetSTVectorMeshFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                STVectorMeshFieldInitiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -313,31 +199,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 SetTensorMeshFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-30
-! summary: Set parameters for tensor mesh field
-
-INTERFACE
-  MODULE SUBROUTINE SetTensorMeshFieldParam( &
-    param, name, fieldType, varType, engine, defineOn, dim1, dim2, nns)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: fieldType
-    INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(*), INTENT(IN) :: engine
-    INTEGER(I4B), INTENT(IN) :: defineOn
-    !! Nodal, Quadrature
-    INTEGER(I4B), INTENT(IN) :: dim1
-    INTEGER(I4B), INTENT(IN) :: dim2
-    INTEGER(I4B), INTENT(IN) :: nns
-    !! Number of node in space
-  END SUBROUTINE SetTensorMeshFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                  TensorMeshFieldInitiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -362,35 +223,6 @@ INTERFACE
     !! Number of node in space
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
   END SUBROUTINE TensorMeshFieldInitiate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                SetSTTensorMeshFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-30
-! summary:  Set param for space-time tensor mesh field
-
-INTERFACE
-  MODULE SUBROUTINE SetSTTensorMeshFieldParam( &
-    param, name, fieldType, varType, engine, defineOn, dim1, dim2, nns, nnt)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: name
-    INTEGER(I4B), INTENT(IN) :: fieldType
-    INTEGER(I4B), INTENT(IN) :: varType
-    CHARACTER(*), INTENT(IN) :: engine
-    INTEGER(I4B), INTENT(IN) :: defineOn
-    !! Nodal, Quadrature
-    INTEGER(I4B), INTENT(IN) :: dim1
-    !! size in dim1
-    INTEGER(I4B), INTENT(IN) :: dim2
-    !! size in dim2
-    INTEGER(I4B), INTENT(IN) :: nns
-    !! number of nodes in space
-    INTEGER(I4B), INTENT(IN) :: nnt
-    !! Number of node in space
-  END SUBROUTINE SetSTTensorMeshFieldParam
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -581,22 +413,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-04
-! summary:  Get prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(MeshField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                            GenerateInterpolationPoints@InterpolationMethods
+!                            InitiateInterpolationPoints@InterpolationMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -615,7 +432,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                             UpdateInterpolationPoints@InterpolationMethods
+!                                SetInterpolationPoints@InterpolationMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -632,7 +449,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 GenerateQuadraturePoints@QuadratureMethods
+!                                 InitiateQuadraturePoints@QuadratureMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -650,7 +467,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                             UpdateInterpolationPoints@InterpolationMethods
+!                                    SetQuadraturePoints@InterpolationMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu

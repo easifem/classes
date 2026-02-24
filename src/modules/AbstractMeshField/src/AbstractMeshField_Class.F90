@@ -18,7 +18,6 @@ MODULE AbstractMeshField_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE BaseType, ONLY: FEVariable_
 USE String_Class, ONLY: String
-USE FPL, ONLY: ParameterList_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ExceptionHandler_Class, ONLY: e
 USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
@@ -31,14 +30,7 @@ IMPLICIT NONE
 
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class"
-
-CHARACTER(*), PARAMETER :: AbstractMeshFieldEssential = "/name/fieldType"// &
-                           "/engine/defineOn/varType/rank/s/totalShape"
-
 PUBLIC :: AbstractMeshField_
-PUBLIC :: SetAbstractMeshFieldParam
-PUBLIC :: AbstractMeshFieldCheckEssentialParam
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
 PUBLIC :: AbstractMeshFieldGetShapeAndSize
@@ -110,24 +102,19 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check essential parameters
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate the field by reading param and a given mesh
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copying other fields, and different options
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate3 => obj_Initiate3
+  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate from Abstract materials
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate5 => obj_Initiate5
+  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate from user function
   !! This routine should be implemened by the child class
   PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate from user function
   !! This routine should be implemened by the child class
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
-    Initiate4, Initiate5
-  !! Generic initiate
+    Initiate4
+  !! Generic initiate method
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
   !! Deallocate the field
@@ -154,7 +141,6 @@ CONTAINS
   !! Getting the value
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get_ => obj_Get_
   !! Getting the value in FEVariable without allocation
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Returns true if the object is initiated
@@ -208,78 +194,6 @@ CONTAINS
 END TYPE AbstractMeshField_
 
 !----------------------------------------------------------------------------
-!                              SetAbstractMeshFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE SetAbstractMeshFieldParam( &
-    param, prefix, name, fieldType, engine, defineOn, varType, rank, s)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! prefix
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of the field
-    INTEGER(I4B), INTENT(IN) :: fieldType
-    !! field type
-    CHARACTER(*), INTENT(IN) :: engine
-    !! engine
-    INTEGER(I4B), INTENT(IN) :: defineOn
-    !! define on Nodal or Quadrature
-    INTEGER(I4B), INTENT(IN) :: varType
-    !! variable type
-    !! how the field varies inside the element
-    !! space, time, spaceTime, constant
-    INTEGER(I4B), INTENT(IN) :: rank
-    !! rank of the field, scalar, vector, matrix
-    INTEGER(I4B), INTENT(IN) :: s(:)
-    !! shape of the field
-  END SUBROUTINE SetAbstractMeshFieldParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: This routine Check the essential parameters in param.
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param)
-    CLASS(AbstractMeshField_), INTENT(IN) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-INTERFACE AbstractMeshFieldCheckEssentialParam
-  MODULE PROCEDURE obj_CheckEssentialParam
-END INTERFACE AbstractMeshFieldCheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
-! summary: Initiate the field by reading param and given domain
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, param, mesh)
-    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
-    CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE AbstractMeshFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE AbstractMeshFieldInitiate
-
-!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -288,14 +202,14 @@ END INTERFACE AbstractMeshFieldInitiate
 ! summary: Initiate by copying other fields, and different options
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, obj2, copyFull, copyStructure, &
+  MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj2
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
-  END SUBROUTINE obj_Initiate2
+  END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -314,7 +228,7 @@ END INTERFACE
 ! Then we call Initiate4 method
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, mesh, material, name, engine, nnt)
+  MODULE SUBROUTINE obj_Initiate2(obj, mesh, material, name, engine, nnt)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -327,7 +241,7 @@ INTERFACE
     !! engine of the AbstractMeshField
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
     !! number of nodes in time
-  END SUBROUTINE obj_Initiate3
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -339,7 +253,7 @@ END INTERFACE
 ! summary: Initiate from UserFunction_
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, mesh, func, name, engine, nnt)
+  MODULE SUBROUTINE obj_Initiate3(obj, mesh, func, name, engine, nnt)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
@@ -352,7 +266,7 @@ INTERFACE
     !! engine of the AbstractMeshField
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
     !! number of nodes in time
-  END SUBROUTINE obj_Initiate4
+  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -368,8 +282,8 @@ END INTERFACE
 !   arguments.
 !   It is like Initiate1, but it does not use ParameterList_
 
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate5( &
+INTERFACE AbstractMeshFieldInitiate
+  MODULE SUBROUTINE obj_Initiate4( &
     obj, name, fieldType, engine, defineOn, varType, rank, s, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
@@ -390,11 +304,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: s(:)
     !! shape of the field
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
-  END SUBROUTINE obj_Initiate5
-END INTERFACE
-
-INTERFACE AbstractMeshFieldInitiate
-  MODULE PROCEDURE obj_Initiate5
+  END SUBROUTINE obj_Initiate4
 END INTERFACE AbstractMeshFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -483,21 +393,6 @@ INTERFACE
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
     !! FEVariable
   END SUBROUTINE obj_Get_
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-03
-! summary:  Get the prefix
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(AbstractMeshField_), INTENT(IN) :: obj
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -894,7 +789,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Insert@InsertMethods
+!                                                       Insert@InsertMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -921,7 +816,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Insert@InsertMethods
+!                                                       Insert@InsertMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -948,7 +843,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Insert@InsertMethods
+!                                                       Insert@InsertMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.

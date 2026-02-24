@@ -15,12 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) VTKMethods
-USE VTKFile_Class, ONLY: VTKFile_, VTK_BINARY_APPENDED, VTK_POLYDATA
+USE VTKFile_Class, ONLY: VTKFile_
+USE VTKFile_Class, ONLY: VTK_BINARY_APPENDED
+USE VTKFile_Class, ONLY: VTK_POLYDATA
 USE BaseType, ONLY: TypeFEVariableOpt
 USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: Display, ToString
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class@VTKMethods"
+#endif
 
 CONTAINS
 
@@ -48,6 +54,7 @@ CASE (TypeFEVariableOpt%vector)
 CASE (TypeFEVariableOpt%matrix)
   CALL WriteMatrixData(obj=obj, nodeCoordField=nodeCoordField, &
                        filename=filename)
+CASE DEFAULT
 END SELECT
 
 #ifdef DEBUG_VER
@@ -93,12 +100,14 @@ SUBROUTINE CheckErrorNodeCoordField(nodeCoordField)
     jj = nodeCoordField%indxShape(iel + 1) - 1
     isok = (jj - ii + 1) .EQ. 2
     CALL AssertError1(isok, myName, &
-           "In nodeCoordField, for iel = "//ToString(iel)//" indxShape error")
+                      "In nodeCoordField, for iel = "//ToString(iel)// &
+                      " indxShape error")
 
     ss(1:nodeCoordField%totalShape) = nodeCoordField%ss(ii:jj)
     isok = ss(1) .EQ. 3
     CALL AssertError1(isok, myName, &
-                      "The number of components in nodeCoordField must be 3.")
+                      "The number of components in nodeCoordField &
+                      &must be 3.")
   END DO
 #endif
 
@@ -147,7 +156,8 @@ SUBROUTINE CheckErrorWriteScalarData(obj, nodeCoordField)
     isok = (jj - ii + 1) .EQ. ss(2)
 
     CALL AssertError1(isok, myName, &
-             "In nodeCoordField, for iel = "//ToString(iel)//" indxVal error")
+                      "In nodeCoordField, for iel = "// &
+                      ToString(iel)//" indxVal error")
   END DO
 #endif
 
@@ -234,7 +244,8 @@ SUBROUTINE CheckErrorWriteVectorData(obj, nodeCoordField)
     jj = obj%indxShape(iel + 1) - 1
     isok = (jj - ii + 1) .EQ. 2
     CALL AssertError1(isok, myName, &
-                    "In obj for iel = "//ToString(iel)//" indxShape error(1)")
+                      "In obj for iel = "//ToString(iel)// &
+                      " indxShape error(1)")
 
     ss(1:nodeCoordField%totalShape) = obj%ss(ii:jj)
     tpoints_obj = ss(2)
@@ -245,13 +256,15 @@ SUBROUTINE CheckErrorWriteVectorData(obj, nodeCoordField)
     tpoints_xij = nodeCoordField%ss(ii + 1)
     isok = tpoints_obj .EQ. tpoints_xij
     CALL AssertError1(isok, myName, &
-                    "In obj for iel = "//ToString(iel)//" indxShape error(2)")
+                      "In obj for iel = "//ToString(iel)// &
+                      " indxShape error(2)")
 
     ii = obj%indxVal(iel)
     jj = obj%indxVal(iel + 1) - 1
     isok = (jj - ii + 1) .EQ. (ss(1) * ss(2))
     CALL AssertError1(isok, myName, &
-                      "In obj for iel = "//ToString(iel)//" indxVal error(2)")
+                      "In obj for iel = "//ToString(iel)// &
+                      " indxVal error(2)")
   END DO
 #endif
 

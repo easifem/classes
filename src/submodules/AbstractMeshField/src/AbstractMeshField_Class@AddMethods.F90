@@ -17,6 +17,12 @@
 SUBMODULE(AbstractMeshField_Class) AddMethods
 USE FEVariable_Method, ONLY: FEVariable_Size => Size
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractMeshField_Class@AddMethods"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

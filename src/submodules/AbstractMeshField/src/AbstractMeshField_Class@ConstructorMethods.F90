@@ -15,76 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) ConstructorMethods
-USE FPL_Method, ONLY: Set, GetValue, CheckEssentialParam
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
-USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
-
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractMeshField_Class@ConstructorMethods"
+#endif
+
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetAbstractMeshFieldParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetAbstractMeshFieldParam()"
-#endif
-
-INTEGER(I4B) :: tsize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Set(obj=param, prefix=prefix, key="name", VALUE=name, dataType=name)
-CALL Set(obj=param, prefix=prefix, key="fieldType", VALUE=fieldType, &
-         dataType=fieldType)
-CALL Set(obj=param, prefix=prefix, key="engine", VALUE=engine, &
-         dataType=engine)
-CALL Set(obj=param, prefix=prefix, key="defineOn", VALUE=defineOn, &
-         dataType=defineOn)
-CALL Set(obj=param, prefix=prefix, key="varType", VALUE=varType, &
-         dataType=varType)
-CALL Set(obj=param, prefix=prefix, key="rank", VALUE=rank, dataType=rank)
-CALL Set(obj=param, prefix=prefix, key="s", VALUE=s, dataType=s)
-
-tsize = SIZE(s)
-CALL Set(obj=param, prefix=prefix, key="totalShape", VALUE=tsize, &
-         dataType=tsize)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetAbstractMeshFieldParam
-
-!----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL CheckEssentialParam(obj=param, keys=AbstractMeshFieldEssential, &
-                         prefix=obj%GetPrefix(), myName=myName, &
-                         modName=modName)
-!note: CheckEssentialParam param is defined in easifemClasses FPL_Method
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_CheckEssentialParam
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
@@ -100,7 +43,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInit = .FALSE.
+obj%isInit = math%no
 obj%fieldType = typefield%normal
 obj%name = ""
 obj%engine = ""
@@ -122,102 +65,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                 Initiate
+!                                                                  Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-
-TYPE(String) :: dsetname
-INTEGER(I4B) :: ierr, nrow, s(fevaropt%maxRank)
-CHARACTER(:), ALLOCATABLE :: prefix
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-CALL obj%CheckEssentialParam(param)
-obj%isInit = .TRUE.
-prefix = obj%GetPrefix()
-
-! fieldType
-obj%fieldType = typefield%normal
-CALL GetValue(obj=param, prefix=prefix, key="fieldType", VALUE=obj%fieldType)
-
-! name
-obj%name = prefix
-CALL GetValue(obj=param, prefix=prefix, key="name", VALUE=obj%name)
-
-! engine
-CALL GetValue(obj=param, prefix=prefix, key="engine", VALUE=obj%engine)
-
-! defineOn
-CALL GetValue(obj=param, prefix=prefix, key="defineOn", VALUE=obj%defineOn)
-
-! varType
-CALL GetValue(obj=param, prefix=prefix, key="varType", VALUE=obj%varType)
-
-! rank
-CALL GetValue(obj=param, prefix=prefix, key="rank", VALUE=obj%rank)
-
-nrow = GetTotalRow(rank=obj%rank, varType=obj%varType)
-
-CALL GetValue(obj=param, prefix=prefix, key="totalShape", &
-              VALUE=obj%totalShape)
-
-#ifdef DEBUG_VER
-isok = obj%totalShape .LE. SIZE(s)
-CALL AssertError1(isok, myName, &
-                  'The size of s in param is more than the size of s in obj.')
-#endif
-
-dsetname = TRIM(prefix)//"/s"
-ierr = param%Get(key=dsetname%chars(), VALUE=s(1:obj%totalShape))
-
-! tSize
-IF (obj%fieldType .EQ. typefield%constant) THEN
-  obj%tSize = 1
-ELSE
-  obj%tSize = mesh%GetTotalElements()
-END IF
-
-! val
-CALL Reallocate(obj%indxVal, obj%tSize + 1)
-obj%indxVal = 1
-
-ierr = PRODUCT(s(1:nrow))
-CALL Reallocate(obj%val, ierr * obj%tSize)
-
-! indxShape
-CALL Reallocate(obj%indxShape, obj%tSize + 1)
-obj%indxShape = 1
-
-CALL Reallocate(obj%ss, obj%totalShape * obj%tSize)
-
-! mesh
-obj%mesh => mesh
-
-prefix = ""
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                  Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 #endif
 
 INTEGER(I4B) :: ii, tsize
@@ -267,15 +120,55 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
+END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                   Iniitate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+LOGICAL(LGT) :: isok
+#endif
+
+CLASS(UserFunction_), POINTER :: func
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = material%IsMaterialPresent(name)
+CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
+#endif
+
+func => NULL()
+func => material%GetMaterialPointer(name)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(func)
+CALL AssertError1(isok, myname, 'Material pointer not found.')
+#endif
+
+CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, mesh=mesh)
+
+NULLIFY (func)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
-!                                                           Initiate
+!                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate4
+MODULE PROCEDURE obj_Initiate3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 #endif
 
 INTEGER(I4B) :: rank, nns, varType, fieldType, &
@@ -309,15 +202,15 @@ CALL obj%Initiate(name=name, fieldType=fieldType, varType=varType, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate4
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate5
+MODULE PROCEDURE obj_Initiate4
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
 #endif
 
 INTEGER(I4B) :: tsize
@@ -328,7 +221,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 obj%fieldType = fieldType
 obj%name = name
 obj%engine = engine
@@ -366,47 +259,7 @@ obj%mesh => mesh
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate5
-
-!----------------------------------------------------------------------------
-!                                                           Iniitate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-LOGICAL(LGT) :: isok
-#endif
-
-CLASS(UserFunction_), POINTER :: func
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-isok = material%IsMaterialPresent(name)
-CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
-#endif
-
-func => NULL()
-func => material%GetMaterialPointer(name)
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(func)
-CALL AssertError1(isok, myname, 'Material pointer not found.')
-#endif
-
-CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, mesh=mesh)
-
-NULLIFY (func)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate3
+END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

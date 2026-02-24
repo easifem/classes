@@ -18,18 +18,21 @@ SUBMODULE(MeshField_Class) QuadratureMethods
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE ReallocateUtility, ONLY: Reallocate
-USE BaseType, ONLY: FEVariable_, &
-                    TypeFEVariableVector, &
-                    TypeFEVariableSpace, &
-                    QuadraturePoint_, &
-                    ElemShapeData_
-USE FEVariable_Method, ONLY: NodalVariable, &
-                             QuadratureVariable, &
-                             FEVariable_Set => Set, &
-                             FEVariable_Deallocate => DEALLOCATE
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: TypeFEVariableVector
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
 USE ElemshapeData_Method, ONLY: GetInterpolation_
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MeshField_Class@QuadratureMethods"
+#endif
 
 CONTAINS
 
@@ -41,7 +44,7 @@ MODULE PROCEDURE InitiateQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "InitiateQuadraturePoints()"
 #endif
-INTEGER(I4B) :: maxCon, iel, tElements, ii
+INTEGER(I4B) :: maxCon, tElements
 CLASS(AbstractFE_), POINTER :: feptr
 
 #ifdef DEBUG_VER
@@ -78,12 +81,12 @@ MODULE PROCEDURE SetQuadraturePoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "SetQuadraturePoints()"
 #endif
-INTEGER(I4B) :: maxCon, iel, tElements, ii, maxNNE, elemCoord_i, &
+INTEGER(I4B) :: maxCon, iel, tElements, maxNNE, elemCoord_i, &
                 elemCoord_j, xij_i, xij_j
 CLASS(AbstractFE_), POINTER :: feptr, geofeptr
 TYPE(FEVariable_) :: fevar
 TYPE(QuadraturePoint_) :: quad
-TYPE(ElemShapeData_) :: elemsd, geoelemsd
+TYPE(ElemShapeData_) :: geoelemsd
 REAL(DFP), ALLOCATABLE :: xij(:, :), elemCoord(:, :)
 
 #ifdef DEBUG_VER

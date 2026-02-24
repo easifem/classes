@@ -17,6 +17,10 @@
 SUBMODULE(AbstractMeshField_Class) HDFMethods
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class@HDFMethods"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

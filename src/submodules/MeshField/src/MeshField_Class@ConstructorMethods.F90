@@ -17,52 +17,15 @@
 !
 
 SUBMODULE(MeshField_Class) ConstructorMethods
-USE AbstractMeshField_Class, ONLY: SetAbstractMeshFieldParam
 USE Display_Method, ONLY: ToString
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MeshField_Class@ConstructorMethods"
+#endif
+
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                     SetScalarMeshFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetScalarMeshFieldParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetScalarMeshFieldParam()"
-#endif
-
-INTEGER(I4B) :: s(1)
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = varType .EQ. TypeFieldOpt%constant
-IF (isok) THEN
-  s = 1
-ELSE
-  s = nns
-END IF
-
-CALL SetAbstractMeshFieldParam(param=param, &
-                               prefix=myprefix, &
-                               name=name, &
-                               fieldType=fieldType, &
-                               varType=varType, &
-                               engine=engine, &
-                               defineOn=defineOn, &
-                               rank=TypeFieldOpt%scalar, &
-                               s=s)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetScalarMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                     ScalarMeshFieldInitiate
@@ -88,80 +51,15 @@ ELSE
   s = nns
 END IF
 
-CALL obj%Initiate(name=name, &
-                  fieldType=fieldType, &
-                  varType=varType, &
-                  engine=engine, &
-                  defineOn=defineOn, &
-                  rank=TypeFieldOpt%scalar, &
-                  s=s, mesh=mesh)
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, engine=engine, &
+  defineOn=defineOn, rank=TypeFieldOpt%scalar, s=s, mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE ScalarMeshFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                  SetSTScalarMeshFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetSTScalarMeshFieldParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetSTScalarMeshFieldParam()"
-#endif
-
-INTEGER(I4B) :: s(2), n
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = varType .EQ. TypeFieldOpt%constant
-IF (isok) THEN
-  s = 1
-  n = 1
-ELSE
-  s(1) = nns
-  s(2) = nnt
-  n = 2
-END IF
-
-isok = varType .EQ. TypeFieldOpt%time
-IF (isok) THEN
-  CALL SetAbstractMeshFieldParam(param=param, &
-                                 prefix=myprefix, &
-                                 name=name, &
-                                 fieldType=fieldType, &
-                                 varType=varType, &
-                                 engine=engine, &
-                                 defineOn=defineOn, &
-                                 rank=TypeFieldOpt%scalar, &
-                                 s=s(n:n))
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-CALL SetAbstractMeshFieldParam(param=param, &
-                               prefix=myprefix, &
-                               name=name, &
-                               fieldType=fieldType, &
-                               varType=varType, &
-                               engine=engine, &
-                               defineOn=defineOn, &
-                               rank=TypeFieldOpt%scalar, &
-                               s=s(1:n))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetSTScalarMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                  STScalarMeshFieldInitiate
@@ -192,14 +90,10 @@ END IF
 
 isok = varType .EQ. TypeFieldOpt%time
 IF (isok) THEN
-  CALL obj%Initiate(name=name, &
-                    fieldType=fieldType, &
-                    varType=varType, &
-                    engine=engine, &
-                    defineOn=defineOn, &
-                    rank=TypeFieldOpt%scalar, &
-                    s=s(n:n), &
-                    mesh=mesh)
+  CALL obj%Initiate( &
+    name=name, fieldType=fieldType, varType=varType, engine=engine, &
+    defineOn=defineOn, rank=TypeFieldOpt%scalar, s=s(n:n), mesh=mesh)
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -207,64 +101,15 @@ IF (isok) THEN
   RETURN
 END IF
 
-CALL obj%Initiate(name=name, &
-                  fieldType=fieldType, &
-                  varType=varType, &
-                  engine=engine, &
-                  defineOn=defineOn, &
-                  rank=TypeFieldOpt%scalar, &
-                  s=s(1:n), &
-                  mesh=mesh)
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, engine=engine, &
+  defineOn=defineOn, rank=TypeFieldOpt%scalar, s=s(1:n), mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE STScalarMeshFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                    SetVectorMeshFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetVectorMeshFieldParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetVectorMeshFieldParam()"
-#endif
-
-INTEGER(I4B) :: s(2), n
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = varType .EQ. TypeFieldOpt%constant
-IF (isok) THEN
-  s = spaceCompo
-  n = 1
-ELSE
-  s(1) = spaceCompo
-  s(2) = nns
-  n = 2
-END IF
-
-CALL SetAbstractMeshFieldParam(param=param, &
-                               prefix=myprefix, &
-                               name=name, &
-                               fieldType=fieldType, &
-                               varType=varType, &
-                               engine=engine, &
-                               defineOn=defineOn, &
-                               rank=TypeFieldOpt%vector, &
-                               s=s(1:n))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE SetVectorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                    VectorMeshFieldInitiate
@@ -293,64 +138,15 @@ ELSE
   n = 2
 END IF
 
-CALL obj%Initiate(name=name, &
-                  fieldType=fieldType, &
-                  varType=varType, &
-                  engine=engine, &
-                  defineOn=defineOn, &
-                  rank=TypeFieldOpt%vector, &
-                  s=s(1:n), &
-                  mesh=mesh)
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, engine=engine, &
+  defineOn=defineOn, rank=TypeFieldOpt%vector, s=s(1:n), mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE VectorMeshFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                   SetSTVectorMeshFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetSTVectorMeshFieldParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetSTVectorMeshFieldParam()"
-#endif
-
-INTEGER(I4B) :: s(3), n
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = varType .EQ. TypeFieldOpt%constant
-IF (isok) THEN
-  s = spaceCompo
-  n = 1
-ELSE
-  s(1) = spaceCompo
-  s(2) = nns
-  s(3) = nnt
-  n = 3
-END IF
-
-CALL SetAbstractMeshFieldParam(param=param, &
-                               prefix=myprefix, &
-                               name=name, &
-                               fieldType=fieldType, &
-                               varType=varType, &
-                               engine=engine, &
-                               defineOn=defineOn, &
-                               rank=TypeFieldOpt%vector, &
-                               s=s(1:n))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetSTVectorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                   STVectorMeshFieldInitiate
@@ -379,66 +175,15 @@ ELSE
   n = 3
 END IF
 
-CALL obj%Initiate(name=name, &
-                  fieldType=fieldType, &
-                  varType=varType, &
-                  engine=engine, &
-                  defineOn=defineOn, &
-                  rank=TypeFieldOpt%vector, &
-                  s=s(1:n), &
-                  mesh=mesh)
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, engine=engine, &
+  defineOn=defineOn, rank=TypeFieldOpt%vector, s=s(1:n), mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE STVectorMeshFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                     SetTensorMeshFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetTensorMeshFieldParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetTensorMeshFieldParam()"
-#endif
-
-INTEGER(I4B) :: s(3), n
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = varType .EQ. TypeFieldOpt%constant
-IF (isok) THEN
-  n = 2
-  s(1) = dim1
-  s(2) = dim2
-ELSE
-  n = 3
-  s(1) = dim1
-  s(2) = dim2
-  s(3) = nns
-END IF
-
-CALL SetAbstractMeshFieldParam(param=param, &
-                               prefix=myprefix, &
-                               name=name, &
-                               fieldType=fieldType, &
-                               varType=varType, &
-                               engine=engine, &
-                               defineOn=defineOn, &
-                               rank=TypeFieldOpt%matrix, &
-                               s=s(1:n))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                     TensorMeshFieldInitiate
@@ -469,66 +214,15 @@ ELSE
   s(3) = nns
 END IF
 
-CALL obj%Initiate(name=name, &
-                  fieldType=fieldType, &
-                  varType=varType, &
-                  engine=engine, &
-                  defineOn=defineOn, &
-                  rank=TypeFieldOpt%matrix, &
-                  s=s(1:n), &
-                  mesh=mesh)
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, engine=engine, &
+  defineOn=defineOn, rank=TypeFieldOpt%matrix, s=s(1:n), mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE TensorMeshFieldInitiate
-
-!----------------------------------------------------------------------------
-!                                                  SetSTTensorMeshFieldParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetSTTensorMeshFieldParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetSTTensorMeshFieldParam()"
-#endif
-
-INTEGER(I4B) :: s(4), n
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = varType .EQ. TypeFieldOpt%constant
-IF (isok) THEN
-  n = 2
-  s(1) = dim1
-  s(2) = dim2
-ELSE
-  n = 4
-  s(1) = dim1
-  s(2) = dim2
-  s(3) = nns
-  s(4) = nnt
-END IF
-
-CALL SetAbstractMeshFieldParam(param=param, &
-                               prefix=myprefix, &
-                               name=name, &
-                               fieldType=fieldType, &
-                               varType=varType, &
-                               engine=engine, &
-                               defineOn=defineOn, &
-                               rank=TypeFieldOpt%matrix, &
-                               s=s(1:n))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetSTTensorMeshFieldParam
 
 !----------------------------------------------------------------------------
 !                                                   STTensorMeshFieldInitiate
@@ -560,14 +254,9 @@ ELSE
   s(4) = nnt
 END IF
 
-CALL obj%Initiate(name=name, &
-                  fieldType=fieldType, &
-                  varType=varType, &
-                  engine=engine, &
-                  defineOn=defineOn, &
-                  rank=TypeFieldOpt%matrix, &
-                  s=s(1:n), &
-                  mesh=mesh)
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, engine=engine, &
+  defineOn=defineOn, rank=TypeFieldOpt%matrix, s=s(1:n), mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -609,14 +298,9 @@ IF (argType .EQ. TypeFieldOpt%constant) THEN
   varType = fieldType
 END IF
 
-CALL ScalarMeshFieldInitiate(obj=obj, &
-                             name=name, &
-                             fieldType=fieldType, &
-                             varType=varType, &
-                             engine=engine, &
-                             defineOn=TypeFieldOpt%nodal, &
-                             nns=nns, &
-                             mesh=mesh)
+CALL ScalarMeshFieldInitiate( &
+  obj=obj, name=name, fieldType=fieldType, varType=varType, engine=engine, &
+  defineOn=TypeFieldOpt%nodal, nns=nns, mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -661,13 +345,15 @@ END IF
 #ifdef DEBUG_VER
 isok = PRESENT(nnt)
 CALL AssertError1(isok, myName, &
-   'NNT should be present when varType in userFunction is Time or SpaceTime.')
+   'NNT should be present when varType in &
+  &userFunction is Time or SpaceTime.')
 #endif
 
-CALL STScalarMeshFieldInitiate(obj=obj, name=name, fieldType=fieldType, &
-                               varType=varType, engine=engine, &
-                               defineOn=TypeFieldOpt%nodal, nns=nns, &
-                               nnt=nnt, mesh=mesh)
+CALL STScalarMeshFieldInitiate( &
+  obj=obj, name=name, fieldType=fieldType, &
+  varType=varType, engine=engine, &
+  defineOn=TypeFieldOpt%nodal, nns=nns, &
+  nnt=nnt, mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -710,10 +396,11 @@ IF (argType .EQ. TypeFieldOpt%constant) THEN
   varType = fieldType
 END IF
 
-CALL VectorMeshFieldInitiate(obj=obj, name=name, fieldType=fieldType, &
-                             varType=varType, engine=engine, &
-                             defineOn=TypeFieldOpt%nodal, &
-                             spaceCompo=numReturns, nns=nns, mesh=mesh)
+CALL VectorMeshFieldInitiate( &
+  obj=obj, name=name, fieldType=fieldType, &
+  varType=varType, engine=engine, &
+  defineOn=TypeFieldOpt%nodal, &
+  spaceCompo=numReturns, nns=nns, mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -761,11 +448,12 @@ CALL AssertError1(isok, myName, &
                   'nnt should be present when varType is Time or SpaceTime.')
 #endif
 
-CALL STVectorMeshFieldInitiate(obj=obj, name=name, fieldType=fieldType, &
-                               varType=varType, engine=engine, &
-                               defineOn=TypeFieldOpt%nodal, &
-                               spaceCompo=numReturns, nns=nns, nnt=nnt, &
-                               mesh=mesh)
+CALL STVectorMeshFieldInitiate( &
+  obj=obj, name=name, fieldType=fieldType, &
+  varType=varType, engine=engine, &
+  defineOn=TypeFieldOpt%nodal, &
+  spaceCompo=numReturns, nns=nns, nnt=nnt, &
+  mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -811,10 +499,11 @@ IF (argType .EQ. TypeFieldOpt%constant) THEN
   varType = argType
 END IF
 
-CALL TensorMeshFieldInitiate(obj=obj, name=name, fieldType=fieldType, &
-                             varType=varType, engine=engine, &
-                             defineOn=TypeFieldOpt%nodal, dim1=dims(1), &
-                             dim2=dims(2), nns=nns, mesh=mesh)
+CALL TensorMeshFieldInitiate( &
+  obj=obj, name=name, fieldType=fieldType, &
+  varType=varType, engine=engine, &
+  defineOn=TypeFieldOpt%nodal, dim1=dims(1), &
+  dim2=dims(2), nns=nns, mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -861,10 +550,11 @@ isok = PRESENT(nnt)
 CALL AssertError1(isok, myName, 'nnt should be present')
 #endif
 
-CALL STTensorMeshFieldInitiate(obj=obj, name=name, fieldType=fieldType, &
-                               varType=varType, engine=engine, &
-                               defineOn=TypeFieldOpt%nodal, dim1=dims(1), &
-                               dim2=dims(2), nns=nns, nnt=nnt, mesh=mesh)
+CALL STTensorMeshFieldInitiate( &
+  obj=obj, name=name, fieldType=fieldType, &
+  varType=varType, engine=engine, &
+  defineOn=TypeFieldOpt%nodal, dim1=dims(1), &
+  dim2=dims(2), nns=nns, nnt=nnt, mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

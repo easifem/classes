@@ -15,11 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE SafeSizeUtility, ONLY: SafeSize
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class@IOMethods"
+#endif
 
 CONTAINS
 
@@ -49,13 +53,9 @@ IF (.NOT. obj%isInit) THEN
 END IF
 
 CALL Display('name: '//obj%name%chars(), unitno=unitno)
-CALL Display('prefix: '//obj%GetPrefix(), unitno=unitno)
-
 CALL Display('fieldType: '//typefield%ToString(obj%fieldType), &
              unitno=unitno)
-
 CALL Display('engine: '//obj%engine%chars(), unitno=unitno)
-
 CALL Display(obj%tSize, 'tSize: ', unitno=unitno)
 
 IF (obj%defineOn .EQ. fevaropt%nodal) THEN

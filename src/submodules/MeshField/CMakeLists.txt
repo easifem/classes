@@ -18,8 +18,9 @@
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/MeshField_Class@ConstructorMethods.F90
-  PRIVATE ${src_path}/MeshField_Class@GetMethods.F90
-  PRIVATE ${src_path}/MeshField_Class@QuadratureMethods.F90
-  PRIVATE ${src_path}/MeshField_Class@InterpolationMethods.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/MeshField_Class@ConstructorMethods.F90
+        ${src_path}/MeshField_Class@QuadratureMethods.F90
+        ${src_path}/MeshField_Class@InterpolationMethods.F90
+)
