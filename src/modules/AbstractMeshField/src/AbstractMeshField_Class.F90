@@ -23,11 +23,12 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ExceptionHandler_Class, ONLY: e
 USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
 USE HDF5File_Class, ONLY: HDF5File_
-USE UserFunction_Class, ONLY: UserFunction_, UserFunctionPointer_
-USE AbstractMaterial_Class, ONLY: AbstractMaterial_, &
-                                  AbstractMaterialPointer_
-
+USE UserFunction_Class, ONLY: UserFunction_
+USE UserFunction_Class, ONLY: UserFunctionPointer_
+USE AbstractMaterial_Class, ONLY: AbstractMaterial_
+USE AbstractMaterial_Class, ONLY: AbstractMaterialPointer_
 IMPLICIT NONE
+
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractMeshField_Class"
@@ -109,7 +110,6 @@ CONTAINS
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
     obj_CheckEssentialParam
   !! Check essential parameters
@@ -134,7 +134,6 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -149,11 +148,12 @@ CONTAINS
 
   ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Return shape
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get => obj_Get
   !! Getting the value
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get_ => obj_Get_
+  !! Getting the value in FEVariable without allocation
   PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
 
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
@@ -161,7 +161,6 @@ CONTAINS
 
   ! SET:
   ! @AddMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Add1 => obj_Add1
   !! Adding a value to an element
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Add2 => obj_Add2
@@ -170,7 +169,6 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Setting the value by using FEVariable_
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
@@ -190,7 +188,6 @@ CONTAINS
 
   ! SET:
   ! @InsertMethods
-
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert1 => obj_Insert1
   !! Insertting the value by using FEVariable_
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert2 => obj_Insert2
@@ -466,6 +463,26 @@ INTERFACE
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
     !! FEVariable
   END SUBROUTINE obj_Get
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Get_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-02-24
+! summary: Get the values from AbstractMeshField_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Get_(obj, globalElement, fevar, islocal)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true, then global element is local element
+    TYPE(FEVariable_), INTENT(INOUT) :: fevar
+    !! FEVariable
+  END SUBROUTINE obj_Get_
 END INTERFACE
 
 !----------------------------------------------------------------------------

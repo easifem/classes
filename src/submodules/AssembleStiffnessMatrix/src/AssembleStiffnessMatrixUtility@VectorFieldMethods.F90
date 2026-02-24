@@ -22,16 +22,17 @@ USE ReallocateUtility, ONLY: Reallocate
 USE MassMatrix_Method, ONLY: MassMatrix_
 USE StiffnessMatrix_Method, ONLY: StiffnessMatrix_
 USE AbstractFE_Class, ONLY: AbstractFE_
-
-USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
-                    TypeFEVariableVector
-
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemshapeData_
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: TypeFEVariableVector
+USE BaseType, ONLY: math => TypeMathOpt
 #ifdef DEBUG_VER
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
 USE ElemshapeData_Method, ONLY: ElemshapeData_Display => Display
 #endif
-
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -65,7 +66,7 @@ mesh => fedof%GetMeshPointer()
 geofedof => nodeField%geofedof
 tElements = mesh%GetTotalElements()
 
-IF (reset) CALL tanmat%set(VALUE=defaultOpt%zero)
+IF (reset) CALL tanmat%set(VALUE=math%zero)
 
 tElements = mesh%GetTotalElements()
 
@@ -80,17 +81,18 @@ CALL Reallocate(ks, spaceCompo(1) * maxNNE, spaceCompo(1) * maxNNE)
 
 DO iel = 1, tElements
 
-  CALL fedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
-  feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
-  geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+  CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
+  geofeptr => geofedof%GetFEPointer( &
+              globalElement=iel, islocal=math%yes)
 
   CALL mesh%GetNodeCoord( &
-    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
     globalElement=iel)
 
-  CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
+  CALL fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
 
   CALL feptr%GetGlobalElemShapeData2( &
@@ -98,21 +100,21 @@ DO iel = 1, tElements
     quad=quad)
 
   ! TODO: No allocation is needed
-  CALL lambdaField%Get(globalElement=iel, islocal=defaultOpt%yes, &
-                       fevar=lambdaVar)
-  CALL muField%Get(globalElement=iel, islocal=defaultOpt%yes, &
-                   fevar=muVar)
+  CALL lambdaField%Get_(globalElement=iel, islocal=math%yes, &
+                        fevar=lambdaVar)
+  CALL muField%Get_(globalElement=iel, islocal=math%yes, &
+                    fevar=muVar)
 
-  ks = defaultOpt%zero
+  ks = math%zero
   CALL StiffnessMatrix_( &
     test=elemsd, trial=elemsd, lambda=lambdaVar, mu=muVar, &
     islambdaYoungsModulus=islambdaYoungsModulus, &
     ans=ks, nrow=ks_i, ncol=ks_j)
 
   CALL tanmat%Set( &
-    globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
+    globalNode=cellcon(1:tcellCon), islocal=math%yes, &
     VALUE=ks(1:ks_i, 1:ks_j), storageFMT=defaultOpt%storageFormatDOF, &
-    scale=scale, addContribution=defaultOpt%yes)
+    scale=scale, addContribution=math%yes)
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)

@@ -203,6 +203,79 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Get
 
 !----------------------------------------------------------------------------
+!                                                                       Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Get_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get_()"
+#endif
+INTEGER(I4B) :: iel, ii, a, b
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! fevar%defineOn = obj%defineOn
+#ifdef DEBUG_VER
+isok = fevar%defineOn .EQ. obj%defineOn
+CALL AssertError1(isok, myName, &
+                  "fevar%defineOn not same a obj%defineOn.")
+#endif
+
+! fevar%varType = obj%varType
+#ifdef DEBUG_VER
+isok = fevar%varType .EQ. obj%varType
+CALL AssertError1(isok, myName, &
+                  "fevar%varType not same a obj%varType.")
+#endif
+
+! fevar%rank = obj%rank
+#ifdef DEBUG_VER
+isok = fevar%rank .EQ. obj%rank
+CALL AssertError1(isok, myName, &
+                  "fevar%rank not same a obj%rank.")
+#endif
+
+isok = obj%fieldType .EQ. TypeField%constant
+IF (isok) THEN
+  iel = 1
+ELSE
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
+END IF
+
+a = obj%indxVal(iel)
+b = obj%indxVal(iel + 1)
+
+fevar%len = b - a
+
+#ifdef DEBUG_VER
+CALL AssertError3(fevar%len, fevar%capacity, myName, &
+                  "a=fevar%len, b=fevar%capacity")
+#endif
+
+! CALL Reallocate(fevar%val, fevar%capacity)
+
+DO ii = a, b - 1
+  fevar%val(ii - a + 1) = obj%val(ii)
+END DO
+
+a = obj%indxShape(iel)
+b = obj%indxShape(iel + 1) - 1
+DO ii = a, b
+  fevar%s(ii - a + 1) = obj%ss(ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Get_
+
+!----------------------------------------------------------------------------
 !                                                                  GetPrefix
 !----------------------------------------------------------------------------
 

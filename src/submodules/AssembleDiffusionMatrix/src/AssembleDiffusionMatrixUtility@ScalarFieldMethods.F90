@@ -23,8 +23,11 @@ USE DiffusionMatrix_Method, ONLY: DiffusionMatrix_
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE FEDOF_Class, ONLY: FEDOF_
-USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
-                    TypeFEVariableScalar
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemshapeData_
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: math => TypeMathOpt
 
 #ifdef DEBUG_VER
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
@@ -68,7 +71,7 @@ mesh => fedof%GetMeshPointer()
 geofedof => nodeField%geofedof
 tElements = mesh%GetTotalElements()
 
-IF (reset) CALL tanmat%set(VALUE=defaultOpt%zero)
+IF (reset) CALL tanmat%set(VALUE=math%zero)
 
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
 maxNNE = fedof%GetMaxTotalConnectivity()
@@ -79,18 +82,18 @@ CALL Reallocate(ks, maxNNE, maxNNE)
 
 DO iel = 1, tElements
 
-  CALL fedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
-  feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
+  CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
   geofeptr => geofedof%GetFEPointer(globalElement=iel, &
-                                    islocal=defaultOpt%yes)
+                                    islocal=math%yes)
 
   CALL mesh%GetNodeCoord( &
-    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
     globalElement=iel)
 
-  CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
+  CALL fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
 
   CALL feptr%GetGlobalElemShapeData2( &
@@ -98,18 +101,18 @@ DO iel = 1, tElements
     quad=quad)
 
   ! TODO: No allocatation in diffCoeffVar
-  CALL diffCoeffField%Get(globalElement=iel, islocal=defaultOpt%yes, &
-                          fevar=diffCoeffVar)
+  CALL diffCoeffField%Get_(globalElement=iel, islocal=math%yes, &
+                           fevar=diffCoeffVar)
 
-  ks = defaultOpt%zero
+  ks = math%zero
   CALL DiffusionMatrix_( &
     test=elemsd, trial=elemsd, k=diffCoeffVar, krank=TypeFEVariableScalar, &
     ans=ks, nrow=ks_i, ncol=ks_j)
 
   CALL tanmat%Set( &
-    globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
+    globalNode=cellcon(1:tcellCon), islocal=math%yes, &
     VALUE=ks(1:ks_i, 1:ks_j), storageFMT=defaultOpt%storageFormatDOF, &
-    scale=scale, addContribution=defaultOpt%yes)
+    scale=scale, addContribution=math%yes)
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)

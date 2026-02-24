@@ -22,9 +22,12 @@ USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE FEDOF_Class, ONLY: FEDOF_
 USE FEVariable_Method, ONLY: QuadratureVariable
-USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_, FEVariable_, &
-                    TypeFEVariableScalar, TypeFEVariableSpace
-
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemshapeData_
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 TYPE(DefaultOpt_), PARAMETER :: defaultOpt = DefaultOpt_()
@@ -63,7 +66,7 @@ geofedof => nodeField%geofedof
 tElements = mesh%GetTotalElements()
 spaceCompo = nodeField%GetSpaceCompo(1)
 
-IF (reset) CALL tanmat%set(VALUE=defaultOpt%zero)
+IF (reset) CALL tanmat%set(VALUE=math%zero)
 
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
 maxNNE = fedof%GetMaxTotalConnectivity()
@@ -79,36 +82,36 @@ rhoVar = QuadratureVariable(tsize=maxQuadPoints, &
 
 DO iel = 1, tElements
 
-  CALL fedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
-  feptr => fedof%GetFEPointer(globalElement=iel, islocal=defaultOpt%yes)
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL geofedof%SetFE(globalElement=iel, islocal=defaultOpt%yes)
+  CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
   geofeptr => geofedof%GetFEPointer(globalElement=iel, &
-                                    islocal=defaultOpt%yes)
+                                    islocal=math%yes)
 
   CALL mesh%GetNodeCoord( &
-    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=defaultOpt%yes, &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
     globalElement=iel)
 
-  CALL fedof%GetConnectivity_(globalElement=iel, islocal=defaultOpt%yes, &
+  CALL fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                               ans=cellcon, tsize=tcellCon, opt="A")
 
   CALL feptr%GetGlobalElemShapeData2( &
     geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
     quad=quad)
 
-  CALL massDensityField%Get(globalElement=iel, islocal=defaultOpt%yes, &
-                            fevar=rhoVar)
+  CALL massDensityField%Get_(globalElement=iel, islocal=math%yes, &
+                             fevar=rhoVar)
 
-  ks = defaultOpt%zero
+  ks = math%zero
   CALL MassMatrix_( &
     test=elemsd, trial=elemsd, rho=rhoVar, rhoRank=TypeFEVariableScalar, &
     ans=ks, nrow=ks_i, ncol=ks_j, opt=spaceCompo(1))
 
   CALL tanmat%Set( &
-    globalNode=cellcon(1:tcellCon), islocal=defaultOpt%yes, &
+    globalNode=cellcon(1:tcellCon), islocal=math%yes, &
     VALUE=ks(1:ks_i, 1:ks_j), storageFMT=defaultOpt%storageFormatDOF, &
-    scale=scale, addContribution=defaultOpt%yes)
+    scale=scale, addContribution=math%yes)
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
