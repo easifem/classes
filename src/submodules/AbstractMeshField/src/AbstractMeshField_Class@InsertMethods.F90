@@ -17,11 +17,12 @@
 SUBMODULE(AbstractMeshField_Class) InsertMethods
 USE Display_Method, ONLY: ToString
 USE Display_Method, ONLY: Display
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
-USE FEVariable_Method, ONLY: FEVariable_SIZE => Size
-USE FEVariable_Method, ONLY: FEVariable_GetShape => GetShape
+USE FEVariable_Method, ONLY: FEVariableDeallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariableSize => Size
+USE FEVariable_Method, ONLY: FEVariableGetShape => GetShape
 USE ReallocateUtility, ONLY: Reallocate
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -55,7 +56,7 @@ SUBROUTINE MasterInsert(val, indxVal, set_val, indx, tsize, ss, &
 END SUBROUTINE MasterInsert
 
 !----------------------------------------------------------------------------
-!                                                                        Insert
+!                                                                     Insert
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert1
@@ -76,12 +77,13 @@ isok = obj%fieldType .EQ. TypeField%Constant
 IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber( &
                       globalElement=globalElement, islocal=islocal)
 
-tsize = FEVariable_SIZE(fevar)
-CALL FEVariable_GetShape(obj=fevar, ans=s, tsize=tshape)
+tsize = FEVariableSize(fevar)
+CALL FEVariableGetShape(obj=fevar, ans=s, tsize=tshape)
 
-CALL MasterInsert(val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, &
-                  indx=iel, tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
-                  s=s, tshape=tshape)
+CALL MasterInsert( &
+  val=obj%val, indxVal=obj%indxVal, set_val=fevar%val, &
+  indx=iel, tsize=tsize, ss=obj%ss, indxShape=obj%indxShape, &
+  s=s, tshape=tshape)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -90,7 +92,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Insert1
 
 !----------------------------------------------------------------------------
-!                                                                       Insert
+!                                                                     Insert
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert2
@@ -113,7 +115,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 bool1 = obj%fieldType .EQ. typefield%Constant
 IF (bool1) THEN
   CALL func%Get(fevar=fevar)
-  CALL obj%Insert(fevar=fevar, globalElement=1, islocal=.TRUE.)
+  CALL obj%Insert(fevar=fevar, globalElement=1, islocal=math%yes)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -132,23 +134,22 @@ CALL Reallocate(nptrs, nns)
 nsd = mesh%GetNSD()
 CALL Reallocate(xij, nsd, nns)
 
-!$OMP PARALLEL DO PRIVATE(iel, tsize, nptrs, xij, fevar)
 DO iel = 1, telem
-  CALL mesh%GetConnectivity_(globalElement=iel, islocal=.TRUE., &
+  CALL mesh%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                              ans=nptrs, tsize=tsize)
 
-  CALL mesh%GetNodeCoord(nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
-                        ncol=ncol, globalNode=nptrs(1:tsize), islocal=.FALSE.)
+  CALL mesh%GetNodeCoord( &
+    nodeCoord=xij(1:nsd, 1:tsize), nrow=nrow, &
+    ncol=ncol, globalNode=nptrs(1:tsize), islocal=math%no)
 
   CALL func%Get(fevar=fevar, xij=xij(1:nsd, 1:tsize), times=times)
 
-  CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=.TRUE.)
+  CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=math%yes)
 END DO
-!$OMP END PARALLEL DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
-CALL FEVariable_Deallocate(fevar)
+CALL FEVariableDeallocate(fevar)
 
 mesh => NULL()
 
@@ -203,7 +204,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Insert3
 
 !----------------------------------------------------------------------------
-!                                                                       Insert
+!                                                                     Insert
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert4
@@ -217,14 +218,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (obj%fieldType .EQ. TypeField%Constant) THEN
+IF (obj%fieldType .EQ. TypeField%constant) THEN
   telem = 1
 ELSE
   telem = obj%mesh%GetTotalElements()
 END IF
 
 DO iel = 1, telem
-  CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=.TRUE.)
+  CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=math%yes)
 END DO
 
 #ifdef DEBUG_VER
@@ -234,7 +235,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Insert4
 
 !----------------------------------------------------------------------------
-!                                                                       Insert
+!                                                                     Insert
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert5
@@ -242,10 +243,7 @@ MODULE PROCEDURE obj_Insert5
 CHARACTER(*), PARAMETER :: myName = "obj_Insert5()"
 #endif
 
-LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
-
 INTEGER(I4B) :: iel, xij_i, xij_j, tnptrs
-
 LOGICAL(LGT) :: isok
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 INTEGER(I4B), ALLOCATABLE :: nptrs(:)
@@ -260,7 +258,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 isok = obj%fieldType .EQ. typefield%Constant
 IF (isok) THEN
   CALL func%Get(fevar=fevar)
-  CALL obj%Insert(fevar=fevar, globalElement=1, islocal=.TRUE.)
+  CALL obj%Insert(fevar=fevar, globalElement=1, islocal=math%yes)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -280,17 +278,18 @@ xij = 0.0_DFP
 
 iel = mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
-CALL mesh%GetConnectivity_(globalElement=iel, islocal=yes, ans=nptrs, &
-                           tsize=tnptrs)
+CALL mesh%GetConnectivity_( &
+  globalElement=iel, islocal=math%yes, ans=nptrs, &
+  tsize=tnptrs)
 
 CALL mesh%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
-                       globalNode=nptrs(1:tnptrs), islocal=no)
+                       globalNode=nptrs(1:tnptrs), islocal=math%no)
 
 CALL func%Get(fevar=fevar, xij=xij(1:3, 1:xij_j), times=times)
 
-CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=yes)
+CALL obj%Insert(fevar=fevar, globalElement=iel, islocal=math%yes)
 
-CALL FEVariable_Deallocate(fevar)
+CALL FEVariableDeallocate(fevar)
 DEALLOCATE (xij, nptrs)
 
 mesh => NULL()
@@ -302,7 +301,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Insert5
 
 !----------------------------------------------------------------------------
-!                                                                        Insert
+!                                                                     Insert
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Insert6
@@ -324,15 +323,15 @@ ALLOCATE (func(tsize))
 
 DO ii = 1, tsize
 
-! Check if material(ii)%ptr is associated or not
 #ifdef DEBUG_VER
+! Check if material(ii)%ptr is associated or not
   isok = ASSOCIATED(material(ii)%ptr)
   CALL AssertError1(isok, myName, &
                     'material('//ToString(ii)//')%ptr is not associated')
 #endif
 
-! Check if material(ii)%ptr has the name or not
 #ifdef DEBUG_VER
+! Check if material(ii)%ptr has the name or not
   isok = material(ii)%ptr%IsMaterialPresent(name)
   CALL AssertError1(isok, myName, &
                     'material name = '//name//' not found in material('// &
@@ -367,7 +366,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_Insert7()"
 LOGICAL(LGT) :: isok
 #endif
 
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 INTEGER(I4B) :: tsize, ii, telements, jj
 
 #ifdef DEBUG_VER
@@ -389,11 +387,11 @@ END DO
 telements = obj%mesh%GetTotalElements()
 
 DO ii = 1, telements
-  jj = obj%mesh%GetMaterial(globalElement=ii, islocal=yes, &
+  jj = obj%mesh%GetMaterial(globalElement=ii, islocal=math%yes, &
                             medium=medium)
 
-  ! Check if material index is out of bound or not
 #ifdef DEBUG_VER
+  ! Check if material index is out of bound or not
   isok = (jj .LE. tsize) .AND. (jj .NE. 0)
   CALL AssertError1(isok, myName, &
                     'material index '//ToString(jj)// &
@@ -402,7 +400,7 @@ DO ii = 1, telements
                     ToString(ii))
 #endif
 
-  CALL obj%Insert(func=func(jj)%ptr, globalElement=ii, islocal=yes, &
+  CALL obj%Insert(func=func(jj)%ptr, globalElement=ii, islocal=math%yes, &
                   times=times)
 END DO
 

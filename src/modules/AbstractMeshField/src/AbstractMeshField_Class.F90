@@ -198,8 +198,12 @@ END TYPE AbstractMeshField_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
+! date: 2026-02-24
 ! summary: Initiate by copying other fields, and different options
+!
+!# Initiate
+!
+! Initiate by copying data from obj2 to obj.
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
@@ -217,15 +221,15 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
+! date: 2026-02-24
 ! summary: Initiate from abstractMaterials
 !
-!# Introduction
+!# Initiate
 !
-! We first search the name in material
+! We first search the name in material.
 ! If the name is found in the material  then we get the pointer to
 ! user function corresponding to the material name.
-! Then we call Initiate4 method
+! Then we call Initiate3 method
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, mesh, material, name, engine, nnt)
@@ -249,8 +253,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 17 Feb 2022
+! date: 2026-02-24
 ! summary: Initiate from UserFunction_
+!
+!# Initiate
+!
+! This method initiates AbstractMeshField from a user function.
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, mesh, func, name, engine, nnt)
@@ -277,10 +285,10 @@ END INTERFACE
 ! date: 2025-07-29
 ! summary:  Initiate AbstractMeshField_ from arguments
 !
-!# Introduction
-!   This routine is used to initiate the AbstractMeshField_ from
-!   arguments.
-!   It is like Initiate1, but it does not use ParameterList_
+!# Initiate
+!
+! This routine is used to initiate the AbstractMeshField_ from
+! arguments.
 
 INTERFACE AbstractMeshFieldInitiate
   MODULE SUBROUTINE obj_Initiate4( &
@@ -865,10 +873,22 @@ END INTERFACE
 ! date: 2025-08-18
 ! summary: Insert values in AbstractMeshField from userFunction
 !
-!# Introduction
+!# Insert
+!
 ! This routine sets the value of globalElement in AbstractMeshField_
-! from user function. This function is like Insert2, but in this case
-! we insert the value of a single element.
+! from user function.
+!
+! This function is like Insert2, but in this case we insert the value of
+!  a single element.
+!
+! We get the FEVariable from the userFunction, and then we set
+! this FEVariable by using Insert1 method.
+!
+! if obj%fieldType equals constant then we just get the constant value
+!
+! if obj%fieldType is not equal to constant then we use cell nodal
+! coordinates, and get fevariable from user function by using these
+! nodal coordinates.
 
 INTERFACE
   MODULE SUBROUTINE obj_Insert5(obj, func, globalElement, islocal, times)
@@ -928,7 +948,8 @@ END INTERFACE
 ! summary: Insert AbstractMeshField_ using AbstractMaterial Add
 !          MeshSelection_
 !
-!# Introduction
+!# Insert
+!
 ! This routine Inserts the values in AbstractMeshField_ from
 ! AbstractMaterial. The following steps are performed:
 !
@@ -937,6 +958,7 @@ END INTERFACE
 !    material.
 ! 3. Then from the material we get the user function by using the name
 ! 4. Then we Insert the values in that element using this function
+! 5. This method calls Insert5 method.
 
 INTERFACE
   MODULE SUBROUTINE obj_Insert7(obj, medium, func, times)
