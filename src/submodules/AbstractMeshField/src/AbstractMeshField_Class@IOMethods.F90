@@ -42,6 +42,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+CALL Display(msg, unitNo=unitNo)
 CALL Display(obj%isInit, 'isInit: ', unitno=unitno)
 
 IF (.NOT. obj%isInit) THEN

@@ -145,7 +145,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-30
-! summary:  Initiate vector mesh field
+! summary: Initiate vector mesh field
 
 INTERFACE
   MODULE SUBROUTINE VectorMeshFieldInitiate( &
@@ -457,11 +457,16 @@ END INTERFACE
 ! summary:  Generate quadrature points
 
 INTERFACE
-  MODULE SUBROUTINE InitiateQuadraturePoints(obj, fedof, mesh, &
-                                             geofedof, engine)
+  MODULE SUBROUTINE InitiateQuadraturePoints( &
+    obj, fedof, mesh, geofedof, engine)
     CLASS(MeshField_), INTENT(INOUT) :: obj
-    TYPE(FEDOF_), INTENT(INOUT) :: fedof, geofedof
+    !! mesh field
+    TYPE(FEDOF_), INTENT(INOUT) :: fedof
+    !! finite element degree of freedom
+    TYPE(FEDOF_), INTENT(INOUT) :: geofedof
+    !! finite element degree of freedom for geometry
     CLASS(AbstractMesh_), TARGET, INTENT(IN) :: mesh
+    !! abstract mesh
     CHARACTER(*), INTENT(IN) :: engine
   END SUBROUTINE InitiateQuadraturePoints
 END INTERFACE

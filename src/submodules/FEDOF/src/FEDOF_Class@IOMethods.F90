@@ -104,7 +104,13 @@ IF (isok) CALL Display(SIZE(obj%cellIA), "cellIA size: ", unitno=unitno)
 
 DO ii = 1, SIZE(obj%fe)
   isok = ASSOCIATED(obj%fe(ii)%ptr)
-  CALL Display(isok, "fe(ii)%ptr ASSOCIATED: ", unitno=unitno)
+  CALL Display(isok, &
+               "fe("//ToString(ii)//")%ptr ASSOCIATED: ", &
+               unitno=unitno)
+  IF (isok) THEN
+    CALL obj%fe(ii)%ptr%Display("fe("//ToString(ii)//")%ptr: ", &
+                                unitNo=unitNo)
+  END IF
 END DO
 
 #ifdef DEBUG_VER

@@ -15,19 +15,20 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(MeshField_Class) QuadratureMethods
-USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE AbstractFE_Class, ONLY: AbstractFE_
-USE ReallocateUtility, ONLY: Reallocate
-USE BaseType, ONLY: FEVariable_
-USE BaseType, ONLY: TypeFEVariableVector
-USE BaseType, ONLY: TypeFEVariableSpace
-USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: TypeFEVariableVector
+USE ElemshapeData_Method, ONLY: GetInterpolation_
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
 USE FEVariable_Method, ONLY: NodalVariable
 USE FEVariable_Method, ONLY: QuadratureVariable
-USE FEVariable_Method, ONLY: FEVariable_Set => Set
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
-USE ElemshapeData_Method, ONLY: GetInterpolation_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -37,7 +38,7 @@ CHARACTER(*), PARAMETER :: modName = "MeshField_Class@QuadratureMethods"
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                 InitiateQuadraturePoints
+!                                                   InitiateQuadraturePoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE InitiateQuadraturePoints
@@ -61,7 +62,7 @@ CALL VectorMeshFieldInitiate( &
   obj=obj, name="xij", fieldType=TypeFieldOpt%normal, &
   varType=TypeFieldOpt%space, engine=engine, &
   defineOn=TypeFieldOpt%quadrature, &
-  spaceCompo=3_I4B, nns=maxCon, mesh=mesh)
+  spaceCompo=math%three_i, nns=maxCon, mesh=mesh)
 
 CALL SetQuadraturePoints(obj=obj, fedof=fedof, mesh=mesh, geofedof=geofedof)
 
@@ -98,26 +99,25 @@ tElements = mesh%GetTotalElements()
 maxNNE = mesh%GetMaxNNE()
 
 maxCon = 0
-
 maxCon = fedof%GetMaxTotalQuadraturePoints()
 
-CALL Reallocate(xij, 3, maxCon)
-CALL Reallocate(elemCoord, 3, maxNNE)
+CALL Reallocate(xij, math%three_i, maxCon)
+CALL Reallocate(elemCoord, math%three_i, maxNNE)
 
 fevar = QuadratureVariable( &
         val=xij, rank=TypeFEVariableVector, varType=TypeFEVariableSpace)
 
-elemCoord = 0.0_DFP
+elemCoord = math%zero
 
 DO iel = 1, tElements
-  CALL fedof%SetFE(globalElement=iel, islocal=.TRUE.)
-  feptr => fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
-  CALL geofedof%SetFE(globalElement=iel, islocal=.TRUE.)
-  geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+  CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
+  geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
   CALL mesh%GetNodeCoord( &
     globalElement=iel, nodeCoord=elemCoord, nrow=elemCoord_i, &
-    ncol=elemCoord_j, islocal=.TRUE.)
+    ncol=elemCoord_j, islocal=math%yes)
 
   CALL feptr%GetQuadraturePoints(quad=quad)
   CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
@@ -126,10 +126,11 @@ DO iel = 1, tElements
                          val=elemCoord, nrow=xij_i, ncol=xij_j)
 
   CALL FEVariable_Set( &
-    obj=fevar, val=xij(1:3, 1:xij_j), rank=TypeFEVariableVector, &
-    vartype=TypeFEVariableSpace, scale=1.0_DFP, addContribution=.FALSE.)
+    obj=fevar, val=xij(1:math%three_i, 1:xij_j), &
+    rank=TypeFEVariableVector, vartype=TypeFEVariableSpace, &
+    scale=math%one, addContribution=math%no)
 
-  CALL obj%Insert(globalElement=iel, islocal=.TRUE., fevar=fevar)
+  CALL obj%Insert(globalElement=iel, islocal=math%yes, fevar=fevar)
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)

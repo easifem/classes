@@ -33,6 +33,7 @@ USE StringUtility, ONLY: UpperCase
 USE AbstractFE_Class, ONLY: AbstractFEDeallocate
 USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE ReferenceElement_Method, ONLY: GetElementIndex
 USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE FEFactoryUtility, ONLY: FEFactory
@@ -94,8 +95,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 #endif
 
 LOGICAL(LGT) :: isok
+INTEGER(I4B), PARAMETER :: topolist_size = 8
 INTEGER(I4B) :: ii, elemType, nsd, jj
-INTEGER(I4B) :: totalTopo, topoList(8)
+INTEGER(I4B) :: totalTopo, topoList(topolist_size)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -179,13 +181,14 @@ telems = dom%GetTotalElements()
 tsize = SIZE(order, 2)
 
 #ifdef DEBUG_VER
-isok = SIZE(order, 1) .NE. 2
+isok = SIZE(order, 1) .EQ. 2
 CALL AssertError1(isok, myName, &
                   'number of rows of order array is not equal to 2')
 
-isok = tsize .NE. telems
+isok = tsize .EQ. telems
 CALL AssertError1(isok, myName, &
-           'number of cols of order array is not equal to number of elements')
+           'number of cols of order array is not equal to&
+           &number of elements')
 #endif
 
 ALLOCATE (order0(telems))
@@ -193,14 +196,14 @@ ALLOCATE (order0(telems))
 DO ii = 1, telems
   globalElement = order(1, ii)
   localElement = dom%GetLocalElemNumber(globalElement=globalElement, &
-                                        islocal=.FALSE.)
+                                        islocal=math%no)
   order0(localElement) = order(2, ii)
 END DO
 
 CALL obj%Initiate(dom=dom, baseContinuity=baseContinuity, &
                   baseInterpolation=baseInterpolation, order=order0, &
                   ipType=ipType, feType=feType, basisType=basisType, &
-                  alpha=alpha, beta=beta, lambda=lambda, islocal=.TRUE., &
+                  alpha=alpha, beta=beta, lambda=lambda, islocal=math%yes, &
                   dofType=dofType, &
                   transformType=transformType, &
                   quadratureIsHomogeneous=quadratureIsHomogeneous, &
@@ -222,7 +225,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate4
 
 !----------------------------------------------------------------------------
-!                                                     FEDOF_Initiate_Help
+!                                                               AllocateSizes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_AllocateSizes
@@ -264,7 +267,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_AllocateSizes
 
 !----------------------------------------------------------------------------
-!                                                     FEDOF_Initiate_Help
+!                                                     SetOrdersFromCellOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOrdersFromCellOrder
@@ -273,7 +276,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrdersFromCellOrder()"
 #endif
 
 ! Internal variables
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 INTEGER(I4B) :: ent(4), tsize, iel, tedgedof, tfacedof, tcelldof, ii, jj, &
                 tdof, myorder
 LOGICAL(LGT), ALLOCATABLE :: foundEdges(:), foundFaces(:), foundCells(:)
@@ -303,10 +305,11 @@ obj%cellIA(1) = 1
 #ifdef DEBUG_VER
 DO iel = 1, obj%tCells
 
-  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=yes)
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
   IF (.NOT. isok) CYCLE
 
-  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=yes)
+  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, &
+                                          islocal=math%yes)
 
   isok = ASSOCIATED(elemdata)
   CALL AssertError1(isok, myName, 'elemdata is not allocated')
@@ -316,10 +319,11 @@ END DO
 
 cellLoop: DO iel = 1, obj%tCells
 
-  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=yes)
-  IF (.NOT. isok) CYCLE
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE cellLoop
 
-  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=yes)
+  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, &
+                                          islocal=math%yes)
 
   ent = ElemData_GetTotalEntities(elemdata)
 
@@ -340,7 +344,7 @@ cellLoop: DO iel = 1, obj%tCells
       obj%edgeIA(jj + 1) = obj%edgeIA(jj) + tsize
       tedgedof = tedgedof + tsize
 
-      foundEdges(jj) = .TRUE.
+      foundEdges(jj) = math%yes
     END IF
 
   END DO edgeLoop
@@ -363,7 +367,7 @@ cellLoop: DO iel = 1, obj%tCells
               baseInterpolation=obj%baseInterpolation)
 
       tdof = tdof + tsize
-      foundFaces(jj) = .TRUE.
+      foundFaces(jj) = math%yes
 
       obj%faceIA(jj + 1) = obj%faceIA(jj) + tsize
       tfacedof = tfacedof + tsize
@@ -373,7 +377,7 @@ cellLoop: DO iel = 1, obj%tCells
   END DO faceLoop
 
   ! cell
-  jj = ElemData_GetCell(obj=elemdata, islocal=.TRUE.)
+  jj = ElemData_GetCell(obj=elemdata, islocal=math%yes)
   isok = foundCells(jj)
 
   ! if cell not found
@@ -383,7 +387,7 @@ cellLoop: DO iel = 1, obj%tCells
                                      baseContinuity=obj%baseContinuity, &
                                      baseInterpolation=obj%baseInterpolation)
     tdof = tdof + tsize
-    foundCells(jj) = .TRUE.
+    foundCells(jj) = math%yes
 
     obj%cellIA(jj + 1) = obj%cellIA(jj) + tsize
 
@@ -569,7 +573,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_InitiateGeoFEDOF()"
 INTEGER(I4B), ALLOCATABLE :: order(:)
 INTEGER(I4B) :: telements
 CLASS(AbstractMesh_), POINTER :: mesh
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -585,7 +588,8 @@ mesh => NULL()
 CALL obj%Initiate(order=order, dom=dom, baseContinuity=baseContinuity, &
                   baseInterpolation=baseInterpolation, feType=feType, &
                   ipType=ipType, basisType=basisType, alpha=alpha, &
-                  lambda=lambda, beta=beta, islocal=yes, dofType=dofType, &
+                  lambda=lambda, beta=beta, islocal=math%yes, &
+                  dofType=dofType, &
                   transformType=transformType, &
                   quadratureIsHomogeneous=quadratureIsHomogeneous, &
                   quadratureType=quadratureType, &
@@ -601,7 +605,6 @@ CALL obj%Initiate(order=order, dom=dom, baseContinuity=baseContinuity, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_InitiateGeoFEDOF
 
 !----------------------------------------------------------------------------

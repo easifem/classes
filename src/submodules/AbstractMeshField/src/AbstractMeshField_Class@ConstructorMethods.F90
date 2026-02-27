@@ -194,9 +194,10 @@ CALL AbstractMeshFieldGetShapeAndSize( &
   rank=rank, varType=varType, s=s, tsize=tsize, nns=nns, &
   spaceCompo=spaceCompo, dim1=dims(1), dim2=dims(2), nnt=nnt)
 
-CALL obj%Initiate(name=name, fieldType=fieldType, varType=varType, &
-                  engine=engine, defineOn=typefield%nodal, &
-                  rank=rank, s=s(1:tsize), mesh=mesh)
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, &
+  engine=engine, defineOn=typefield%nodal, &
+  rank=rank, s=s(1:tsize), mesh=mesh)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

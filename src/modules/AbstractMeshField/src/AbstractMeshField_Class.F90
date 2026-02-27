@@ -26,10 +26,10 @@ USE UserFunction_Class, ONLY: UserFunction_
 USE UserFunction_Class, ONLY: UserFunctionPointer_
 USE AbstractMaterial_Class, ONLY: AbstractMaterial_
 USE AbstractMaterial_Class, ONLY: AbstractMaterialPointer_
+USE FEDOF_Class, ONLY: FEDOF_
 IMPLICIT NONE
 
 PRIVATE
-
 PUBLIC :: AbstractMeshField_
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
@@ -259,6 +259,14 @@ END INTERFACE
 !# Initiate
 !
 ! This method initiates AbstractMeshField from a user function.
+!
+! This method initiate abstract mesh field by using the following:
+!
+! - fieldType = normal
+! - varType = func%GetArgType()
+! - engine = engine
+! - defineOn = nodal
+! - rank = func%GetReturnType()
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate3(obj, mesh, func, name, engine, nnt)

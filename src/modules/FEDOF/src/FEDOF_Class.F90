@@ -379,9 +379,56 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
 !
-!# Introduction
+!# Initiate
+!
+! This method creates a FEDOF object in which all elements have the same
+! order.
 !
 ! This method makes order0(1) from order and calls obj_Initiate2.
+!
+!## Examples 1
+!
+! The following examples creates FEDOF for hierarchical polynomials.
+!
+!```fortran
+!{{% fortran-code file="examples/Initiate_test_1.F90" %}}
+!```
+!
+!## Examples 2
+!
+! The following examples creates FEDOF for lagrange polynomials and first
+! order mesh.
+!
+!```fortran
+!{{% fortran-code file="examples/Initiate_test_4.F90" %}}
+!```
+!
+!## Examples 3
+!
+! The following example creates FEDOF for lagrange polynomials on a second
+! order mesh.
+!
+!```fortran
+!{{% fortran-code file="examples/Initiate_test_5.F90" %}}
+!```
+!
+!## Examples 4
+!
+! The following example creates a first order lagrange FEDOF on
+! linear triangle mesh:
+!
+!```fortran
+!{{% fortran-code file="examples/Lagrange_test_1.F90" %}}
+!```
+!
+!## Examples 5
+!
+! The following example creates a second order lagrange FEDOF on linear
+! triangle mesh.
+!
+!```fortran
+!{{% fortran-code file="examples/Lagrange_test_2.F90" %}}
+!```
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1( &
@@ -462,6 +509,25 @@ END INTERFACE
 !
 ! This method uses order vector, it means you can specify the
 ! order for each cell element
+!
+!
+!## Examples 1
+!
+! The following example creates FEDOF of hierarchical basis functions.
+! In this examples all elements have the same order.
+!
+!```fortran
+!{{% fortran-code file="examples/Initiate_test_2.F90" %}}
+!```
+!
+!## Examples 2
+!
+! The following example creates FEDOF of hierarchical basis functions.
+! In this examples elements have different order.
+!
+!```fortran
+!{{% fortran-code file="examples/Initiate_test_3.F90" %}}
+!```
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &
@@ -544,15 +610,22 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
 !
-!# Introduction
+!# Initiate
 !
 ! This routine is similar to the obj_Initiate2, but the order of the
 ! element is defined for global element numbers.
-! The number of rows in order is equal to 2
-! the first row contains the global element number
-! the second row contains the order.
+!
+! The number of rows in order is equal to 2: the first row contains
+! the global element number,  the second row contains the order.
 !
 ! This routine will make order0(:) from order(:,:) and call initiate2
+!
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/Initiate_test_6.F90" %}}
+!```
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate4( &
@@ -1239,11 +1312,11 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetFE(obj, globalElement, islocal)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-  !! FEDOF object
+    !! FEDOF object
     INTEGER(I4B), INTENT(IN) :: globalElement
-  !! global element number
+    !! global element number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
-  !! if true then global element is local element
+    !! if true then global element is local element
   END SUBROUTINE obj_SetFE
 END INTERFACE
 
@@ -1438,6 +1511,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-17
 ! summary: Get maximum number of quadrature points in an element
+!
+!# GetMaxTotalQuadraturePoints
+!
+! This method returns the maximum number of quadrature points in an element
 
 INTERFACE
   MODULE FUNCTION obj_GetMaxTotalQuadraturePoints(obj) RESULT(ans)
@@ -1453,9 +1530,12 @@ END INTERFACE
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2024-06-09
 ! summary: Set sparsity in CSRMatrix_ from AbstractDomain_
+!
+!# SetSparsity
+!
+! This method sets the sparsity inside the matrix using the fedof object.
 
 INTERFACE FEDOFSetSparsity
-
   MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
