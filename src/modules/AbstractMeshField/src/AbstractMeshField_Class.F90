@@ -15,18 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE AbstractMeshField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE BaseType, ONLY: FEVariable_
-USE String_Class, ONLY: String
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE ExceptionHandler_Class, ONLY: e
-USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
-USE HDF5File_Class, ONLY: HDF5File_
-USE UserFunction_Class, ONLY: UserFunction_
-USE UserFunction_Class, ONLY: UserFunctionPointer_
 USE AbstractMaterial_Class, ONLY: AbstractMaterial_
 USE AbstractMaterial_Class, ONLY: AbstractMaterialPointer_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_
+USE FieldOpt_Class, ONLY: typefield => TypeFieldOpt
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE String_Class, ONLY: String
+USE UserFunction_Class, ONLY: UserFunction_
+USE UserFunction_Class, ONLY: UserFunctionPointer_
 IMPLICIT NONE
 
 PRIVATE
@@ -74,7 +75,23 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! Space ! Time ! SpaceTime ! Constant
 
   INTEGER(I4B) :: totalShape = 0
-  !! total shape of the data
+  !! total shape of the data, following rules are used for totalShape
+  !! for (scalar, constant) totalShape  = 1
+  !! for (scalar, space) totalShape  =  1
+  !! for (scalar, time) totalShape  =  1
+  !! for (scalar, spaceTime) totalShape  =  2
+  !! for (vector, constant) totalShape  = 1
+  !! for (vector, space) totalShape  =  2
+  !! for (vector, time) totalShape  =  2
+  !! for (vector, spaceTime) totalShape  =  3
+  !! for (matrix, constant) totalShape  = 2
+  !! for (matrix, space) totalShape  =  3
+  !! for (matrix, time) totalShape  =  3
+  !! for (matrix, spaceTime) totalShape  = 4
+
+  INTEGER(I4B) :: maxShape(fevaropt%maxRank)
+  !! maxShape denotes the upper bound of data in each dimension.
+  !! it is upper bound for shape of data in a given element.
 
   INTEGER(I4B), ALLOCATABLE :: ss(:)
   !! shape of the data
@@ -108,12 +125,14 @@ CONTAINS
   !! Initiate from Abstract materials
   PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate from user function
-  !! This routine should be implemened by the child class
   PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate from user function
-  !! This routine should be implemened by the child class
+  PROCEDURE, PASS(obj) :: Initiate5 => obj_Initiate5
+  !! Initiate from Abstract materials
+  PROCEDURE, PASS(obj) :: Initiate6 => obj_Initiate6
+  !! Initiate from user function
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3, &
-    Initiate4
+    Initiate4, Initiate5, Initiate6
   !! Generic initiate method
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
@@ -141,9 +160,22 @@ CONTAINS
   !! Getting the value
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Get_ => obj_Get_
   !! Getting the value in FEVariable without allocation
-
-  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
+    obj_IsInitiated
   !! Returns true if the object is initiated
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshPointer => &
+    obj_GetMeshPointer
+  !! get mesh pointer
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMaxNNE => &
+    obj_GetMaxNNE
+  !! Get maximum number of nodes in space, it gets appropiate entry from
+  !! maxShape.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetSpaceVectorField_ => &
+    obj_GetSpaceVectorField_
+  !! get the space values from vector mesh field without allocation.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRank => &
+    obj_GetRank
+  !! Get rank of the field
 
   ! SET:
   ! @AddMethods
@@ -188,9 +220,14 @@ CONTAINS
   !!  Insert the values by using AbstractMaterialPointer
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert7 => obj_Insert7
   !! Insert the values by using user functions
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert8 => obj_Insert8
+  !! Insert the values by using user functions and quadField
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert9 => obj_Insert9
+  !! Insert the values in a element using user functions and
+  !! quadrature points
 
   GENERIC, PUBLIC :: Insert => Insert1, Insert2, Insert3, Insert4, &
-    Insert5, Insert6, Insert7
+    Insert5, Insert6, Insert7, Insert8, Insert9
 END TYPE AbstractMeshField_
 
 !----------------------------------------------------------------------------
@@ -324,6 +361,76 @@ INTERFACE AbstractMeshFieldInitiate
 END INTERFACE AbstractMeshFieldInitiate
 
 !----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-02-24
+! summary: Initiate from abstract materials and quadrature fields
+!
+!# Initiate
+!
+! We first search the name in material.
+! If the name is found in the material  then we get the pointer to
+! user function corresponding to the material name.
+! Then we call Initiate3 method
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate5(obj, quadField, material, name, &
+                                  engine, nnt)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: quadField
+    !! vector mesh field for quadrature fields
+    CLASS(AbstractMaterial_), INTENT(INOUT) :: material
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the material
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-02-24
+! summary: Initiate from UserFunction_
+!
+!# Initiate
+!
+! This method initiates AbstractMeshField from a user function.
+!
+! This method initiate abstract mesh field by using the following:
+!
+! - fieldType = normal
+! - varType = func%GetArgType()
+! - engine = engine
+! - defineOn = nodal
+! - rank = func%GetReturnType()
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate6(obj, quadField, func, name, engine, nnt)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: quadField
+    !! vector mesh field for quadrature fields
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! Abstract material
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the AbstractMeshField
+    CHARACTER(*), INTENT(IN) :: engine
+    !! engine of the AbstractMeshField
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nnt
+    !! number of nodes in time
+  END SUBROUTINE obj_Initiate6
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -331,14 +438,10 @@ END INTERFACE AbstractMeshFieldInitiate
 ! date: 21 Oct 2021
 ! summary: Deallocates data in [[AbstractMeshField_]]
 
-INTERFACE
+INTERFACE AbstractMeshFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE AbstractMeshFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractMeshFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -424,6 +527,94 @@ INTERFACE
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetMeshPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary:  Returns mesh pointer stored inside the AbstractMeshField
+
+INTERFACE
+  MODULE FUNCTION obj_GetMeshPointer(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), POINTER :: ans
+  END FUNCTION obj_GetMeshPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetMaxNNE@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get maximum number of nodes in element
+!
+!# GetMaxNNE
+!
+! Get the maximum number of nodes space. This method returns an
+! appropiate entry from maxShape. Following rule has been used.
+!
+!- For (scalar, constant), ans = 1
+!- For (scalar, space), ans = maxShape(1)
+!- For (scalar, time), ans = 1
+!- For (scalar, spaceTime), ans = maxShape(1)
+!
+!- For (vector, constant), ans = 1
+!- For (vector, space), ans = maxShape(2)
+!- For (vector, time), ans = 1
+!- For (vector, spaceTime), ans = maxShape(2)
+!
+!- For (matrix, constant), ans = 1
+!- For (matrix, space), ans = maxShape(3)
+!- For (matrix, time), ans = 1
+!- For (matrix, spaceTime), ans = maxShape(3)
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxNNE(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxNNE
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            GetSpaceVectorField_@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the element value of vector meshField
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSpaceVectorField_(obj, globalElement, ans, &
+                                             nrow, ncol, islocal)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    REAL(DFP), INTENT(INOUT) :: ans(:, :)
+    !! element level value of vector mesh field
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of rows and cols in ans
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! is globalElement local element
+  END SUBROUTINE obj_GetSpaceVectorField_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetRank@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the rank of mesh field
+
+INTERFACE
+  MODULE FUNCTION obj_GetRank(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetRank
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -874,7 +1065,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Set@SetMethods
+!                                                       Insert@InsertMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -913,7 +1104,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Insert@SetMethods
+!                                                       Insert@InsertMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -948,7 +1139,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                                        Insert@InsertMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -979,6 +1170,83 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
     !! time vector when the var type is `Time` or `SpaceTime`
   END SUBROUTINE obj_Insert7
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        Insert@InsertMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-13
+! summary: Insert AbstractMeshField_ using user function.
+!
+!# Insert
+!
+! This routine Inserts the values in AbstractMeshField_ from
+! UserFunction func. The following steps are performed:
+!
+! 1. The elements of mesh contains the medium and material information
+! 2. We first get the material number which acts as a pointer to
+!    func.
+! 3. Then we Insert the values in that element using this function
+! 4. This method calls Insert9 method.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert8(obj, quadField, medium, func, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! AbstractMeshField
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: quadField
+    !! Vector mesh field for quadrature points
+    INTEGER(I4B), INTENT(IN) :: medium
+    !! Medium number
+    CLASS(UserFunctionPointer_), INTENT(INOUT) :: func(:)
+    !! Abstract material
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Insert8
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       Insert@InsertMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-18
+! summary: Insert values in AbstractMeshField from userFunction
+!
+!# Insert
+!
+! This routine sets the value of globalElement in AbstractMeshField_
+! from user function.
+!
+! This function is like Insert2, but in this case we insert the value of
+!  a single element.
+!
+! We get the FEVariable from the userFunction, and then we set
+! this FEVariable by using Insert1 method.
+!
+! if obj%fieldType equals constant then we just get the constant value
+!
+! if obj%fieldType is not equal to constant then we use cell nodal
+! coordinates, and get fevariable from user function by using these
+! nodal coordinates.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Insert9(obj, quadField, func, globalElement, &
+                                islocal, times)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! abstract mesh field
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: quadField
+    !! vector mesh field which contains quadrature points
+    CLASS(UserFunction_), INTENT(INOUT) :: func
+    !! User function
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! time vector when the var type is `Time` or `SpaceTime`
+  END SUBROUTINE obj_Insert9
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -411,6 +411,118 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Insert7
 
 !----------------------------------------------------------------------------
+!                                                                     Insert
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Insert8
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Insert8()"
+LOGICAL(LGT) :: isok
+#endif
+
+INTEGER(I4B) :: tsize, ii, telements, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(func)
+
+! Check if func(ii)%ptr is associated or not
+#ifdef DEBUG_VER
+DO ii = 1, tsize
+  isok = ASSOCIATED(func(ii)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'func('//ToString(ii)//')%ptr is not associated')
+END DO
+#endif
+
+telements = obj%mesh%GetTotalElements()
+
+DO ii = 1, telements
+  jj = obj%mesh%GetMaterial(globalElement=ii, islocal=math%yes, &
+                            medium=medium)
+
+#ifdef DEBUG_VER
+  ! Check if material index is out of bound or not
+  isok = (jj .LE. tsize) .AND. (jj .NE. 0)
+  CALL AssertError1(isok, myName, &
+                    'material index '//ToString(jj)// &
+                    ' is out of bounds for func size '// &
+                    ToString(tsize)//' for local element = '// &
+                    ToString(ii))
+#endif
+
+#ifdef DEBUG_VER
+  ! Check if material index is out of bound or not
+  isok = ASSOCIATED(func(jj)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'func('//ToString(jj)//')%ptr is not associated.')
+#endif
+
+  CALL obj%Insert(func=func(jj)%ptr, globalElement=ii, islocal=math%yes, &
+                  times=times, quadField=quadField)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Insert8
+
+!----------------------------------------------------------------------------
+!                                                                     Insert
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Insert9
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Insert9()"
+#endif
+
+INTEGER(I4B) :: xij_i, xij_j
+LOGICAL(LGT) :: isok
+REAL(DFP), ALLOCATABLE :: xij(:, :)
+TYPE(FEVariable_) :: fevar
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = obj%fieldType .EQ. typefield%Constant
+IF (isok) THEN
+  CALL func%Get(fevar=fevar)
+  CALL obj%Insert(fevar=fevar, globalElement=1, islocal=math%yes)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+xij_j = quadField%GetMaxNNE()
+CALL Reallocate(xij, math%three_i, xij_j)
+
+CALL quadField%GetSpaceVectorField_( &
+  globalElement=globalElement, ans=xij, nrow=xij_i, &
+  ncol=xij_j, islocal=islocal)
+
+CALL func%Get(fevar=fevar, xij=xij(1:math%three_i, 1:xij_j), times=times)
+CALL obj%Insert(fevar=fevar, globalElement=globalElement, islocal=islocal)
+
+CALL FEVariableDeallocate(fevar)
+DEALLOCATE (xij)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Insert9
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

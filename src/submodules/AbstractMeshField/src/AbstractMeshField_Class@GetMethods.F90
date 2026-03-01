@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) GetMethods
-USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
@@ -70,7 +70,7 @@ CASE (fevaropt%scalar)
   CASE DEFAULT
 
 #ifdef DEBUG_VER
-    CALL AssertError1(.FALSE., myName, &
+    CALL AssertError1(math%no, myName, &
                       "No case found for vartype="//ToString(obj%vartype))
 #endif
 
@@ -101,8 +101,9 @@ CASE (fevaropt%vector)
   CASE DEFAULT
 
 #ifdef DEBUG_VER
-    CALL AssertError1(.FALSE., myName, &
-                      "No case found for vartype="//ToString(obj%vartype))
+    CALL AssertError1(math%no, myName, &
+                      "No case found for vartype="// &
+                      ToString(obj%vartype))
 #endif
 
   END SELECT
@@ -135,8 +136,9 @@ CASE (fevaropt%matrix)
   CASE DEFAULT
 
 #ifdef DEBUG_VER
-    CALL AssertError1(.FALSE., myName, &
-                      "No case found for vartype="//ToString(obj%vartype))
+    CALL AssertError1(math%no, myName, &
+                      "No case found for vartype="// &
+                      ToString(obj%vartype))
 #endif
 
   END SELECT
@@ -144,8 +146,9 @@ CASE (fevaropt%matrix)
 CASE DEFAULT
 
 #ifdef DEBUG_VER
-  CALL AssertError1(.FALSE., myName, &
-                    "No case found for rank="//ToString(obj%rank))
+  CALL AssertError1(math%no, myName, &
+                    "No case found for rank="// &
+                    ToString(obj%rank))
 #endif
 
 END SELECT
@@ -224,23 +227,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ! fevar%defineOn = obj%defineOn
 #ifdef DEBUG_VER
-isok = fevar%defineOn .EQ. obj%defineOn
-CALL AssertError1(isok, myName, &
-                  "fevar%defineOn not same a obj%defineOn.")
+CALL AssertError2(fevar%defineOn, obj%defineOn, myName, &
+                  "a=fevar%defineOn, b=obj%defineOn.")
 #endif
 
-! fevar%varType = obj%varType
-#ifdef DEBUG_VER
-isok = fevar%varType .EQ. obj%varType
-CALL AssertError1(isok, myName, &
-                  "fevar%varType not same a obj%varType.")
-#endif
+! #ifdef DEBUG_VER
+! CALL AssertError2(fevar%varType, obj%varType, myName, &
+!                   "a=fevar%varType, b=obj%varType.")
+! #endif
+fevar%varType = obj%varType
 
 ! fevar%rank = obj%rank
 #ifdef DEBUG_VER
-isok = fevar%rank .EQ. obj%rank
-CALL AssertError1(isok, myName, &
-                  "fevar%rank not same a obj%rank.")
+CALL AssertError2(fevar%rank, obj%rank, myName, &
+                  "a=fevar%rank, b=obj%rank")
 #endif
 
 isok = obj%fieldType .EQ. TypeField%constant
@@ -338,7 +338,7 @@ CASE (typefield%spaceTime)
 
 CASE DEFAULT
 #ifdef DEBUG_VER
-  CALL AssertError1(.FALSE., myName, &
+  CALL AssertError1(math%no, myName, &
                     'No case found for varType: '//ToString(varType))
 #endif
 END SELECT
@@ -586,6 +586,189 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_IsInitiated
+
+!----------------------------------------------------------------------------
+!                                                             GetMeshPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans => obj%mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshPointer
+
+!----------------------------------------------------------------------------
+!                                                                   GetMaxNNE
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMaxNNE
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNNE()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = (obj%varType .EQ. fevaropt%constant) &
+       .OR. (obj%varType .EQ. fevaropt%time)
+
+IF (isok) THEN
+  ans = 1
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+SELECT CASE (obj%rank)
+CASE (fevaropt%scalar)
+
+  SELECT CASE (obj%varType)
+  CASE (fevaropt%space, fevaropt%spaceTime)
+    ans = obj%maxShape(1)
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, "no case found for obj%varType")
+#endif
+  END SELECT
+
+CASE (fevaropt%vector)
+
+  SELECT CASE (obj%varType)
+  CASE (fevaropt%space, fevaropt%spaceTime)
+    ans = obj%maxShape(2)
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, "no case found for obj%varType")
+#endif
+  END SELECT
+
+CASE (fevaropt%matrix)
+
+  SELECT CASE (obj%varType)
+  CASE (fevaropt%space, fevaropt%spaceTime)
+    ans = obj%maxShape(3)
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, "no case found for obj%varType")
+#endif
+  END SELECT
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "no case found for obj%rank")
+#endif
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMaxNNE
+
+!----------------------------------------------------------------------------
+!                                                                       Get
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSpaceVectorField_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSpaceVectorField_()"
+#endif
+INTEGER(I4B) :: iel, ii, a, b, s(fevaropt%maxRank)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = fevaropt%vector .EQ. obj%rank
+CALL AssertError1(isok, myName, &
+                  "obj%rank is not vector.")
+#endif
+
+#ifdef DEBUG_VER
+isok = fevaropt%space .EQ. obj%varType
+CALL AssertError1(isok, myName, &
+                  "obj%varType is not space.")
+#endif
+
+isok = obj%fieldType .EQ. TypeField%constant
+IF (isok) THEN
+  iel = 1
+ELSE
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
+END IF
+
+a = obj%indxShape(iel)
+b = obj%indxShape(iel + 1) - 1
+
+#ifdef DEBUG_VER
+isok = (b - a + 1 .EQ. math%two_i)
+CALL AssertError1(isok, myName, &
+                  "error in getting shape of data")
+#endif
+
+DO ii = a, b
+  s(ii - a + 1) = obj%ss(ii)
+END DO
+
+nrow = s(1)
+ncol = s(2)
+
+a = obj%indxVal(iel)
+b = obj%indxVal(iel + 1) - 1
+
+ans(1:nrow, 1:ncol) = RESHAPE(obj%val(a:b), s(1:2))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSpaceVectorField_
+
+!----------------------------------------------------------------------------
+!                                                                    GetRank
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetRank
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetRank()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%rank
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetRank
 
 !----------------------------------------------------------------------------
 !

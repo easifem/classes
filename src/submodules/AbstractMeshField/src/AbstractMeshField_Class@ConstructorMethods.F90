@@ -15,7 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) ConstructorMethods
-USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
@@ -231,6 +230,13 @@ obj%varType = varType
 obj%rank = rank
 obj%totalShape = SIZE(s)
 
+#ifdef DEBUG_VER
+CALL AssertError3(obj%totalShape, fevaropt%maxRank, myName, &
+                  "a=obj%totalShape, b=fevaropt%maxRank")
+#endif
+
+obj%maxShape(1:obj%totalShape) = s(1:obj%totalShape)
+
 ! tSize
 IF (obj%fieldType .EQ. typefield%constant) THEN
   obj%tSize = 1
@@ -261,6 +267,91 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate4
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate5()"
+LOGICAL(LGT) :: isok
+#endif
+
+CLASS(UserFunction_), POINTER :: func
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = material%IsMaterialPresent(name)
+CALL AssertError1(isok, myname, 'Material name = '//name//" not found.")
+#endif
+
+func => NULL()
+func => material%GetMaterialPointer(name)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(func)
+CALL AssertError1(isok, myname, 'Material pointer not found.')
+#endif
+
+CALL obj%Initiate(name=name, func=func, engine=engine, nnt=nnt, &
+                  quadField=quadField)
+
+NULLIFY (func)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate5
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate6
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate6()"
+#endif
+
+INTEGER(I4B) :: rank, nns, varType, fieldType, &
+                spaceCompo, dims(2), s(4), tsize, rank
+CLASS(AbstractMesh_), POINTER :: mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+mesh => quadField%GetMeshPointer()
+
+! nns should be maximum number of quadrature points in quadField
+nns = quadField%GetMaxNNE()
+rank = func%GetReturnType()
+varType = func%GetArgType()
+spaceCompo = func%GetNumReturns()
+dims = func%GetReturnShape()
+
+fieldType = typefield%normal
+
+CALL AbstractMeshFieldGetShapeAndSize( &
+  rank=rank, varType=varType, s=s, tsize=tsize, nns=nns, &
+  spaceCompo=spaceCompo, dim1=dims(1), dim2=dims(2), nnt=nnt)
+
+CALL obj%Initiate( &
+  name=name, fieldType=fieldType, varType=varType, &
+  engine=engine, defineOn=typefield%quadrature, &
+  rank=rank, s=s(1:tsize), mesh=mesh)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate6
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
