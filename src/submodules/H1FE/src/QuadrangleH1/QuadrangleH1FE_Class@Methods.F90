@@ -30,8 +30,12 @@ USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle
 USE QuadrangleInterpolationUtility, ONLY: InterpolationPoint_Quadrangle_
 USE QuadrangleInterpolationUtility, ONLY: FacetConnectivity_Quadrangle
 USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "QuadrangleH1FE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -315,14 +319,13 @@ MODULE PROCEDURE obj_GetFacetDOFValueFromSTFunc
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetFacetDOFValueFromSTFunc()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tReturns, tArgs
 #endif
 
-INTEGER(I4B), PARAMETER :: tVertices = 2
+INTEGER(I4B), PARAMETER :: tVertices = 2, temp_ans_size = 10
 INTEGER(I4B) :: ii, nips, nns, nsd, faceCon(tVertices, 4), &
-                returnType, icompo0
+                returnType, icompo0, tReturns, tArgs
 REAL(DFP) :: args(4), scale, vertexVal(tVertices), xijLine(3, tVertices), &
-             vertexInterpol, temp_ans(10)
+             vertexInterpol, temp_ans(temp_ans_size)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -333,7 +336,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 tArgs = func%GetNumArgs()
 isok = tArgs .GE. 4_I4B
 CALL AssertError1(isok, myName, &
-           "WIP: the user function must have at least 4 arguments, (x,y,z,t)")
+                  "func must have at least 4 arguments, (x,y,z,t)")
 #endif
 
 nips = facetElemsd%nips
@@ -354,7 +357,7 @@ CASE (TypeFEVariableOpt%scalar)
 #ifdef DEBUG_VER
   isok = tReturns .EQ. 1
   CALL AssertError1(isok, myName, &
-                    "WIP: the user function must return a single value")
+                    "user function must return a single value")
 #endif
 
   IF (onlyFaceBubble) THEN
@@ -401,7 +404,7 @@ CASE (TypeFEVariableOpt%vector)
       vertexVal(ii) = temp_ans(icompo0)
     END DO
 
-    scale = 1.0_DFP
+    scale = math%one
   END IF
 
   DO ii = 1, nips
@@ -437,12 +440,11 @@ MODULE PROCEDURE obj_GetSTFacetDOFValueFromSTFunc
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetSTFacetDOFValueFromSTFunc()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tReturns, tArgs
 #endif
 
 INTEGER(I4B), PARAMETER :: tSpaceVertices = 2, tTimeVertices = 2
 INTEGER(I4B) :: ii, jj, kk, nips, nns, nsd, faceCon(tSpaceVertices, 4), &
-                ips, ipt, nipt, in_nns, in_nnt, tsize, nnt
+                ips, ipt, nipt, in_nns, in_nnt, tsize, nnt, tReturns, tArgs
 REAL(DFP) :: args(4), scale, xijLine(3, tSpaceVertices), vertexInterpol, &
              areal
 
@@ -468,14 +470,16 @@ nrowEnd = nns
 ncolStart = 1
 ncolEnd = nnt
 nsd = obj%opt%GetNSD()
-scale = 0.0_DFP
-args = 0.0_DFP
+scale = math%zero
+args = math%zero
 
 #ifdef DEBUG_VER
 tReturns = func%GetNumReturns()
 isok = tReturns .EQ. 1
-CALL AssertError1( &
-  isok, myName, "The user function must return a single value")
+CALL AssertError2( &
+  tReturns, math%one_i, myName, &
+  "The user function must return a single value, "// &
+  "a=tReturns, b=1")
 #endif
 
 ! faceCon contains the facet connectivity of quadrangle element
@@ -483,7 +487,8 @@ faceCon = FacetConnectivity_Quadrangle()
 
 ! xijLine contains the x1 and x2 coordinates of the line (end points)
 xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
-                                   faceCon(1:tSpaceVertices, localFaceNumber))
+                                       faceCon(1:tSpaceVertices, &
+                                               localFaceNumber))
 
 ! Now we form space-time vertex values of func
 DO jj = 1, tTimeVertices
@@ -646,7 +651,8 @@ faceCon = FacetConnectivity_Quadrangle()
 
 ! xijLine contains the x1 and x2 coordinates of the line (end points)
 xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
-                                   faceCon(1:tSpaceVertices, localFaceNumber))
+                                       faceCon(1:tSpaceVertices, &
+                                               localFaceNumber))
 
 ! Now we form space-time vertex values of func
 ans(1:tTimeVertices, 1:tSpaceVertices) = math%one

@@ -22,15 +22,12 @@ USE AbstractFE_Class, ONLY: AbstractFE_
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
 USE UserFunction_Class, ONLY: UserFunction_
-
 IMPLICIT NONE
 
 PRIVATE
 
 PUBLIC :: QuadrangleH1FE_
 PUBLIC :: QuadrangleH1FEPointer_
-
-CHARACTER(*), PARAMETER :: modName = "QuadrangleH1FE_Class"
 
 !----------------------------------------------------------------------------
 !                                                     QuadrangleH1FE_
