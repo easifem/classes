@@ -30,8 +30,6 @@ PRIVATE
 PUBLIC :: TriangleH1FE_
 PUBLIC :: TriangleH1FEPointer_
 
-CHARACTER(*), PARAMETER :: modName = "TriangleH1FE_Class"
-
 !----------------------------------------------------------------------------
 !                                                           TriangleH1FE_
 !----------------------------------------------------------------------------

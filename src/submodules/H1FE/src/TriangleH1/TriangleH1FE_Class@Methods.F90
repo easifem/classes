@@ -26,8 +26,12 @@ USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
 USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "TriangleH1FE_Class"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -254,14 +258,13 @@ MODULE PROCEDURE obj_GetFacetDOFValueFromSTFunc
 CHARACTER(*), PARAMETER :: myName = &
                            "obj_GetFacetDOFValueFromSTFunc()"
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tReturns
 #endif
 
-INTEGER(I4B), PARAMETER :: tVertices = 2
+INTEGER(I4B), PARAMETER :: tVertices = 2, temp_ans_size = 10
 INTEGER(I4B) :: tArgs, ii, nips, nns, nsd, faceCon(tVertices, 3), &
-                returnType, icompo0
+                returnType, icompo0, tReturns
 REAL(DFP) :: args(4), scale, vertexVal(tVertices), xijLine(3, tVertices), &
-             vertexInterpol, temp_ans(10)
+             vertexInterpol, temp_ans(temp_ans_size)
 LOGICAL(LGT) :: onlyFaceBubble0
 
 #ifdef DEBUG_VER
@@ -274,12 +277,12 @@ nns = facetElemsd%nns
 nsd = facetElemsd%nsd
 
 tArgs = func%GetNumArgs()
-scale = 0.0_DFP
-vertexVal = 0.0_DFP
+scale = math%zero
+vertexVal = math%zero
 
 returnType = func%GetReturnType()
 tReturns = func%GetNumReturns()
-onlyFaceBubble0 = Input(option=onlyFaceBubble, default=.FALSE.)
+onlyFaceBubble0 = Input(option=onlyFaceBubble, default=math%no)
 
 SELECT CASE (returnType)
 CASE (TypeFEVariableOpt%scalar)
