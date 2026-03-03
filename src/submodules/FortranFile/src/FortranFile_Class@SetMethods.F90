@@ -17,6 +17,11 @@
 
 SUBMODULE(FortranFile_Class) SetMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = 'FortranFile_Class@SetMethods.F90'
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

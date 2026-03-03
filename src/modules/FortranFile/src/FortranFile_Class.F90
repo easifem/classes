@@ -45,9 +45,7 @@ USE AbstractFile_Class, ONLY: AbstractFile_
 USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: fileopt => TypeFileOpt
 IMPLICIT NONE
-
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = 'FortranFile_Class()'
 
 PUBLIC :: FortranFile_
 PUBLIC :: FortranFilePointer_

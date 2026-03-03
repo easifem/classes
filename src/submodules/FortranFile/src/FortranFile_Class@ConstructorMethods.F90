@@ -23,8 +23,13 @@ USE System_Method, ONLY: System_Mkdir
 USE System_Method, ONLY: RWX_U
 USE InputUtility, ONLY: Input
 USE AbstractFile_Class, ONLY: AbstractFileDeallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           'FortranFile_Class@ConstructorMethods.F90'
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -83,6 +88,8 @@ obj%getNewUnit = math%yes
 
 isok = PRESENT(unit)
 IF (isok) THEN
+
+#ifdef DEBUG_VER
   isok = (unit .NE. stdout) &
          .AND. (unit .NE. stderr) &
          .AND. (unit .NE. stdin)
@@ -90,6 +97,7 @@ IF (isok) THEN
   CALL AssertError1(isok, myName, &
         'Illegal value for optional input argument unit! value cannot &
         & be equal to stdout, stderr, stdin. Found unit='//ToString(unit))
+#endif
 
   INQUIRE (UNIT=unit, OPENED=ostat)
 
