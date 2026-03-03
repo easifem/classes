@@ -20,6 +20,10 @@ USE Display_Method, ONLY: Display
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MarkdownData_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

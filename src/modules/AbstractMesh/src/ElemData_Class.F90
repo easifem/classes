@@ -35,7 +35,6 @@ USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
 USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle
 USE SortUtility, ONLY: Sort, QuickSort
-
 IMPLICIT NONE
 
 PRIVATE
@@ -572,8 +571,10 @@ SUBROUTINE Elemdata_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
                           faceOpt=1_I4B, faceElemType=faceElemType, &
                           tFaceNodes=tFaceNodes)
 
+#ifdef DEBUG_VER
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[WIP ERROR] :: This routine is under development')
+#endif
 
   DO iface = 1, tFaces
     aint = tFaceNodes(iface)

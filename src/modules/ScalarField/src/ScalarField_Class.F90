@@ -36,8 +36,8 @@ USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE MeshField_Class, ONLY: MeshField_
 USE NeumannBC_Class, ONLY: NeumannBCPointer_
-
 IMPLICIT NONE
+
 PRIVATE
 
 CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
@@ -56,9 +56,12 @@ PUBLIC :: ScalarFieldApplyBodySource
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
-! summary: Scalar field data type, storage format is same as AbstractNodeField_
+! summary: Scalar field data type.
 !
-!{!pages/docs-api/ScalarField/ScalarField_.md!}
+!# ScalarField_
+!
+! ScalarField storage format is same as AbstractNodeField.
+!
 
 TYPE, EXTENDS(AbstractNodeField_) :: ScalarField_
 CONTAINS

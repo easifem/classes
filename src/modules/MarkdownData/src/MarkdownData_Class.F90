@@ -29,10 +29,6 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: MarkdownData_
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "MarkdownData_Class"
-#endif
-
 !----------------------------------------------------------------------------
 !                                                             MarkdownData_
 !----------------------------------------------------------------------------

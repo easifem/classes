@@ -238,11 +238,6 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
 CALL ImportIsUserFunctionFromToml(obj=obj, table=table, &
                                   isUserFunction=isUserFunction)
 
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'calling ImportUserFunctionValueFromToml() ...')
-#endif
-
 IF (isUserFunction) THEN
 
 #ifdef DEBUG_VER

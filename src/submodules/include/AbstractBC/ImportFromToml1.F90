@@ -97,9 +97,11 @@ tsize1 = SIZE(obj)
 
 #ifdef DEBUG_VER
 isok = tsize .EQ. tsize1
-CALL AssertError1( &
-  isok, myName, 'The number of boundary condition in the toml config ('// &
- ToString(tsize)//') is not same as the size of obj ('//ToString(tsize1)//")")
+CALL AssertError1(isok, myName, &
+                  'The number of boundary condition in the toml config ('// &
+                  ToString(tsize)// &
+                  ') is not same as the size of obj ('// &
+                  ToString(tsize1)//")")
 #endif
 
 DO ii = 1, tsize
@@ -109,8 +111,8 @@ DO ii = 1, tsize
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
   CALL AssertError1(isok, myName, &
-    'boundary condition no. '//ToString(ii)//' cannot be read from the &
-    &toml file.')
+                    'boundary condition no. '//ToString(ii)// &
+                    ' cannot be read from the toml file.')
 #endif
 
   isok = ASSOCIATED(obj(ii)%ptr)

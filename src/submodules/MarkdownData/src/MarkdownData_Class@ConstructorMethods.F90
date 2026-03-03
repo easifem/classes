@@ -19,6 +19,11 @@ SUBMODULE(MarkdownData_Class) ConstructorMethods
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MarkdownData_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
