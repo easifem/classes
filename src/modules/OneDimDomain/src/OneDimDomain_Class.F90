@@ -24,7 +24,7 @@ USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: OneDimDomain_
-CHARACTER(*), PARAMETER :: modName = "OneDimDomain_Class"
+
 INTEGER(I4B), PARAMETER :: MAX_ORDER = 51
 !! maximum order of lagrange polynomial in an element of mesh
 

@@ -29,7 +29,8 @@ USE MarkdownFile_Class, ONLY: MarkdownFile_
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = __FILE__
+CHARACTER(*), PARAMETER :: modName = &
+                           "ProcedureData_Class@MarkdownMethods.F90"
 #endif
 
 CONTAINS

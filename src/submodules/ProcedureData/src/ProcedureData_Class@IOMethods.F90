@@ -22,7 +22,7 @@ USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = __FILE__
+CHARACTER(*), PARAMETER :: modName = "ProcedureData_Class@IOMethods.F90"
 #endif
 
 CONTAINS

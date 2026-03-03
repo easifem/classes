@@ -23,7 +23,8 @@ USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = __FILE__
+CHARACTER(*), PARAMETER :: modName = &
+                           "ProcedureData_Class@ConstructorMethods.F90"
 #endif
 
 CONTAINS

@@ -23,7 +23,6 @@
 MODULE MarkdownData_Class
 USE String_Class, ONLY: String
 USE GlobalData, ONLY: I4B, DFP, LGT
-
 IMPLICIT NONE
 
 PRIVATE

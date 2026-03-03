@@ -17,11 +17,11 @@
 
 SUBMODULE(ProcedureData_Class) GetMethods
 USE ExceptionHandler_Class, ONLY: e
-
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = __FILE__
+CHARACTER(*), PARAMETER :: modName = &
+                           "ProcedureData_Class@GetMethods.F90"
 #endif
 
 CONTAINS

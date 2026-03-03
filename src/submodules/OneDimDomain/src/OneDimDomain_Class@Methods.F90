@@ -17,10 +17,16 @@
 
 SUBMODULE(OneDimDomain_Class) Methods
 USE GlobalData, ONLY: CHAR_LF
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE ReallocateUtility, ONLY: Reallocate
-
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "OneDimDomain_Class@Methods.F90"
+#endif
 
 CONTAINS
 
@@ -396,14 +402,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
@@ -420,8 +427,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -434,8 +443,8 @@ END PROCEDURE obj_ImportFromToml2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-obj%isElemLengthUniform = .FALSE.
-obj%domain = 0.0_DFP
+obj%isElemLengthUniform = math%no
+obj%domain = math%zero
 obj%totalElements = 0
 obj%totalNodes = 0
 IF (ALLOCATED(obj%elemLength)) DEALLOCATE (obj%elemLength)
@@ -548,8 +557,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -572,14 +583,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 obj%domain(1:2) = domain(1:2)
 obj%totalElements = totalElements
 obj%totalNodes = totalElements + 1
-obj%isElemLengthUniform = .TRUE.
+obj%isElemLengthUniform = math%yes
 CALL Reallocate(obj%elemLength, 1)
 obj%elemLength(1) = (domain(2) - domain(1)) / REAL(totalElements, kind=DFP)
-obj%xij = 0.0_DFP
+obj%xij = math%zero
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -602,14 +613,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 obj%domain(1:2) = domain(1:2)
-obj%isElemLengthUniform = .TRUE.
+obj%isElemLengthUniform = math%yes
 CALL Reallocate(obj%elemLength, 1)
 obj%elemLength(1) = elemLength
 obj%totalElements = INT((domain(2) - domain(1)) / elemLength, kind=I4B)
 obj%totalNodes = obj%totalElements + 1
-obj%xij = 0.0_DFP
+obj%xij = math%zero
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -634,23 +645,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 obj%domain(1:2) = domain(1:2)
 obj%totalElements = totalElements
 obj%totalNodes = obj%totalElements + 1
-obj%xij = 0.0_DFP
+obj%xij = math%zero
 
 tsize = SIZE(elemLength)
 
 IF (tsize .EQ. 1) THEN
   CALL Reallocate(obj%elemLength, 1)
-  obj%isElemLengthUniform = .TRUE.
+  obj%isElemLengthUniform = math%yes
   obj%elemLength(1) = elemLength(1)
   RETURN
 END IF
 
 CALL Reallocate(obj%elemLength, totalElements)
-obj%isElemLengthUniform = .FALSE.
+obj%isElemLengthUniform = math%no
 
 DO ii = 1, totalElements
   obj%elemLength(ii) = elemLength(ii)
@@ -666,6 +677,6 @@ END PROCEDURE obj_Initiate3
 !                                                                     Error
 !----------------------------------------------------------------------------
 
-INCLUDE "../../include/errors.F90"
+#include "../../include/errors.F90"
 
 END SUBMODULE Methods

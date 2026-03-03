@@ -21,7 +21,7 @@ USE BaseType, ONLY: fileopt => TypeFileOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = __FILE__
+CHARACTER(*), PARAMETER :: modName = "ProcedureData_Class@SetMethods.F90"
 #endif
 
 CONTAINS

@@ -1,3 +1,4 @@
+#ifdef DEBUG_VER
 !----------------------------------------------------------------------------
 !                                                           AssertError1
 !----------------------------------------------------------------------------
@@ -27,7 +28,8 @@ SUBROUTINE AssertError2(a, b, myName, msg)
 
   IF (a .NE. b) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-  '[INTERNAL ERROR] :: Size error, msg: '//msg//", found a="//ToString(a)//", b = " &
+                      '[INTERNAL ERROR] :: Size error, msg: '//msg// &
+                      ", found a="//ToString(a)//", b = " &
                       //ToString(b))
     RETURN
   END IF
@@ -52,3 +54,4 @@ SUBROUTINE AssertError3(a, b, myName, msg)
     RETURN
   END IF
 END SUBROUTINE AssertError3
+#endif
