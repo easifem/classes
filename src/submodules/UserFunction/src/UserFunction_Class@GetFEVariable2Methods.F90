@@ -31,8 +31,10 @@ USE FEVariable_Method, ONLY: NodalVariable, Fevar_Set => Set
 
 IMPLICIT NONE
 
-REAL(DFP), PARAMETER :: one = 1.0_DFP
-LOGICAL(LGT), PARAMETER :: no = .FALSE.
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@GetFEVariable2Methods.F90"
+#endif
 
 CONTAINS
 
@@ -62,6 +64,7 @@ CASE (varopt%Constant)
     CALL Vector_Constant_GetVariable(obj=obj, fevar=fevar)
   CASE (varopt%Matrix)
     CALL Matrix_Constant_GetVariable(obj=obj, fevar=fevar)
+  CASE DEFAULT
   END SELECT
 
 CASE (varopt%Space)
@@ -73,6 +76,7 @@ CASE (varopt%Space)
     CALL Vector_Space_GetVariable(obj=obj, fevar=fevar, xij=xij)
   CASE (varopt%Matrix)
     CALL Matrix_Space_GetVariable(obj=obj, fevar=fevar, xij=xij)
+  CASE DEFAULT
   END SELECT
 
 CASE (varopt%Time)
@@ -84,6 +88,7 @@ CASE (varopt%Time)
     CALL Vector_Time_GetVariable(obj=obj, fevar=fevar, timeVec=times)
   CASE (varopt%Matrix)
     CALL Matrix_Time_GetVariable(obj=obj, fevar=fevar, timeVec=times)
+  CASE DEFAULT
   END SELECT
 
 CASE (varopt%SpaceTime)
@@ -98,15 +103,16 @@ CASE (varopt%SpaceTime)
   CASE (varopt%Matrix)
     CALL Matrix_SpaceTime_GetVariable(obj=obj, fevar=fevar, xij=xij, &
                                       timeVec=times)
+  CASE DEFAULT
   END SELECT
 
+CASE DEFAULT
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetFEVariable_
 
 !----------------------------------------------------------------------------
@@ -132,8 +138,8 @@ SUBROUTINE Scalar_Constant_GetVariable(obj, fevar)
 
   ! fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableConstant)
   CALL Fevar_Set( &
-    obj=fevar, val=val, rank=TypeFEVariableScalar, scale=one, &
-    vartype=TypeFEVariableConstant, addContribution=no)
+    obj=fevar, val=val, rank=TypeFEVariableScalar, scale=math%one, &
+    vartype=TypeFEVariableConstant, addContribution=math%no)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -179,7 +185,7 @@ SUBROUTINE Scalar_Space_GetVariable(obj, fevar, xij)
   ! fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableSpace)
   CALL Fevar_Set( &
     obj=fevar, val=val, rank=TypeFEVariableScalar, &
-    vartype=TypeFEVariableSpace, scale=one, addContribution=no)
+    vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
 
@@ -227,8 +233,8 @@ SUBROUTINE Scalar_Time_GetVariable(obj, fevar, timeVec)
 
   ! fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableTime)
   CALL Fevar_Set(obj=fevar, val=val, rank=TypeFEVariableScalar, &
-                 vartype=TypeFEVariableTime, scale=one, &
-                 addContribution=no)
+                 vartype=TypeFEVariableTime, scale=math%one, &
+                 addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
 
@@ -287,8 +293,8 @@ SUBROUTINE Scalar_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
 
   ! fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableSpaceTime)
   CALL Fevar_Set(obj=fevar, val=val, rank=TypeFEVariableScalar, &
-                 vartype=TypeFEVariableSpaceTime, scale=one, &
-                 addContribution=no)
+                 vartype=TypeFEVariableSpaceTime, scale=math%one, &
+                 addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
 
@@ -321,8 +327,8 @@ SUBROUTINE Vector_Constant_GetVariable(obj, fevar)
 
   ! fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableConstant)
   CALL Fevar_Set( &
-    obj=fevar, val=val, rank=TypeFEVariableVector, scale=one, &
-    vartype=TypeFEVariableConstant, addContribution=no)
+    obj=fevar, val=val, rank=TypeFEVariableVector, scale=math%one, &
+    vartype=TypeFEVariableConstant, addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
 
@@ -372,7 +378,7 @@ SUBROUTINE Vector_Space_GetVariable(obj, fevar, xij)
   ! fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableSpace)
   CALL Fevar_Set( &
     obj=fevar, val=val, rank=TypeFEVariableVector, &
-    vartype=TypeFEVariableSpace, scale=one, addContribution=no)
+    vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
   IF (ALLOCATED(r1)) DEALLOCATE (r1)
@@ -420,7 +426,7 @@ SUBROUTINE Vector_Time_GetVariable(obj, fevar, timeVec)
   ! fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableTime)
   CALL Fevar_Set( &
     obj=fevar, val=val, rank=TypeFEVariableVector, &
-    vartype=TypeFEVariableTime, scale=one, addContribution=no)
+    vartype=TypeFEVariableTime, scale=math%one, addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
   IF (ALLOCATED(r1)) DEALLOCATE (r1)
@@ -478,8 +484,8 @@ SUBROUTINE Vector_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
 
   ! fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableSpaceTime)
   CALL Fevar_Set(obj=fevar, val=val, rank=TypeFEVariableVector, &
-                 vartype=TypeFEVariableSpaceTime, scale=one, &
-                 addContribution=no)
+                 vartype=TypeFEVariableSpaceTime, scale=math%one, &
+                 addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
   IF (ALLOCATED(r1)) DEALLOCATE (r1)
@@ -515,8 +521,8 @@ SUBROUTINE Matrix_Constant_GetVariable(obj, fevar)
 
   ! fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableConstant)
   CALL Fevar_Set( &
-    obj=fevar, val=val, rank=TypeFEVariableMatrix, scale=one, &
-    vartype=TypeFEVariableConstant, addContribution=no)
+    obj=fevar, val=val, rank=TypeFEVariableMatrix, scale=math%one, &
+    vartype=TypeFEVariableConstant, addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
 
@@ -570,7 +576,7 @@ SUBROUTINE Matrix_Space_GetVariable(obj, fevar, xij)
   ! fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableSpace)
   CALL Fevar_Set( &
     obj=fevar, val=val, rank=TypeFEVariableMatrix, &
-    vartype=TypeFEVariableSpace, scale=one, addContribution=no)
+    vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
   IF (ALLOCATED(r2)) DEALLOCATE (r2)
@@ -623,7 +629,7 @@ SUBROUTINE Matrix_Time_GetVariable(obj, fevar, timeVec)
   ! fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableTime)
   CALL Fevar_Set( &
     obj=fevar, val=val, rank=TypeFEVariableMatrix, &
-    vartype=TypeFEVariableTime, scale=one, addContribution=no)
+    vartype=TypeFEVariableTime, scale=math%one, addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
   IF (ALLOCATED(r2)) DEALLOCATE (r2)
@@ -685,7 +691,8 @@ SUBROUTINE Matrix_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   ! fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableSpaceTime)
   CALL Fevar_Set( &
     obj=fevar, val=val, rank=TypeFEVariableMatrix, &
-    vartype=TypeFEVariableSpaceTime, scale=one, addContribution=no)
+    vartype=TypeFEVariableSpaceTime, scale=math%one, &
+    addContribution=math%no)
 
   IF (ALLOCATED(val)) DEALLOCATE (val)
   IF (ALLOCATED(r2)) DEALLOCATE (r2)

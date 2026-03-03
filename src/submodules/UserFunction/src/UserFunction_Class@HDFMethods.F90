@@ -18,6 +18,12 @@ SUBMODULE(UserFunction_Class) HDFMethods
 USE Display_Method, ONLY: Display
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -25,115 +31,119 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+#endif
+
 TYPE(String) :: dsetname, strval
 REAL(DFP), ALLOCATABLE :: vectorValue(:), matrixValue(:, :)
 INTEGER(I4B) :: tsize, nrow, ncol
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//"::"//myName//" - "// &
                         "[START]")
 #endif
 
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: HDF5 file is not opened')
-END IF
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, &
+                  "HDF file is not opened.")
+#endif
 
-IF (.NOT. hdf5%isRead()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: HDF5 file does not have read permission')
-END IF
+#ifdef DEBUG_VER
+isok = hdf5%IsRead()
+CALL AssertError1(isok, myName, &
+                  "HDF file does not have read permission.")
+#endif
 
-!> name
+! name
 dsetname = TRIM(group)//"/name"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
-ELSE
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[CONFIG ERROR] :: name should be present.')
-END IF
+#ifdef DEBUG_VER
+isok = hdf5%pathExists(dsetname%Chars())
+CALL AssertError1(isok, myName, &
+                  dsetname//" is not present.")
+#endif
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%name)
 
-!> isUserFunctionSet
+! isUserFunctionSet
 dsetname = TRIM(group)//"/isExternalFunc"
-IF (hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%Chars())
+obj%isExternalFunc = math%no
+IF (isok) &
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isExternalFunc)
-ELSE
-  obj%isExternalFunc = .FALSE.
-END IF
 
-!> isExternalFunc
-IF (obj%isExternalFunc) THEN
-  ! dsetname = TRIM(group)//"/userFunction"
-  ! ALLOCATE (obj%userFunction)
-  ! CALL obj%userFunction%IMPORT(hdf5=hdf5, group=dsetname%chars())
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[WIP ERROR] :: currently import does not work for external func')
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. obj%isExternalFunc
+CALL AssertError1(isok, myName, &
+                  'Currently, import does not work for external func')
+#endif
 
-IF (.NOT. obj%isExternalFunc) THEN
-  !> returnType
-  dsetname = TRIM(group)//"/returnType"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  'dsetname '//dsetname%chars()//'is not present in HDFFile_')
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    obj%returnType = UserFunctionGetReturnType(strval%chars())
+!> returnType
+dsetname = TRIM(group)//"/returnType"
+#ifdef DEBUG_VER
+isok = hdf5%pathExists(dsetname%Chars())
+CALL AssertError1(isok, myName, &
+                  dsetname//" is not present.")
+#endif
+CALL hdf5%READ(dsetname=dsetname%Chars(), vals=strval)
+obj%returnType = UserFunctionGetReturnType(strval%Chars())
+
+!> argType
+dsetname = TRIM(group)//"/argType"
+#ifdef DEBUG_VER
+isok = hdf5%pathExists(dsetname%Chars())
+CALL AssertError1(isok, myName, &
+                  dsetname//" is not present.")
+#endif
+CALL hdf5%READ(dsetname=dsetname%Chars(), vals=strval)
+obj%argType = UserFunctionGetArgType(strval%Chars())
+
+!> check the argType, and decide the importer
+#ifdef DEBUG_VER
+CALL AssertError2(obj%argType, varopt%constant, myName, &
+                  "a%obj%argType, b=varopt%constant")
+#endif
+
+!> scalarValue, vectorValue, matrixValue
+SELECT CASE (obj%returnType)
+
+CASE (varopt%scalar)
+  dsetname = TRIM(group)//"/scalarValue"
+  isok = hdf5%pathExists(dsetname%chars())
+  IF (isok) THEN
+    CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%scalarValue)
   END IF
 
-  !> argType
-  dsetname = TRIM(group)//"/argType"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  'dsetname '//dsetname%chars()//'is not present in HDFFile_')
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    obj%argType = UserFunctionGetArgType(strval%chars())
+CASE (varopt%vector)
+  dsetname = TRIM(group)//"/vectorValue"
+  isok = hdf5%pathExists(dsetname%chars())
+  IF (isok) THEN
+    CALL hdf5%READ(dsetname=dsetname%chars(), vals=vectorValue)
+    tsize = SIZE(vectorValue)
+    obj%vectorValue(1:tsize) = vectorValue(1:tsize)
+    DEALLOCATE (vectorValue)
   END IF
 
-  !> check the argType, and decide the importer
-  IF (obj%argType == varopt%constant) THEN
-
-    !> scalarValue, vectorValue, matrixValue
-    SELECT CASE (obj%returnType)
-
-    CASE (varopt%scalar)
-      dsetname = TRIM(group)//"/scalarValue"
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%scalarValue)
-      END IF
-
-    CASE (varopt%vector)
-      dsetname = TRIM(group)//"/vectorValue"
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=vectorValue)
-        tsize = SIZE(vectorValue)
-        obj%vectorValue(1:tsize) = vectorValue(1:tsize)
-        DEALLOCATE (vectorValue)
-      END IF
-
-    CASE (varopt%matrix)
-      dsetname = TRIM(group)//"/matrixValue"
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=dsetname%chars(), vals=matrixValue)
-        nrow = SIZE(matrixValue, 1)
-        ncol = SIZE(matrixValue, 2)
-        obj%matrixValue(1:nrow, 1:ncol) = matrixValue(1:nrow, 1:ncol)
-        DEALLOCATE (matrixValue)
-      END IF
-
-    CASE DEFAULT
-
-    END SELECT
-
-  ELSE
-
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-               'Currently, EASIFEM Supports import of constant userFunction.')
-
+CASE (varopt%matrix)
+  dsetname = TRIM(group)//"/matrixValue"
+  isok = hdf5%pathExists(dsetname%chars())
+  IF (isok) THEN
+    CALL hdf5%READ(dsetname=dsetname%chars(), vals=matrixValue)
+    nrow = SIZE(matrixValue, 1)
+    ncol = SIZE(matrixValue, 2)
+    obj%matrixValue(1:nrow, 1:ncol) = matrixValue(1:nrow, 1:ncol)
+    DEALLOCATE (matrixValue)
   END IF
-END IF
+
+CASE DEFAULT
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "no case found for varopt%rank...")
+#endif
+
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -146,85 +156,84 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
+
 TYPE(String) :: dsetname, strval
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] Export()')
+                        '[START] ')
 #endif
 
-!> check
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: HDF5 file is not opened')
-END IF
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, &
+                  "HDF file is not opened.")
+#endif
 
-!> check
-IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: HDF5 file does not have write permission')
-END IF
+#ifdef DEBUG_VER
+isok = hdf5%IsWrite()
+CALL AssertError1(isok, myName, &
+                  "HDF file does not have write permission.")
+#endif
 
-!> name
 dsetname = TRIM(group)//"/name"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
 
-!> isExternalFunc
-IF (obj%isExternalFunc) THEN
-  !> isUserFunctionSet
-  ! dsetname = TRIM(group)//"/isUserFunctionSet"
-  ! CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isUserFunctionSet)
-  ! !> returnType
-  ! dsetname = TRIM(group)//"/userFunction"
-  ! CALL obj%userFunction%Export(hdf5=hdf5, group=dsetname%chars())
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                 '[WIP ERROR] :: Currently export function does not work '// &
-                    ' for UserFunction.')
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. obj%isExternalFunc
+CALL AssertError1(isok, myName, &
+                  'Currently, export function does not work '// &
+                  ' for UserFunction.')
+#endif
 
-IF (.NOT. obj%isExternalFunc) THEN
-  !> isUserFunctionSet
-  dsetname = TRIM(group)//"/isExternalFunc"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isExternalFunc)
+! the following code works when obj%isExternalFunc is not true
+dsetname = TRIM(group)//"/isExternalFunc"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isExternalFunc)
 
-  !> returnType
-  dsetname = TRIM(group)//"/returnType"
-  strval = NAME_RETURN_TYPE(obj%returnType)
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
+!> returnType
+dsetname = TRIM(group)//"/returnType"
+strval = NAME_RETURN_TYPE(obj%returnType)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
-  !> argType
-  dsetname = TRIM(group)//"/argType"
-  strval = NAME_ARG_TYPE(obj%argType)
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
-  !>
-  IF (obj%argType == varopt%constant) THEN
+!> argType
+dsetname = TRIM(group)//"/argType"
+strval = NAME_ARG_TYPE(obj%argType)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
+!>
 
-    SELECT CASE (obj%returnType)
+#ifdef DEBUG_VER
+CALL AssertError3(obj%argType, varopt%constant, myName, &
+                  "a=obj%argType, b=varopt%constant")
+#endif
 
-    CASE (varopt%Scalar)
-      dsetname = TRIM(group)//"/scalarValue"
-      CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%scalarValue)
+! the following code is executed when obj%argType .eq. varopt%constant
+SELECT CASE (obj%returnType)
 
-    CASE (varopt%vector)
-      dsetname = TRIM(group)//"/vectorValue"
-      CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-                      vals=obj%vectorValue(1:obj%numReturns))
+CASE (varopt%Scalar)
+  dsetname = TRIM(group)//"/scalarValue"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%scalarValue)
 
-    CASE (varopt%matrix)
-      dsetname = TRIM(group)//"/matrixValue"
-      CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-             vals=obj%matrixValue(1:obj%returnShape(1), 1:obj%returnShape(2)))
+CASE (varopt%vector)
+  dsetname = TRIM(group)//"/vectorValue"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), &
+                  vals=obj%vectorValue(1:obj%numReturns))
 
-    CASE DEFAULT
-    END SELECT
+CASE (varopt%matrix)
+  dsetname = TRIM(group)//"/matrixValue"
+  CALL hdf5%WRITE( &
+    dsetname=dsetname%chars(), &
+    vals=obj%matrixValue(1:obj%returnShape(1), 1:obj%returnShape(2)))
 
-  ELSE
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-               'Currently, EASIFEM Supports import of constant userFunction.')
-  END IF
-
-END IF
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "no case found for obj%returnType")
+#endif
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -235,5 +244,7 @@ END PROCEDURE obj_Export
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE HDFMethods

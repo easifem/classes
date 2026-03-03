@@ -17,6 +17,11 @@
 
 SUBMODULE(UserFunction_Class) GetMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@GetMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

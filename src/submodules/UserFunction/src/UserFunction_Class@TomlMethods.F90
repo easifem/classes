@@ -21,8 +21,13 @@ USE Display_Method, ONLY: ToString
 USE TomlUtility, ONLY: GetValue
 USE TomlUtility, ONLY: GetValue_
 USE tomlf, ONLY: toml_get => get_value
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

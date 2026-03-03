@@ -48,10 +48,6 @@ IMPLICIT NONE
 
 PRIVATE
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "UserFunction_Class"
-#endif
-
 CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) = &
                            ["Scalar", "Vector", "Matrix"]
 

@@ -23,6 +23,11 @@ USE ReallocateUtility, ONLY: Reallocate
 USE EquationParser_Class, ONLY: EquationParser_Pointer
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

@@ -21,8 +21,13 @@ USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -134,20 +139,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInit = .FALSE.
-obj%isExternalFunc = .FALSE.
-obj%isLuaScript = .FALSE.
+obj%isInit = math%no
+obj%isExternalFunc = math%no
+obj%isLuaScript = math%no
 obj%luaScript = ""
 obj%luaFunctionName = ""
-obj%returnType = 0
-obj%returnShape = 0
-obj%argType = 0
-obj%numArgs = 0
-obj%numReturns = 0
-obj%scalarValue = 0.0_DFP
+obj%returnType = math%zero_i
+obj%returnShape = math%zero_i
+obj%argType = math%zero_i
+obj%numArgs = math%zero_i
+obj%numReturns = math%zero_i
+obj%scalarValue = math%zero
 obj%name = ""
-obj%vectorValue = 0.0_DFP
-obj%matrixValue = 0.0_DFP
+obj%vectorValue = math%zero
+obj%matrixValue = math%zero
 obj%scalarFunction => NULL()
 obj%vectorFunction => NULL()
 obj%matrixFunction => NULL()
@@ -199,7 +204,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 
 obj%name = name
 obj%returnType = returnType
@@ -228,7 +233,8 @@ isok = obj%returnType == varopt%matrix
 IF (isok) THEN
   isok = PRESENT(returnShape)
   CALL AssertError1(isok, myName, &
-             'When returnType is Matrix, then returnShape should be present.')
+             'When returnType is Matrix, &
+            &then returnShape should be present.')
 
   tsize = returnShape(1) * returnShape(2)
   CALL AssertError2(tsize, obj%numReturns, myName, &

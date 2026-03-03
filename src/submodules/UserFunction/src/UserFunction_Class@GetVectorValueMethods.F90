@@ -34,8 +34,13 @@ USE LuaInterface, ONLY: lua_tonumber
 USE LuaInterface, ONLY: lua_pop
 USE LuaInterface, ONLY: lua_close
 USE LuaInterface, ONLY: lua_number
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@GetVectorValueMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

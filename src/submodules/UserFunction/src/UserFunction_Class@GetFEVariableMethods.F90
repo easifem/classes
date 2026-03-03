@@ -16,20 +16,25 @@
 !
 
 SUBMODULE(UserFunction_Class) GetFEVariableMethods
-USE BaseType, ONLY: varopt => TypeFEVariableOpt, &
-                    TypeFEVariableScalar, &
-                    TypeFEVariableVector, &
-                    TypeFEVariableMatrix, &
-                    TypeFEVariableSpace, &
-                    TypeFEVariableTime, &
-                    TypeFEVariableSpaceTime, &
-                    TypeFEVariableConstant
+USE BaseType, ONLY: varopt => TypeFEVariableOpt
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableVector
+USE BaseType, ONLY: TypeFEVariableMatrix
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: TypeFEVariableTime
+USE BaseType, ONLY: TypeFEVariableSpaceTime
+USE BaseType, ONLY: TypeFEVariableConstant
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
 USE FEVariable_Method, ONLY: NodalVariable
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@GetFEVariableMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -44,7 +49,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif DEBUG_VER
+#endif
 
 SELECT CASE (obj%argType)
 
@@ -58,6 +63,11 @@ CASE (varopt%Constant)
     CALL Vector_Constant_GetVariable(obj=obj, fevar=fevar)
   CASE (varopt%Matrix)
     CALL Matrix_Constant_GetVariable(obj=obj, fevar=fevar)
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "no case found for obj%returnType(1)")
+#endif
   END SELECT
 
 CASE (varopt%Space)
@@ -69,6 +79,12 @@ CASE (varopt%Space)
     CALL Vector_Space_GetVariable(obj=obj, fevar=fevar, xij=xij)
   CASE (varopt%Matrix)
     CALL Matrix_Space_GetVariable(obj=obj, fevar=fevar, xij=xij)
+  CASE DEFAULT
+
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "no case found for obj%returnType(2)")
+#endif
   END SELECT
 
 CASE (varopt%Time)
@@ -80,6 +96,12 @@ CASE (varopt%Time)
     CALL Vector_Time_GetVariable(obj=obj, fevar=fevar, timeVec=times)
   CASE (varopt%Matrix)
     CALL Matrix_Time_GetVariable(obj=obj, fevar=fevar, timeVec=times)
+  CASE DEFAULT
+
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "no case found for obj%returnType(3)")
+#endif
   END SELECT
 
 CASE (varopt%SpaceTime)
@@ -94,15 +116,25 @@ CASE (varopt%SpaceTime)
   CASE (varopt%Matrix)
     CALL Matrix_SpaceTime_GetVariable(obj=obj, fevar=fevar, xij=xij, &
                                       timeVec=times)
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "no case found for obj%returnType(4)")
+#endif
   END SELECT
 
+CASE DEFAULT
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "no case found for obj%varType(1)")
+#endif
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
-#endif DEBUG_VER
-
+#endif
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------
@@ -114,9 +146,23 @@ SUBROUTINE Scalar_Constant_GetVariable(obj, fevar)
   TYPE(FEVariable_), INTENT(INOUT) :: fevar
 
   ! Internal variable
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Scalar_Constant_GetVariable()"
+#endif
   REAL(DFP) :: val
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   CALL obj%Get(val=val)
   fevar = NodalVariable(val, TypeFEVariableScalar, TypeFEVariableConstant)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Scalar_Constant_GetVariable
 
 !----------------------------------------------------------------------------
@@ -129,7 +175,9 @@ SUBROUTINE Scalar_Space_GetVariable(obj, fevar, xij)
   REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Scalar_Constant_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: ii, tsize
@@ -140,11 +188,11 @@ SUBROUTINE Scalar_Space_GetVariable(obj, fevar, xij)
 #endif
 
   isxij = PRESENT(xij)
-  IF (.NOT. isxij) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTENRAL ERROR] :: xij should be present.')
-    RETURN
-  END IF
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isxij, myName, &
+                    'xij should be present.')
+#endif
 
   tsize = SIZE(xij, 2)
   CALL Reallocate(val, tsize)
@@ -158,7 +206,6 @@ SUBROUTINE Scalar_Space_GetVariable(obj, fevar, xij)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE Scalar_Space_GetVariable
 
 !----------------------------------------------------------------------------
@@ -171,7 +218,9 @@ SUBROUTINE Scalar_Time_GetVariable(obj, fevar, timeVec)
   REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Scalar_Time_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:)
   LOGICAL(LGT) :: istimevec
   INTEGER(I4B) :: ii, tsize
@@ -183,11 +232,10 @@ SUBROUTINE Scalar_Time_GetVariable(obj, fevar, timeVec)
 
   istimevec = PRESENT(timeVec)
 
-  IF (.NOT. istimevec) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTENRAL ERROR] :: timeVec should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(istimevec, myName, &
+                    "timeVec should be present")
+#endif
 
   tsize = SIZE(timeVec)
   CALL Reallocate(val, tsize)
@@ -201,7 +249,6 @@ SUBROUTINE Scalar_Time_GetVariable(obj, fevar, timeVec)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE Scalar_Time_GetVariable
 
 !----------------------------------------------------------------------------
@@ -215,9 +262,11 @@ SUBROUTINE Scalar_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Scalar_SpaceTime_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:, :), args(:)
-  LOGICAL(LGT) :: problem
+  LOGICAL(LGT) :: isok
   INTEGER(I4B) :: ii, tspace, ttime, jj, nsd
 
 #ifdef DEBUG_VER
@@ -225,12 +274,11 @@ SUBROUTINE Scalar_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
                           '[START] ')
 #endif
 
-  problem = (.NOT. PRESENT(xij)) .OR. (.NOT. PRESENT(timeVec))
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                     '[INTENRAL ERROR] :: xij and timeVec should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  isok = PRESENT(xij) .AND. PRESENT(timeVec)
+  CALL AssertError1(isok, myName, &
+                    "xij and timeVec should ne present.")
+#endif
 
   tspace = SIZE(xij, 2)
   ttime = SIZE(timeVec)
@@ -254,7 +302,6 @@ SUBROUTINE Scalar_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE Scalar_SpaceTime_GetVariable
 
 !----------------------------------------------------------------------------
@@ -266,11 +313,24 @@ SUBROUTINE Vector_Constant_GetVariable(obj, fevar)
   TYPE(FEVariable_), INTENT(INOUT) :: fevar
 
   ! internal variable
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Vector_Constant_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   CALL obj%Get(val=val)
   fevar = NodalVariable(val, TypeFEVariableVector, TypeFEVariableConstant)
   IF (ALLOCATED(val)) DEALLOCATE (val)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Vector_Constant_GetVariable
 
 !----------------------------------------------------------------------------
@@ -283,7 +343,9 @@ SUBROUTINE Vector_Space_GetVariable(obj, fevar, xij)
   REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Vector_Space_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:, :), r1(:)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: nrow, ncol, jj
@@ -295,11 +357,10 @@ SUBROUTINE Vector_Space_GetVariable(obj, fevar, xij)
 
   isxij = PRESENT(xij)
 
-  IF (.NOT. isxij) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTENRAL ERROR] :: xij should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(isxij, myName, &
+                    'xij should be present.')
+#endif
 
   nrow = obj%numReturns
   ncol = SIZE(xij, 2)
@@ -318,7 +379,6 @@ SUBROUTINE Vector_Space_GetVariable(obj, fevar, xij)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE Vector_Space_GetVariable
 
 !----------------------------------------------------------------------------
@@ -331,7 +391,9 @@ SUBROUTINE Vector_Time_GetVariable(obj, fevar, timeVec)
   REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Vector_Time_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:, :), r1(:)
   LOGICAL(LGT) :: istimevec
   INTEGER(I4B) :: nrow, ncol, jj
@@ -342,11 +404,10 @@ SUBROUTINE Vector_Time_GetVariable(obj, fevar, timeVec)
 #endif
 
   istimevec = PRESENT(timeVec)
-  IF (.NOT. istimevec) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTENRAL ERROR] :: timeVec should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(istimevec, myName, &
+                    'timeVec should be present.')
+#endif
 
   nrow = obj%numReturns
   ncol = SIZE(timeVec)
@@ -365,7 +426,6 @@ SUBROUTINE Vector_Time_GetVariable(obj, fevar, timeVec)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE Vector_Time_GetVariable
 
 !----------------------------------------------------------------------------
@@ -379,7 +439,9 @@ SUBROUTINE Vector_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Vector_SpaceTime_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:, :, :), r1(:), args(:)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: dim1, dim2, dim3, jj, kk, nsd
@@ -390,11 +452,11 @@ SUBROUTINE Vector_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
 #endif
 
   isxij = PRESENT(xij)
-  IF (.NOT. isxij) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                     '[INTENRAL ERROR] :: xij and timeVec should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(isxij, myName, &
+                    'xij and timeVec should be present.')
+#endif
+
   dim1 = obj%numReturns
   dim2 = SIZE(xij, 2)
   nsd = SIZE(xij, 1)
@@ -420,7 +482,6 @@ SUBROUTINE Vector_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE Vector_SpaceTime_GetVariable
 
 !----------------------------------------------------------------------------
@@ -432,11 +493,25 @@ SUBROUTINE Matrix_Constant_GetVariable(obj, fevar)
   TYPE(FEVariable_), INTENT(INOUT) :: fevar
 
   ! internal variable
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Matrix_Constant_GetVariable()"
+#endif
+
   REAL(DFP), ALLOCATABLE :: val(:, :)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   CALL obj%Get(val=val)
   fevar = NodalVariable(val, TypeFEVariableMatrix, TypeFEVariableConstant)
   IF (ALLOCATED(val)) DEALLOCATE (val)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Matrix_Constant_GetVariable
 
 !----------------------------------------------------------------------------
@@ -449,7 +524,9 @@ SUBROUTINE Matrix_Space_GetVariable(obj, fevar, xij)
   REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Matrix_Space_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:, :, :), r2(:, :), args(:)
   LOGICAL(LGT) :: isxij
   INTEGER(I4B) :: jj, dim1, dim2, dim3
@@ -460,11 +537,10 @@ SUBROUTINE Matrix_Space_GetVariable(obj, fevar, xij)
 #endif
 
   isxij = PRESENT(xij)
-  IF (.NOT. isxij) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTENRAL ERROR] :: xij should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(isxij, myName, &
+                    'xij should be present.')
+#endif
 
   dim1 = obj%returnShape(1)
   dim2 = obj%returnShape(2)
@@ -487,7 +563,6 @@ SUBROUTINE Matrix_Space_GetVariable(obj, fevar, xij)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE Matrix_Space_GetVariable
 
 !----------------------------------------------------------------------------
@@ -500,7 +575,9 @@ SUBROUTINE Matrix_Time_GetVariable(obj, fevar, timeVec)
   REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Matrix_Time_GetVariable()"
+#endif
   REAL(DFP), ALLOCATABLE :: val(:, :, :), r2(:, :)
   LOGICAL(LGT) :: istimevec
   INTEGER(I4B) :: jj, dim1, dim2, dim3
@@ -511,11 +588,10 @@ SUBROUTINE Matrix_Time_GetVariable(obj, fevar, timeVec)
 #endif
 
   istimevec = PRESENT(timeVec)
-  IF (.NOT. istimevec) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTENRAL ERROR] :: timeVec should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(istimevec, myName, &
+                    'timeVec should be present.')
+#endif
 
   dim1 = obj%returnShape(1)
   dim2 = obj%returnShape(2)
@@ -533,9 +609,8 @@ SUBROUTINE Matrix_Time_GetVariable(obj, fevar, timeVec)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
+                          '[END] ')
 #endif
-
 END SUBROUTINE Matrix_Time_GetVariable
 
 !----------------------------------------------------------------------------
@@ -549,23 +624,30 @@ SUBROUTINE Matrix_SpaceTime_GetVariable(obj, fevar, xij, timeVec)
   REAL(DFP), OPTIONAL, INTENT(IN) :: timeVec(:)
 
   ! internal variable
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Matrix_SpaceTime_GetVariable()"
+  LOGICAL(LGT) :: isok
+#endif
+
   REAL(DFP), ALLOCATABLE :: val(:, :, :, :), r2(:, :), args(:)
-  LOGICAL(LGT) :: problem
   INTEGER(I4B) :: ii, jj, dim1, dim2, dim3, dim4
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
+                          '[START] ')
 #endif
 
-  problem = (.NOT. PRESENT(xij)) .OR. (.NOT. PRESENT(timeVec))
+#ifdef DEBUG_VER
+  isok = PRESENT(xij)
+  CALL AssertError1(isok, myName, &
+                    "xij should be present")
+#endif
 
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTENRAL ERROR] :: xij should be present.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  isok = PRESENT(timeVec)
+  CALL AssertError1(isok, myName, &
+                    "timeVec should be present")
+#endif
 
   dim1 = obj%returnShape(1)
   dim2 = obj%returnShape(2)
@@ -598,5 +680,7 @@ END SUBROUTINE Matrix_SpaceTime_GetVariable
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetFEVariableMethods

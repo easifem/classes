@@ -18,6 +18,11 @@ SUBMODULE(UserFunction_Class) IOMethods
 USE Display_Method, ONLY: Display, ToString
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "UserFunction_Class@IOMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
