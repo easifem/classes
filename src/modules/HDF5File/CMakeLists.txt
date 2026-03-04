@@ -16,9 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-TARGET_SOURCES(
-  ${PROJECT_NAME} PRIVATE
-  ${src_path}/HDF5File_Class.F90
-  ${src_path}/HDF5File_Method.F90
+set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE ${src_path}/HDF5File_Class.F90 ${src_path}/HDF5FileUtility.F90
 )

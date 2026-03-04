@@ -80,11 +80,11 @@ TYPE, EXTENDS(AbstractFile_) :: HDF5File_
     !! File id assigned by the HDF5 library when file is opened
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(Obj) :: open => hdf5_open
-  PROCEDURE, PUBLIC, PASS(Obj) :: close => hdf5_close
+  PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => hdf5_open
+  PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => hdf5_close
   PROCEDURE, PUBLIC, PASS(Obj) :: delete => hdf5_delete
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => hdf5_initiate
-  PROCEDURE, PUBLIC, PASS(Obj) :: Deallocate => hdf5_clear
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => hdf5_clear
   PROCEDURE, PUBLIC, PASS(Obj) :: setOverwriteStat => &
     & hdf5_setOverwriteStat
   PROCEDURE, PUBLIC, PASS(Obj) :: getUnitNo => hdf5_getUnitNo
@@ -114,7 +114,7 @@ CONTAINS
     & hdf5_write_st0, hdf5_write_st1, hdf5_write_st1_helper, &
     & hdf5_write_st2, hdf5_write_st2_helper, &
     & hdf5_write_c1
-  GENERIC, PUBLIC :: Write => &
+  GENERIC, PUBLIC :: WRITE => &
     & hdf5_write_d0, hdf5_write_d1, hdf5_write_d2, &
     & hdf5_write_d3, hdf5_write_d4, hdf5_write_d5, &
     & hdf5_write_d6, hdf5_write_d7, &
@@ -145,7 +145,7 @@ CONTAINS
     & hdf5_read_c1, hdf5_read_b0, hdf5_read_b1, &
     & hdf5_read_b2, hdf5_read_b3
 
-  GENERIC, PUBLIC :: Read => &
+  GENERIC, PUBLIC :: READ => &
     & hdf5_read_d0, hdf5_read_d1, hdf5_read_d2, &
     & hdf5_read_d3, hdf5_read_d4, hdf5_read_d5, &
     & hdf5_read_d6, hdf5_read_d7, &
@@ -546,7 +546,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE preWrite( obj,rank,gdims,ldims,path,mem,dset_id,dspace_id,&
-            & gspace_id, plist_id, error, cnt, offset)
+               & gspace_id, plist_id, error, cnt, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     INTEGER, INTENT(IN) :: rank
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
@@ -640,7 +640,7 @@ INTERFACE
     !! HDF5 File object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real64), INTENT(IN) :: vals
+    REAL(REAL64), INTENT(IN) :: vals
     !! Value to be written
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(1)
     !! Global dimension; Shape of data to write with
@@ -664,7 +664,7 @@ INTERFACE
     !! hdf5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name and path
-    REAL(Real64), INTENT(IN) :: vals(:)
+    REAL(REAL64), INTENT(IN) :: vals(:)
     !! Rank-1 array of reals which will be written in hdf5 file
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(1)
     !! Shape of data to write with
@@ -688,7 +688,7 @@ INTERFACE
     !! hdf5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real64), INTENT(IN) :: vals(:, :)
+    REAL(REAL64), INTENT(IN) :: vals(:, :)
     !! Rank-2 array of Real64
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(2)
     !! Shape of data to write with
@@ -712,7 +712,7 @@ INTERFACE
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real64), INTENT(IN) :: vals(:, :, :)
+    REAL(REAL64), INTENT(IN) :: vals(:, :, :)
     !! Rank 3 array of real64
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(3)
     !! Shape of data to write with
@@ -736,7 +736,7 @@ INTERFACE
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real64), INTENT(IN) :: vals(:, :, :, :)
+    REAL(REAL64), INTENT(IN) :: vals(:, :, :, :)
     !! Rank4 array of real64
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(4)
     !! Shape of data to write with
@@ -760,7 +760,7 @@ INTERFACE
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real64), INTENT(IN) :: vals(:, :, :, :, :)
+    REAL(REAL64), INTENT(IN) :: vals(:, :, :, :, :)
     !! Rank5 array of Real64
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(5)
     !! Shape of data to write with
@@ -784,7 +784,7 @@ INTERFACE
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real64), INTENT(IN) :: vals(:, :, :, :, :, :)
+    REAL(REAL64), INTENT(IN) :: vals(:, :, :, :, :, :)
     !! Rank6 array of datatype Real64
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(6)
     !! Shape of data to write with
@@ -808,7 +808,7 @@ INTERFACE
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real64), INTENT(IN) :: vals(:, :, :, :, :, :, :)
+    REAL(REAL64), INTENT(IN) :: vals(:, :, :, :, :, :, :)
     !! Rank7 array of real64
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(7)
     !! Shape of data to write with
@@ -828,7 +828,7 @@ INTERFACE
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    REAL(Real32), INTENT(IN) :: vals
+    REAL(REAL32), INTENT(IN) :: vals
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(1)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in
@@ -844,7 +844,7 @@ INTERFACE
     & offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(IN) :: vals(:)
+    REAL(REAL32), INTENT(IN) :: vals(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(1)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in(1)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in(1)
@@ -860,7 +860,7 @@ INTERFACE
     & offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(IN) :: vals(:, :)
+    REAL(REAL32), INTENT(IN) :: vals(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(2)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in(2)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in(2)
@@ -876,7 +876,7 @@ INTERFACE
     & offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(IN) :: vals(:, :, :)
+    REAL(REAL32), INTENT(IN) :: vals(:, :, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(3)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in(3)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in(3)
@@ -892,7 +892,7 @@ INTERFACE
     & offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(IN) :: vals(:, :, :, :)
+    REAL(REAL32), INTENT(IN) :: vals(:, :, :, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(4)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in(4)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in(4)
@@ -908,7 +908,7 @@ INTERFACE
     & offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(IN) :: vals(:, :, :, :, :)
+    REAL(REAL32), INTENT(IN) :: vals(:, :, :, :, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(5)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in(5)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in(5)
@@ -924,7 +924,7 @@ INTERFACE
     & offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(IN) :: vals(:, :, :, :, :, :)
+    REAL(REAL32), INTENT(IN) :: vals(:, :, :, :, :, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(6)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in(6)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in(6)
@@ -940,7 +940,7 @@ INTERFACE
     & offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(IN) :: vals(:, :, :, :, :, :, :)
+    REAL(REAL32), INTENT(IN) :: vals(:, :, :, :, :, :, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(7)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cnt_in(7)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: offset_in(7)
@@ -1058,7 +1058,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals
+    INTEGER(INT32), INTENT(IN) :: vals
     !! Rank 0, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(1)
     !! Shape of data to write
@@ -1082,7 +1082,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals(:)
+    INTEGER(INT32), INTENT(IN) :: vals(:)
     !! Rank 0, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(1)
     !! Shape of data to write
@@ -1106,7 +1106,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals(:, :)
+    INTEGER(INT32), INTENT(IN) :: vals(:, :)
     !! Rank 2, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(2)
     !! Shape of data to write
@@ -1130,7 +1130,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals(:, :, :)
+    INTEGER(INT32), INTENT(IN) :: vals(:, :, :)
     !! Rank 3, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(3)
     !! Shape of data to write
@@ -1154,7 +1154,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals(:, :, :, :)
+    INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :)
     !! Rank 4, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(4)
     !! Shape of data to write
@@ -1178,7 +1178,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals(:, :, :, :, :)
+    INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :, :)
     !! Rank 5, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(5)
     !! Shape of data to write
@@ -1202,7 +1202,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals(:, :, :, :, :, :)
+    INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :, :, :)
     !! Rank 6, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(6)
     !! Shape of data to write
@@ -1226,7 +1226,7 @@ INTERFACE
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! Dataset name and path
-    INTEGER(Int32), INTENT(IN) :: vals(:, :, :, :, :, :, :)
+    INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :, :, :, :)
     !! Rank 7, array of int32 data types
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: gdims_in(7)
     !! Shape of data to write
@@ -1293,7 +1293,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st1(obj, dsetname, vals, length_max, gdims_in, &
-            & cnt_in, offset_in)
+               & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1343,7 +1343,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st2(obj, dsetname, vals, length_max, gdims_in, &
-            & cnt_in, offset_in)
+               & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1393,7 +1393,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st3(obj, dsetname, vals, length_max, gdims_in, &
-            & cnt_in, offset_in)
+               & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1503,7 +1503,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), INTENT(INOUT) :: vals
+    REAL(REAL64), INTENT(INOUT) :: vals
   END SUBROUTINE hdf5_read_d0
 END INTERFACE
 
@@ -1519,7 +1519,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:)
   END SUBROUTINE hdf5_read_d1
 END INTERFACE
 
@@ -1535,7 +1535,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
   END SUBROUTINE hdf5_read_d2
 END INTERFACE
 
@@ -1551,7 +1551,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
   END SUBROUTINE hdf5_read_d3
 END INTERFACE
 
@@ -1567,7 +1567,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
   END SUBROUTINE hdf5_read_d4
 END INTERFACE
 
@@ -1583,7 +1583,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
   END SUBROUTINE hdf5_read_d5
 END INTERFACE
 
@@ -1599,7 +1599,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
   END SUBROUTINE hdf5_read_d6
 END INTERFACE
 
@@ -1615,7 +1615,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_d7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
+    REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
   END SUBROUTINE hdf5_read_d7
 END INTERFACE
 
@@ -1631,7 +1631,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), INTENT(INOUT) :: vals
+    REAL(REAL32), INTENT(INOUT) :: vals
   END SUBROUTINE hdf5_read_s0
 END INTERFACE
 
@@ -1647,7 +1647,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:)
   END SUBROUTINE hdf5_read_s1
 END INTERFACE
 
@@ -1663,7 +1663,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
   END SUBROUTINE hdf5_read_s2
 END INTERFACE
 
@@ -1679,7 +1679,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
   END SUBROUTINE hdf5_read_s3
 END INTERFACE
 
@@ -1695,7 +1695,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
   END SUBROUTINE hdf5_read_s4
 END INTERFACE
 
@@ -1711,7 +1711,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
   END SUBROUTINE hdf5_read_s5
 END INTERFACE
 
@@ -1727,7 +1727,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
   END SUBROUTINE hdf5_read_s6
 END INTERFACE
 
@@ -1743,7 +1743,7 @@ INTERFACE
   MODULE SUBROUTINE hdf5_read_s7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    REAL(Real32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
   END SUBROUTINE hdf5_read_s7
 END INTERFACE
 
