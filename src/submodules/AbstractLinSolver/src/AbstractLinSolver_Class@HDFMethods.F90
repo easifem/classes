@@ -16,11 +16,12 @@
 !
 
 SUBMODULE(AbstractLinSolver_Class) HDFMethods
-USE HDF5File_Method, ONLY: HDF5ReadScalar
+USE HDF5FileUtility, ONLY: HDF5ReadScalar
 USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
-
+USE BaseType, ONLY: TypePrecondOpt
+USE BaseType, ONLY: TypeConvergenceOpt
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
