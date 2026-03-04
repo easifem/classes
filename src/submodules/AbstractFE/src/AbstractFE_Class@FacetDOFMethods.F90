@@ -25,8 +25,10 @@ USE ForceVector_Method, ONLY: ForceVector_
 USE Lapack_Method, ONLY: GetLU, LUSolve, GetInvMat
 USE InputUtility, ONLY: Input
 USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
-
 IMPLICIT NONE
+
+CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class@FacetDOFMethods.F90"
+
 CONTAINS
 
 !----------------------------------------------------------------------------

@@ -33,8 +33,6 @@ PUBLIC :: AbstractFEDeallocate
 PUBLIC :: AbstractFEDisplay
 PUBLIC :: DEALLOCATE
 
-CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class"
-
 !----------------------------------------------------------------------------
 !                                                                 AbstractFE_
 !----------------------------------------------------------------------------

@@ -17,11 +17,13 @@
 
 SUBMODULE(AbstractDomain_Class) MeshDataMethods
 USE GlobalData, ONLY: stdout
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE DomainConnectivity_Class
 USE Kdtree2_Module, ONLY: Kdtree2_create
 USE CPUTime_Class, ONLY: CPUTime_
 USE ElemData_Class, ONLY: BOUNDARY_ELEMENT
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -36,13 +38,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateKdtree
-INTEGER(I4B) :: nsd
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
-
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
 LOGICAL(LGT) :: isok
 #endif
 
+INTEGER(I4B) :: nsd
 TYPE(CPUTime_) :: TypeCPUTime
 
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -55,20 +56,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DeallocateKdtree()
 
 #ifdef DEBUG_VER
-
 isok = ALLOCATED(obj%nodeCoord)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: AbstractDomain_::obj%nodeCoord not allocated')
-  RETURN
-END IF
-
+CALL AssertError1(isok, myName, &
+                  "obj%nodeCoord not allocated")
 #endif
 
 nsd = obj%nsd
-! FUNCTION Kdtree2_create(input_data, dim, sort, rearrange) RESULT(mr)
 obj%kdtree => Kdtree2_Create(input_data=obj%nodeCoord(1:nsd, :), &
-                             dim=nsd, sort=.FALSE., rearrange=.TRUE.)
+                             dim=nsd, sort=math%no, &
+                             rearrange=math%yes)
 
 ALLOCATE (obj%kdresult(obj%tNodes))
 
@@ -91,10 +87,24 @@ END PROCEDURE obj_InitiateKdtree
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateNodeToElements
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(math%no, myName, &
+                  "This routine should be implemented by child classes.")
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_InitiateNodeToElements
 
 !----------------------------------------------------------------------------
@@ -102,10 +112,24 @@ END PROCEDURE obj_InitiateNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateNodeToNodes
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodeToNodes()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(math%no, myName, &
+                  "This routine should be implemented by child classes.")
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_InitiateNodeToNodes
 
 !----------------------------------------------------------------------------

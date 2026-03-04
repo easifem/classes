@@ -33,8 +33,8 @@ USE Kdtree2_Module, ONLY: Kdtree2Result_
 USE String_Class, ONLY: String
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
-
 IMPLICIT NONE
+
 PRIVATE
 
 PUBLIC :: AbstractDomain_

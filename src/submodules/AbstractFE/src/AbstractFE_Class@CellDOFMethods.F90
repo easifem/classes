@@ -25,8 +25,10 @@ USE ForceVector_Method, ONLY: ForceVector_
 USE Lapack_Method, ONLY: GetLU, LUSolve, GetInvMat
 USE InputUtility, ONLY: Input
 USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
-
 IMPLICIT NONE
+
+CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class@CellDOFMethods.F90"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -61,7 +63,7 @@ DO iface = 1, tFace
     elemsd=elemsd(iface), facetElemsd=facetElemsd(iface), xij=xij, &
     times=times, localFaceNumber=iface, func=func, ans=temp, &
     tsize=tFaceDOF, massMat=massMat, ipiv=ipiv, funcValue=funcValue, &
-    onlyFaceBubble=.TRUE., icompo=icompo)
+    onlyFaceBubble=math%yes, icompo=icompo)
   ans(tsize + 1:tsize + tFaceDOF) = temp(1:tFaceDOF)
   tsize = tsize + tFaceDOF
 END DO
@@ -201,12 +203,12 @@ END PROCEDURE obj_GetDOFValueFromQuadrature
 MODULE PROCEDURE obj_GetVertexDOFValueFromSTFunc
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetVertexDOFValueFromSTFunc()"
-INTEGER(I4B) :: tReturns, tArgs
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: ii, nsd, returnType, icompo0
-REAL(DFP) :: args(4), temp_ans(10)
+INTEGER(I4B), PARAMETER :: temp_ans_size = 10
+INTEGER(I4B) :: ii, nsd, returnType, icompo0, tReturns, tArgs
+REAL(DFP) :: args(4), temp_ans(temp_ans_size)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -220,7 +222,7 @@ tsize = obj%opt%GetTotalVertex()
 tArgs = func%GetNumArgs()
 isok = tArgs .GE. 4_I4B
 CALL AssertError1(isok, myName, &
-           "WIP: the user function must have at least 4 arguments, (x,y,z,t)")
+                  "WIP: func must have at least 4 arguments, (x,y,z,t)")
 #endif
 
 args(1:3) = 0.0_DFP
@@ -262,7 +264,7 @@ CASE (TypeFEVariableOpt%vector)
 
 CASE default
 #ifdef DEBUG_VER
-  CALL AssertError1(.FALSE., myName, &
+  CALL AssertError1(math%no, myName, &
                     "Return type of user function must be scalar or vector")
 #endif
 END SELECT
@@ -341,19 +343,21 @@ END SELECT
 mysize = SIZE(temp)
 isok = mysize >= cellElemsd%nns
 CALL AssertError1(isok, myName, &
-      'Size of temp='//ToString(mysize)//' is lesser than cellElemsd%nns='// &
+                  'Size of temp='//ToString(mysize)// &
+                  ' is lesser than cellElemsd%nns='// &
                   ToString(cellElemsd%nns))
 #endif
 
 CALL obj%GetDOFValueFromQuadrature( &
   elemsd=cellElemsd, func=funcValue, ans=temp, tsize=tsize, &
-  massMat=massMat, ipiv=ipiv, onlyInside=.TRUE., tVertices=offset)
+  massMat=massMat, ipiv=ipiv, onlyInside=math%yes, tVertices=offset)
 
 #ifdef DEBUG_VER
 mysize = SIZE(ans)
 isok = mysize >= offset + tsize
 CALL AssertError1(isok, myName, &
-         'Size of ans='//ToString(mysize)//' is lesser than offset+tsize='// &
+                  'Size of ans='//ToString(mysize)// &
+                  ' is lesser than offset+tsize='// &
                   ToString(offset + tsize))
 #endif
 
