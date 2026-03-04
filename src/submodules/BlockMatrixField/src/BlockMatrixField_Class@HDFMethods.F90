@@ -22,11 +22,11 @@
 SUBMODULE(BlockMatrixField_Class) HDFMethods
 USE Display_Method, ONLY: ToString
 USE String_Class, ONLY: String
-USE HDF5File_Method, ONLY: ImportCSRMatrix
-USE MatrixFieldUtility, ONLY: Export_Header, &
-                              Import_Header, &
-                              Import_CheckError, &
-                              Import_PhysicalVar
+USE HDF5FileUtility, ONLY: ImportCSRMatrix
+USE MatrixFieldUtility, ONLY: Export_Header
+USE MatrixFieldUtility, ONLY: Import_Header
+USE MatrixFieldUtility, ONLY: Import_CheckError
+USE MatrixFieldUtility, ONLY: Import_PhysicalVar
 IMPLICIT NONE
 
 CONTAINS
