@@ -18,11 +18,11 @@ SUBMODULE(AbstractNodeField_Class) HDFMethods
 USE String_Class, ONLY: String
 USE AbstractField_Class, ONLY: AbstractFieldImport
 USE AbstractField_Class, ONLY: AbstractFieldExport
-USE HDF5File_Method, ONLY: ImportRealVector
-USE HDF5File_Method, ONLY: ImportDOF
-USE HDF5File_Method, ONLY: ExportRealVector
-USE HDF5File_Method, ONLY: ImportRealVector
-USE HDF5File_Method, ONLY: ExportDOF
+USE HDF5FileUtility, ONLY: ImportRealVector
+USE HDF5FileUtility, ONLY: ImportDOF
+USE HDF5FileUtility, ONLY: ExportRealVector
+USE HDF5FileUtility, ONLY: ImportRealVector
+USE HDF5FileUtility, ONLY: ExportDOF
 
 IMPLICIT NONE
 

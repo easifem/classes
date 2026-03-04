@@ -20,23 +20,20 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) HDFMethods
-USE MatrixFieldUtility, ONLY: Export_Header, Import_Header, &
-                              Import_CheckError, &
-                              Import_PhysicalVar
-
+USE MatrixFieldUtility, ONLY: Export_Header
+USE MatrixFieldUtility, ONLY: Import_Header
+USE MatrixFieldUtility, ONLY: Import_CheckError
+USE MatrixFieldUtility, ONLY: Import_PhysicalVar
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
 USE AbstractField_Class, ONLY: AbstractFieldExport
-
-USE HDF5File_Method, ONLY: ExportCSRMatrix, ImportCSRMatrix
-
-USE Display_Method, ONLY: Display, Tostring
-
+USE HDF5FileUtility, ONLY: ExportCSRMatrix, ImportCSRMatrix
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Tostring
 USE BaseType, ONLY: DOF_
 USE String_Class, ONLY: String
-
 USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
-
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
