@@ -119,48 +119,39 @@ SUBROUTINE AbstractDomainImportMetaData(obj, hdf5, group)
 
   ! read engine
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%engine, fieldname="engine", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%engine, fieldname="engine")
 
   ! read majorVersion
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%majorVersion, fieldname="majorVersion", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%majorVersion, fieldname="majorVersion")
 
   ! read minorVersion
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%minorVersion, fieldname="minorVersion", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%minorVersion, fieldname="minorVersion")
 
   ! read version
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%version, fieldname="version", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%version, fieldname="version")
 
   ! read NSD
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%NSD, fieldname="NSD", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%NSD, fieldname="NSD")
 
   ! maxNptrs
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%maxNptrs, fieldname="maxNptrs", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%maxNptrs, fieldname="maxNptrs")
 
   ! minNptrs
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%minNptrs, fieldname="minNptrs", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%minNptrs, fieldname="minNptrs")
 
   ! tNodes
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%tNodes, fieldname="tNodes", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%tNodes, fieldname="tNodes")
 
   ! nodeCoord
   CALL HDF5ReadMatrix(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%nodeCoord, fieldname="nodeCoord", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%nodeCoord, fieldname="nodeCoord")
 
   ! is node number sparse
   isok = (obj%maxNptrs - obj%minNptrs) .EQ. (obj%tNodes - 1)
@@ -169,49 +160,41 @@ SUBROUTINE AbstractDomainImportMetaData(obj, hdf5, group)
 
   ! maxElemNum
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%maxElemNum, fieldname="maxElemNum", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%maxElemNum, fieldname="maxElemNum")
 
   ! minElemNum
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
-                      VALUE=obj%minElemNum, fieldname="minElemNum", &
-                      myName=myName, modName=modName)
+                      VALUE=obj%minElemNum, fieldname="minElemNum")
 
   ! tEntitiesForNodes
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
                       VALUE=obj%tEntitiesForNodes, &
-                      fieldname="tEntitiesForNodes", &
-                      myName=myName, modName=modName)
+                      fieldname="tEntitiesForNodes")
 
   ! tEntitiesForElements
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
                       VALUE=obj%tEntitiesForElements, &
-                      fieldname="tEntitiesForElements", &
-                      myName=myName, modName=modName)
+                      fieldname="tEntitiesForElements")
 
   ! numVolumeEntities
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
                       VALUE=obj%tEntities(3), &
-                      fieldname="numVolumeEntities", &
-                      myName=myName, modName=modName)
+                      fieldname="numVolumeEntities")
 
   ! numSurfaceEntities
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
                       VALUE=obj%tEntities(2), &
-                      fieldname="numSurfaceEntities", &
-                      myName=myName, modName=modName)
+                      fieldname="numSurfaceEntities")
 
   ! numCurveEntities
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
                       VALUE=obj%tEntities(1), &
-                      fieldname="numCurveEntities", &
-                      myName=myName, modName=modName)
+                      fieldname="numCurveEntities")
 
   ! numPointEntities
   CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
                       VALUE=obj%tEntities(0), &
-                      fieldname="numPointEntities", &
-                      myName=myName, modName=modName)
+                      fieldname="numPointEntities")
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
