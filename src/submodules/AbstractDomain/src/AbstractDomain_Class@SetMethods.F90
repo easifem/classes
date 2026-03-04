@@ -17,11 +17,16 @@
 
 SUBMODULE(AbstractDomain_Class) SetMethods
 USE FEDomainConnectivity_Class, ONLY: FEDomainConnectivity_
-USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity, &
-                            CSRMatrix_GetMatrixProp => GetMatrixProp
+USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity
+USE CSRMatrix_Method, ONLY: CSRMatrix_GetMatrixProp => GetMatrixProp
 USE Display_Method, ONLY: ToString, Display
 USE InputUtility, ONLY: Input
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

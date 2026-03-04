@@ -20,10 +20,16 @@
 ! summary: This submodule contains methods for domain object
 
 SUBMODULE(AbstractDomain_Class) ConstructorMethods
-USE ReallocateUtility
-USE CSRSparsity_Method
+USE ReallocateUtility, ONLY: Reallocate
 USE Kdtree2_Module, ONLY: Kdtree2_Destroy
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractDomain_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,6 +39,9 @@ CONTAINS
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
@@ -52,26 +61,40 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ! obj%showTime = .FALSE.
-obj%isInit = .FALSE.
+obj%isInit = math%no
 obj%engine = ''
 obj%majorVersion = 0
 obj%minorVersion = 0
-obj%version = 0.0_DFP
+obj%version = math%zero
 obj%nsd = 0
 obj%maxNptrs = 0
 obj%minNptrs = 0
 obj%tNodes = 0
-obj%isNodeNumberSparse = .FALSE.
+obj%isNodeNumberSparse = math%no
 obj%maxElemNum = 0
 obj%minElemNum = 0
-obj%isElemNumberSparse = .FALSE.
+obj%isElemNumberSparse = math%no
 obj%tEntitiesForNodes = 0
 obj%tEntitiesForElements = 0
 obj%tElements(0:3) = 0
 obj%tEntities(0:3) = 0
 IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
 CALL obj%DeallocateKdtree()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -79,15 +102,32 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DeallocateKdtree
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_DeallocateKdtree()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 IF (ASSOCIATED(obj%kdtree)) THEN
   CALL Kdtree2_Destroy(obj%kdtree)
   obj%kdtree => NULL()
 END IF
 
 IF (ALLOCATED(obj%kdresult)) DEALLOCATE (obj%kdresult)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_DeallocateKdtree
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
+
 END SUBMODULE ConstructorMethods

@@ -22,8 +22,13 @@ USE DomainConnectivity_Class
 USE Kdtree2_Module, ONLY: Kdtree2_create
 USE CPUTime_Class, ONLY: CPUTime_
 USE ElemData_Class, ONLY: BOUNDARY_ELEMENT
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractDomain_Class@MeshDataMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

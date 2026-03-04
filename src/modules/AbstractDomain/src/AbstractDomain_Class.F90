@@ -17,22 +17,22 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 18 June 2021
-! update:
-!   - 12 Nov 2021
-!   - 4 Nov 2022
 ! summary: This module contains methods for domain data type
 
 MODULE AbstractDomain_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE BaseType, ONLY: CSRSparsity_, CSRMatrix_, BoundingBox_
-USE String_Class, ONLY: String
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: CSRSparsity_
+USE BaseType, ONLY: CSRMatrix_
+USE BaseType, ONLY: BoundingBox_
+USE ElemData_Class, ONLY: ElemData_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE HDF5File_Class, ONLY: HDF5File_
+USE Kdtree2_Module, ONLY: Kdtree2_
+USE Kdtree2_Module, ONLY: Kdtree2Result_
+USE String_Class, ONLY: String
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
-USE ExceptionHandler_Class, ONLY: e
-USE Kdtree2_Module, ONLY: Kdtree2_, Kdtree2Result_
-USE ElemData_Class, ONLY: ElemData_
 
 IMPLICIT NONE
 PRIVATE
@@ -45,8 +45,6 @@ PUBLIC :: AbstractDomainInitiate
 PUBLIC :: AbstractDomainImport
 PUBLIC :: AbstractDomainDisplay
 PUBLIC :: AbstractDomainDisplayDomainInfo
-
-CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class"
 
 !----------------------------------------------------------------------------
 !                                                            AbstractDomain_
@@ -650,7 +648,6 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-12
-! update: 2021-11-12
 ! summary: Returns true if the element number is present inside the domain
 !
 !# Introduction

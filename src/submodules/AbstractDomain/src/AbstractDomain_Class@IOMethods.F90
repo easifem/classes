@@ -17,6 +17,11 @@
 SUBMODULE(AbstractDomain_Class) IOMethods
 USE Display_Method, ONLY: Display, ToString
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractDomain_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
