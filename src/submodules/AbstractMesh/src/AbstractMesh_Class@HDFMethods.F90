@@ -84,7 +84,7 @@ ELSEIF (cases(2)) THEN
 ELSEIF (cases(3)) THEN
 
   CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim, &
-                       tEntities=tEntities, myName=myName, modName=modName)
+                       tEntities=tEntities)
 
   IF (tEntities .GT. 0_I4B) THEN
     entities0 = Arange(1_I4B, tEntities)
@@ -224,43 +224,43 @@ SUBROUTINE MeshImportScalar(obj, hdf5, group)
   dsetname = TRIM(group)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%uid, group=dsetname, &
-                fieldname="uid", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="uid", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname, &
-                fieldname="nsd", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="nsd", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%xidim, group=dsetname, &
-              fieldname="xidim", myname=myname, modname=modname, check=.TRUE.)
+                      fieldname="xidim", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tElements, group=dsetname, &
-          fieldname="tElements", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="tElements", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minX, group=dsetname, &
-               fieldname="minX", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="minX", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minY, group=dsetname, &
-               fieldname="minY", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="minY", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minZ, group=dsetname, &
-               fieldname="minZ", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="minZ", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxX, group=dsetname, &
-               fieldname="maxX", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="maxX", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxY, group=dsetname, &
-               fieldname="maxY", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="maxY", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxZ, group=dsetname, &
-               fieldname="maxZ", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="maxZ", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%x, group=dsetname, &
-                  fieldname="x", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="x", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%y, group=dsetname, &
-                  fieldname="y", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="y", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%z, group=dsetname, &
-                  fieldname="z", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="z", check=.TRUE.)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -295,8 +295,7 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   dsetname = TRIM(group)
 
   CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname, &
-                 fieldname="boundingEntity", myname=myname, modName=modName, &
-                      check=.FALSE.)
+                      fieldname="boundingEntity", check=.FALSE.)
 
   ! If boundingEntity is not initiated then we initiate it with size=0
   ! Bounding entity will not be initiated for point type
@@ -305,7 +304,7 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   END IF
 
   CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname, &
-         fieldname="elemNumber", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="elemNumber", check=.TRUE.)
 
   isok = .FALSE.
   IF (ALLOCATED(elemNumber)) THEN
@@ -320,7 +319,7 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   END IF
 
   CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname, &
-       fieldname="connectivity", myname=myname, modName=modName, check=.TRUE.)
+                      fieldname="connectivity", check=.TRUE.)
 
   isok = ALLOCATED(connectivity)
   IF (isok) THEN
@@ -339,8 +338,7 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
 
   IF (PRESENT(internalNptrs)) THEN
     CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname, &
-                  fieldname="intNodeNumber", myname=myname, modName=modName, &
-                        check=.TRUE.)
+                        fieldname="intNodeNumber", check=.TRUE.)
   END IF
 
   obj%maxElemNum = MAXVAL(elemNumber)
@@ -442,10 +440,10 @@ SUBROUTINE MeshImportElementData(obj, hdf5, group, connectivity, elemNumber)
   CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType, group=dsetname, &
-           fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
+                      fieldname="elemType", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=meshID, group=dsetname, &
-                fieldname="uid", myname=myname, modname=modname, check=.TRUE.)
+                      fieldname="uid", check=.TRUE.)
 
   !$OMP PARALLEL DO PRIVATE(ii)
   DO ii = 1, obj%tElements
@@ -736,8 +734,7 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
 
   ! INFO: HDf5ReadMatrix is defined in HDF5File_Method
   CALL HDF5ReadMatrix(hdf5=hdf5, check=.TRUE., group=dsetname, &
-                      VALUE=xij, fieldname="", myName=myName, &
-                      modName=modName)
+                      VALUE=xij, fieldname="")
   jj = SIZE(xij, 1)
   tsize = obj%GetTotalNodes()
   x = 0.0_DFP
@@ -818,7 +815,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     CALL MeshImportCheckError(hdf5, dsetname)
     CALL MeshImportScalar(obj, hdf5, dsetname)
     CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType(ii), group=dsetname, &
-           fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
+                        fieldname="elemType", check=.TRUE.)
 
     nne(ii) = GetTotalNodes(elemType(ii))
 
@@ -888,7 +885,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   IF (dim .GT. 0) THEN
     CALL HDF5GetEntities(hdf5=hdf5, group=group, dim=dim - 1, &
-                tEntities=maxBoundingEntities, myName=myName, modName=modName)
+                         tEntities=maxBoundingEntities)
   ELSE
     maxBoundingEntities = 0
   END IF
@@ -984,8 +981,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   ! INFO: HDf5ReadMatrix is defined in HDF5File_Method
   CALL HDF5ReadMatrix(hdf5=hdf5, check=.TRUE., group=dsetname, &
-                      VALUE=xij, fieldname="", myName=myName, &
-                      modName=modName)
+                      VALUE=xij, fieldname="")
   jj = SIZE(xij, 1)
   tsize = obj%GetTotalNodes()
   x = 0.0_DFP
