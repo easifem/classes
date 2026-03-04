@@ -16,17 +16,22 @@
 !
 
 SUBMODULE(Mesh_Class) IOMethods
-USE Display_Method
-USE ReallocateUtility
-USE ReferenceElement_Method
-USE InputUtility
-USE HDF5File_Method, ONLY: HDF5ReadScalar, HDF5ReadVector,  &
-  & HDF5ReadMatrix
-
-USE NodeData_Class, ONLY: NodeData_Display
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE ElemData_Class, ONLY: ElemData_Display
-USE FacetData_Class, ONLY: BoundaryFacetData_Display, &
-                           InternalFacetData_Display
+USE FacetData_Class, ONLY: BoundaryFacetData_Display
+USE FacetData_Class, ONLY: InternalFacetData_Display
+USE HDF5FileUtility, ONLY: HDF5ReadMatrix
+USE HDF5FileUtility, ONLY: HDF5ReadScalar
+USE HDF5FileUtility, ONLY: HDF5ReadVector
+USE InputUtility, ONLY: Input
+USE NodeData_Class, ONLY: NodeData_Display
+USE ReallocateUtility, ONLY: Reallocate
+USE ReferenceElement_Method, ONLY: GetFacetElements
+USE ReferenceElement_Method, ONLY: ReferenceElement_Pointer
+USE ReferenceElement_Method, ONLY: TotalEntities
+USE ReferenceElement_Method, ONLY: ReferenceElementDisplay => Display
 IMPLICIT NONE
 
 CHARACTER(*), PARAMETER :: mygroup(4) = ["pointEntities  ", &
@@ -84,7 +89,8 @@ xidim = obj%GetXidimension()
 nsd = obj%GetNSD()
 
 obj%refelem => ReferenceElement_Pointer(xidim=xidim, &
-  & nsd=nsd, elemType=obj%elemType, ipType=Equidistance)
+                                        nsd=nsd, elemType=obj%elemType, &
+                                        ipType=Equidistance)
 
 isok = xidim .GT. 0
 IF (isok) THEN
@@ -133,17 +139,20 @@ INTEGER(I4B) :: ii, n
 LOGICAL(LGT) :: abool
 
 abool = ALLOCATED(obj%facetElements)
-IF (abool) THEN; n = SIZE(obj%facetElements); ELSE; n = 0; END IF
+IF (abool) THEN
+  n = SIZE(obj%facetElements)
+ELSE
+  n = 0
+END IF
 
 CALL Display(msg, unitno=unitno)
 CALL Display(abool, "facetElements ALLOCATED: ", unitno=unitno)
 
 DO ii = 1, n
 
-  CALL Display(obj%facetElements(ii), &
-    & "obj%facetElements("//tostring(ii)//"): ", unitno=unitno)
-
-  CALL BlankLines(nol=1, unitno=unitno)
+  CALL ReferenceElementDisplay( &
+    obj%facetElements(ii), &
+    "obj%facetElements("//tostring(ii)//"): ", unitno=unitno)
 
 END DO
 END PROCEDURE obj_DisplayFacetElements

@@ -17,10 +17,10 @@
 
 SUBMODULE(AbstractMesh_Class) HDFMethods
 USE ReallocateUtility, ONLY: Reallocate
-USE HDF5File_Method, ONLY: HDF5GetEntities
-USE HDF5File_Method, ONLY: HDF5ReadScalar
-USE HDF5File_Method, ONLY: HDF5ReadVector
-USE HDF5File_Method, ONLY: HDF5ReadMatrix
+USE HDF5FileUtility, ONLY: HDF5GetEntities
+USE HDF5FileUtility, ONLY: HDF5ReadScalar
+USE HDF5FileUtility, ONLY: HDF5ReadVector
+USE HDF5FileUtility, ONLY: HDF5ReadMatrix
 USE ArangeUtility, ONLY: Arange
 USE InputUtility, ONLY: Input
 USE ReferenceElement_Method, ONLY: GetElementIndex

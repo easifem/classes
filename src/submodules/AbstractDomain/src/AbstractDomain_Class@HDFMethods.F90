@@ -16,9 +16,9 @@
 
 SUBMODULE(AbstractDomain_Class) HDFMethods
 USE Display_Method, ONLY: ToString
-USE HDF5File_Method, ONLY: HDF5ReadScalar
-USE HDF5File_Method, ONLY: HDF5ReadVector
-USE HDF5File_Method, ONLY: HDF5ReadMatrix
+USE HDF5FileUtility, ONLY: HDF5ReadScalar
+USE HDF5FileUtility, ONLY: HDF5ReadVector
+USE HDF5FileUtility, ONLY: HDF5ReadMatrix
 USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
