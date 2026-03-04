@@ -16,14 +16,8 @@
 !
 
 SUBMODULE(HDF5FileUtility) Methods
-! USE String_Class
-! USE DOF_Method
-! USE CSRSparsity_Method
-! USE CSRMatrix_Method
-! USE RealVector_Method
-! USE IntVector_Method
-! USE HDF5File_Class
 USE ExceptionHandler_Class, ONLY: e
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -38,6 +32,10 @@ CONTAINS
 
 MODULE PROCEDURE HDF5GetEntities
 #ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HDF5GetEntities()"
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
@@ -46,29 +44,29 @@ SELECT CASE (dim)
 
 CASE (0)
   ! numPointEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=tEntities, fieldname="numPointEntities", &
-                      myName=myName, modName=modName)
+  CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
+                      VALUE=tEntities, fieldname="numPointEntities")
 
 CASE (1)
   ! numCurveEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=tEntities, fieldname="numCurveEntities", &
-                      myName=myName, modName=modName)
+  CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
+                      VALUE=tEntities, fieldname="numCurveEntities")
 
 CASE (2)
   ! numSurfaceEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=tEntities, fieldname="numSurfaceEntities", &
-                      myName=myName, modName=modName)
+  CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
+                      VALUE=tEntities, fieldname="numSurfaceEntities")
 
 CASE (3)
   ! numVolumeEntities
-  CALL HDF5ReadScalar(hdf5=hdf5, check=.TRUE., group=group, &
-                      VALUE=tEntities, fieldname="numVolumeEntities", &
-                      myName=myName, modName=modName)
+  CALL HDF5ReadScalar(hdf5=hdf5, check=math%yes, group=group, &
+                      VALUE=tEntities, fieldname="numVolumeEntities")
 
 CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    'no case found for given dim.')
+#endif
 END SELECT
 
 #ifdef DEBUG_VER
@@ -82,8 +80,17 @@ END PROCEDURE HDF5GetEntities
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE HDF5ReadIntMatrix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HDF5ReadIntMatrix()"
+#endif
+
 LOGICAL(LGT) :: isok0
 CHARACTER(:), ALLOCATABLE :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 astr = group//"/"//fieldname
 isok0 = hdf5%pathExists(astr)
@@ -91,13 +98,18 @@ IF (isok0) THEN
   CALL hdf5%READ(astr, VALUE)
 END IF
 
-IF (check .AND. .NOT. isok0) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-  RETURN
+#ifdef DEBUG_VER
+IF (check) THEN
+  CALL AssertError1(isok0, myName, astr//' path does not exists.')
 END IF
+#endif
 
 astr = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE HDF5ReadIntMatrix
 
 !----------------------------------------------------------------------------
@@ -105,23 +117,35 @@ END PROCEDURE HDF5ReadIntMatrix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE HDF5ReadRealMatrix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HDF5ReadRealMatrix()"
+#endif
 LOGICAL(LGT) :: isok0
 CHARACTER(:), ALLOCATABLE :: astr
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 astr = group//"/"//fieldname
 isok0 = hdf5%pathExists(astr)
-
 IF (isok0) THEN
   CALL hdf5%READ(astr, VALUE)
 END IF
 
-IF (check .AND. .NOT. isok0) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-  RETURN
+#ifdef DEBUG_VER
+IF (check) THEN
+  CALL AssertError1(isok0, myName, astr//' path does not exists.')
 END IF
+#endif
 
 astr = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE HDF5ReadRealMatrix
 
 !----------------------------------------------------------------------------
@@ -129,6 +153,9 @@ END PROCEDURE HDF5ReadRealMatrix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE HDF5ReadRealVector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HDF5ReadRealVector()"
+#endif
 LOGICAL(LGT) :: isok0
 CHARACTER(:), ALLOCATABLE :: astr
 
@@ -139,11 +166,11 @@ IF (isok0) THEN
   CALL hdf5%READ(astr, VALUE)
 END IF
 
-IF (check .AND. .NOT. isok0) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-  RETURN
+#ifdef DEBUG_VER
+IF (check) THEN
+  CALL AssertError1(isok0, myName, astr//' path does not exists.')
 END IF
+#endif
 
 astr = ""
 END PROCEDURE HDF5ReadRealVector
@@ -153,8 +180,16 @@ END PROCEDURE HDF5ReadRealVector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE HDF5ReadIntVector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HDF5ReadIntVector()"
+#endif
 LOGICAL(LGT) :: isok0
 CHARACTER(:), ALLOCATABLE :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 astr = group//"/"//fieldname
 isok0 = hdf5%pathExists(astr)
@@ -163,13 +198,18 @@ IF (isok0) THEN
   CALL hdf5%READ(astr, VALUE)
 END IF
 
-IF (check .AND. .NOT. isok0) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-  RETURN
+#ifdef DEBUG_VER
+IF (check) THEN
+  CALL AssertError1(isok0, myName, astr//' path does not exists.')
 END IF
+#endif
 
 astr = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE HDF5ReadIntVector
 
 !----------------------------------------------------------------------------
@@ -177,17 +217,25 @@ END PROCEDURE HDF5ReadIntVector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE HDF5ReadScalar
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HDF5ReadScalar()"
+#endif
 LOGICAL(LGT) :: isok0
 CHARACTER(:), ALLOCATABLE :: astr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 astr = group//"/"//fieldname
 isok0 = hdf5%pathExists(astr)
 
-IF (check .AND. .NOT. isok0) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR]:: '//astr//' path does not exists.')
-  RETURN
+#ifdef DEBUG_VER
+IF (check) THEN
+  CALL AssertError1(isok0, myName, astr//' path does not exists.')
 END IF
+#endif
 
 IF (isok0) THEN
   SELECT TYPE (VALUE)
@@ -208,6 +256,11 @@ IF (isok0) THEN
 END IF
 
 astr = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE HDF5ReadScalar
 
 !----------------------------------------------------------------------------
@@ -215,23 +268,33 @@ END PROCEDURE HDF5ReadScalar
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ExportDOF
-! Internal variable
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ExportDOF()"
+#endif
 TYPE(String) :: dsetname
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 dsetname = TRIM(group)//"/storageFMT"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%storageFMT)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%storageFMT)
+
 IF (ALLOCATED(obj%map)) THEN
   dsetname = TRIM(group)//"/map"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-                  vals=obj%map)
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%map)
 END IF
-!>
+
 IF (ALLOCATED(obj%valMap)) THEN
   dsetname = TRIM(group)//"/valMap"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-                  vals=obj%valMap)
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%valMap)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ExportDOF
 
 !----------------------------------------------------------------------------
@@ -239,19 +302,35 @@ END PROCEDURE ExportDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ImportDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ImportDOF()"
+#endif
+
 TYPE(String) :: dsetname
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 dsetname = TRIM(group)//"/storageFMT"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%storageFMT)
-!> Map
+
 dsetname = TRIM(group)//"/map"
-IF (hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) &
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%map)
-END IF
-!> valmap
+
 dsetname = TRIM(group)//"/valMap"
-IF (hdf5%pathExists(dsetname%chars())) THEN
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) &
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%valMap)
-END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ImportDOF
 
 !----------------------------------------------------------------------------
@@ -259,46 +338,51 @@ END PROCEDURE ImportDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ExportCSRSparsity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ExportCSRSparsity()"
+#endif
 TYPE(String) :: dsetname
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 dsetname = TRIM(group)//"/nnz"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%nnz)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%nnz)
+
 dsetname = TRIM(group)//"/ncol"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%ncol)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%ncol)
+
 dsetname = TRIM(group)//"/nrow"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%nrow)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%nrow)
+
 dsetname = TRIM(group)//"/isSorted"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%isSorted)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isSorted)
+
 dsetname = TRIM(group)//"/isInitiated"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%isInitiated)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isInitiated)
+
 dsetname = TRIM(group)//"/isSparsityLock"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%isSparsityLock)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isSparsityLock)
+
 CALL ExportDOF(obj=obj%idof, hdf5=hdf5, group=TRIM(group)//"/idof")
 CALL ExportDOF(obj=obj%jdof, hdf5=hdf5, group=TRIM(group)//"/jdof")
-!>
+
 IF (ALLOCATED(obj%IA)) THEN
   dsetname = TRIM(group)//"/IA"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-    & vals=obj%IA)
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%IA)
 END IF
-!>
+
 IF (ALLOCATED(obj%JA)) THEN
   dsetname = TRIM(group)//"/JA"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-    & vals=obj%JA)
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%JA)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ExportCSRSparsity
 
 !----------------------------------------------------------------------------
@@ -306,38 +390,60 @@ END PROCEDURE ExportCSRSparsity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ImportCSRSparsity
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ImportCSRSparsity()"
+#endif
 TYPE(String) :: dsetname
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 !> nnzz
 dsetname = TRIM(group)//"/nnz"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%nnz)
+
 !> ncol
 dsetname = TRIM(group)//"/ncol"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%ncol)
+
 !> nrow
 dsetname = TRIM(group)//"/nrow"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%nrow)
+
 !> isSorted
 dsetname = TRIM(group)//"/isSorted"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isSorted)
+
 !> isInitiated
 dsetname = TRIM(group)//"/isInitiated"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isInitiated)
+
 !> isSparsityLock
 dsetname = TRIM(group)//"/isSparsityLock"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%isSparsityLock)
+
 !> dof
 CALL ImportDOF(obj=obj%idof, hdf5=hdf5, group=TRIM(group)//"/idof")
 CALL ImportDOF(obj=obj%jdof, hdf5=hdf5, group=TRIM(group)//"/jdof")
+
 !> IA
 dsetname = TRIM(group)//"/IA"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%IA)
 END IF
+
 !> JA
 dsetname = TRIM(group)//"/JA"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%JA)
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ImportCSRSparsity
 
 !----------------------------------------------------------------------------
@@ -345,28 +451,36 @@ END PROCEDURE ImportCSRSparsity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ExportCSRMatrix
-! Internal variable
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ExportCSRMatrix()"
+#endif
 TYPE(String) :: dsetname
-!>
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 dsetname = TRIM(group)//"/csrOwnership"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%csrOwnership)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%csrOwnership)
+
 dsetname = TRIM(group)//"/tDimension"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=obj%tDimension)
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tDimension)
+
 dsetname = TRIM(group)//"/matrixProp"
-CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-  & vals=String(obj%matrixProp))
-!>
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=String(obj%matrixProp))
+
 IF (ALLOCATED(obj%A)) THEN
   dsetname = TRIM(group)//"/A"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), &
-    & vals=obj%A)
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%A)
 END IF
-!>
+
 CALL ExportCSRSparsity(obj=obj%csr, hdf5=hdf5, group=TRIM(group)//"/csr")
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ExportCSRMatrix
 
 !----------------------------------------------------------------------------
@@ -374,30 +488,43 @@ END PROCEDURE ExportCSRMatrix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ImportCSRMatrix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ImportCSRMatrix()"
+#endif
 TYPE(String) :: dsetname, strval
 
-!> main
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 !> csrOwnership
 dsetname = TRIM(group)//"/csrOwnership"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%csrOwnership)
+
 !> tDimension
 dsetname = TRIM(group)//"/tDimension"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tDimension)
+
 !> matrixProp
 dsetname = TRIM(group)//"/matrixProp"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
 obj%matrixProp = strval%chars()
-!>
+
 dsetname = TRIM(group)//"/A"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%A)
 END IF
-!>
+
 dsetname = TRIM(group)//"/csr"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL ImportCSRSparsity(obj=obj%csr, hdf5=hdf5, &
-    & group=dsetname%chars())
+  CALL ImportCSRSparsity(obj=obj%csr, hdf5=hdf5, group=dsetname%chars())
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ImportCSRMatrix
 
 !----------------------------------------------------------------------------
@@ -405,13 +532,28 @@ END PROCEDURE ImportCSRMatrix
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ExportRealVector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ExportRealVector()"
+#endif
 TYPE(String) :: dsetname
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 !> tDimension
 dsetname = TRIM(group)//"/tDimension"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tDimension)
+
 !> Val
 dsetname = TRIM(group)//"/Val"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%Val)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ExportRealVector
 
 !----------------------------------------------------------------------------
@@ -419,14 +561,26 @@ END PROCEDURE ExportRealVector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ImportRealVector
-!> internal variables
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ImportRealVector()"
+#endif
 TYPE(String) :: dsetname
-!> tDimension
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 dsetname = TRIM(group)//"/tDimension"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tDimension)
-!> Val
+
 dsetname = TRIM(group)//"/Val"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%Val)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ImportRealVector
 
 !----------------------------------------------------------------------------
@@ -434,13 +588,27 @@ END PROCEDURE ImportRealVector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ExportIntVector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ExportIntVector()"
+#endif
 TYPE(String) :: dsetname
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 !> tDimension
 dsetname = TRIM(group)//"/tDimension"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tDimension)
 !> Val
 dsetname = TRIM(group)//"/Val"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%Val)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ExportIntVector
 
 !----------------------------------------------------------------------------
@@ -448,14 +616,27 @@ END PROCEDURE ExportIntVector
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE ImportIntVector
-!> internal variables
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ImportIntVector()"
+#endif
 TYPE(String) :: dsetname
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 !> tDimension
 dsetname = TRIM(group)//"/tDimension"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tDimension)
 !> Val
 dsetname = TRIM(group)//"/Val"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%Val)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE ImportIntVector
 
 !----------------------------------------------------------------------------

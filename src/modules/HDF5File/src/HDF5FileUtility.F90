@@ -52,13 +52,11 @@ PUBLIC :: HDF5GetEntities
 
 INTERFACE
   MODULE SUBROUTINE HDF5GetEntities( &
-    hdf5, group, dim, tEntities, myName, modName)
+    hdf5, group, dim, tEntities)
     CLASS(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(OUT) :: tEntities
-    CHARACTER(*), INTENT(IN) :: myName
-    CHARACTER(*), INTENT(IN) :: modName
   END SUBROUTINE HDF5GetEntities
 END INTERFACE
 
@@ -68,13 +66,11 @@ END INTERFACE
 
 INTERFACE HDF5ReadMatrix
   MODULE SUBROUTINE HDF5ReadIntMatrix( &
-    hdf5, VALUE, group, fieldname, myname, modname, check)
+    hdf5, VALUE, group, fieldname, check)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     CHARACTER(*), INTENT(IN) :: group
     CHARACTER(*), INTENT(IN) :: fieldname
-    CHARACTER(*), INTENT(IN) :: myname
-    CHARACTER(*), INTENT(IN) :: modname
     LOGICAL(LGT), INTENT(IN) :: check
   END SUBROUTINE HDF5ReadIntMatrix
 END INTERFACE HDF5ReadMatrix
@@ -85,13 +81,11 @@ END INTERFACE HDF5ReadMatrix
 
 INTERFACE HDF5ReadMatrix
   MODULE SUBROUTINE HDF5ReadRealMatrix( &
-    hdf5, VALUE, group, fieldname, myname, modname, check)
+    hdf5, VALUE, group, fieldname, check)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
     CHARACTER(*), INTENT(IN) :: group
     CHARACTER(*), INTENT(IN) :: fieldname
-    CHARACTER(*), INTENT(IN) :: myname
-    CHARACTER(*), INTENT(IN) :: modname
     LOGICAL(LGT), INTENT(IN) :: check
   END SUBROUTINE HDF5ReadRealMatrix
 END INTERFACE HDF5ReadMatrix
@@ -102,13 +96,11 @@ END INTERFACE HDF5ReadMatrix
 
 INTERFACE HDF5ReadVector
   MODULE SUBROUTINE HDF5ReadRealVector( &
-    hdf5, VALUE, group, fieldname, myname, modname, check)
+    hdf5, VALUE, group, fieldname, check)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     CHARACTER(*), INTENT(IN) :: group
     CHARACTER(*), INTENT(IN) :: fieldname
-    CHARACTER(*), INTENT(IN) :: myname
-    CHARACTER(*), INTENT(IN) :: modname
     LOGICAL(LGT), INTENT(IN) :: check
   END SUBROUTINE HDF5ReadRealVector
 END INTERFACE HDF5ReadVector
@@ -119,13 +111,11 @@ END INTERFACE HDF5ReadVector
 
 INTERFACE HDF5ReadVector
   MODULE SUBROUTINE HDF5ReadIntVector( &
-    hdf5, VALUE, group, fieldname, myname, modname, check)
+    hdf5, VALUE, group, fieldname, check)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
     CHARACTER(*), INTENT(IN) :: group
     CHARACTER(*), INTENT(IN) :: fieldname
-    CHARACTER(*), INTENT(IN) :: myname
-    CHARACTER(*), INTENT(IN) :: modname
     LOGICAL(LGT), INTENT(IN) :: check
   END SUBROUTINE HDF5ReadIntVector
 END INTERFACE HDF5ReadVector
@@ -136,13 +126,11 @@ END INTERFACE HDF5ReadVector
 
 INTERFACE
   MODULE SUBROUTINE HDF5ReadScalar( &
-    hdf5, VALUE, group, fieldname, myname, modname, check)
+    hdf5, VALUE, group, fieldname, check)
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CLASS(*), INTENT(INOUT) :: VALUE
     CHARACTER(*), INTENT(IN) :: group
     CHARACTER(*), INTENT(IN) :: fieldname
-    CHARACTER(*), INTENT(IN) :: myname
-    CHARACTER(*), INTENT(IN) :: modname
     LOGICAL(LGT), INTENT(IN) :: check
   END SUBROUTINE HDF5ReadScalar
 END INTERFACE
