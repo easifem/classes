@@ -20,22 +20,21 @@
 MODULE OneDimFEDOF_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE ExceptionHandler_Class, ONLY: e
-USE BaseType, ONLY: CSRMatrix_, QuadraturePoint_, ElemshapeData_
+USE BaseType, ONLY: CSRMatrix_
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemshapeData_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE OneDimDomain_Class, ONLY: OneDimDomain_
-
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
-
 IMPLICIT NONE
-PRIVATE
 
+PRIVATE
 PUBLIC :: OneDimFEDOF_
 PUBLIC :: OneDimFEDOFPointer_
 
 ! PUBLIC :: OneDimFEDOFSetSparsity
 
-CHARACTER(*), PARAMETER :: modName = "OneDimFEDOF_Class"
 CHARACTER(*), PARAMETER :: DEFAULT_BASETYPE = "Monomial"
 CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
 REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP

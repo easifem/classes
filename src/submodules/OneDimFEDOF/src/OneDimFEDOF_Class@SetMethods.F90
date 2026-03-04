@@ -18,10 +18,16 @@
 !
 
 SUBMODULE(OneDimFEDOF_Class) SetMethods
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "OneDimFEDOF_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,7 +35,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCellOrder
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetCellOrder()"
+#endif
 INTEGER(I4B) :: tsize, ii, jj, tcells
 LOGICAL(LGT) :: isok, no_true
 INTEGER(INT8) :: int8_order
@@ -53,8 +61,10 @@ IF (tsize .EQ. 1) THEN
 
 ELSE
 
+#ifdef DEBUG_VER
   isok = tsize .LE. tcells
   CALL AssertError1(isok, myName, "Size of order array is out of bounds")
+#endif
 
   DO ii = 1, tsize
     isok = obj%mesh%IsElementPresent(globalElement=ii, islocal=no_true)
@@ -80,10 +90,24 @@ END PROCEDURE obj_SetCellOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
+#endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 ! INTEGER(I4B) :: tsize, ii, tdof, iel, telements
 ! INTEGER(I4B), ALLOCATABLE :: conn(:)
@@ -135,9 +159,25 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 ! INTEGER(I4B) :: tsize, ii, tdof, iel, telements, col_telements, col_tdof, &
 !                 col_iel
 ! INTEGER(I4B), ALLOCATABLE :: conn(:), col_conn(:)
@@ -220,9 +260,24 @@ END PROCEDURE obj_SetSparsity2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity3()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 ! INTEGER(I4B) :: ivar, jvar, nsd(SIZE(fedofs))
 ! LOGICAL(LGT) :: isok

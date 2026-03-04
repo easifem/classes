@@ -19,7 +19,13 @@
 
 SUBMODULE(OneDimFEDOF_Class) GetMethods
 USE BaseType, ONLY: TypeMeshOpt
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "OneDimFEDOF_Class@GetMethods.F90"
+#endif
 
 CONTAINS
 
@@ -55,8 +61,22 @@ END PROCEDURE obj_GetCaseName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetVertexDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVertexDOF()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 tsize = 1
 ans(1) = obj%mesh%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetVertexDOF
 
 !----------------------------------------------------------------------------
@@ -64,7 +84,21 @@ END PROCEDURE obj_GetVertexDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalVertexDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexDOF()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%mesh%GetTotalVertexNodes()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalVertexDOF
 
 !----------------------------------------------------------------------------
@@ -72,13 +106,28 @@ END PROCEDURE obj_GetTotalVertexDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCellDOF()"
+#endif
 INTEGER(I4B) :: ii, jj
-jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                 islocal=islocal)
 tsize = 0
 DO ii = obj%cellIA(jj), obj%cellIA(jj + 1) - 1
   tsize = tsize + 1
   ans(tsize) = ii
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetCellDOF
 
 !----------------------------------------------------------------------------
@@ -86,9 +135,24 @@ END PROCEDURE obj_GetCellDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalCellDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalCellDOF()"
+#endif
 INTEGER(I4B) :: jj
-jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                 islocal=islocal)
 ans = obj%cellIA(jj + 1) - obj%cellIA(jj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalCellDOF
 
 !----------------------------------------------------------------------------
@@ -96,7 +160,21 @@ END PROCEDURE obj_GetTotalCellDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalDOF1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDOF1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%tdof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalDOF1
 
 !----------------------------------------------------------------------------
@@ -183,7 +261,6 @@ CALL obj%GetConnectivity_(ans=ans, tsize=tdof, opt=opt, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetConnectivity
 
 !----------------------------------------------------------------------------
@@ -197,7 +274,6 @@ CHARACTER(*), PARAMETER :: myName = 'obj_GetConnectivity_()'
 
 INTEGER(I4B) :: ii, jj, kk, a, b, localElement, tvertices
 INTEGER(I4B) :: temp(TypeMeshOpt%maxCon)
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -207,23 +283,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                            islocal=islocal)
 
-CALL obj%mesh%GetConnectivity_(globalElement=localElement, islocal=yes, &
-                               opt=opt, tsize=jj, ans=temp)
+CALL obj%mesh%GetConnectivity_( &
+  globalElement=localElement, islocal=math%yes, opt=opt, tsize=jj, ans=temp)
 
 ! points
 tvertices = 2
 
-a = 1; b = 2
+a = 1
+b = 2
 jj = 1
 DO ii = 1, 2
   CALL obj%GetVertexDOF(globalNode=temp(ii), ans=ans(jj:), tsize=kk, &
-                        islocal=.FALSE.)
+                        islocal=math%no)
   jj = jj + kk
 END DO
 
 ! cell
 CALL obj%GetCellDOF(globalElement=temp(ii), ans=ans(jj:), tsize=kk, &
-                    islocal=.FALSE.)
+                    islocal=math%no)
 jj = jj + kk
 
 tsize = jj - 1
@@ -232,7 +309,6 @@ tsize = jj - 1
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
@@ -240,7 +316,21 @@ END PROCEDURE obj_GetConnectivity_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans => obj%mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetMeshPointer
 
 !----------------------------------------------------------------------------
@@ -248,7 +338,21 @@ END PROCEDURE obj_GetMeshPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBaseInterpolation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBaseInterpolation()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%fe%GetBaseInterpolation()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetBaseInterpolation
 
 !----------------------------------------------------------------------------
@@ -256,12 +360,25 @@ END PROCEDURE obj_GetBaseInterpolation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCellOrder()"
+#endif
 INTEGER(I4B) :: jj
 
-jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                 islocal=islocal)
 cellOrder(1) = obj%cellOrder(jj)
 tcellOrder = 1
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetCellOrder
 
 !----------------------------------------------------------------------------
@@ -284,7 +401,7 @@ ans = 0
 telems = obj%mesh%GetTotalElements()
 
 DO ii = 1, telems
-  tdof = obj%GetTotalDOF(globalElement=ii, isLocal=.TRUE.)
+  tdof = obj%GetTotalDOF(globalElement=ii, isLocal=math%yes)
   ans = MAX(ans, tdof)
 END DO
 
@@ -292,7 +409,6 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetMaxTotalConnectivity
 
 !----------------------------------------------------------------------------

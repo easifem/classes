@@ -18,9 +18,14 @@
 !
 
 SUBMODULE(OneDimFEDOF_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "OneDimFEDOF_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -44,7 +49,8 @@ CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
 CALL Display(obj%tdof, "tdof: ", unitno=unitno)
-CALL Display(obj%maxTotalConnectivity, "maxTotalConnectivity: ", unitno=unitno)
+CALL Display(obj%maxTotalConnectivity, "maxTotalConnectivity: ", &
+             unitno=unitno)
 CALL Display(obj%maxCellOrder, "maxCellOrder: ", unitno=unitno)
 
 isok = ASSOCIATED(obj%mesh)

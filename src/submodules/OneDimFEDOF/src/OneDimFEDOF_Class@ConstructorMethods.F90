@@ -27,12 +27,15 @@ USE BaseType, ONLY: TypeInterpolationOpt, TypePolynomialOpt
 USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFEPointer
 USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFEPointer
 USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFEPointer
-
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "OneDimFEDOF_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 

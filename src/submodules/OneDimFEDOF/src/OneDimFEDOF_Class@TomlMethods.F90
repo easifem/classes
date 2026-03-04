@@ -19,6 +19,12 @@
 
 SUBMODULE(OneDimFEDOF_Class) TomlMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "OneDimFEDOF_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,8 +36,21 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
 ! TYPE(String) :: baseContinuity, baseInterpolation, astr, baseTypeStr(3)
 ! INTEGER(I4B) :: ipType, origin, stat, tBaseType, ii, baseType0(3), &
 !                 tAlpha, tBeta, tLambda
@@ -169,10 +188,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !      baseInterpolation=baseInterpolation%chars(), ipType=ipType, basisType=baseType0, &
 !                   alpha=alpha, beta=beta, lambda=lambda, islocal=islocal)
 !
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END]')
-! #endif
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
@@ -180,9 +195,25 @@ END PROCEDURE obj_ImportFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 ! TYPE(toml_table), ALLOCATABLE :: table
 ! TYPE(toml_table), POINTER :: node
 ! INTEGER(I4B) :: origin, stat
