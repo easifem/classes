@@ -82,8 +82,8 @@ END IF
 
 CALL AbstractMeshImport(obj=obj, hdf5=hdf5, group=dsetname)
 
-CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname,  &
-  & fieldname="elemType", myname=myname, modname=modname, check=.TRUE.)
+CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%elemType, group=dsetname, &
+                    fieldname="elemType", check=math%yes)
 
 xidim = obj%GetXidimension()
 nsd = obj%GetNSD()
