@@ -629,6 +629,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 !> tDimension
 dsetname = TRIM(group)//"/tDimension"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tDimension)
+
 !> Val
 dsetname = TRIM(group)//"/Val"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%Val)
