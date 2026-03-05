@@ -21,6 +21,8 @@ USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity
 USE CSRMatrix_Method, ONLY: CSRMatrix_GetMatrixProp => GetMatrixProp
 USE Display_Method, ONLY: ToString, Display
 USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -34,7 +36,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetShowTime
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetShowTime()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%showTime = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetShowTime
 
 !----------------------------------------------------------------------------
@@ -54,11 +70,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-IF (.NOT. obj%isInit) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-                "[INTERNAL ERROR] :: Domain is not initiated, first initiate")
-  RETURN
-END IF
+CALL AssertError1(obj%isInit, myName, "obj is not initiated.")
 #endif
 
 meshptr => obj%GetMeshPointer()
@@ -70,7 +82,6 @@ meshptr => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetSparsity1
 
 !----------------------------------------------------------------------------
@@ -80,8 +91,9 @@ END PROCEDURE obj_SetSparsity1
 MODULE PROCEDURE obj_SetSparsity2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
-INTEGER(I4B) :: ivar, nsd(SIZE(domains))
-LOGICAL(LGT) :: problem
+INTEGER(I4B) :: ivar, tsize
+INTEGER(I4B), ALLOCATABLE :: nsd(:)
+LOGICAL(LGT) :: isok
 #endif
 
 CHARACTER(:), ALLOCATABLE :: matProp
@@ -91,37 +103,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
 ! Check if domains are associated and initiated
+#ifdef DEBUG_VER
+tsize = SIZE(domains)
+CALL Reallocate(nsd, tsize)
 
-DO ivar = 1, SIZE(domains)
+DO ivar = 1, tsize
 
-  problem = .NOT. ASSOCIATED(domains(ivar)%ptr)
-  IF (problem) THEN
-    CALL e%RaiseError(modName//"::"//myName//" - "// &
-           '[INTERNAL ERROR] :: domains('//Tostring(ivar)//') NOT ASSOCIATED')
-    RETURN
-  END IF
+  isok = ASSOCIATED(domains(ivar)%ptr)
+  CALL AssertError1(isok, myName, &
+                    'domains('//Tostring(ivar)//') NOT ASSOCIATED')
 
-  problem = .NOT. domains(ivar)%ptr%isInit
-  IF (problem) THEN
-    CALL e%RaiseError(modName//"::"//myName//" - "// &
-        '[INTERNAL ERROR] :: domains('//Tostring(ivar)//')%ptr NOT INITIATED')
-    RETURN
-  END IF
+  isok = domains(ivar)%ptr%isInit
+  CALL AssertError1(isok, myName, &
+                    'domains('//Tostring(ivar)//') NOT Initiated.')
 
   nsd(ivar) = domains(ivar)%ptr%GetNSD()
 
 END DO
 
 ! NSD of all domains should be identical
-problem = ANY(nsd .NE. nsd(1))
-IF (problem) THEN
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-        '[INTERNAL ERROR] :: It seems that NSD of domains are not identical.')
-  RETURN
-END IF
+isok = ALL(nsd .EQ. nsd(1))
+CALL AssertError1(isok, myName, &
+                  'It seems that nsd of domains are not same.')
 
+DEALLOCATE (nsd)
 #endif
 
 matProp = CSRMatrix_GetMatrixProp(mat)
@@ -150,20 +156,19 @@ SUBROUTINE part1_obj_Set_sparsity2(domains, mat)
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
 
   ! internal variables
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "part1_obj_Set_sparsity2()"
+#endif
   INTEGER(I4B) :: ivar, jvar
   CLASS(AbstractDomain_), POINTER :: rowDomain, colDomain
   CLASS(AbstractMesh_), POINTER :: rowMesh, colMesh
   TYPE(FEDomainConnectivity_) :: domainConn
   INTEGER(I4B), POINTER :: nodeToNode(:)
-  LOGICAL(LGT) :: isdebug
-
-  isdebug = .FALSE.
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%raiseInformation(modName//'::'//myName//' - '// &
-                          '[START]')
-  isdebug = .TRUE.
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
 
   ! nullify first for safety
@@ -174,24 +179,24 @@ SUBROUTINE part1_obj_Set_sparsity2(domains, mat)
 
   DO ivar = 1, SIZE(domains)
 
-    IF (isdebug) CALL Display("row domain = "//ToString(ivar))
-
     rowDomain => domains(ivar)%ptr
-    IF (.NOT. ASSOCIATED(rowDomain)) CYCLE
+    isok = ASSOCIATED(rowDomain)
+    IF (.NOT. isok) CYCLE
 
     rowMesh => rowDomain%GetMeshPointer(dim=rowDomain%GetNSD())
-    IF (.NOT. ASSOCIATED(rowMesh)) CYCLE
+    isok = ASSOCIATED(rowMesh)
+    IF (.NOT. isok) CYCLE
     IF (rowMesh%isEmpty()) CYCLE
 
     DO jvar = 1, SIZE(domains)
 
-      IF (isdebug) CALL Display("col domain = "//ToString(jvar))
-
       colDomain => domains(jvar)%ptr
-      IF (.NOT. ASSOCIATED(colDomain)) CYCLE
+      isok = ASSOCIATED(colDomain)
+      IF (.NOT. isok) CYCLE
 
       colMesh => colDomain%GetMeshPointer(dim=colDomain%GetNSD())
-      IF (.NOT. ASSOCIATED(colMesh)) CYCLE
+      isok = ASSOCIATED(colMesh)
+      IF (.NOT. isok) CYCLE
       IF (colMesh%isEmpty()) CYCLE
 
       CALL domainConn%DEALLOCATE()
@@ -201,18 +206,20 @@ SUBROUTINE part1_obj_Set_sparsity2(domains, mat)
 
       CALL rowMesh%SetSparsity(mat=mat, colMesh=colMesh, &
                                nodeToNode=nodeToNode, ivar=ivar, jvar=jvar)
+
     END DO
   END DO
 
   CALL CSRMatrix_SetSparsity(mat)
+
   NULLIFY (rowMesh, colMesh, rowDomain, colDomain, nodeToNode)
+
   CALL domainConn%DEALLOCATE()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE part1_obj_Set_sparsity2
 
 !----------------------------------------------------------------------------
@@ -224,14 +231,16 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
   TYPE(CSRMatrix_), INTENT(INOUT) :: mat
 
   ! internal variables
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "part2_obj_Set_sparsity2()"
+#endif
   INTEGER(I4B), PARAMETER :: tvar = 2, ivar = 1, jvar = 1
   INTEGER(I4B) :: nsd(tvar), ii
   CLASS(AbstractMesh_), POINTER :: rowMesh, colMesh
   CLASS(AbstractDomain_), POINTER :: rowDomain, colDomain
   TYPE(FEDomainConnectivity_) :: domainConn
   INTEGER(I4B), POINTER :: nodeToNode(:)
-  LOGICAL(LGT) :: problem
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -248,15 +257,13 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
   colDomain => domains(2)%ptr
 
 #ifdef DEBUG_VER
+  isok = ASSOCIATED(rowDomain)
+  CALL AssertError1(isok, myName, &
+                    "rowDomain is not associated.")
 
-  problem = (.NOT. ASSOCIATED(rowDomain)) .OR. (.NOT. ASSOCIATED(colDomain))
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: rowMesh not ASSOCIATED')
-    RETURN
-  END IF
-
+  isok = ASSOCIATED(colDomain)
+  CALL AssertError1(isok, myName, &
+                    "colDomain is not associated.")
 #endif
 
   rowMesh => NULL()
@@ -265,15 +272,13 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
   colMesh => colDomain%GetMeshPointer(dim=nsd(2))
 
 #ifdef DEBUG_VER
+  isok = ASSOCIATED(rowMesh)
+  CALL AssertError1(isok, myName, &
+                    "rowMesh is not associated.")
 
-  problem = (.NOT. ASSOCIATED(rowMesh)) .OR. (.NOT. ASSOCIATED(colMesh))
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: rowMesh or colMesh not ASSOCIATED')
-    RETURN
-  END IF
-
+  isok = ASSOCIATED(colMesh)
+  CALL AssertError1(isok, myName, &
+                    "colMesh is not associated.")
 #endif
 
   CALL domainConn%InitiateNodeToNodeData(domain1=rowDomain, &
@@ -281,7 +286,8 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
   nodeToNode => domainConn%GetNodeToNodePointer()
 
   CALL rowMesh%SetSparsity(mat=mat, colMesh=colMesh, &
-                           nodeToNode=nodeToNode, ivar=ivar, jvar=jvar)
+                           nodeToNode=nodeToNode, ivar=ivar, &
+                           jvar=jvar)
 
   CALL CSRMatrix_SetSparsity(mat)
 
@@ -293,7 +299,6 @@ SUBROUTINE part2_obj_Set_sparsity2(domains, mat)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE part2_obj_Set_sparsity2
 
 !----------------------------------------------------------------------------
@@ -320,7 +325,6 @@ meshptr => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetTotalMedium
 
 !----------------------------------------------------------------------------
@@ -344,11 +348,8 @@ meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(meshptr)
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::obj_SetMaterial - '// &
-                    '[INTERNAL ERROR] :: meshptr not associated')
-  RETURN
-END IF
+CALL AssertError1(isok, myName, &
+                  "meshptr is not associated.")
 #endif
 
 CALL meshptr%SetMaterial(medium=medium, material=material, &
@@ -359,7 +360,6 @@ meshptr => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetMaterial
 
 !----------------------------------------------------------------------------
@@ -369,7 +369,7 @@ END PROCEDURE obj_SetMaterial
 MODULE PROCEDURE obj_SetNodeCoord
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetNodeCoord1()"
-LOGICAL(LGT) :: problem
+LOGICAL(LGT) :: problem, isok
 #endif
 
 REAL(DFP) :: scale0
@@ -382,24 +382,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-problem = .NOT. ALLOCATED(obj%nodeCoord)
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: AbstractDomain_::obj%nodeCoord not allocated')
-  RETURN
-END IF
+isok = ALLOCATED(obj%nodeCoord)
+CALL AssertError1(isok, myName, &
+                  "obj%nodeCoord not allocated.")
 
-problem = ALL(SHAPE(nodeCoord) .NE. SHAPE(obj%nodeCoord))
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[INTERNAL ERROR] :: Shape of nodeCoord does not match '// &
-                    'with obj_::obj%nodeCoord')
-  RETURN
-END IF
+CALL AssertError2(SIZE(nodeCoord, 1), SIZE(obj%nodeCoord, 1), myName, &
+                  "a=nrow in nodeCoord, b=nrow in obj%nodeCoord")
+
+CALL AssertError2(SIZE(nodeCoord, 2), SIZE(obj%nodeCoord, 2), myName, &
+                  "a=ncol in nodeCoord, b=ncol in obj%nodeCoord")
 #endif
 
-scale0 = Input(option=scale, default=1.0_DFP)
-add0 = Input(option=addContribution, default=.FALSE.)
+scale0 = Input(option=scale, default=math%one)
+add0 = Input(option=addContribution, default=math%no)
 tnodes = SIZE(nodeCoord, 2)
 nsd = obj%nsd
 
@@ -408,6 +403,12 @@ IF (add0) THEN
     obj%nodeCoord(1:nsd, ii) = nodeCoord(1:nsd, ii) * scale0 &
                                + obj%nodeCoord(1:nsd, ii)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -420,7 +421,6 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetNodeCoord
 
 !----------------------------------------------------------------------------
@@ -428,15 +428,25 @@ END PROCEDURE obj_SetNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetQuality
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuality()"
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 ! CLASS(Mesh_), POINTER :: meshptr
 ! CHARACTER(*), PARAMETER :: myName = "obj_SetQuality"
 ! REAL(DFP), ALLOCATABLE :: max_(:, :), min_(:, :)
@@ -493,12 +503,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !
 ! CALL e%RaiseError(modName//'::'//myName//' - '// &
 !   & 'No case found')
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
 END PROCEDURE obj_SetQuality
 
 !----------------------------------------------------------------------------
@@ -508,7 +512,7 @@ END PROCEDURE obj_SetQuality
 MODULE PROCEDURE obj_SetTotalElements
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetTotalElements()"
-LOGICAL(LGT) :: isok
+INTEGER(I4B) :: aint
 #endif
 
 #ifdef DEBUG_VER
@@ -517,9 +521,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-isok = indx .LT. SIZE(obj%tElements)
-CALL AssertError1(isok, myName, &
-                  "indx is out of bound, it should be between 0,1,2,3")
+aint = SIZE(obj%tElements)
+CALL AssertError3(indx, aint, myName, &
+                  "indx is out of bound, a=indx, b=size(obj%tElements)")
 #endif
 
 obj%tElements(indx) = VALUE

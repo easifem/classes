@@ -163,8 +163,8 @@ CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
-       'following error occured while reading the toml file :: cannot find ' &
-                  //tomlName//" table in config.")
+                  'cannot find '// &
+                  tomlName//" table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node)
@@ -172,7 +172,8 @@ CALL obj%ImportFromToml(table=node)
 #ifdef DEBUG_VER
 isok = PRESENT(printToml)
 IF (isok) THEN
- CALL Display(toml_serialize(node), "AbstractDomain toml config: "//CHAR_LF, &
+  CALL Display(toml_serialize(node), &
+               "AbstractDomain toml config: "//CHAR_LF, &
                unitno=stdout)
 END IF
 #endif

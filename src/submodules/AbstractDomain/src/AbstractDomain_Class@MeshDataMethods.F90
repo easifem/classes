@@ -19,7 +19,6 @@ SUBMODULE(AbstractDomain_Class) MeshDataMethods
 USE GlobalData, ONLY: stdout
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
-USE DomainConnectivity_Class
 USE Kdtree2_Module, ONLY: Kdtree2_create
 USE CPUTime_Class, ONLY: CPUTime_
 USE ElemData_Class, ONLY: BOUNDARY_ELEMENT
@@ -44,9 +43,14 @@ LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: nsd
-TYPE(CPUTime_) :: TypeCPUTime
 
+#ifdef DEBUG_VER
+TYPE(CPUTime_) :: TypeCPUTime
+#endif
+
+#ifdef DEBUG_VER
 IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -73,13 +77,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
+#ifdef DEBUG_VER
 IF (obj%showTime) THEN
   CALL TypeCPUTime%SetEndTime()
   CALL Display(modName//" : "//myName// &
                " : time : "// &
                ToString(TypeCPUTime%GetTime()), unitno=stdout)
 END IF
-
+#endif
 END PROCEDURE obj_InitiateKdtree
 
 !----------------------------------------------------------------------------
@@ -137,20 +142,49 @@ END PROCEDURE obj_InitiateNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateElementToElements
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(math%no, myName, &
+                  "This routine should be implemented by child classes.")
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_InitiateElementToElements
 
 !----------------------------------------------------------------------------
-!                                                  InitiateBoundaryData
+!                                                      InitiateBoundaryData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateBoundaryData
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(math%no, myName, &
+                  "This routine should be implemented by child classes.")
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_InitiateBoundaryData
 
 !----------------------------------------------------------------------------
@@ -158,10 +192,24 @@ END PROCEDURE obj_InitiateBoundaryData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetElements
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetElements()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(math%no, myName, &
+                  "This routine should be implemented by child classes.")
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_InitiateFacetElements
 
 !----------------------------------------------------------------------------
@@ -169,10 +217,24 @@ END PROCEDURE obj_InitiateFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateExtraNodeToNodes
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodeToNodes()"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[IMPLEMENTATION ERROR] :: This routine should be implemented by '//&
-  & 'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(math%no, myName, &
+                  "This routine should be implemented by child classes.")
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_InitiateExtraNodeToNodes
 
 !----------------------------------------------------------------------------
@@ -180,7 +242,9 @@ END PROCEDURE obj_InitiateExtraNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetElementType
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetFacetElementType()"
+#endif
 CLASS(AbstractMesh_), POINTER :: masterMesh
 INTEGER(I4B) :: kk, iel, iface, telements
 INTEGER(I4B), ALLOCATABLE :: faceID(:)
@@ -188,8 +252,8 @@ LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+                        '[START] ')
+#endif
 
 masterMesh => obj%GetMeshPointer(dim=obj%nsd)
 
@@ -200,18 +264,19 @@ telements = masterMesh%GetTotalElements()
 
 DO iel = 1, telements
   isok = masterMesh%isBoundaryElement(globalElement=iel, &
-                                      islocal=.TRUE.)
+                                      islocal=math%yes)
   IF (.NOT. isok) CYCLE
 
   faceID = masterMesh%GetBoundaryElementData(globalElement=iel, &
-                                             islocal=.TRUE.)
+                                             islocal=math%yes)
 
   DO iface = 1, SIZE(faceID)
 
     kk = faceID(iface)
 
-    CALL masterMesh%SetFacetElementType(globalElement=iel, &
-      & iface=kk, facetElementType=BOUNDARY_ELEMENT, islocal=.TRUE.)
+    CALL masterMesh%SetFacetElementType( &
+      globalElement=iel, iface=kk, facetElementType=BOUNDARY_ELEMENT, &
+      islocal=math%yes)
 
   END DO
 
@@ -223,9 +288,8 @@ IF (ALLOCATED(faceID)) DEALLOCATE (faceID)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-
+                        '[END] ')
+#endif
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------
@@ -257,5 +321,7 @@ END PROCEDURE obj_SetMeshFacetElement
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE MeshDataMethods
