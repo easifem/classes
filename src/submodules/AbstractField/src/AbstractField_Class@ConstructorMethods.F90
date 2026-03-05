@@ -15,14 +15,21 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) ConstructorMethods
-USE GlobalData, ONLY: TypeIntI4B
+USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
-USE InputUtility, ONLY: Input
-USE FPL_Method, ONLY: CheckEssentialParam
-USE FPL_Method, ONLY: FPL_Set => Set
-USE FPL_Method, ONLY: FPL_GetValue => GetValue
 USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
+USE FPL_Method, ONLY: CheckEssentialParam
+USE FPL_Method, ONLY: FPL_GetValue => GetValue
+USE FPL_Method, ONLY: FPL_Set => Set
+USE GlobalData, ONLY: TypeIntI4B
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractField_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,7 +37,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
 INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: isok
 
@@ -63,7 +72,6 @@ obj%local_n = obj2%local_n
 obj%is = obj2%is
 obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
-
 obj%fedof => obj2%fedof
 obj%geofedof => obj2%geofedof
 
@@ -125,7 +133,6 @@ obj%dof = obj2%dof
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
@@ -151,13 +158,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! here.
 ! CALL obj%DEALLOCATE()
 
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 obj%name = name
 obj%engine = engine
 obj%fieldType = Input(option=fieldType, default=TypeField%normal)
-obj%comm = Input(option=comm, default=0_I4B)
-obj%local_n = Input(option=local_n, default=0_I4B)
-obj%global_n = Input(option=global_n, default=0_I4B)
+obj%comm = Input(option=comm, default=math%zero_i)
+obj%local_n = Input(option=local_n, default=math%zero_i)
+obj%global_n = Input(option=global_n, default=math%zero_i)
 
 obj%fedof => fedof
 obj%geofedof => geofedof
@@ -167,7 +174,6 @@ IF (PRESENT(timefedof)) obj%timefedof => timefedof
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
-
 END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
@@ -187,8 +193,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-! main
-
 ! note: We should not call deallocate in abstract classes.
 ! This is because, in concrete classes we may set some
 ! parameters before calling this method.
@@ -196,13 +200,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! here.
 ! CALL obj%DEALLOCATE()
 
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 obj%name = name
 obj%engine = engine
 obj%fieldType = Input(option=fieldType, default=TypeField%normal)
-obj%comm = Input(option=comm, default=0_I4B)
-obj%local_n = Input(option=local_n, default=0_I4B)
-obj%global_n = Input(option=global_n, default=0_I4B)
+obj%comm = Input(option=comm, default=math%zero_i)
+obj%local_n = Input(option=local_n, default=math%zero_i)
+obj%global_n = Input(option=global_n, default=math%zero_i)
 
 tsize = SIZE(fedof)
 ALLOCATE (obj%fedofs(tsize))
@@ -271,20 +275,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInit = .FALSE.
-obj%isMaxTotalNodeNumForBCSet = .FALSE.
+obj%isInit = math%no
+obj%isMaxTotalNodeNumForBCSet = math%no
 obj%fieldType = TypeField%normal
 obj%name = ""
 obj%engine = ""
-obj%maxTotalNodeNumForBC = 0
-obj%comm = 0
-obj%myRank = 0
-obj%numProcs = 1
-obj%global_n = 0
-obj%local_n = 0
-obj%is = 0
-obj%ie = 0
-obj%lis_ptr = 0
+obj%maxTotalNodeNumForBC = math%zero_i
+obj%comm = math%zero_i
+obj%myRank = math%zero_i
+obj%numProcs = math%one_i
+obj%global_n = math%zero_i
+obj%local_n = math%zero_i
+obj%is = math%zero_i
+obj%ie = math%zero_i
+obj%lis_ptr = math%zero_i
 obj%fedof => NULL()
 obj%geofedof => NULL()
 
@@ -318,10 +322,10 @@ IF (isok) THEN
 END IF
 
 obj%exact => NULL()
-obj%saveErrorNorm = .FALSE.
+obj%saveErrorNorm = math%no
 obj%errorType = "NONE"
-obj%plotWithResult = .FALSE.
-obj%plotErrorNorm = .FALSE.
+obj%plotWithResult = math%no
+obj%plotErrorNorm = math%no
 
 isok = ALLOCATED(obj%dbc)
 IF (isok) THEN

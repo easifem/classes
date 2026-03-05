@@ -15,18 +15,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) TomlMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
+USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
 USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize, toml_array, &
-                 toml_len => len
-USE StringUtility, ONLY: UpperCase
-USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
+USE GlobalData, ONLY: stdout, CHAR_LF
 USE NeumannBC_Class, ONLY: NeumannBCImportFromToml
-
+USE StringUtility, ONLY: UpperCase
+USE tomlf, ONLY: toml_array
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_len => len
+USE tomlf, ONLY: toml_serialize
+USE TomlUtility, ONLY: GetValue
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractField_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -125,7 +131,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 #endif
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
@@ -150,7 +156,6 @@ node => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
@@ -163,7 +168,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml3()"
 #endif
 
 LOGICAL(LGT) :: isok
-! INTEGER(I4B) :: comm, local_n, global_n
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -175,17 +179,12 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-! CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
-
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 CALL AbstractFieldReadGeoFEDOFFromToml(table=table, fedof=geofedof, dom=dom)
 
 isok = PRESENT(timefedof)
 IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml( &
   table=table, timefedof=timefedof, timeOpt=timeOpt)
-
-! CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
-!                   timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 
@@ -222,7 +221,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 #endif
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
@@ -271,7 +270,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
 
-! CALL SetAbstractFieldParamFromToml(param=param, table=table, prefix=prefix)
 CALL AbstractFieldReadFEDOFFromToml(table=table, fedof=fedof, dom=dom)
 CALL AbstractFieldReadGeoFEDOFFromToml(table=table, fedof=geofedof, dom=dom)
 
@@ -279,9 +277,6 @@ isok = PRESENT(timefedof)
 IF (isok) &
   CALL AbstractFieldReadTimeFEDOFFromToml(table=table, timefedof=timefedof, &
                                           timeOpt=timeOpt)
-
-! CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof, &
-!                   timefedof=timefedof)
 
 CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 
@@ -317,7 +312,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 #endif
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
@@ -343,7 +338,6 @@ node => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml6
 
 !----------------------------------------------------------------------------
@@ -688,7 +682,7 @@ CALL GetValue(table=table, key=key, VALUE=fedofName, &
 
 ! Get the node from toml table [subtable]
 CALL toml_get(table, fedofName%chars(), node, &
-              origin=origin, requested=.FALSE., stat=stat)
+              origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
@@ -699,13 +693,14 @@ CALL AssertError1(isok, myName, &
 ! Now we can init fedof from toml
 CALL fedof%ImportFromToml(table=node, dom=dom)
 
-node => NULL(); key = ""; fedofName = ""
+node => NULL()
+key = ""
+fedofName = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE AbstractFieldReadFEDOFFromToml1
 
 !----------------------------------------------------------------------------
@@ -727,7 +722,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 key = "physicalVarNames"
-!========================
+
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Reading '//key//' ...')
@@ -769,7 +764,7 @@ DO ii = 1, tPhysicalVarNames
 
   ! Get the node (subtable) from toml table for each physical variable
   CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                origin=origin, requested=.FALSE., stat=stat)
+                origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -794,7 +789,6 @@ node => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE AbstractFieldReadFEDOFFromToml2
 
 !----------------------------------------------------------------------------
@@ -819,7 +813,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 key = "physicalVarNames"
-!========================
+
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Reading '//key//' ...')
@@ -875,7 +869,7 @@ DO ii = 1, tPhysicalVarNames
 
   ! Get the node (subtable) from toml table for each physical variable
   CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                origin=origin, requested=.FALSE., stat=stat)
+                origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -885,7 +879,8 @@ DO ii = 1, tPhysicalVarNames
 
   ! Now we can init fedof from toml
   CALL AbstractFieldReadFEDOFFromToml(table=node, &
-                                      fedof=fedof(ii)%ptr, dom=dom(ii)%ptr)
+                                      fedof=fedof(ii)%ptr, &
+                                      dom=dom(ii)%ptr)
 
 END DO
 
@@ -932,6 +927,7 @@ IF (isfedof) THEN
 #ifdef DEBUG_VER
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                     'fedof is already initiated, nothing to do')
+
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
@@ -958,7 +954,7 @@ CALL GetValue(table=table, key=key, VALUE=fedofName, &
 
 ! Get the node from toml table [subtable]
 CALL toml_get(table, fedofName%chars(), node, &
-              origin=origin, requested=.FALSE., stat=stat)
+              origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
@@ -969,7 +965,9 @@ CALL AssertError1(isok, myName, &
 ! Now we can init fedof from toml
 CALL fedof%ImportFromToml(table=node, dom=dom)
 
-node => NULL(); key = ""; fedofName = ""
+node => NULL()
+key = ""
+fedofName = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -996,11 +994,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 key = "physicalVarNames"
-!========================
+
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Reading '//key//' ...')
 #endif
+
 CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
               origin=origin, stat=stat, &
               isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
@@ -1038,7 +1037,7 @@ DO ii = 1, tPhysicalVarNames
 
   ! Get the node (subtable) from toml table for each physical variable
   CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                origin=origin, requested=.FALSE., stat=stat)
+                origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -1088,7 +1087,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 key = "physicalVarNames"
-!========================
+
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Reading '//key//' ...')
@@ -1144,7 +1143,7 @@ DO ii = 1, tPhysicalVarNames
 
   ! Get the node (subtable) from toml table for each physical variable
   CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                origin=origin, requested=.FALSE., stat=stat)
+                origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -1154,7 +1153,8 @@ DO ii = 1, tPhysicalVarNames
 
   ! Now we can init fedof from toml
   CALL AbstractFieldReadGeoFEDOFFromToml(table=node, &
-                                         fedof=fedof(ii)%ptr, dom=dom(ii)%ptr)
+                                         fedof=fedof(ii)%ptr, &
+                                         dom=dom(ii)%ptr)
 
 END DO
 
@@ -1178,7 +1178,9 @@ END PROCEDURE AbstractFieldReadGeoFEDOFFromToml3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadTimeFEDOFFromToml1()"
+#endif
 CHARACTER(*), PARAMETER :: DEFAULT_FEDOFNAME = "timefedof"
 CHARACTER(*), PARAMETER :: DEFAULT_FEDOFNAME_KEY = "timefedofName"
 CHARACTER(:), ALLOCATABLE :: key
@@ -1214,6 +1216,7 @@ IF (isfedof) THEN
 #ifdef DEBUG_VER
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                     'fedof is already initiated, nothing to do')
+
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
@@ -1240,7 +1243,7 @@ CALL GetValue(table=table, key=key, VALUE=fedofName, &
 
 ! Get the node from toml table [subtable]
 CALL toml_get(table, fedofName%chars(), node, &
-              origin=origin, requested=.FALSE., stat=stat)
+              origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
@@ -1251,13 +1254,14 @@ CALL AssertError1(isok, myName, &
 ! Now we can init fedof from toml
 CALL timefedof%ImportFromToml(table=node, timeOpt=timeOpt)
 
-node => NULL(); key = ""; fedofName = ""
+node => NULL()
+key = ""
+fedofName = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE AbstractFieldReadTimeFEDOFFromToml1
 
 !----------------------------------------------------------------------------
@@ -1265,9 +1269,24 @@ END PROCEDURE AbstractFieldReadTimeFEDOFFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadTimeFEDOFFromToml2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE AbstractFieldReadTimeFEDOFFromToml2
 
 !----------------------------------------------------------------------------
@@ -1298,7 +1317,7 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
 
 astr = "exact"
 CALL toml_get(table, astr%chars(), node, origin=origin, &
-              requested=.FALSE., stat=stat)
+              requested=math%no, stat=stat)
 isok = ASSOCIATED(node)
 IF (.NOT. isok) RETURN
 
@@ -1307,7 +1326,7 @@ CALL obj%exact%ImportFromToml(table=node)
 
 ! errorNorm
 CALL GetValue(table=node, key="errorNorm", VALUE=obj%saveErrorNorm, &
-              default_value=.FALSE., stat=stat, origin=origin, isfound=isok)
+              default_value=math%no, stat=stat, origin=origin, isfound=isok)
 
 ! normType
 CALL GetValue(table=node, key="normType", VALUE=astr, &
@@ -1317,11 +1336,11 @@ obj%errorType = UpperCase(astr%slice(1, 4))
 
 ! plotWithResult
 CALL GetValue(table=node, key="plotWithResult", VALUE=obj%plotWithResult, &
-              default_value=.FALSE., stat=stat, origin=origin, isfound=isok)
+              default_value=math%no, stat=stat, origin=origin, isfound=isok)
 
 ! plotErrorNorm
 CALL GetValue(table=node, key="plotErrorNorm", VALUE=obj%plotErrorNorm, &
-              default_value=.FALSE., stat=stat, origin=origin, isfound=isok)
+              default_value=math%no, stat=stat, origin=origin, isfound=isok)
 
 node => NULL()
 
@@ -1357,8 +1376,9 @@ END IF
 #ifdef DEBUG_VER
 isok = ALLOCATED(obj%fedofs)
 IF (isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
+  CALL AssertError1(math%no, myName, &
+                    'Currently, this routine cannot be used '// &
+                    "with multiple domains")
 END IF
 #endif
 
@@ -1398,8 +1418,9 @@ END IF
 #ifdef DEBUG_VER
 isok = ALLOCATED(obj%fedofs)
 IF (isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
+  CALL AssertError1(math%no, myName, &
+                    'Currently, this routine cannot be used '// &
+                    "with multiple domains")
 END IF
 #endif
 
@@ -1414,7 +1435,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE AbstractFieldReadNBCFromToml
 
 !----------------------------------------------------------------------------
-!                                           AbstractFieldReadPointNBCFromToml
+!                                          AbstractFieldReadPointNBCFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFieldReadPointNBCFromToml
@@ -1439,8 +1460,9 @@ END IF
 #ifdef DEBUG_VER
 isok = ALLOCATED(obj%fedofs)
 IF (isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[WIP ERROR] :: Currently this routine cannot be used with multiple domains')
+  CALL AssertError1(math%no, myName, &
+                    "Currently, this routine cannot be "// &
+                    "used with multiple domains")
 END IF
 #endif
 
@@ -1453,132 +1475,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE AbstractFieldReadPointNBCFromToml
-
-!----------------------------------------------------------------------------
-!                                               SetAbstractFieldParamFromToml
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE SetAbstractFieldParamFromToml
-! CHARACTER(*), PARAMETER :: myName = "SetAbstractFieldParamFromToml()"
-! CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
-! CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
-!
-! CHARACTER(:), ALLOCATABLE :: key
-! CHARACTER(1), ALLOCATABLE :: physicalVarNamesChar(:)
-! TYPE(String) :: name, engine, fieldTypeChar
-! TYPE(String), ALLOCATABLE :: physicalVarNames(:)
-! INTEGER(I4B) :: fieldType, origin, stat, tPhysicalVarNames, ii
-! INTEGER(I4B), ALLOCATABLE :: spaceCompo(:), timeCompo(:)
-! LOGICAL(LGT) :: isfound, isSpaceCompo, isTimeCompo, isSpaceCompoScalar, &
-!                isTimeCompoScalar, isPhysicalVarNames, isPhysicalVarNamesScalar
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! key = "name"
-! !============
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading '//key//" ...")
-! #endif
-! CALL GetValue(table=table, key=key, VALUE=name, &
-!               default_value=prefix, origin=origin, &
-!               stat=stat, isFound=isfound)
-!
-! #ifdef DEBUG_VER
-! CALL AssertError1(isfound, myName, &
-!                   key//" not found in the toml file")
-! #endif
-!
-! key = "engine"
-! !=============
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading '//key//" ...")
-! #endif
-! CALL GetValue(table=table, key=key, VALUE=engine, &
-!               default_value=default_engine, origin=origin, &
-!               stat=stat, isFound=isfound)
-! #ifdef DEBUG_VER
-! CALL AssertError1(isfound, myName, &
-!                   key//" not found in the toml file")
-! #endif
-!
-! key = "fieldType"
-! !================
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading '//key//" ...")
-! #endif
-! CALL GetValue(table=table, key=key, VALUE=fieldTypeChar, &
-!               default_value=default_fieldTypeChar, origin=origin, &
-!               stat=stat, isFound=isfound)
-! #ifdef DEBUG_VER
-! CALL AssertError1(isfound, myName, &
-!                   key//" not found in the toml file")
-! #endif
-!
-! fieldType = TypeField%ToNumber(fieldTypeChar%chars())
-!
-! key = "spaceCompo"
-! !================
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading '//key//" ...")
-! #endif
-! CALL GetValue(table=table, key=key, VALUE=spaceCompo, &
-!               origin=origin, stat=stat, isFound=isSpaceCompo, &
-!               isScalar=isSpaceCompoScalar)
-!
-! key = "timeCompo"
-! !================
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading '//key//" ...")
-! #endif
-! CALL GetValue(table=table, key=key, VALUE=timeCompo, &
-!               origin=origin, stat=stat, isFound=isTimeCompo, &
-!               isScalar=isTimeCompoScalar)
-!
-! key = "physicalVarNames"
-! !========================
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading '//key//' ...')
-! #endif
-! CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
-!               origin=origin, stat=stat, isFound=isPhysicalVarNames, &
-!               isScalar=isPhysicalVarNamesScalar)
-! tPhysicalVarNames = 0
-! IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
-! ALLOCATE (physicalVarNamesChar(tPhysicalVarNames))
-! DO ii = 1, tPhysicalVarNames
-!   physicalVarNamesChar(ii) = physicalVarNames(ii)%slice(1, 1)
-! END DO
-!
-! CALL SetAbstractFieldParam(param=param, name=name%chars(), &
-!                            engine=engine%chars(), fieldType=fieldType, &
-!                            prefix=prefix, comm=comm, local_n=local_n, &
-!                            global_n=global_n, spaceCompo=spaceCompo, &
-!                            isSpaceCompo=isSpaceCompo, &
-!                            isSpaceCompoScalar=isSpaceCompoScalar, &
-!                            timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
-!                            isTimeCompoScalar=isTimeCompoScalar, &
-!                            physicalVarNames=physicalVarNamesChar, &
-!                            tPhysicalVarNames=tPhysicalVarNames, &
-!                            isPhysicalVarNames=isPhysicalVarNames)
-!
-! name = ""; engine = ""; fieldTypeChar = ""; key = ""
-! DEALLOCATE (physicalVarNamesChar)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END] ')
-! #endif
-!
-! END PROCEDURE SetAbstractFieldParamFromToml
 
 !----------------------------------------------------------------------------
 !                                                                    Errors

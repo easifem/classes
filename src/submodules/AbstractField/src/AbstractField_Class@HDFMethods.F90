@@ -17,8 +17,12 @@
 SUBMODULE(AbstractField_Class) HDFMethods
 USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractField_Class@HDFMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

@@ -57,14 +57,9 @@ USE TxtFile_Class, ONLY: TxtFile_
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
 USE tomlf, ONLY: toml_table
-
 IMPLICIT NONE
+
 PRIVATE
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "AbstractField_Class"
-#endif
-
 PUBLIC :: AbstractFieldInitiate
 PUBLIC :: AbstractFieldDisplay
 PUBLIC :: AbstractFieldImport

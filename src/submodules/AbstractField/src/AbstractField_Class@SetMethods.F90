@@ -18,6 +18,11 @@ SUBMODULE(AbstractField_Class) SetMethods
 USE Display_Method, ONLY: ToString
 USE GlobalData, ONLY: CHAR_LF
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractField_Class@SetMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

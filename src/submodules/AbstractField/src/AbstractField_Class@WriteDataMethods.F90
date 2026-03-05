@@ -16,8 +16,12 @@
 
 SUBMODULE(AbstractField_Class) WriteDataMethods
 USE Display_Method, ONLY: Display, ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName="AbstractField_Class@WriteDataMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -25,10 +29,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteData_hdf5
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData_hdf5()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-            '[IMPLEMENTATION ERROR] :: This method should be implemented '// &
-                  'by children of AbstractField_')
+                  'This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_WriteData_hdf5
 
 !----------------------------------------------------------------------------
@@ -36,10 +55,25 @@ END PROCEDURE obj_WriteData_hdf5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteData_vtk
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[IMPLEMENTATION ERROR] :: This method should be implemented by'// &
-                  ' children of AbstractField_')
+                  'This routine should be implemented by '// &
+                  'child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_WriteData_vtk
 
 !----------------------------------------------------------------------------

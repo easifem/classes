@@ -21,8 +21,12 @@ USE DOF_Method, ONLY: GetNodeLoc_
 USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractField_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -30,7 +34,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
@@ -38,9 +56,17 @@ END PROCEDURE obj_IsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
-INTEGER(I4B) :: ii
+INTEGER(I4B) :: i1, i2
+#endif
+INTEGER(I4B) :: ii, tfedof
 LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 IF (PRESENT(isInitiated)) isInitiated = obj%isInit
 IF (PRESENT(fieldType)) fieldType = obj%fieldType
@@ -54,40 +80,35 @@ IF (PRESENT(local_n)) local_n = obj%local_n
 IF (PRESENT(is)) is = obj%is
 IF (PRESENT(ie)) ie = obj%ie
 IF (PRESENT(lis_ptr)) lis_ptr = obj%lis_ptr
-
 IF (PRESENT(fedof)) fedof => obj%fedof
 
-IF (PRESENT(fedofs)) THEN
+isok = PRESENT(fedofs)
+IF (isok) THEN
 
+#ifdef DEBUG_VER
   isok = ALLOCATED(obj%fedofs)
-  IF (.NOT. isok) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: AbstractField_::obj%fedofs is not allocated ')
-    RETURN
-  END IF
+  CALL AssertError1(isok, myName, &
+                    "obj%fedofs is not allocated.")
+#endif
 
-  isok = SIZE(obj%fedofs) .EQ. SIZE(fedofs)
+#ifdef DEBUG_VER
+  i1 = SIZE(obj%fedofs)
+  i2 = SIZE(fedofs)
+  CALL AssertError2(i1, i2, myName, &
+                    "a=size(obj%fedofs), b=size(fedofs), ")
+#endif
 
-  IF (.NOT. isok) THEN
-    CALL e%raiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: AbstractField_::obj%fedofs size mismatch')
-    RETURN
-  END IF
-
-  DO ii = 1, SIZE(fedofs)
+  tfedof = SIZE(fedofs)
+  DO ii = 1, tfedof
     fedofs(ii)%ptr => obj%fedofs(ii)%ptr
   END DO
 
 END IF
 
-!SELECT TYPE (obj)
-!CLASS IS (AbstractNodeField_)
-!  IF (PRESENT(tSize)) tSize = obj%tSize
-!  IF (PRESENT(realVec)) realVec = obj%realVec
-!  IF (PRESENT(dof)) dof = obj%dof
-!CLASS IS (AbstractMatrixField_)
-!  IF (PRESENT(isPMatInitiated)) isPMatInitiated = obj%isPMatInitiated
-!END SELECT
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
@@ -256,12 +277,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalCellDOF
 
 !----------------------------------------------------------------------------
-!                                                                 isConstant
+!                                                                 IsConstant
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isConstant
+MODULE PROCEDURE obj_IsConstant
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsConstant()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%fieldType .EQ. TypeField%constant
-END PROCEDURE obj_isConstant
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_IsConstant
 
 !----------------------------------------------------------------------------
 !                                                           GetFEDOFPointer
@@ -271,9 +306,7 @@ MODULE PROCEDURE obj_GetFEDOFPointer1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetFEDOFPointer1()"
 INTEGER(I4B) :: tsize
-LOGICAL(LGT) :: isok
 #endif
-
 LOGICAL(LGT) :: abool
 
 #ifdef DEBUG_VER
@@ -287,10 +320,8 @@ IF (abool) THEN
 
 #ifdef DEBUG_VER
   tsize = SIZE(obj%fedofs)
-  isok = indx .LE. tsize
-  CALL AssertError1(isok, myName, &
-                  "indx="//ToString(indx)//" should be <= size of fedofs="// &
-                    ToString(tsize))
+  CALL AssertError3(indx, tsize, myName, &
+                    "a=indx, b=size(obj%fedofs),")
 #endif
 
   ans => obj%fedofs(indx)%ptr
@@ -328,7 +359,6 @@ isok = ALLOCATED(obj%fedofs)
 tsize = 0
 
 IF (isok) tsize = SIZE(obj%fedofs)
-
 ALLOCATE (ans(tsize))
 
 DO ii = 1, tsize
@@ -339,7 +369,6 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetFEDOFPointer2
 
 !----------------------------------------------------------------------------
@@ -370,9 +399,8 @@ IF (abool) THEN
 #ifdef DEBUG_VER
   tsize = SIZE(obj%timefedofs)
   isok = indx .LE. tsize
-
-  CALL AssertError1(isok, myName, &
-                    "indx should be less than or equal to size of timefedofs")
+  CALL AssertError3(indx, tsize, myName, &
+                    "a=indx, b=size(obj%timefedofs)")
 #endif
 
   ans => obj%timefedofs(indx)%ptr
@@ -407,7 +435,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 isok = ALLOCATED(obj%timefedofs)
-tsize = 0; IF (isok) tsize = SIZE(obj%timefedofs)
+tsize = 0
+IF (isok) tsize = SIZE(obj%timefedofs)
 
 ALLOCATE (ans(tsize))
 
@@ -517,6 +546,7 @@ isok = ALLOCATED(obj%nbc)
 
 IF (.NOT. isok) THEN
   ans => NULL()
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -526,9 +556,8 @@ END IF
 
 #ifdef DEBUG_VER
 tsize = SIZE(obj%nbc)
-isok = indx .LE. tsize
-CALL AssertError1(isok, myName, &
-                  "indx should be less than or equal to size of nbc")
+CALL AssertError3(indx, tsize, myName, &
+                  "a=indx, b=size(obj%nbc)")
 
 #endif
 
@@ -570,9 +599,8 @@ END IF
 
 #ifdef DEBUG_VER
 tsize = SIZE(obj%nbc_point)
-isok = indx .LE. tsize
-CALL AssertError1(isok, myName, &
-                  "indx should be less than or equal to size of nbc_point")
+CALL AssertError3(indx, tsize, myName, &
+                  "a=indx, b=size(obj%nbc_point)")
 
 #endif
 
@@ -599,9 +627,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+CALL AssertError1(math%no, myName, &
+                  "this routine should be implemented by child class")
 #endif
 
 #ifdef DEBUG_VER
@@ -758,12 +785,14 @@ IF (isfedofs) THEN
   tsize = SIZE(obj%fedofs)
   isok = ivar0 .LE. tsize
   CALL AssertError1(isok, myName, &
-                    'ivar='//ToString(ivar0)//' is greater than size of &
-                    &obj%fedofs='//ToString(tsize))
+                    'ivar='//ToString(ivar0)// &
+                    ' is greater than size of obj%fedofs='// &
+                    ToString(tsize))
 
   isok = ASSOCIATED(obj%fedofs(ivar0)%ptr)
   CALL AssertError1(isok, myName, &
-                   'obj%fedofs('//ToString(ivar0)//')%ptr is not associated.')
+                    'obj%fedofs('//ToString(ivar0)// &
+                    ')%ptr is not associated.')
 END IF
 #endif
 
@@ -989,7 +1018,8 @@ INTEGER(I4B) :: tfedofs
 
 INTEGER(I4B), ALLOCATABLE :: globalNode(:)
 INTEGER(I4B) :: tPhysicalVars, spaceCompo(1), ivar0, tnode, &
-            timeCompo(TypeDOFOpt%maxPhysicalVars), iNodeOnNode, iNodeOnEdge, &
+                timeCompo(TypeDOFOpt%maxPhysicalVars), &
+                iNodeOnNode, iNodeOnEdge, &
                 iNodeOnFace, timeCompo2(TypeDOFOpt%maxTimeCompo)
 LOGICAL(LGT) :: isok, isfedof, isfedofs
 CLASS(FEDOF_), POINTER :: fedof
@@ -1036,7 +1066,8 @@ IF (isfedofs) THEN
 
   isok = ASSOCIATED(obj%fedofs(ivar0)%ptr)
   CALL AssertError1(isok, myName, &
-                   'obj%fedofs('//ToString(ivar0)//')%ptr is not associated.')
+                    'obj%fedofs('//ToString(ivar0)// &
+                    ')%ptr is not associated.')
 
 END IF
 #endif
@@ -1113,7 +1144,6 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetNodeLoc_3
 
 !----------------------------------------------------------------------------

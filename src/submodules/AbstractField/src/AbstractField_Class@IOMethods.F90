@@ -18,8 +18,12 @@ SUBMODULE(AbstractField_Class) IOMethods
 USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE DOF_Method, ONLY: DOF_Display => Display
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractField_Class@IOMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
