@@ -37,13 +37,9 @@ USE TimeOpt_Class, ONLY: TimeOpt_
 USE UserFunction_Class, ONLY: UserFunction_
 USE tomlf, ONLY: toml_table
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-
 IMPLICIT NONE
-PRIVATE
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "STScalarField_Class"
-#endif
+PRIVATE
 
 INTEGER(I4B), PARAMETER :: MYCONVERSION = TypeFieldOpt%conversionNodesToDOF
 

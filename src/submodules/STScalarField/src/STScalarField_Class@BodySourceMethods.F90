@@ -16,31 +16,38 @@
 !
 
 SUBMODULE(STScalarField_Class) BodySourceMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE FEVariable_Method, ONLY: NodalVariable
-USE FEVariable_Method, ONLY: QuadratureVariable
-USE FEVariable_Method, ONLY: FEVariable_Set => Set
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
 USE AbstractFE_Class, ONLY: AbstractFE_
-USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE ForceVector_Method, ONLY: ForceVector_
-USE STForceVector_Method, ONLY: STForceVector_
-USE BaseType, ONLY: QuadraturePoint_
+USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: ElemshapeData_
 USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: TypeFEVariableSpaceTime
-USE BaseType, ONLY: math => TypeMathOpt
-USE FieldOpt_Class, ONLY: TypeFieldOpt
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemshapeData_Method, ONLY: ElemshapeData_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE ForceVector_Method, ONLY: ForceVector_
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE ReallocateUtility, ONLY: Reallocate
+USE STForceVector_Method, ONLY: STForceVector_
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
 USE ElemshapeData_Method, ONLY: ElemshapeData_Display => Display
+#endif
+
+IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STScalarField_Class@BodySourceMethods.F90"
 #endif
 
 CONTAINS
@@ -167,8 +174,20 @@ MODULE PROCEDURE obj_ApplyBodySource2
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource2()"
 #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 ! LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 ! TYPE(QuadraturePoint_) :: quad
@@ -250,11 +269,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! IF (ALLOCATED(forceVec)) DEALLOCATE (forceVec)
 ! IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
 ! NULLIFY (feptr, geofeptr, mesh)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
 END PROCEDURE obj_ApplyBodySource2
 
 !----------------------------------------------------------------------------

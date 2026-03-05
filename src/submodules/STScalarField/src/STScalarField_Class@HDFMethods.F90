@@ -17,9 +17,15 @@
 
 SUBMODULE(STScalarField_Class) HDFMethods
 USE String_Class, ONLY: String
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport, &
-                                   AbstractNodeFieldExport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STScalarField_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

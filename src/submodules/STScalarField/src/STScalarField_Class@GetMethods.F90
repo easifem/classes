@@ -16,24 +16,23 @@
 !
 
 SUBMODULE(STScalarField_Class) GetMethods
-USE Display_Method, ONLY: ToString
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE RealVector_Method, ONLY: GetValue_
 USE ArangeUtility, ONLY: Arange
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpaceTime
+USE Display_Method, ONLY: ToString
+USE DOF_Method, ONLY: GetIDOF
+USE DOF_Method, ONLY: GetNodeLoc
+USE DOF_Method, ONLY: GetNodeLoc_
+USE DOF_Method, ONLY: OPERATOR(.tnodes.)
+USE FEVariable_Method, ONLY: NodalVariable
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE RealVector_Method, ONLY: GetValue_
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 USE STScalarField_Class, ONLY: STScalarField_
 USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
 USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-USE FEVariable_Method, ONLY: NodalVariable
-USE DOF_Method, ONLY: GetIDOF
-USE DOF_Method, ONLY: OPERATOR(.tnodes.)
-USE DOF_Method, ONLY: GetNodeLoc
-USE DOF_Method, ONLY: GetNodeLoc_
-
 IMPLICIT NONE
 
 INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
@@ -43,6 +42,11 @@ INTEGER(I4B) :: TEMP_INTVEC(TEMP_INTVEC_LEN)
 
 INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
 !$OMP THREADPRIVATE(TEMP_DYNA_INTVEC)
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STScalarField_Class@GetMethods.F90"
+#endif
 
 CONTAINS
 

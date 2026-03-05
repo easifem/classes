@@ -16,19 +16,20 @@
 !
 
 SUBMODULE(STScalarField_Class) ConstructorMethods
-USE String_Class, ONLY: String
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
-USE ReallocateUtility, ONLY: Reallocate
-USE SafeSizeUtility, ONLY: SafeSize
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldSetParam
 USE ArangeUtility, ONLY: Arange
 USE Display_Method, ONLY: ToString
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
-
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
+USE String_Class, ONLY: String
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STScalarField_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
