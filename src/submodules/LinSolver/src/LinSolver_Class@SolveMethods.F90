@@ -15,14 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(LinSolver_Class) SolveMethods
-USE Display_Method, ONLY: Display, EqualLine, Blanklines, ToString
-USE MatrixField_Class, ONLY: MatrixField_
 USE BaseType, ONLY: TypeSolverNameOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE CSRMatrix_Method, ONLY: LinSolve
-USE SuperLU_Types, ONLY: yes_no_t
+USE Display_Method, ONLY: Blanklines
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: ToString
 USE GlobalData, ONLY: stdout
-
+USE MatrixField_Class, ONLY: MatrixField_
+USE SuperLU_Types, ONLY: yes_no_t
 IMPLICIT NONE
+
+CHARACTER(*), PARAMETER :: modName = "LinSolver_Class@SolveMethods.F90"
 
 CONTAINS
 
@@ -49,24 +54,27 @@ SUBROUTINE PERFORM_TASK(amat, y, x, ierr)
   SELECT CASE (ierr)
 
   CASE (1)
-
-    CALL amat%Matvec(y=y, x=x, isTranspose=.FALSE.)
+    CALL amat%Matvec(y=y, x=x, isTranspose=math%no)
 
   CASE (2)
-
-    CALL amat%Matvec(y=y, x=x, isTranspose=.TRUE.)
+    CALL amat%Matvec(y=y, x=x, isTranspose=math%yes)
 
   CASE (3, 5)
-
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
-    CALL amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.FALSE.)
+    CALL amat%ILUSOLVE(sol=y, rhs=x, isTranspose=math%no)
 
   CASE (4, 6)
-
     ! LEFT/RIGHT PRECONDITIONER SOLVER
     ! The preconditioners are inside the Amat
-    CALL amat%ILUSOLVE(sol=y, rhs=x, isTranspose=.TRUE.)
+    CALL amat%ILUSOLVE(sol=y, rhs=x, isTranspose=math%yes)
+
+  CASE DEFAULT
+
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "no case found for ierr")
+#endif
 
   END SELECT
 
@@ -74,7 +82,6 @@ SUBROUTINE PERFORM_TASK(amat, y, x, ierr)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE PERFORM_TASK
 
 !----------------------------------------------------------------------------
@@ -85,6 +92,7 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
   INTEGER(I4B), INTENT(IN) :: IPAR(:)
   REAL(DFP), INTENT(IN) :: FPAR(:)
   CHARACTER(*), INTENT(IN) :: myName
+
   ! internal variable
   INTEGER(I4B) :: ierr, unitNo
 
@@ -123,46 +131,46 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
     CALL EqualLine(unitNo=unitNo)
 
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      "[INTERNAL ERROR] :: Termination because iteration "// &
+                      "Termination because iteration "// &
                       "number exceeds the limit")
-    RETURN
 
   CASE (-2)
     CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  "[INTERNAL ERROR] :: Return due to insufficient work space")
-    RETURN
+                      "Return due to insufficient work space")
 
   CASE (-3)
     CALL e%RaiseError(modName//'::'//myName//" - "// &
                       "[INTERNAL ERROR] :: Return due to anticipated &
                       & break-down / divide by zero")
-    RETURN
 
   CASE (-4)
     CALL e%RaiseError(modName//'::'//myName//" - "// &
        "[INTERNAL ERROR] :: values of `fpar(1)` and `fpar(2)` &
       & are both <= 0,valid ranges are `0<=fpar(1)<1`, `0<=fpar(2)`, &
       & and they can not be zero at the same time")
-    RETURN
 
   CASE (-9)
     CALL e%RaiseError(modName//'::'//myName//" - "// &
        "[INTERNAL ERROR] :: While trying to detect a break-down, &
       & an abnormal number is detected")
-    RETURN
 
   CASE (-10)
     CALL e%RaiseError(modName//'::'//myName//" - "// &
        "[INTERNAL ERROR] :: Return due to some non-numerical reasons, &
       & e.g. invalid floating-point numbers etc")
-    RETURN
 
   CASE DEFAULT
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-       "[INTERNAL ERROR] :: Unknown error encountered. &
-       & Cannot read the error message")
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "Unknown error encountered")
+#endif
+
   END SELECT
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE CHECKERROR
 
 !----------------------------------------------------------------------------
@@ -216,12 +224,21 @@ INTEGER(I4B) :: solverName
 LOGICAL(LGT) :: isok
 CLASS(AbstractMatrixField_), POINTER :: amat
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%GetParam(isInitiated=isok, solverName=solverName, amat=amat)
 
+#ifdef DEBUG_VER
 CALL AssertError1(isok, myname, 'Linear solver is not initiated!')
+#endif
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(amat)
 CALL AssertError1(isok, myname, 'Amat is not associated')
+#endif
 
 SELECT CASE (solverName)
 
@@ -244,56 +261,64 @@ CASE (TypeSolverNameOpt%CGNR)
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_CGNR(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%BCG)
 
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_BCG(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%DBCG)
 
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_DBCG(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%BCGSTAB)
 
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_BCGSTAB(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%TFQMR)
 
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_TFQMR(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%FOM)
 
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_FOM(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%FGMRES)
 
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_FGMRES(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%DQGMRES)
 
   rhsvar => rhs%GetPointer()
   solvar => sol%GetPointer()
   CALL LS_SOLVE_DQGMRES(obj=obj, sol=solvar, rhs=rhsvar)
-  rhsvar => NULL(); solvar => NULL()
+  rhsvar => NULL()
+  solvar => NULL()
 
 CASE (TypeSolverNameOpt%SUPERLU)
 
@@ -309,22 +334,31 @@ CASE (TypeSolverNameOpt%SUPERLU)
 
     NULLIFY (rhsvar, solvar)
 
+#ifdef DEBUG_VER
     isok = info .EQ. 0
     CALL AssertError1(isok, myName, 'Failure in LinSolve()')
+#endif
 
   CLASS DEFAULT
 
-    CALL AssertError1(.FALSE., myName, 'No case found for obj%Amat type')
-    RETURN
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, 'No case found for obj%Amat type')
+#endif
 
   END SELECT
 
 CASE DEFAULT
 
-  CALL AssertError1(.FALSE., myName, 'No case found for linear solver')
-  RETURN
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, 'No case found for linear solver')
+#endif
+
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Solve
 
 !----------------------------------------------------------------------------

@@ -36,7 +36,6 @@ PUBLIC :: LinSolverPointer_
 PUBLIC :: LinSolver_
 PUBLIC :: TypeLinSolver
 
-CHARACTER(*), PARAMETER :: modName = "LinSolver_Class"
 CHARACTER(*), PARAMETER :: myengine = "NATIVE_SERIAL"
 INTEGER(I4B), PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PARAMETER :: FPAR_LENGTH = 14

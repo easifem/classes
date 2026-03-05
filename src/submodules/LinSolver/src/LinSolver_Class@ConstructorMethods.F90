@@ -16,14 +16,19 @@
 !
 
 SUBMODULE(LinSolver_Class) ConstructorMethods
-USE BaseType, ONLY: TypePrecondOpt, TypeConvergenceOpt
+USE BaseType, ONLY: TypePrecondOpt
+USE BaseType, ONLY: TypeConvergenceOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE InputUtility, ONLY: Input
-USE AbstractLinSolver_Class, ONLY: AbstractLinSolverDeallocate, &
-                                   AbstractLinSolverInitiate
-
+USE AbstractLinSolver_Class, ONLY: AbstractLinSolverDeallocate
+USE AbstractLinSolver_Class, ONLY: AbstractLinSolverInitiate
 USE LinSolverOpt_Class, ONLY: TypeLinSolverOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "LinSolver_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -161,6 +166,12 @@ SUBROUTINE SetConvergenceType(ipar, convergenceIn, convergenceType, &
       END IF
 
     END IF
+
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "no case found for convergenceType.")
+#endif
 
   END SELECT
 

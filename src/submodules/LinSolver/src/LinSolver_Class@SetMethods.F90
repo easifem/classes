@@ -17,10 +17,14 @@
 
 SUBMODULE(LinSolver_Class) SetMethods
 USE BaseType, ONLY: TypeSolverNameOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "LinSolver_Class@SetMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,9 +33,9 @@ CONTAINS
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
-! summary: This subroutine allocates the workspace required for the linear solver
+! summary: allocates the workspace required for the linear solver
 !
-!# Introduction
+!# AllocateWorkSpace
 !
 ! This routine allocates the workspace required for the linear solver
 
@@ -41,7 +45,16 @@ SUBROUTINE AllocateWorkSpace(W, IPAR, solverName, n)
   INTEGER(I4B), INTENT(IN) :: solverName
   INTEGER(I4B), INTENT(IN) :: n
 
+  ! Internal variable
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "AllocateWorkSpace()"
+#endif
   INTEGER(I4B) :: i, m
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   SELECT CASE (solverName)
 
@@ -72,11 +85,24 @@ SUBROUTINE AllocateWorkSpace(W, IPAR, solverName, n)
     m = INPUT(default=15, option=IPAR(5)) + 1
     i = n + m * (2 * n + 4)
 
+  CASE DEFAULT
+
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "no case found for soverName.")
+#endif
+
   END SELECT
 
   IPAR(4) = i
 
   CALL Reallocate(W, i)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
 END SUBROUTINE AllocateWorkSpace
 
 !----------------------------------------------------------------------------
@@ -84,7 +110,9 @@ END SUBROUTINE AllocateWorkSpace
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+#endif
 INTEGER(I4B) :: s(2)
 INTEGER(I4B) :: solverName
 
@@ -105,11 +133,12 @@ CALL AllocateWorkSpace(w=obj%w, n=s(1), solverName=solverName, ipar=obj%ipar)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods
