@@ -16,31 +16,26 @@
 !
 
 MODULE MatrixFieldUtility
-USE GlobalData, ONLY: LGT, I4B, DFP
-USE MatrixField_Class, ONLY: MatrixField_
-USE HDF5File_Class, ONLY: HDF5File_
-USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
-USE String_Class, ONLY: String
-
-USE BaseType, ONLY: DOF_, CSRMatrix_
-
-USE DOF_Method, ONLY: OPERATOR(.tNames.), &
-                      OPERATOR(.Names.), &
-                      OPERATOR(.SpaceComponents.), &
-                      OPERATOR(.TimeComponents.)
-
-USE CSRMatrix_Method, ONLY: GetDOFPointer, &
-                            OPERATOR(.MatrixProp.)
-
+USE BaseType, ONLY: CSRMatrix_
+USE BaseType, ONLY: DOF_
+USE BaseType, ONLY: math => TypeMathOpt
+USE CSRMatrix_Method, ONLY: GetDOFPointer
+USE CSRMatrix_Method, ONLY: OPERATOR(.MatrixProp.)
 USE Display_Method, ONLY: ToString
-
+USE DOF_Method, ONLY: OPERATOR(.Names.)
+USE DOF_Method, ONLY: OPERATOR(.SpaceComponents.)
+USE DOF_Method, ONLY: OPERATOR(.TimeComponents.)
+USE DOF_Method, ONLY: OPERATOR(.tNames.)
+USE ExceptionHandler_Class, ONLY: e
+USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
+USE GlobalData, ONLY: LGT, I4B, DFP
+USE HDF5File_Class, ONLY: HDF5File_
+USE MatrixField_Class, ONLY: MatrixField_
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 PRIVATE
-
 PUBLIC :: Export_CheckError
 PUBLIC :: Import_CheckError
 PUBLIC :: Export_Header
@@ -49,8 +44,12 @@ PUBLIC :: Export_PhysicalVar
 PUBLIC :: Import_PhysicalVar
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "MatrixFieldUtility"
+CHARACTER(*), PARAMETER :: modName = "MatrixFieldUtility.F90"
 #endif
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 CONTAINS
 
@@ -58,14 +57,12 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Import_PhysicalVar(obj, hdf5, group, myName, modName, &
-           matrixProp, tvar1, tvar2, name1, name2, spaceCompo1, spaceCompo2, &
-                              timeCompo1, timeCompo2)
+SUBROUTINE Import_PhysicalVar( &
+  obj, hdf5, group, matrixProp, tvar1, tvar2, name1, name2, &
+  spaceCompo1, spaceCompo2, timeCompo1, timeCompo2)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(*), INTENT(IN) :: group
-  CHARACTER(*), INTENT(IN) :: myName
-  CHARACTER(*), INTENT(IN) :: modName
   TYPE(String), INTENT(INOUT) :: matrixProp
   !! matrix properties
   INTEGER(I4B), INTENT(INOUT) :: tvar1, tvar2
@@ -76,94 +73,108 @@ SUBROUTINE Import_PhysicalVar(obj, hdf5, group, myName, modName, &
   INTEGER(I4B), INTENT(INOUT) :: timeCompo1, timeCompo2
 
   ! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Import_PhysicalVar()"
+#endif
+  LOGICAL(LGT) :: isok
   TYPE(DOF_), POINTER :: dofobj
   TYPE(String) :: dsetname
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   dofobj => NULL()
 
   IF (matrixProp .EQ. "RECTANGLE") THEN
     ! tPhysicalVarNames
     dsetname = TRIM(group)//"/ivar/tPhysicalVarNames"
-    IF (hdf5%pathExists(dsetname%chars())) THEN
+    isok = hdf5%pathExists(dsetname%Chars())
+    tvar1 = math%one_i
+    IF (isok) THEN
       CALL hdf5%READ(dsetname=dsetname%chars(), vals=tvar1)
-    ELSE
-      tvar1 = 1_I4B
     END IF
 
     ! physicalVarName
     DO ii = 1, tvar1
       dsetname = TRIM(group)//"/ivar/physicalVarName"//ToString(ii)
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=TRIM(dsetname%chars()), &
-        & vals=name1)
-      ELSE
-        CALL e%RaiseError(modName//'::'//myName//' - '// &
-          & dsetname%chars()//' not found!')
-      END IF
+#ifdef DEBUG_VER
+      isok = hdf5%pathExists(dsetname%Chars())
+      CALL AssertError1(isok, myName, &
+                        dsetname%Chars()//" not found.")
+#endif
+      CALL hdf5%READ(dsetname=TRIM(dsetname%chars()), &
+                     vals=name1)
     END DO
 
     ! spaceCompo
     dsetname = TRIM(group)//"/ivar/spaceCompo"
-    IF (hdf5%pathExists(dsetname%chars())) THEN
+    spaceCompo1 = math%one_i
+    isok = hdf5%pathExists(dsetname%chars())
+    IF (isok) THEN
       CALL hdf5%READ(dsetname=dsetname%chars(), vals=spaceCompo1)
-    ELSE
-      spaceCompo1 = 1_I4B
     END IF
 
     ! timeCompo
     dsetname = TRIM(group)//"/ivar/timeCompo"
-    IF (hdf5%pathExists(dsetname%chars())) THEN
+    timeCompo1 = math%one_i
+    isok = hdf5%pathExists(dsetname%chars())
+    IF (isok) THEN
       CALL hdf5%READ(dsetname=dsetname%chars(), vals=timeCompo1)
-    ELSE
-      timeCompo1 = 1_I4B
     END IF
 
     ! tPhysicalVarNames
     dsetname = TRIM(group)//"/jvar/tPhysicalVarNames"
-    IF (hdf5%pathExists(dsetname%chars())) THEN
+    tvar2 = math%one_i
+    isok = hdf5%pathExists(dsetname%chars())
+    IF (isok) THEN
       CALL hdf5%READ(dsetname=dsetname%chars(), vals=tvar2)
-    ELSE
-      tvar2 = 1_I4B
     END IF
 
     ! physicalVarName
     DO ii = 1, tvar2
       dsetname = TRIM(group)//"/jvar/physicalVarName"//ToString(ii)
-      IF (hdf5%pathExists(dsetname%chars())) THEN
-        CALL hdf5%READ(dsetname=TRIM(dsetname%chars()), &
-        & vals=name2)
-      ELSE
-        CALL e%RaiseError(modName//'::'//myName//' - '// &
-          & dsetname%chars()//' not found!')
-      END IF
+#ifdef DEBUG_VER
+      isok = hdf5%pathExists(dsetname%Chars())
+      CALL AssertError1(isok, myName, &
+                        dsetname%Chars()//" not found.")
+#endif
+      CALL hdf5%READ(dsetname=TRIM(dsetname%chars()), &
+                     vals=name2)
     END DO
 
     ! spaceCompo
     dsetname = TRIM(group)//"/jvar/spaceCompo"
-    IF (hdf5%pathExists(dsetname%chars())) THEN
+    spaceCompo2 = math%one_i
+    isok = hdf5%pathExists(dsetname%Chars())
+    IF (isok) THEN
       CALL hdf5%READ(dsetname=dsetname%chars(), vals=spaceCompo2)
-    ELSE
-      spaceCompo2 = 1_I4B
     END IF
 
     ! timeCompo
     dsetname = TRIM(group)//"/jvar/timeCompo"
-    IF (hdf5%pathExists(dsetname%chars())) THEN
+    timeCompo2 = math%one_i
+    isok = hdf5%pathExists(dsetname%Chars())
+    IF (isok) THEN
       CALL hdf5%READ(dsetname=dsetname%chars(), vals=timeCompo2)
-    ELSE
-      timeCompo2 = 1_I4B
     END IF
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
 
     RETURN
   END IF
 
   ! tPhysicalVarNames
   dsetname = TRIM(group)//"/tPhysicalVarNames"
-  IF (hdf5%pathExists(dsetname%chars())) THEN
+  tvar1 = math%one_i
+  isok = hdf5%pathExists(dsetname%chars())
+  IF (isok) THEN
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=tvar1)
-  ELSE
-    tvar1 = 1_I4B
   END IF
 
   tvar2 = tvar1
@@ -171,139 +182,154 @@ SUBROUTINE Import_PhysicalVar(obj, hdf5, group, myName, modName, &
   ! physicalVarName
   DO ii = 1, tvar1
     dsetname = TRIM(group)//"/physicalVarName"//ToString(ii)
-    IF (hdf5%pathExists(dsetname%chars())) THEN
-      CALL hdf5%READ(dsetname=TRIM(dsetname%chars()), &
-      & vals=name1)
-    ELSE
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-        & dsetname%chars()//' not found!')
-    END IF
+#ifdef DEBUG_VER
+    isok = hdf5%pathExists(dsetname%Chars())
+    CALL AssertError1(isok, myName, &
+                      dsetname//" not found.")
+#endif
+    CALL hdf5%READ(dsetname=dsetname%Chars(), vals=name1)
   END DO
 
   name2 = name1
 
   dsetname = TRIM(group)//"/spaceCompo"
-  IF (hdf5%pathExists(dsetname%chars())) THEN
+  spaceCompo1 = math%one_i
+  isok = hdf5%pathExists(dsetname%chars())
+  IF (isok) THEN
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=spaceCompo1)
-  ELSE
-    spaceCompo1 = 1_I4B
   END IF
 
   spaceCompo2 = spaceCompo1
 
   dsetname = TRIM(group)//"/timeCompo"
-  IF (hdf5%pathExists(dsetname%chars())) THEN
+  timeCompo1 = math%one_i
+  isok = hdf5%pathExists(dsetname%chars())
+  IF (isok) THEN
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=timeCompo1)
-  ELSE
-    timeCompo1 = 1_I4B
   END IF
 
   timeCompo2 = timeCompo1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Import_PhysicalVar
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Import_Header(obj, hdf5, group, modName, myName, fieldType, name, &
-                         engine, matrixProp, isRectangle)
+SUBROUTINE Import_Header( &
+  obj, hdf5, group, fieldType, name, engine, matrixProp, isRectangle)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(*), INTENT(IN) :: group
-  CHARACTER(*), INTENT(IN) :: modName
-  CHARACTER(*), INTENT(IN) :: myName
   INTEGER(I4B), INTENT(INOUT) :: fieldType
   TYPE(String), INTENT(INOUT) :: name, engine, matrixProp
   LOGICAL(LGT), INTENT(OUT) :: isRectangle
   TYPE(String) :: dsetname, strval
 
+  ! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Import_Header()"
+#endif
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   ! fieldType
   dsetname = TRIM(group)//"/fieldType"
-  IF (hdf5%pathExists(dsetname%chars())) THEN
+  isok = hdf5%pathExists(dsetname%Chars())
+  fieldType = TypeField%constant
+  IF (isok) THEN
     CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
     fieldType = TypeField%ToNumber(strval%chars())
-  ELSE
-    fieldType = TypeField%constant
   END IF
 
   ! name
   dsetname = TRIM(group)//"/name"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The dataset name should be present')
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=name)
-  END IF
+#ifdef DEBUG_VER
+  isok = hdf5%pathExists(dsetname%Chars())
+  CALL AssertError1(isok, myName, &
+                    dsetname//" should be present.")
+#endif
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=name)
 
   ! engine
   dsetname = TRIM(group)//"/engine"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    engine = "NATIVE_SERIAL"
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=engine)
+  isok = hdf5%pathExists(dsetname%Chars())
+  engine = "NATIVE_SERIAL"
+  IF (isok) THEN
+    CALL hdf5%READ(dsetname=dsetname%Chars(), vals=engine)
   END IF
 
   ! matrixProp
   dsetname = TRIM(group)//"/matrixProp"
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-    & 'The dataset matrixProp should be present')
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=matrixProp)
-  END IF
+#ifdef DEBUG_VER
+  isok = hdf5%pathExists(dsetname%Chars())
+  CALL AssertError1(isok, myName, &
+                    dsetname//" should be present.")
+#endif
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=matrixProp)
 
   ! isRectangle
   dsetname = TRIM(group)//"/isRectangle "
-  IF (.NOT. hdf5%pathExists(dsetname%chars())) THEN
-    isRectangle = .FALSE.
-  ELSE
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=isRectangle)
+  isRectangle = math%no
+  isok = hdf5%pathExists(dsetname%Chars())
+  IF (isok) THEN
+    CALL hdf5%READ(dsetname=dsetname%Chars(), vals=isRectangle)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Import_Header
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Import_CheckError(obj, hdf5, group, myName, modName)
+SUBROUTINE Import_CheckError(obj, hdf5, group)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(*), INTENT(IN) :: group
-  CHARACTER(*), INTENT(IN) :: myName
-  CHARACTER(*), INTENT(IN) :: modName
 
   ! internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName0 = "Import_CheckError()"
+  CHARACTER(*), PARAMETER :: myName = "Import_CheckError()"
   LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   isok = .NOT. obj%IsInitiated()
-  CALL AssertError1(isok, myName0, &
+  CALL AssertError1(isok, myName, &
                     'The instance of MatrixField_ is already initiated')
 #endif
 
 #ifdef DEBUG_VER
   isok = hdf5%isOpen()
-  CALL AssertError1(isok, myName0, &
+  CALL AssertError1(isok, myName, &
                     'HDF5 file is not opened')
 #endif
 
 #ifdef DEBUG_VER
   isok = hdf5%isRead()
-  CALL AssertError1(isok, myName0, &
+  CALL AssertError1(isok, myName, &
                     'HDF5 file does not have read permission')
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE Import_CheckError
@@ -312,43 +338,41 @@ END SUBROUTINE Import_CheckError
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Export_CheckError(obj, hdf5, group, myName, modName)
+SUBROUTINE Export_CheckError(obj, hdf5, group)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(*), INTENT(IN) :: group
-  CHARACTER(*), INTENT(IN) :: myName
-  CHARACTER(*), INTENT(IN) :: modName
 
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName0 = "Export_CheckError()"
+  CHARACTER(*), PARAMETER :: myName = "Export_CheckError()"
   LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   isok = obj%IsInitiated()
-  CALL AssertError1(isok, myName0, &
+  CALL AssertError1(isok, myName, &
                     'The instance of MatrixField_ is not initiated')
 #endif
 
 #ifdef DEBUG_VER
   isok = hdf5%isOpen()
-  CALL AssertError1(isok, myName0, &
+  CALL AssertError1(isok, myName, &
                     'HDF5 file is not opened')
 #endif
 
 #ifdef DEBUG_VER
   isok = hdf5%isWrite()
-  CALL AssertError1(isok, myName0, &
+  CALL AssertError1(isok, myName, &
                     'HDF5 file does not have write permission')
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName0//' - '// &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE Export_CheckError
@@ -363,6 +387,16 @@ SUBROUTINE Export_Header(obj, hdf5, group, dname, matprop)
   CHARACTER(*), INTENT(IN) :: group
   TYPE(String), INTENT(INOUT) :: dname
   TYPE(String), INTENT(INOUT) :: matprop
+
+  !internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Export_Header()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   ! isPmatInitiated
   dname = TRIM(group)//"/isPmatInitiated"
@@ -384,6 +418,10 @@ SUBROUTINE Export_Header(obj, hdf5, group, dname, matprop)
   CALL Export_PhysicalVar(obj=obj, hdf5=hdf5, group=group, &
                           dname=dname, matprop=matprop)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Export_Header
 
 !----------------------------------------------------------------------------
@@ -398,8 +436,16 @@ SUBROUTINE Export_PhysicalVar(obj, hdf5, group, dname, matprop)
   TYPE(String), INTENT(INOUT) :: matprop
 
   ! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Export_PhysicalVar()"
+#endif
   TYPE(DOF_), POINTER :: dofobj
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   dofobj => NULL()
 
@@ -476,6 +522,10 @@ SUBROUTINE Export_PhysicalVar(obj, hdf5, group, dname, matprop)
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
                   vals=(.TimeComponents.dofobj))
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Export_PhysicalVar
 
 !----------------------------------------------------------------------------
