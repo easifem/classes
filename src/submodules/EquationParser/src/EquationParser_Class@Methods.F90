@@ -469,10 +469,12 @@ lFunc = LEN_TRIM(obj%funcString)
 
 step: DO
 
+#ifdef DEBUG_VER
   isok = j <= lFunc
   CALL AssertError1(isok, myName, &
                     'Error in syntax of function string: '//CHAR_LF// &
                     obj%funcStringOrig)
+#endif
 
   c = obj%funcString(j:j)
 
@@ -481,20 +483,24 @@ step: DO
     ! Check for leading - or +
     j = j + 1
 
+#ifdef DEBUG_VER
     isok = j <= lFunc
     CALL AssertError1( &
       isok, myName, &
       'Error in syntax of function string: Missing operand'//CHAR_LF// &
       obj%funcStringOrig)
+#endif
 
     c = obj%funcString(j:j)
 
+#ifdef DEBUG_VER
     err = ANY(c == OPS)
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: Multiple consequtive&
       &operators'//CHAR_LF// &
       obj%funcStringOrig)
+#endif
 
   END IF
 
@@ -504,21 +510,25 @@ step: DO
     ! j = j + LEN_TRIM(funcs(n))
     j = j + LEN_FUNCS(n)
 
+#ifdef DEBUG_VER
     err = j > lFunc
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: &
       &Missing function argument after "'//funcs(n)//'" '//CHAR_LF// &
       obj%funcStringOrig)
+#endif
 
     c = obj%funcString(j:j)
 
+#ifdef DEBUG_VER
     err = c /= '('
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: &
       &Missing opening parenthesis after "'//funcs(n)//'" '//CHAR_LF// &
       obj%funcStringOrig)
+#endif
 
   END IF
 
@@ -535,11 +545,13 @@ step: DO
     ! Check for number
     r = RealNum(obj%funcString(j:), ib, in, err)
 
+#ifdef DEBUG_VER
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: '//CHAR_LF// &
       'Invalid number format: '//obj%funcString(j + ib - 1:j + in - 2)// &
       CHAR_LF//obj%funcStringOrig)
+#endif
 
     j = j + in - 1
     IF (j > lFunc) EXIT
@@ -550,12 +562,14 @@ step: DO
     ! Check for variable
     n = VariableIndex(obj%funcString(j:), obj%variableNames, ib, in)
 
+#ifdef DEBUG_VER
     err = n .EQ. 0
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: '//CHAR_LF// &
       'Invalid element: '//obj%funcString(j + ib - 1:j + in - 2)// &
       CHAR_LF//obj%funcStringOrig)
+#endif
 
     j = j + in - 1
     IF (j > lFunc) EXIT
@@ -566,17 +580,21 @@ step: DO
     ! Check for closing parenthesis
     parCount = parCount - 1
 
+#ifdef DEBUG_VER
     err = parCount < 0
     CALL AssertError1( &
       .NOT. err, myName, &
-     'Error in syntax of function string: Mismatched parenthesis'//CHAR_LF// &
-      obj%funcStringOrig)
+      'Error in syntax of function string: Mismatched parenthesis'// &
+      CHAR_LF//obj%funcStringOrig)
+#endif
 
+#ifdef DEBUG_VER
     err = obj%funcString(j - 1:j - 1) == '('
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: '//CHAR_LF// &
       'Empty parentheses'//CHAR_LF//obj%funcStringOrig)
+#endif
 
     j = j + 1
     IF (j > lFunc) EXIT
@@ -588,24 +606,31 @@ step: DO
   IF (ANY(c == Ops)) THEN
     ! Check for multiple operators
 
+#ifdef DEBUG_VER
     err = j + 1 > lFunc
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: '// &
       CHAR_LF//obj%funcStringOrig)
+#endif
 
+#ifdef DEBUG_VER
     err = ANY(obj%funcString(j + 1:j + 1) == Ops)
     CALL AssertError1( &
       .NOT. err, myName, &
       'Error in syntax of function string: Multiple operators'//CHAR_LF// &
       obj%funcStringOrig)
+#endif
 
   ELSE
+
+#ifdef DEBUG_VER
     ! Check for next operand
     CALL AssertError1( &
       math%no, myName, &
       'Error in syntax of function string: Missing operator'//CHAR_LF// &
       obj%funcStringOrig)
+#endif
 
   END IF
 
@@ -615,11 +640,13 @@ step: DO
   j = j + 1
 END DO step
 
+#ifdef DEBUG_VER
 err = parCount > 0
 CALL AssertError1( &
   .NOT. err, myName, &
   'Error in syntax of function string: Mismatched parenthesis'//CHAR_LF// &
   obj%funcStringOrig)
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
