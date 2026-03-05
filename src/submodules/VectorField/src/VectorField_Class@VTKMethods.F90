@@ -17,8 +17,12 @@
 
 SUBMODULE(VectorField_Class) VTKMethods
 USE String_Class, ONLY: String
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@VTKMethods.F90"
+#endif
 
 CONTAINS
 

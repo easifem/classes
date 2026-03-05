@@ -16,25 +16,26 @@
 !
 
 SUBMODULE(VectorField_Class) BodySourceMethods
-USE GlobalData, ONLY: NODES_FMT
-USE ReallocateUtility, ONLY: Reallocate
-USE ForceVector_Method, ONLY: ForceVector_
-USE FEVariable_Method, ONLY: NodalVariable, QuadratureVariable, &
-                             FEVariable_Set => Set
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-
-USE BaseType, ONLY: QuadraturePoint_, &
-                    ElemshapeData_, &
-                    FEVariable_, &
-                    TypeFEVariableVector, &
-                    TypeFEVariableSpace
+USE BaseType, ONLY: ElemshapeData_
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: TypeFEVariableVector
+USE Display_Method, ONLY: Display
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE ForceVector_Method, ONLY: ForceVector_
+USE GlobalData, ONLY: NODES_FMT
+USE ReallocateUtility, ONLY: Reallocate
+IMPLICIT NONE
 
 #ifdef DEBUG_VER
-USE FEVariable_Method, ONLY: Fevar_Display => Display
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@BodySourceMethods.F90"
 #endif
-
-USE Display_Method, ONLY: Display
 
 CONTAINS
 

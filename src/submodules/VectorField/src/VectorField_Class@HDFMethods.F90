@@ -17,9 +17,14 @@
 
 SUBMODULE(VectorField_Class) HDFMethods
 USE String_Class, ONLY: String
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport, &
-                                   AbstractNodeFieldExport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@HDFMethods.F90"
+#endif
 
 CONTAINS
 
@@ -28,9 +33,10 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+#endif
 TYPE(String) :: dsetname
-! TYPE(ParameterList_) :: param
 LOGICAL(LGT) :: bools(3), isok
 
 #ifdef DEBUG_VER
@@ -44,9 +50,11 @@ CALL AbstractNodeFieldImport( &
 
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
+#ifdef DEBUG_VER
 isok = hdf5%pathExists(dsetname%chars())
 CALL AssertError1(isok, myName, &
-                  'The dataset spaceCompo should be present')
+                  dsetname//' should be present')
+#endif
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
@@ -59,7 +67,10 @@ bools(3) = hdf5%pathExists(dsetname%chars())
 
 isok = ALL(bools)
 IF (isok) THEN
-  CALL FinishMe
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -71,8 +82,8 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! CALL param%initiate()
 !
 ! CALL SetVectorFieldParam(param=param, name=obj%name%chars(), &
-!                          fieldType=obj%fieldType, spaceCompo=obj%spaceCompo, &
-!                          engine=obj%engine%chars())
+!          fieldType=obj%fieldType, spaceCompo=obj%spaceCompo, &
+!          engine=obj%engine%chars())
 !
 ! obj%isInit = .FALSE.
 !
@@ -80,18 +91,10 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !
 ! CALL param%DEALLOCATE()
 
-CALL finishMe
-
-CONTAINS
-SUBROUTINE finishMe
-
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
-
-END SUBROUTINE finishMe
-
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -99,7 +102,9 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
 TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
@@ -117,7 +122,6 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------

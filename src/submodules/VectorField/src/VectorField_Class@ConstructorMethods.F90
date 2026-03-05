@@ -24,8 +24,12 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@ConstructorMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

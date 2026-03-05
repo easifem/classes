@@ -19,8 +19,12 @@
 SUBMODULE(VectorField_Class) TomlMethods
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@TomlMethods.F90"
+#endif
 CONTAINS
 
 ! [kernel.initialCondition]

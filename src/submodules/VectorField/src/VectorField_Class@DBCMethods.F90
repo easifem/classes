@@ -22,6 +22,10 @@ USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@DBCMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

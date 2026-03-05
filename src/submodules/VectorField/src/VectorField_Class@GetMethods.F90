@@ -53,6 +53,11 @@ USE Display_Method, ONLY: ToString, Display
 USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@GetMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

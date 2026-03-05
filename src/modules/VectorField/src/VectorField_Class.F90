@@ -44,10 +44,6 @@ IMPLICIT NONE
 
 PRIVATE
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "VectorField_Class"
-#endif
-
 INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: VectorField_

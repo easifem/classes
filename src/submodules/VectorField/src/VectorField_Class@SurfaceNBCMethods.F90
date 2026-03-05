@@ -32,12 +32,12 @@ USE AbstractFE_Class, ONLY: AbstractFE_
 USE ForceVector_Method, ONLY: ForceVector_
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+IMPLICIT NONE
 
 #ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
+CHARACTER(*), PARAMETER :: modName = &
+                           "VectorField_Class@SurfaceNBCMethods.F90"
 #endif
-
-IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -192,8 +192,12 @@ SUBROUTINE VectorFieldAssembleSurfaceSource( &
 
   isok = isElemToEdge .OR. isElemToFace
   IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
     CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-          'isElemToEdge and isElemToFace are both .false. So, nothing to do.')
+                      'isElemToEdge and isElemToFace are both .false. '// &
+                      " So, nothing to do.")
+#endif
 
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
