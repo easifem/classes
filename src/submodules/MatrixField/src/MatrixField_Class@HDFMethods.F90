@@ -34,6 +34,11 @@ USE String_Class, ONLY: String
 USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -206,12 +211,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 !From MatrixFieldUtility
-CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group, myName=myName, &
-                       modName=modName)
+CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group)
 
 ! From MatrixFieldUtility
 CALL Import_Header( &
-  obj=obj, hdf5=hdf5, group=group, modName=modName, myName=myName, &
+  obj=obj, hdf5=hdf5, group=group, &
   fieldType=fieldType, name=name, engine=engine, matrixProp=matrixProp, &
   isRectangle=isRectangle0)
 
@@ -230,15 +234,19 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
   obj%fieldType = fieldType
   obj%isRectangle = isRectangle0
 
+#ifdef DEBUG_VER
   IF (ASSOCIATED(obj%fedof)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       'obj%fedof is associated, deallocate first')
   END IF
+#endif
 
+#ifdef DEBUG_VER
   IF (ALLOCATED(obj%fedofs)) THEN
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       'obj%fedofs is allocated, deallocate first')
   END IF
+#endif
 
   IF (PRESENT(fedof)) THEN
     obj%fedof => fedof
@@ -247,9 +255,11 @@ IF (hdf5%PathExists(dsetname%chars())) THEN
     obj%fedofs(1)%ptr => fedofs(1)%ptr
     obj%fedofs(2)%ptr => fedofs(2)%ptr
   ELSE
+#ifdef DEBUG_VER
     CALL e%RaiseError(modName//'::'//myName//" - "// &
                       "For non-rectangle matrix fedof should be present, "// &
-                      "for rectangle matrix matrix fedofsshould be present")
+                      "for rectangle matrix matrix fedofs should be present")
+#endif
   END IF
 
   CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
@@ -261,7 +271,7 @@ ELSE
 
   ! Import Physical Variables
   CALL Import_PhysicalVar( &
-    obj=obj, hdf5=hdf5, group=group, myName=myName, modName=modName, &
+    obj=obj, hdf5=hdf5, group=group, &
     matrixProp=matrixProp, tvar1=tvar1, tvar2=tvar2, name1=name1, &
     name2=name2, spaceCompo1=spaceCompo1, spaceCompo2=spaceCompo2, &
     timeCompo1=timeCompo1, timeCompo2=timeCompo2)
@@ -314,6 +324,7 @@ ELSE
                    "create preconditioning matrix, when /pmat is absent. "// &
                     "This routine needs further attention")
 #endif
+
 END IF
 
 #ifdef DEBUG_VER

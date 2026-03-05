@@ -25,6 +25,11 @@ USE CSRMatrix_Method, ONLY: CSRMatrix_Shape => Shape
 USE CSRMatrix_Method, ONLY: GetValue
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

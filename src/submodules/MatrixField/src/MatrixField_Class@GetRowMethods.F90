@@ -21,14 +21,16 @@
 
 SUBMODULE(MatrixField_Class) GetRowMethods
 USE CSRMatrix_Method, ONLY: GetRow
-
 USE DOF_Method, ONLY: GetIDOF
-
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
-
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@GetRowMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -36,40 +38,59 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetRow1()"
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
+isok = PRESENT(VALUE)
+IF (isok) THEN
+  CALL GetRow( &
+    obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=VALUE, &
+    scale=scale, addContribution=addContribution)
 
-  CALL GetRow(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=VALUE, &
-              scale=scale, addContribution=addContribution)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
-
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
-CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
-                              stride=1, tsize=tsize)
+CALL nodeFieldVal%GetMultiple( &
+  VALUE=realvec, istart=1, iend=ii, stride=1, tsize=tsize)
 
-CALL GetRow(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=realvec, &
-            scale=scale, addContribution=addContribution)
+CALL GetRow( &
+  obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=realvec, &
+  scale=scale, addContribution=addContribution)
 
-CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
-                              stride=1)
+CALL nodeFieldVal%SetMultiple( &
+  VALUE=realvec, istart=1, iend=ii, stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetRow1
 
 !----------------------------------------------------------------------------
@@ -77,13 +98,26 @@ END PROCEDURE obj_GetRow1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow2()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, idof=idof)
 
 CALL obj%GetRow(globalNode=globalNode, islocal=islocal, &
                 idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
                 scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetRow2
 
 !----------------------------------------------------------------------------
@@ -91,7 +125,15 @@ END PROCEDURE obj_GetRow2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetRow3()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, spaceCompo=spaceCompo, &
              timeCompo=timeCompo)
@@ -100,6 +142,10 @@ CALL obj%GetRow(globalNode=globalNode, islocal=islocal, &
                 idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
                 scale=scale, addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetRow3
 
 !----------------------------------------------------------------------------
@@ -107,26 +153,40 @@ END PROCEDURE obj_GetRow3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetRow4()"
+#endif
 
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetRow(obj=obj%mat, nodenum=globalNode, &
               ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
               VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -141,35 +201,52 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetRow4
 
 !----------------------------------------------------------------------------
-!                                                                 GetRow
+!                                                                     GetRow
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow5
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetRow5()"
-
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetRow(obj=obj%mat, nodenum=globalNode, &
               ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
               VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -184,35 +261,52 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetRow5
 
 !----------------------------------------------------------------------------
-!                                                                 GetRow
+!                                                                     GetRow
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow6
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetRow6()"
-
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetRow(obj=obj%mat, nodenum=globalNode, &
               ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
               VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -227,8 +321,11 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetRow6
 
 !----------------------------------------------------------------------------
@@ -236,29 +333,42 @@ END PROCEDURE obj_GetRow6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetRow7
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetRow7()"
-
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetRow(obj=obj%mat, nodenum=globalNode, &
               ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
               VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
-
 CALL nodeFieldVal%GetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1, tsize=tsize)
 
@@ -270,8 +380,11 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetRow7
 
 !----------------------------------------------------------------------------

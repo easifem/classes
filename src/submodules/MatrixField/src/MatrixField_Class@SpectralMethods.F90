@@ -16,8 +16,15 @@
 !
 
 SUBMODULE(MatrixField_Class) SpectralMethods
-USE CSRMatrix_Method, ONLY: SymSchurLargestEigenVal, &
-                            SymLargestEigenVal
+USE BaseType, ONLY: math => TypeMathOpt
+USE CSRMatrix_Method, ONLY: SymSchurLargestEigenVal
+USE CSRMatrix_Method, ONLY: SymLargestEigenVal
+IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@SpectralMethods.F90"
+#endif
 
 CONTAINS
 
@@ -26,19 +33,31 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymSchurLargestEigenVal
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SymSchurLargestEigenVal()"
+#endif
 
-SELECT TYPE (B); CLASS IS (MatrixField_)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+SELECT TYPE (B)
+CLASS IS (MatrixField_)
   ans = SymSchurLargestEigenVal(A=obj%mat, B=B%mat, nev=nev, which=which, &
                                 NCV=NCV, maxIter=maxIter, tol=tol)
 
+#ifdef DEBUG_VER
 CLASS DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for type of B')
-  RETURN
-
+  CALL AssertError1(math%no, myName, &
+                    'No case found for type of B')
+#endif
 END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SymSchurLargestEigenVal
 
 !----------------------------------------------------------------------------
@@ -46,12 +65,28 @@ END PROCEDURE obj_SymSchurLargestEigenVal
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymLargestEigenVal
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SymLargestEigenVal()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = SymLargestEigenVal(mat=obj%mat, nev=nev, which=which, &
                          NCV=NCV, maxIter=maxIter, tol=tol)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SymLargestEigenVal
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include  "../../include/errors.F90"
 
 END SUBMODULE SpectralMethods

@@ -24,8 +24,13 @@ USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
 USE Display_Method, ONLY: Display
 USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
 USE CSRMatrix_Method, ONLY: CSRMatrix_Display => Display
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

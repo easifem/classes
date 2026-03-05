@@ -16,10 +16,14 @@
 !
 
 SUBMODULE(MatrixField_Class) DiagonalMethods
-
 USE CSRMatrix_Method, ONLY: GetDiagonal
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@DiagonalMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

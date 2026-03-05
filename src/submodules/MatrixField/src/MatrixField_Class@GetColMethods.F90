@@ -21,14 +21,16 @@
 
 SUBMODULE(MatrixField_Class) GetColMethods
 USE CSRMatrix_Method, ONLY: GetColumn
-
 USE DOF_Method, ONLY: GetIDOF
-
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
-
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@GetColMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -36,25 +38,39 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetColumn1()"
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetColumn(obj=obj%mat, nodenum=globalNode, idof=idof, VALUE=VALUE, &
                  scale=scale, addContribution=addContribution)
-  RETURN
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -68,8 +84,11 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetColumn1
 
 !----------------------------------------------------------------------------
@@ -77,13 +96,26 @@ END PROCEDURE obj_GetColumn1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn2()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, idof=idof)
 
 CALL obj%GetColumn(globalNode=globalNode, islocal=islocal, &
                    idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
                    scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetColumn2
 
 !----------------------------------------------------------------------------
@@ -91,7 +123,15 @@ END PROCEDURE obj_GetColumn2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetColumn3()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 ii = GetIDOF(obj=obj%mat%csr%idof, ivar=ivar, spaceCompo=spaceCompo, &
              timeCompo=timeCompo)
@@ -100,6 +140,10 @@ CALL obj%GetColumn(globalNode=globalNode, islocal=islocal, &
                    idof=ii, VALUE=VALUE, nodefieldVal=nodefieldVal, &
                    scale=scale, addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetColumn3
 
 !----------------------------------------------------------------------------
@@ -107,26 +151,39 @@ END PROCEDURE obj_GetColumn3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetColumn4()"
-
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
                  ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
                  VALUE=VALUE, scale=scale, addContribution=addContribution)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -141,8 +198,11 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetColumn4
 
 !----------------------------------------------------------------------------
@@ -150,26 +210,39 @@ END PROCEDURE obj_GetColumn4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn5
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetColumn5()"
-
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
                  ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
                  VALUE=VALUE, scale=scale, addContribution=addContribution)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -184,8 +257,11 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetColumn5
 
 !----------------------------------------------------------------------------
@@ -193,26 +269,40 @@ END PROCEDURE obj_GetColumn5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn6
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetColumn6()"
-
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
-
+isok = PRESENT(VALUE)
+IF (isok) THEN
   CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
                  ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
                  VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -227,8 +317,11 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetColumn6
 
 !----------------------------------------------------------------------------
@@ -236,26 +329,41 @@ END PROCEDURE obj_GetColumn6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetColumn7
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetColumn7()"
-
+#endif
 REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 #include "./localNodeError.F90"
 
-IF (PRESENT(VALUE)) THEN
+isok = PRESENT(VALUE)
 
+IF (isok) THEN
   CALL GetColumn(obj=obj%mat, nodenum=globalNode, &
                  ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
                  VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 realvec => AbstractNodeFieldGetPointer(nodeFieldVal)
 
+#ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
 CALL AssertError1(isok, myName, "problem in get pointer to nodeFieldVal")
+#endif
 
 ii = SIZE(realvec)
 
@@ -270,8 +378,11 @@ CALL nodeFieldVal%SetMultiple(VALUE=realvec, istart=1, iend=ii, &
                               stride=1)
 
 realvec => NULL()
-RETURN
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetColumn7
 
 !----------------------------------------------------------------------------

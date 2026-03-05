@@ -40,17 +40,10 @@ USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE BaseType, ONLY: CSRMatrix_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-
 IMPLICIT NONE
 
 PRIVATE
-
-#ifdef DEBUG_VER
-CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixField_Class"
-#endif
-
 INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
-
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
 INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 

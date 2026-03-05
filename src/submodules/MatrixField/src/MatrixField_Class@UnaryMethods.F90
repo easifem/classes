@@ -17,8 +17,13 @@
 
 SUBMODULE(MatrixField_Class) UnaryMethods
 USE CSRMatrix_Method, ONLY: Scal
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@UnaryMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

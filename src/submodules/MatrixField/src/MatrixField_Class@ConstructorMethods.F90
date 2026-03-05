@@ -19,177 +19,32 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) ConstructorMethods
-USE InputUtility, ONLY: INPUT
-USE String_Class, ONLY: String
-USE Display_Method, ONLY: ToString
+USE AbstractField_Class, ONLY: AbstractFieldInitiate
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDeallocate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: DOF_
 USE BaseType, ONLY: TypePrecondOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE CSRMatrix_Method, ONLY: ASSIGNMENT(=)
 USE CSRMatrix_Method, ONLY: CSRMatrix_Deallocate => DEALLOCATE
 USE CSRMatrix_Method, ONLY: CSRMatrix_Initiate => Initiate
-USE CSRMatrix_Method, ONLY: ASSIGNMENT(=)
-USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDeallocate
-USE AbstractField_Class, ONLY: AbstractFieldInitiate
-USE BaseType, ONLY: DOF_
-USE DOF_Method, ONLY: DOF_Initiate => Initiate
+USE Display_Method, ONLY: ToString
 USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
+USE DOF_Method, ONLY: DOF_Initiate => Initiate
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
-USE SafeSizeUtility, ONLY: SafeSize
-USE ReallocateUtility, ONLY: Reallocate
 USE FEDOF_Class, ONLY: FEDOFSetSparsity
-
+USE InputUtility, ONLY: INPUT
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
+USE String_Class, ONLY: String
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                 SetMatrixFieldPrecondParam
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE SetMatrixFieldPrecondParam
-! CHARACTER(*), PARAMETER :: myName = "SetMatrixFieldPrecondParam()"
-! CHARACTER(*), PARAMETER :: prefix = "Precond"
-! LOGICAL(LGT) :: abool, isSublist
-! INTEGER(I4B) :: ierr
-! TYPE(ParameterList_), POINTER :: sublist
-!
-! sublist => NULL()
-!
-! ! Create a new sublist
-! isSublist = param%isSubList(prefix)
-!
-! IF (isSublist) THEN
-!
-!   ierr = param%GetSubList(key=prefix, sublist=sublist)
-!   IF (ierr .NE. 0) THEN
-!     CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                '[INTERNAL ERROR] :: some error occured in getting sublist(1)')
-!     RETURN
-!   END IF
-!
-! ELSE
-!
-!   sublist => param%NewSubList(key=prefix)
-!
-! END IF
-!
-! IF (.NOT. ASSOCIATED(sublist)) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                '[INTERNAL ERROR] :: some error occured in getting sublist(2)')
-!   RETURN
-! END IF
-!
-! CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="name", VALUE=name)
-! CALL Set(obj=sublist, datatype="Char", prefix=prefix, key="engine", VALUE=engine)
-! CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="comm", &
-!          VALUE=INPUT(option=comm, default=0_I4B))
-! CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="local_n", &
-!          VALUE=INPUT(option=local_n, default=0_I4B))
-! CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="global_n", &
-!          VALUE=INPUT(option=global_n, default=0_I4B))
-!
-! SELECT CASE (name)
-! CASE (PRECOND_ILUT)
-!
-!   abool = (.NOT. PRESENT(droptol)) .OR. (.NOT. PRESENT(lfil))
-!
-!   IF (abool) THEN
-!     CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                       '[INTERNAL ERROR] :: for PRECOND_ILUT '// &
-!                       'droptol and lfil should be present!!!')
-!     RETURN
-!   END IF
-!
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
-!            VALUE=droptol)
-!
-!   CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="lfil", &
-!            VALUE=lfil)
-!
-! CASE (PRECOND_ILUTP)
-!
-!   abool = (.NOT. PRESENT(droptol)) &
-!           .OR. (.NOT. PRESENT(lfil)) &
-!           .OR. (.NOT. PRESENT(permtol)) &
-!           .OR. (.NOT. PRESENT(mbloc))
-!
-!   IF (abool) THEN
-!     CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                    '[INTERNAL ERROR] :: for PRECOND_ILUTP droptol, lfil, '// &
-!                       ' permtol, mbloc should be present!!!')
-!     RETURN
-!   END IF
-!
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
-!            VALUE=droptol)
-!
-!   CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="lfil", &
-!            VALUE=lfil)
-!
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="permtol", &
-!            VALUE=permtol)
-!
-!   CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="mbloc", &
-!            VALUE=mbloc)
-!
-! CASE (PRECOND_ILUD)
-!
-!   abool = (.NOT. PRESENT(droptol)) .OR. (.NOT. PRESENT(alpha))
-!
-!   IF (abool) THEN
-!     CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                       '[INTERNAL ERROR] :: for PRECOND_ILUTP droptol '// &
-!                       ' and alpha should be present!!!')
-!     RETURN
-!   END IF
-!
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
-!            VALUE=droptol)
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="alpha", &
-!            VALUE=alpha)
-!
-! CASE (PRECOND_ILUDP)
-!
-!   abool = (.NOT. PRESENT(droptol)) &
-!           .OR. (.NOT. PRESENT(alpha)) &
-!           .OR. (.NOT. PRESENT(permtol)) &
-!           .OR. (.NOT. PRESENT(mbloc))
-!
-!   IF (abool) THEN
-!     CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                       '[INTERNAL ERROR] :: for PRECOND_ILUTP droptol, '// &
-!                       ' alpha, permtol, mbloc should be present!!!')
-!     RETURN
-!   END IF
-!
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="droptol", &
-!            VALUE=droptol)
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="alpha", &
-!            VALUE=alpha)
-!   CALL Set(obj=sublist, datatype=1.0_DFP, prefix=prefix, key="permtol", &
-!            VALUE=permtol)
-!   CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="mbloc", &
-!            VALUE=mbloc)
-!
-! CASE (PRECOND_ILUK)
-!
-!   abool = .NOT. PRESENT(lfil)
-!   IF (abool) THEN
-!     CALL e%RaiseError(modName//'::'//myName//' - '// &
-!              '[INTERNAL ERROR] :: for PRECOND_ILUK lfil should be present!!!')
-!     RETURN
-!   END IF
-!
-!   CALL Set(obj=sublist, datatype=1_I4B, prefix=prefix, key="lfil", &
-!            VALUE=lfil)
-!
-! CASE DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!               '[INTERNAL ERROR] :: No case found for given precondition name')
-!   RETURN
-! END SELECT
-!
-! sublist => NULL()
-!
-! END PROCEDURE SetMatrixFieldPrecondParam
 
 !----------------------------------------------------------------------------
 !                                                                  Initiate
@@ -244,7 +99,8 @@ CLASS IS (AbstractNodeField_)
 #ifdef DEBUG_VER
   isok = nrow .EQ. (tNodes(1) * spaceCompo(1) * timeCompo(1))
   CALL AssertError1(isok, myName, &
-            "nrow should be same as tNodes(1) * spaceCompo(1) * timeCompo(1)")
+                    "nrow should be same as "// &
+                    "tNodes(1) * spaceCompo(1) * timeCompo(1)")
 #endif
 
   ! Initiate CSRMatrix
@@ -283,10 +139,12 @@ CLASS IS (MatrixField_)
   END DO
 
 #ifdef DEBUG_VER
+
 CLASS DEFAULT
-  CALL AssertError1(.FALSE., myName, &
+  CALL AssertError1(math%no, myName, &
                     'obj2 should an instance of MatrixField_ or its child')
 #endif
+
 END SELECT
 
 #ifdef DEBUG_VER
@@ -493,135 +351,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_MatrixFieldAllocate1
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Initiate3
-! CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-! INTEGER(I4B), PARAMETER :: tVar = 2
-!
-! INTEGER(I4B) :: ierr, nrow, ncol, nnz, storageFMT, tNodes(tVar), &
-!                 timeCompo(tVar), spaceCompo(tVar), ii
-! CHARACTER(1) :: physicalVarNames(tVar)
-! TYPE(DOF_) :: idofobj, jdofobj
-! ! CLASS( AbstractMesh_ ), POINTER :: dom(tVar)
-! TYPE(ParameterList_), POINTER :: sublist
-! LOGICAL(LGT) :: isok
-! TYPE(String) :: astr, matrixProp
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! sublist => NULL()
-! ierr = param%GetSubList(key=myprefix, sublist=sublist)
-! isok = ierr .EQ. 0_I4B
-! CALL AssertError1(isok, myName, "Some error occured in getting sublist(1)")
-!
-! isok = ASSOCIATED(sublist)
-! CALL AssertError1(isok, myName, "sublist is not associated")
-!
-! CALL RectangleMatrixFieldCheckEssentialParam(obj=obj, param=sublist)
-! CALL obj%DEALLOCATE()
-!
-! ! matrixProp
-! CALL GetValue(obj=sublist, prefix=myprefix, key="matrixProp", &
-!               VALUE=matrixProp)
-! isok = matrixProp%chars() == "RECTANGLE"
-! CALL AssertError1(isok, myName, "matrixProp should be RECTANGLE")
-!
-! ! engine
-! CALL GetValue(obj=sublist, prefix=myprefix, key="engine", &
-!               VALUE=obj%engine)
-!
-! ! name
-! CALL GetValue(obj=sublist, prefix=myprefix, key="name", &
-!               VALUE=obj%name)
-!
-! ! fieldType
-! CALL GetValue(obj=sublist, prefix=myprefix, key="fieldType", &
-!               VALUE=obj%fieldType)
-!
-! ! check domain
-! isok = SIZE(fedof) .EQ. tVar
-! CALL AssertError1(isok, myName, &
-!                   "Size of dom should be equal to 2, that is two domains.")
-!
-! DO ii = 1, tVar
-!   isok = ASSOCIATED(fedof(ii)%ptr)
-!   CALL AssertError1(isok, myName, &
-!                     "fedof("//TOSTRING(ii)//")%ptr is not associated")
-! END DO
-!
-! ! physicalVarName
-! DO ii = 1, tVar
-!   CALL GetValue(obj=sublist, prefix=myprefix, &
-!                 key="physicalVarName"//tostring(ii), VALUE=astr)
-!
-!   physicalVarNames(ii) (1:1) = astr%Slice(1, 1)
-!   astr = ""
-!
-! END DO
-!
-! ! spaceCompo
-! CALL GetValue(obj=sublist, prefix=myprefix, key="spaceCompo", &
-!               VALUE=spaceCompo)
-!
-! ! timeCompo
-! CALL GetValue(obj=sublist, prefix=myprefix, key="timeCompo", VALUE=timeCompo)
-!
-! ! storage format
-! storageFMT = mystorageformat
-!
-! ! domains
-! ALLOCATE (obj%fedofs(tvar))
-! DO ii = 1, tVar
-!   obj%fedofs(ii)%ptr => fedof(ii)%ptr
-!   tNodes(ii) = obj%fedofs(ii)%ptr%GetTotalDOF()
-! END DO
-!
-! ! make [[DOF_]]
-! CALL DOF_Initiate( &
-!   obj=idofobj, tNodes=tNodes(1:1), names=physicalVarNames(1:1), &
-!   spaceCompo=spaceCompo(1:1), timeCompo=timeCompo(1:1), &
-!   storageFMT=storageFMT)
-!
-! CALL DOF_Initiate( &
-!   obj=jdofobj, tNodes=tNodes(2:2), names=physicalVarNames(2:2), &
-!   spaceCompo=spaceCompo(2:2), timeCompo=timeCompo(2:2), &
-!   storageFMT=storageFMT)
-!
-! ! CSRMatrix/Initiate
-! nrow = .tNodes.idofobj
-! ncol = .tNodes.jdofobj
-!
-! CALL CSRMatrix_Initiate( &
-!   obj=obj%mat, nrow=nrow, ncol=ncol, idof=idofobj, jdof=jdofobj, &
-!   matrixProp=matrixProp%chars())
-!
-! matrixProp = ""
-!
-! obj%isInit = .TRUE.
-! obj%isPmatInitiated = .FALSE.
-! obj%isRectangle = .TRUE.
-!
-! ! setting the sparsity
-! CALL FEDOFSetSparsity(mat=obj%mat, fedofs=obj%fedofs)
-!
-! ! comm
-! CALL GetValue(obj=sublist, prefix=myprefix, key="comm", VALUE=obj%comm)
-! CALL GetValue(obj=sublist, prefix=myprefix, key="global_n", VALUE=obj%global_n)
-! CALL GetValue(obj=sublist, prefix=myprefix, key="local_n", VALUE=obj%local_n)
-!
-! IF (obj%local_n .EQ. 0) obj%local_n = nrow
-! IF (obj%global_n .EQ. 0) obj%global_n = nrow
-!
-! CALL DOF_Deallocate(idofobj)
-! CALL DOF_Deallocate(jdofobj)
-! END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !

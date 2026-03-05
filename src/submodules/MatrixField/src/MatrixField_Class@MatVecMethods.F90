@@ -20,10 +20,14 @@
 
 SUBMODULE(MatrixField_Class) MatVecMethods
 USE Display_Method, ONLY: ToString
-
 USE CSRMatrix_Method, ONLY: Matvec
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@MatVecMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

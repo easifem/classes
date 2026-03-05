@@ -21,8 +21,13 @@ USE CSRMatrix_Method, ONLY: CSRMatrix_Matvec => Matvec
 USE CSRMatrix_Method, ONLY: CSRMatrix_ApplyDBC => ApplyDBC
 USE Display_Method, ONLY: ToString
 USE BaseType, ONLY: math => TypeMathOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@DBCMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

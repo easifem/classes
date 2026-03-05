@@ -21,18 +21,25 @@
 
 SUBMODULE(MatrixField_Class) SetMethods
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE InputUtility, ONLY: Input
-
-USE DOF_Method, ONLY: OPERATOR(.tdof.), &
-                      OPERATOR(.spacecomponents.), &
-                      OPERATOR(.timecomponents.)
-
-USE CSRMatrix_Method, ONLY: Add, Set, GetDOFPointer, SetToSTMatrix, &
-                            AddToSTMatrix
 USE BaseType, ONLY: DOF_
+USE BaseType, ONLY: math => TypeMathOpt
+USE CSRMatrix_Method, ONLY: Add
+USE CSRMatrix_Method, ONLY: AddToSTMatrix
+USE CSRMatrix_Method, ONLY: GetDOFPointer
+USE CSRMatrix_Method, ONLY: Set
+USE CSRMatrix_Method, ONLY: SetToSTMatrix
 USE Display_Method, ONLY: ToString
-
+USE DOF_Method, ONLY: OPERATOR(.spacecomponents.)
+USE DOF_Method, ONLY: OPERATOR(.tdof.)
+USE DOF_Method, ONLY: OPERATOR(.timecomponents.)
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -498,11 +505,11 @@ SELECT TYPE (VALUE); CLASS IS (MatrixField_)
 
   CALL Set(obj=obj%mat, VALUE=VALUE%mat, scale=scale0)
 
+#ifdef DEBUG_VER
 CLASS DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-         '[INTERNAL ERROR] :: This method is available for MatrixField_ only')
-  RETURN
+  CALL AssertError1(math%no, myName, &
+                    'This method is available for MatrixField_ only')
+#endif
 
 END SELECT
 

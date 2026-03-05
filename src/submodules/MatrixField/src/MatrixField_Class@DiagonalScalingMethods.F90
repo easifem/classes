@@ -18,6 +18,12 @@
 SUBMODULE(MatrixField_Class) DiagonalScalingMethods
 USE CSRMatrix_Method, ONLY: DiagonalScaling
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@DiagonalScalingMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

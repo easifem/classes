@@ -21,10 +21,15 @@
 
 SUBMODULE(MatrixField_Class) LUSolveMethods
 USE InputUtility, ONLY: Input
-
-USE CSRMatrix_Method, ONLY: LUSOLVE, LUTSOLVE
-
+USE CSRMatrix_Method, ONLY: LUSOLVE
+USE CSRMatrix_Method, ONLY: LUTSOLVE
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MatrixField_Class@LUSolveMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
