@@ -18,10 +18,15 @@
 SUBMODULE(STVectorField_Class) HDFMethods
 USE String_Class, ONLY: String
 USE Display_Method, ONLY: Display
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport, &
-                                   AbstractNodeFieldExport
-
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STVectorField_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,7 +34,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+#endif
 TYPE(String) :: dsetname
 LOGICAL(LGT) :: bools(3), isok
 
@@ -42,20 +49,22 @@ CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, fedof=fedof, &
                              fedofs=fedofs)
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
+
+#ifdef DEBUG_VER
 isok = hdf5%pathExists(dsetname%chars())
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-               '[INTERNAL ERROR] :: The dataset spaceCompo should be present')
-END IF
+CALL AssertError1(isok, myName, &
+                  dsetname//" should ne present.")
+#endif
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
 ! timeCompo
 dsetname = TRIM(group)//"/timeCompo"
 isok = hdf5%pathExists(dsetname%chars())
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: The dataset timeCompo should be present')
-END IF
+#ifdef DEBUG_VER
+isok = hdf5%pathExists(dsetname%chars())
+CALL AssertError1(isok, myName, &
+                  dsetname//" should ne present.")
+#endif
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
 
 dsetname = TRIM(group)//"/tSize"
@@ -67,7 +76,11 @@ bools(3) = hdf5%pathExists(dsetname%chars())
 
 isok = ALL(bools)
 IF (isok) THEN
-  CALL FinishMe
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -90,18 +103,10 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !
 ! CALL param%DEALLOCATE()
 
-CALL finishMe
-
-CONTAINS
-SUBROUTINE finishMe
-
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                          "[END]")
+CALL e%RaiseInformation(modName//"::"//myName//" - "// &
+                        "[END]")
 #endif
-
-END SUBROUTINE finishMe
-
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------

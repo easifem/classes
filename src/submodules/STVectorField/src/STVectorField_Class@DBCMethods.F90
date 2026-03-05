@@ -19,8 +19,12 @@ SUBMODULE(STVectorField_Class) DBCMethods
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
 USE BaseType, ONLY: math => TypeMathOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STVectorField_Class@DBCMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

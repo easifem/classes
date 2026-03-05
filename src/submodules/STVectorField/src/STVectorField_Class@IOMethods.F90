@@ -18,8 +18,13 @@
 SUBMODULE(STVectorField_Class) IOMethods
 USE Display_Method, ONLY: Display
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STVectorField_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

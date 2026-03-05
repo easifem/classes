@@ -25,8 +25,12 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STVectorField_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
@@ -115,8 +119,10 @@ IF (.NOT. timeCompoMade) THEN
   timeCompoMade = .TRUE.
 END IF
 
+#ifdef DEBUG_VER
 isok = PRESENT(spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo is not present")
+#endif
 
 dof_spaceCompo(1) = spaceCompo(1)
 

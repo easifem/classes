@@ -36,7 +36,6 @@ IMPLICIT NONE
 
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "STVectorField_Class"
 INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 
 PUBLIC :: STVectorField_

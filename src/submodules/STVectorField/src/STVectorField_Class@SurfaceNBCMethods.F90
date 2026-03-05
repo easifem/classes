@@ -40,8 +40,13 @@ USE Display_Method, ONLY: Display
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
 USE ElemshapeData_Method, ONLY: ElemshapeData_Display => Display
 #endif
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STVectorField_Class@SurfaceNBCMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -211,8 +216,12 @@ SUBROUTINE STVectorFieldAssembleSurfaceSource( &
 
   isok = isElemToEdge .OR. isElemToFace
   IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
     CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-          'isElemToEdge and isElemToFace are both .false. So, nothing to do.')
+                      'isElemToEdge and isElemToFace are both .false. '// &
+                      " So, nothing to do.")
+#endif
 
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &

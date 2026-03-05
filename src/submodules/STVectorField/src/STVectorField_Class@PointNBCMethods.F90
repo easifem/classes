@@ -24,8 +24,12 @@ USE BaseType, ONLY: math => TypeMathOpt
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
 #endif
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STVectorField_Class@PointNBCMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

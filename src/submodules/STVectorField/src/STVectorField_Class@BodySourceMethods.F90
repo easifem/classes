@@ -16,26 +16,26 @@
 !
 
 SUBMODULE(STVectorField_Class) BodySourceMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE FEVariable_Method, ONLY: NodalVariable
-USE FEVariable_Method, ONLY: QuadratureVariable
-USE FEVariable_Method, ONLY: FEVariable_Set => Set
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
 USE AbstractFE_Class, ONLY: AbstractFE_
-USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE ForceVector_Method, ONLY: ForceVector_
-USE STForceVector_Method, ONLY: STForceVector_
-USE BaseType, ONLY: QuadraturePoint_
+USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: ElemshapeData_
 USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableScalar, TypeFEVariableVector
 USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: TypeFEVariableSpaceTime
-USE BaseType, ONLY: math => TypeMathOpt
-USE FieldOpt_Class, ONLY: TypeFieldOpt
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemshapeData_Method, ONLY: ElemshapeData_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE ForceVector_Method, ONLY: ForceVector_
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE ReallocateUtility, ONLY: Reallocate
+USE STForceVector_Method, ONLY: STForceVector_
 USE SwapUtility, ONLY: Swap_
 
 #ifdef DEBUG_VER
@@ -46,6 +46,12 @@ USE FEVariable_Method, ONLY: Display
 #endif
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "STVectorField_Class@BodySourceMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -60,10 +66,11 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource1()"
 INTEGER(I4B) :: iel, tElements, maxNNS, maxNNT, maxNNSGeo, tcellCon, xij_i, &
                 xij_j, maxNips, ips, maxNipt, ipt, &
                 forceVec_i, forceVec_j, forceVec_k, &
-                spaceCompo(1), itcompo, tsize
+                spaceCompo(1), tsize
 INTEGER(I4B), ALLOCATABLE :: cellcon(:)
 REAL(DFP) :: args(4)
-REAL(DFP), ALLOCATABLE :: xij(:, :), forceVec(:, :, :), forceVecQuad(:, :, :),  &
+REAL(DFP), ALLOCATABLE :: xij(:, :), forceVec(:, :, :), &
+                          forceVecQuad(:, :, :), &
                           forceVec_swap(:, :, :)
 TYPE(QuadraturePoint_) :: quad, timeQuad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd, timeelemsd, timegeoelemsd
@@ -104,7 +111,7 @@ forceVar = QuadratureVariable( &
            rank=TypeFEVariableVector, &
            vartype=TypeFEVariableSpaceTime)
 
-args = 0.0_DFP
+args = math%zero
 
 DO iel = 1, tElements
 
@@ -139,7 +146,7 @@ DO iel = 1, tElements
     obj=forceVar, &
     val=forceVecQuad(1:elemsd%nsd, 1:elemsd%nips, 1:timeelemsd%nips), &
     rank=TypeFEVariableVector, varType=TypeFEVariableSpaceTime, &
-    scale=1.0_DFP, addContribution=math%no)
+    scale=math%one, addContribution=math%no)
 
   CALL STForceVector_( &
     testSpace=elemsd, testTime=timeelemsd, c=forceVar, &
@@ -179,8 +186,20 @@ MODULE PROCEDURE obj_ApplyBodySource2
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource2()"
 #endif
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 
 ! LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 ! TYPE(QuadraturePoint_) :: quad
@@ -263,10 +282,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! IF (ALLOCATED(fevec)) DEALLOCATE (fevec)
 ! NULLIFY (feptr, geofeptr, mesh)
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
 END PROCEDURE obj_ApplyBodySource2
 
 !----------------------------------------------------------------------------
@@ -277,8 +292,6 @@ MODULE PROCEDURE obj_ApplyBodySource3
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource3()"
 #endif
-
-LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
                 tcellCon, tforceVec, xij_i, xij_j, maxNips, ips, &
@@ -321,17 +334,18 @@ args(4) = times
 
 DO iel = 1, tElements
 
-  CALL obj%fedof%SetFE(globalElement=iel, islocal=yes)
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=yes)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
 
-  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=yes)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=yes, &
+  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                                   ans=cellcon, tsize=tcellCon, opt="A")
 
   CALL mesh%GetNodeCoord( &
-    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, globalElement=iel)
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
+    globalElement=iel)
 
   CALL feptr%GetGlobalElemShapeData2( &
     geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
@@ -346,14 +360,14 @@ DO iel = 1, tElements
   CALL FEVariable_Set( &
     obj=forceVar, val=forceVecQuad(1:elemsd%nsd, 1:elemsd%nips), &
     rank=TypeFEVariableVector, varType=TypeFEVariableSpace, &
-    scale=1.0_DFP, addContribution=no)
+    scale=math%one, addContribution=math%no)
 
   CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableVector, &
                     ans=forceVec, nrow=force_i, ncol=force_j)
 
   CALL obj%Set( &
-    globalNode=cellcon(1:tcellCon), islocal=yes, scale=scale, &
-    addContribution=yes, VALUE=forceVec(1:force_i, 1:force_j))
+    globalNode=cellcon(1:tcellCon), islocal=math%yes, scale=scale, &
+    addContribution=math%yes, VALUE=forceVec(1:force_i, 1:force_j))
 
 END DO
 
