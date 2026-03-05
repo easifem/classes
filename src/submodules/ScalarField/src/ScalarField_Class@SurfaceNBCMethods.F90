@@ -33,12 +33,13 @@ USE ForceVector_Method, ONLY: ForceVector_
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE InputUtility, ONLY: Input
+IMPLICIT NONE
 
 #ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@SurfaceNBCMethods.F90"
 #endif
 
-IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -268,9 +269,6 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
   CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleSurfaceSource()"
 #endif
 
-  LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
-  REAL(DFP), PARAMETER :: one = 1.0_DFP
-
   LOGICAL(LGT) :: isElemToEdge, isElemToFace, isok
   INTEGER(I4B) :: tElemToFace, indx, localCellNumber, localFaceNumber, &
                   tnbcValue, tforceVec, &
@@ -287,9 +285,12 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
 
   isok = isElemToEdge .OR. isElemToFace
   IF (.NOT. isok) THEN
+
+#ifdef DEBUG_VER
     CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                       'isElemToEdge isElemToFace are both .false. &
                       &Nothing to do.')
+#endif
 
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -305,20 +306,20 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
     CALL nbc%GetElemToFace(indx=indx, localCellNumber=localCellNumber, &
                            localFaceNumber=localFaceNumber)
 
-    CALL fedof%SetFE(globalElement=localCellNumber, islocal=yes)
+    CALL fedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     feptr => fedof%GetFEPointer(globalElement=localCellNumber, &
-                                islocal=yes)
+                                islocal=math%yes)
 
-    CALL geofedof%SetFE(globalElement=localCellNumber, islocal=yes)
+    CALL geofedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
-                                      islocal=yes)
+                                      islocal=math%yes)
 
     CALL fedof%GetFacetConnectivity_( &
-      globalElement=localCellNumber, islocal=yes, ans=facetCon, &
+      globalElement=localCellNumber, islocal=math%yes, ans=facetCon, &
       tsize=tFacetCon, localFaceNumber=localFaceNumber)
 
     CALL mesh%GetNodeCoord( &
-      nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, &
+      nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
       globalElement=localCellNumber)
 
     CALL feptr%GetGlobalFacetElemShapeData2( &
@@ -328,11 +329,11 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
       xij=xij)
 
     CALL nbcField%Get(VALUE=nbcValue, globalNode=facetCon(1:tFacetCon), &
-                      tsize=tnbcValue, islocal=yes)
+                      tsize=tnbcValue, islocal=math%yes)
 
     CALL FEVariable_Set( &
       obj=forceVar, val=nbcValue(1:tnbcValue), rank=TypeFEVariableScalar, &
-      vartype=TypeFEVariableSpace, scale=one, addContribution=no)
+      vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
     CALL ForceVector_( &
       test=facetElemsd, c=forceVar, crank=TypeFEVariableScalar, &
@@ -340,7 +341,7 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
 
     CALL obj%Set( &
       globalNode=facetCon(1:tFacetCon), VALUE=forceVec(1:tforceVec), &
-      scale=scale, addContribution=yes, islocal=yes)
+      scale=scale, addContribution=math%yes, islocal=math%yes)
   END DO
 
   NULLIFY (feptr, geofeptr)

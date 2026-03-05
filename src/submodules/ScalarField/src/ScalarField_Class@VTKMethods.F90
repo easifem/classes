@@ -17,8 +17,13 @@
 
 SUBMODULE(ScalarField_Class) VTKMethods
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@VTKMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

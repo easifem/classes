@@ -19,8 +19,13 @@ SUBMODULE(ScalarField_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 USE BaseType, ONLY: math => TypeMathOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -54,7 +59,8 @@ CALL AbstractNodeFieldInitiate( &
   local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
   storageFMT=obj%GetStorageFMT(), spaceCompo=dof_spaceCompo, &
   isSpaceCompo=math%yes, isSpaceCompoScalar=math%yes, &
-  timeCompo=dof_timeCompo, isTimeCompo=math%yes, isTimeCompoScalar=math%yes, &
+  timeCompo=dof_timeCompo, isTimeCompo=math%yes, &
+  isTimeCompoScalar=math%yes, &
   tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
   isPhysicalVarNames=math%yes, isPhysicalVarNamesScalar=math%yes, &
   tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=math%yes, &

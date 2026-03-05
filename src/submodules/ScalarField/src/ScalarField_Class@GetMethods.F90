@@ -35,11 +35,13 @@ USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE DOF_Method, ONLY: GetIDOF
 USE ElemshapeData_Method, ONLY: ElemshapeData_GetInterpolation => &
                                 GetInterpolation
+IMPLICIT NONE
+
 #ifdef DEBUG_VER
-USE FEVariable_Method, ONLY: FEVariable_Display => Display
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@GetMethods.F90"
 #endif
 
-IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------

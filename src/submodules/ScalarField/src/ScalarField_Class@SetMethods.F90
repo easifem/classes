@@ -33,8 +33,12 @@ USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: math => TypeMathOpt
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@SetMethods.F90"
+#endif
 
 CONTAINS
 

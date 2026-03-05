@@ -19,27 +19,14 @@
 SUBMODULE(ScalarField_Class) TomlMethods
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
-
-! [kernel.initialCondition]
-! name = "initialCondition"
-! nodalValueType = "Constant"
-! value = 0.0
-
-! [kernel.initialCondition]
-! name = "initialCondition"
-! nodalValueType = "Space"
-! isUserFunction = true
-! [kernel.initialCondition.function]
-! name = "Function3"
-! returnType = "Scalar"
-! numReturns = 1
-! argType = "Space"
-! numArgs = 4
-! luaScript = "./functions.lua"
-! luaFunctionName = "Function3"
 
 !----------------------------------------------------------------------------
 !                                                ImportNodalValueTypeFromToml

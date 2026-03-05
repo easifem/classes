@@ -40,8 +40,6 @@ IMPLICIT NONE
 
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "ScalarField_Class"
-
 PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
 PUBLIC :: ScalarFieldInitiate

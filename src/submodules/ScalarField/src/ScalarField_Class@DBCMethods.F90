@@ -21,6 +21,12 @@ USE ReallocateUtility, ONLY: Reallocate
 USE InputUtility, ONLY: Input
 USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@DBCMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

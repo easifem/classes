@@ -17,8 +17,13 @@
 
 SUBMODULE(ScalarField_Class) HDFMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

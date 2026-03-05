@@ -21,8 +21,12 @@ USE ReallocateUtility, ONLY: Reallocate
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE BaseType, ONLY: math => TypeMathOpt
 USE InputUtility, ONLY: Input
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@PointNBCMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

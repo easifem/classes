@@ -18,19 +18,22 @@
 SUBMODULE(ScalarField_Class) BodySourceMethods
 USE ReallocateUtility, ONLY: Reallocate
 USE ForceVector_Method, ONLY: ForceVector_
-USE FEVariable_Method, ONLY: NodalVariable, QuadratureVariable, &
-                             FEVariable_Set => Set
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-
-USE BaseType, ONLY: QuadraturePoint_, &
-                    ElemshapeData_, &
-                    FEVariable_, &
-                    TypeFEVariableScalar, &
-                    TypeFEVariableSpace
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemshapeData_
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: math => TypeMathOpt
+IMPLICIT NONE
 
 #ifdef DEBUG_VER
-USE FEVariable_Method, ONLY: Fevar_Display => Display
+CHARACTER(*), PARAMETER :: modName = &
+                           "ScalarField_Class@BodySourceMethods.F90"
 #endif
 
 CONTAINS
@@ -43,8 +46,6 @@ MODULE PROCEDURE obj_ApplyBodySource1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource1()"
 #endif
-
-LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
                 tcellCon, tforceVec, xij_i, xij_j, maxNips, ips
@@ -84,17 +85,19 @@ IF (PRESENT(times)) args(4) = times
 
 DO iel = 1, tElements
 
-  CALL obj%fedof%SetFE(globalElement=iel, islocal=yes)
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=yes)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
 
-  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=yes)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
   CALL obj%fedof%GetConnectivity_( &
-    globalElement=iel, islocal=yes, ans=cellcon, tsize=tcellCon, opt="A")
+    globalElement=iel, islocal=math%yes, ans=cellcon, &
+    tsize=tcellCon, opt="A")
 
   CALL mesh%GetNodeCoord( &
-    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, globalElement=iel)
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
+    globalElement=iel)
 
   CALL feptr%GetGlobalElemShapeData2( &
     geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
@@ -107,16 +110,16 @@ DO iel = 1, tElements
 
   CALL FEVariable_Set( &
     obj=forceVar, val=forceVecQuad(1:elemsd%nips), &
-    rank=TypeFEVariableScalar, varType=TypeFEVariableSpace, scale=1.0_DFP, &
-    addContribution=no)
+    rank=TypeFEVariableScalar, varType=TypeFEVariableSpace, scale=math%one, &
+    addContribution=math%no)
 
   CALL ForceVector_( &
     test=elemsd, c=forceVar, crank=TypeFEVariableScalar, ans=forceVec, &
     tsize=tforceVec)
 
   CALL obj%Set( &
-    globalNode=cellcon(1:tcellCon), islocal=yes, scale=scale, &
-    addContribution=yes, VALUE=forceVec(1:tforceVec))
+    globalNode=cellcon(1:tcellCon), islocal=math%yes, scale=scale, &
+    addContribution=math%yes, VALUE=forceVec(1:tforceVec))
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
@@ -140,7 +143,6 @@ MODULE PROCEDURE obj_ApplyBodySource2
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource2()"
 #endif
 
-LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 TYPE(FEVariable_) :: forceVar
@@ -181,17 +183,18 @@ forceVar = NodalVariable(tsize=maxNNE, rank=TypeFEVariableScalar, &
 
 DO iel = 1, tElements
 
-  CALL obj%fedof%SetFE(globalElement=iel, islocal=yes)
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=yes)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
 
-  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=yes)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, &
+                                        islocal=math%yes)
 
-  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=yes, &
+  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                                   ans=cellcon, tsize=tcellCon, opt="A")
 
   CALL mesh%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
-                         islocal=yes, globalElement=iel)
+                         islocal=math%yes, globalElement=iel)
 
   CALL feptr%GetGlobalElemShapeData2( &
     geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
@@ -199,18 +202,18 @@ DO iel = 1, tElements
 
   ! Read the above TODO comment
   CALL bodySource%Get(VALUE=forceVec, globalNode=cellcon(1:tcellCon), &
-                      tsize=tforceVec, islocal=yes)
+                      tsize=tforceVec, islocal=math%yes)
 
   CALL FEVariable_Set( &
     obj=forceVar, val=forceVec(1:tforceVec), rank=TypeFEVariableScalar, &
-    vartype=TypeFEVariableSpace, scale=1.0_DFP, addContribution=no)
+    vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
   CALL ForceVector_( &
     test=elemsd, c=forceVar, crank=TypeFEVariableScalar, ans=fevec, &
     tsize=tfevec)
 
-  CALL obj%Set(globalNode=cellcon(1:tcellCon), islocal=yes, &
-               scale=scale, addContribution=yes, &
+  CALL obj%Set(globalNode=cellcon(1:tcellCon), islocal=math%yes, &
+               scale=scale, addContribution=math%yes, &
                VALUE=fevec(1:tfevec))
 
 END DO
