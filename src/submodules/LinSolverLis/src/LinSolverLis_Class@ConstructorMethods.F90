@@ -16,16 +16,21 @@
 !
 
 SUBMODULE(LinSolverLis_Class) ConstructorMethods
-USE BaseType, ONLY: TypePrecondOpt, &
-                    TypeSolverNameOpt
-USE LinSolver_Class, ONLY: LinSolverInitiate, &
-                           LinSolverDeallocate
+USE BaseType, ONLY: TypePrecondOpt
+USE BaseType, ONLY: TypeSolverNameOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE LinSolver_Class, ONLY: LinSolverInitiate
+USE LinSolver_Class, ONLY: LinSolverDeallocate
 USE Display_Method, ONLY: ToString
 USE String_Class, ONLY: String
-
 IMPLICIT NONE
 
 #include "lisf.h"
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "LinSolverLis_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
@@ -43,8 +48,18 @@ SUBROUTINE ConfigSolverName_bicgstabl(obj, opt)
 
   INTEGER(I4B) :: bicgstab_ell
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   bicgstab_ell = obj%opt%GetBicgstabEll()
   opt = opt//' -i bicgstabl -ell '//ToString(bicgstab_ell)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigSolverName_bicgstabl
 
 !----------------------------------------------------------------------------
@@ -58,11 +73,20 @@ SUBROUTINE ConfigSolverName_gmres(obj, opt)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ConfigSolverName_gmres()"
 #endif
-
   INTEGER(I4B) :: i1
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   i1 = obj%opt%GetKrylovSubspaceSize()
   opt = opt//' -i gmres -restart '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigSolverName_gmres
 
 !----------------------------------------------------------------------------
@@ -79,8 +103,18 @@ SUBROUTINE ConfigSolverName_orthomin(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetKrylovSubspaceSize()
   opt = opt//' -i orthomin -restart '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigSolverName_orthomin
 
 !----------------------------------------------------------------------------
@@ -97,8 +131,18 @@ SUBROUTINE ConfigSolverName_fgmres(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetKrylovSubspaceSize()
   opt = opt//' -i fgmres -restart '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigSolverName_fgmres
 
 !----------------------------------------------------------------------------
@@ -115,8 +159,18 @@ SUBROUTINE ConfigSolverName_idrs(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetKrylovSubspaceSize()
   opt = opt//' -i idrs -irestart '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigSolverName_idrs
 
 !----------------------------------------------------------------------------
@@ -133,8 +187,18 @@ SUBROUTINE ConfigSolverName_sor(obj, opt)
 
   REAL(DFP) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetSorOmega()
   opt = opt//' -i sor -omega '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigSolverName_sor
 
 !----------------------------------------------------------------------------
@@ -151,8 +215,18 @@ SUBROUTINE ConfigMaxIter(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetMaxIter()
   opt = opt//' -maxiter '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigMaxIter
 
 !----------------------------------------------------------------------------
@@ -169,8 +243,18 @@ SUBROUTINE ConfigPrint(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = 3
   opt = opt//' -print '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrint
 
 !----------------------------------------------------------------------------
@@ -187,8 +271,18 @@ SUBROUTINE ConfigScale(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetScale()
   opt = opt//' -scale '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigScale
 
 !----------------------------------------------------------------------------
@@ -205,8 +299,18 @@ SUBROUTINE ConfigRelativeTolerance(obj, opt)
 
   REAL(DFP) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetRelativeTolerance()
   opt = opt//' -tol '//ToString(i1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigRelativeTolerance
 
 !----------------------------------------------------------------------------
@@ -223,6 +327,11 @@ SUBROUTINE ConfigInitxZeros(obj, opt)
 
   LOGICAL(LGT) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetInitxZeros()
 
   IF (i1) THEN
@@ -230,6 +339,11 @@ SUBROUTINE ConfigInitxZeros(obj, opt)
   ELSE
     opt = opt//' -initx_zeros false '
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigInitxZeros
 
 !----------------------------------------------------------------------------
@@ -246,6 +360,11 @@ SUBROUTINE ConfigRelativeToRHS(obj, opt)
 
   LOGICAL(LGT) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetRelativeToRHS()
 
   IF (i1) THEN
@@ -254,6 +373,10 @@ SUBROUTINE ConfigRelativeToRHS(obj, opt)
     opt = opt//" -conv_cond 0 "
   END IF
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigRelativeToRHS
 
 !----------------------------------------------------------------------------
@@ -268,7 +391,17 @@ SUBROUTINE ConfigPrecond_none(obj, opt)
   CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_none()"
 #endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   opt = opt//' -p none '
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_none
 
 !----------------------------------------------------------------------------
@@ -283,7 +416,17 @@ SUBROUTINE ConfigPrecond_jacobi(obj, opt)
   CHARACTER(*), PARAMETER :: myName = "ConfigPrecond_jacobi()"
 #endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   opt = opt//' -p jacobi '
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_jacobi
 
 !----------------------------------------------------------------------------
@@ -300,9 +443,18 @@ SUBROUTINE ConfigPrecond_ilu(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetIluFill()
   opt = opt//' -p ilu -ilu_fill '//ToString(i1)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_ilu
 
 !----------------------------------------------------------------------------
@@ -319,9 +471,18 @@ SUBROUTINE ConfigPrecond_ssor(obj, opt)
 
   REAL(DFP) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetSsorOmega()
   opt = opt//' -p ssor -ssor_omega '//ToString(i1)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_ssor
 
 !----------------------------------------------------------------------------
@@ -339,6 +500,11 @@ SUBROUTINE ConfigPrecond_hybrid(obj, opt)
   INTEGER(I4B) :: i1, i2, i3, i4
   REAL(DFP) :: r1, r2
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetHybridI()
   i2 = obj%opt%GetHybridMaxIter()
   i3 = obj%opt%GetHybridEll()
@@ -353,6 +519,10 @@ SUBROUTINE ConfigPrecond_hybrid(obj, opt)
         ' -hybrid_tol '//ToString(r1)// &
         ' -hybrid_omega '//ToString(r2)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_hybrid
 
 !----------------------------------------------------------------------------
@@ -370,12 +540,21 @@ SUBROUTINE ConfigPrecond_is(obj, opt)
   INTEGER(I4B) :: i1
   REAL(DFP) :: r1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetIsM()
   r1 = obj%opt%GetIsAlpha()
 
   opt = opt//' -p is '//' -is_m '//ToString(i1)// &
         ' -is_alpha '//ToString(r1)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_is
 
 !----------------------------------------------------------------------------
@@ -392,9 +571,18 @@ SUBROUTINE ConfigPrecond_sainv(obj, opt)
 
   REAL(DFP) :: r1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   r1 = obj%opt%GetSainvDrop()
   opt = opt//' -p sainv -sainv_drop '//ToString(r1)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_sainv
 
 !----------------------------------------------------------------------------
@@ -412,6 +600,11 @@ SUBROUTINE ConfigPrecond_saamg(obj, opt)
   LOGICAL(LGT) :: b1
   REAL(DFP) :: r1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   b1 = obj%opt%GetSaamgUnsym()
   r1 = obj%opt%GetSaamgTheta()
 
@@ -424,6 +617,10 @@ SUBROUTINE ConfigPrecond_saamg(obj, opt)
           ToString(r1)
   END IF
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_saamg
 
 !----------------------------------------------------------------------------
@@ -440,11 +637,21 @@ SUBROUTINE ConfigPrecond_iluc(obj, opt)
 
   REAL(DFP) :: r1, r2
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   r1 = obj%opt%GetIlucDrop()
   r2 = obj%opt%GetIlucRate()
 
   opt = opt//' -p iluc -iluc_drop '//ToString(r1)// &
         ' -iluc_rate '//ToString(r2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_iluc
 
 !----------------------------------------------------------------------------
@@ -461,10 +668,19 @@ SUBROUTINE ConfigPrecond_adds(obj, opt)
 
   INTEGER(I4B) :: i1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   i1 = obj%opt%GetAddsIter()
 
   opt = opt//' -p ilut -adds true -adds_iter '//ToString(i1)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ConfigPrecond_adds
 
 !----------------------------------------------------------------------------
@@ -573,9 +789,10 @@ CASE (TypeSolverNameOpt%cocg)
 CASE (TypeSolverNameOpt%cocr)
   opt = opt//' -i cocr '
 
-#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myName, "No case found for solver name")
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for solver name")
 #endif
 
 END SELECT
@@ -637,9 +854,10 @@ CASE (TypePrecondOpt%ILUC)
 CASE (TypePrecondOpt%ADDS)
   CALL ConfigPrecond_adds(obj=obj, opt=opt)
 
-#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myName, "No case found for precondition name")
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for precondition name")
 #endif
 
 END SELECT

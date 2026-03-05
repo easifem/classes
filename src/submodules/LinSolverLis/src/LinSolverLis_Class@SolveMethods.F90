@@ -17,12 +17,17 @@
 
 SUBMODULE(LinSolverLis_Class) SolveMethods
 USE GlobalData, ONLY: stdout
-USE Display_Method, ONLY: EqualLine, Display, Blanklines, &
-                          ToString
-
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Blanklines
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 
 #include "lisf.h"
+
+CHARACTER(*), PARAMETER :: &
+  modName = "LinSolverLis_Class@SolveMethods.F90"
 
 CONTAINS
 
@@ -99,7 +104,8 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
 
   END SELECT
 
-  CALL AssertError1(.FALSE., myname, msg)
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    msg)
 
 END SUBROUTINE CHECKERROR
 

@@ -36,7 +36,6 @@ PUBLIC :: LinSolverLis_
 PUBLIC :: TypeLinSolverLis
 PUBLIC :: LinSolverLisPointer_
 
-CHARACTER(*), PARAMETER :: modName = "LinSolverLis_Class"
 CHARACTER(*), PARAMETER :: myengine = "LIS_OMP"
 
 !----------------------------------------------------------------------------

@@ -17,6 +17,12 @@
 
 SUBMODULE(LinSolverLis_Class) SetMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "LinSolverLis_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,17 +39,28 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: s(2)
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL amat%GetParam(engine=engine)
 
 isok = TRIM(engine) .EQ. "LIS_OMP"
 CALL AssertError1(isok, myName, &
-      'engine of amat should be LIS_OMP, but give engine is = '//TRIM(engine))
+                  'engine of amat should be LIS_OMP, but give engine is='// &
+                  TRIM(engine))
 #endif
 
 s = amat%SHAPE()
 
 CALL obj%SetParam(amat=amat, localNumColumn=s(2), localNumRow=s(1), &
                   globalNumRow=s(1), globalNumColumn=s(2))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set
 
 !----------------------------------------------------------------------------
