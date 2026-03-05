@@ -16,8 +16,14 @@
 !
 
 SUBMODULE(FEDomainConnectivity_Class) FacetMethods
-USE ReallocateUtility
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "FEDomainConnectivity_Class@FacetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -130,9 +136,25 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 !
 ! INTEGER(I4B) :: tfacet
 ! CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData1"
@@ -161,11 +183,9 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! obj%isFacetToCell = .TRUE.
 ! CALL display("Calling facet_to_cell_helper()", unitno=stdout)
 !
-! CALL facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, isMaster)
+! CALL facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum,&
+!  isMaster)
 !
-! CALL e%raiseInformation(modName//'::'//myName//' - '// &
-!   & '[END] InitiateFacetToCellData()')
-
 END PROCEDURE obj_InitiateFacetToCellData1
 
 !----------------------------------------------------------------------------
@@ -173,9 +193,25 @@ END PROCEDURE obj_InitiateFacetToCellData1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 ! INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, nsd
 ! CLASS(AbstractMesh_), POINTER :: meshptr
 ! LOGICAL(LGT) :: isVar
@@ -194,8 +230,8 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! nsd = masterFEDomain%getNSD()
 !
 ! IF (dim_facet .GE. nsd) THEN
-!   CALL e%raiseError(modName//'::'//myName//' - '// &
-!   & 'xidimension of facet mesh is >= to spatial dimension of masterFEDomain')
+! CALL e%raiseError(modName//'::'//myName//' - '// &
+! 'xidimension of facet mesh is >= to spatial dimension of masterFEDomain')
 ! END IF
 !
 ! tface = facetMesh%getTotalElements()
@@ -253,7 +289,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !
 ! CALL e%raiseInformation(modName//'::'//myName//' - '// &
 !   & '[END] InitiateFacetToCellData()')
-
 END PROCEDURE obj_InitiateFacetToCellData2
 
 !----------------------------------------------------------------------------
@@ -261,10 +296,25 @@ END PROCEDURE obj_InitiateFacetToCellData2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData3()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
-!
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 ! INTEGER(I4B) :: iface, icell, ii, colID, tface, tfacet, &
 ! & cellGlobalNum, localFacetID, jj
 ! INTEGER(I4B), ALLOCATABLE :: nptrs(:), pt2elem(:), &
@@ -383,9 +433,25 @@ END PROCEDURE obj_InitiateFacetToCellData3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFacetToCellData4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetToCellData4()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
 ! INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, ii, iface, icell, &
 ! & nsd, tfacet, cellGlobalNum, localFacetID, jj
 ! CLASS(AbstractMesh_), POINTER :: cellMesh
@@ -540,7 +606,6 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 !
 ! CALL e%raiseInformation(modName//'::'//myName//' - '// &
 !   & '[END] InitiateFacetToCellData()')
-
 END PROCEDURE obj_InitiateFacetToCellData4
 
 !----------------------------------------------------------------------------
@@ -556,8 +621,9 @@ END PROCEDURE obj_MasterCellNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_MasterCellNumber2
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(localElement)
+INTEGER(I4B) :: ii, tsize
+tsize = SIZE(localElement)
+DO ii = 1, tsize
   ans(ii) = obj%facetToCell(localElement(ii))%GlobalCellData(1, 1)
 END DO
 END PROCEDURE obj_MasterCellNumber2
@@ -568,8 +634,10 @@ END PROCEDURE obj_MasterCellNumber2
 
 MODULE PROCEDURE obj_MasterCellNumber3
 INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: isok
 
-IF (ALLOCATED(obj%facetToCell)) THEN
+isok = ALLOCATED(obj%facetToCell)
+IF (isok) THEN
   tsize = SIZE(obj%facetToCell)
 ELSE
   tsize = 0
@@ -586,16 +654,17 @@ END PROCEDURE obj_MasterCellNumber3
 
 MODULE PROCEDURE obj_GetMasterCellNumber
 INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
 
 tsize = 0
-IF (ALLOCATED(obj%facetToCell)) THEN
+isok = ALLOCATED(obj%facetToCell)
+IF (isok) THEN
   tsize = SIZE(obj%facetToCell)
 END IF
 
 DO ii = 1, tsize
   VALUE(ii) = obj%facetToCell(ii)%GlobalCellData(1, 1)
 END DO
-
 END PROCEDURE obj_GetMasterCellNumber
 
 !----------------------------------------------------------------------------
@@ -611,8 +680,9 @@ END PROCEDURE obj_SlaveCellNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SlaveCellNumber2
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(localElement)
+INTEGER(I4B) :: ii, tsize
+tsize = SIZE(localElement)
+DO ii = 1, tsize
   ans(ii) = obj%facetToCell(localElement(ii))%GlobalCellData(1, 2)
 END DO
 END PROCEDURE obj_SlaveCellNumber2
@@ -623,9 +693,11 @@ END PROCEDURE obj_SlaveCellNumber2
 
 MODULE PROCEDURE obj_SlaveCellNumber3
 INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: isok
 
 tsize = 0
-IF (ALLOCATED(obj%facetToCell)) THEN
+isok = ALLOCATED(obj%facetToCell)
+IF (isok) THEN
   tsize = SIZE(obj%facetToCell)
 ELSE
   tsize = 0
@@ -641,8 +713,11 @@ END PROCEDURE obj_SlaveCellNumber3
 
 MODULE PROCEDURE obj_GetSlaveCellNumber
 INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
 tsize = 0
-IF (ALLOCATED(obj%facetToCell)) THEN
+isok = ALLOCATED(obj%facetToCell)
+IF (isok) THEN
   tsize = SIZE(obj%facetToCell)
 END IF
 
@@ -652,7 +727,7 @@ END DO
 END PROCEDURE obj_GetSlaveCellNumber
 
 !----------------------------------------------------------------------------
-!                                                       masterFacetLocalID
+!                                                         MasterFacetLocalID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_MasterFacetLocalID1
@@ -664,8 +739,10 @@ END PROCEDURE obj_MasterFacetLocalID1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_MasterFacetLocalID2
-INTEGER(I4B) :: ii
-DO ii = 1, SIZE(localElement)
+INTEGER(I4B) :: ii, tsize
+
+tsize = SIZE(localElement)
+DO ii = 1, tsize
   ans(ii) = obj%facetToCell(localElement(ii))%GlobalCellData(2, 1)
 END DO
 END PROCEDURE obj_MasterFacetLocalID2
@@ -676,20 +753,20 @@ END PROCEDURE obj_MasterFacetLocalID2
 
 MODULE PROCEDURE obj_MasterFacetLocalID3
 INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: isok
 
 tsize = 0
-IF (ALLOCATED(obj%facetToCell)) THEN
+isok = ALLOCATED(obj%facetToCell)
+IF (isok) THEN
   tsize = SIZE(obj%facetToCell)
 END IF
 
 CALL Reallocate(ans, tsize)
-
 CALL obj%GetMasterFacetLocalID(ans)
-
 END PROCEDURE obj_MasterFacetLocalID3
 
 !----------------------------------------------------------------------------
-!                                                     GetMasterFacetLocalID
+!                                                      GetMasterFacetLocalID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMasterFacetLocalID
@@ -703,7 +780,7 @@ END DO
 END PROCEDURE obj_GetMasterFacetLocalID
 
 !----------------------------------------------------------------------------
-!                                                       slaveFacetLocalID
+!                                                          SlaveFacetLocalID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SlaveFacetLocalID1
@@ -711,7 +788,7 @@ ans = obj%facetToCell(localElement)%GlobalCellData(2, 2)
 END PROCEDURE obj_SlaveFacetLocalID1
 
 !----------------------------------------------------------------------------
-!                                                       slaveFacetLocalID
+!                                                          SlaveFacetLocalID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SlaveFacetLocalID2
@@ -946,5 +1023,7 @@ END PROCEDURE obj_GetTotalFacet
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE FacetMethods

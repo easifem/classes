@@ -33,7 +33,6 @@ PUBLIC :: FEDomainConnectivity_
 PUBLIC :: FEDomainConnectivityPointer_
 PUBLIC :: FEDomainConnectivityDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "FEDomainConnectivity_Class"
 INTEGER(I4B), PARAMETER :: pType = 1
 INTEGER(I4B), PARAMETER :: hType = 2
 INTEGER(I4B), PARAMETER :: rType = 3

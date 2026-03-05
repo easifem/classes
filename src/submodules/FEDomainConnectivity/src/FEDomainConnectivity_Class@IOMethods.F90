@@ -16,12 +16,19 @@
 !
 
 SUBMODULE(FEDomainConnectivity_Class) IOMethods
-USE Display_Method
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "FEDomainConnectivity_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                  DisplayFacetToCellData
+!                                                     DisplayFacetToCellData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayFacetToCellData
@@ -29,12 +36,12 @@ INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: abool
 CHARACTER(:), ALLOCATABLE :: astr
 
-abool = ALLOCATED(obj%facetToCell)
-CALL Display(abool, "FEDomainConnectivity_::obj%facetToCell ALLOCATED: ",  &
-  & unitno=unitno)
-IF (.NOT. abool) RETURN
-
 CALL Display(msg, unitno=unitno)
+
+abool = ALLOCATED(obj%facetToCell)
+CALL Display(abool, "FEDomainConnectivity_::obj%facetToCell ALLOCATED: ", &
+             unitno=unitno)
+IF (.NOT. abool) RETURN
 
 tsize = SIZE(obj%facetToCell)
 astr = "facetID, globalCell(master), localFacetID(master), dim(master), &
@@ -45,11 +52,14 @@ CALL Display(astr, unitno=unitno)
 
 DO ii = 1, tsize
   astr = Tostring(obj%facetToCell(ii)%facetID)//", "// &
-    & Tostring(obj%facetToCell(ii)%globalCellData(:, 1))//", "// &
-    & Tostring(obj%facetToCell(ii)%globalCellData(:, 2))
+         Tostring(obj%facetToCell(ii)%globalCellData(:, 1))//", "// &
+         Tostring(obj%facetToCell(ii)%globalCellData(:, 2))
   CALL Display(astr, unitno=unitno)
 END DO
-
 END PROCEDURE obj_DisplayFacetToCellData
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE IOMethods
