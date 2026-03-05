@@ -19,13 +19,12 @@
 ! summary: This module contains constructor method for [[BlockMatrixField_]]
 
 SUBMODULE(BlockMatrixField_Class) ConstructorMethods
-! USE DOF_Method, ONLY: DOF_Initiate => Initiate, &
-!                       OPERATOR(.tNodes.), &
-!                       DOF_Deallocate => DEALLOCATE
-! USE CSRMatrix_Method, ONLY: CSRMatrix_Initiate => Initiate
-! USE FEDOF_Class, ONLY: FEDOFSetSparsity
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BlockMatrixField_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 

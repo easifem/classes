@@ -27,7 +27,13 @@ USE MatrixFieldUtility, ONLY: Export_Header
 USE MatrixFieldUtility, ONLY: Import_Header
 USE MatrixFieldUtility, ONLY: Import_CheckError
 USE MatrixFieldUtility, ONLY: Import_PhysicalVar
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BlockMatrixField_Class@HDFMethods.F90"
+#endif
 
 CONTAINS
 
@@ -52,8 +58,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ! From MatrixFieldUtility
-CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group, &
-                       myName=myName, modName=modName)
+CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group)
 
 #ifdef DEBUG_VER
 isok = PRESENT(fedof) .OR. PRESENT(fedofs)
@@ -62,28 +67,33 @@ CALL AssertError1(isok, myName, "Either fedof or fedofs should be present")
 
 ! From MatrixFieldUtility
 CALL Import_Header( &
-  obj=obj, hdf5=hdf5, group=group, modName=modName, myName=myName, &
+  obj=obj, hdf5=hdf5, group=group, &
   fieldType=fieldType, name=name, engine=engine, matrixProp=matrixProp, &
   isRectangle=isRectangle)
 
 ! tPhysicalVarNames
 dsetname = TRIM(group)//"/tPhysicalVarNames"
+
 #ifdef DEBUG_VER
 isok = hdf5%PathExists(dsetname%chars())
 CALL AssertError1(isok, myName, 'dataset '//dsetname//' should be present')
 #endif
+
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=tvar)
 
 ! spaceCompo
 dsetname = TRIM(group)//"/spaceCompo"
+
 #ifdef DEBUG_VER
 isok = hdf5%PathExists(dsetname%chars())
 CALL AssertError1(isok, myName, 'dataset '//dsetname//' should be present')
 #endif
+
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=spaceCompo)
 
 ! timeCompo
 dsetname = TRIM(group)//"/timeCompo"
+
 #ifdef DEBUG_VER
 isok = hdf5%PathExists(dsetname%chars())
 timeCompo = 1
@@ -171,8 +181,10 @@ IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
 IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
 IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
 
+#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] Import()')
+                        '[END] ')
+#endif
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------

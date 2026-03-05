@@ -43,7 +43,6 @@ IMPLICIT NONE
 
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "BlockMatrixField_Class"
 INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 
 PUBLIC :: BlockMatrixField_
