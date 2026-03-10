@@ -16,29 +16,23 @@
 !
 
 SUBMODULE(STScalarField_Class) SurfaceNBCMethods
-USE BaseType, ONLY: QuadraturePoint_
+USE AbstractFE_Class, ONLY: AbstractFE_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpaceTime
-USE BaseType, ONLY: math => TypeMathOpt
-USE ReallocateUtility, ONLY: Reallocate
-USE FEVariable_Method, ONLY: NodalVariable
-USE FEVariable_Method, ONLY: FEVariable_Set => Set
-USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ElemshapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
-USE AbstractFE_Class, ONLY: AbstractFE_
-USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-USE STForceVector_Method, ONLY: STForceVector_
-USE NeumannBC_Class, ONLY: NeumannBC_
-USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: NodalVariable
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
-USE ElemshapeData_Method, ONLY: ElemshapeData_Display => Display
-#endif
-
+USE NeumannBC_Class, ONLY: NeumannBC_
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE ReallocateUtility, ONLY: Reallocate
+USE STForceVector_Method, ONLY: STForceVector_
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -57,19 +51,16 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplySurfaceNeumannBC()"
 #endif
 
 LOGICAL(LGT) :: isok
-
-CLASS(NeumannBC_), POINTER :: nbc
-CLASS(AbstractMesh_), POINTER :: mesh
-CLASS(AbstractOneDimFE_), POINTER :: timefeptr
-
 INTEGER(I4B) :: tbc, ibc, maxNNSGeo, maxNNS, maxNNT
 INTEGER(I4B), ALLOCATABLE :: facetCon(:)
 REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:, :), forceVec(:, :)
-
 TYPE(FEVariable_) :: forceVar
 TYPE(QuadraturePoint_) :: quad, facetQuad, timeQuad
 TYPE(ElemShapeData_) :: elemsd, facetElemsd, geoElemsd, geoFacetElemsd, &
                         timeelemsd, timegeoelemsd
+CLASS(NeumannBC_), POINTER :: nbc
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(AbstractOneDimFE_), POINTER :: timefeptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -87,8 +78,8 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
+! set the value in nbcField
 CALL nbcField%SetAll(VALUE=math%zero)
-
 DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
@@ -151,14 +142,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ApplySurfaceNeumannBC
 
 !----------------------------------------------------------------------------
-!                       STScalarFieldAssembleSurfaceSource@ScalarFieldMethods
+!                                          STScalarFieldAssembleSurfaceSource
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-05
 ! summary: Assemble surface source into RHS
 !
-!# Introduction
+!# STScalarFieldAssembleSurfaceSource
 !
 ! This is an internal routine that assemble surface source (Neumann BC)
 ! into the right-hand side (RHS) vector of a scalar field.
@@ -176,9 +167,6 @@ SUBROUTINE STScalarFieldAssembleSurfaceSource( &
   REAL(DFP), INTENT(IN) :: scale
   INTEGER(I4B), INTENT(INOUT) :: facetCon(:)
   !! Working arrays for connectivity
-  !! geoCellCon: connectivity of the geometry
-  !! geoFacetCon: connectivity of the geometry facet element
-  !! cellCon: connectivity of the call
   REAL(DFP), INTENT(INOUT) :: xij(:, :), forceVec(:, :), nbcValue(:, :)
   !! Working arrays for element vectors and matrix
   TYPE(FEVariable_), INTENT(INOUT) :: forceVar
