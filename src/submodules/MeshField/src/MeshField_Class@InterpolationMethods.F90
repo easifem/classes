@@ -21,6 +21,7 @@ USE ReallocateUtility, ONLY: Reallocate
 USE BaseType, ONLY: FEVariable_
 USE BaseType, ONLY: TypeFEVariableVector
 USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: math => TypeMathOpt
 USE FEVariable_Method, ONLY: NodalVariable
 USE FEVariable_Method, ONLY: FEVariable_Set => Set
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
@@ -52,7 +53,7 @@ tElements = mesh%GetTotalElements()
 maxCon = 0
 
 DO iel = 1, tElements
-  feptr => fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
   ii = feptr%GetTotalInterpolationPoints(order=order, ipType=ipType)
   maxCon = MAX(maxCon, ii)
 END DO
@@ -60,7 +61,7 @@ END DO
 CALL VectorMeshFieldInitiate( &
   obj=obj, name="xij", fieldType=TypeFieldOpt%normal, &
   varType=TypeFieldOpt%space, engine=engine, defineOn=TypeFieldOpt%nodal, &
-  spaceCompo=3_I4B, nns=maxCon, mesh=mesh)
+  spaceCompo=math%three_i, nns=maxCon, mesh=mesh)
 
 CALL SetInterpolationPoints(obj=obj, order=order, ipType=ipType, &
                             fedof=fedof, mesh=mesh)
@@ -97,26 +98,26 @@ maxNNE = mesh%GetMaxNNE()
 
 maxCon = 0
 DO iel = 1, tElements
-  feptr => fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
   ii = feptr%GetTotalInterpolationPoints(order=order, ipType=ipType)
   maxCon = MAX(maxCon, ii)
 END DO
 
-CALL Reallocate(xij, 3, maxCon)
-CALL Reallocate(elemCoord, 3, maxNNE)
+CALL Reallocate(xij, math%three_i, maxCon)
+CALL Reallocate(elemCoord, math%three_i, maxNNE)
 fevar = NodalVariable( &
         val=xij, rank=TypeFEVariableVector, varType=TypeFEVariableSpace)
 
 elemCoord = 0.0_DFP
 
 DO iel = 1, tElements
-  CALL fedof%SetFE(globalElement=iel, islocal=.TRUE.)
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
 
-  feptr => fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
   CALL mesh%GetNodeCoord( &
     globalElement=iel, nodeCoord=elemCoord, nrow=elemCoord_i, &
-    ncol=elemCoord_j, islocal=.TRUE.)
+    ncol=elemCoord_j, islocal=math%yes)
 
   CALL feptr%GetInterpolationPoints( &
     xij=elemCoord, ans=xij, nrow=xij_i, ncol=xij_j, order=order, &
@@ -124,9 +125,9 @@ DO iel = 1, tElements
 
   CALL FEVariable_Set( &
     obj=fevar, val=xij(1:3, 1:xij_j), rank=TypeFEVariableVector, &
-    vartype=TypeFEVariableSpace, scale=1.0_DFP, addContribution=.FALSE.)
+    vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
-  CALL obj%Insert(globalElement=iel, islocal=.TRUE., fevar=fevar)
+  CALL obj%Insert(globalElement=iel, islocal=math%yes, fevar=fevar)
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
