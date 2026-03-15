@@ -57,7 +57,7 @@ REAL(DFP), ALLOCATABLE :: xij(:, :), nbcValue(:, :), forceVec(:, :)
 TYPE(FEVariable_) :: forceVar
 TYPE(QuadraturePoint_) :: quad, facetQuad, timeQuad
 TYPE(ElemShapeData_) :: elemsd, facetElemsd, geoElemsd, geoFacetElemsd, &
-                        timeelemsd, timegeoelemsd
+                        timeElemsd, timeGeoElemsd
 CLASS(NeumannBC_), POINTER :: nbc
 CLASS(AbstractMesh_), POINTER :: mesh
 CLASS(AbstractOneDimFE_), POINTER :: timefeptr
@@ -92,7 +92,7 @@ mesh => obj%fedof%GetMeshPointer()
 CALL obj%timefedof%SetFE()
 timefeptr => obj%timefedof%GetFEPointer()
 CALL timefeptr%GetGlobalTimeElemShapeData( &
-  elemsd=timeelemsd, geoelemsd=timegeoelemsd, quad=timeQuad, times=times)
+  elemsd=timeElemsd, geoelemsd=timeGeoElemsd, quad=timeQuad, times=times)
 
 maxNNSGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNS = obj%fedof%GetMaxTotalConnectivity()
@@ -109,7 +109,6 @@ forceVar = NodalVariable( &
 
 DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
-
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
 
@@ -119,7 +118,7 @@ DO ibc = 1, tbc
     forceVec=forceVec, nbcValue=nbcValue, forceVar=forceVar, quad=quad, &
     facetQuad=facetQuad, elemsd=elemsd, facetElemsd=facetElemsd, &
     geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, &
-    facetCon=facetCon, timeelemsd=timeelemsd)
+    facetCon=facetCon, timeElemsd=timeElemsd)
 END DO
 
 DEALLOCATE (xij, nbcValue, forceVec, facetCon)
@@ -132,8 +131,8 @@ CALL ElemshapeData_Deallocate(elemsd)
 CALL ElemshapeData_Deallocate(facetElemsd)
 CALL ElemshapeData_Deallocate(geoElemsd)
 CALL ElemshapeData_Deallocate(geoFacetElemsd)
-CALL ElemshapeData_Deallocate(timeelemsd)
-CALL ElemshapeData_Deallocate(timegeoelemsd)
+CALL ElemshapeData_Deallocate(timeElemsd)
+CALL ElemshapeData_Deallocate(timeGeoElemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -157,7 +156,7 @@ END PROCEDURE obj_ApplySurfaceNeumannBC
 SUBROUTINE STScalarFieldAssembleSurfaceSource( &
   obj, nbc, fedof, geofedof, mesh, nbcField, scale, xij, forceVec, &
   nbcValue, forceVar, quad, facetQuad, elemsd, facetElemsd, geoElemsd, &
-  geoFacetElemsd, facetCon, timeelemsd)
+  geoFacetElemsd, facetCon, timeElemsd)
   CLASS(STScalarField_), INTENT(INOUT) :: obj
   CLASS(NeumannBC_), INTENT(INOUT) :: nbc
   CLASS(FEDOF_), INTENT(INOUT) :: fedof
@@ -174,7 +173,7 @@ SUBROUTINE STScalarFieldAssembleSurfaceSource( &
   TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
   !! Working variables
   TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
-                                         geoFacetElemsd, timeelemsd
+                                         geoFacetElemsd, timeElemsd
   !! Working variables for containing shape function data
 
 #ifdef DEBUG_VER
@@ -250,7 +249,7 @@ SUBROUTINE STScalarFieldAssembleSurfaceSource( &
       scale=math%one, addContribution=math%no)
 
     CALL STForceVector_( &
-      testSpace=facetElemsd, testTime=timeelemsd, c=forceVar, &
+      testSpace=facetElemsd, testTime=timeElemsd, c=forceVar, &
       crank=TypeFEVariableScalar, ans=forceVec, nrow=forceVec_i, &
       ncol=forceVec_j)
 
