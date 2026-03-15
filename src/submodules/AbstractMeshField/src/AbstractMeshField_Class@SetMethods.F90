@@ -61,29 +61,45 @@ SUBROUTINE MasterSet(val, indxVal, set_val, indx, tsize, ss, indxShape, s, &
 #ifdef DEBUG_VER
   myint1 = indxVal(indx + 1) - indxVal(indx)
   isok = myint1 .EQ. tsize
-  CALL AssertError1(isok, myName, &
-                 "Size mismatch in val array assignment: &
-                &Expected size = "// &
-                    ToString(tsize)//", Actual size = "//ToString(myint1))
+  CALL AssertError2(myint1, tsize, myName, &
+                    "Size mismatch in val array assignment, "// &
+                    "a=actualSize, b=expectedSize,")
 #endif
 
 #ifdef DEBUG_VER
   myint1 = indxShape(indx + 1) - indxShape(indx)
   isok = myint1 .EQ. tshape
-  CALL AssertError1(isok, myName, &
-                  "Size mismatch in ss array assignment: &
-                  &Expected size = "// &
-                    ToString(tshape)//", Actual size = "//ToString(myint1))
+  CALL AssertError2(myint1, tshape, myName, &
+                    "Size mismatch in ss array assignment, "// &
+                    " a=actualSize,b=expectedSize")
+#endif
+
+#ifdef DEBUG_VER
+  myint1 = SIZE(val)
+  CALL AssertError3(indxVal(indx), myint1, myName, &
+                    "error in val, a=indxVal(indx), b=size(val)")
+
+  CALL AssertError3(indxVal(indx + 1) - 1, myint1, myName, &
+                    "error in val, a=indxVal(indx+1)-1, b=size(val)")
 #endif
 
   val(indxVal(indx):indxVal(indx + 1) - 1) = set_val(1:tsize)
+
+#ifdef DEBUG_VER
+  myint1 = SIZE(ss)
+  CALL AssertError3(indxShape(indx), myint1, myName, &
+                    "error in ss, a=indxShape(indx), b=size(ss)")
+
+  CALL AssertError3(indxShape(indx + 1) - 1, myint1, myName, &
+                    "error in ss, a=indxShape(indx+1)-1, b=size(ss)")
+#endif
+
   ss(indxShape(indx):indxShape(indx + 1) - 1) = s(1:tshape)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE MasterSet
 
 !----------------------------------------------------------------------------
@@ -106,7 +122,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 iel = 1
 isok = obj%fieldType .EQ. typefield%Constant
 IF (.NOT. isok) iel = obj%mesh%GetLocalElemNumber( &
-                      globalElement=globalElement, islocal=islocal)
+                      globalElement=globalElement, &
+                      islocal=islocal)
 
 tsize = FEVariable_SIZE(fevar)
 tshape = GetTotalRow(rank=obj%rank, varType=obj%varType)
@@ -261,7 +278,7 @@ ELSE
 END IF
 
 DO iel = 1, telem
-  CALL obj%Set(globalElement=iel, islocal=.TRUE., fevar=fevar)
+  CALL obj%Set(globalElement=iel, islocal=math%yes, fevar=fevar)
 END DO
 
 #ifdef DEBUG_VER
@@ -300,7 +317,7 @@ IF (isok) THEN
 #endif
 
   CALL func%Get(fevar=fevar)
-  CALL obj%Set(fevar=fevar, globalElement=1, islocal=.TRUE.)
+  CALL obj%Set(fevar=fevar, globalElement=1, islocal=math%yes)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -94,7 +94,7 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! it is upper bound for shape of data in a given element.
 
   INTEGER(I4B), ALLOCATABLE :: ss(:)
-  !! shape of the data
+  !! shape of the data stored in the MeshField
 
   INTEGER(I4B), ALLOCATABLE :: indxShape(:)
   !! Index for shape
@@ -173,9 +173,27 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetSpaceVectorField_ => &
     obj_GetSpaceVectorField_
   !! get the space values from vector mesh field without allocation.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetSpaceScalarField_ => &
+    obj_GetSpaceScalarField_
+  !! get the space values from Scalar mesh field without allocation.
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetConstantScalarField_ => obj_GetConstantScalarField_
+  !! get the Constant values from Scalar mesh field without allocation.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRank => &
     obj_GetRank
   !! Get rank of the field
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalElements => &
+    obj_GetTotalElements
+  !! Get total number of elements tSize
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetVarType => &
+    obj_GetVarType
+  !! Get varType of the field
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalShape => &
+    obj_GetTotalShape
+  !! Get total shape of data, this the size of shape vector
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetShape => &
+    obj_GetShape
+  !! Get the shape of data for a given element
 
   ! SET:
   ! @AddMethods
@@ -586,10 +604,18 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-02-27
 ! summary: Get the element value of vector meshField
+!
+!# GetSpaceVectorField_
+!
+! Get the value of vector mesh field which has vartype = space.
+! The result will be a two dimension array. the first index of ans will
+! represent the space components, and second index will represent the
+! total number of spatial points
+!
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSpaceVectorField_(obj, globalElement, ans, &
-                                             nrow, ncol, islocal)
+  MODULE SUBROUTINE obj_GetSpaceVectorField_( &
+    obj, globalElement, ans, nrow, ncol, islocal)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number
@@ -603,18 +629,173 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                            GetSpaceScalarField_@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the element value of Scalar meshField
+!
+!# GetSpaceScalarField_
+!
+! Get the value of scalar mesh field which has vartype = space.
+! The result will be a one dimension array, which represents the value
+! at spatial nodes.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSpaceScalarField_( &
+    obj, globalElement, ans, tsize, islocal)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    !! abstract mesh field
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Element level value of Scalar mesh field
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Size of data written in ans
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! Is globalElement local element
+  END SUBROUTINE obj_GetSpaceScalarField_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetConstantScalarField_@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the element value of Scalar meshField
+!
+!# GetConstantScalarField_
+!
+! Get the value of scalar mesh field which has vartype = constant.
+! The result will be a scalar
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetConstantScalarField_( &
+    obj, globalElement, ans, islocal)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    !! abstract mesh field
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! Global element number
+    REAL(DFP), INTENT(INOUT) :: ans
+    !! Element level value of Scalar mesh field
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! Is globalElement local element
+  END SUBROUTINE obj_GetConstantScalarField_
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                         GetRank@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-02-27
 ! summary: Get the rank of mesh field
+!
+!# GetRank
+!
+! Get the rank of data stored in obj
 
 INTERFACE
   MODULE FUNCTION obj_GetRank(obj) RESULT(ans)
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetRank
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetTotalElements@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the total number of elements in obj
+!
+!# GetTotalElements
+!
+! Get the total number of elements in obj
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalElements(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalElements
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetVarType@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the varType of obj
+!
+!# GetVarType
+!
+! Get the varType of obj
+
+INTERFACE
+  MODULE FUNCTION obj_GetVarType(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetVarType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetTotalShape@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the total shape of obj
+!
+!# GetTotalShape
+!
+! Get the total shape of data. Ans is the total size of shape vector of
+! data. For example,
+!
+! - For scalar constant data, ans is 1
+! - For scalar, space or time data, ans is 1
+! - For scalar, space-time data, ans is 1
+!
+! - For vector, constant data, ans is 1
+! - For vector, space or time data, ans is 2
+! - For vector, space-time data, ans is 3
+!
+! - For matrix, constant data, ans is 2
+! - For matrix, space or time data, ans is 3
+! - For matrix, space-time data, ans is 4
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalShape(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalShape
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                        GetShape@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the shape of data in an element
+!
+!# GetShape
+!
+! Get the shape of data in an element.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetShape(obj, globalElement, islocal, ans, tsize)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global or local element number
+    LOGICAL(LGT), INTENT(IN) :: islocal
+    !! if true globalElement is a local element
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+  END SUBROUTINE obj_GetShape
 END INTERFACE
 
 !----------------------------------------------------------------------------

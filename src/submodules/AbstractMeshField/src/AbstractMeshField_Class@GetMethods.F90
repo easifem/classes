@@ -686,7 +686,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetMaxNNE
 
 !----------------------------------------------------------------------------
-!                                                                       Get
+!                                                        GetSpaceVectorField
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSpaceVectorField_
@@ -749,6 +749,127 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetSpaceVectorField_
 
 !----------------------------------------------------------------------------
+!                                                        GetSpaceScalarField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSpaceScalarField_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSpaceScalarField_()"
+#endif
+INTEGER(I4B) :: iel, a, b
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = fevaropt%scalar .EQ. obj%rank
+CALL AssertError1(isok, myName, &
+                  "obj%rank is not Scalar.")
+#endif
+
+#ifdef DEBUG_VER
+isok = fevaropt%space .EQ. obj%varType
+CALL AssertError1(isok, myName, &
+                  "obj%varType is not space.")
+#endif
+
+isok = obj%fieldType .EQ. TypeField%constant
+IF (isok) THEN
+  iel = 1
+ELSE
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
+END IF
+
+#ifdef DEBUG_VER
+a = obj%indxShape(iel)
+b = obj%indxShape(iel + 1) - 1
+
+isok = (b - a + 1 .EQ. math%one_i)
+CALL AssertError1(isok, myName, &
+                  "error in getting shape of data")
+#endif
+
+a = obj%indxVal(iel)
+b = obj%indxVal(iel + 1) - 1
+tsize = b - a + 1
+
+ans(1:tsize) = obj%val(a:b)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSpaceScalarField_
+
+!----------------------------------------------------------------------------
+!                                                     GetConstantScalarField
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetConstantScalarField_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetConstantScalarField_()"
+INTEGER(I4B) :: b, tsize
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: iel, a
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = fevaropt%scalar .EQ. obj%rank
+CALL AssertError1(isok, myName, &
+                  "obj%rank is not Scalar.")
+#endif
+
+#ifdef DEBUG_VER
+isok = fevaropt%constant .EQ. obj%varType
+CALL AssertError1(isok, myName, &
+                  "obj%varType is not Constant.")
+#endif
+
+isok = obj%fieldType .EQ. TypeField%constant
+IF (isok) THEN
+  iel = 1
+ELSE
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
+END IF
+
+#ifdef DEBUG_VER
+a = obj%indxShape(iel)
+b = obj%indxShape(iel + 1) - 1
+
+isok = (b - a + 1 .EQ. math%one_i)
+CALL AssertError1(isok, myName, &
+                  "error in getting shape of data")
+#endif
+
+a = obj%indxVal(iel)
+
+#ifdef DEBUG_VER
+b = obj%indxVal(iel + 1) - 1
+tsize = b - a + 1
+CALL AssertError2(tsize, math%one_i, myName, &
+                  "error in getting size of data, a=tsize, b=1")
+#endif
+
+ans = obj%val(a)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetConstantScalarField_
+
+!----------------------------------------------------------------------------
 !                                                                    GetRank
 !----------------------------------------------------------------------------
 
@@ -769,6 +890,112 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetRank
+
+!----------------------------------------------------------------------------
+!                                                           GetTotalElements
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalElements
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElements()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%tSize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalElements
+
+!----------------------------------------------------------------------------
+!                                                                 GetVarType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVarType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVarType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%varType
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVarType
+
+!----------------------------------------------------------------------------
+!                                                              GetTotalShape
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalShape
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalShape()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%totalShape
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTotalShape
+
+!----------------------------------------------------------------------------
+!                                                              GetShape
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetShape
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetShape()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: iel, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+#endif
+
+isok = obj%fieldType .EQ. TypeField%constant
+IF (isok) THEN
+  iel = 1
+ELSE
+  iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                    islocal=islocal)
+END IF
+
+tsize = 0
+DO ii = obj%indxShape(iel), obj%indxShape(iel + 1) - 1
+  tsize = tsize + 1
+  ans(tsize) = obj%ss(ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetShape
 
 !----------------------------------------------------------------------------
 !

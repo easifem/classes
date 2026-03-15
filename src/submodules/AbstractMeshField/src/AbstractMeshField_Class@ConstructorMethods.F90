@@ -23,13 +23,13 @@ IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-                           "AbstractMeshField_Class@ConstructorMethods"
+                           "AbstractMeshField_Class@ConstructorMethods.F90"
 #endif
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                Deallocate
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
@@ -51,10 +51,13 @@ obj%defineOn = 0
 obj%varType = 0
 obj%rank = 0
 obj%totalShape = 0
+
 IF (ALLOCATED(obj%val)) DEALLOCATE (obj%val)
 IF (ALLOCATED(obj%indxVal)) DEALLOCATE (obj%indxVal)
+
 IF (ALLOCATED(obj%ss)) DEALLOCATE (obj%ss)
 IF (ALLOCATED(obj%indxShape)) DEALLOCATE (obj%indxShape)
+
 obj%mesh => NULL()
 
 #ifdef DEBUG_VER
@@ -85,26 +88,14 @@ obj%name = obj2%name
 obj%engine = obj2%engine
 obj%tSize = obj2%tSize
 obj%defineOn = obj2%defineOn
-obj%varType = obj2%varType
 obj%rank = obj2%rank
-obj%mesh => obj2%mesh
-
-tsize = SafeSize(obj2%val)
-CALL Reallocate(obj%val, tsize)
-DO CONCURRENT(ii=1:tsize)
-  obj%val(ii) = obj2%val(ii)
-END DO
-
-tsize = SafeSize(obj2%indxVal)
-CALL Reallocate(obj%indxVal, tsize)
-DO CONCURRENT(ii=1:tsize)
-  obj%indxVal(ii) = obj2%indxVal(ii)
-END DO
-
+obj%varType = obj2%varType
 obj%totalShape = obj2%totalShape
+obj%maxShape = obj2%maxShape
 
-CALL Reallocate(obj%ss, obj%totalShape)
-DO CONCURRENT(ii=1:obj%totalShape)
+tsize = SafeSize(obj2%ss)
+CALL Reallocate(obj%ss, tsize)
+DO CONCURRENT(ii=1:tsize)
   obj%ss(ii) = obj2%ss(ii)
 END DO
 
@@ -114,11 +105,24 @@ DO CONCURRENT(ii=1:tsize)
   obj%indxShape(ii) = obj2%indxShape(ii)
 END DO
 
+tsize = SafeSize(obj2%indxVal)
+CALL Reallocate(obj%indxVal, tsize)
+DO CONCURRENT(ii=1:tsize)
+  obj%indxVal(ii) = obj2%indxVal(ii)
+END DO
+
+tsize = SafeSize(obj2%val)
+CALL Reallocate(obj%val, tsize)
+DO CONCURRENT(ii=1:tsize)
+  obj%val(ii) = obj2%val(ii)
+END DO
+
+obj%mesh => obj2%mesh
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
