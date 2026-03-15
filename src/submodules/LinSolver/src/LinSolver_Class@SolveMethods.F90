@@ -109,25 +109,13 @@ SUBROUTINE CHECKERROR(IPAR, FPAR, myName)
     END IF
 
     CALL EqualLine(unitNo=unitNo)
-
     CALL Display(IPAR(7), "Number of Matrix-Vector Multiplication: ", &
                  unitNo=unitNo)
-
-    CALL Display(FPAR(3), "Initial residual/error norm: ", &
-                 unitNo=unitNo)
-
-    CALL Display(FPAR(4), "Target residual/error norm: ", &
-                 unitNo=unitNo)
-
-    CALL Display(FPAR(6), "Current residual/error norm: ", &
-                 unitNo=unitNo)
-
-    CALL Display(FPAR(5), "Current residual norm: ", &
-                 unitNo=unitNo)
-
-    CALL Display(FPAR(7), "Convergence rate: ", &
-                 unitNo=unitNo)
-
+    CALL Display(FPAR(3), "Initial residual/error norm: ", unitNo=unitNo)
+    CALL Display(FPAR(4), "Target residual/error norm: ", unitNo=unitNo)
+    CALL Display(FPAR(6), "Current residual/error norm: ", unitNo=unitNo)
+    CALL Display(FPAR(5), "Current residual norm: ", unitNo=unitNo)
+    CALL Display(FPAR(7), "Convergence rate: ", unitNo=unitNo)
     CALL EqualLine(unitNo=unitNo)
 
     CALL e%RaiseError(modName//'::'//myName//" - "// &
@@ -329,8 +317,8 @@ CASE (TypeSolverNameOpt%SUPERLU)
     rhsvar => rhs%GetPointer()
     solvar => sol%GetPointer()
 
-    CALL LinSolve(A=amat%mat, B=rhsvar, X=solvar, isTranspose=.FALSE., &
-                  isFactored=.FALSE., PrintStat=yes_no_t%YES, info=info)
+    CALL LinSolve(A=amat%mat, B=rhsvar, X=solvar, isTranspose=math%no, &
+                  isFactored=math%no, PrintStat=yes_no_t%yes, info=info)
 
     NULLIFY (rhsvar, solvar)
 
@@ -339,9 +327,8 @@ CASE (TypeSolverNameOpt%SUPERLU)
     CALL AssertError1(isok, myName, 'Failure in LinSolve()')
 #endif
 
-  CLASS DEFAULT
-
 #ifdef DEBUG_VER
+  CLASS DEFAULT
     CALL AssertError1(math%no, myName, 'No case found for obj%Amat type')
 #endif
 
@@ -365,92 +352,121 @@ END PROCEDURE obj_Solve
 !                                                               LS_SOLVE_CG
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_CG
-#define _LIS_NAME CG
-#define _MY_NAME "LS_SOLVE_CG"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_CG
+#define _LIS_NAME_ CG
+#define _MY_NAME_ "LS_SOLVE_CG"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                               LS_SOLVE_CGNR
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_CGNR
-#define _LIS_NAME CGNR
-#define _MY_NAME "LS_SOLVE_CGNR"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_CGNR
+#define _LIS_NAME_ CGNR
+#define _MY_NAME_ "LS_SOLVE_CGNR"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                               LS_SOLVE_BCG
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_BCG
-#define _LIS_NAME BCG
-#define _MY_NAME "LS_SOLVE_BCG"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_BCG
+#define _LIS_NAME_ BCG
+#define _MY_NAME_ "LS_SOLVE_BCG"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                               LS_SOLVE_DBCG
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_DBCG
-#define _LIS_NAME DBCG
-#define _MY_NAME "LS_SOLVE_DBCG"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_DBCG
+#define _LIS_NAME_ DBCG
+#define _MY_NAME_ "LS_SOLVE_DBCG"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                          LS_SOLVE_BCGSTAB
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_BCGSTAB
-#define _LIS_NAME BCGSTAB
-#define _MY_NAME "LS_SOLVE_BCGSTAB"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_BCGSTAB
+#define _LIS_NAME_ BCGSTAB
+#define _MY_NAME_ "LS_SOLVE_BCGSTAB"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                          LS_SOLVE_TFQMR
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_TFQMR
-#define _LIS_NAME TFQMR
-#define _MY_NAME "LS_SOLVE_TFQMR"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_TFQMR
+#define _LIS_NAME_ TFQMR
+#define _MY_NAME_ "LS_SOLVE_TFQMR"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                              LS_SOLVE_FOM
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_FOM
-#define _LIS_NAME FOM
-#define _MY_NAME "LS_SOLVE_FOM"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_FOM
+#define _LIS_NAME_ FOM
+#define _MY_NAME_ "LS_SOLVE_FOM"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                              LS_SOLVE_GMRES
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_GMRES
-#define _LIS_NAME GMRES
-#define _MY_NAME "LS_SOLVE_GMRES"
-
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_GMRES
+#define _LIS_NAME_ GMRES
+#define _MY_NAME_ "LS_SOLVE_GMRES"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                           LS_SOLVE_FGMRES
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_FGMRES
-#define _LIS_NAME FGMRES
-#define _MY_NAME "LS_SOLVE_FGMRES"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_FGMRES
+#define _LIS_NAME_ FGMRES
+#define _MY_NAME_ "LS_SOLVE_FGMRES"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !                                                           LS_SOLVE_DQGMRES
 !----------------------------------------------------------------------------
 
-#define _SUBROUTINE_NAME LS_SOLVE_DQGMRES
-#define _LIS_NAME DQGMRES
-#define _MY_NAME "LS_SOLVE_DQGMRES"
-#include "./LIS_SOLVE.F90"
+#define _SUBROUTINE_NAME_ LS_SOLVE_DQGMRES
+#define _LIS_NAME_ DQGMRES
+#define _MY_NAME_ "LS_SOLVE_DQGMRES"
+#include "./include/LIS_SOLVE.F90"
+#undef _SUBROUTINE_NAME_
+#undef _LIS_NAME_
+#undef _MY_NAME_
 
 !----------------------------------------------------------------------------
 !
