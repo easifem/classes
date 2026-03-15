@@ -72,8 +72,10 @@ END PROCEDURE obj_GetVectorValue
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetVectorValue_
-CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_()"
+MODULE PROCEDURE obj_GetVectorValue_1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_1()"
+#endif
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
@@ -93,12 +95,15 @@ CASE (funcopt%constEngine)
   val(1:tsize) = obj%vectorValue(1:tsize)
 
 CASE (funcopt%externalEngine)
+
 #ifdef DEBUG_VER
   CALL CheckError_ExternalEngine(obj=obj)
 #endif
+
   CALL obj%vectorFunction(args=args, nargs=obj%numArgs, ans=val, tsize=tsize)
 
 CASE (funcopt%specialFuncEngine)
+
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
 #endif
@@ -107,6 +112,7 @@ CASE (funcopt%luaEngine)
   CALL GetValue_LuaEngine(obj=obj, val=val, args=args)
 
 CASE (funcopt%equationParserEngine)
+
 #ifdef DEBUG_VER
   CALL CheckError_EquationParserEngine(obj=obj)
 #endif
@@ -116,11 +122,13 @@ CASE (funcopt%equationParserEngine)
   END DO
 
 CASE (funcopt%symengineEngine)
+
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
 #endif
 
 CASE DEFAULT
+
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, "No case found for engineID.")
 #endif
@@ -131,7 +139,34 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetVectorValue_
+END PROCEDURE obj_GetVectorValue_1
+
+!----------------------------------------------------------------------------
+!                                                            GetVectorValue_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVectorValue_2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_2()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ncol = SIZE(args, 2)
+DO ii = 1, ncol
+  CALL obj%GetVectorValue_(val=val(:, ii), tsize=nrow, args=args(:, ii))
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVectorValue_2
 
 !----------------------------------------------------------------------------
 !                                                                 CheckError

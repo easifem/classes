@@ -239,9 +239,9 @@ END SUBROUTINE GetValue_Lua
 !                                                                        Get
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetScalarValue
+MODULE PROCEDURE obj_GetScalarValue_1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetScalarValue()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetScalarValue_1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -291,7 +291,35 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetScalarValue
+END PROCEDURE obj_GetScalarValue_1
+
+!----------------------------------------------------------------------------
+!                                                             GetScalarValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetScalarValue_2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetScalarValue_2()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(args, 2)
+
+DO ii = 1, tsize
+  CALL obj%GetScalarValue_(val=val(ii), args=args(:, ii))
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetScalarValue_2
 
 !----------------------------------------------------------------------------
 !                                                               Include Error

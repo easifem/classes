@@ -73,9 +73,9 @@ END PROCEDURE obj_GetMatrixValue
 !                                                                       Get_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMatrixValue_
+MODULE PROCEDURE obj_GetMatrixValue_1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMatrixValue_()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetMatrixValue_1()"
 #endif
 
 INTEGER(I4B) :: ii, jj
@@ -155,7 +155,35 @@ END SELECT
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetMatrixValue_
+END PROCEDURE obj_GetMatrixValue_1
+
+!----------------------------------------------------------------------------
+!                                                             GetMatrixValue_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMatrixValue_2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMatrixValue_2()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+dim3 = SIZE(args, 2)
+DO ii = 1, dim3
+  CALL obj%GetMatrixValue_(val=val(:, :, ii), nrow=dim1, ncol=dim2, &
+                           args=args(:, ii))
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMatrixValue_2
 
 !----------------------------------------------------------------------------
 !                                                                 CheckError
