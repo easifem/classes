@@ -16,25 +16,26 @@
 !
 
 SUBMODULE(ScalarField_Class) GetMethods
-USE RealVector_Method, ONLY: GetValue_, Get, GetValue
-USE ReallocateUtility, ONLY: Reallocate
-USE MeshField_Class, ONLY: ScalarMeshFieldInitiate
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractFE_Class, ONLY: AbstractFE_
-USE FEVariable_Method, ONLY: NodalVariable
-USE FEVariable_Method, ONLY: QuadratureVariable
-USE FEVariable_Method, ONLY: FEVariable_Set => Set
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
-USE BaseType, ONLY: TypeFEVariableScalar
-USE BaseType, ONLY: TypeFEVariableSpace
-USE BaseType, ONLY: QuadraturePoint_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpace
+USE DOF_Method, ONLY: GetIDOF
 USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
-USE DOF_Method, ONLY: GetIDOF
 USE ElemshapeData_Method, ONLY: ElemshapeData_GetInterpolation => &
                                 GetInterpolation
+USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE FEVariable_Method, ONLY: NodalVariable
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE MeshField_Class, ONLY: ScalarMeshFieldInitiate
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE ReallocateUtility, ONLY: Reallocate
+USE RealVector_Method, ONLY: GetValue_, Get, GetValue
+
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -298,7 +299,7 @@ maxFedofCon = obj%fedof%GetMaxTotalConnectivity()
 
 maxCon = 0
 DO iel = 1, tElements
-  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
   ii = feptr%GetTotalInterpolationPoints(order=order, ipType=ipType)
   maxCon = MAX(maxCon, ii)
 END DO
@@ -327,11 +328,11 @@ sol_fevar = NodalVariable(tsize=maxFedofCon, rank=TypeFEVariableScalar, &
 
 DO iel = 1, tElements
 
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=.TRUE.)
-  CALL obj%fedof%SetFE(globalElement=iel, islocal=.TRUE.)
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
 
-  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=.TRUE.)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
   CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_i, &
                              ncol=refElemCoord_j)
@@ -347,7 +348,8 @@ DO iel = 1, tElements
   CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
 
   CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
-                         nrow=elemCoord_i, ncol=elemCoord_j, islocal=.TRUE.)
+                         nrow=elemCoord_i, ncol=elemCoord_j, &
+                         islocal=math%yes)
 
   ! This step is necessary to fix the orientation in Lagrange elements
   CALL feptr%GetGlobalElemShapeData( &
@@ -355,18 +357,18 @@ DO iel = 1, tElements
     xij=elemCoord(1:elemCoord_i, 1:elemCoord_j))
 
   CALL obj%fedof%GetConnectivity_( &
-    ans=solCon, tsize=tSolCon, globalElement=iel, islocal=.TRUE., opt='A')
+    ans=solCon, tsize=tSolCon, globalElement=iel, islocal=math%yes, opt='A')
 
   CALL obj%Get(VALUE=sol, tsize=tSol, globalNode=solCon(1:tSolCon), &
-               islocal=.TRUE.)
+               islocal=math%yes)
 
   CALL FEVariable_Set( &
     obj=sol_fevar, val=sol(1:tSol), rank=TypeFEVariableScalar, &
-    varType=TypeFEVariableSpace, scale=1.0_DFP, addContribution=.FALSE.)
+    varType=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
   CALL ElemshapeData_GetInterpolation(obj=elemsd, ans=fevar, val=sol_fevar)
 
-  CALL meshField%Insert(globalElement=iel, islocal=.TRUE., fevar=fevar)
+  CALL meshField%Insert(globalElement=iel, islocal=math%yes, fevar=fevar)
 
 END DO
 
