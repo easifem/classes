@@ -205,23 +205,29 @@ CONTAINS
 
   ! GET:
   ! @GetScalarValueMethods
-  PROCEDURE, PASS(obj) :: GetScalarValue => obj_GetScalarValue
-  GENERIC, PUBLIC :: Get => GetScalarValue
-  GENERIC, PUBLIC :: Get_ => GetScalarValue
+  PROCEDURE, PASS(obj) :: GetScalarValue1_ => obj_GetScalarValue_1
+  PROCEDURE, PASS(obj) :: GetScalarValue2_ => obj_GetScalarValue_2
+  GENERIC, PUBLIC :: GetScalarValue_ => GetScalarValue1_, GetScalarValue2_
+  GENERIC, PUBLIC :: Get => GetScalarValue1_
+  GENERIC, PUBLIC :: Get_ => GetScalarValue1_
 
   ! GET:
   ! @GetVectorValueMethods
   PROCEDURE, PASS(obj) :: GetVectorValue => obj_GetVectorValue
-  PROCEDURE, PASS(obj) :: GetVectorValue_ => obj_GetVectorValue_
   GENERIC, PUBLIC :: Get => GetVectorValue
-  GENERIC, PUBLIC :: Get_ => GetVectorValue_
+  PROCEDURE, PASS(obj) :: GetVectorValue1_ => obj_GetVectorValue_1
+  PROCEDURE, PASS(obj) :: GetVectorValue2_ => obj_GetVectorValue_2
+  GENERIC, PUBLIC :: GetVectorValue_ => GetVectorValue1_, GetVectorValue2_
+  GENERIC, PUBLIC :: Get_ => GetVectorValue1_
 
   ! GET:
   ! @GetMatrixValueMethods
   PROCEDURE, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
-  PROCEDURE, PASS(obj) :: GetMatrixValue_ => obj_GetMatrixValue_
   GENERIC, PUBLIC :: Get => GetMatrixValue
-  GENERIC, PUBLIC :: Get_ => GetMatrixValue_
+  PROCEDURE, PASS(obj) :: GetMatrixValue1_ => obj_GetMatrixValue_1
+  PROCEDURE, PASS(obj) :: GetMatrixValue2_ => obj_GetMatrixValue_2
+  GENERIC, PUBLIC :: GetMatrixValue_ => GetMatrixValue1_, GetMatrixValue2_
+  GENERIC, PUBLIC :: Get_ => GetMatrixValue1_
 
   ! GET:
   ! @GetFEVariableMethods
@@ -515,11 +521,42 @@ END INTERFACE
 !```
 !
 INTERFACE
-  MODULE SUBROUTINE obj_GetScalarValue(obj, val, args)
+  MODULE SUBROUTINE obj_GetScalarValue_1(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE obj_GetScalarValue
+  END SUBROUTINE obj_GetScalarValue_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  Get@GetScalarValueMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-02-13
+! summary: Returns the scalar value
+!
+! Get
+!
+! This method returns the value of scalar function.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/Scalar/Initiate_test_2.F90" %}}
+!```
+!
+INTERFACE
+  MODULE SUBROUTINE obj_GetScalarValue_2(obj, val, tsize, args)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    !! user functions
+    REAL(DFP), INTENT(INOUT) :: val(:)
+    !! list of scalar values
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in val
+    REAL(DFP), INTENT(IN) :: args(:, :)
+    !! argument list
+  END SUBROUTINE obj_GetScalarValue_2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -568,7 +605,7 @@ END INTERFACE
 !```
 !
 INTERFACE
-  MODULE SUBROUTINE obj_GetVectorValue_(obj, val, tsize, args)
+  MODULE SUBROUTINE obj_GetVectorValue_1(obj, val, tsize, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val(:)
     !! returned value
@@ -576,7 +613,36 @@ INTERFACE
     !! number of return values
     !! data written in val
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE obj_GetVectorValue_
+  END SUBROUTINE obj_GetVectorValue_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             Get@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 26 Oct 2021
+! summary: Returns the vector value no allocation
+!
+!# Get_
+!
+! Get the vector value without allocation.
+!
+!## Examples
+!
+!```fortran
+!{{% fortran-code file="examples/Vector/Get_test_1.F90" %}}
+!```
+!
+INTERFACE
+  MODULE SUBROUTINE obj_GetVectorValue_2(obj, val, nrow, ncol, args)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: val(:, :)
+    !! returned value
+    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
+    !! number of return values
+    REAL(DFP), INTENT(IN) :: args(:, :)
+  END SUBROUTINE obj_GetVectorValue_2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -605,18 +671,37 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date: 26 Oct 2021
+! date: 2026-03-13
 ! summary: Returns the Matrix value
 !
 !# Method for getting matrix value without allocation.
 !
 INTERFACE
-  MODULE SUBROUTINE obj_GetMatrixValue_(obj, val, nrow, ncol, args)
+  MODULE SUBROUTINE obj_GetMatrixValue_1(obj, val, nrow, ncol, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
     REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
-  END SUBROUTINE obj_GetMatrixValue_
+  END SUBROUTINE obj_GetMatrixValue_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Get_@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-03-13
+! summary: Returns the Matrix value
+!
+!# Method for getting matrix value without allocation.
+!
+INTERFACE
+  MODULE SUBROUTINE obj_GetMatrixValue_2(obj, val, dim1, dim2, dim3, args)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: val(:, :, :)
+    INTEGER(I4B), INTENT(OUT) :: dim1, dim2, dim3
+    REAL(DFP), INTENT(IN) :: args(:, :)
+  END SUBROUTINE obj_GetMatrixValue_2
 END INTERFACE
 
 !----------------------------------------------------------------------------
