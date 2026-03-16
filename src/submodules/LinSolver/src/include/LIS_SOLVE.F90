@@ -56,7 +56,8 @@ SUBROUTINE _SUBROUTINE_NAME_(obj, sol, rhs)
     ELSE IF (obj%IPAR(1) .EQ. math%zero_i) THEN
 
       CALL obj%SetParam(ierr=obj%ipar(1), iter=obj%ipar(7))
-      CALL DisplayConvergence(myName, obj%ipar(7), obj%FPAR)
+
+      CALL DisplayConvergence(iter=obj%ipar(7), fpar=obj%FPAR)
       EXIT main_loop
 
     END IF
