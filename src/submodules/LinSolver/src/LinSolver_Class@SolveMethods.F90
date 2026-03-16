@@ -165,13 +165,20 @@ END SUBROUTINE CHECKERROR
 !                                                        DisplayConvergence
 !----------------------------------------------------------------------------
 
-SUBROUTINE DisplayConvergence(myName, iter, FPAR)
-  CHARACTER(*), INTENT(IN) :: myName
+SUBROUTINE DisplayConvergence(iter, FPAR)
   INTEGER(I4B), INTENT(IN) :: iter
   REAL(DFP), INTENT(IN) :: FPAR(:)
 
   ! internal variable
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "DisplayConvergence()"
+#endif
   INTEGER(I4B) :: unitno
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   IF (e%isLogActive()) THEN
     unitno = e%getLogFileUnit()
@@ -179,11 +186,13 @@ SUBROUTINE DisplayConvergence(myName, iter, FPAR)
     unitno = stdout
   END IF
 
-  CALL e%RaiseInformation(modName//'::'//myName//" - "// &
-                          'Convergence is achieved')
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//" - "// &
+                    'Convergence is achieved')
+#endif
 
   CALL Blanklines(nol=2, unitno=unitno)
-  CALL EqualLine(unitNo=unitNo)
+  CALL EqualLine(unitno=unitno)
 
   CALL Display(iter, "Number of Matrix-Vector Multiplication: ", &
                unitno=unitno)
@@ -198,6 +207,11 @@ SUBROUTINE DisplayConvergence(myName, iter, FPAR)
   CALL Display(fpar(7), "Convergence rate: ", &
                unitno=unitno)
   CALL EqualLine(unitNo=unitNo)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE DisplayConvergence
 
 !----------------------------------------------------------------------------
@@ -355,7 +369,68 @@ END PROCEDURE obj_Solve
 #define _SUBROUTINE_NAME_ LS_SOLVE_CG
 #define _LIS_NAME_ CG
 #define _MY_NAME_ "LS_SOLVE_CG"
-#include "./include/LIS_SOLVE.F90"
+! #include "./include/LIS_SOLVE.F90"
+
+SUBROUTINE _SUBROUTINE_NAME_(obj, sol, rhs)
+  CLASS(LinSolver_), TARGET, INTENT(INOUT) :: obj
+  REAL(DFP), INTENT(INOUT) :: sol(:)
+  REAL(DFP), INTENT(INOUT) :: rhs(:)
+
+  ! Internal variables
+  CHARACTER(*), PARAMETER :: myName = _MY_NAME_
+  INTEGER(I4B) :: n
+  CLASS(AbstractMatrixField_), POINTER :: amat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  obj%IPAR(1) = math%zero_i
+  obj%FPAR(11) = math%zero
+  CALL obj%GetParam(globalNumRow=n, amat=amat)
+  obj%IPAR(7) = math%one_i
+
+  main_loop: DO
+
+    CALL _LIS_NAME_(n, rhs, sol, obj%ipar, obj%fpar, obj%w)
+
+    IF (obj%IPAR(1) .GT. math%zero_i) THEN
+
+      CALL PERFORM_TASK(amat=amat, &
+                        y=obj%W(obj%IPAR(9):obj%IPAR(9) + n - 1), &
+                        x=obj%W(obj%IPAR(8):obj%IPAR(8) + n - 1), &
+                        ierr=obj%IPAR(1))
+
+    ELSE IF (obj%IPAR(1) .LT. math%zero_i) THEN
+
+      IF (obj%fpar(6) .LE. obj%fpar(4)) EXIT main_loop
+
+      CALL CHECKERROR(IPAR=obj%ipar, FPAR=obj%fpar, myName=myName)
+      EXIT main_loop
+
+    ELSE IF (obj%ipar(1) .EQ. math%zero_i) THEN
+
+      CALL obj%SetParam(ierr=obj%ipar(1), iter=obj%ipar(7))
+
+      CALL DisplayConvergence(iter=obj%ipar(7), fpar=obj%FPAR)
+      EXIT main_loop
+
+    END IF
+
+  END DO main_loop
+
+  ! Initial residual/error norm
+  CALL obj%SetParam(error0=obj%fpar(3), tol=obj%fpar(4), &
+                    error=obj%fpar(6), normRes=obj%fpar(5))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+END SUBROUTINE _SUBROUTINE_NAME_
+
 #undef _SUBROUTINE_NAME_
 #undef _LIS_NAME_
 #undef _MY_NAME_
