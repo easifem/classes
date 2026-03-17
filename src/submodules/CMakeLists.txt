@@ -234,6 +234,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/OneDimFEDOF/CMakeLists.txt)
 # FEDOF
 include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
 
+# GmshAPI
+include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
+
 # Vector
 include(${CMAKE_CURRENT_LIST_DIR}/Vector/CMakeLists.txt)
 
