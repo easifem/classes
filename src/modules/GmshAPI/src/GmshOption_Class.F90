@@ -16,185 +16,132 @@
 !
 
 MODULE GmshOption_Class
-USE GlobalData, ONLY: DFP => REAL64, I4B => INT32, LGT
-USE GmshInterface
-USE GmshUtility
-USE CInterface
-USE ISO_C_BINDING
+USE GlobalData, ONLY: DFP, I4B, LGT
 IMPLICIT NONE
+
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "GMSHOPTION_CLASS"
-INTEGER(C_INT) :: ierr
-!$OMP THREADPRIVATE(ierr)
-INTEGER(I4B), PARAMETER :: maxStrLen = 256
 PUBLIC :: GmshOption_
+PUBLIC :: TypeGmshOption
 PUBLIC :: GmshOptionPointer_
 
 !----------------------------------------------------------------------------
-!
+!                                                                GmshOption_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Gmsh options
+!
+!# GmshOption_
+!
+! Gmsh options.
+!
 TYPE :: GmshOption_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, NOPASS :: Initiate => opt_Initiate
-  PROCEDURE, PUBLIC, NOPASS :: setNumber => opt_setNumber
-  PROCEDURE, PUBLIC, NOPASS :: getNumber => opt_getNumber
-  PROCEDURE, PUBLIC, NOPASS :: setString => opt_setString
-  PROCEDURE, PUBLIC, NOPASS :: getString => opt_getString
-  PROCEDURE, PUBLIC, NOPASS :: setColor => opt_setColor
-  PROCEDURE, PUBLIC, NOPASS :: getColor => opt_getColor
+  PROCEDURE, PUBLIC, NOPASS :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, NOPASS :: SetNumber => obj_SetNumber
+  PROCEDURE, PUBLIC, NOPASS :: GetNumber => obj_GetNumber
+  PROCEDURE, PUBLIC, NOPASS :: SetString => obj_SetString
+  PROCEDURE, PUBLIC, NOPASS :: GetString => obj_GetString
+  PROCEDURE, PUBLIC, NOPASS :: SetColor => obj_SetColor
+  PROCEDURE, PUBLIC, NOPASS :: GetColor => obj_GetColor
 END TYPE GmshOption_
 
-TYPE(GmshOption_), PUBLIC, PARAMETER :: TypeGmshOption = GmshOption_()
+!----------------------------------------------------------------------------
+!                                                              TypeGmshOption
+!----------------------------------------------------------------------------
+
+TYPE(GmshOption_), PARAMETER :: TypeGmshOption = GmshOption_()
 
 !----------------------------------------------------------------------------
-!
+!                                                          GmshOptionPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: GmshOptionPointer_
   CLASS(GmshOption_), POINTER :: Ptr => NULL()
-END TYPE
+END TYPE GmshOptionPointer_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-CONTAINS
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate()
+  END SUBROUTINE obj_Initiate
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE opt_Initiate()
-END SUBROUTINE opt_Initiate
+INTERFACE
+  MODULE FUNCTION obj_SetNumber(name, VALUE) RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: name
+    CLASS(*), INTENT(IN) :: VALUE
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_SetNumber
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION opt_setNumber(name, VALUE) RESULT(ans)
-  CHARACTER(*), INTENT(IN) :: name
-  CLASS(*), INTENT(IN) :: VALUE
-  INTEGER(I4B) :: ans
-
-  ! Internal variables
-  CHARACTER(maxStrLen), TARGET :: name_
-
-  name_ = TRIM(name)//C_NULL_CHAR
-  CALL gmshOptionSetNumber( &
-    & name=C_LOC(name_), &
-    & VALUE=gmsh_cdouble(VALUE), &
-    & ierr=ans)
-  ! ans = INT( ierr, KIND=I4B)
-END FUNCTION opt_setNumber
+INTERFACE
+  MODULE FUNCTION obj_GetNumber(name, VALUE) RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: name
+    REAL(DFP), INTENT(OUT) :: VALUE
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetNumber
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION opt_getNumber(name, VALUE) RESULT(ans)
-  CHARACTER(*), INTENT(IN) :: name
-  REAL(DFP), INTENT(OUT) :: VALUE
-  INTEGER(I4B) :: ans
-
-  ! Internal variables
-  CHARACTER(maxStrLen), TARGET :: name_
-  REAL(C_DOUBLE) :: val
-
-  name_ = TRIM(name)//C_NULL_CHAR
-
-  CALL gmshOptionGetNumber( &
-    & name=C_LOC(name_), &
-    & VALUE=val, &
-    & ierr=ans)
-
-  VALUE = REAL(val, KIND=DFP)
-END FUNCTION opt_getNumber
+INTERFACE
+  MODULE FUNCTION obj_SetString(name, VALUE) RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN) :: VALUE
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_SetString
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION opt_setString(name, VALUE) RESULT(ans)
-  CHARACTER(*), INTENT(IN) :: name
-  CHARACTER(*), INTENT(IN) :: VALUE
-  INTEGER(I4B) :: ans
-
-  ! Internal variables
-  CHARACTER(maxStrLen), TARGET :: name_, value_
-
-  name_ = TRIM(name)//C_NULL_CHAR
-  value_ = TRIM(VALUE)//C_NULL_CHAR
-
-  CALL gmshOptionSetString(name=C_LOC(name_), &
-    & VALUE=C_LOC(value_), ierr=ans)
-END FUNCTION opt_setString
+INTERFACE
+  MODULE FUNCTION obj_GetString(name, VALUE) RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: name
+    CHARACTER(*), INTENT(OUT) :: VALUE
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetString
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION opt_getString(name, VALUE) RESULT(ans)
-  CHARACTER(*), INTENT(IN) :: name
-  CHARACTER(*), INTENT(OUT) :: VALUE
-  INTEGER(I4B) :: ans
- 
-  ! Internal variables
-  CHARACTER(maxStrLen), TARGET :: name_
-  TYPE(C_PTR) :: value_
-  
-  name_ = TRIM(name)//C_NULL_CHAR
-  CALL gmshOptionGetString(name=C_LOC(name_), &
-    & VALUE=value_, ierr=ans)
-  CALL C2Fortran(C_String=value_, F_String=VALUE)
-END FUNCTION opt_getString
+INTERFACE
+  MODULE FUNCTION obj_SetColor(name, r, g, b, a) RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: name
+    INTEGER(I4B), INTENT(IN) :: r, g, b, a
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_SetColor
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION opt_setColor(name, r, g, b, a) RESULT(ans)
-  CHARACTER(*), INTENT(IN) :: name
-  INTEGER(I4B), INTENT(IN) :: r, g, b, a
-  INTEGER(I4B) :: ans
-  
-  ! Internal variables
-  CHARACTER(maxStrLen), TARGET :: name_
-  
-  name_ = gmsh_CString(name)
-  CALL gmshOptionSetColor( &
-    & name=C_LOC(name_), &
-    & r=gmsh_cint(r), &
-    & g=gmsh_cint(g), &
-    & b=gmsh_cint(b), &
-    & a=gmsh_cint(a), &
-    & ierr=ans)
-END FUNCTION opt_setColor
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-FUNCTION opt_getColor(name, r, g, b, a) RESULT(ans)
-  CHARACTER(*), INTENT(IN) :: name
-  INTEGER(I4B), INTENT(OUT) :: r, g, b, a
-  INTEGER(I4B) :: ans
-  
-  ! Internal variables
-  CHARACTER(maxStrLen), TARGET :: name_
-  INTEGER(C_INT) :: r0, g0, b0, a0
- 
-  name_ = gmsh_CString(name)
-  CALL gmshOptionGetColor( &
-    & name=C_LOC(name_), &
-    & r=r0, g=g0, b=b0, a=a0, ierr=ans)
-
-  r = INT(r0, KIND=I4B)
-  g = INT(g0, KIND=I4B)
-  b = INT(b0, KIND=I4B)
-  a = INT(a0, KIND=I4B)
-END FUNCTION opt_getColor
+INTERFACE
+  MODULE FUNCTION obj_GetColor(name, r, g, b, a) RESULT(ans)
+    CHARACTER(*), INTENT(IN) :: name
+    INTEGER(I4B), INTENT(OUT) :: r, g, b, a
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetColor
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
