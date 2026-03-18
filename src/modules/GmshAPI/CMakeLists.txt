@@ -20,7 +20,6 @@ if(USE_GMSH_SDK)
     target_sources(
         ${PROJECT_NAME}
         PRIVATE
-            ${src_path}/GmshUtility.F90
             ${src_path}/GmshInterface/GmshInterface.F90
             ${src_path}/GmshFLTK_Class.F90
             ${src_path}/GmshGraphics_Class.F90

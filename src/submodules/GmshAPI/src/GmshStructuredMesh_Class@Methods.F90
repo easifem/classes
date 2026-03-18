@@ -26,7 +26,6 @@ USE Gmsh_Class
 USE BaseMethod
 IMPLICIT NONE
 PRIVATE
-
 PUBLIC :: GmshStructuredMesh_
 PUBLIC :: GmshStructuredMeshPointer_
 PUBLIC :: SetGmshStructuredMeshParam

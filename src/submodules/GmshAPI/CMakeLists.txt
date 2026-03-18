@@ -28,5 +28,8 @@ if(USE_GMSH_SDK)
         PRIVATE ${src_path}/GmshOnelab_Class@Methods.F90
         PRIVATE ${src_path}/GmshOption_Class@Methods.F90
         PRIVATE ${src_path}/GmshGraphics_Class@Methods.F90
+        PRIVATE ${src_path}/GmshFLTK_Class@Methods.F90
+        PRIVATE ${src_path}/Gmsh_Class@Methods.F90
+        PRIVATE ${src_path}/GmshUtility.F90
     )
 endif()

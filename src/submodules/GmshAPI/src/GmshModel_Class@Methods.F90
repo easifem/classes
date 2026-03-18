@@ -17,6 +17,8 @@
 !
 
 SUBMODULE(GmshModel_Class) Methods
+USE ReallocateUtility, ONLY: Reallocate
+USE InputUtility, ONLY: Input
 USE BaseType, ONLY: math => TypeMathOpt
 USE ISO_C_BINDING, ONLY: C_INT
 USE ISO_C_BINDING, ONLY: C_LOC

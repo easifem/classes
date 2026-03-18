@@ -19,7 +19,6 @@ MODULE GmshModel_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE ExceptionHandler_Class, ONLY: e
 USE String_Class, ONLY: String
-USE Utility, ONLY: Input, Reallocate
 USE GmshModelGeo_Class, ONLY: GmshModelGeo_
 USE GmshModelOcc_Class, ONLY: GmshModelOcc_
 USE GmshModelMesh_Class, ONLY: GmshModelMesh_
