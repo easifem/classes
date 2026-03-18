@@ -17,151 +17,212 @@
 
 MODULE GmshModelMesh_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
-USE Utility, ONLY: Reallocate
-USE GmshInterface
-USE CInterface, ONLY: C_PTR_TO_INT_VEC
-USE ISO_C_BINDING
 IMPLICIT NONE
+
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "GmshModelMesh_Class"
-INTEGER(C_INT) :: ierr
-!$OMP THREADPRIVATE(ierr)
-INTEGER(I4B), PARAMETER :: maxStrLen = 256
+PUBLIC :: GmshModelMesh_
+PUBLIC :: TypeGmshModelMesh
+PUBLIC :: GmshModelMeshPointer_
 
 !----------------------------------------------------------------------------
+!                                                             GmshModelMesh_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Gmsh model mesh
 !
-!----------------------------------------------------------------------------
-
+!# GmshModelMesh_
+!
+! Gmsh model mesh.
+!
 TYPE :: GmshModelMesh_
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => mesh_Initiate
-  PROCEDURE, PUBLIC, PASS(Obj) :: Generate => mesh_Generate
-  PROCEDURE, PUBLIC, PASS(Obj) :: Partition => mesh_Partition
-  PROCEDURE, PUBLIC, PASS(Obj) :: Unpartition => mesh_Unpartition
-  PROCEDURE, PUBLIC, PASS(Obj) :: Optimize => mesh_Optimize
-  PROCEDURE, PUBLIC, PASS(obj) :: Recombine => mesh_Recombine
-  PROCEDURE, PUBLIC, PASS(obj) :: Refine => mesh_Refine
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => mesh_SetOrder
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, PASS(Obj) :: Generate => obj_Generate
+  PROCEDURE, PUBLIC, PASS(Obj) :: Partition => obj_Partition
+  PROCEDURE, PUBLIC, PASS(Obj) :: Unpartition => obj_Unpartition
+  PROCEDURE, PUBLIC, PASS(Obj) :: Optimize => obj_Optimize
+  PROCEDURE, PUBLIC, PASS(obj) :: Recombine => obj_Recombine
+  PROCEDURE, PUBLIC, PASS(obj) :: Refine => obj_Refine
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
 END TYPE GmshModelMesh_
 
-PUBLIC :: GmshModelMesh_
-TYPE(GmshModelMesh_), PUBLIC, PARAMETER :: TypeGmshModelMesh = &
-  & GmshModelMesh_()
+!----------------------------------------------------------------------------
+!                                                          TypeGmshModelMesh
+!----------------------------------------------------------------------------
+
+TYPE(GmshModelMesh_), PARAMETER :: TypeGmshModelMesh = GmshModelMesh_()
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 TYPE :: GmshModelMeshPointer_
-  CLASS(GmshModelMesh_), POINTER :: Ptr => NULL()
-END TYPE
+  CLASS(GmshModelMesh_), POINTER :: ptr => NULL()
+END TYPE GmshModelMeshPointer_
 
-PUBLIC :: GmshModelMeshPointer_
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Initiate gmsh model mesh
+!
+!# Initiate
+!
+! Initiate gmsh model mesh.
+!
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate(obj)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Initiate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   Generate
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Generate mesh
+!
+!# Generate
+!
+! Generate mesh.
+
+INTERFACE
+  MODULE FUNCTION obj_Generate(obj, dim) RESULT(ans)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Generate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  Partition
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary:         Partition
+!
+!# Partition
+!
+! Partition of mesh.
+INTERFACE
+  MODULE FUNCTION obj_Partition(obj, numPart) RESULT(ans)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: numPart
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Partition
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-CONTAINS
-
-!----------------------------------------------------------------------------
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Unpartition
 !
-!----------------------------------------------------------------------------
-
-SUBROUTINE mesh_Initiate(obj)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-END SUBROUTINE mesh_Initiate
-
-!----------------------------------------------------------------------------
+!# Unpartition
 !
-!----------------------------------------------------------------------------
-
-FUNCTION mesh_Generate(obj, dim) RESULT(ans)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  INTEGER(I4B), INTENT(IN) :: dim
-  INTEGER(I4B) :: ans
-  !
-  CALL gmshModelMeshGenerate(dim, ierr)
-  ans = INT(ierr, I4B)
-END FUNCTION mesh_Generate
-
-!----------------------------------------------------------------------------
+! Unpartition.
 !
-!----------------------------------------------------------------------------
-
-FUNCTION mesh_Partition(obj, numPart) &
-  & RESULT(ans)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  INTEGER(I4B), INTENT(IN) :: numPart
-  INTEGER(I4B) :: ans
-  CALL gmshModelMeshPartition(numPart, ierr)
-  ans = INT(ierr, I4B)
-END FUNCTION mesh_Partition
+INTERFACE
+  MODULE FUNCTION obj_Unpartition(obj) RESULT(ans)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Unpartition
+END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                                   Optimize
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Optimize
 !
-!----------------------------------------------------------------------------
-
-FUNCTION mesh_Unpartition(obj) RESULT(ans)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  INTEGER(I4B) :: ans
-  CALL gmshModelMeshUnpartition(ierr)
-  ans = INT(ierr, I4B)
-END FUNCTION mesh_Unpartition
-
-!----------------------------------------------------------------------------
+!# Optimize
 !
-!----------------------------------------------------------------------------
+! Optimize the mesh.
+!
 
-FUNCTION mesh_Optimize(obj, method, force, niter, dimTags) &
-  & RESULT(ans)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  CHARACTER(*), INTENT(IN) :: method
-  INTEGER(I4B), INTENT(IN) :: force, niter
-  INTEGER(I4B), INTENT(IN) :: dimTags(:)
-  INTEGER(I4B) :: ans
-  !
-  CHARACTER(maxStrLen), TARGET :: method_
-  method_ = TRIM(method)//C_NULL_CHAR
-  CALL gmshModelMeshOptimize(C_LOC(method_), force, niter, &
-    & dimTags, SIZE(dimTags, KIND=C_SIZE_T), ierr)
-  ans = INT(ierr, I4B)
-END FUNCTION mesh_Optimize
+INTERFACE
+  MODULE FUNCTION obj_Optimize(obj, method, force, niter, dimTags) &
+    RESULT(ans)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: method
+    INTEGER(I4B), INTENT(IN) :: force, niter
+    INTEGER(I4B), INTENT(IN) :: dimTags(:)
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Optimize
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 Recombine
 !----------------------------------------------------------------------------
 
-FUNCTION mesh_Recombine(obj) RESULT(ans)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  INTEGER(I4B) :: ans
-  CALL gmshModelMeshRecombine(ierr)
-  ans = INT(ierr, I4B)
-END FUNCTION mesh_Recombine
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Recombine the mesh
+!
+!# Recombine
+!
+! Recombining the mesh.
+!
+INTERFACE
+  MODULE FUNCTION obj_Recombine(obj) RESULT(ans)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Recombine
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 Refine
+!                                                                     Refine
 !----------------------------------------------------------------------------
 
-FUNCTION mesh_Refine(obj) RESULT(ans)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  INTEGER(I4B) :: ans
-  CALL gmshModelMeshRefine(ierr)
-  ans = INT(ierr, I4B)
-END FUNCTION mesh_Refine
+!> author: Vikas Sharma, Ph. D.
+! date:  2026-03-18
+! summary: Refine the mesh
+!
+!# Refine
+!
+! Refine the mesh.
+
+INTERFACE
+  MODULE FUNCTION obj_Refine(obj) RESULT(ans)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Refine
+END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                 SetOrder
+!                                                                   SetOrder
 !----------------------------------------------------------------------------
 
-FUNCTION mesh_SetOrder(obj, order) RESULT(ans)
-  CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
-  INTEGER(I4B), INTENT(IN) :: order
-  INTEGER(I4B) :: ans
-  !> main
-  CALL gmshModelMeshSetOrder(order, ierr)
-  ans = INT(ierr, I4B)
-END FUNCTION mesh_SetOrder
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-18
+! summary: Set order the mesh
+!
+!# SetOrder
+!
+! Set the order the mesh.
+
+INTERFACE
+  MODULE FUNCTION obj_SetOrder(obj, order) RESULT(ans)
+    CLASS(GmshModelMesh_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_SetOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE GmshModelMesh_Class
