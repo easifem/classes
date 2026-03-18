@@ -41,85 +41,85 @@ TYPE :: GmshModel_
   TYPE(GmshModelMesh_), PUBLIC, POINTER :: mesh => NULL()
 CONTAINS
   PRIVATE
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => model_Initiate
-  PROCEDURE, PUBLIC, NOPASS :: Add => model_Add
-  PROCEDURE, PUBLIC, NOPASS :: Remove => model_Remove
-  PROCEDURE, PUBLIC, NOPASS :: List => model_List
-  PROCEDURE, PUBLIC, NOPASS :: GetCurrent => model_GetCurrent
-  PROCEDURE, PUBLIC, NOPASS :: SetCurrent => model_SetCurrent
-  PROCEDURE, PUBLIC, NOPASS :: GetFileName => model_GetFileName
-  PROCEDURE, PUBLIC, NOPASS :: SetFileName => model_SetFileName
-  PROCEDURE, PUBLIC, NOPASS :: GetEntities => model_GetEntities
-  PROCEDURE, PUBLIC, NOPASS :: SetEntityName => model_SetEntityName
-  PROCEDURE, PUBLIC, NOPASS :: GetEntityName => model_GetEntityName
-  PROCEDURE, PUBLIC, NOPASS :: GetPhysicalGroups => model_GetPhysicalGroups
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, PUBLIC, NOPASS :: Add => obj_Add
+  PROCEDURE, PUBLIC, NOPASS :: Remove => obj_Remove
+  PROCEDURE, PUBLIC, NOPASS :: List => obj_List
+  PROCEDURE, PUBLIC, NOPASS :: GetCurrent => obj_GetCurrent
+  PROCEDURE, PUBLIC, NOPASS :: SetCurrent => obj_SetCurrent
+  PROCEDURE, PUBLIC, NOPASS :: GetFileName => obj_GetFileName
+  PROCEDURE, PUBLIC, NOPASS :: SetFileName => obj_SetFileName
+  PROCEDURE, PUBLIC, NOPASS :: GetEntities => obj_GetEntities
+  PROCEDURE, PUBLIC, NOPASS :: SetEntityName => obj_SetEntityName
+  PROCEDURE, PUBLIC, NOPASS :: GetEntityName => obj_GetEntityName
+  PROCEDURE, PUBLIC, NOPASS :: GetPhysicalGroups => obj_GetPhysicalGroups
   PROCEDURE, PUBLIC, NOPASS :: GetEntitiesForPhysicalGroup => &
-    model_GetEntitiesForPhysicalGroup
+    obj_GetEntitiesForPhysicalGroup
   PROCEDURE, PUBLIC, NOPASS :: GetPhysicalGroupsForEntity => &
-    model_GetPhysicalGroupsForEntity
-  PROCEDURE, PUBLIC, NOPASS :: AddPhysicalGroup => model_AddPhysicalGroup
+    obj_GetPhysicalGroupsForEntity
+  PROCEDURE, PUBLIC, NOPASS :: AddPhysicalGroup => obj_AddPhysicalGroup
   PROCEDURE, PUBLIC, NOPASS :: RemovePhysicalGroups => &
-    model_RemovePhysicalGroups
-  PROCEDURE, PUBLIC, NOPASS :: SetPhysicalName => model_SetPhysicalName
+    obj_RemovePhysicalGroups
+  PROCEDURE, PUBLIC, NOPASS :: SetPhysicalName => obj_SetPhysicalName
   PROCEDURE, PUBLIC, NOPASS :: RemovePhysicalName => &
-    model_RemovePhysicalName
-  PROCEDURE, PUBLIC, NOPASS :: GetPhysicalName => model_GetPhysicalName
-  PROCEDURE, PUBLIC, NOPASS :: SetTag => model_SetTag
-  PROCEDURE, PUBLIC, NOPASS :: GetBoundary => model_GetBoundary
-  PROCEDURE, PUBLIC, NOPASS :: GetAdjacencies => model_GetAdjacencies
+    obj_RemovePhysicalName
+  PROCEDURE, PUBLIC, NOPASS :: GetPhysicalName => obj_GetPhysicalName
+  PROCEDURE, PUBLIC, NOPASS :: SetTag => obj_SetTag
+  PROCEDURE, PUBLIC, NOPASS :: GetBoundary => obj_GetBoundary
+  PROCEDURE, PUBLIC, NOPASS :: GetAdjacencies => obj_GetAdjacencies
   PROCEDURE, PUBLIC, NOPASS :: GetEntitiesInBoundingBox => &
-    model_GetEntitiesInBoundingBox
+    obj_GetEntitiesInBoundingBox
   PROCEDURE, PUBLIC, NOPASS :: GetBoundingBox => &
-    model_GetBoundingBox
+    obj_GetBoundingBox
   PROCEDURE, PUBLIC, NOPASS :: GetDimension => &
-    model_GetDimension
+    obj_GetDimension
   PROCEDURE, PUBLIC, NOPASS :: AddDiscreteEntity => &
-    model_AddDiscreteEntity
+    obj_AddDiscreteEntity
   PROCEDURE, PUBLIC, NOPASS :: RemoveEntities => &
-    model_RemoveEntities
+    obj_RemoveEntities
   PROCEDURE, PUBLIC, NOPASS :: RemoveEntityName => &
-    model_RemoveEntityName
+    obj_RemoveEntityName
   PROCEDURE, PUBLIC, NOPASS :: GetType => &
-    model_GetType
+    obj_GetType
   PROCEDURE, PUBLIC, NOPASS :: GetParent => &
-    model_GetParent
+    obj_GetParent
   PROCEDURE, PUBLIC, NOPASS :: GetNumberOfPartitions => &
-    model_GetNumberOfPartitions
+    obj_GetNumberOfPartitions
   PROCEDURE, PUBLIC, NOPASS :: GetPartitions => &
-    model_GetPartitions
+    obj_GetPartitions
   PROCEDURE, PUBLIC, NOPASS :: GetValue => &
-    model_GetValue
+    obj_GetValue
   PROCEDURE, PUBLIC, NOPASS :: GetDerivative => &
-    model_GetDerivative
+    obj_GetDerivative
   PROCEDURE, PUBLIC, NOPASS :: GetSecondDerivative => &
-    model_GetSecondDerivative
+    obj_GetSecondDerivative
   PROCEDURE, PUBLIC, NOPASS :: GetCurvature => &
-    model_GetCurvature
+    obj_GetCurvature
   PROCEDURE, PUBLIC, NOPASS :: GetPrincipalCurvatures => &
-    model_GetPrincipalCurvatures
+    obj_GetPrincipalCurvatures
   PROCEDURE, PUBLIC, NOPASS :: GetNormal => &
-    model_GetNormal
+    obj_GetNormal
   PROCEDURE, PUBLIC, NOPASS :: GetParameterizaion => &
-    model_GetParametrization
+    obj_GetParametrization
   PROCEDURE, PUBLIC, NOPASS :: GetParametrizationBounds => &
-    model_GetParametrizationBounds
+    obj_GetParametrizationBounds
   PROCEDURE, PUBLIC, NOPASS :: IsInside => &
-    model_IsInside
+    obj_IsInside
   PROCEDURE, PUBLIC, NOPASS :: GetClosestPoint => &
-    model_GetClosestPoint
+    obj_GetClosestPoint
   PROCEDURE, PUBLIC, NOPASS :: ReparametrizeOnSurface => &
-    model_ReparametrizeOnSurface
-  PROCEDURE, PUBLIC, NOPASS :: SetVisibility => model_SetVisibility
-  PROCEDURE, PUBLIC, NOPASS :: GetVisibility => model_GetVisibility
+    obj_ReparametrizeOnSurface
+  PROCEDURE, PUBLIC, NOPASS :: SetVisibility => obj_SetVisibility
+  PROCEDURE, PUBLIC, NOPASS :: GetVisibility => obj_GetVisibility
   PROCEDURE, PUBLIC, NOPASS :: SetVisibilityPerWindow => &
-    model_SetVisibilityPerWindow
-  PROCEDURE, PUBLIC, NOPASS :: SetColor => model_SetColor
-  PROCEDURE, PUBLIC, NOPASS :: GetColor => model_GetColor
-  PROCEDURE, PUBLIC, NOPASS :: SetCoordinates => model_SetCoordinates
-  PROCEDURE, PUBLIC, NOPASS :: GetAttributeNames => model_GetAttributeNames
-  PROCEDURE, PUBLIC, NOPASS :: SetAttribute => model_SetAttribute
-  PROCEDURE, PUBLIC, NOPASS :: GetAttribute => model_GetAttribute
-  PROCEDURE, PUBLIC, NOPASS :: RemoveAttribute => model_RemoveAttribute
+    obj_SetVisibilityPerWindow
+  PROCEDURE, PUBLIC, NOPASS :: SetColor => obj_SetColor
+  PROCEDURE, PUBLIC, NOPASS :: GetColor => obj_GetColor
+  PROCEDURE, PUBLIC, NOPASS :: SetCoordinates => obj_SetCoordinates
+  PROCEDURE, PUBLIC, NOPASS :: GetAttributeNames => obj_GetAttributeNames
+  PROCEDURE, PUBLIC, NOPASS :: SetAttribute => obj_SetAttribute
+  PROCEDURE, PUBLIC, NOPASS :: GetAttribute => obj_GetAttribute
+  PROCEDURE, PUBLIC, NOPASS :: RemoveAttribute => obj_RemoveAttribute
 END TYPE GmshModel_
 
 !----------------------------------------------------------------------------
@@ -141,9 +141,9 @@ END TYPE GmshModelPointer_
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE model_initiate(obj)
+  MODULE SUBROUTINE obj_Initiate(obj)
     CLASS(GmshModel_), INTENT(INOUT) :: obj
-  END SUBROUTINE model_initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -151,10 +151,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_add(name) RESULT(ans)
+  MODULE FUNCTION obj_Add(name) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_add
+  END FUNCTION obj_Add
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -162,9 +162,9 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_remove() RESULT(ans)
+  MODULE FUNCTION obj_Remove() RESULT(ans)
     INTEGER(I4B) :: ans
-  END FUNCTION model_remove
+  END FUNCTION obj_Remove
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -172,10 +172,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_list(names) RESULT(ans)
+  MODULE FUNCTION obj_List(names) RESULT(ans)
     TYPE(String), ALLOCATABLE, INTENT(OUT) :: names(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_list
+  END FUNCTION obj_List
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -183,10 +183,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_GetCurrent(name) RESULT(ans)
+  MODULE FUNCTION obj_GetCurrent(name) RESULT(ans)
     CHARACTER(*), INTENT(OUT) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetCurrent
+  END FUNCTION obj_GetCurrent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -194,10 +194,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_SetCurrent(name) RESULT(ans)
+  MODULE FUNCTION obj_SetCurrent(name) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetCurrent
+  END FUNCTION obj_SetCurrent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -205,10 +205,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_GetFileName(fileName) RESULT(ans)
+  MODULE FUNCTION obj_GetFileName(fileName) RESULT(ans)
     CHARACTER(*), INTENT(OUT) :: fileName
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetFileName
+  END FUNCTION obj_GetFileName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -216,10 +216,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_SetFileName(fileName) RESULT(ans)
+  MODULE FUNCTION obj_SetFileName(fileName) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: fileName
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetFileName
+  END FUNCTION obj_SetFileName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -232,14 +232,14 @@ END INTERFACE
 !! The entities are returned as a vector of (dim, tag) pairs.
 
 INTERFACE
-  MODULE FUNCTION model_GetEntities(dimTags, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetEntities(dimTags, dim) RESULT(ans)
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: dimTags(:, :)
     !! dimTags has two rows
     !! first row is for dim and second row is for tag
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     !! if present should be greater than 0
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetEntities
+  END FUNCTION obj_GetEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -249,11 +249,11 @@ END INTERFACE
 !! Set the name of the entity of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_SetEntityName(dim, tag, name) RESULT(ans)
+  MODULE FUNCTION obj_SetEntityName(dim, tag, name) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim, tag
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetEntityName
+  END FUNCTION obj_SetEntityName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -263,11 +263,11 @@ END INTERFACE
 !! Get the name of the entity of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetEntityName(dim, tag, name) RESULT(ans)
+  MODULE FUNCTION obj_GetEntityName(dim, tag, name) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim, tag
     CHARACTER(*), INTENT(OUT) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetEntityName
+  END FUNCTION obj_GetEntityName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -279,11 +279,11 @@ END INTERFACE
 !! == 0). The entities are returned as a vector of (dim, tag) pairs.
 
 INTERFACE
-  MODULE FUNCTION model_GetPhysicalGroups(dimTags, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetPhysicalGroups(dimTags, dim) RESULT(ans)
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: dimTags(:, :)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetPhysicalGroups
+  END FUNCTION obj_GetPhysicalGroups
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -294,12 +294,12 @@ END INTERFACE
 !! dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetEntitiesForPhysicalGroup(dim, tag, tags) &
+  MODULE FUNCTION obj_GetEntitiesForPhysicalGroup(dim, tag, tags) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim, tag
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: tags(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetEntitiesForPhysicalGroup
+  END FUNCTION obj_GetEntitiesForPhysicalGroup
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -310,12 +310,12 @@ END INTERFACE
 !! dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetPhysicalGroupsForEntity(dim, tag, physicalTags) &
+  MODULE FUNCTION obj_GetPhysicalGroupsForEntity(dim, tag, physicalTags) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim, tag
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: physicalTags(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetPhysicalGroupsForEntity
+  END FUNCTION obj_GetPhysicalGroupsForEntity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -327,13 +327,13 @@ END INTERFACE
 !! is positive, or a new tag if `tag' < 0.
 
 INTERFACE
-  MODULE FUNCTION model_AddPhysicalGroup(dim, tags, tag, name) RESULT(ans)
+  MODULE FUNCTION obj_AddPhysicalGroup(dim, tags, tag, name) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tags(:)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tag
     CHARACTER(*), OPTIONAL, INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_AddPhysicalGroup
+  END FUNCTION obj_AddPhysicalGroup
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -344,10 +344,10 @@ END INTERFACE
 !! pairs) from the current model. If `dimTags' is empty, remove all groups.
 
 INTERFACE
-  MODULE FUNCTION model_RemovePhysicalGroups(dimTags) RESULT(ans)
+  MODULE FUNCTION obj_RemovePhysicalGroups(dimTags) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dimTags(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_RemovePhysicalGroups
+  END FUNCTION obj_RemovePhysicalGroups
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -357,11 +357,11 @@ END INTERFACE
 !! Set the name of the physical group of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_SetPhysicalName(dim, tag, name) RESULT(ans)
+  MODULE FUNCTION obj_SetPhysicalName(dim, tag, name) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim, tag
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetPhysicalName
+  END FUNCTION obj_SetPhysicalName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -371,10 +371,10 @@ END INTERFACE
 !! Remove the physical name `name' from the current model.
 
 INTERFACE
-  MODULE FUNCTION model_RemovePhysicalName(name) RESULT(ans)
+  MODULE FUNCTION obj_RemovePhysicalName(name) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_RemovePhysicalName
+  END FUNCTION obj_RemovePhysicalName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -384,11 +384,11 @@ END INTERFACE
 !! Get the name of the physical group of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetPhysicalName(dim, tag, name) RESULT(ans)
+  MODULE FUNCTION obj_GetPhysicalName(dim, tag, name) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim, tag
     CHARACTER(*), INTENT(OUT) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetPhysicalName
+  END FUNCTION obj_GetPhysicalName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -399,10 +399,10 @@ END INTERFACE
 !! `newTag'.
 
 INTERFACE
-  MODULE FUNCTION model_SetTag(dim, tag, newTag) RESULT(ans)
+  MODULE FUNCTION obj_SetTag(dim, tag, newTag) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim, tag, newTag
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetTag
+  END FUNCTION obj_SetTag
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -417,7 +417,7 @@ END INTERFACE
 !  to dimension 0 (i.e. to points) if `recursive' is true.
 
 INTERFACE
-  MODULE FUNCTION model_GetBoundary( &
+  MODULE FUNCTION obj_GetBoundary( &
     dimTags, outDimTags, combined, oriented, RECURSIVE) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: outDimTags(:, :)
@@ -425,7 +425,7 @@ INTERFACE
     LOGICAL, INTENT(IN), OPTIONAL :: oriented
     LOGICAL, INTENT(IN), OPTIONAL :: RECURSIVE
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetBoundary
+  END FUNCTION obj_GetBoundary
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -438,14 +438,14 @@ END INTERFACE
 ! dimension `dim' - 1. */
 
 INTERFACE
-  MODULE FUNCTION model_GetAdjacencies(dim, tag, upward, downward) &
+  MODULE FUNCTION obj_GetAdjacencies(dim, tag, upward, downward) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: upward(:)
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: downward(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetAdjacencies
+  END FUNCTION obj_GetAdjacencies
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -453,7 +453,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_GetEntitiesInBoundingBox( &
+  MODULE FUNCTION obj_GetEntitiesInBoundingBox( &
     xmin, ymin, zmin, xmax, ymax, zmax, dimTags, dim) RESULT(ans)
     REAL(DFP), INTENT(IN) :: xmin
     REAL(DFP), INTENT(IN) :: ymin
@@ -464,7 +464,7 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE, INTENT(OUT) :: dimTags(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetEntitiesInBoundingBox
+  END FUNCTION obj_GetEntitiesInBoundingBox
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -472,8 +472,8 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE FUNCTION model_GetBoundingBox(dim, tag, xmin, ymin, zmin, &
-                                       xmax, ymax, zmax) RESULT(ans)
+  MODULE FUNCTION obj_GetBoundingBox(dim, tag, xmin, ymin, zmin, &
+                                     xmax, ymax, zmax) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), INTENT(OUT) :: xmin
@@ -483,7 +483,7 @@ INTERFACE
     REAL(DFP), INTENT(OUT) :: ymax
     REAL(DFP), INTENT(OUT) :: zmax
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetBoundingBox
+  END FUNCTION obj_GetBoundingBox
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -493,9 +493,9 @@ END INTERFACE
 !> Return the geometrical dimension of the current model.
 
 INTERFACE
-  MODULE FUNCTION model_GetDimension() RESULT(ans)
+  MODULE FUNCTION obj_GetDimension() RESULT(ans)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetDimension
+  END FUNCTION obj_GetDimension
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -509,13 +509,13 @@ END INTERFACE
 !! `boundary' allows Gmsh to construct the topology of the overall model.
 
 INTERFACE
-  MODULE FUNCTION model_AddDiscreteEntity(dim, tag, boundary) &
+  MODULE FUNCTION obj_AddDiscreteEntity(dim, tag, boundary) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN), OPTIONAL :: tag
     INTEGER(I4B), INTENT(IN), OPTIONAL :: boundary(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_AddDiscreteEntity
+  END FUNCTION obj_AddDiscreteEntity
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -528,11 +528,11 @@ END INTERFACE
 !! all the entities on their boundaries, down to dimension 0.
 
 INTERFACE
-  MODULE FUNCTION model_RemoveEntities(dimTags, RECURSIVE) RESULT(ans)
+  MODULE FUNCTION obj_RemoveEntities(dimTags, RECURSIVE) RESULT(ans)
     INTEGER(i4b), INTENT(in) :: dimTags(:, :)
     LOGICAL, INTENT(in), OPTIONAL :: RECURSIVE
     INTEGER(I4B) :: ans
-  END FUNCTION model_RemoveEntities
+  END FUNCTION obj_RemoveEntities
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -542,10 +542,10 @@ END INTERFACE
 !> Remove the entity name `name' from the current model.
 
 INTERFACE
-  MODULE FUNCTION model_RemoveEntityName(name) RESULT(ans)
+  MODULE FUNCTION obj_RemoveEntityName(name) RESULT(ans)
     CHARACTER(len=*), INTENT(in) :: name
     INTEGER(i4b) :: ans
-  END FUNCTION model_RemoveEntityName
+  END FUNCTION obj_RemoveEntityName
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -555,11 +555,11 @@ END INTERFACE
 ! Get the type of the entity of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetType(dim, tag) RESULT(ans)
+  MODULE FUNCTION obj_GetType(dim, tag) RESULT(ans)
     INTEGER(i4b), INTENT(in) :: dim
     INTEGER(i4b), INTENT(in) :: tag
     CHARACTER(len=:), ALLOCATABLE :: ans
-  END FUNCTION model_GetType
+  END FUNCTION obj_GetType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -571,13 +571,13 @@ END INTERFACE
 !! `parentTag' are Set to -1 if the entity has no parent.
 
 INTERFACE
-  MODULE FUNCTION model_GetParent(dim, tag, parentDim, parentTag) RESULT(ans)
+  MODULE FUNCTION obj_GetParent(dim, tag, parentDim, parentTag) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     INTEGER(I4B), INTENT(OUT) :: parentDim
     INTEGER(I4B), INTENT(OUT) :: parentTag
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetParent
+  END FUNCTION obj_GetParent
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -587,9 +587,9 @@ END INTERFACE
 !> Return the number of partitions in the model.
 
 INTERFACE
-  MODULE FUNCTION model_GetNumberOfPartitions() RESULT(ans)
+  MODULE FUNCTION obj_GetNumberOfPartitions() RESULT(ans)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetNumberOfPartitions
+  END FUNCTION obj_GetNumberOfPartitions
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -600,11 +600,11 @@ END INTERFACE
 !! entity belongs.
 
 INTERFACE
-  MODULE FUNCTION model_GetPartitions(dim, tag) RESULT(ans)
+  MODULE FUNCTION obj_GetPartitions(dim, tag) RESULT(ans)
     INTEGER(I4B), INTENT(in) :: dim
     INTEGER(I4B), INTENT(in) :: tag
     INTEGER(I4B), ALLOCATABLE :: ans(:)
-  END FUNCTION model_GetPartitions
+  END FUNCTION obj_GetPartitions
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -620,12 +620,12 @@ END INTERFACE
 !! p1y, p1z, p2x, ...].
 
 INTERFACE
-  MODULE FUNCTION model_GetValue(dim, tag, parametricCoord) RESULT(ans)
+  MODULE FUNCTION obj_GetValue(dim, tag, parametricCoord) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), DIMENSION(:), INTENT(IN) :: parametricCoord
     REAL(DFP), DIMENSION(:), ALLOCATABLE :: ans
-  END FUNCTION model_GetValue
+  END FUNCTION obj_GetValue
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -643,13 +643,13 @@ END INTERFACE
 !! d1uz, d1vx, d1vy, d1vz, d2ux, ...].
 
 INTERFACE
-  MODULE FUNCTION model_GetDerivative(dim, tag, parametricCoord) &
+  MODULE FUNCTION obj_GetDerivative(dim, tag, parametricCoord) &
     RESULT(derivatives)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), DIMENSION(:), INTENT(IN) :: parametricCoord
     REAL(DFP), DIMENSION(:), ALLOCATABLE :: derivatives
-  END FUNCTION model_GetDerivative
+  END FUNCTION obj_GetDerivative
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -669,13 +669,13 @@ END INTERFACE
 !! d1uvy, d1uvz, d2uux, ...].
 
 INTERFACE
-  MODULE FUNCTION model_GetSecondDerivative(dim, tag, parametricCoord) &
+  MODULE FUNCTION obj_GetSecondDerivative(dim, tag, parametricCoord) &
     RESULT(derivatives)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), DIMENSION(:), INTENT(IN) :: parametricCoord
     REAL(DFP), DIMENSION(:), ALLOCATABLE :: derivatives
-  END FUNCTION model_GetSecondDerivative
+  END FUNCTION obj_GetSecondDerivative
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -689,13 +689,13 @@ END INTERFACE
 !! on the surface, concatenated: [p1u, p1v, p2u, ...]).
 
 INTERFACE
-  MODULE FUNCTION model_GetCurvature(dim, tag, parametricCoord) &
+  MODULE FUNCTION obj_GetCurvature(dim, tag, parametricCoord) &
     RESULT(curvatures)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), DIMENSION(:), INTENT(IN) :: parametricCoord
     REAL(DFP), DIMENSION(:), ALLOCATABLE :: curvatures
-  END FUNCTION model_GetCurvature
+  END FUNCTION obj_GetCurvature
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -708,7 +708,7 @@ END INTERFACE
 !! concatenated: [p1u, p1v, p2u, ...].
 
 INTERFACE
-  MODULE FUNCTION model_GetPrincipalCurvatures( &
+  MODULE FUNCTION obj_GetPrincipalCurvatures( &
     tag, parametricCoord, curvatureMax, curvatureMin, directionMax, &
     directionMin) RESULT(ans)
     INTEGER(I4B), INTENT(in) :: tag
@@ -718,7 +718,7 @@ INTERFACE
     REAL(DFP), ALLOCATABLE, INTENT(OUT) :: directionMax(:)
     REAL(DFP), ALLOCATABLE, INTENT(OUT) :: directionMin(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetPrincipalCurvatures
+  END FUNCTION obj_GetPrincipalCurvatures
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -731,12 +731,12 @@ END INTERFACE
 !! a vector of x, y, z components, concatenated: [n1x, n1y, n1z, n2x, ...].
 
 INTERFACE
-  MODULE FUNCTION model_GetNormal(tag, parametricCoord) RESULT(ans)
+  MODULE FUNCTION obj_GetNormal(tag, parametricCoord) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), INTENT(IN) :: parametricCoord(:)
     REAL(DFP), ALLOCATABLE :: ans(:)
     !! normals
-  END FUNCTION model_GetNormal
+  END FUNCTION obj_GetNormal
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -751,13 +751,13 @@ END INTERFACE
 !! ...] or [p1u, p1v, p2u, ...].
 
 INTERFACE
-  MODULE FUNCTION model_GetParametrization(dim, tag, coord) RESULT(ans)
+  MODULE FUNCTION obj_GetParametrization(dim, tag, coord) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), INTENT(IN) :: coord(:)
     REAL(DFP), ALLOCATABLE :: ans(:)
     !! parametricCoord
-  END FUNCTION model_GetParametrization
+  END FUNCTION obj_GetParametrization
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -768,14 +768,14 @@ END INTERFACE
 !! of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetParametrizationBounds(dim, tag, min, max) &
+  MODULE FUNCTION obj_GetParametrizationBounds(dim, tag, min, max) &
     RESULT(ans)
     INTEGER(I4B), INTENT(in) :: dim
     INTEGER(I4B), INTENT(in) :: tag
     REAL(DFP), ALLOCATABLE, INTENT(OUT) :: MIN(:)
     REAL(DFP), ALLOCATABLE, INTENT(OUT) :: MAX(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetParametrizationBounds
+  END FUNCTION obj_GetParametrizationBounds
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -789,13 +789,13 @@ END INTERFACE
 !! underlying geometrical representation.
 
 INTERFACE
-  MODULE FUNCTION model_IsInside(dim, tag, coord, parametric) RESULT(ans)
+  MODULE FUNCTION obj_IsInside(dim, tag, coord, parametric) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), INTENT(IN) :: coord(:)
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: parametric
     LOGICAL(LGT) :: ans
-  END FUNCTION model_IsInside
+  END FUNCTION obj_IsInside
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -810,15 +810,15 @@ END INTERFACE
   !! (if `dim' = 2), i.e. [p1t, p2t, ...] or [p1u, p1v, p2u, ...].
 
 INTERFACE
-  MODULE FUNCTION model_GetClosestPoint(dim, tag, coord, closestCoord, &
-                                        parametricCoord) RESULT(ans)
+  MODULE FUNCTION obj_GetClosestPoint(dim, tag, coord, closestCoord, &
+                                      parametricCoord) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), INTENT(IN) :: coord(:)
     REAL(DFP), ALLOCATABLE, INTENT(OUT) :: closestCoord(:)
     REAL(DFP), ALLOCATABLE, INTENT(OUT) :: parametricCoord(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_GetClosestPoint
+  END FUNCTION obj_GetClosestPoint
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -833,7 +833,7 @@ END INTERFACE
 !! entities, depending on the underlying geometrical representation.
 
 INTERFACE
-  MODULE FUNCTION model_ReparametrizeOnSurface( &
+  MODULE FUNCTION obj_ReparametrizeOnSurface( &
     dim, tag, parametricCoord, surfaceTag, which) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
@@ -842,7 +842,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: which
     REAL(DFP), ALLOCATABLE :: ans(:)
     !! surfaceParametricCoord
-  END FUNCTION model_ReparametrizeOnSurface
+  END FUNCTION obj_ReparametrizeOnSurface
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -854,12 +854,12 @@ END INTERFACE
 !! `recursive' is true.
 
 INTERFACE
-  MODULE FUNCTION model_SetVisibility(dimTags, VALUE, RECURSIVE) RESULT(ans)
+  MODULE FUNCTION obj_SetVisibility(dimTags, VALUE, RECURSIVE) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
     INTEGER(I4B), INTENT(IN) :: VALUE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: RECURSIVE
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetVisibility
+  END FUNCTION obj_SetVisibility
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -869,12 +869,12 @@ END INTERFACE
 !! Get the visibility of the model entity of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetVisibility(dim, tag) RESULT(ans)
+  MODULE FUNCTION obj_GetVisibility(dim, tag) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     INTEGER(I4B) :: ans
     !! VALUE
-  END FUNCTION model_GetVisibility
+  END FUNCTION obj_GetVisibility
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -885,12 +885,12 @@ END INTERFACE
 !! `windowIndex' identifies the window in the window list.
 
 INTERFACE
-  MODULE FUNCTION model_SetVisibilityPerWindow(VALUE, windowIndex) &
+  MODULE FUNCTION obj_SetVisibilityPerWindow(VALUE, windowIndex) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: VALUE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: windowIndex
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetVisibilityPerWindow
+  END FUNCTION obj_SetVisibilityPerWindow
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -903,7 +903,7 @@ END INTERFACE
 !! recursively if `recursive' is true.
 
 INTERFACE
-  MODULE FUNCTION model_SetColor(dimTags, r, g, b, a, RECURSIVE) RESULT(ans)
+  MODULE FUNCTION obj_SetColor(dimTags, r, g, b, a, RECURSIVE) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
     INTEGER(I4B), INTENT(IN) :: r
     INTEGER(I4B), INTENT(IN) :: g
@@ -911,7 +911,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: a
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: RECURSIVE
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetColor
+  END FUNCTION obj_SetColor
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -921,11 +921,11 @@ END INTERFACE
 !! Get the color of the model entity of dimension `dim' and tag `tag'.
 
 INTERFACE
-  MODULE FUNCTION model_GetColor(dim, tag) RESULT(ans)
+  MODULE FUNCTION obj_GetColor(dim, tag) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
     INTEGER(I4B) :: ans(4)
-  END FUNCTION model_GetColor
+  END FUNCTION obj_GetColor
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -935,13 +935,13 @@ END INTERFACE
 !! Set the `x', `y', `z' coordinates of a geometrical point.
 
 INTERFACE
-  MODULE FUNCTION model_SetCoordinates(tag, x, y, z) RESULT(ans)
+  MODULE FUNCTION obj_SetCoordinates(tag, x, y, z) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: tag
     REAL(DFP), INTENT(IN) :: x
     REAL(DFP), INTENT(IN) :: y
     REAL(DFP), INTENT(IN) :: z
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetCoordinates
+  END FUNCTION obj_SetCoordinates
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -951,9 +951,9 @@ END INTERFACE
 !! Get the names of any optional attributes stored in the model.
 
 INTERFACE
-  MODULE FUNCTION model_GetAttributeNames() RESULT(names)
+  MODULE FUNCTION obj_GetAttributeNames() RESULT(names)
     TYPE(String), ALLOCATABLE :: names(:)
-  END FUNCTION model_GetAttributeNames
+  END FUNCTION obj_GetAttributeNames
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -963,10 +963,10 @@ END INTERFACE
 !! Get the values of the attribute with name `name'.
 
 INTERFACE
-  MODULE FUNCTION model_GetAttribute(name) RESULT(ans)
+  MODULE FUNCTION obj_GetAttribute(name) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     TYPE(String), ALLOCATABLE :: ans(:)
-  END FUNCTION model_GetAttribute
+  END FUNCTION obj_GetAttribute
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -976,11 +976,11 @@ END INTERFACE
 !> Set the values of the attribute with name `name'.
 
 INTERFACE
-  MODULE FUNCTION model_SetAttribute(name, values) RESULT(ans)
+  MODULE FUNCTION obj_SetAttribute(name, values) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     CHARACTER(*), INTENT(IN) :: values(:)
     INTEGER(I4B) :: ans
-  END FUNCTION model_SetAttribute
+  END FUNCTION obj_SetAttribute
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -990,11 +990,15 @@ END INTERFACE
 !> Remove the attribute with name `name'.
 
 INTERFACE
-  MODULE FUNCTION model_RemoveAttribute(name) RESULT(ans)
+  MODULE FUNCTION obj_RemoveAttribute(name) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
-  END FUNCTION model_RemoveAttribute
+  END FUNCTION obj_RemoveAttribute
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE GmshModel_Class
 

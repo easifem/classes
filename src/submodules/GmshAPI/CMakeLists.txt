@@ -15,10 +15,17 @@
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(
-    ${PROJECT_NAME}
-    PRIVATE ${src_path}/GmshModel_Class@Methods.F90
-    PRIVATE ${src_path}/GmshModelGeo_Class@Methods.F90
-    PRIVATE ${src_path}/GmshModelOcc_Class@Methods.F90
-)
+if(USE_GMSH_SDK)
+    set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+    target_sources(
+        ${PROJECT_NAME}
+        PRIVATE ${src_path}/GmshModel_Class@Methods.F90
+        PRIVATE ${src_path}/GmshModelMesh_Class@Methods.F90
+        PRIVATE ${src_path}/GmshModelGeo_Class@Methods.F90
+        PRIVATE ${src_path}/GmshModelGeoMesh_Class@Methods.F90
+        PRIVATE ${src_path}/GmshModelOcc_Class@Methods.F90
+        PRIVATE ${src_path}/GmshModelOccMesh_Class@Methods.F90
+        PRIVATE ${src_path}/GmshOnelab_Class@Methods.F90
+        PRIVATE ${src_path}/GmshOption_Class@Methods.F90
+    )
+endif()

@@ -108,9 +108,9 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_Initiate
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_Initiate"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
 #endif
 
 LOGICAL(LGT) :: isok
@@ -157,15 +157,15 @@ CALL obj%mesh%Initiate()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_Initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_Add
+MODULE PROCEDURE obj_Add
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_Add()"
+CHARACTER(*), PARAMETER :: myName = "obj_Add()"
 #endif
 CHARACTER(maxStrLen), TARGET :: name_
 
@@ -182,15 +182,15 @@ ans = INT(ierr, KIND=I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_Add
+END PROCEDURE obj_Add
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_Remove
+MODULE PROCEDURE obj_Remove
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_Remove()"
+CHARACTER(*), PARAMETER :: myName = "obj_Remove()"
 #endif
 
 #ifdef DEBUG_VER
@@ -205,15 +205,15 @@ ans = INT(ierr, KIND=I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_Remove
+END PROCEDURE obj_Remove
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_List
+MODULE PROCEDURE obj_List
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_List()"
+CHARACTER(*), PARAMETER :: myName = "obj_List()"
 #endif
 TYPE(C_PTR) :: names_
 INTEGER(C_SIZE_T) :: names_n_
@@ -244,15 +244,15 @@ ans = MAX(ans - 1, math%zero_i)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_List
+END PROCEDURE obj_List
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetCurrent
+MODULE PROCEDURE obj_GetCurrent
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetCurrent()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetCurrent()"
 #endif
 TYPE(C_PTR) :: cstring
 
@@ -269,15 +269,15 @@ CALL C2Fortran(C_string=cstring, F_string=name)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetCurrent
+END PROCEDURE obj_GetCurrent
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetCurrent
+MODULE PROCEDURE obj_SetCurrent
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetCurrent()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetCurrent()"
 #endif
 CHARACTER(maxStrLen), TARGET :: name_
 
@@ -294,15 +294,15 @@ ans = INT(ierr, KIND=I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetCurrent
+END PROCEDURE obj_SetCurrent
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetFileName
+MODULE PROCEDURE obj_GetFileName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetFileName()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetFileName()"
 #endif
 TYPE(C_PTR) :: cstring
 
@@ -319,15 +319,15 @@ CALL C2Fortran(C_string=cstring, F_string=fileName)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetFileName
+END PROCEDURE obj_GetFileName
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetFileName
+MODULE PROCEDURE obj_SetFileName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetFileName()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetFileName()"
 #endif
 CHARACTER(maxStrLen), TARGET :: name_
 
@@ -344,15 +344,15 @@ ans = INT(ierr, KIND=I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetFileName
+END PROCEDURE obj_SetFileName
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetEntities
+MODULE PROCEDURE obj_GetEntities
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetEntities()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetEntities()"
 #endif
 TYPE(C_PTR) :: cptr
 INTEGER(C_SIZE_T) :: dimTags_n_
@@ -375,7 +375,7 @@ dimTags = gmsh_dimtag_c2f(cptr=cptr, n=dimTags_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetEntities
+END PROCEDURE obj_GetEntities
 
 !----------------------------------------------------------------------------
 !
@@ -383,9 +383,9 @@ END PROCEDURE model_GetEntities
 
 !! Set the name of the entity of dimension `dim' and tag `tag'.
 
-MODULE PROCEDURE model_SetEntityName
+MODULE PROCEDURE obj_SetEntityName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetEntityName()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetEntityName()"
 #endif
 CHARACTER(maxStrLen), TARGET :: name_
 
@@ -405,7 +405,7 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetEntityName
+END PROCEDURE obj_SetEntityName
 
 !----------------------------------------------------------------------------
 !
@@ -413,9 +413,9 @@ END PROCEDURE model_SetEntityName
 
 !! Get the name of the entity of dimension `dim' and tag `tag'.
 
-MODULE PROCEDURE model_GetEntityName
+MODULE PROCEDURE obj_GetEntityName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetEntityName()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetEntityName()"
 #endif
 TYPE(C_PTR) :: cptr
 
@@ -433,7 +433,7 @@ CALL GmshFree(cptr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetEntityName
+END PROCEDURE obj_GetEntityName
 
 !----------------------------------------------------------------------------
 !
@@ -443,9 +443,9 @@ END PROCEDURE model_GetEntityName
 !! only the entities of the specified dimension (e.g. physical points if `dim'
 !! == 0). The entities are returned as a vector of (dim, tag) pairs.
 
-MODULE PROCEDURE model_GetPhysicalGroups
+MODULE PROCEDURE obj_GetPhysicalGroups
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetPhysicalGroups()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalGroups()"
 #endif
 TYPE(C_PTR) :: cptr
 INTEGER(C_SIZE_T) :: dimTags_n_
@@ -478,7 +478,7 @@ dimTags = gmsh_dimtag_c2f(cptr=cptr, n=dimTags_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetPhysicalGroups
+END PROCEDURE obj_GetPhysicalGroups
 
 !----------------------------------------------------------------------------
 !
@@ -487,9 +487,9 @@ END PROCEDURE model_GetPhysicalGroups
 !> Get the tags of the model entities making up the physical group of
 !! dimension `dim' and tag `tag'.
 
-MODULE PROCEDURE model_GetEntitiesForPhysicalGroup
+MODULE PROCEDURE obj_GetEntitiesForPhysicalGroup
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetEntitiesForPhysicalGroup()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetEntitiesForPhysicalGroup()"
 #endif
 
 TYPE(C_PTR) :: cptr
@@ -512,7 +512,7 @@ CALL C2Fortran(cptr=cptr, vec=tags)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetEntitiesForPhysicalGroup
+END PROCEDURE obj_GetEntitiesForPhysicalGroup
 
 !----------------------------------------------------------------------------
 !
@@ -521,9 +521,9 @@ END PROCEDURE model_GetEntitiesForPhysicalGroup
 !! Get the tags of the model entities making up the physical group of
 !! dimension `dim' and tag `tag'.
 
-MODULE PROCEDURE model_GetPhysicalGroupsForEntity
+MODULE PROCEDURE obj_GetPhysicalGroupsForEntity
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetPhysicalGroupsForEntity()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalGroupsForEntity()"
 #endif
 TYPE(C_PTR) :: cptr
 INTEGER(C_SIZE_T) :: physicalTags_n_
@@ -546,7 +546,7 @@ CALL C2Fortran(cptr=cptr, vec=physicalTags)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetPhysicalGroupsForEntity
+END PROCEDURE obj_GetPhysicalGroupsForEntity
 
 !----------------------------------------------------------------------------
 !
@@ -556,9 +556,9 @@ END PROCEDURE model_GetPhysicalGroupsForEntity
 !! tags `tags'. Return the tag of the physical group, equal to `tag' if `tag'
 !! is positive, or a new tag if `tag' < 0.
 
-MODULE PROCEDURE model_AddPhysicalGroup
+MODULE PROCEDURE obj_AddPhysicalGroup
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_AddPhysicalGroup()"
+CHARACTER(*), PARAMETER :: myName = "obj_AddPhysicalGroup()"
 #endif
 INTEGER(C_SIZE_T) :: tags_n
 CHARACTER(maxStrLen), TARGET :: name_
@@ -583,15 +583,15 @@ ans = GmshModelAddPhysicalGroup( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_AddPhysicalGroup
+END PROCEDURE obj_AddPhysicalGroup
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_RemovePhysicalGroups
+MODULE PROCEDURE obj_RemovePhysicalGroups
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_RemovePhysicalGroups()"
+CHARACTER(*), PARAMETER :: myName = "obj_RemovePhysicalGroups()"
 #endif
 INTEGER(C_SIZE_T) :: dimTags_n
 
@@ -611,15 +611,15 @@ ans = INT(ierr, i4b)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_RemovePhysicalGroups
+END PROCEDURE obj_RemovePhysicalGroups
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetPhysicalName
+MODULE PROCEDURE obj_SetPhysicalName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetPhysicalName()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetPhysicalName()"
 #endif
 CHARACTER(maxStrLen), TARGET :: name_
 
@@ -639,15 +639,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetPhysicalName
+END PROCEDURE obj_SetPhysicalName
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_RemovePhysicalName
+MODULE PROCEDURE obj_RemovePhysicalName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_RemovePhysicalName()"
+CHARACTER(*), PARAMETER :: myName = "obj_RemovePhysicalName()"
 #endif
 CHARACTER(maxStrLen), TARGET :: name_
 
@@ -664,15 +664,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_RemovePhysicalName
+END PROCEDURE obj_RemovePhysicalName
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetPhysicalName
+MODULE PROCEDURE obj_GetPhysicalName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetPhysicalName()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalName()"
 #endif
 TYPE(C_PTR) :: cptr
 
@@ -692,15 +692,15 @@ CALL C2Fortran(C_STRING=cptr, F_STRING=name)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetPhysicalName
+END PROCEDURE obj_GetPhysicalName
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetTag
+MODULE PROCEDURE obj_SetTag
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetTag()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetTag()"
 #endif
 
 #ifdef DEBUG_VER
@@ -717,15 +717,15 @@ ans = INT(ierr, i4b)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetTag
+END PROCEDURE obj_SetTag
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetBoundary
+MODULE PROCEDURE obj_GetBoundary
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetBoundary()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundary()"
 #endif
 TYPE(C_PTR) :: outDimTags_
 INTEGER(C_SIZE_T) :: outDimTags_n
@@ -753,15 +753,15 @@ outDimTags = gmsh_dimtag_c2f(cptr=outDimTags_, n=outDimTags_n)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetBoundary
+END PROCEDURE obj_GetBoundary
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetAdjacencies
+MODULE PROCEDURE obj_GetAdjacencies
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetAdjacencies()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetAdjacencies()"
 #endif
 TYPE(C_PTR) :: upward_
 INTEGER(C_SIZE_T) :: upward_n
@@ -791,15 +791,15 @@ downward = gmsh_intvec_c2f(cptr=downward_, n=downward_n)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetAdjacencies
+END PROCEDURE obj_GetAdjacencies
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetEntitiesInBoundingBox
+MODULE PROCEDURE obj_GetEntitiesInBoundingBox
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetEntitiesInBoundingBox()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetEntitiesInBoundingBox()"
 #endif
 TYPE(C_PTR) :: dimTags_
 INTEGER(C_SIZE_T) :: dimTags_n
@@ -829,15 +829,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetEntitiesInBoundingBox
+END PROCEDURE obj_GetEntitiesInBoundingBox
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetBoundingBox
+MODULE PROCEDURE obj_GetBoundingBox
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetBoundingBox()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox()"
 #endif
 REAL(C_DOUBLE) :: x(6)
 
@@ -862,15 +862,15 @@ zmax = REAL(x(6), DFP)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetBoundingBox
+END PROCEDURE obj_GetBoundingBox
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetDimension
+MODULE PROCEDURE obj_GetDimension
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetDimension()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetDimension()"
 #endif
 
 #ifdef DEBUG_VER
@@ -884,15 +884,15 @@ ans = INT(GmshModelGetDimension(ierr=ierr), I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetDimension
+END PROCEDURE obj_GetDimension
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_AddDiscreteEntity
+MODULE PROCEDURE obj_AddDiscreteEntity
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_AddDiscreteEntity()"
+CHARACTER(*), PARAMETER :: myName = "obj_AddDiscreteEntity()"
 #endif
 INTEGER(C_INT) :: ans0
 INTEGER(C_SIZE_T) :: boundary_n
@@ -929,15 +929,15 @@ ans = INT(ans0, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_AddDiscreteEntity
+END PROCEDURE obj_AddDiscreteEntity
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_RemoveEntities
+MODULE PROCEDURE obj_RemoveEntities
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_RemoveEntities()"
+CHARACTER(*), PARAMETER :: myName = "obj_RemoveEntities()"
 #endif
 
 #ifdef DEBUG_VER
@@ -957,15 +957,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_RemoveEntities
+END PROCEDURE obj_RemoveEntities
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_RemoveEntityName
+MODULE PROCEDURE obj_RemoveEntityName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_RemoveEntityName()"
+CHARACTER(*), PARAMETER :: myName = "obj_RemoveEntityName()"
 #endif
 
 #ifdef DEBUG_VER
@@ -982,15 +982,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_RemoveEntityName
+END PROCEDURE obj_RemoveEntityName
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetType
+MODULE PROCEDURE obj_GetType
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetType()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetType()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1006,7 +1006,7 @@ CALL GmshModelGetType( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetType
+END PROCEDURE obj_GetType
 
 !----------------------------------------------------------------------------
 !
@@ -1016,9 +1016,9 @@ END PROCEDURE model_GetType
 !! tag `tag', i.e. from which the entity is a part of, if any. `parentDim' and
 !! `parentTag' are Set to -1 if the entity has no parent.
 
-MODULE PROCEDURE model_GetParent
+MODULE PROCEDURE obj_GetParent
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetParent()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetParent()"
 #endif
 INTEGER(C_INT) :: parentDim0, parentTag0
 
@@ -1040,15 +1040,15 @@ parentTag = INT(parentTag0, i4b)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetParent
+END PROCEDURE obj_GetParent
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetNumberOfPartitions
+MODULE PROCEDURE obj_GetNumberOfPartitions
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetNumberOfPartitions()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetNumberOfPartitions()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1062,15 +1062,15 @@ ans = INT(GmshModelGetNumberOfPartitions(ierr=ierr), I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetNumberOfPartitions
+END PROCEDURE obj_GetNumberOfPartitions
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetPartitions
+MODULE PROCEDURE obj_GetPartitions
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetPartitions()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPartitions()"
 #endif
 
 TYPE(C_PTR) :: partitions_
@@ -1092,15 +1092,15 @@ ans = gmsh_intvec_c2f(partitions_, partitions_n)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetPartitions
+END PROCEDURE obj_GetPartitions
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetValue
+MODULE PROCEDURE obj_GetValue
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetValue()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetValue()"
 #endif
 TYPE(C_PTR) :: coord_
 INTEGER(C_SIZE_T) :: coord_n_
@@ -1125,15 +1125,15 @@ ans = gmsh_realvec_c2f(coord_, coord_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetValue
+END PROCEDURE obj_GetValue
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetDerivative
+MODULE PROCEDURE obj_GetDerivative
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetDerivative()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetDerivative()"
 #endif
 TYPE(C_PTR) :: derivatives_
 INTEGER(C_SIZE_T) :: derivatives_n_
@@ -1156,15 +1156,15 @@ derivatives = gmsh_realvec_c2f(derivatives_, derivatives_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetDerivative
+END PROCEDURE obj_GetDerivative
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetSecondDerivative
+MODULE PROCEDURE obj_GetSecondDerivative
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetSecondDerivative()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetSecondDerivative()"
 #endif
 TYPE(C_PTR) :: derivatives_
 INTEGER(C_SIZE_T) :: derivatives_n_
@@ -1187,15 +1187,15 @@ derivatives = gmsh_realvec_c2f(derivatives_, derivatives_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetSecondDerivative
+END PROCEDURE obj_GetSecondDerivative
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetCurvature
+MODULE PROCEDURE obj_GetCurvature
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetCurvature()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetCurvature()"
 #endif
 TYPE(C_PTR) :: curvatures_
 INTEGER(C_SIZE_T) :: curvatures_n_
@@ -1220,15 +1220,15 @@ curvatures = gmsh_realvec_c2f(curvatures_, curvatures_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetCurvature
+END PROCEDURE obj_GetCurvature
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetPrincipalCurvatures
+MODULE PROCEDURE obj_GetPrincipalCurvatures
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetPrincipalCurvatures()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrincipalCurvatures()"
 #endif
 TYPE(C_PTR) :: curvatureMax_
 INTEGER(C_SIZE_T) :: curvatureMax_n_
@@ -1267,15 +1267,15 @@ directionMin = gmsh_realvec_c2f(directionMin_, directionMin_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetPrincipalCurvatures
+END PROCEDURE obj_GetPrincipalCurvatures
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetNormal
+MODULE PROCEDURE obj_GetNormal
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetNormal()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetNormal()"
 #endif
 TYPE(C_PTR) :: normals_
 INTEGER(C_SIZE_T) :: normals_n_
@@ -1299,15 +1299,15 @@ ans = gmsh_realvec_c2f(normals_, normals_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetNormal
+END PROCEDURE obj_GetNormal
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetParametrization
+MODULE PROCEDURE obj_GetParametrization
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetParametrization()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetParametrization()"
 #endif
 TYPE(C_PTR) :: parametricCoord_
 INTEGER(C_SIZE_T) :: parametricCoord_n_
@@ -1332,15 +1332,15 @@ ans = gmsh_realvec_c2f(parametricCoord_, parametricCoord_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetParametrization
+END PROCEDURE obj_GetParametrization
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetParametrizationBounds
+MODULE PROCEDURE obj_GetParametrizationBounds
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetParametrizationBounds()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetParametrizationBounds()"
 #endif
 TYPE(C_PTR) :: min_
 INTEGER(C_SIZE_T) :: min_n_
@@ -1363,15 +1363,15 @@ max = gmsh_realvec_c2f(max_, max_n_)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetParametrizationBounds
+END PROCEDURE obj_GetParametrizationBounds
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_IsInside
+MODULE PROCEDURE obj_IsInside
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_IsInside()"
+CHARACTER(*), PARAMETER :: myName = "obj_IsInside()"
 #endif
 INTEGER(C_INT) :: ans0
 
@@ -1392,15 +1392,15 @@ ans = ans0 .NE. 0
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_IsInside
+END PROCEDURE obj_IsInside
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetClosestPoint
+MODULE PROCEDURE obj_GetClosestPoint
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetClosestPoint()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetClosestPoint()"
 #endif
 TYPE(C_PTR) :: closestCoord_
 INTEGER(C_SIZE_T) :: closestCoord_n_
@@ -1433,15 +1433,15 @@ parametricCoord = gmsh_realvec_c2f(parametricCoord_, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetClosestPoint
+END PROCEDURE obj_GetClosestPoint
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_ReparametrizeOnSurface
+MODULE PROCEDURE obj_ReparametrizeOnSurface
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_ReparametrizeOnSurface()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReparametrizeOnSurface()"
 #endif
 TYPE(C_PTR) :: surfaceParametricCoord_
 INTEGER(C_SIZE_T) :: surfaceParametricCoord_n_
@@ -1469,15 +1469,15 @@ ans = gmsh_realvec_c2f(surfaceParametricCoord_, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_ReparametrizeOnSurface
+END PROCEDURE obj_ReparametrizeOnSurface
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetVisibility
+MODULE PROCEDURE obj_SetVisibility
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetVisibility()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetVisibility()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1496,15 +1496,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetVisibility
+END PROCEDURE obj_SetVisibility
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetVisibility
+MODULE PROCEDURE obj_GetVisibility
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetVisibility()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetVisibility()"
 #endif
 INTEGER(C_INT) :: value0
 
@@ -1523,15 +1523,15 @@ ans = INT(value0, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetVisibility
+END PROCEDURE obj_GetVisibility
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetVisibilityPerWindow
+MODULE PROCEDURE obj_SetVisibilityPerWindow
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetVisibilityPerWindow()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetVisibilityPerWindow()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1550,15 +1550,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetVisibilityPerWindow
+END PROCEDURE obj_SetVisibilityPerWindow
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetColor
+MODULE PROCEDURE obj_SetColor
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetColor()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetColor()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1582,15 +1582,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetColor
+END PROCEDURE obj_SetColor
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetColor
+MODULE PROCEDURE obj_GetColor
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetColor()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetColor()"
 #endif
 INTEGER(C_INT) :: rgba(4)
 
@@ -1609,15 +1609,15 @@ ans = INT(rgba, kind=I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetColor
+END PROCEDURE obj_GetColor
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetCoordinates
+MODULE PROCEDURE obj_SetCoordinates
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetCoordinates()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetCoordinates()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1635,15 +1635,15 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetCoordinates
+END PROCEDURE obj_SetCoordinates
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetAttributeNames
+MODULE PROCEDURE obj_GetAttributeNames
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetAttributeNames()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetAttributeNames()"
 #endif
 CHARACTER(maxStrLen), ALLOCATABLE :: names0(:)
 TYPE(C_PTR) :: names_
@@ -1670,15 +1670,15 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetAttributeNames
+END PROCEDURE obj_GetAttributeNames
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_GetAttribute
+MODULE PROCEDURE obj_GetAttribute
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_GetAttribute()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetAttribute()"
 #endif
 CHARACTER(maxStrLen), ALLOCATABLE :: values(:)
 TYPE(C_PTR) :: values_
@@ -1705,15 +1705,15 @@ IF (ALLOCATED(values)) DEALLOCATE (values)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_GetAttribute
+END PROCEDURE obj_GetAttribute
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_SetAttribute
+MODULE PROCEDURE obj_SetAttribute
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_SetAttribute()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetAttribute()"
 #endif
 CHARACTER(len=maxStrLen, kind=C_CHAR), ALLOCATABLE :: values_strs(:)
 TYPE(C_PTR), ALLOCATABLE :: values_(:)
@@ -1735,15 +1735,15 @@ ans = INT(ierr, i4b)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_SetAttribute
+END PROCEDURE obj_SetAttribute
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE model_RemoveAttribute
+MODULE PROCEDURE obj_RemoveAttribute
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "model_RemoveAttribute()"
+CHARACTER(*), PARAMETER :: myName = "obj_RemoveAttribute()"
 #endif
 
 #ifdef DEBUG_VER
@@ -1758,7 +1758,7 @@ ans = INT(ierr, I4B)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE model_RemoveAttribute
+END PROCEDURE obj_RemoveAttribute
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

@@ -15,29 +15,27 @@
 # along with this program.  If not, see <https: //www.gnu.org/licenses/>
 #
 
-IF(USE_GMSH_SDK)
-SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-TARGET_SOURCES(
-  ${PROJECT_NAME} PRIVATE
-  ${src_path}/GmshUtility.F90
-  ${src_path}/GmshInterface/GmshInterface.F90
-  ${src_path}/GmshFLTK_Class.F90
-  ${src_path}/GmshGraphics_Class.F90
-  ${src_path}/GmshModel_Class.F90
-  ${src_path}/GmshModelGeo_Class.F90
-  ${src_path}/GmshModelGeoMesh_Class.F90
-  ${src_path}/GmshModelMesh_Class.F90
-  ${src_path}/GmshModelOcc_Class.F90
-  ${src_path}/GmshModelOccMesh_Class.F90
-  ${src_path}/GmshOnelab_Class.F90
-  ${src_path}/GmshOption_Class.F90
-  ${src_path}/Gmsh_Class.F90
-  ${src_path}/GmshStructuredMesh_Class.F90
-)
-ELSE()
-SET(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-TARGET_SOURCES(
-  ${PROJECT_NAME} PRIVATE
-  ${src_path}/NoGmsh/Gmsh_Class.F90
-)
-ENDIF()
+if(USE_GMSH_SDK)
+    set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+    target_sources(
+        ${PROJECT_NAME}
+        PRIVATE
+            ${src_path}/GmshUtility.F90
+            ${src_path}/GmshInterface/GmshInterface.F90
+            ${src_path}/GmshFLTK_Class.F90
+            ${src_path}/GmshGraphics_Class.F90
+            ${src_path}/GmshModel_Class.F90
+            ${src_path}/GmshModelGeo_Class.F90
+            ${src_path}/GmshModelGeoMesh_Class.F90
+            ${src_path}/GmshModelMesh_Class.F90
+            ${src_path}/GmshModelOcc_Class.F90
+            ${src_path}/GmshModelOccMesh_Class.F90
+            ${src_path}/GmshOnelab_Class.F90
+            ${src_path}/GmshOption_Class.F90
+            ${src_path}/Gmsh_Class.F90
+            ${src_path}/GmshStructuredMesh_Class.F90
+    )
+else()
+    set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+    target_sources(${PROJECT_NAME} PRIVATE ${src_path}/NoGmsh/Gmsh_Class.F90)
+endif()
