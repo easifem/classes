@@ -17,64 +17,57 @@
 
 MODULE GmshGraphics_Class
 USE GlobalData, ONLY: DFP, I4B, LGT
-USE GmshInterface
-USE ISO_C_BINDING
 IMPLICIT NONE
 PRIVATE
-CHARACTER( LEN = * ), PARAMETER :: modName = "GMSHGRAPHICS_CLASS"
-INTEGER( C_INT ) :: ierr
-!$OMP THREADPRIVATE(ierr)
-INTEGER( I4B ), PARAMETER :: maxStrLen = 256
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-TYPE :: GmshGraphics_
-  CONTAINS
-  PRIVATE
-  PROCEDURE, PUBLIC, PASS( Obj ) :: Draw=>graphics_Draw
-  PROCEDURE, PUBLIC, PASS( obj ) :: Initiate => graphics_Initiate
-END TYPE GmshGraphics_
 
 PUBLIC :: GmshGraphics_
-TYPE( GmshGraphics_ ), PUBLIC, PARAMETER :: TypeGmshGraphics = GmshGraphics_()
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-TYPE :: GmshGraphicsPointer_
-  CLASS( GmshGraphics_ ), POINTER :: Ptr => NULL()
-END TYPE
-
+PUBLIC :: TypeGmshGraphics
 PUBLIC :: GmshGraphicsPointer_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
+TYPE :: GmshGraphics_
 CONTAINS
+  PRIVATE
+  PROCEDURE, PUBLIC, PASS(Obj) :: Draw => obj_Draw
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+END TYPE GmshGraphics_
+
+!----------------------------------------------------------------------------
+!                                                           TypeGmshGraphics
+!----------------------------------------------------------------------------
+
+TYPE(GmshGraphics_), PARAMETER :: TypeGmshGraphics = GmshGraphics_()
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE graphics_Initiate( obj )
-  CLASS( GmshGraphics_ ), INTENT( INOUT ) :: obj
-END SUBROUTINE graphics_Initiate
+TYPE :: GmshGraphicsPointer_
+  CLASS(GmshGraphics_), POINTER :: Ptr => NULL()
+END TYPE GmshGraphicsPointer_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-FUNCTION graphics_Draw(obj) RESULT( ans )
-  CLASS( GmshGraphics_ ), INTENT( INOUT ) :: obj
-  INTEGER( I4B ) :: ans
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate(obj)
+    CLASS(GmshGraphics_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Initiate
+END INTERFACE
 
-  ! Internal
-  CALL gmshGraphicsDraw(ierr)
-  ans = int(ierr, i4b)
-END FUNCTION graphics_Draw
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_Draw(obj) RESULT(ans)
+    CLASS(GmshGraphics_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_Draw
+END INTERFACE
 
 END MODULE GmshGraphics_Class

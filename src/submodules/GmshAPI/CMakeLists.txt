@@ -27,5 +27,6 @@ if(USE_GMSH_SDK)
         PRIVATE ${src_path}/GmshModelOccMesh_Class@Methods.F90
         PRIVATE ${src_path}/GmshOnelab_Class@Methods.F90
         PRIVATE ${src_path}/GmshOption_Class@Methods.F90
+        PRIVATE ${src_path}/GmshGraphics_Class@Methods.F90
     )
 endif()
