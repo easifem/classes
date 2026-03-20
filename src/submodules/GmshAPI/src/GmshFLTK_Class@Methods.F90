@@ -67,10 +67,14 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
+INTEGER(I4B) :: ierr
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+ierr = obj%Initialize()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

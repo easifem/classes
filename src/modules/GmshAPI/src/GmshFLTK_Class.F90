@@ -44,7 +44,7 @@ CONTAINS
   PROCEDURE, PUBLIC, NOPASS :: SelectElements => obj_SelectElements
   PROCEDURE, PUBLIC, NOPASS :: SelectViews => obj_SelectViews
   PROCEDURE, PUBLIC, NOPASS :: SplitCurrentWindow => &
-  & obj_SplitCurrentWindow
+    obj_SplitCurrentWindow
   PROCEDURE, PUBLIC, NOPASS :: SetStatusMessage => obj_SetStatusMessage
   PROCEDURE, PUBLIC, NOPASS :: ShowContextWindow => obj_ShowContextWindow
   PROCEDURE, PUBLIC, NOPASS :: OpenTreeItem => obj_OpenTreeItem

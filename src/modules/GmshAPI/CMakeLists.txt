@@ -32,7 +32,6 @@ if(USE_GMSH_SDK)
             ${src_path}/GmshOnelab_Class.F90
             ${src_path}/GmshOption_Class.F90
             ${src_path}/Gmsh_Class.F90
-            ${src_path}/GmshStructuredMesh_Class.F90
     )
 else()
     set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")

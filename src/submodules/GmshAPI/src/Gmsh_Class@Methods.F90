@@ -116,7 +116,7 @@ ALLOCATE (obj%option)
 CALL obj%option%Initiate()
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(obj%FLTK)
+isok = ASSOCIATED(obj%fltk)
 IF (isok) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     "Gmsh%FLTK is already associated; &
@@ -129,7 +129,7 @@ ALLOCATE (obj%fltk)
 CALL obj%fltk%Initiate()
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(obj%Onelab)
+isok = ASSOCIATED(obj%onelab)
 IF (isok) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     "Gmsh%Onelab is already associated; hint: &

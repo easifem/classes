@@ -46,7 +46,7 @@ TYPE(GmshGraphics_), PARAMETER :: TypeGmshGraphics = GmshGraphics_()
 !----------------------------------------------------------------------------
 
 TYPE :: GmshGraphicsPointer_
-  CLASS(GmshGraphics_), POINTER :: Ptr => NULL()
+  CLASS(GmshGraphics_), POINTER :: ptr => NULL()
 END TYPE GmshGraphicsPointer_
 
 !----------------------------------------------------------------------------
