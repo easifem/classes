@@ -150,6 +150,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/FEDOF/CMakeLists.txt)
 # GmshAPI
 include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
 
+# GmshStructuredMesh2
+include(${CMAKE_CURRENT_LIST_DIR}/GmshStructuredMesh2/CMakeLists.txt)
+
 # MSHFile
 include(${CMAKE_CURRENT_LIST_DIR}/MSHFile/CMakeLists.txt)
 

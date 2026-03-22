@@ -653,7 +653,7 @@ END INTERFACE
 ! date: 2025-06-13
 ! summary:  Import data From toml file
 !
-!# Introduction
+!# ImportFromToml
 !
 ! This method is used to import data from toml table.
 ! fedof: If fedof is not initiated then it will be initiated by
@@ -705,7 +705,7 @@ END INTERFACE
 ! date: 2025-06-13
 ! summary:  Import data From toml file
 !
-!# Introduction
+!# ImportFromToml
 !
 ! In this method we call obj_ImportFromToml1 method.
 
