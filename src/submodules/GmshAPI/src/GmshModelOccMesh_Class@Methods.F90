@@ -18,8 +18,8 @@
 SUBMODULE(GmshModelOccMesh_Class) Methods
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE ExceptionHandler_Class, ONLY: e
-USE GmshInterface, ONLY: GMSH_API_MAX_STR_LEN
-USE GmshInterface, ONLY: GmshModelOccMeshSetSize
+USE GmshBasicInterface, ONLY: GMSH_API_MAX_STR_LEN
+USE GmshModelOccMeshInterface, ONLY: GmshModelOccMeshSetSize
 USE ISO_C_BINDING, ONLY: C_INT
 USE ISO_C_BINDING, ONLY: C_SIZE_T
 IMPLICIT NONE
