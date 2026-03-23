@@ -19,11 +19,11 @@ SUBMODULE(GmshOnelab_Class) Methods
 USE ExceptionHandler_Class, ONLY: e
 USE ReallocateUtility, ONLY: Reallocate
 
-USE GmshInterface, ONLY: GMSH_API_MAX_STR_LEN
-USE GmshInterface, ONLY: GmshOnelabSet
-USE GmshInterface, ONLY: GmshOnelabGetNumber
-USE GmshInterface, ONLY: GmshOnelabSetString
-USE GmshInterface, ONLY: GmshOnelabGetString
+USE GmshBasicInterface, ONLY: GMSH_API_MAX_STR_LEN
+USE GmshOnelabInterface, ONLY: GmshOnelabSet
+USE GmshOnelabInterface, ONLY: GmshOnelabGetNumber
+USE GmshOnelabInterface, ONLY: GmshOnelabSetString
+USE GmshOnelabInterface, ONLY: GmshOnelabGetString
 
 USE CInterface, ONLY: C_PTR_TO_REAL_VEC
 USE CInterface, ONLY: C2Fortran
