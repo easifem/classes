@@ -43,10 +43,13 @@ USE ISO_C_BINDING, ONLY: C_PTR
 USE ISO_C_BINDING, ONLY: C_SIZE_T
 USE GmshUtility, ONLY: gmsh_opt_cdouble
 USE GmshUtility, ONLY: gmsh_CString
-USE GmshUtility, ONLY: gmsh_opt_cint
 USE GmshUtility, ONLY: gmsh_dimtag_c2f
 USE GmshUtility, ONLY: gmsh_intvec_c2f
+USE GmshUtility, ONLY: gmsh_opt_cint
 USE GmshUtility, ONLY: gmsh_cint
+USE GmshUtility, ONLY: optval_c_str
+USE GmshUtility, ONLY: istring_
+
 USE CInterface, ONLY: optval_c_bool
 
 IMPLICIT NONE
@@ -239,7 +242,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL GmshFltkRun(ierr)
+CALL GmshFltkRun( &
+  optionFileName=istring_(optval_c_str("", optionFileName)), &
+  ierr=ierr)
+
 ans = INT(ierr, I4B)
 
 #ifdef DEBUG_VER

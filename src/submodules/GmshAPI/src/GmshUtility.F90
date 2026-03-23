@@ -39,6 +39,8 @@ PUBLIC :: gmsh_dimtag_c2f
 PUBLIC :: gmsh_cstrlen
 PUBLIC :: gmshFree
 PUBLIC :: gmsh_size_str
+PUBLIC :: optval_c_str
+PUBLIC :: istring_
 
 TYPE cstr_
   CHARACTER(:), ALLOCATABLE :: s
@@ -49,6 +51,31 @@ TYPE, PRIVATE :: c_array_
 END TYPE c_array_
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+FUNCTION istring_(o) RESULT(v)
+  CHARACTER(len=*), INTENT(in) :: o
+  CHARACTER(len=:, kind=C_CHAR), ALLOCATABLE :: v
+  v = TRIM(o)//C_NULL_CHAR
+END FUNCTION istring_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+!
+PURE FUNCTION optval_c_str(def, val) RESULT(res)
+  CHARACTER(len=*), INTENT(in) :: def
+  CHARACTER(len=*), OPTIONAL, INTENT(in) :: val
+  CHARACTER(len=:), ALLOCATABLE :: res
+  IF (PRESENT(val)) THEN
+    res = val
+  ELSE
+    res = def
+  END IF
+END FUNCTION optval_c_str
 
 !----------------------------------------------------------------------------
 !

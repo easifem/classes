@@ -166,7 +166,8 @@ END INTERFACE
 ! been initialized. Can only be called in the main thread. */
 
 INTERFACE
-  MODULE FUNCTION obj_Run() RESULT(ans)
+  MODULE FUNCTION obj_Run(optionFileName) RESULT(ans)
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: optionFileName
     INTEGER(I4B) :: ans
   END FUNCTION obj_Run
 END INTERFACE

@@ -156,8 +156,10 @@ END INTERFACE
 ! GMSH_API void gmshFltkRun(int *ierr);
 
 INTERFACE
-  SUBROUTINE gmshFltkRun(ierr) BIND(C, name="gmshFltkRun")
+  SUBROUTINE gmshFltkRun(optionFileName, ierr) BIND(C, name="gmshFltkRun")
     IMPORT
+    CHARACTER(len=1, kind=C_CHAR), INTENT(in), OPTIONAL :: &
+      optionFileName(*)
     INTEGER(C_INT), INTENT(OUT) :: ierr
   END SUBROUTINE gmshFltkRun
 END INTERFACE
