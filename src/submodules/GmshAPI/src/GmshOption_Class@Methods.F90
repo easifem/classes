@@ -30,13 +30,13 @@ USE GmshUtility, ONLY: gmsh_cint
 
 USE CInterface, ONLY: C2Fortran
 
-USE GmshInterface, ONLY: GMSH_API_MAX_STR_LEN
-USE GmshInterface, ONLY: GmshOptionSetNumber
-USE GmshInterface, ONLY: GmshOptionGetNumber
-USE GmshInterface, ONLY: GmshOptionSetString
-USE GmshInterface, ONLY: GmshOptionGetString
-USE GmshInterface, ONLY: GmshOptionSetColor
-USE GmshInterface, ONLY: GmshOptionGetColor
+USE GmshBasicInterface, ONLY: GMSH_API_MAX_STR_LEN
+USE GmshOptionInterface, ONLY: GmshOptionSetNumber
+USE GmshOptionInterface, ONLY: GmshOptionGetNumber
+USE GmshOptionInterface, ONLY: GmshOptionSetString
+USE GmshOptionInterface, ONLY: GmshOptionGetString
+USE GmshOptionInterface, ONLY: GmshOptionSetColor
+USE GmshOptionInterface, ONLY: GmshOptionGetColor
 
 IMPLICIT NONE
 
