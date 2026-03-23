@@ -21,16 +21,16 @@ USE ReallocateUtility, ONLY: Reallocate
 USE InputUtility, ONLY: Input
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: math => TypeMathOpt
-USE GmshInterface, ONLY: GMSH_API_MAX_STR_LEN
-USE GmshInterface, ONLY: GmshModelGeoMeshSetSize
-USE GmshInterface, ONLY: GmshModelGeoMeshSetTransfiniteSurface
-USE GmshInterface, ONLY: GmshModelGeoMeshSetTransfiniteVolume
-USE GmshInterface, ONLY: GmshModelGeoMeshSetRecombine
-USE GmshInterface, ONLY: GmshModelGeoMeshSetReverse
-USE GmshInterface, ONLY: GmshModelGeoMeshSetAlgorithm
-USE GmshInterface, ONLY: GmshModelGeoMeshSetSizeFromBoundary
-USE GmshInterface, ONLY: GmshModelGeoMeshSetSmoothing
-USE GmshInterface, ONLY: GmshModelGeoMeshSetTransfiniteCurve
+USE GmshBasicInterface, ONLY: GMSH_API_MAX_STR_LEN
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetSize
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetTransfiniteSurface
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetTransfiniteVolume
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetRecombine
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetReverse
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetAlgorithm
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetSizeFromBoundary
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetSmoothing
+USE GmshModelGeoMeshInterface, ONLY: GmshModelGeoMeshSetTransfiniteCurve
 USE CInterface, ONLY: C_PTR_TO_INT_VEC
 USE ISO_C_BINDING, ONLY: C_INT
 USE ISO_C_BINDING, ONLY: C_SIZE_T
