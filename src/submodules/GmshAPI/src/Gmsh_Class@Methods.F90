@@ -26,7 +26,6 @@ USE ISO_C_BINDING, ONLY: C_PTR
 USE ISO_C_BINDING, ONLY: C_CHAR
 USE ISO_C_BINDING, ONLY: C_LOC
 USE ISO_C_BINDING, ONLY: C_NULL_CHAR
-USE GmshInterface, ONLY: GMSH_API_MAX_STR_LEN
 USE GmshInterface, ONLY: GmshInitialize
 USE GmshInterface, ONLY: GmshFinalize
 USE GmshInterface, ONLY: GmshIsInitialized

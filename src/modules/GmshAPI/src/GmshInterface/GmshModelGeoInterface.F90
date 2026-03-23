@@ -45,6 +45,7 @@ PUBLIC :: gmshModelGeoAddPointOnGeometry
 PUBLIC :: gmshModelGeoExtrude
 PUBLIC :: gmshModelGeoRevolve
 PUBLIC :: gmshModelGeoTwist
+PUBLIC :: gmshModelGeoExtrudeBoundaryLayer
 PUBLIC :: gmshModelGeoTranslate
 PUBLIC :: gmshModelGeoRotate
 PUBLIC :: gmshModelGeoDilate

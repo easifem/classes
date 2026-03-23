@@ -21,6 +21,25 @@ if(USE_GMSH_SDK)
         ${PROJECT_NAME}
         PRIVATE
             ${src_path}/GmshInterface/GmshInterface.F90
+            ${src_path}/GmshInterface/GmshBasicInterface.F90
+            ${src_path}/GmshInterface/GmshOptionInterface.F90
+            ${src_path}/GmshInterface/GmshGraphicsInterface.F90
+            ${src_path}/GmshInterface/GmshFLTKInterface.F90
+            ${src_path}/GmshInterface/GmshOnelabInterface.F90
+            ${src_path}/GmshInterface/GmshModelInterface.F90
+            ${src_path}/GmshInterface/GmshModelGeoInterface.F90
+            ${src_path}/GmshInterface/GmshModelGeoMeshInterface.F90
+            ${src_path}/GmshInterface/GmshModelOccInterface.F90
+            ${src_path}/GmshInterface/GmshModelOccMeshInterface.F90
+            ${src_path}/GmshInterface/GmshModelMeshInterface.F90
+    )
+endif()
+
+if(USE_GMSH_SDK)
+    set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
+    target_sources(
+        ${PROJECT_NAME}
+        PRIVATE
             ${src_path}/GmshFLTK_Class.F90
             ${src_path}/GmshGraphics_Class.F90
             ${src_path}/GmshModel_Class.F90

@@ -32,6 +32,12 @@ PUBLIC :: gmshMerge
 PUBLIC :: gmshWrite
 PUBLIC :: gmshClear
 
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_MAJOR = 4
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_MINOR = 11
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_PATCH = 0
+INTEGER, PARAMETER, PUBLIC :: GMSH_API_MAX_STR_LEN = 256
+CHARACTER(6), PARAMETER, PUBLIC :: GMSH_API_VERSION = "4.11.0"
+
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------

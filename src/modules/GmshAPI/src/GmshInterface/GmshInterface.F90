@@ -15,43 +15,17 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#define I4B C_INT
-#define DFP C_DOUBLE
-#define _I_OUT_ INTEGER( C_INT ), INTENT( OUT )
-#define _I_IN_ INTEGER( C_INT ), INTENT( IN )
-#define _I_V_IN_ INTEGER( C_INT ), VALUE, INTENT( IN )
-#define _ST_V_IN_ INTEGER( C_SIZE_T ), VALUE, INTENT( IN )
-#define _ST_OUT_ INTEGER( C_SIZE_T ), INTENT( OUT )
-#define _ST_IN_ INTEGER( C_SIZE_T ), INTENT( IN )
-#define _R_V_IN_ REAL( C_DOUBLE ), VALUE, INTENT( IN )
-#define _R_IN_ REAL( C_DOUBLE ), INTENT( IN )
-#define _R_OUT_ REAL( C_DOUBLE ), INTENT( OUT )
-#define _CPTR_V_IN_ TYPE(C_PTR), VALUE, INTENT( IN )
-#define _CPTR_IN_ TYPE(C_PTR), INTENT( IN )
-#define _CPTR_OUT_ TYPE(C_PTR), INTENT( OUT )
-
 MODULE GmshInterface
-USE ISO_C_BINDING
+USE GmshBasicInterface
+USE GmshOptionInterface
+USE GmshGraphicsInterface
+USE GmshFLTKInterface
+USE GmshOnelabInterface
+USE GmshModelInterface
+USE GmshModelGeoInterface
+USE GmshModelGeoMeshInterface
+USE GmshModelOccInterface
+USE GmshModelOccMeshInterface
+USE GmshModelMeshInterface
 IMPLICIT NONE
-PRIVATE
-
-INTEGER(I4B), PARAMETER :: maxStrLen = 256
-INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_MAJOR = 4
-INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_MINOR = 11
-INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_PATCH = 0
-INTEGER, PARAMETER, PUBLIC :: GMSH_API_MAX_STR_LEN = maxStrLen
-CHARACTER(100), PARAMETER, PUBLIC :: GMSH_API_VERSION = "4.11.0"
-
-#include "./include/Gmsh.F90"
-#include "./include/GmshOption.F90"
-#include "./include/GmshModel.F90"
-#include "./include/GmshGraphics.F90"
-#include "./include/GmshFLTK.F90"
-#include "./include/GmshModelGeo.F90"
-#include "./include/GmshModelGeoMesh.F90"
-#include "./include/GmshModelOcc.F90"
-#include "./include/GmshModelOccMesh.F90"
-#include "./include/GmshModelMesh.F90"
-#include "./include/GmshOnelab.F90"
-
 END MODULE GmshInterface
