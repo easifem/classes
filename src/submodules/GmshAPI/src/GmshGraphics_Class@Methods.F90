@@ -17,8 +17,8 @@
 
 SUBMODULE(GmshGraphics_Class) Methods
 USE ExceptionHandler_Class, ONLY: e
-USE GmshInterface, ONLY: GMSH_API_MAX_STR_LEN
-USE GmshInterface, ONLY: GmshGraphicsDraw
+USE GmshBasicInterface, ONLY: GMSH_API_MAX_STR_LEN
+USE GmshGraphicsInterface, ONLY: GmshGraphicsDraw
 USE ISO_C_BINDING, ONLY: C_INT
 IMPLICIT NONE
 
