@@ -42,17 +42,16 @@ INTEGER, PARAMETER, PUBLIC :: GMSH_API_VERSION_PATCH = 0
 INTEGER, PARAMETER, PUBLIC :: GMSH_API_MAX_STR_LEN = maxStrLen
 CHARACTER(100), PARAMETER, PUBLIC :: GMSH_API_VERSION = "4.11.0"
 
-#include "./Gmsh.inc"
-#include "./GmshOption.inc"
-#include "./GmshModel.inc"
-! 🏁
-#include "./GmshGraphics.inc"
-#include "./GmshFLTK.inc"
-#include "./GmshModelGeo.inc"
-#include "./GmshModelGeoMesh.inc"
-#include "./GmshModelOcc.inc"
-#include "./GmshModelOccMesh.inc"
-#include "./GmshModelMesh.inc"
-#include "./GmshOnelab.inc"
+#include "./include/Gmsh.F90"
+#include "./include/GmshOption.F90"
+#include "./include/GmshModel.F90"
+#include "./include/GmshGraphics.F90"
+#include "./include/GmshFLTK.F90"
+#include "./include/GmshModelGeo.F90"
+#include "./include/GmshModelGeoMesh.F90"
+#include "./include/GmshModelOcc.F90"
+#include "./include/GmshModelOccMesh.F90"
+#include "./include/GmshModelMesh.F90"
+#include "./include/GmshOnelab.F90"
 
 END MODULE GmshInterface

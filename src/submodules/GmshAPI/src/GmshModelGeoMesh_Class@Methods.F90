@@ -36,6 +36,7 @@ USE ISO_C_BINDING, ONLY: C_INT
 USE ISO_C_BINDING, ONLY: C_SIZE_T
 USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 USE ISO_C_BINDING, ONLY: C_LOC
+USE GmshUtility, ONLY: gmsh_cdouble
 
 IMPLICIT NONE
 
@@ -60,7 +61,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoMeshSetSize( &
-  dimTags, SIZE(dimTags, KIND=C_SIZE_T), meshSize, ierr)
+  dimTags=dimTags, dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
+  size=gmsh_cdouble(meshSize), ierr=ierr)
 
 ans = INT(ierr, I4B)
 

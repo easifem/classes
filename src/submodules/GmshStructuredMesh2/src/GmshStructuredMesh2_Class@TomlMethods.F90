@@ -345,9 +345,9 @@ SUBROUTINE ImportMeshTypeOnAxis1FromToml(table, ans, defaultSize)
       oneChar(1:1) = strs(1)%slice(1, 1)
       oneChar = UpperCase(oneChar)
       IF (oneChar .EQ. "P") THEN
-        meshType = Progression
+        meshType = TypeGmshStructuredMesh2Opt%progression
       ELSE
-        meshType = Bump
+        meshType = TypeGmshStructuredMesh2Opt%bump
       END IF
       ans = meshType
 
@@ -360,9 +360,9 @@ SUBROUTINE ImportMeshTypeOnAxis1FromToml(table, ans, defaultSize)
         oneChar(1:1) = strs(ii)%slice(1, 1)
         oneChar = UpperCase(oneChar)
         IF (oneChar .EQ. "P") THEN
-          meshType = Progression
+          meshType = TypeGmshStructuredMesh2Opt%progression
         ELSE
-          meshType = Bump
+          meshType = TypeGmshStructuredMesh2Opt%bump
         END IF
         ans(ii) = meshType
 
@@ -414,9 +414,9 @@ SUBROUTINE ImportMeshTypeOnAxis2FromToml(table, ans, defaultSize)
       oneChar(1:1) = strs(1)%slice(1, 1)
       oneChar = UpperCase(oneChar)
       IF (oneChar .EQ. "P") THEN
-        meshType = Progression
+        meshType = TypeGmshStructuredMesh2Opt%progression
       ELSE
-        meshType = Bump
+        meshType = TypeGmshStructuredMesh2Opt%bump
       END IF
       ans = meshType
 
@@ -429,9 +429,9 @@ SUBROUTINE ImportMeshTypeOnAxis2FromToml(table, ans, defaultSize)
         oneChar(1:1) = strs(ii)%slice(1, 1)
         oneChar = UpperCase(oneChar)
         IF (oneChar .EQ. "P") THEN
-          meshType = Progression
+          meshType = TypeGmshStructuredMesh2Opt%progression
         ELSE
-          meshType = Bump
+          meshType = TypeGmshStructuredMesh2Opt%bump
         END IF
         ans(ii) = meshType
 

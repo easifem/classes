@@ -251,7 +251,8 @@ SUBROUTINE SetTransfiniteMeshType(pointsOnAxis, ans, meshTypeOnAxis)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "SetMeshTypeOnAxis()"
 #endif
-  INTEGER(I4B), PARAMETER :: default_meshtype = Progression
+  INTEGER(I4B), PARAMETER :: default_meshtype = &
+                             TypeGmshStructuredMesh2Opt%progression
   LOGICAL(LGT) :: isok
   INTEGER(I4B) :: ii, jj
 

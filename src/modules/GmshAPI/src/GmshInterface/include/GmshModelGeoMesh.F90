@@ -29,7 +29,7 @@
 
 INTERFACE
   SUBROUTINE gmshModelGeoMeshSetSize(dimTags, dimTags_n, size, ierr) &
-    & BIND(C, NAME="gmshModelGeoMeshSetSize")
+    BIND(C, NAME="gmshModelGeoMeshSetSize")
     IMPORT
     _ST_V_IN_ :: dimTags_n
     _I_IN_ :: dimTags(dimTags_n)
@@ -57,9 +57,9 @@ PUBLIC :: gmshModelGeoMeshSetSize
 !                                                   int *ierr);
 
 INTERFACE
-  SUBROUTINE gmshModelGeoMeshSetTransfiniteCurve(tag, nPoints, &
-    & meshType, coef, ierr) &
-    & BIND(C, NAME="gmshModelGeoMeshSetTransfiniteCurve")
+  SUBROUTINE gmshModelGeoMeshSetTransfiniteCurve( &
+    tag, nPoints, meshType, coef, ierr) &
+    BIND(C, NAME="gmshModelGeoMeshSetTransfiniteCurve")
     IMPORT
     _I_V_IN_ :: tag, nPoints
     _CPTR_V_IN_ :: meshType

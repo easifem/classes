@@ -607,23 +607,29 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
-!> Evaluate the parametrization of the entity of dimension `dim' and tag `tag'
-!! at the parametric coordinates `parametricCoord'. Only valid for `dim' equal
-!! to 0 (with empty `parametricCoord'), 1 (with `parametricCoord' containing
-!! parametric coordinates on the curve) or 2 (with `parametricCoord'
-!! containing u, v parametric coordinates on the surface, concatenated: [p1u,
-!! p1v, p2u, ...]). Return x, y, z coordinates in `coord', concatenated: [p1x,
-!! p1y, p1z, p2x, ...].
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-22
+! summary: Evaluate the parametrization of entity of dimension
+!
+!# GetValue
+!
+! Evaluate the parametrization of the entity of dimension `dim' and tag `tag'
+! at the parametric coordinates `parametricCoord'. Only valid for `dim' equal
+! to 0 (with empty `parametricCoord'), 1 (with `parametricCoord' containing
+! parametric coordinates on the curve) or 2 (with `parametricCoord'
+! containing u, v parametric coordinates on the surface, concatenated: [p1u,
+! p1v, p2u, ...]). Return x, y, z coordinates in `coord', concatenated: [p1x,
+! p1y, p1z, p2x, ...].
 
 INTERFACE
   MODULE FUNCTION obj_GetValue(dim, tag, parametricCoord) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: dim
     INTEGER(I4B), INTENT(IN) :: tag
-    REAL(DFP), DIMENSION(:), INTENT(IN) :: parametricCoord
-    REAL(DFP), DIMENSION(:), ALLOCATABLE :: ans
+    REAL(DFP), INTENT(IN) :: parametricCoord(:)
+    REAL(DFP), ALLOCATABLE :: ans(:)
   END FUNCTION obj_GetValue
 END INTERFACE
 

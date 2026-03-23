@@ -32,9 +32,29 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: GmshStructuredMesh2_
 PUBLIC :: GmshStructuredMesh2Pointer_
+PUBLIC :: TypeGmshStructuredMesh2Opt
 
-INTEGER(I4B), PARAMETER :: Progression = 1
-INTEGER(I4B), PARAMETER :: Bump = 2
+!----------------------------------------------------------------------------
+!                                                    GmshStructuredMesh2Opt_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-22
+! summary: options for GmshStructuredMesh2
+
+TYPE :: GmshStructuredMesh2Opt_
+  INTEGER(I4B) :: progression = math%one_i
+  INTEGER(I4B) :: bump = math%two_i
+  CHARACTER(11) :: progression_char = "Progression"
+  CHARACTER(4) :: bump_char = "Bump"
+END TYPE GmshStructuredMesh2Opt_
+
+!----------------------------------------------------------------------------
+!                                                 TypeGmshStructuredMesh2Opt
+!----------------------------------------------------------------------------
+
+TYPE(GmshStructuredMesh2Opt_), PARAMETER :: TypeGmshStructuredMesh2Opt = &
+                                            GmshStructuredMesh2Opt_()
 
 !----------------------------------------------------------------------------
 !                                                      GmshStructuredMesh2_

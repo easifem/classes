@@ -533,16 +533,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                                    Extrude
 !----------------------------------------------------------------------------
 
-!> Extrude the entities `dimTags' (given as a vector of (dim, tag) pairs) in
-!! the built-in CAD representation, using a translation along (`dx', `dy',
-!! `dz'). Return extruded entities in `outDimTags'. If the `numElements'
-!! vector is not empty, also extrude the mesh: the entries in `numElements'
-!! give the number of elements in each layer. If the `height' vector is not
-!! empty, it provides the (cumulative) height of the different layers,
-!! normalized to 1. If `recombine' is set, recombine the mesh in the layers.
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-22
+! summary: Extrude the entities `dimTags`
+!
+!# Extrude
+!
+! Extrude the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+! the built-in CAD representation, using a translation along (`dx', `dy',
+! `dz'). Return extruded entities in `outDimTags'. If the `numElements'
+! vector is not empty, also extrude the mesh: the entries in `numElements'
+! give the number of elements in each layer. If the `height' vector is not
+! empty, it provides the (cumulative) height of the different layers,
+! normalized to 1. If `recombine' is set, recombine the mesh in the layers.
 
 INTERFACE
   MODULE FUNCTION obj_Extrude( &
@@ -645,11 +651,17 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                                  Translate
 !----------------------------------------------------------------------------
 
-!> Translate the entities `dimTags' (given as a vector of (dim, tag) pairs) in
-!! the built-in CAD representation along (`dx', `dy', `dz').
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-22
+! summary: Translate the entities  `dimTags`
+!
+!# Translate
+!
+! Translate the entities `dimTags' (given as a vector of (dim, tag) pairs) in
+! the built-in CAD representation along (`dx', `dy', `dz').
 
 INTERFACE
   MODULE FUNCTION obj_Translate(dimTags, dx, dy, dz) RESULT(ans)
@@ -728,11 +740,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
+!                                                                       Copy
 !----------------------------------------------------------------------------
 
-!> Copy the entities `dimTags' (given as a vector of (dim, tag) pairs) in the
-!! built-in CAD representation; the new entities are returned in `outDimTags'.
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-22
+! summary: Copy the entities `dimTags`.
+!
+!# Copy
+!
+! Copy the entities `dimTags' (given as a vector of (dim, tag) pairs) in the
+! built-in CAD representation; the new entities are returned in `outDimTags'.
+!
 
 INTERFACE
   MODULE FUNCTION obj_Copy(dimTags) RESULT(ans)

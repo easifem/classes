@@ -89,7 +89,7 @@ END TYPE GmshModelGeoMeshPointer_
 
 INTERFACE
   MODULE FUNCTION obj_SetSize(dimTags, meshSize) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: dimTags(:)
+    INTEGER(I4B), INTENT(IN) :: dimTags(:, :)
     REAL(DFP), INTENT(IN) :: meshSize
     INTEGER(I4B) :: ans
   END FUNCTION obj_SetSize

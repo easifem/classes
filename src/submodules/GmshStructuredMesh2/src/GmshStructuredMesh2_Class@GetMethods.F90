@@ -112,12 +112,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 SELECT CASE (meshType)
-CASE (Progression)
-  ans = "Progression"
-CASE (Bump)
-  ans = "Bump"
+CASE (TypeGmshStructuredMesh2Opt%progression)
+  ans = TypeGmshStructuredMesh2Opt%progression_char
+CASE (TypeGmshStructuredMesh2Opt%bump)
+  ans = TypeGmshStructuredMesh2Opt%bump_char
 CASE DEFAULT
-  ans = "Bump"
+  ans = TypeGmshStructuredMesh2Opt%bump_char
 END SELECT
 
 #ifdef DEBUG_VER
