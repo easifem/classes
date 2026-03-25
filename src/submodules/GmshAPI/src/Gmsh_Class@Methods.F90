@@ -16,7 +16,7 @@
 !
 
 !> authors: Vikas Sharma, Ph. D.
-! date:         26 April 2021
+! date: 2026-03-24
 ! summary: Gmsh-Fortran Interface
 
 SUBMODULE(Gmsh_Class) Methods
@@ -33,11 +33,13 @@ USE GmshBasicInterface, ONLY: GmshOpen
 USE GmshBasicInterface, ONLY: GmshMerge
 USE GmshBasicInterface, ONLY: GmshWrite
 USE GmshBasicInterface, ONLY: GmshClear
-USE GmshUtility, ONLY: gmsh_GetCharArray_cPtr
-USE GmshUtility, ONLY: gmsh_InputStr
-USE GmshUtility, ONLY: gmsh_strArraySize
-USE GmshUtility, ONLY: gmsh_CString
-USE CInterface, ONLY: optval_c_bool
+
+USE GmshUtility, ONLY: ivectorstring_
+USE GmshUtility, ONLY: optval_str_array
+USE GmshUtility, ONLY: size_gmsh_str_array
+USE GmshUtility, ONLY: istring_
+USE GmshUtility, ONLY: optval_c_bool
+
 IMPLICIT NONE
 
 INTEGER(C_INT) :: ierr
@@ -69,21 +71,22 @@ ans = math%zero_i
 IF (obj%isInit) THEN
   CALL e%RaiseError(modName//"::"//myName//" - "// &
     "Gmsh is already initiated; hint: You can run finalize(), &
-    & the initialize()")
+      & the initialize()")
 END IF
 #endif
 
 ! The following code is initiated when obj%isInit is false
 
-CALL gmsh_GetCharArray_cPtr( &
-  gmsh_InputStr(default=[''], option=argv), argv_strs, argv_cptr)
+CALL ivectorstring_( &
+  optval_str_array(def=[''], val=argv), argv_strs, argv_cptr)
 
 CALL GmshInitialize( &
-  argc=gmsh_strArraySize(argv), &
+  argc=size_gmsh_str_array(argv), &
   argv=argv_cptr, &
   readConfigFiles=optval_c_bool(default=math%yes, &
                                 option=readConfigFiles), &
-  run=optval_c_bool(default=math%no, option=run), ierr=ierr)
+  run=optval_c_bool(default=math%no, option=run), &
+  ierr=ierr)
 
 ans = INT(ierr, I4B)
 
@@ -358,7 +361,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-C_STR = gmsh_CString(fileName)
+C_STR = istring_(fileName)
 CALL GmshWrite(fileName=C_STR, ierr=ierr)
 ans = INT(ierr, KIND=I4B)
 

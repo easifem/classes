@@ -83,20 +83,19 @@ USE GmshModelInterface, ONLY: GmshModelGetAttribute
 USE GmshModelInterface, ONLY: GmshModelSetAttribute
 USE GmshModelInterface, ONLY: GmshModelRemoveAttribute
 
-USE GmshUtility, ONLY: gmsh_CString
-USE GmshUtility, ONLY: gmsh_cStrings2CharArray
-USE GmshUtility, ONLY: gmsh_GetCharArray_cPtr
-USE GmshUtility, ONLY: gmsh_cint
-USE GmshUtility, ONLY: gmsh_cdouble
-USE GmshUtility, ONLY: gmsh_dimtag_c2f
+USE GmshUtility, ONLY: istring_
+USE GmshUtility, ONLY: ovectorstring_
+USE GmshUtility, ONLY: ivectorstring_
+USE GmshUtility, ONLY: optval_c_int
+USE GmshUtility, ONLY: optval_c_double
+USE GmshUtility, ONLY: optval_c_bool
+USE GmshUtility, ONLY: ovectorpair_
 USE GmshUtility, ONLY: GmshFree
-USE GmshUtility, ONLY: gmsh_intvec_c2f
-USE GmshUtility, ONLY: gmsh_realvec_c2f
-USE GmshUtility, ONLY: gmsh_size_str
+USE GmshUtility, ONLY: ovectorint_
+USE GmshUtility, ONLY: ovectordouble_
+USE GmshUtility, ONLY: size_gmsh_str
 
 USE CInterface, ONLY: C2Fortran
-USE CInterface, ONLY: optval_c_bool
-USE CInterface, ONLY: optval_c_int
 
 IMPLICIT NONE
 
@@ -176,7 +175,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-name_ = gmsh_CString(name)
+name_ = istring_(name)
 CALL GmshModelAdd(name=C_LOC(name_), ierr=ierr)
 ans = INT(ierr, KIND=I4B)
 
@@ -230,7 +229,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelList(names=names_, names_n=names_n_, ierr=ierr)
 
 ans = INT(names_n_, I4B)
-names0 = gmsh_cStrings2CharArray(cptr=names_, n=names_n_)
+names0 = ovectorstring_(cptr=names_, n=names_n_)
 
 IF (ans .GT. 0) THEN
   ALLOCATE (names(ans - 1))
@@ -366,12 +365,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GmshModelGetEntities( &
   dimTags=cptr, dimTags_n=dimTags_n_, &
-  dim=gmsh_cint(input(default=math%minus_one_i, option=dim)), &
+  dim=optval_c_int(default=input(default=math%minus_one_i, option=dim)), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
 
-dimTags = gmsh_dimtag_c2f(cptr=cptr, n=dimTags_n_)
+dimTags = ovectorpair_(cptr=cptr, n=dimTags_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -442,7 +441,8 @@ END PROCEDURE obj_GetEntityName
 !----------------------------------------------------------------------------
 
 !! Get all the physical groups in the current model. If `dim' is >= 0, return
-!! only the entities of the specified dimension (e.g. physical points if `dim'
+!! only the entities of the specified dimension
+!! (e.g. physical points if `dim'
 !! == 0). The entities are returned as a vector of (dim, tag) pairs.
 
 MODULE PROCEDURE obj_GetPhysicalGroups
@@ -474,7 +474,7 @@ IF (isok) THEN
   RETURN
 END IF
 
-dimTags = gmsh_dimtag_c2f(cptr=cptr, n=dimTags_n_)
+dimTags = ovectorpair_(cptr=cptr, n=dimTags_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -574,10 +574,11 @@ name_ = TRIM(input(option="", default=name))//C_NULL_CHAR
 tags_n = SIZE(tags)
 
 ans = GmshModelAddPhysicalGroup( &
-      dim=gmsh_cint(dim), &
-      tags=gmsh_cint(tags), &
+      dim=optval_c_int(default=dim), &
+      tags=optval_c_int(default=tags), &
       tags_n=tags_n, &
-      tag=gmsh_cint(Input(option=math%minus_one_i, default=tag)), &
+      tag=optval_c_int(default=Input( &
+                       option=math%minus_one_i, default=tag)), &
       name=C_LOC(name_), &
       ierr=ierr)
 
@@ -605,7 +606,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 dimTags_n = SIZE(dimTags)
 
 CALL GmshModelRemovePhysicalGroups( &
-  dimTags=gmsh_cint(dimTags), dimTags_n=dimTags_n, ierr=ierr)
+  dimTags=optval_c_int(default=dimTags), dimTags_n=dimTags_n, ierr=ierr)
 
 ans = INT(ierr, i4b)
 
@@ -633,7 +634,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 name_ = TRIM(name)//C_NULL_CHAR
 
 CALL GmshModelSetPhysicalName( &
-  dim=dim, tag=gmsh_cint(tag), name=C_LOC(name_), ierr=ierr)
+  dim=dim, tag=optval_c_int(default=tag), name=C_LOC(name_), ierr=ierr)
 
 ans = INT(ierr, I4B)
 
@@ -684,7 +685,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGetPhysicalName( &
-  dim=gmsh_cint(dim), tag=gmsh_cint(tag), name=cptr, ierr=ierr)
+  dim=optval_c_int(default=dim), tag=optval_c_int(default=tag), &
+  name=cptr, ierr=ierr)
 
 ans = INT(ierr, I4B)
 
@@ -710,8 +712,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL GmshModelSetTag(dim=gmsh_cint(dim), tag=gmsh_cint(tag), &
-                     newtag=gmsh_cint(newtag), ierr=ierr)
+CALL GmshModelSetTag(dim=optval_c_int(default=dim), &
+                     tag=optval_c_int(default=tag), &
+                     newtag=optval_c_int(default=newtag), ierr=ierr)
 
 ans = INT(ierr, i4b)
 
@@ -739,7 +742,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GmshModelGetBoundary( &
   dimTags=dimTags, &
-  dimTags_n=gmsh_cint(SIZE(dimTags, KIND=I4B)), &
+  dimTags_n=optval_c_int(default=SIZE(dimTags, KIND=I4B)), &
   outDimTags=outDimTags_, &
   outDimTags_n=outDimTags_n, &
   combined=optval_c_bool(math%yes, combined), &
@@ -749,7 +752,7 @@ CALL GmshModelGetBoundary( &
 
 ans = INT(ierr, I4B)
 
-outDimTags = gmsh_dimtag_c2f(cptr=outDimTags_, n=outDimTags_n)
+outDimTags = ovectorpair_(cptr=outDimTags_, n=outDimTags_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -776,8 +779,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGetAdjacencies( &
-  dim=gmsh_cint(dim), &
-  tag=gmsh_cint(tag), &
+  dim=optval_c_int(default=dim), &
+  tag=optval_c_int(default=tag), &
   upward=upward_, &
   upward_n=upward_n, &
   downward=downward_, &
@@ -786,8 +789,8 @@ CALL GmshModelGetAdjacencies( &
 
 ans = INT(ierr, I4B)
 
-upward = gmsh_intvec_c2f(cptr=upward_, n=upward_n)
-downward = gmsh_intvec_c2f(cptr=downward_, n=downward_n)
+upward = ovectorint_(cptr=upward_, n=upward_n)
+downward = ovectorint_(cptr=downward_, n=downward_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -812,18 +815,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGetEntitiesInBoundingBox( &
-  xmin=gmsh_cdouble(xmin), &
-  xmax=gmsh_cdouble(xmax), &
-  ymin=gmsh_cdouble(ymin), &
-  ymax=gmsh_cdouble(ymax), &
-  zmin=gmsh_cdouble(zmin), &
-  zmax=gmsh_cdouble(zmax), &
+  xmin=optval_c_double(default=xmin), &
+  xmax=optval_c_double(default=xmax), &
+  ymin=optval_c_double(default=ymin), &
+  ymax=optval_c_double(default=ymax), &
+  zmin=optval_c_double(default=zmin), &
+  zmax=optval_c_double(default=zmax), &
   tags=dimTags_, &
   tags_n=dimTags_n, &
-  dim=gmsh_cint(Input(default=math%minus_one_i, option=dim)), &
+  dim=optval_c_int(default=Input(default=math%minus_one_i, option=dim)), &
   ierr=ierr)
 
-dimTags = gmsh_dimtag_c2f(dimTags_, dimTags_n)
+dimTags = ovectorpair_(dimTags_, dimTags_n)
 
 ans = INT(ierr, I4B)
 
@@ -841,7 +844,8 @@ MODULE PROCEDURE obj_GetBoundingBox
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox()"
 #endif
-REAL(C_DOUBLE) :: x(6)
+INTEGER(I4B), PARAMETER :: six_ = 6
+REAL(C_DOUBLE) :: x(six_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -849,8 +853,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGetBoundingBox( &
-  dim=gmsh_cint(dim), tag=gmsh_cint(tag), xmin=x(1), ymin=x(2), &
-  zmin=x(3), xmax=x(4), ymax=x(5), zmax=x(6), ierr=ierr)
+  dim=optval_c_int(default=dim), &
+  tag=optval_c_int(default=tag), &
+  xmin=x(1), ymin=x(2), zmin=x(3), &
+  xmax=x(4), ymax=x(5), zmax=x(6), ierr=ierr)
 
 ans = INT(ierr, I4B)
 xmin = REAL(x(1), DFP)
@@ -909,7 +915,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 isok = PRESENT(boundary)
 
 IF (isok) THEN
-  boundary0 = gmsh_cint(boundary)
+  boundary0 = optval_c_int(default=boundary)
   boundary_n = SIZE(boundary, kind=C_SIZE_T)
 
 ELSE
@@ -919,8 +925,8 @@ ELSE
 END IF
 
 ans0 = GmshModelAddDiscreteEntity( &
-       dim=gmsh_cint(dim), &
-       tag=gmsh_cint(Input(math%minus_one_i, tag)), &
+       dim=optval_c_int(default=dim), &
+       tag=optval_c_int(default=Input(math%minus_one_i, tag)), &
        boundary=boundary0, &
        boundary_n=boundary_n, &
        ierr=ierr)
@@ -948,7 +954,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelRemoveEntities( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, kind=C_SIZE_T), &
   RECURSIVE=optval_c_bool(math%no, RECURSIVE), &
   ierr=ierr)
@@ -975,7 +981,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL GmshModelRemoveEntityName(name=gmsh_CString(name), &
+CALL GmshModelRemoveEntityName(name=istring_(name), &
                                ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -1014,8 +1020,10 @@ END PROCEDURE obj_GetType
 !
 !----------------------------------------------------------------------------
 
-!> In a partitioned model, get the parent of the entity of dimension `dim' and
-!! tag `tag', i.e. from which the entity is a part of, if any. `parentDim' and
+!! In a partitioned model, get the parent of the entity of dimension `dim'
+!! and
+!! tag `tag', i.e. from which the entity is a part of, if any.
+!! `parentDim' and
 !! `parentTag' are Set to -1 if the entity has no parent.
 
 MODULE PROCEDURE obj_GetParent
@@ -1088,7 +1096,7 @@ CALL GmshModelGetPartitions( &
   partitions=partitions_, partitions_n=partitions_n, &
   ierr=ierr)
 
-ans = gmsh_intvec_c2f(partitions_, partitions_n)
+ans = ovectorint_(partitions_, partitions_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1115,13 +1123,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelGetValue( &
   dim=INT(dim, C_INT), &
   tag=INT(tag, C_INT), &
-  parametricCoord=gmsh_cdouble(parametricCoord), &
+  parametricCoord=optval_c_double(default=parametricCoord), &
   parametricCoord_n=SIZE(parametricCoord, kind=C_SIZE_T), &
   coord=coord_, &
   coord_n=coord_n_, &
   ierr=ierr)
 
-ans = gmsh_realvec_c2f(coord_, coord_n_)
+ans = ovectordouble_(coord_, coord_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1152,7 +1160,7 @@ CALL GmshModelGetDerivative( &
   derivatives=derivatives_, derivatives_n=derivatives_n_, &
   ierr=ierr)
 
-derivatives = gmsh_realvec_c2f(derivatives_, derivatives_n_)
+derivatives = ovectordouble_(derivatives_, derivatives_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1178,12 +1186,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GmshModelGetSecondDerivative( &
   dim=INT(dim, C_INT), tag=INT(tag, C_INT), &
-  parametricCoord=gmsh_cdouble(parametricCoord), &
+  parametricCoord=optval_c_double(default=parametricCoord), &
   parametricCoord_n=SIZE(parametricCoord, kind=C_SIZE_T), &
   derivatives=derivatives_, derivatives_n=derivatives_n_, &
   ierr=ierr)
 
-derivatives = gmsh_realvec_c2f(derivatives_, derivatives_n_)
+derivatives = ovectordouble_(derivatives_, derivatives_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1210,13 +1218,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelGetCurvature( &
   dim=INT(dim, C_INT), &
   tag=INT(tag, C_INT), &
-  parametricCoord=gmsh_cdouble(curvatures), &
+  parametricCoord=optval_c_double(default=curvatures), &
   parametricCoord_n=SIZE(parametricCoord, kind=C_SIZE_T), &
   curvatures=curvatures_, &
   curvatures_n=curvatures_n_, &
   ierr=ierr)
 
-curvatures = gmsh_realvec_c2f(curvatures_, curvatures_n_)
+curvatures = ovectordouble_(curvatures_, curvatures_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1248,7 +1256,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GmshModelGetPrincipalCurvatures( &
   tag=INT(tag, C_INT), &
-  parametricCoord=gmsh_cdouble(parametricCoord), &
+  parametricCoord=optval_c_double(default=parametricCoord), &
   parametricCoord_n=SIZE(parametricCoord, kind=C_SIZE_T), &
   curvatureMax=curvatureMax_, &
   curvatureMax_n=curvatureMax_n_, &
@@ -1260,10 +1268,10 @@ CALL GmshModelGetPrincipalCurvatures( &
   directionMin_n=directionMin_n_, &
   ierr=ierr)
 
-curvatureMax = gmsh_realvec_c2f(curvatureMax_, curvatureMax_n_)
-curvatureMin = gmsh_realvec_c2f(curvatureMin_, curvatureMin_n_)
-directionMax = gmsh_realvec_c2f(directionMax_, directionMax_n_)
-directionMin = gmsh_realvec_c2f(directionMin_, directionMin_n_)
+curvatureMax = ovectordouble_(curvatureMax_, curvatureMax_n_)
+curvatureMin = ovectordouble_(curvatureMin_, curvatureMin_n_)
+directionMax = ovectordouble_(directionMax_, directionMax_n_)
+directionMin = ovectordouble_(directionMin_, directionMin_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1289,13 +1297,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GmshModelGetNormal( &
   tag=INT(tag, C_INT), &
-  parametricCoord=gmsh_cdouble(parametricCoord), &
+  parametricCoord=optval_c_double(default=parametricCoord), &
   parametricCoord_n=SIZE(parametricCoord, kind=C_SIZE_T), &
   normals=normals_, &
   normals_n=normals_n_, &
   ierr=ierr)
 
-ans = gmsh_realvec_c2f(normals_, normals_n_)
+ans = ovectordouble_(normals_, normals_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1322,13 +1330,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelGetParametrization( &
   dim=INT(dim, C_INT), &
   tag=INT(tag, C_INT), &
-  coord=gmsh_cdouble(coord), &
+  coord=optval_c_double(default=coord), &
   coord_n=SIZE(coord, kind=C_SIZE_T), &
   parametricCoord=parametricCoord_, &
   parametricCoord_n=parametricCoord_n_, &
   ierr=ierr)
 
-ans = gmsh_realvec_c2f(parametricCoord_, parametricCoord_n_)
+ans = ovectordouble_(parametricCoord_, parametricCoord_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1358,8 +1366,8 @@ CALL GmshModelGetParametrizationBounds( &
   dim=INT(dim, C_INT), tag=INT(tag, C_INT), min=min_, min_n=min_n_, &
   max=max_, max_n=max_n_, ierr=ierr)
 
-min = gmsh_realvec_c2f(min_, min_n_)
-max = gmsh_realvec_c2f(max_, max_n_)
+min = ovectordouble_(min_, min_n_)
+max = ovectordouble_(max_, max_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1384,7 +1392,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ans0 = GmshModelIsInside( &
        dim=INT(dim, C_INT), tag=INT(tag, C_INT), &
-       coord=gmsh_cdouble(coord), &
+       coord=optval_c_double(default=coord), &
        coord_n=SIZE(coord, kind=C_SIZE_T), &
        parametric=optval_c_bool(math%no, parametric), ierr=ierr)
 
@@ -1417,7 +1425,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelGetClosestPoint( &
   dim=INT(dim, C_INT), &
   tag=INT(tag, C_INT), &
-  coord=gmsh_cdouble(coord), &
+  coord=optval_c_double(default=coord), &
   coord_n=SIZE(coord, kind=C_SIZE_T), &
   closestCoord=closestCoord_, &
   closestCoord_n=closestCoord_n_, &
@@ -1426,10 +1434,10 @@ CALL GmshModelGetClosestPoint( &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
-closestCoord = gmsh_realvec_c2f(closestCoord_, closestCoord_n_)
+closestCoord = ovectordouble_(closestCoord_, closestCoord_n_)
 
-parametricCoord = gmsh_realvec_c2f(parametricCoord_, &
-                                   parametricCoord_n_)
+parametricCoord = ovectordouble_(parametricCoord_, &
+                                 parametricCoord_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1456,7 +1464,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelReparametrizeOnSurface( &
   dim=INT(dim, C_INT), &
   tag=INT(tag, C_INT), &
-  parametricCoord=gmsh_cdouble(parametricCoord), &
+  parametricCoord=optval_c_double(default=parametricCoord), &
   parametricCoord_n=SIZE(parametricCoord, kind=C_SIZE_T), &
   surfaceTag=INT(surfaceTag, C_INT), &
   surfaceParametricCoord=surfaceParametricCoord_, &
@@ -1464,8 +1472,8 @@ CALL GmshModelReparametrizeOnSurface( &
   which=optval_c_int(math%zero_i, which), &
   ierr=ierr)
 
-ans = gmsh_realvec_c2f(surfaceParametricCoord_, &
-                       surfaceParametricCoord_n_)
+ans = ovectordouble_(surfaceParametricCoord_, &
+                     surfaceParametricCoord_n_)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1488,8 +1496,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelSetVisibility( &
-  dimTags=gmsh_cint(dimTags), dimTags_n=SIZE(dimTags, kind=C_SIZE_T), &
-  VALUE=INT(VALUE, C_INT), RECURSIVE=optval_c_bool(math%no, RECURSIVE), &
+  dimTags=optval_c_int(default=dimTags), &
+  dimTags_n=SIZE(dimTags, kind=C_SIZE_T), &
+  VALUE=INT(VALUE, C_INT), &
+  RECURSIVE=optval_c_bool(math%no, RECURSIVE), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -1543,7 +1553,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GmshModelSetVisibilityPerWindow( &
   VALUE=INT(VALUE, C_INT), &
-  windowIndex=gmsh_cint(input(default=math%zero_i, option=windowIndex)), &
+  windowIndex=optval_c_int(default=Input( &
+                           default=math%zero_i, option=windowIndex)), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -1569,7 +1580,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelSetColor( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, kind=C_SIZE_T), &
   r=INT(r, C_INT), &
   g=INT(g, C_INT), &
@@ -1660,7 +1671,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelGetAttributeNames(names=names_, names_n=names_n_, &
                                 ierr=ierr)
 
-names0 = gmsh_cStrings2CharArray(names_, names_n_)
+names0 = ovectorstring_(names_, names_n_)
 
 ALLOCATE (names(names_n_))
 
@@ -1692,9 +1703,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL GmshModelGetAttribute(name=gmsh_CString(name), values=values_, &
+CALL GmshModelGetAttribute(name=istring_(name), values=values_, &
                            values_n=values_n_, ierr=ierr)
-values = gmsh_cStrings2CharArray(values_, values_n_)
+values = ovectorstring_(values_, values_n_)
 ALLOCATE (ans(values_n_))
 
 DO ii = 1, INT(values_n_, i4b)
@@ -1725,10 +1736,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL gmsh_GetCharArray_cPtr(values, values_strs, values_)
+CALL ivectorstring_(values, values_strs, values_)
 
 CALL GmshModelSetAttribute( &
-  name=gmsh_CString(name), values=values_, values_n=gmsh_size_str(values), &
+  name=istring_(name), values=values_, values_n=size_gmsh_str(values), &
   ierr=ierr)
 
 ans = INT(ierr, i4b)
@@ -1753,7 +1764,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL GmshModelRemoveAttribute(name=gmsh_CString(name), ierr=ierr)
+CALL GmshModelRemoveAttribute(name=istring_(name), ierr=ierr)
 ans = INT(ierr, I4B)
 
 #ifdef DEBUG_VER

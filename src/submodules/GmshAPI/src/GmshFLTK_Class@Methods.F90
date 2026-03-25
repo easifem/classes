@@ -41,21 +41,18 @@ USE GmshFLTKInterface, ONLY: GmshFltkCloseTreeItem
 USE ISO_C_BINDING, ONLY: C_INT
 USE ISO_C_BINDING, ONLY: C_PTR
 USE ISO_C_BINDING, ONLY: C_SIZE_T
-USE GmshUtility, ONLY: gmsh_opt_cdouble
-USE GmshUtility, ONLY: gmsh_CString
-USE GmshUtility, ONLY: gmsh_dimtag_c2f
-USE GmshUtility, ONLY: gmsh_intvec_c2f
-USE GmshUtility, ONLY: gmsh_opt_cint
-USE GmshUtility, ONLY: gmsh_cint
-USE GmshUtility, ONLY: optval_c_str
+USE GmshUtility, ONLY: optval_c_double
 USE GmshUtility, ONLY: istring_
-
-USE CInterface, ONLY: optval_c_bool
+USE GmshUtility, ONLY: ovectorpair_
+USE GmshUtility, ONLY: ovectorint_
+USE GmshUtility, ONLY: optval_c_int
+USE GmshUtility, ONLY: optval_c_str
+USE GmshUtility, ONLY: optval_c_bool
 
 IMPLICIT NONE
 
 INTEGER(I4B), PARAMETER :: maxStrLen = GMSH_API_MAX_STR_LEN
-CHARACTER(*), PARAMETER :: modName = "GMSHFLTK_CLASS"
+CHARACTER(*), PARAMETER :: modName = "GmshFLTK_Class@Methods.F90"
 INTEGER(C_INT) :: ierr
 INTEGER(C_INT) :: cintvar
 
@@ -70,14 +67,14 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
-INTEGER(I4B) :: ierr
+INTEGER(I4B) :: ierr0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ierr = obj%Initialize()
+ierr0 = obj%Initialize()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -123,7 +120,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshFltkWait( &
-  time=gmsh_opt_cdouble(option=time0, default=math%minus_one_i), &
+  time=optval_c_double(option=time0, default=math%minus_one_i), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -172,7 +169,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-action_ = gmsh_CString(Input(option=action, default=""))
+action_ = istring_(Input(option=action, default=""))
 CALL GmshFltkAwake(action=action_, ierr=ierr)
 ans = INT(ierr, I4B)
 
@@ -296,10 +293,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 cintvar = GmshFltkSelectEntities( &
           dimTags=cptr, dimTags_n=dimTags_n, &
-          dim=gmsh_opt_cint(default=math%minus_one_i, option=dim), &
+          dim=optval_c_int(default=math%minus_one_i, option=dim), &
           ierr=ierr)
 
-ans = gmsh_dimtag_c2f(cptr, dimTags_n)
+ans = ovectorpair_(cptr, dimTags_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -326,7 +323,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 cintvar = GmshFltkSelectElements( &
           elementTags=cptr, elementTags_n=elementTags_n, ierr=ierr)
 
-ans = gmsh_intvec_c2f(cptr, elementTags_n)
+ans = ovectorint_(cptr, elementTags_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -352,7 +349,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 cintvar = GmshFltkSelectViews(viewTags=cptr, viewTags_n=viewTags_n, &
                               ierr=ierr)
-ans = gmsh_intvec_c2f(cptr, viewTags_n)
+ans = ovectorint_(cptr, viewTags_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -375,10 +372,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-how_ = gmsh_CString(how)
+how_ = istring_(how)
 
 CALL GmshFltkSplitCurrentWindow( &
-  how=how_, ratio=gmsh_opt_cdouble(option=ratio, default=math%half), &
+  how=how_, ratio=optval_c_double(option=ratio, default=math%half), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -404,7 +401,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshFltkSetCurrentWindow( &
-  windowIndex=gmsh_opt_cint(option=windowIndex, default=math%zero_i), &
+  windowIndex=optval_c_int(option=windowIndex, default=math%zero_i), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -430,7 +427,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-message_ = gmsh_CString(message)
+message_ = istring_(message)
 
 CALL GmshFltkSetStatusMessage(message=message_, &
                               graphics=optval_c_bool(math%no, graphics), &
@@ -458,8 +455,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL GmshFltkShowContextWindow(dim=gmsh_cint(dim), &
-                               tag=gmsh_cint(tag), &
+CALL GmshFltkShowContextWindow(dim=optval_c_int(default=dim), &
+                               tag=optval_c_int(default=tag), &
                                ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -485,7 +482,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-name_ = gmsh_CString(name)
+name_ = istring_(name)
 CALL GmshFltkOpenTreeItem(name=name_, ierr=ierr)
 ans = INT(ierr, i4b)
 
@@ -510,7 +507,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-name_ = gmsh_CString(name)
+name_ = istring_(name)
 CALL GmshFltkCloseTreeItem(name=name_, ierr=ierr)
 ans = INT(ierr, i4b)
 

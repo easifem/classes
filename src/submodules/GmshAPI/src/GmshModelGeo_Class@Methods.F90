@@ -53,16 +53,16 @@ USE GmshModelGeoInterface, ONLY: GmshModelGeoSetMaxTag
 USE GmshModelGeoInterface, ONLY: GmshModelGeoAddPhysicalGroup
 USE GmshModelGeoInterface, ONLY: GmshModelGeoRemovePhysicalGroups
 USE GmshModelGeoInterface, ONLY: GmshModelGeoSynchronize
-USE GmshUtility, ONLY: gmsh_dimtag_c2f
-USE GmshUtility, ONLY: gmsh_cdouble
-USE GmshUtility, ONLY: gmsh_cint
-USE GmshUtility, ONLY: gmsh_opt_cint
-USE GmshUtility, ONLY: gmsh_opt_cdouble
-USE GmshUtility, ONLY: gmsh_intvec_c2f
-USE GmshUtility, ONLY: gmsh_GetCharArray_cPtr
-USE GmshUtility, ONLY: gmsh_CString
-USE GmshUtility, ONLY: gmsh_size_str
-USE CInterface, ONLY: optval_c_bool
+
+USE GmshUtility, ONLY: ovectorpair_
+USE GmshUtility, ONLY: optval_c_int
+USE GmshUtility, ONLY: optval_c_double
+USE GmshUtility, ONLY: ovectorint_
+USE GmshUtility, ONLY: ivectorstring_
+USE GmshUtility, ONLY: istring_
+USE GmshUtility, ONLY: size_gmsh_str
+USE GmshUtility, ONLY: optval_c_bool
+
 USE ReallocateUtility, ONLY: Reallocate
 USE InputUtility, ONLY: Input
 USE ISO_C_BINDING, ONLY: C_INT
@@ -125,11 +125,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddPoint( &
-          x=gmsh_cdouble(x), &
-          y=gmsh_cdouble(y), &
-          z=gmsh_cdouble(z), &
-          meshSize=gmsh_cdouble(meshSize), &
-          tag=gmsh_cint(INPUT(default=-1_I4B, option=tag)), &
+          x=optval_c_double(default=x), &
+          y=optval_c_double(default=y), &
+          z=optval_c_double(default=z), &
+          meshSize=optval_c_double(default=meshSize), &
+          tag=optval_c_int(INPUT(default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -155,9 +155,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddLine( &
-          startTag=gmsh_cint(startTag), &
-          endTag=gmsh_cint(endTag), &
-          tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+          startTag=optval_c_int(default=startTag), &
+          endTag=optval_c_int(default=endTag), &
+          tag=optval_c_int(default=INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -183,13 +184,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddCircleArc( &
-          startTag=gmsh_cint(startTag), &
-          centerTag=gmsh_cint(centerTag), &
-          endTag=gmsh_cint(endTag), &
-          tag=gmsh_opt_cint(default=math%minus_one_i, option=tag), &
-          nx=gmsh_opt_cdouble(math%zero, nx), &
-          ny=gmsh_opt_cdouble(math%zero, ny), &
-          nz=gmsh_opt_cdouble(math%zero, nz), &
+          startTag=optval_c_int(default=startTag), &
+          centerTag=optval_c_int(default=centerTag), &
+          endTag=optval_c_int(default=endTag), &
+          tag=optval_c_int(default=math%minus_one_i, option=tag), &
+          nx=optval_c_double(math%zero, nx), &
+          ny=optval_c_double(math%zero, ny), &
+          nz=optval_c_double(math%zero, nz), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -215,14 +216,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddEllipseArc( &
-          startTag=gmsh_cint(startTag), &
-          centerTag=gmsh_cint(centerTag), &
-          majorTag=gmsh_cint(majorTag), &
-          endTag=gmsh_cint(endTag), &
-          tag=gmsh_cint(input(default=math%minus_one_i, option=tag)), &
-          nx=gmsh_cdouble(nx), &
-          ny=gmsh_cdouble(ny), &
-          nz=gmsh_cdouble(nz), &
+          startTag=optval_c_int(default=startTag), &
+          centerTag=optval_c_int(default=centerTag), &
+          majorTag=optval_c_int(default=majorTag), &
+          endTag=optval_c_int(default=endTag), &
+          tag=optval_c_int(default=input( &
+                           default=math%minus_one_i, option=tag)), &
+          nx=optval_c_double(default=nx), &
+          ny=optval_c_double(default=ny), &
+          nz=optval_c_double(default=nz), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -248,12 +250,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddSpline( &
-          pointTags=gmsh_cint(pointTags), &
+          pointTags=optval_c_int(default=pointTags), &
           pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T), &
-          tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+          tag=optval_c_int(default=INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
-ans = INT(cintvar, i4b)
+ans = INT(cintvar, I4B)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -276,9 +279,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddBSpline( &
-          pointTags=gmsh_cint(pointTags), &
+          pointTags=optval_c_int(default=pointTags), &
           pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T), &
-          tag=gmsh_cint(INPUT(default=math%minus_one_i, option=tag)), &
+          tag=optval_c_int(default=INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -304,12 +308,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddBezier( &
-          pointTags=gmsh_cint(pointTags), &
+          pointTags=optval_c_int(default=pointTags), &
           pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T), &
-          tag=gmsh_cint(INPUT(default=math%minus_one_i, option=tag)), &
+          tag=optval_c_int(default=INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
-ans = INT(cintvar, i4b)
+ans = INT(cintvar, I4B)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -332,9 +337,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddPolyline( &
-          pointTags=gmsh_cint(pointTags), &
+          pointTags=optval_c_int(pointTags), &
           pointTags_n=INT(SIZE(pointTags), KIND=C_SIZE_T), &
-          tag=gmsh_cint(INPUT(default=math%minus_one_i, option=tag)), &
+          tag=optval_c_int(INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -360,10 +366,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddCompoundSpline( &
-          curveTags=gmsh_cint(curveTags), &
+          curveTags=optval_c_int(default=curveTags), &
           curveTags_n=INT(SIZE(curveTags), KIND=C_SIZE_T), &
-          numIntervals=gmsh_cint(numIntervals), &
-          tag=gmsh_cint(INPUT(default=math%minus_one_i, option=tag)), &
+          numIntervals=optval_c_int(default=numIntervals), &
+          tag=optval_c_int(default=INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -389,10 +396,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddCompoundBSpline( &
-          curveTags=gmsh_cint(curveTags), &
+          curveTags=optval_c_int(default=curveTags), &
           curveTags_n=INT(SIZE(curveTags), KIND=C_SIZE_T), &
-          numIntervals=gmsh_cint(numIntervals), &
-          tag=gmsh_cint(INPUT(default=math%minus_one_i, option=tag)), &
+          numIntervals=optval_c_int(default=numIntervals), &
+          tag=optval_c_int(default=INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, i4b)
@@ -419,9 +427,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddCurveLoop( &
-          curveTags=gmsh_cint(curveTags), &
+          curveTags=optval_c_int(default=curveTags), &
           curveTags_n=INT(SIZE(curveTags), C_SIZE_T), &
-          tag=gmsh_cint(INPUT(default=-1, option=tag)), &
+          tag=optval_c_int(default=INPUT( &
+                           default=math%minus_one_i, option=tag)), &
           reorient=optval_c_bool(math%no, reorient), &
           ierr=ierr)
 
@@ -450,12 +459,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoAddCurveLoops( &
-  curveTags=gmsh_cint(curveTags), &
+  curveTags=optval_c_int(default=curveTags), &
   curveTags_n=INT(SIZE(curveTags), C_SIZE_T), &
   tags=cptr, tags_n=tags_n, ierr=ierr)
 
 ans = INT(ierr, I4B)
-tags = gmsh_intvec_c2f(cptr, tags_n)
+tags = ovectorint_(cptr, tags_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -478,9 +487,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddPlaneSurface( &
-          wireTags=gmsh_cint(wireTags), &
+          wireTags=optval_c_int(default=wireTags), &
           wireTags_n=INT(SIZE(wireTags), C_SIZE_T), &
-          tag=gmsh_cint(input(default=math%minus_one_i, option=tag)), &
+          tag=optval_c_int(default=Input( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -506,10 +516,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddSurfaceFilling( &
-          wireTags=gmsh_cint(wireTags), &
+          wireTags=optval_c_int(default=wireTags), &
           wireTags_n=INT(SIZE(wireTags), C_SIZE_T), &
-          tag=gmsh_cint(input(default=math%minus_one_i, option=tag)), &
-          sphereCenterTag=gmsh_cint(sphereCenterTag), &
+          tag=optval_c_int(default=Input( &
+                           default=math%minus_one_i, option=tag)), &
+          sphereCenterTag=optval_c_int(default=sphereCenterTag), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -535,9 +546,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddSurfaceLoop( &
-          surfaceTags=gmsh_cint(surfaceTags), &
+          surfaceTags=optval_c_int(default=surfaceTags), &
           surfaceTags_n=INT(SIZE(surfaceTags), C_SIZE_T), &
-          tag=gmsh_cint(input(default=math%minus_one_i, option=tag)), &
+          tag=optval_c_int(default=Input( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -563,9 +575,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddVolume( &
-          shellTags=gmsh_cint(shellTags), &
+          shellTags=optval_c_int(default=shellTags), &
           shellTags_n=INT(SIZE(shellTags), C_SIZE_T), &
-          tag=gmsh_cint(input(default=math%minus_one_i, option=tag)), &
+          tag=optval_c_int(default=Input( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -595,22 +608,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL gmsh_GetCharArray_cPtr(strings, strings_strs, strings_)
+CALL ivectorstring_(strings, strings_strs, strings_)
 
 isok = PRESENT(numbers)
 IF (isok) THEN
-  numbers0 = gmsh_cdouble(numbers)
+  numbers0 = optval_c_double(default=numbers)
 ELSE
   ALLOCATE (numbers0(0))
 END IF
 
 cintvar = GmshModelGeoAddGeometry( &
-          geometry=gmsh_CString(geometry), &
+          geometry=istring_(geometry), &
           numbers=numbers0, &
           numbers_n=SIZE(numbers0, kind=C_SIZE_T), &
           strings=strings_, &
-          strings_n=gmsh_size_str(strings), &
-          tag=gmsh_cint(input(default=-1, option=tag)), &
+          strings_n=size_gmsh_str(strings), &
+          tag=optval_c_int(default=Input( &
+                           default=math%minus_one_i, option=tag)), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -636,12 +650,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddPointOnGeometry( &
-          geometryTag=gmsh_cint(geometryTag), &
-          x=gmsh_cdouble(x), &
-          y=gmsh_cdouble(y), &
-          z=gmsh_opt_cdouble(default=math%zero, option=z), &
-          meshSize=gmsh_opt_cdouble(default=math%zero, option=meshSize), &
-          tag=gmsh_opt_cint(default=math%minus_one_i, option=tag), &
+          geometryTag=optval_c_int(default=geometryTag), &
+          x=optval_c_double(default=x), &
+          y=optval_c_double(default=y), &
+          z=optval_c_double(default=math%zero, option=z), &
+          meshSize=optval_c_double(default=math%zero, option=meshSize), &
+          tag=optval_c_int(default=math%minus_one_i, option=tag), &
           ierr=ierr)
 
 ans = INT(cintvar, I4B)
@@ -674,34 +688,34 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 isok = PRESENT(numElements)
 IF (isok) THEN
-  numElements_ = gmsh_cint(numElements)
+  numElements_ = optval_c_int(default=numElements)
 ELSE
   CALL Reallocate(numElements_, 0)
 END IF
 
 isok = PRESENT(heights)
 IF (isok) THEN
-  heights_ = gmsh_cdouble(heights)
+  heights_ = optval_c_double(default=heights)
 ELSE
   CALL Reallocate(heights_, 0)
 END IF
 
 CALL GmshModelGeoExtrude( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=INT(SIZE(dimTags), C_SIZE_T), &
-  dx=gmsh_cdouble(dx), &
-  dy=gmsh_cdouble(dy), &
-  dz=gmsh_cdouble(dz), &
+  dx=optval_c_double(default=dx), &
+  dy=optval_c_double(default=dy), &
+  dz=optval_c_double(default=dz), &
   outDimTags=cptr, &
   outDimTags_n=outDimTags_n, &
-  numElements=gmsh_cint(numElements_), &
+  numElements=optval_c_int(default=numElements_), &
   numElements_n=SIZE(numElements_, KIND=C_SIZE_T), &
-  heights=gmsh_cdouble(heights_), &
+  heights=optval_c_double(default=heights_), &
   heights_n=SIZE(heights_, KIND=C_SIZE_T), &
   recombine=optval_c_bool(math%no, recombine), &
   ierr=ierr)
 
-ans = gmsh_dimtag_c2f(cptr, outDimTags_n)
+ans = ovectorpair_(cptr, outDimTags_n)
 
 DEALLOCATE (heights_, numElements_)
 
@@ -733,14 +747,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 isok = PRESENT(numElements)
 IF (isok) THEN
-  numElements0 = gmsh_cint(numElements)
+  numElements0 = optval_c_int(default=numElements)
 ELSE
   ALLOCATE (numElements0(0))
 END IF
 
 isok = PRESENT(heights)
 IF (isok) THEN
-  heights0 = gmsh_cdouble(heights)
+  heights0 = optval_c_double(default=heights)
 ELSE
   ALLOCATE (heights0(0))
 END IF
@@ -748,13 +762,13 @@ END IF
 CALL GmshModelGeoRevolve( &
   dimTags=dimTags, &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-  x=gmsh_cdouble(x), &
-  y=gmsh_cdouble(y), &
-  z=gmsh_cdouble(z), &
-  ax=gmsh_cdouble(ax), &
-  ay=gmsh_cdouble(ay), &
-  az=gmsh_cdouble(az), &
-  angle=gmsh_cdouble(angle), &
+  x=optval_c_double(default=x), &
+  y=optval_c_double(default=y), &
+  z=optval_c_double(default=z), &
+  ax=optval_c_double(default=ax), &
+  ay=optval_c_double(default=ay), &
+  az=optval_c_double(default=az), &
+  angle=optval_c_double(default=angle), &
   outDimTags=cptr, &
   outDimTags_n=outDimTags_n, &
   numElements=numElements0, &
@@ -764,7 +778,7 @@ CALL GmshModelGeoRevolve( &
   recombine=optval_c_bool(math%no, recombine), &
   ierr=ierr)
 
-ans = gmsh_dimtag_c2f(cptr, outDimTags_n)
+ans = ovectorpair_(cptr, outDimTags_n)
 
 DEALLOCATE (heights0, numElements0)
 
@@ -795,31 +809,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 isok = PRESENT(numElements)
 IF (isok) THEN
-  numElements0 = gmsh_cint(numElements)
+  numElements0 = optval_c_int(default=numElements)
 ELSE
   ALLOCATE (numElements0(0))
 END IF
 
 isok = PRESENT(heights)
 IF (isok) THEN
-  heights0 = gmsh_cdouble(heights)
+  heights0 = optval_c_double(default=heights)
 ELSE
   ALLOCATE (heights0(0))
 END IF
 
 CALL GmshModelGeoTwist( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-  x=gmsh_cdouble(x), &
-  y=gmsh_cdouble(y), &
-  z=gmsh_cdouble(z), &
-  dx=gmsh_cdouble(dx), &
-  dy=gmsh_cdouble(dy), &
-  dz=gmsh_cdouble(dz), &
-  ax=gmsh_cdouble(ax), &
-  ay=gmsh_cdouble(ay), &
-  az=gmsh_cdouble(az), &
-  angle=gmsh_cdouble(angle), &
+  x=optval_c_double(default=x), &
+  y=optval_c_double(default=y), &
+  z=optval_c_double(default=z), &
+  dx=optval_c_double(default=dx), &
+  dy=optval_c_double(default=dy), &
+  dz=optval_c_double(default=dz), &
+  ax=optval_c_double(default=ax), &
+  ay=optval_c_double(default=ay), &
+  az=optval_c_double(default=az), &
+  angle=optval_c_double(default=angle), &
   outDimTags=cptr, &
   outDimTags_n=outDimTags_n, &
   numElements=numElements0, &
@@ -829,7 +843,7 @@ CALL GmshModelGeoTwist( &
   recombine=optval_c_bool(math%no, recombine), &
   ierr=ierr)
 
-ans = gmsh_dimtag_c2f(cptr, outDimTags_n)
+ans = ovectorpair_(cptr, outDimTags_n)
 
 DEALLOCATE (heights0, numElements0)
 
@@ -860,20 +874,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 isok = PRESENT(numElements)
 IF (isok) THEN
-  numElements0 = gmsh_cint(numElements)
+  numElements0 = optval_c_int(default=numElements)
 ELSE
   ALLOCATE (numElements0(0))
 END IF
 
 isok = PRESENT(heights)
 IF (isok) THEN
-  heights0 = gmsh_cdouble(heights)
+  heights0 = optval_c_double(default=heights)
 ELSE
   ALLOCATE (heights0(0))
 END IF
 
 CALL GmshModelGeoExtrudeBoundaryLayer( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, kind=C_SIZE_T), &
   outDimTags=cptr, &
   outDimTags_n=outDimTags_n, &
@@ -886,7 +900,7 @@ CALL GmshModelGeoExtrudeBoundaryLayer( &
   viewIndex=optval_c_bool(math%no, viewIndex), &
   ierr=ierr)
 
-ans = gmsh_dimtag_c2f(cptr, outDimTags_n)
+ans = ovectorpair_(cptr, outDimTags_n)
 
 DEALLOCATE (heights0, numElements0)
 
@@ -911,11 +925,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoTranslate( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-  dx=gmsh_cdouble(dx), &
-  dy=gmsh_cdouble(dy), &
-  dz=gmsh_cdouble(dz), &
+  dx=optval_c_double(default=dx), &
+  dy=optval_c_double(default=dy), &
+  dz=optval_c_double(default=dz), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -943,13 +957,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GmshModelGeoRotate( &
   dimTags=dimTags, &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-  x=gmsh_cdouble(x), &
-  y=gmsh_cdouble(y), &
-  z=gmsh_cdouble(z), &
-  ax=gmsh_cdouble(ax), &
-  ay=gmsh_cdouble(ay), &
-  az=gmsh_cdouble(az), &
-  angle=gmsh_cdouble(angle), &
+  x=optval_c_double(default=x), &
+  y=optval_c_double(default=y), &
+  z=optval_c_double(default=z), &
+  ax=optval_c_double(default=ax), &
+  ay=optval_c_double(default=ay), &
+  az=optval_c_double(default=az), &
+  angle=optval_c_double(default=angle), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -975,14 +989,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoDilate( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-  x=gmsh_cdouble(x), &
-  y=gmsh_cdouble(y), &
-  z=gmsh_cdouble(z), &
-  a=gmsh_cdouble(a), &
-  b=gmsh_cdouble(b), &
-  c=gmsh_cdouble(c), &
+  x=optval_c_double(default=x), &
+  y=optval_c_double(default=y), &
+  z=optval_c_double(default=z), &
+  a=optval_c_double(default=a), &
+  b=optval_c_double(default=b), &
+  c=optval_c_double(default=c), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -1008,12 +1022,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoMirror( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-  a=gmsh_cdouble(a), &
-  b=gmsh_cdouble(b), &
-  c=gmsh_cdouble(c), &
-  d=gmsh_cdouble(d), &
+  a=optval_c_double(default=a), &
+  b=optval_c_double(default=b), &
+  c=optval_c_double(default=c), &
+  d=optval_c_double(default=d), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -1039,12 +1053,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoSymmetrize( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
-  a=gmsh_cdouble(a), &
-  b=gmsh_cdouble(b), &
-  c=gmsh_cdouble(c), &
-  d=gmsh_cdouble(d), &
+  a=optval_c_double(default=a), &
+  b=optval_c_double(default=b), &
+  c=optval_c_double(default=c), &
+  d=optval_c_double(default=d), &
   ierr=ierr)
 
 ans = INT(ierr, I4B)
@@ -1072,13 +1086,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoCopy( &
-  dimTags=gmsh_cint(dimTags), &
+  dimTags=optval_c_int(default=dimTags), &
   dimTags_n=SIZE(dimTags, KIND=C_SIZE_T), &
   outDimTags=cptr, &
   outDimTags_n=outDimTags_n, &
   ierr=ierr)
 
-ans = gmsh_dimtag_c2f(cptr, outDimTags_n)
+ans = ovectorpair_(cptr, outDimTags_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1154,14 +1168,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoSplitCurve( &
-  tag=gmsh_cint(tag), &
-  pointTags=gmsh_cint(pointTags), &
+  tag=optval_c_int(default=tag), &
+  pointTags=optval_c_int(default=pointTags), &
   pointTags_n=SIZE(pointTags, kind=C_SIZE_T), &
   curveTags=cptr, &
   curveTags_n=curveTags_n, &
   ierr=ierr)
 
-ans = gmsh_intvec_c2f(cptr, curveTags_n)
+ans = ovectorint_(cptr, curveTags_n)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1183,7 +1197,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-cintvar = GmshModelGeoGetMaxTag(dim=gmsh_cint(dim), ierr=ierr)
+cintvar = GmshModelGeoGetMaxTag(dim=optval_c_int(default=dim), ierr=ierr)
 ans = INT(cintvar, i4b)
 
 #ifdef DEBUG_VER
@@ -1207,7 +1221,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GmshModelGeoSetMaxTag( &
-  dim=gmsh_cint(dim), maxTag=gmsh_cint(maxTag), ierr=ierr)
+  dim=optval_c_int(default=dim), maxTag=optval_c_int(default=maxTag), &
+  ierr=ierr)
 
 ans = INT(ierr, I4B)
 
@@ -1232,11 +1247,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 cintvar = GmshModelGeoAddPhysicalGroup( &
-          dim=gmsh_cint(dim), &
-          tags=gmsh_cint(tags), &
+          dim=optval_c_int(default=dim), &
+          tags=optval_c_int(default=tags), &
           tags_n=SIZE(tags, kind=C_SIZE_T), &
-          tag=gmsh_opt_cint(default=math%minus_one_i, option=tag), &
-          name=gmsh_CString(input(default="", option=name)), &
+          tag=optval_c_int(default=math%minus_one_i, option=tag), &
+          name=istring_(input(default="", option=name)), &
           ierr=ierr)
 
 ans = INT(cintvar, i4b)
@@ -1266,7 +1281,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 isok = PRESENT(dimTags)
 
 IF (isok) THEN
-  dimTags0 = gmsh_cint(dimTags)
+  dimTags0 = optval_c_int(default=dimTags)
 ELSE
   ALLOCATE (dimTags0(0, 0))
 END IF

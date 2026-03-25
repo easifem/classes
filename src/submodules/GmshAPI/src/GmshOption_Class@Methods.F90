@@ -24,9 +24,9 @@ USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 USE ISO_C_BINDING, ONLY: C_LOC
 USE ISO_C_BINDING, ONLY: C_PTR
 
-USE GmshUtility, ONLY: gmsh_cdouble
-USE GmshUtility, ONLY: gmsh_CString
-USE GmshUtility, ONLY: gmsh_cint
+USE GmshUtility, ONLY: optval_c_double
+USE GmshUtility, ONLY: istring_
+USE GmshUtility, ONLY: optval_c_int
 
 USE CInterface, ONLY: C2Fortran
 
@@ -83,7 +83,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 name_ = TRIM(name)//C_NULL_CHAR
 
-CALL GmshOptionSetNumber(name=C_LOC(name_), VALUE=gmsh_cdouble(VALUE), &
+CALL GmshOptionSetNumber(name=C_LOC(name_), VALUE=optval_c_double(VALUE), &
                          ierr=ans)
 
 #ifdef DEBUG_VER
@@ -189,9 +189,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-name_ = gmsh_CString(name)
-CALL GmshOptionSetColor(name=C_LOC(name_), r=gmsh_cint(r), g=gmsh_cint(g), &
-                        b=gmsh_cint(b), a=gmsh_cint(a), ierr=ans)
+name_ = istring_(name)
+CALL GmshOptionSetColor(name=C_LOC(name_), r=optval_c_int(r), g=optval_c_int(g), &
+                        b=optval_c_int(b), a=optval_c_int(a), ierr=ans)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -215,7 +215,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-name_ = gmsh_CString(name)
+name_ = istring_(name)
 
 CALL GmshOptionGetColor(name=C_LOC(name_), r=r0, g=g0, b=b0, a=a0, &
                         ierr=ans)

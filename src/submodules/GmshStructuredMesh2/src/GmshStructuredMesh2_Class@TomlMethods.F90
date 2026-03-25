@@ -582,6 +582,7 @@ CALL AssertError1(isok, myName, &
 CALL obj%ImportFromToml(table=node)
 
 node => NULL()
+DEALLOCATE (table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -18,14 +18,13 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-01-06
-! summary: This macro is used in the AbstractBC child classes's tomlMethods
+! summary: This macro is used for importing a vector of pointers
 !
-! Interface is given below
+! Example Interface is given below
 !
 ! MODULE SUBROUTINE obj_ImportFromToml2( &
-!   obj, dom, tomlName, afile, filename, printToml)
-!   TYPE(DirichletBCPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
-!   CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+!   obj, tomlName, afile, filename, printToml)
+!   TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
 !   CHARACTER(*), INTENT(IN) :: tomlName
 !   TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
 !   CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
@@ -43,8 +42,7 @@
 ! USE TomlUtility, ONLY: GetValue
 !
 ! Make sure to define _IMPORT_FROM_TOML_ in the calling program
-! see line 79 of this file
-! For example DirichletBCImportFromToml, NeumannBCImportFromToml etc
+! For example GmshPointImportFromToml
 
 #ifdef DEBUG_VER
 LOGICAL(LGT) :: isok
@@ -66,7 +64,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 #endif
 
 CALL _IMPORT_FROM_TOML_( &
-  obj=obj, table=table, dom=dom, tomlName=tomlName)
+  obj=obj, table=table, tomlName=tomlName)
 
 DEALLOCATE (table)
 
