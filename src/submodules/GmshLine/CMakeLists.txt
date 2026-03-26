@@ -20,8 +20,8 @@ if(USE_GMSH_SDK)
     target_sources(
         ${PROJECT_NAME}
         PRIVATE
-            ${src_path}/GmshPoint_Class@Methods.F90
-            ${src_path}/GmshPoint_Class@TomlMethods.F90
-            ${src_path}/GmshPoint_Class@GmshMethods.F90
+            ${src_path}/GmshLine_Class@Methods.F90
+            ${src_path}/GmshLine_Class@TomlMethods.F90
+            ${src_path}/GmshLine_Class@GmshMethods.F90
     )
 endif()

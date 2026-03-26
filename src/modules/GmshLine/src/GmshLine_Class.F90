@@ -15,7 +15,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE GmshPoint_Class
+MODULE GmshLine_Class
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
@@ -26,39 +26,26 @@ USE Gmsh_Class, ONLY: Gmsh_
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC :: GmshPoint_
-PUBLIC :: GmshPointPointer_
-PUBLIC :: GmshPointImportFromToml
+PUBLIC :: GmshLine_
+PUBLIC :: GmshLinePointer_
+PUBLIC :: GmshLineImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                                  GmshPoint_
+!                                                                  GmshLine_
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-26
-! summary: Gmsh point
-
-TYPE :: GmshPoint_
+TYPE :: GmshLine_
   PRIVATE
-  REAL(DFP) :: x = math%zero
-  REAL(DFP) :: y = math%zero
-  REAL(DFP) :: z = math%zero
-  REAL(DFP) :: meshSize = math%one
+  INTEGER(I4B) :: pointId(2)
   INTEGER(I4B) :: indx = math%one_i
 
 CONTAINS
 
   ! @Methods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: SetX => obj_SetX
-  PROCEDURE, PUBLIC, PASS(obj) :: SetY => obj_SetY
-  PROCEDURE, PUBLIC, PASS(obj) :: SetZ => obj_SetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshSize => obj_SetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: SetPointId => obj_SetPointId
   PROCEDURE, PUBLIC, PASS(obj) :: SetIndx => obj_SetIndx
-  PROCEDURE, PUBLIC, PASS(obj) :: GetX => obj_GetX
-  PROCEDURE, PUBLIC, PASS(obj) :: GetY => obj_GetY
-  PROCEDURE, PUBLIC, PASS(obj) :: GetZ => obj_GetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshSize => obj_GetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: GetPointId => obj_GetPointId
   PROCEDURE, PUBLIC, PASS(obj) :: GetIndx => obj_GetIndx
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
@@ -69,16 +56,15 @@ CONTAINS
 
   ! @GmshMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CreateGmshModel => obj_CreateGmshModel
-
-END TYPE GmshPoint_
+END TYPE GmshLine_
 
 !----------------------------------------------------------------------------
-!                                                          GmshPointPointer_
+!                                                          GmshLinePointer_
 !----------------------------------------------------------------------------
 
-TYPE :: GmshPointPointer_
-  CLASS(GmshPoint_), POINTER :: ptr => NULL()
-END TYPE GmshPointPointer_
+TYPE :: GmshLinePointer_
+  CLASS(GmshLine_), POINTER :: ptr => NULL()
+END TYPE GmshLinePointer_
 
 !----------------------------------------------------------------------------
 !                                                           Initiate@Methods
@@ -86,94 +72,37 @@ END TYPE GmshPointPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Initiate gmsh points
+! summary: Initiate GmshLine
 !
 !# Initiate
 !
-! Initiate gmsh points.
+! Initiate GmshLine.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, x, y, z, meshSize, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x, y, z, meshSize
+  MODULE SUBROUTINE obj_Initiate(obj, pointId, indx)
+    CLASS(GmshLine_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: pointId(2)
     INTEGER(I4B), INTENT(IN) :: indx
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               SetX@Methods
+!                                                         SetPointId@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set x
+! summary: Set pointId in GmshLine
 !
-!# SetX
+!# SetPointId
 !
-! Set x in gmsh point.
+! Set pointId in GmshLine.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetX(obj, x)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x
-  END SUBROUTINE obj_SetX
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               SetY@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set y
-!
-!# SetY
-!
-! Set y in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetY(obj, y)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: y
-  END SUBROUTINE obj_SetY
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               SetZ@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set z
-!
-!# SetZ
-!
-! Set z in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetZ(obj, z)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: z
-  END SUBROUTINE obj_SetZ
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        SetMeshSize@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set mesh size
-!
-!# SetMeshSize
-!
-! Set mesh size in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshSize(obj, meshSize)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: meshSize
-  END SUBROUTINE obj_SetMeshSize
+  MODULE SUBROUTINE obj_SetPointId(obj, pointId)
+    CLASS(GmshLine_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: pointId(2)
+  END SUBROUTINE obj_SetPointId
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -182,93 +111,36 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set indx
+! summary: Set indx GmshLine
 !
 !# SetIndx
 !
-! Set indx
+! Set indx in GmshLine
 
 INTERFACE
   MODULE SUBROUTINE obj_SetIndx(obj, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshLine_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
   END SUBROUTINE obj_SetIndx
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetX@Methods
+!                                                         GetPointId@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get x
+! summary: Get pointId from GmshLine
 !
-!# GetX
+!# GetPointId
 !
-! Get x from Gmsh point.
+! Get pointId from GmshLine.
 
 INTERFACE
-  MODULE FUNCTION obj_GetX(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetX
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               GetY@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Get y
-!
-!# GetY
-!
-! Get x from Gmsh point.
-
-INTERFACE
-  MODULE FUNCTION obj_GetY(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetY
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               GetZ@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Get z
-!
-!# GetZ
-!
-! Get x from Gmsh point.
-
-INTERFACE
-  MODULE FUNCTION obj_GetZ(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetZ
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetMeshSize@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Get mesh size
-!
-!# GetMeshSize
-!
-! Get meshSize from Gmsh point.
-
-INTERFACE
-  MODULE FUNCTION obj_GetMeshSize(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetMeshSize
+  MODULE FUNCTION obj_GetPointId(obj) RESULT(ans)
+    CLASS(GmshLine_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans(2)
+  END FUNCTION obj_GetPointId
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -277,15 +149,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get mesh size
+! summary: Get indx from GmshLine
 !
 !# GetIndx
 !
-! Get indx from Gmsh point.
+! Get indx from GmshLine.
 
 INTERFACE
   MODULE FUNCTION obj_GetIndx(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
+    CLASS(GmshLine_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_GetIndx
 END INTERFACE
@@ -296,35 +168,35 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Display GmshLine
 !
 !# Display
 !
-! Display gmsh point.
+! Display GmshLine.
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshLine_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Display@Methods
+!                                                ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Import from toml table.
 !
-!# Display
+!# ImportFromToml
 !
-! Import Gmsh point.
+! Import GmshLine from toml table.
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshLine_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
@@ -335,11 +207,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Import gmsh points from toml file
+! summary: Import GmshLine from toml file
 !
 !# ImportFromToml
 !
-! Import gmsh points from toml file. After getting the toml table from
+! Import GmshLine from toml file. After getting the toml table from
 ! the provided file, this method calls ImportFromToml1.
 !
 !## Examples
@@ -349,10 +221,10 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    !! Gmsh point
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
+    CLASS(GmshLine_), INTENT(INOUT) :: obj
+    !! GmshLine
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -372,17 +244,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary: Initiate a vector of GmshPoint_ from the toml table
+! summary: Initiate a vector of GmshLine_ from the toml table
 
-INTERFACE GmshPointImportFromToml
+INTERFACE GmshLineImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml3(obj, table, tomlName)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(GmshLinePointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml3
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshLineImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 ImportFromToml@TomlMethods
@@ -390,12 +262,12 @@ END INTERFACE GmshPointImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-25
-! summary: Import a vector of GmshPointPointer_ from toml file
+! summary: Import a vector of GmshLinePointer_ from toml file
 
-INTERFACE GmshPointImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml4(obj, tomlName, afile, filename, &
-                                        printToml)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+INTERFACE GmshLineImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml4( &
+    obj, tomlName, afile, filename, printToml)
+    TYPE(GmshLinePointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Gmsh point
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
@@ -408,10 +280,10 @@ INTERFACE GmshPointImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     !! if it is true then we will print the toml config
   END SUBROUTINE obj_ImportFromToml4
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshLineImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                 CreateGmshModel@GmshMethods
+!                                                CreateGmshModel@GmshMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -424,9 +296,13 @@ END INTERFACE GmshPointImportFromToml
 
 INTERFACE
   MODULE SUBROUTINE obj_CreateGmshModel(obj, gmsh)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshLine_), INTENT(INOUT) :: obj
     TYPE(Gmsh_), INTENT(INOUT) :: gmsh
   END SUBROUTINE obj_CreateGmshModel
 END INTERFACE
 
-END MODULE GmshPoint_Class
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE GmshLine_Class

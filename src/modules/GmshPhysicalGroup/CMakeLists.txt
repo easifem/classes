@@ -19,9 +19,6 @@ if(USE_GMSH_SDK)
     set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
     target_sources(
         ${PROJECT_NAME}
-        PRIVATE
-            ${src_path}/GmshPoint_Class@Methods.F90
-            ${src_path}/GmshPoint_Class@TomlMethods.F90
-            ${src_path}/GmshPoint_Class@GmshMethods.F90
+        PRIVATE ${src_path}/GmshPhysicalGroup_Class.F90
     )
 endif()

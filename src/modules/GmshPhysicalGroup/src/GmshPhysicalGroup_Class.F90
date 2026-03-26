@@ -15,70 +15,68 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE GmshPoint_Class
+MODULE GmshPhysicalGroup_Class
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
 USE BaseType, ONLY: math => TypeMathOpt
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
+USE String_Class, ONLY: String
 USE Gmsh_Class, ONLY: Gmsh_
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC :: GmshPoint_
-PUBLIC :: GmshPointPointer_
-PUBLIC :: GmshPointImportFromToml
+PUBLIC :: GmshPhysicalGroup_
+PUBLIC :: GmshPhysicalGroupPointer_
+PUBLIC :: GmshPhysicalGroupImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                                  GmshPoint_
+!                                                         GmshPhysicalGroup_
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-26
-! summary: Gmsh point
-
-TYPE :: GmshPoint_
+TYPE :: GmshPhysicalGroup_
   PRIVATE
-  REAL(DFP) :: x = math%zero
-  REAL(DFP) :: y = math%zero
-  REAL(DFP) :: z = math%zero
-  REAL(DFP) :: meshSize = math%one
-  INTEGER(I4B) :: indx = math%one_i
+  INTEGER(I4B) :: dim = math%zero_i
+  !! dimension of physical groups
+  INTEGER(I4B) :: indx = math%zero_i
+  !! physical id of physical group
+  TYPE(String) :: name
+  !! name of physical groups
+  INTEGER(I4B), ALLOCATABLE :: tags(:)
+  !! ids of geometric entities
 
 CONTAINS
 
   ! @Methods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: SetX => obj_SetX
-  PROCEDURE, PUBLIC, PASS(obj) :: SetY => obj_SetY
-  PROCEDURE, PUBLIC, PASS(obj) :: SetZ => obj_SetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshSize => obj_SetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: SetDim => obj_SetDim
   PROCEDURE, PUBLIC, PASS(obj) :: SetIndx => obj_SetIndx
-  PROCEDURE, PUBLIC, PASS(obj) :: GetX => obj_GetX
-  PROCEDURE, PUBLIC, PASS(obj) :: GetY => obj_GetY
-  PROCEDURE, PUBLIC, PASS(obj) :: GetZ => obj_GetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshSize => obj_GetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTags => obj_SetTags
+  PROCEDURE, PUBLIC, PASS(obj) :: GetDim => obj_GetDim
   PROCEDURE, PUBLIC, PASS(obj) :: GetIndx => obj_GetIndx
+  PROCEDURE, PUBLIC, PASS(obj) :: GetName => obj_GetName
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTags => obj_GetTags
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
 
   ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
-  ! @GmshMethods
+  !@GmshMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CreateGmshModel => obj_CreateGmshModel
-
-END TYPE GmshPoint_
+END TYPE GmshPhysicalGroup_
 
 !----------------------------------------------------------------------------
-!                                                          GmshPointPointer_
+!                                                      GmshPhysicalGroupPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: GmshPointPointer_
-  CLASS(GmshPoint_), POINTER :: ptr => NULL()
-END TYPE GmshPointPointer_
+TYPE :: GmshPhysicalGroupPointer_
+  CLASS(GmshPhysicalGroup_), POINTER :: ptr => NULL()
+END TYPE GmshPhysicalGroupPointer_
 
 !----------------------------------------------------------------------------
 !                                                           Initiate@Methods
@@ -86,94 +84,39 @@ END TYPE GmshPointPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Initiate gmsh points
+! summary: Initiate GmshPhysicalGroup
 !
 !# Initiate
 !
-! Initiate gmsh points.
+! Initiate GmshPhysicalGroup.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, x, y, z, meshSize, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x, y, z, meshSize
+  MODULE SUBROUTINE obj_Initiate(obj, dim, tags, name, indx)
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+    INTEGER(I4B), INTENT(IN) :: tags(:)
+    CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: indx
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               SetX@Methods
+!                                                            SetDim@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set x
+! summary: Set dim GmshPhysicalGroup
 !
-!# SetX
+!# SetDim
 !
-! Set x in gmsh point.
+! Set dim in GmshPhysicalGroup
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetX(obj, x)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x
-  END SUBROUTINE obj_SetX
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               SetY@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set y
-!
-!# SetY
-!
-! Set y in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetY(obj, y)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: y
-  END SUBROUTINE obj_SetY
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               SetZ@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set z
-!
-!# SetZ
-!
-! Set z in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetZ(obj, z)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: z
-  END SUBROUTINE obj_SetZ
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        SetMeshSize@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set mesh size
-!
-!# SetMeshSize
-!
-! Set mesh size in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshSize(obj, meshSize)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: meshSize
-  END SUBROUTINE obj_SetMeshSize
+  MODULE SUBROUTINE obj_SetDim(obj, dim)
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: dim
+  END SUBROUTINE obj_SetDim
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -182,93 +125,74 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set indx
+! summary: Set indx GmshPhysicalGroup
 !
 !# SetIndx
 !
-! Set indx
+! Set indx in GmshPhysicalGroup
 
 INTERFACE
   MODULE SUBROUTINE obj_SetIndx(obj, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
   END SUBROUTINE obj_SetIndx
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetX@Methods
+!                                                            SetName@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get x
+! summary: Set name GmshPhysicalGroup
 !
-!# GetX
+!# SetName
 !
-! Get x from Gmsh point.
+! Set name in GmshPhysicalGroup
 
 INTERFACE
-  MODULE FUNCTION obj_GetX(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetX
+  MODULE SUBROUTINE obj_SetName(obj, name)
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetName
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetY@Methods
+!                                                            SetTags@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get y
+! summary: Set tags in GmshPhysicalGroup
 !
-!# GetY
+!# SetTags
 !
-! Get x from Gmsh point.
+! Set tags in GmshPhysicalGroup.
 
 INTERFACE
-  MODULE FUNCTION obj_GetY(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetY
+  MODULE SUBROUTINE obj_SetTags(obj, tags)
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: tags(:)
+  END SUBROUTINE obj_SetTags
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetZ@Methods
+!                                                            GetDim@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get z
+! summary: Get dim from GmshPhysicalGroup
 !
-!# GetZ
+!# GetDim
 !
-! Get x from Gmsh point.
+! Get dim from GmshPhysicalGroup.
 
 INTERFACE
-  MODULE FUNCTION obj_GetZ(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetZ
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetMeshSize@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Get mesh size
-!
-!# GetMeshSize
-!
-! Get meshSize from Gmsh point.
-
-INTERFACE
-  MODULE FUNCTION obj_GetMeshSize(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetMeshSize
+  MODULE FUNCTION obj_GetDim(obj) RESULT(ans)
+    CLASS(GmshPhysicalGroup_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetDim
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -277,17 +201,70 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get mesh size
+! summary: Get indx from GmshPhysicalGroup
 !
 !# GetIndx
 !
-! Get indx from Gmsh point.
+! Get indx from GmshPhysicalGroup.
 
 INTERFACE
   MODULE FUNCTION obj_GetIndx(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
+    CLASS(GmshPhysicalGroup_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
   END FUNCTION obj_GetIndx
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            GetName@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-24
+! summary: Get name from GmshPhysicalGroup
+!
+!# GetName
+!
+! Get name from GmshPhysicalGroup.
+
+INTERFACE
+  MODULE FUNCTION obj_GetName(obj) RESULT(ans)
+    CLASS(GmshPhysicalGroup_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetName
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetTags@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-24
+! summary: Get tags from GmshPhysicalGroup
+!
+!# GetTags
+!
+! Get tags from GmshPhysicalGroup.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTags(obj) RESULT(ans)
+    CLASS(GmshPhysicalGroup_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetTags
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               Copy@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-25
+! summary: Copy GmshPhysicalGroup
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
+    CLASS(GmshPhysicalGroup_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -296,35 +273,35 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Display GmshPhysicalGroup
 !
 !# Display
 !
-! Display gmsh point.
+! Display GmshPhysicalGroup.
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Display@Methods
+!                                                ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Import from toml table.
 !
-!# Display
+!# ImportFromToml
 !
-! Import Gmsh point.
+! Import GmshPhysicalGroup from toml table.
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
@@ -335,11 +312,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Import gmsh points from toml file
+! summary: Import GmshPhysicalGroup from toml file
 !
 !# ImportFromToml
 !
-! Import gmsh points from toml file. After getting the toml table from
+! Import GmshPhysicalGroup from toml file. After getting the toml table from
 ! the provided file, this method calls ImportFromToml1.
 !
 !## Examples
@@ -349,10 +326,10 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    !! Gmsh point
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
+    !! GmshPhysicalGroup
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -372,17 +349,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary: Initiate a vector of GmshPoint_ from the toml table
+! summary: Initiate a vector of GmshPhysicalGroup_ from the toml table
 
-INTERFACE GmshPointImportFromToml
+INTERFACE GmshPhysicalGroupImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml3(obj, table, tomlName)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(GmshPhysicalGroupPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml3
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshPhysicalGroupImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 ImportFromToml@TomlMethods
@@ -390,12 +367,12 @@ END INTERFACE GmshPointImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-25
-! summary: Import a vector of GmshPointPointer_ from toml file
+! summary: Import a vector of GmshPhysicalGroupPointer_ from toml file
 
-INTERFACE GmshPointImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml4(obj, tomlName, afile, filename, &
-                                        printToml)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+INTERFACE GmshPhysicalGroupImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml4( &
+    obj, tomlName, afile, filename, printToml)
+    TYPE(GmshPhysicalGroupPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Gmsh point
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
@@ -408,7 +385,7 @@ INTERFACE GmshPointImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     !! if it is true then we will print the toml config
   END SUBROUTINE obj_ImportFromToml4
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshPhysicalGroupImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 CreateGmshModel@GmshMethods
@@ -416,17 +393,17 @@ END INTERFACE GmshPointImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-26
-! summary: Create gmsh model for GmshCurveLoop_
+! summary: Create gmsh model for GmshPhysicalGroup_
 !
 !# CreateGmshModel
 !
-! Create gmsh model for GmshCurveLoop_
+! Create gmsh model for GmshPhysicalGroup_
 
 INTERFACE
   MODULE SUBROUTINE obj_CreateGmshModel(obj, gmsh)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPhysicalGroup_), INTENT(INOUT) :: obj
     TYPE(Gmsh_), INTENT(INOUT) :: gmsh
   END SUBROUTINE obj_CreateGmshModel
 END INTERFACE
 
-END MODULE GmshPoint_Class
+END MODULE GmshPhysicalGroup_Class

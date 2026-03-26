@@ -15,50 +15,63 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE GmshPoint_Class
+MODULE GmshPlaneSurface_Class
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
-USE BaseType, ONLY: math => TypeMathOpt
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
+USE GmshCurveLoop_Class, ONLY: GmshCurveLoop_
+USE GmshCurveLoop_Class, ONLY: GmshCurveLoopPointer_
 USE Gmsh_Class, ONLY: Gmsh_
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC :: GmshPoint_
-PUBLIC :: GmshPointPointer_
-PUBLIC :: GmshPointImportFromToml
+PUBLIC :: GmshPlaneSurface_
+PUBLIC :: GmshPlaneSurfacePointer_
+PUBLIC :: GmshPlaneSurfaceImportFromToml
+INTEGER(I4B), PARAMETER :: innerloopExpandSize = math%two_i
 
 !----------------------------------------------------------------------------
-!                                                                  GmshPoint_
+!                                                          GmshPlaneSurface_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2026-03-26
-! summary: Gmsh point
+! date: 2026-03-25
+! summary: Gmsh plane surface
 
-TYPE :: GmshPoint_
+TYPE :: GmshPlaneSurface_
   PRIVATE
-  REAL(DFP) :: x = math%zero
-  REAL(DFP) :: y = math%zero
-  REAL(DFP) :: z = math%zero
-  REAL(DFP) :: meshSize = math%one
   INTEGER(I4B) :: indx = math%one_i
+  !! surface id
+  LOGICAL(LGT) :: isInnerLoop = math%no
+  !! does inner loop exists
+  INTEGER(I4B) :: innerloopsSize = math%zero_i
+  !! size of inner loops
+  INTEGER(I4B) :: innerloopsCapacity = math%zero_i
+  !! capacity of inner loops
+  TYPE(GmshCurveLoop_) :: outerloop
+  !! outer loop
+  TYPE(GmshCurveLoopPointer_), ALLOCATABLE :: innerloops(:)
+  !! inner loops inside the plane surface
 
 CONTAINS
 
-  ! @Methods
+  !  @Methods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: SetX => obj_SetX
-  PROCEDURE, PUBLIC, PASS(obj) :: SetY => obj_SetY
-  PROCEDURE, PUBLIC, PASS(obj) :: SetZ => obj_SetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshSize => obj_SetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOuterloop => obj_SetOuterloop
+  PROCEDURE, PUBLIC, PASS(obj) :: SetInnerloops => obj_SetInnerloops
+  PROCEDURE, PUBLIC, PASS(obj) :: SetInnerloop => obj_SetInnerloop
+  PROCEDURE, PUBLIC, PASS(obj) :: AddInnerloop => obj_AddInnerloop
+  PROCEDURE, PUBLIC, PASS(obj) :: AllocateInnerloops => &
+    obj_AllocateInnerloops
   PROCEDURE, PUBLIC, PASS(obj) :: SetIndx => obj_SetIndx
-  PROCEDURE, PUBLIC, PASS(obj) :: GetX => obj_GetX
-  PROCEDURE, PUBLIC, PASS(obj) :: GetY => obj_GetY
-  PROCEDURE, PUBLIC, PASS(obj) :: GetZ => obj_GetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshSize => obj_GetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: GetOuterloop => obj_GetOuterloop
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInnerloops => &
+    obj_GetInnerloops
+  PROCEDURE, PUBLIC, PASS(obj) :: GetInnerloopPointer => &
+    obj_GetInnerloopPointer
   PROCEDURE, PUBLIC, PASS(obj) :: GetIndx => obj_GetIndx
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
@@ -69,16 +82,16 @@ CONTAINS
 
   ! @GmshMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CreateGmshModel => obj_CreateGmshModel
-
-END TYPE GmshPoint_
+  !! create gmsh model
+END TYPE GmshPlaneSurface_
 
 !----------------------------------------------------------------------------
-!                                                          GmshPointPointer_
+!                                                   GmshPlaneSurfacePointer_
 !----------------------------------------------------------------------------
 
-TYPE :: GmshPointPointer_
-  CLASS(GmshPoint_), POINTER :: ptr => NULL()
-END TYPE GmshPointPointer_
+TYPE :: GmshPlaneSurfacePointer_
+  CLASS(GmshPlaneSurface_), POINTER :: ptr => NULL()
+END TYPE GmshPlaneSurfacePointer_
 
 !----------------------------------------------------------------------------
 !                                                           Initiate@Methods
@@ -86,94 +99,115 @@ END TYPE GmshPointPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Initiate gmsh points
+! summary: Initiate GmshPlaneSurface
 !
 !# Initiate
 !
-! Initiate gmsh points.
+! Initiate GmshPlaneSurface.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, x, y, z, meshSize, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x, y, z, meshSize
+  MODULE SUBROUTINE obj_Initiate(obj, outerloop, innerloops, indx)
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
+    TYPE(GmshCurveLoop_), INTENT(IN) :: outerloop
+    TYPE(GmshCurveLoopPointer_), INTENT(IN) :: innerloops(:)
     INTEGER(I4B), INTENT(IN) :: indx
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               SetX@Methods
+!                                                     SetOuterloop@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set x
+! summary: Set outerloop in GmshPlaneSurface
 !
-!# SetX
+!# SetOuterloop
 !
-! Set x in gmsh point.
+! Set outerloop in GmshPlaneSurface.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetX(obj, x)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x
-  END SUBROUTINE obj_SetX
+  MODULE SUBROUTINE obj_SetOuterloop(obj, outerloop)
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
+    TYPE(GmshCurveLoop_), INTENT(IN) :: outerloop
+  END SUBROUTINE obj_SetOuterloop
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               SetY@Methods
+!                                                      SetInnerloops@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set y
+! summary: Set all Innerloops in GmshPlaneSurface
 !
-!# SetY
+!# SetInnerloop
 !
-! Set y in gmsh point.
+! Set all Innerloops in GmshPlaneSurface.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetY(obj, y)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: y
-  END SUBROUTINE obj_SetY
+  MODULE SUBROUTINE obj_SetInnerloops(obj, innerloops)
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
+    TYPE(GmshCurveLoopPointer_), INTENT(IN) :: innerloops(:)
+  END SUBROUTINE obj_SetInnerloops
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               SetZ@Methods
+!                                                       SetInnerloop@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set z
+! summary: Set an innerloop in GmshPlaneSurface
 !
-!# SetZ
+!# SetInnerloop
 !
-! Set z in gmsh point.
+! Set a innerloop in GmshPlaneSurface.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetZ(obj, z)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: z
-  END SUBROUTINE obj_SetZ
+  MODULE SUBROUTINE obj_SetInnerloop(obj, innerloop, loopId)
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
+    TYPE(GmshCurveLoop_), TARGET, INTENT(IN) :: innerloop
+    INTEGER(I4B), INTENT(IN) :: loopId
+  END SUBROUTINE obj_SetInnerloop
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        SetMeshSize@Methods
+!                                                       AddInnerloop@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set mesh size
+! summary: Add (append) a innerloop in GmshPlaneSurface
 !
-!# SetMeshSize
+!# AddInnerloop
 !
-! Set mesh size in gmsh point.
+! Add (append) a innerloop in GmshPlaneSurface.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMeshSize(obj, meshSize)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: meshSize
-  END SUBROUTINE obj_SetMeshSize
+  MODULE SUBROUTINE obj_AddInnerloop(obj, innerloop)
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
+    TYPE(GmshCurveLoop_), TARGET, INTENT(IN) :: innerloop
+  END SUBROUTINE obj_AddInnerloop
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  AllocateInnerloops@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-24
+! summary: allocate inner loops
+!
+!# AllocateInnerloops
+!
+! Allocate innerloops in GmshPlaneSurface.
+
+INTERFACE
+  MODULE SUBROUTINE obj_AllocateInnerloops(obj, tsize)
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: tsize
+  END SUBROUTINE obj_AllocateInnerloops
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -182,93 +216,75 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set indx
+! summary: Set indx GmshPlaneSurface
 !
 !# SetIndx
 !
-! Set indx
+! Set indx in GmshPlaneSurface
 
 INTERFACE
   MODULE SUBROUTINE obj_SetIndx(obj, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
   END SUBROUTINE obj_SetIndx
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetX@Methods
+!                                                       GetOuterloop@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get x
+! summary: Get outerloop from GmshPlaneSurface
 !
-!# GetX
+!# GetOuterloop
 !
-! Get x from Gmsh point.
+! Get outerloop from GmshPlaneSurface.
 
 INTERFACE
-  MODULE FUNCTION obj_GetX(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetX
+  MODULE FUNCTION obj_GetOuterloop(obj) RESULT(ans)
+    CLASS(GmshPlaneSurface_), INTENT(IN) :: obj
+    TYPE(GmshCurveLoop_) :: ans
+  END FUNCTION obj_GetOuterloop
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetY@Methods
+!                                                      GetInnerloops@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get y
+! summary: Get all innerloops from GmshPlaneSurface
 !
-!# GetY
+!# GetInnerLoops
 !
-! Get x from Gmsh point.
+! Get all the innerloops from GmshPlaneSurface.
 
 INTERFACE
-  MODULE FUNCTION obj_GetY(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetY
+  MODULE FUNCTION obj_GetInnerloops(obj) RESULT(ans)
+    CLASS(GmshPlaneSurface_), INTENT(IN) :: obj
+    TYPE(GmshCurveLoopPointer_), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetInnerloops
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetZ@Methods
+!                                                       GetInnerloop@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get z
+! summary: Get an innerloop from GmshPlaneSurface
 !
-!# GetZ
+!# GetInnerLoop
 !
-! Get x from Gmsh point.
+! Get an innerloop from GmshPlaneSurface.
 
 INTERFACE
-  MODULE FUNCTION obj_GetZ(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetZ
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetMeshSize@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Get mesh size
-!
-!# GetMeshSize
-!
-! Get meshSize from Gmsh point.
-
-INTERFACE
-  MODULE FUNCTION obj_GetMeshSize(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetMeshSize
+  MODULE FUNCTION obj_GetInnerloopPointer(obj, loopId) RESULT(ans)
+    CLASS(GmshPlaneSurface_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: loopId
+    CLASS(GmshCurveLoop_), POINTER :: ans
+  END FUNCTION obj_GetInnerloopPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -277,15 +293,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get mesh size
+! summary: Get indx from GmshPlaneSurface
 !
 !# GetIndx
 !
-! Get indx from Gmsh point.
+! Get indx from GmshPlaneSurface.
 
 INTERFACE
   MODULE FUNCTION obj_GetIndx(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
+    CLASS(GmshPlaneSurface_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_GetIndx
 END INTERFACE
@@ -296,35 +312,35 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Display GmshPlaneSurface
 !
 !# Display
 !
-! Display gmsh point.
+! Display GmshPlaneSurface.
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Display@Methods
+!                                                ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Import from toml table.
 !
-!# Display
+!# ImportFromToml
 !
-! Import Gmsh point.
+! Import GmshPlaneSurface from toml table.
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
@@ -335,11 +351,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Import gmsh points from toml file
+! summary: Import GmshPlaneSurface from toml file
 !
 !# ImportFromToml
 !
-! Import gmsh points from toml file. After getting the toml table from
+! Import GmshPlaneSurface from toml file. After getting the toml table from
 ! the provided file, this method calls ImportFromToml1.
 !
 !## Examples
@@ -349,10 +365,10 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    !! Gmsh point
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
+    !! GmshPlaneSurface
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -372,17 +388,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary: Initiate a vector of GmshPoint_ from the toml table
+! summary: Initiate a vector of GmshPlaneSurface_ from the toml table
 
-INTERFACE GmshPointImportFromToml
+INTERFACE GmshPlaneSurfaceImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml3(obj, table, tomlName)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(GmshPlaneSurfacePointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml3
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshPlaneSurfaceImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 ImportFromToml@TomlMethods
@@ -390,12 +406,12 @@ END INTERFACE GmshPointImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-25
-! summary: Import a vector of GmshPointPointer_ from toml file
+! summary: Import a vector of GmshPlaneSurfacePointer_ from toml file
 
-INTERFACE GmshPointImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml4(obj, tomlName, afile, filename, &
-                                        printToml)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+INTERFACE GmshPlaneSurfaceImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml4( &
+    obj, tomlName, afile, filename, printToml)
+    TYPE(GmshPlaneSurfacePointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Gmsh point
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
@@ -408,7 +424,7 @@ INTERFACE GmshPointImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     !! if it is true then we will print the toml config
   END SUBROUTINE obj_ImportFromToml4
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshPlaneSurfaceImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 CreateGmshModel@GmshMethods
@@ -416,17 +432,21 @@ END INTERFACE GmshPointImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-26
-! summary: Create gmsh model for GmshCurveLoop_
+! summary: Create gmsh model for plane surface
 !
 !# CreateGmshModel
 !
-! Create gmsh model for GmshCurveLoop_
+! Create gmsh model for plane surface.
 
 INTERFACE
   MODULE SUBROUTINE obj_CreateGmshModel(obj, gmsh)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshPlaneSurface_), INTENT(INOUT) :: obj
     TYPE(Gmsh_), INTENT(INOUT) :: gmsh
   END SUBROUTINE obj_CreateGmshModel
 END INTERFACE
 
-END MODULE GmshPoint_Class
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+END MODULE GmshPlaneSurface_Class

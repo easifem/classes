@@ -15,7 +15,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE GmshPoint_Class
+MODULE GmshCurveLoop_Class
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
@@ -26,59 +26,49 @@ USE Gmsh_Class, ONLY: Gmsh_
 IMPLICIT NONE
 
 PRIVATE
-PUBLIC :: GmshPoint_
-PUBLIC :: GmshPointPointer_
-PUBLIC :: GmshPointImportFromToml
+PUBLIC :: GmshCurveLoop_
+PUBLIC :: GmshCurveLoopPointer_
+PUBLIC :: GmshCurveLoopImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                                  GmshPoint_
+!                                                             GmshCurveLoop_
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-26
-! summary: Gmsh point
-
-TYPE :: GmshPoint_
+TYPE :: GmshCurveLoop_
   PRIVATE
-  REAL(DFP) :: x = math%zero
-  REAL(DFP) :: y = math%zero
-  REAL(DFP) :: z = math%zero
-  REAL(DFP) :: meshSize = math%one
   INTEGER(I4B) :: indx = math%one_i
-
+  !! surface id
+  LOGICAL(LGT) :: reorient = math%no
+  !! should we reorient the loop
+  INTEGER(I4B), ALLOCATABLE :: curveId(:)
+  !! indx of curve entities
 CONTAINS
 
   ! @Methods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-  PROCEDURE, PUBLIC, PASS(obj) :: SetX => obj_SetX
-  PROCEDURE, PUBLIC, PASS(obj) :: SetY => obj_SetY
-  PROCEDURE, PUBLIC, PASS(obj) :: SetZ => obj_SetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshSize => obj_SetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: SetCurveId => obj_SetCurveId
   PROCEDURE, PUBLIC, PASS(obj) :: SetIndx => obj_SetIndx
-  PROCEDURE, PUBLIC, PASS(obj) :: GetX => obj_GetX
-  PROCEDURE, PUBLIC, PASS(obj) :: GetY => obj_GetY
-  PROCEDURE, PUBLIC, PASS(obj) :: GetZ => obj_GetZ
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshSize => obj_GetMeshSize
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCurveId => obj_GetCurveId
   PROCEDURE, PUBLIC, PASS(obj) :: GetIndx => obj_GetIndx
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
 
   ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
-  ! @GmshMethods
+  !@GmshMethods
   PROCEDURE, PUBLIC, PASS(obj) :: CreateGmshModel => obj_CreateGmshModel
-
-END TYPE GmshPoint_
+END TYPE GmshCurveLoop_
 
 !----------------------------------------------------------------------------
-!                                                          GmshPointPointer_
+!                                                      GmshCurveLoopPointer_
 !----------------------------------------------------------------------------
 
-TYPE :: GmshPointPointer_
-  CLASS(GmshPoint_), POINTER :: ptr => NULL()
-END TYPE GmshPointPointer_
+TYPE :: GmshCurveLoopPointer_
+  CLASS(GmshCurveLoop_), POINTER :: ptr => NULL()
+END TYPE GmshCurveLoopPointer_
 
 !----------------------------------------------------------------------------
 !                                                           Initiate@Methods
@@ -86,94 +76,38 @@ END TYPE GmshPointPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Initiate gmsh points
+! summary: Initiate GmshCurveLoop
 !
 !# Initiate
 !
-! Initiate gmsh points.
+! Initiate GmshCurveLoop.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, x, y, z, meshSize, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x, y, z, meshSize
+  MODULE SUBROUTINE obj_Initiate(obj, curveId, indx, reorient)
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: curveId(:)
     INTEGER(I4B), INTENT(IN) :: indx
+    LOGICAL(LGT), INTENT(IN) :: reorient
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               SetX@Methods
+!                                                         SetCurveId@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set x
+! summary: Set CurveId in GmshCurveLoop
 !
-!# SetX
+!# SetCurveId
 !
-! Set x in gmsh point.
+! Set CurveId in GmshCurveLoop.
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetX(obj, x)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x
-  END SUBROUTINE obj_SetX
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               SetY@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set y
-!
-!# SetY
-!
-! Set y in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetY(obj, y)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: y
-  END SUBROUTINE obj_SetY
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               SetZ@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set z
-!
-!# SetZ
-!
-! Set z in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetZ(obj, z)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: z
-  END SUBROUTINE obj_SetZ
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        SetMeshSize@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Set mesh size
-!
-!# SetMeshSize
-!
-! Set mesh size in gmsh point.
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshSize(obj, meshSize)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: meshSize
-  END SUBROUTINE obj_SetMeshSize
+  MODULE SUBROUTINE obj_SetCurveId(obj, curveId)
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: curveId(:)
+  END SUBROUTINE obj_SetCurveId
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -182,93 +116,55 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Set indx
+! summary: Set indx GmshCurveLoop
 !
 !# SetIndx
 !
-! Set indx
+! Set indx in GmshCurveLoop
 
 INTERFACE
   MODULE SUBROUTINE obj_SetIndx(obj, indx)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
   END SUBROUTINE obj_SetIndx
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetX@Methods
+!                                                        SetReorient@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get x
+! summary: Set Reorient GmshCurveLoop
 !
-!# GetX
+!# SetReorient
 !
-! Get x from Gmsh point.
+! Set Reorient in GmshCurveLoop
 
 INTERFACE
-  MODULE FUNCTION obj_GetX(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetX
+  MODULE SUBROUTINE obj_SetReorient(obj, reorient)
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
+    LOGICAL(LGT), INTENT(IN) :: reorient
+  END SUBROUTINE obj_SetReorient
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               GetY@Methods
+!                                                         GetCurveId@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get y
+! summary: Get CurveId from GmshCurveLoop
 !
-!# GetY
+!# GetCurveId
 !
-! Get x from Gmsh point.
+! Get CurveId from GmshCurveLoop.
 
 INTERFACE
-  MODULE FUNCTION obj_GetY(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetY
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                               GetZ@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Get z
-!
-!# GetZ
-!
-! Get x from Gmsh point.
-
-INTERFACE
-  MODULE FUNCTION obj_GetZ(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetZ
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetMeshSize@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-03-24
-! summary: Get mesh size
-!
-!# GetMeshSize
-!
-! Get meshSize from Gmsh point.
-
-INTERFACE
-  MODULE FUNCTION obj_GetMeshSize(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
-  END FUNCTION obj_GetMeshSize
+  MODULE FUNCTION obj_GetCurveId(obj) RESULT(ans)
+    CLASS(GmshCurveLoop_), INTENT(IN) :: obj
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetCurveId
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -277,17 +173,51 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Get mesh size
+! summary: Get indx from GmshCurveLoop
 !
 !# GetIndx
 !
-! Get indx from Gmsh point.
+! Get indx from GmshCurveLoop.
 
 INTERFACE
   MODULE FUNCTION obj_GetIndx(obj) RESULT(ans)
-    CLASS(GmshPoint_), INTENT(IN) :: obj
-    REAL(DFP) :: ans
+    CLASS(GmshCurveLoop_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
   END FUNCTION obj_GetIndx
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetReorient@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-24
+! summary: Get Reorient from GmshCurveLoop
+!
+!# GetReorient
+!
+! Get Reorient from GmshCurveLoop.
+
+INTERFACE
+  MODULE FUNCTION obj_GetReorient(obj) RESULT(ans)
+    CLASS(GmshCurveLoop_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_GetReorient
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               Copy@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-25
+! summary: Copy GmshCurveLoop
+
+INTERFACE
+  MODULE SUBROUTINE obj_Copy(obj, obj2)
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
+    CLASS(GmshCurveLoop_), INTENT(IN) :: obj2
+  END SUBROUTINE obj_Copy
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -296,35 +226,35 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Display GmshCurveLoop
 !
 !# Display
 !
-! Display gmsh point.
+! Display GmshCurveLoop.
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Display@Methods
+!                                                ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Display gmsh point
+! summary: Import from toml table.
 !
-!# Display
+!# ImportFromToml
 !
-! Import Gmsh point.
+! Import GmshCurveLoop from toml table.
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
@@ -335,11 +265,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-24
-! summary: Import gmsh points from toml file
+! summary: Import GmshCurveLoop from toml file
 !
 !# ImportFromToml
 !
-! Import gmsh points from toml file. After getting the toml table from
+! Import GmshCurveLoop from toml file. After getting the toml table from
 ! the provided file, this method calls ImportFromToml1.
 !
 !## Examples
@@ -349,10 +279,10 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
-    !! Gmsh point
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
+    !! GmshCurveLoop
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
@@ -372,17 +302,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-08
-! summary: Initiate a vector of GmshPoint_ from the toml table
+! summary: Initiate a vector of GmshCurveLoop_ from the toml table
 
-INTERFACE GmshPointImportFromToml
+INTERFACE GmshCurveLoopImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml3(obj, table, tomlName)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    TYPE(GmshCurveLoopPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     TYPE(toml_table), INTENT(INOUT) :: table
     !! Toml table to returned
     CHARACTER(*), INTENT(IN) :: tomlName
   END SUBROUTINE obj_ImportFromToml3
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshCurveLoopImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 ImportFromToml@TomlMethods
@@ -390,12 +320,12 @@ END INTERFACE GmshPointImportFromToml
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-25
-! summary: Import a vector of GmshPointPointer_ from toml file
+! summary: Import a vector of GmshCurveLoopPointer_ from toml file
 
-INTERFACE GmshPointImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml4(obj, tomlName, afile, filename, &
-                                        printToml)
-    TYPE(GmshPointPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+INTERFACE GmshCurveLoopImportFromToml
+  MODULE SUBROUTINE obj_ImportFromToml4( &
+    obj, tomlName, afile, filename, printToml)
+    TYPE(GmshCurveLoopPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! Gmsh point
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
@@ -408,7 +338,7 @@ INTERFACE GmshPointImportFromToml
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     !! if it is true then we will print the toml config
   END SUBROUTINE obj_ImportFromToml4
-END INTERFACE GmshPointImportFromToml
+END INTERFACE GmshCurveLoopImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                 CreateGmshModel@GmshMethods
@@ -424,9 +354,9 @@ END INTERFACE GmshPointImportFromToml
 
 INTERFACE
   MODULE SUBROUTINE obj_CreateGmshModel(obj, gmsh)
-    CLASS(GmshPoint_), INTENT(INOUT) :: obj
+    CLASS(GmshCurveLoop_), INTENT(INOUT) :: obj
     TYPE(Gmsh_), INTENT(INOUT) :: gmsh
   END SUBROUTINE obj_CreateGmshModel
 END INTERFACE
 
-END MODULE GmshPoint_Class
+END MODULE GmshCurveLoop_Class

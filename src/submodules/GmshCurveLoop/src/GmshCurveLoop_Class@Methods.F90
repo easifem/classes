@@ -15,13 +15,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(GmshPoint_Class) Methods
+SUBMODULE(GmshCurveLoop_Class) Methods
 USE ExceptionHandler_Class, ONLY: e
 USE Display_Method, ONLY: Display
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "GmshPoint_Class@Methods.F90"
+CHARACTER(*), PARAMETER :: modName = "GmshCurveLoop_Class@Methods.F90"
 #endif
 
 CONTAINS
@@ -35,16 +37,18 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
+INTEGER(I4B) :: tsize
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%x = x
-obj%y = y
-obj%z = z
+tsize = SIZE(curveId)
+CALL Reallocate(obj%curveId, tsize)
+obj%curveId(1:tsize) = curveId(1:tsize)
 obj%indx = indx
-obj%meshSize = meshSize
+obj%reorient = reorient
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -53,92 +57,30 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                                       SetX
+!                                                                 SetCurveId
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetX
+MODULE PROCEDURE obj_SetCurveId
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetX()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetCurveId()"
 #endif
+
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%x = x
+tsize = SIZE(curveId)
+CALL Reallocate(obj%curveId, tsize)
+obj%curveId(1:tsize) = curveId(1:tsize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetX
-
-!----------------------------------------------------------------------------
-!                                                                       SetY
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetY
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetY()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%y = y
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetY
-
-!----------------------------------------------------------------------------
-!                                                                       SetZ
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetZ
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetZ()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%z = z
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetZ
-
-!----------------------------------------------------------------------------
-!                                                                SetMeshSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetMeshSize
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetMeshSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%meshSize = meshSize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetMeshSize
+END PROCEDURE obj_SetCurveId
 
 !----------------------------------------------------------------------------
 !                                                                    SetIndx
@@ -163,12 +105,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetIndx
 
 !----------------------------------------------------------------------------
-!                                                                       GetX
+!                                                                SetReorient
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetX
+MODULE PROCEDURE obj_SetReorient
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetX()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetReorient()"
 #endif
 
 #ifdef DEBUG_VER
@@ -176,79 +118,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%x
+obj%reorient = reorient
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetX
+END PROCEDURE obj_SetReorient
 
 !----------------------------------------------------------------------------
-!                                                                       GetY
+!                                                                 GetCurveId
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetY
+MODULE PROCEDURE obj_GetCurveId
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetY()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetCurveId()"
 #endif
+
+INTEGER(I4B) :: tsize, ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%y
+tsize = SafeSize(obj%curveId)
+CALL Reallocate(ans, tsize)
+
+DO ii = 1, tsize
+  ans(ii) = obj%curveId(ii)
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetY
-
-!----------------------------------------------------------------------------
-!                                                                       GetZ
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetZ
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetZ()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = obj%z
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetZ
-
-!----------------------------------------------------------------------------
-!                                                                GetMeshSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMeshSize
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMeshSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = obj%meshSize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetMeshSize
+END PROCEDURE obj_GetCurveId
 
 !----------------------------------------------------------------------------
 !                                                                    GetIndx
@@ -273,6 +178,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetIndx
 
 !----------------------------------------------------------------------------
+!                                                                GetReorient
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetReorient
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetReorient()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%reorient
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetReorient
+
+!----------------------------------------------------------------------------
 !                                                                    Display
 !----------------------------------------------------------------------------
 
@@ -287,17 +214,46 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL Display(msg, unitno=unitno)
-CALL Display(obj%x, "x: ", unitno=unitno)
-CALL Display(obj%y, "y: ", unitno=unitno)
-CALL Display(obj%z, "z: ", unitno=unitno)
-CALL Display(obj%meshSize, "meshSize: ", unitno=unitno)
 CALL Display(obj%indx, "indx: ", unitno=unitno)
+CALL Display(obj%reorient, "reorient: ", unitno=unitno)
+CALL Display(obj%curveId, "curveId: ", unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                                        Copy
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Copy
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+#endif
+
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%indx = obj2%indx
+obj%reorient = obj2%reorient
+
+tsize = SafeSize(obj2%curveId)
+CALL Reallocate(obj%curveId, tsize)
+DO ii = 1, tsize
+  obj%curveId(ii) = obj2%curveId(ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
 !                                                             Include Errors

@@ -240,6 +240,18 @@ include(${CMAKE_CURRENT_LIST_DIR}/GmshAPI/CMakeLists.txt)
 # GmshPoint
 include(${CMAKE_CURRENT_LIST_DIR}/GmshPoint/CMakeLists.txt)
 
+# GmshLine
+include(${CMAKE_CURRENT_LIST_DIR}/GmshLine/CMakeLists.txt)
+
+# GmshCurveLoop
+include(${CMAKE_CURRENT_LIST_DIR}/GmshCurveLoop/CMakeLists.txt)
+
+# GmshPlaneSurface
+include(${CMAKE_CURRENT_LIST_DIR}/GmshPlaneSurface/CMakeLists.txt)
+
+# GmshPhysicalGroup
+include(${CMAKE_CURRENT_LIST_DIR}/GmshPhysicalGroup/CMakeLists.txt)
+
 # GmshStructuredMesh2
 include(${CMAKE_CURRENT_LIST_DIR}/GmshStructuredMesh2/CMakeLists.txt)
 

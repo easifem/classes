@@ -15,13 +15,16 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(GmshPoint_Class) Methods
+SUBMODULE(GmshPlaneSurface_Class) Methods
 USE ExceptionHandler_Class, ONLY: e
 USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "GmshPoint_Class@Methods.F90"
+CHARACTER(*), PARAMETER :: modName = "GmshPlaneSurface_Class@Methods.F90"
 #endif
 
 CONTAINS
@@ -40,11 +43,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%x = x
-obj%y = y
-obj%z = z
+CALL obj%SetOuterloop(outerloop)
+CALL obj%SetInnerloops(innerloops)
 obj%indx = indx
-obj%meshSize = meshSize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -53,12 +54,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                                       SetX
+!                                                               SetOuterloop
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetX
+MODULE PROCEDURE obj_SetOuterloop
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetX()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetOuterloop()"
 #endif
 
 #ifdef DEBUG_VER
@@ -66,79 +67,173 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%x = x
+CALL obj%outerloop%Copy(outerloop)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetX
+END PROCEDURE obj_SetOuterloop
 
 !----------------------------------------------------------------------------
-!                                                                       SetY
+!                                                          AllocateInnerloops
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetY
+MODULE PROCEDURE obj_AllocateInnerloops
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetY()"
+CHARACTER(*), PARAMETER :: myName = "obj_AllocateInnerloops()"
 #endif
+
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%y = y
+isok = ALLOCATED(obj%innerloops)
+IF (isok) THEN
+
+  IF (tsize .LE. obj%innerloopsCapacity) THEN
+    obj%innerloopsSize = tsize
+  ELSE
+    obj%innerloopsCapacity = tsize
+    obj%innerloopsSize = tsize
+    DEALLOCATE (obj%innerloops)
+    ALLOCATE (obj%innerloops(tsize))
+  END IF
+
+ELSE
+
+  obj%innerloopsCapacity = tsize
+  obj%innerloopsSize = tsize
+  ALLOCATE (obj%innerloops(tsize))
+
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetY
+END PROCEDURE obj_AllocateInnerloops
 
 !----------------------------------------------------------------------------
-!                                                                       SetZ
+!                                                              SetInnerloops
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetZ
+MODULE PROCEDURE obj_SetInnerloops
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetZ()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetInnerloops()"
 #endif
+
+INTEGER(I4B) :: tsize, ii
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%z = z
+tsize = SIZE(innerloops)
+CALL obj%AllocateInnerloops(tsize=tsize)
 
+DO ii = 1, tsize
+  isok = ASSOCIATED(innerloops(ii)%ptr)
+  IF (.NOT. isok) CYCLE
+  CALL obj%SetInnerloop(innerloop=innerloops(ii)%ptr, loopId=ii)
+END DO
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetZ
+END PROCEDURE obj_SetInnerloops
 
 !----------------------------------------------------------------------------
-!                                                                SetMeshSize
+!                                                                SetInnerloop
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetMeshSize
+MODULE PROCEDURE obj_SetInnerloop
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetMeshSize()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetInnerloop()"
 #endif
+
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%meshSize = meshSize
+#ifdef DEBUG_VER
+CALL AssertError3(loopId, obj%innerloopsSize, myName, &
+                  "a=loopId, b=obj%innerloopsSize,")
+#endif
+
+isok = ASSOCIATED(obj%innerloops(loopId)%ptr)
+IF (.NOT. isok) ALLOCATE (obj%innerloops(loopId))
+CALL obj%innerloops(loopId)%ptr%Copy(innerloop)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetMeshSize
+END PROCEDURE obj_SetInnerloop
+
+!----------------------------------------------------------------------------
+!                                                               AddInnerloop
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AddInnerloop
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_AddInnerloop()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, loopId, tsize
+TYPE(GmshCurveLoopPointer_), ALLOCATABLE :: temp(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = obj%innerloopsSize .LT. obj%innerloopsCapacity
+IF (isok) THEN
+  ! it means there is enough space to keep innerloop, so
+  ! we just set
+  obj%innerloopsSize = obj%innerloopsSize + 1
+  loopId = obj%innerloopsSize
+  CALL obj%SetInnerloop(innerloop=innerloop, loopId=loopId)
+ELSE
+
+  ! backup current innerloops in temp
+  tsize = obj%innerloopsCapacity
+  ALLOCATE (temp(tsize))
+  DO ii = 1, tsize
+    temp(ii)%ptr => obj%innerloops(ii)%ptr
+    obj%innerloops(ii)%ptr => NULL()
+  END DO
+
+  ! increase the size of innerloops
+  DEALLOCATE (obj%innerloops)
+  CALL obj%AllocateInnerloops(tsize=tsize + 1)
+
+  ! copying the original content
+  DO ii = 1, tsize
+    obj%innerloops(ii)%ptr => temp(ii)%ptr
+    temp(ii)%ptr => NULL()
+  END DO
+
+  DEALLOCATE (temp)
+  loopId = tsize + 1
+  CALL obj%SetInnerloop(innerloop=innerloop, loopId=loopId)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_AddInnerloop
 
 !----------------------------------------------------------------------------
 !                                                                    SetIndx
@@ -163,12 +258,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetIndx
 
 !----------------------------------------------------------------------------
-!                                                                       GetX
+!                                                               GetOuterloop
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetX
+MODULE PROCEDURE obj_GetOuterloop
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetX()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetOuterloop()"
 #endif
 
 #ifdef DEBUG_VER
@@ -176,79 +271,73 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%x
+CALL ans%Copy(obj%outerloop)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetX
+END PROCEDURE obj_GetOuterloop
 
 !----------------------------------------------------------------------------
-!                                                                       GetY
+!                                                               GetInnerloops
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetY
+MODULE PROCEDURE obj_GetInnerloops
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetY()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetInnerloops()"
 #endif
+
+INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%y
+tsize = obj%innerloopsSize
+ALLOCATE (ans(tsize))
+
+DO ii = 1, tsize
+  ans(ii)%ptr => obj%innerloops(ii)%ptr
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetY
+END PROCEDURE obj_GetInnerloops
 
 !----------------------------------------------------------------------------
-!                                                                       GetZ
+!                                                        GetInnerloopPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetZ
+MODULE PROCEDURE obj_GetInnerloopPointer
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetZ()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetInnerloopPointer()"
 #endif
+
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%z
+tsize = obj%innerloopsSize
+
+#ifdef DEBUG_VER
+CALL AssertError3(loopId, tsize, myName, &
+                  "a=loopId, b=tsize, ")
+#endif
+
+ans => obj%innerloops(loopId)%ptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetZ
-
-!----------------------------------------------------------------------------
-!                                                                GetMeshSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMeshSize
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMeshSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = obj%meshSize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetMeshSize
+END PROCEDURE obj_GetInnerloopPointer
 
 !----------------------------------------------------------------------------
 !                                                                    GetIndx
@@ -281,17 +370,28 @@ MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
 
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 CALL Display(msg, unitno=unitno)
-CALL Display(obj%x, "x: ", unitno=unitno)
-CALL Display(obj%y, "y: ", unitno=unitno)
-CALL Display(obj%z, "z: ", unitno=unitno)
-CALL Display(obj%meshSize, "meshSize: ", unitno=unitno)
 CALL Display(obj%indx, "indx: ", unitno=unitno)
+CALL obj%outerloop%Display("outerloop: ", unitno=unitno)
+
+CALL Display(obj%innerloopsSize, "innerloopsSize: ")
+CALL Display(obj%innerloopsCapacity, "innerloopsCapacity: ")
+
+DO ii = 1, obj%innerloopsSize
+  isok = ASSOCIATED(obj%innerloops(ii)%ptr)
+  IF (isok) THEN
+    CALL obj%innerloops(ii)%ptr%Display("innerloops("//ToString(ii)//"): ", &
+                                        unitno=unitno)
+  END IF
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -302,5 +402,7 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 !                                                             Include Errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE Methods

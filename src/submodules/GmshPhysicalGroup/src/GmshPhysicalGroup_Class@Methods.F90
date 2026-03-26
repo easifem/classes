@@ -15,13 +15,15 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(GmshPoint_Class) Methods
+SUBMODULE(GmshPhysicalGroup_Class) Methods
 USE ExceptionHandler_Class, ONLY: e
 USE Display_Method, ONLY: Display
+USE ReallocateUtility, ONLY: Reallocate
+USE SafeSizeUtility, ONLY: SafeSize
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "GmshPoint_Class@Methods.F90"
+CHARACTER(*), PARAMETER :: modName = "GmshPhysicalGroup_Class@Methods.F90"
 #endif
 
 CONTAINS
@@ -35,16 +37,20 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
+INTEGER(I4B) :: tsize
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%x = x
-obj%y = y
-obj%z = z
+obj%dim = dim
+obj%name = name
 obj%indx = indx
-obj%meshSize = meshSize
+
+tsize = SIZE(tags)
+CALL Reallocate(obj%tags, tsize)
+obj%tags(1:tsize) = tags(1:tsize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -53,12 +59,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                                       SetX
+!                                                                    SetDim
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetX
+MODULE PROCEDURE obj_SetDim
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetX()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetDim()"
 #endif
 
 #ifdef DEBUG_VER
@@ -66,79 +72,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%x = x
+obj%dim = dim
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetX
-
-!----------------------------------------------------------------------------
-!                                                                       SetY
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetY
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetY()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%y = y
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetY
-
-!----------------------------------------------------------------------------
-!                                                                       SetZ
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetZ
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetZ()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%z = z
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetZ
-
-!----------------------------------------------------------------------------
-!                                                                SetMeshSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetMeshSize
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetMeshSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-obj%meshSize = meshSize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetMeshSize
+END PROCEDURE obj_SetDim
 
 !----------------------------------------------------------------------------
 !                                                                    SetIndx
@@ -163,12 +103,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetIndx
 
 !----------------------------------------------------------------------------
-!                                                                       GetX
+!                                                                    SetName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetX
+MODULE PROCEDURE obj_SetName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetX()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
 #endif
 
 #ifdef DEBUG_VER
@@ -176,21 +116,47 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%x
+obj%name = name
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetX
+END PROCEDURE obj_SetName
 
 !----------------------------------------------------------------------------
-!                                                                       GetY
+!                                                                    SetTags
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetY
+MODULE PROCEDURE obj_SetTags
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetY()"
+CHARACTER(*), PARAMETER :: myName = "obj_SetTags()"
+#endif
+
+INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(tags)
+CALL Reallocate(obj%tags, tsize)
+obj%tags(1:tsize) = tags(1:tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetTags
+
+!----------------------------------------------------------------------------
+!                                                                     GetDim
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDim
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDim()"
 #endif
 
 #ifdef DEBUG_VER
@@ -198,57 +164,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = obj%y
+ans = obj%dim
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetY
-
-!----------------------------------------------------------------------------
-!                                                                       GetZ
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetZ
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetZ()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = obj%z
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetZ
-
-!----------------------------------------------------------------------------
-!                                                                GetMeshSize
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetMeshSize
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMeshSize()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = obj%meshSize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetMeshSize
+END PROCEDURE obj_GetDim
 
 !----------------------------------------------------------------------------
 !                                                                    GetIndx
@@ -273,6 +195,57 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetIndx
 
 !----------------------------------------------------------------------------
+!                                                                    GetName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%name%Chars()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetName
+
+!----------------------------------------------------------------------------
+!                                                                    GetTags
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTags
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTags()"
+#endif
+
+INTEGER(I4B) :: tsize, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SafeSize(obj%tags)
+CALL Reallocate(ans, tsize)
+
+DO ii = 1, tsize
+  ans(ii) = obj%tags(ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTags
+
+!----------------------------------------------------------------------------
 !                                                                    Display
 !----------------------------------------------------------------------------
 
@@ -287,17 +260,48 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL Display(msg, unitno=unitno)
-CALL Display(obj%x, "x: ", unitno=unitno)
-CALL Display(obj%y, "y: ", unitno=unitno)
-CALL Display(obj%z, "z: ", unitno=unitno)
-CALL Display(obj%meshSize, "meshSize: ", unitno=unitno)
 CALL Display(obj%indx, "indx: ", unitno=unitno)
+CALL obj%name%Display("name: ", unitno=unitno)
+CALL Display(obj%dim, "dim: ", unitno=unitno)
+CALL Display(obj%tags, "tags: ", unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Display
+
+!----------------------------------------------------------------------------
+!                                                                        Copy
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Copy
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+#endif
+
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%dim = obj2%dim
+obj%indx = obj2%indx
+obj%name = obj2%name
+
+tsize = SafeSize(obj2%tags)
+CALL Reallocate(obj%tags, tsize)
+DO ii = 1, tsize
+  obj%tags(ii) = obj2%tags(ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Copy
 
 !----------------------------------------------------------------------------
 !                                                             Include Errors
