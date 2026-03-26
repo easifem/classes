@@ -252,6 +252,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/GmshPlaneSurface/CMakeLists.txt)
 # GmshPhysicalGroup
 include(${CMAKE_CURRENT_LIST_DIR}/GmshPhysicalGroup/CMakeLists.txt)
 
+# GmshEarthenDamMesh2
+include(${CMAKE_CURRENT_LIST_DIR}/GmshEarthenDamMesh2/CMakeLists.txt)
+
 # GmshStructuredMesh2
 include(${CMAKE_CURRENT_LIST_DIR}/GmshStructuredMesh2/CMakeLists.txt)
 

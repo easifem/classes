@@ -21,12 +21,16 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 USE FPL, ONLY: ParameterList_
-USE Gmsh_Class, ONLY: Gmsh_
 USE BaseType, ONLY: RealMatrix_
 USE BaseType, ONLY: IntVector_
 USE BaseType, ONLY: RealVector_
 USE Tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
+USE Gmsh_Class, ONLY: Gmsh_
+USE GmshPoint_Class, ONLY: GmshPointPointer_
+USE GmshLine_Class, ONLY: GmshLinePointer_
+USE GmshPlaneSurface_Class, ONLY: GmshPlaneSurfacePointer_
+USE GmshPhysicalGroup_Class, ONLY: GmshPhysicalGroupPointer_
 IMPLICIT NONE
 
 PRIVATE
@@ -43,10 +47,6 @@ PUBLIC :: TypeGmshEarthenDamMesh2Opt
 ! summary: options for GmshEarthenDamMesh2
 
 TYPE :: GmshEarthenDamMesh2Opt_
-  INTEGER(I4B) :: progression = math%one_i
-  INTEGER(I4B) :: bump = math%two_i
-  CHARACTER(11) :: progression_char = "Progression"
-  CHARACTER(4) :: bump_char = "Bump"
 END TYPE GmshEarthenDamMesh2Opt_
 
 !----------------------------------------------------------------------------
@@ -65,77 +65,29 @@ TYPE(GmshEarthenDamMesh2Opt_), PARAMETER :: TypeGmshEarthenDamMesh2Opt = &
 ! summary:  The data type to create structured mesh by using Gmsh
 
 TYPE :: GmshEarthenDamMesh2_
-  ! PRIVATE
-  LOGICAL(LGT) :: recombineAll = math%yes
+  PRIVATE
+  LOGICAL(LGT) :: recombineAll = math%no
   !! All surfaces will be recombine into quad or hexahedron
   TYPE(String) :: filename
   !! Name of the mesh file to be generated
-  TYPE(RealMatrix_) :: points(2)
-  !! points on axis 1, axis 2, axis 3
-  !! points(1) are points on axis 1
-  !! points(2) are points on axis 2
-  INTEGER(I4B) :: tPoints(2) = 0
-  !! Total points on axis 1 to define the region
-  !! Total points on axis 2 to define the region
-  REAL(DFP), ALLOCATABLE :: allPoints(:, :)
-  !! All the points
-  TYPE(IntVector_) :: transfinitePoints(3)
-  !! transfinitePoints on lines
-  !! transfinitePoints(1) is transfinitePoints on axis 1
-  !! transfinitePoints(2) is transfinitePoints on axis 2
-  TYPE(RealVector_) :: transfiniteCoeff(3)
-  !! coefficient for transfinite segments on axis
-  TYPE(IntVector_) :: transfiniteMeshType(3)
-  !! meshtype for transfinite segments on axis
-  INTEGER(I4B), ALLOCATABLE :: edge_tfp(:)
-  !! transfinitePoints for edges
-  REAL(DFP), ALLOCATABLE :: edge_coeff(:)
-  !! coeffiecient for transfinite points on edges
-  TYPE(String), ALLOCATABLE :: edge_meshType(:)
-  !! mesh type for transfinite curves
-  INTEGER(I4B), ALLOCATABLE :: edges(:, :)
-  !! The edges
-  INTEGER(I4B) :: tEdges1 = 0
-  !! Total edges parallel to axis 1
-  INTEGER(I4B) :: tEdges2 = 0
-  !! Total edges parallel to axis 2
-  INTEGER(I4B) :: tEdges = 0
-  !! Total number of edges = tEdges1+tEdges2
-  INTEGER(I4B), ALLOCATABLE :: curveLoops(:, :)
-  !! Surface loops for boxes, it means boxes in terms of
-  !! edges
-  INTEGER(I4B) :: tSurfaces = 0
-  !! Total number of surfaces
-  !! If there are no holes then tSurfaces equal to tVolumes
+  TYPE(GmshPointPointer_), ALLOCATABLE :: points(:)
+  !! points of dams
+  TYPE(GmshLinePointer_), ALLOCATABLE :: lines(:)
+  !! lines
+  TYPE(GmshPlaneSurfacePointer_), ALLOCATABLE :: surfaces(:)
+  !! plane surfaces
+  TYPE(GmshPhysicalGroupPointer_), ALLOCATABLE :: physicalGroups(:)
+  !! physical groups
 
 CONTAINS
   PRIVATE
 
-  !@ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
+  !@Methods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
-
-  !@GenerateMethods
+  !! Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Generate => obj_Generate
-  PROCEDURE, PUBLIC, PASS(obj) :: GeneratePoints => obj_GeneratePoints
-  PROCEDURE, PUBLIC, PASS(obj) :: GenerateCurves => obj_GenerateCurves
-  PROCEDURE, PUBLIC, PASS(obj) :: GenerateSurfaces => obj_GenerateSurfaces
-
-  !@IOMethods
+  !! Generate the model and the mesh
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
-
-  !@GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeNumber => obj_GetNodeNumber
-  !! Get the node number
-  PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeNumberOnAxis1 => &
-    obj_GetEdgeNumberOnAxis1
-  !! Get the edge number on axis1
-  PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeNumberOnAxis2 => &
-    obj_GetEdgeNumberOnAxis2
-  !! Get the edge number on axis2
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshTypeName => &
-    obj_GetMeshTypeName
-  !! get the meshtype name from integer
 
   !@TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
@@ -150,49 +102,17 @@ END TYPE GmshEarthenDamMesh2_
 !                                                 GmshEarthenDamMesh2Pointer_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-03-26
+! summary: Pointer to GmshEarthenDamMesh2_
+!
+!# GmshEarthenDamMesh2Pointer_
+!
+! Pointer to GmshEarthenDamMesh2.
+!
 TYPE :: GmshEarthenDamMesh2Pointer_
   CLASS(GmshEarthenDamMesh2_), POINTER :: ptr => NULL()
 END TYPE GmshEarthenDamMesh2Pointer_
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-04
-! summary:  Initiate the object
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate( &
-    obj, filename, pointsOnAxis1, transfinitePointsOnAxis1, &
-    pointsOnAxis2, transfinitePointsOnAxis2, recombineAll, &
-    meshTypeOnAxis1, meshTypeOnAxis2, coeffOnAxis1, coeffOnAxis2)
-    CLASS(GmshEarthenDamMesh2_), INTENT(INOUT) :: obj
-    !! Gmsh structured mesh
-    CHARACTER(*), INTENT(IN) :: filename
-    !! name of the mesh file to be generated
-    REAL(DFP), INTENT(IN) :: pointsOnAxis1(:, :)
-    !! points on axis 1
-    INTEGER(I4B), INTENT(IN) :: transfinitePointsOnAxis1(:)
-    !! transfinitePoints on axis 1, transfinitePointsOnAxis1(ii) denotes
-    !! the transfinite points on segament ii on axis1, the size of
-    !! this vector should be 1 less than the number of points on axis1
-    REAL(DFP), INTENT(IN) :: pointsOnAxis2(:, :)
-    !! points on axis 2
-    INTEGER(I4B), INTENT(IN) :: transfinitePointsOnAxis2(:)
-    !! transfinitePoints on axis 2, transfinitePointsOnAxis2(ii) denotes
-    !! the transfinite points on segament ii on axis2, the size of
-    !! this vector should be 1 less than the number of points on axis2
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: recombineAll
-    !! If true we combine triangle and tetrahedron into quad and hexahedron
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshTypeOnAxis1(:)
-    !! mesh type on each segment on axis 1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshTypeOnAxis2(:)
-    !! mesh type on each segment on axis 2
-    REAL(DFP), OPTIONAL, INTENT(IN) :: coeffOnAxis1(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: coeffOnAxis2(:)
-  END SUBROUTINE obj_Initiate
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -214,59 +134,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-03
-! summary:  Generate mesh
+! date: 2023-11-03
+! summary: Generate mesh
 
 INTERFACE
   MODULE SUBROUTINE obj_Generate(obj, gmsh)
     CLASS(GmshEarthenDamMesh2_), INTENT(inout) :: obj
     CLASS(Gmsh_), INTENT(INOUT) :: gmsh
   END SUBROUTINE obj_Generate
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             GeneratePoints@GenerateMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-04
-! summary:  Generate points
-
-INTERFACE
-  MODULE SUBROUTINE obj_GeneratePoints(obj, gmsh)
-    CLASS(GmshEarthenDamMesh2_), INTENT(INOUT) :: obj
-    CLASS(Gmsh_), INTENT(INOUT) :: gmsh
-  END SUBROUTINE obj_GeneratePoints
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GenerateCurves@GeneratreMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-04
-! summary:  Generate curves
-
-INTERFACE
-  MODULE SUBROUTINE obj_GenerateCurves(obj, gmsh)
-    CLASS(GmshEarthenDamMesh2_), INTENT(INOUT) :: obj
-    CLASS(Gmsh_), INTENT(INOUT) :: gmsh
-  END SUBROUTINE obj_GenerateCurves
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GenerateSurfaces@GenerateMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-04
-! summary:  Generate Surfaces
-
-INTERFACE
-  MODULE SUBROUTINE obj_GenerateSurfaces(obj, gmsh)
-    CLASS(GmshEarthenDamMesh2_), INTENT(INOUT) :: obj
-    CLASS(Gmsh_), INTENT(INOUT) :: gmsh
-  END SUBROUTINE obj_GenerateSurfaces
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -286,66 +161,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetMeshTypeName@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2026-03-19
-! summary: Get the mesh type name from integer code
-
-INTERFACE
-  MODULE FUNCTION obj_GetMeshTypeName(obj, meshType) RESULT(ans)
-    CLASS(GmshEarthenDamMesh2_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: meshType
-    CHARACTER(:), ALLOCATABLE :: ans
-  END FUNCTION obj_GetMeshTypeName
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetNodeNumber@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetNodeNumber(obj, i, j) RESULT(ans)
-    CLASS(GmshEarthenDamMesh2_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: i, j
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetNodeNumber
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                            GetEdgeNumberOnAxis1@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetEdgeNumberOnAxis1(obj, i, j) RESULT(ans)
-    CLASS(GmshEarthenDamMesh2_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: i, j
-    !! point number
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetEdgeNumberOnAxis1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             GetEdgeNumberOnAxis2@GetMethods
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE FUNCTION obj_GetEdgeNumberOnAxis2(obj, i, j) RESULT(ans)
-    CLASS(GmshEarthenDamMesh2_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: i, j
-    !! point number
-    INTEGER(I4B) :: ans
-  END FUNCTION obj_GetEdgeNumberOnAxis2
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-03-20
-! summary:         Import obj from toml table
+! summary: Import obj from toml table
 !
 !# ImportFromToml
 !
@@ -365,15 +186,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-13
-! summary:  Import data From toml file
+! summary: Import data From toml file
 !
 !# ImportFromToml
 !
 ! Initiate obj from toml file.
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
     CLASS(GmshEarthenDamMesh2_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the key
