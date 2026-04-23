@@ -57,9 +57,9 @@ LOGICAL(LGT) :: reset0
 
 IF (optionStr%LEN() .EQ. 0) RETURN
 
-reset0 = Input(default=.TRUE., option=.TRUE.)
+reset0 = Input(default=.TRUE., option=reset)
 
-IF (reset) THEN
+IF (reset0) THEN
   CALL optionStr%Split(tokens=obj%options, sep=";")
 ELSE
   tmpStr = ""
