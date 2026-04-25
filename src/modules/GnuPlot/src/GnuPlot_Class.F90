@@ -186,7 +186,6 @@ TYPE :: GnuPlot_
   TYPE(RealVectorPointer_), ALLOCATABLE :: xVecs(:), yVecs(:), zVecs(:)
 
 CONTAINS
-  PRIVATE
 
   !! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
