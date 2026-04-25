@@ -28,6 +28,8 @@ MODULE PROCEDURE obj_Initiate
 
 IF (obj%pltfile%IsOpen()) RETURN
 
+obj%isInitiated = .TRUE.
+
 IF (obj%showAnimation) THEN
   obj%frameIndex = obj%frameIndex + 1
 END IF
@@ -57,6 +59,8 @@ END PROCEDURE obj_Initiate
 ! TODO: fix mismatch of subroutine name
 MODULE PROCEDURE obj_Deallocate
 LOGICAL(LGT) :: finished
+
+IF (.NOT. obj%isInitiated) RETURN
 
 IF (obj%showAnimation) THEN
   CALL obj%pltfile%WRITE("pause "//tostring(obj%pauseSeconds))
@@ -89,6 +93,8 @@ END IF
 
 IF (obj%runAfterWrite) &
   CALL execute_command_line(obj%commandline//" "//obj%filename//".plt")
+
+obj%isInitiated = .FALSE.
 
 END PROCEDURE obj_Deallocate
 

@@ -142,6 +142,8 @@ TYPE :: GnuPlot_
 
   TYPE(PlotOpts_) :: opts
 
+  LOGICAL(LGT) :: isInitiated = .FALSE.
+
   LOGICAL(LGT) :: runAfterWrite = .TRUE.
 
   LOGICAL(LGT) :: pauseAfterDraw = .FALSE.
