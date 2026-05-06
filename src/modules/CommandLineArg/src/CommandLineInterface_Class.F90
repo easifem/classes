@@ -361,7 +361,9 @@ SUBROUTINE add_group(self, help, description, exclude, examples, group)
     CALL clasg_list_new(Ng)%set_examples(examples)
     DEALLOCATE (self%clasg)
     ALLOCATE (self%clasg(0:Ng))
-    self%clasg = clasg_list_new
+    DO gi = 0, Ng
+      self%clasg(gi) = clasg_list_new(gi)
+    END DO
     DEALLOCATE (clasg_list_new)
   END IF
 END SUBROUTINE add_group
