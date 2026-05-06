@@ -24,7 +24,7 @@ MODULE CommandLineInterface_Class
 USE FACE, ONLY: colorize
 USE CommandLineArg_Class, ONLY: CommandLineArg_, ACTION_STORE, ERROR_UNKNOWN
 USE CommandLineGroupArg_Class, ONLY: CommandLineGroupArg_, &
-  & STATUS_PRINT_H, STATUS_PRINT_V
+                                     STATUS_PRINT_H, STATUS_PRINT_V
 USE AbstractCommandLine_Class, ONLY: AbstractCommandLineArg_
 USE CommandLineArg_Utils
 USE PENF
@@ -76,7 +76,7 @@ TYPE, EXTENDS(AbstractCommandLineArg_) :: CommandLineInterface_
   !! Error trapping flag for unknown CLAs.
 CONTAINS
   ! public methods
-  PROCEDURE, PUBLIC :: Deallocate => free
+  PROCEDURE, PUBLIC :: DEALLOCATE => free
   !! Free dynamic memory.
   PROCEDURE, PUBLIC :: Initiate => init
   !! Initialize CLI.
@@ -192,7 +192,7 @@ CONTAINS
 ELEMENTAL SUBROUTINE free(self)
   !! Free dynamic memory.
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
-  INTEGER(I4P) :: g    !! Counter.
+  INTEGER(I4P) :: g !! Counter.
 
   ! object members
   CALL self%free_object
@@ -259,14 +259,14 @@ SUBROUTINE init(self, progname, version, help, description, license, &
   INTEGER(I4P) :: retrieval_status
   !! Retrieval status.
   !> main
-  CALL self%Deallocate()
+  CALL self%DEALLOCATE()
   IF (PRESENT(progname)) THEN
     self%progname = progname
   ELSE
     ! try to set the default progname to the 0th command line entry a-la unix $0
-    CALL get_command_ARGUMENT(0, length=invocation_length)
+    CALL GET_COMMAND_ARGUMENT(0, length=invocation_length)
     ALLOCATE (CHARACTER(len=invocation_length) :: prog_invocation)
-  CALL get_command_ARGUMENT(0, VALUE=prog_invocation, status=retrieval_status)
+  CALL GET_COMMAND_ARGUMENT(0, VALUE=prog_invocation, status=retrieval_status)
     IF (retrieval_status == 0) THEN
       self%progname = prog_invocation
     ELSE
@@ -530,11 +530,11 @@ END SUBROUTINE add
 
 SUBROUTINE check(self, pref, error)
   !! Check data consistency.
-  CLASS(CommandLineInterface_), INTENT(INOUT) :: self  !! CLI data.
-  CHARACTER(*), OPTIONAL, INTENT(IN) :: pref  !! Prefixing string.
+  CLASS(CommandLineInterface_), INTENT(INOUT) :: self !! CLI data.
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: pref !! Prefixing string.
   INTEGER(I4P), OPTIONAL, INTENT(OUT) :: error !! Error trapping flag.
-  INTEGER(I4P) :: g     !! Counter.
-  INTEGER(I4P) :: gg    !! Counter.
+  INTEGER(I4P) :: g !! Counter.
+  INTEGER(I4P) :: gg !! Counter.
 
   DO g = 0, SIZE(self%clasg, dim=1) - 1
     ! check group consistency
@@ -663,11 +663,11 @@ END FUNCTION is_called_group
 
 FUNCTION is_defined(self, switch, group)
   !! Check if a CLA has been defined.
-  CLASS(CommandLineInterface_), INTENT(in) :: self       !! CLI data.
-  CHARACTER(*), INTENT(in) :: switch     !! Switch name.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group      !! Name of group (command) of CLAs.
+  CLASS(CommandLineInterface_), INTENT(in) :: self !! CLI data.
+  CHARACTER(*), INTENT(in) :: switch !! Switch name.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLAs.
   LOGICAL :: is_defined !! Check if a CLA has been defined.
-  INTEGER(I4P) :: g          !! Counter.
+  INTEGER(I4P) :: g !! Counter.
 
   is_defined = .FALSE.
   IF (.NOT. PRESENT(group)) THEN
@@ -679,7 +679,7 @@ END FUNCTION is_defined
 
 ELEMENTAL FUNCTION is_parsed(self)
   !! Check if CLI has been parsed.
-  CLASS(CommandLineInterface_), INTENT(in) :: self      !! CLI data.
+  CLASS(CommandLineInterface_), INTENT(in) :: self !! CLI data.
   LOGICAL :: is_parsed !! Parsed status.
 
   is_parsed = self%is_parsed_
@@ -692,11 +692,11 @@ SUBROUTINE parse(self, pref, args, error)
   !!
   !! @note If the *args* argument is passed the command line arguments are taken from it and not from the actual program CLI
   !! invocations.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self    !! CLI data.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref    !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args    !! String containing command line arguments.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error   !! Error trapping flag.
-  INTEGER(I4P) :: g       !! Counter for CLAs group.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  INTEGER(I4P) :: g !! Counter for CLAs group.
   INTEGER(I4P), ALLOCATABLE :: ai(:, :) !! Counter for CLAs grouped.
 
   IF (PRESENT(error)) error = 0
@@ -843,13 +843,13 @@ END SUBROUTINE parse
   !! Get the argument indexes of CLAs groups defined parsing
   !! the actual passed CLAs.
 SUBROUTINE get_clasg_indexes(self, ai)
-  CLASS(CommandLineInterface_), INTENT(inout) :: self   !! CLI data.
-  INTEGER(I4P), ALLOCATABLE, INTENT(out) :: ai(:, :)!! CLAs grouped indexes.
-  INTEGER(I4P) :: Na     !! Number of command line arguments passed.
-  INTEGER(I4P) :: a      !! Counter for CLAs.
-  INTEGER(I4P) :: aa     !! Counter for CLAs.
-  INTEGER(I4P) :: g      !! Counter for CLAs group.
-  LOGICAL :: found  !! Flag for inquiring if a named group is found.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  INTEGER(I4P), ALLOCATABLE, INTENT(out) :: ai(:, :) !! CLAs grouped indexes.
+  INTEGER(I4P) :: Na !! Number of command line arguments passed.
+  INTEGER(I4P) :: a !! Counter for CLAs.
+  INTEGER(I4P) :: aa !! Counter for CLAs.
+  INTEGER(I4P) :: g !! Counter for CLAs group.
+  LOGICAL :: found !! Flag for inquiring if a named group is found.
 
   ALLOCATE (ai(0:SIZE(self%clasg, dim=1) - 1, 1:2))
   ai = 0
@@ -895,16 +895,16 @@ END SUBROUTINE get_clasg_indexes
 
 SUBROUTINE get_args_from_string(self, args, ai)
   !! Get CLAs from string.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self   !! CLI data.
-  CHARACTER(*), INTENT(in) :: args   !! String containing command line arguments.
-  INTEGER(I4P), ALLOCATABLE, INTENT(out) :: ai(:, :)!! CLAs grouped indexes.
-  CHARACTER(len=len_TRIM(args)) :: argsd  !! Dummy string containing command line arguments.
-  CHARACTER(len=len_TRIM(args)), ALLOCATABLE :: toks(:)!! CLAs tokenized.
-  INTEGER(I4P) :: Nt     !! Number of tokens.
-  INTEGER(I4P) :: Na     !! Number of command line arguments passed.
-  INTEGER(I4P) :: a      !! Counter for CLAs.
-  INTEGER(I4P) :: t      !! Counter for tokens.
-  INTEGER(I4P) :: c      !! Counter for characters inside tokens.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  CHARACTER(*), INTENT(in) :: args !! String containing command line arguments.
+  INTEGER(I4P), ALLOCATABLE, INTENT(out) :: ai(:, :) !! CLAs grouped indexes.
+  CHARACTER(len=LEN_TRIM(args)) :: argsd !! Dummy string containing command line arguments.
+  CHARACTER(len=LEN_TRIM(args)), ALLOCATABLE :: toks(:) !! CLAs tokenized.
+  INTEGER(I4P) :: Nt !! Number of tokens.
+  INTEGER(I4P) :: Na !! Number of command line arguments passed.
+  INTEGER(I4P) :: a !! Counter for CLAs.
+  INTEGER(I4P) :: t !! Counter for tokens.
+  INTEGER(I4P) :: c !! Counter for characters inside tokens.
 #ifndef __GFORTRAN__
   INTEGER(I4P) :: length !! Maxium lenght of arguments string.
 #endif
@@ -964,17 +964,17 @@ CONTAINS
     !! string is string'argument'with'spaces...
     !!
     !! @note The white spaces are reintroduce later.
-    CHARACTER(*), INTENT(in) :: argsin    !! Arguments string.
+    CHARACTER(*), INTENT(in) :: argsin !! Arguments string.
     CHARACTER(*), INTENT(in) :: delimiter !! Delimiter enclosing string argument.
-    CHARACTER(len=len_TRIM(argsin)) :: sanitized !! Arguments string sanitized.
-    CHARACTER(len=len_TRIM(argsin)), ALLOCATABLE :: tok(:)    !! Arguments string tokens.
-    INTEGER(I4P) :: Nt        !! Number of command line arguments passed.
-    INTEGER(I4P) :: t         !! Counter.
-    INTEGER(I4P) :: tt        !! Counter.
+    CHARACTER(len=LEN_TRIM(argsin)) :: sanitized !! Arguments string sanitized.
+    CHARACTER(len=LEN_TRIM(argsin)), ALLOCATABLE :: tok(:) !! Arguments string tokens.
+    INTEGER(I4P) :: Nt !! Number of command line arguments passed.
+    INTEGER(I4P) :: t !! Counter.
+    INTEGER(I4P) :: tt !! Counter.
 
     CALL tokenize(strin=TRIM(argsin), delimiter=delimiter, toks=tok, Nt=Nt)
     DO t = 2, Nt, 2
-      DO tt = 1, len_TRIM(ADJUSTL(tok(t)))
+      DO tt = 1, LEN_TRIM(ADJUSTL(tok(t)))
         IF (tok(t) (tt:tt) == ' ') tok(t) (tt:tt) = "'"
       END DO
     END DO
@@ -988,28 +988,28 @@ END SUBROUTINE get_args_from_string
 
 SUBROUTINE get_args_from_invocation(self, ai)
   !! Get CLAs from CLI invocation.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self    !! CLI data.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   INTEGER(I4P), ALLOCATABLE, INTENT(out) :: ai(:, :) !! CLAs grouped indexes.
-  INTEGER(I4P) :: Na      !! Number of command line arguments passed.
-  CHARACTER(max_val_len) :: switch  !! Switch name.
-  INTEGER(I4P) :: a       !! Counter for CLAs.
-  INTEGER(I4P) :: aa      !! Counter for CLAs.
+  INTEGER(I4P) :: Na !! Number of command line arguments passed.
+  CHARACTER(max_val_len) :: switch !! Switch name.
+  INTEGER(I4P) :: a !! Counter for CLAs.
+  INTEGER(I4P) :: aa !! Counter for CLAs.
 
   IF (ALLOCATED(self%args)) DEALLOCATE (self%args)
-  Na = command_argument_COUNT()
+  Na = COMMAND_ARGUMENT_COUNT()
   IF (Na > 0) THEN
 #ifdef __GFORTRAN__
     ALLOCATE (self%args(1:Na))
 #else
     aa = 0
     find_longest_arg: DO a = 1, Na
-      CALL get_command_ARGUMENT(a, switch)
-      aa = MAX(aa, len_TRIM(switch))
+      CALL GET_COMMAND_ARGUMENT(a, switch)
+      aa = MAX(aa, LEN_TRIM(switch))
     END DO find_longest_arg
     ALLOCATE (CHARACTER(aa) :: self%args(1:Na))
 #endif
     get_args: DO a = 1, Na
-      CALL get_command_ARGUMENT(a, switch)
+      CALL GET_COMMAND_ARGUMENT(a, switch)
       self%args(a) = TRIM(ADJUSTL(switch))
     END DO get_args
   END IF
@@ -1021,17 +1021,17 @@ SUBROUTINE get_cla(self, val, pref, args, group, switch, position, error)
   !! Get CLA (single) value from CLAs list parsed.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self     !! CLI data.
-  CLASS(*), INTENT(inout) :: val      !! CLA value.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args     !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group    !! Name of group (command) of CLA.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: switch   !! Switch name.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  CLASS(*), INTENT(inout) :: val !! CLA value.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error    !! Error trapping flag.
-  LOGICAL :: found    !! Flag for checking if CLA containing switch has been found.
-  INTEGER(I4P) :: g        !! Group counter.
-  INTEGER(I4P) :: a        !! Argument counter.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P) :: g !! Group counter.
+  INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
     CALL self%parse(pref=pref, args=args, error=error)
@@ -1079,17 +1079,17 @@ SUBROUTINE get_cla_list(self, val, pref, args, group, switch, position, error)
   !! Get CLA multiple values from CLAs list parsed.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self     !! CLI data.
-  CLASS(*), INTENT(inout) :: val(1:)  !! CLA values.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args     !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group    !! Name of group (command) of CLA.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: switch   !! Switch name.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  CLASS(*), INTENT(inout) :: val(1:) !! CLA values.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error    !! Error trapping flag.
-  LOGICAL :: found    !! Flag for checking if CLA containing switch has been found.
-  INTEGER(I4P) :: g        !! Group counter.
-  INTEGER(I4P) :: a        !! Argument counter.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P) :: g !! Group counter.
+  INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
     CALL self%parse(pref=pref, args=args, error=error)
@@ -1136,17 +1136,17 @@ SUBROUTINE get_cla_list_varying_R16P(self, val, pref, args, group, &
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self     !! CLI data.
-  REAL(R16P), ALLOCATABLE, INTENT(out) :: val(:)   !! CLA values.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args     !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group    !! Name of group (command) of CLA.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: switch   !! Switch name.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  REAL(R16P), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error    !! Error trapping flag.
-  LOGICAL :: found    !! Flag for checking if CLA containing switch has been found.
-  INTEGER(I4P) :: g        !! Group counter.
-  INTEGER(I4P) :: a        !! Argument counter.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P) :: g !! Group counter.
+  INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
     CALL self%parse(pref=pref, args=args, error=error)
@@ -1513,17 +1513,17 @@ END SUBROUTINE get_cla_list_varying_I4P
 
 SUBROUTINE get_cla_list_varying_I2P(self, val, pref, args, group, &
      & switch, position, error)
-  CLASS(CommandLineInterface_), INTENT(inout) :: self     !! CLI data.
-  INTEGER(I2P), ALLOCATABLE, INTENT(out) :: val(:)   !! CLA values.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args     !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group    !! Name of group (command) of CLA.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: switch   !! Switch name.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  INTEGER(I2P), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error    !! Error trapping flag.
-  LOGICAL :: found    !! Flag for checking if CLA containing switch has been found.
-  INTEGER(I4P) :: g        !! Group counter.
-  INTEGER(I4P) :: a        !! Argument counter.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P) :: g !! Group counter.
+  INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
     CALL self%parse(pref=pref, args=args, error=error)
@@ -1568,17 +1568,17 @@ END SUBROUTINE get_cla_list_varying_I2P
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self     !! CLI data.
-  INTEGER(I1P), ALLOCATABLE, INTENT(out) :: val(:)   !! CLA values.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args     !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group    !! Name of group (command) of CLA.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: switch   !! Switch name.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  INTEGER(I1P), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error    !! Error trapping flag.
-  LOGICAL :: found    !! Flag for checking if CLA containing switch has been found.
-  INTEGER(I4P) :: g        !! Group counter.
-  INTEGER(I4P) :: a        !! Argument counter.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P) :: g !! Group counter.
+  INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
     CALL self%parse(pref=pref, args=args, error=error)
@@ -1623,17 +1623,17 @@ END SUBROUTINE get_cla_list_varying_I1P
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self     !! CLI data.
-  LOGICAL, ALLOCATABLE, INTENT(out) :: val(:)   !! CLA values.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args     !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group    !! Name of group (command) of CLA.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: switch   !! Switch name.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  LOGICAL, ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error    !! Error trapping flag.
-  LOGICAL :: found    !! Flag for checking if CLA containing switch has been found.
-  INTEGER(I4P) :: g        !! Group counter.
-  INTEGER(I4P) :: a        !! Argument counter.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P) :: g !! Group counter.
+  INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
     CALL self%parse(pref=pref, args=args, error=error)
@@ -1678,17 +1678,17 @@ END SUBROUTINE get_cla_list_varying_logical
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
-  CLASS(CommandLineInterface_), INTENT(inout) :: self     !! CLI data.
-  CHARACTER(*), ALLOCATABLE, INTENT(out) :: val(:)   !! CLA values.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args     !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group    !! Name of group (command) of CLA.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: switch   !! Switch name.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
+  CHARACTER(*), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error    !! Error trapping flag.
-  LOGICAL :: found    !! Flag for checking if CLA containing switch has been found.
-  INTEGER(I4P) :: g        !! Group counter.
-  INTEGER(I4P) :: a        !! Argument counter.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P) :: g !! Group counter.
+  INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
     CALL self%parse(pref=pref, args=args, error=error)
@@ -1729,21 +1729,21 @@ END SUBROUTINE get_cla_list_varying_char
 
   FUNCTION usage(self, g, pref, no_header, no_examples, no_epilog, markdown) RESULT(usaged)
   !! Print correct usage of CLI.
-  CLASS(CommandLineInterface_), INTENT(in) :: self             !! CLI data.
-  INTEGER(I4P), INTENT(in) :: g                !! Group index.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref             !! Prefixing string.
-  LOGICAL, OPTIONAL, INTENT(in) :: no_header        !! Avoid insert header to usage.
-  LOGICAL, OPTIONAL, INTENT(in) :: no_examples      !! Avoid insert examples to usage.
-  LOGICAL, OPTIONAL, INTENT(in) :: no_epilog        !! Avoid insert epilogue to usage.
-  LOGICAL, OPTIONAL, INTENT(in) :: markdown         !! Format things with markdown
-  CHARACTER(len=:), ALLOCATABLE :: prefd            !! Prefixing string.
-  CHARACTER(len=:), ALLOCATABLE :: usaged           !! Usage string.
-  LOGICAL :: no_headerd       !! Avoid insert header to usage.
-  LOGICAL :: no_examplesd     !! Avoid insert examples to usage.
-  LOGICAL :: no_epilogd       !! Avoid insert epilogue to usage.
-  LOGICAL :: markdownd        !! Format for markdown.
+  CLASS(CommandLineInterface_), INTENT(in) :: self !! CLI data.
+  INTEGER(I4P), INTENT(in) :: g !! Group index.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
+  LOGICAL, OPTIONAL, INTENT(in) :: no_header !! Avoid insert header to usage.
+  LOGICAL, OPTIONAL, INTENT(in) :: no_examples !! Avoid insert examples to usage.
+  LOGICAL, OPTIONAL, INTENT(in) :: no_epilog !! Avoid insert epilogue to usage.
+  LOGICAL, OPTIONAL, INTENT(in) :: markdown !! Format things with markdown
+  CHARACTER(len=:), ALLOCATABLE :: prefd !! Prefixing string.
+  CHARACTER(len=:), ALLOCATABLE :: usaged !! Usage string.
+  LOGICAL :: no_headerd !! Avoid insert header to usage.
+  LOGICAL :: no_examplesd !! Avoid insert examples to usage.
+  LOGICAL :: no_epilogd !! Avoid insert epilogue to usage.
+  LOGICAL :: markdownd !! Format for markdown.
   LOGICAL :: grouped_examples !! Will show examples of group usage.
-  INTEGER(I4P) :: gi               !! Counter.
+  INTEGER(I4P) :: gi !! Counter.
 
   no_headerd = .FALSE.; IF (PRESENT(no_header)) no_headerd = no_header
   no_examplesd = .FALSE.; IF (PRESENT(no_examples)) no_examplesd = no_examples
@@ -1766,9 +1766,9 @@ END SUBROUTINE get_cla_list_varying_char
     END IF
     IF (self%clasg(0)%Na>0) usaged = usaged//new_LINE('a')//self%clasg(0)%usage(pref=prefd,no_header=.TRUE.,markdown=markdownd)
     IF (SIZE(self%clasg, dim=1) > 1) THEN
-      usaged = usaged//new_LINE('a')//new_LINE('a')//prefd//'Commands:'
+      usaged = usaged//NEW_LINE('a')//NEW_LINE('a')//prefd//'Commands:'
       DO gi = 1, SIZE(self%clasg, dim=1) - 1
-        usaged = usaged//new_LINE('a')//prefd//'  '//self%clasg(gi)%group
+        usaged = usaged//NEW_LINE('a')//prefd//'  '//self%clasg(gi)%group
         usaged = usaged//new_LINE('a')//prefd//REPEAT(' ',10)//self%clasg(gi)%description
       END DO
       usaged = usaged//new_LINE('a')//new_LINE('a')//prefd//'For more detailed commands help try:'
@@ -1785,31 +1785,31 @@ END SUBROUTINE get_cla_list_varying_char
 CONTAINS
   FUNCTION print_examples(prefd, examples) RESULT(exampled)
     !! Print examples of the correct usage.
-    CHARACTER(*), INTENT(in) :: prefd          !! Prefixing string.
-    CHARACTER(*), INTENT(in) :: examples(1:)   !! Examples to be printed.
-    CHARACTER(len=:), ALLOCATABLE :: exampled       !! Examples string.
-    INTEGER(I4P) :: e              !! Counter.
+    CHARACTER(*), INTENT(in) :: prefd !! Prefixing string.
+    CHARACTER(*), INTENT(in) :: examples(1:) !! Examples to be printed.
+    CHARACTER(len=:), ALLOCATABLE :: exampled !! Examples string.
+    INTEGER(I4P) :: e !! Counter.
 
-    exampled = new_LINE('a')//new_LINE('a')//prefd//'Examples:'
+    exampled = NEW_LINE('a')//NEW_LINE('a')//prefd//'Examples:'
     DO e = 1, SIZE(examples, dim=1)
-      exampled = exampled//new_LINE('a')//prefd//'   '//TRIM(examples(e))
+      exampled = exampled//NEW_LINE('a')//prefd//'   '//TRIM(examples(e))
     END DO
   END FUNCTION print_examples
 END FUNCTION usage
 
 FUNCTION signature(self, bash_completion)
   !! Get signature.
-  CLASS(CommandLineInterface_), INTENT(in) :: self             !! CLI data.
-  LOGICAL, OPTIONAL, INTENT(in) :: bash_completion  !! Return the signature for bash completion.
+  CLASS(CommandLineInterface_), INTENT(in) :: self !! CLI data.
+  LOGICAL, OPTIONAL, INTENT(in) :: bash_completion !! Return the signature for bash completion.
   LOGICAL :: bash_completion_ !! Return the signature for bash completion, local variable.
-  CHARACTER(len=:), ALLOCATABLE :: signature        !< Signature.
-  INTEGER(I4P) :: g                !< Counter.
+  CHARACTER(len=:), ALLOCATABLE :: signature !< Signature.
+  INTEGER(I4P) :: g !< Counter.
 
   bash_completion_ = .FALSE.; IF (PRESENT(bash_completion)) bash_completion_ = bash_completion
 
   IF (bash_completion_) THEN
-    signature = signature//new_LINE('a')//'    COMPREPLY=( )'
-  signature = signature//new_LINE('a')//'    COMPREPLY+=( $( compgen -W "'// &
+    signature = signature//NEW_LINE('a')//'    COMPREPLY=( )'
+  signature = signature//NEW_LINE('a')//'    COMPREPLY+=( $( compgen -W "'// &
                 self%clasg(0)%signature(bash_completion=bash_completion, plain=.TRUE.)//'" -- $cur ) )'
     IF (SIZE(self%clasg, dim=1) > 1) THEN
       DO g = 1, SIZE(self%clasg, dim=1) - 1
@@ -1830,31 +1830,31 @@ END FUNCTION signature
 
 SUBROUTINE print_usage(self, pref)
   !< Print correct usage.
-  CLASS(CommandLineInterface_), INTENT(in) :: self  !< CLI data.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
+  CLASS(CommandLineInterface_), INTENT(in) :: self !< CLI data.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !< Prefixing string.
 
   WRITE (self%usage_lun, '(A)') self%usage(pref=pref, g=0)
 END SUBROUTINE print_usage
 
 SUBROUTINE save_bash_completion(self, bash_file, error)
   !< Save bash completion script (for named CLAs only).
-  CLASS(CommandLineInterface_), INTENT(in) :: self      !< CLI data.
+  CLASS(CommandLineInterface_), INTENT(in) :: self !< CLI data.
   CHARACTER(*), INTENT(in) :: bash_file !< Output file name of bash completion script.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error     !< Error trapping flag.
-  CHARACTER(len=:), ALLOCATABLE :: script    !< Script text.
-  INTEGER(I4P) :: g         !< CLAs groups counter.
-  INTEGER(I4P) :: u         !< Unit file handler.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !< Error trapping flag.
+  CHARACTER(len=:), ALLOCATABLE :: script !< Script text.
+  INTEGER(I4P) :: g !< CLAs groups counter.
+  INTEGER(I4P) :: u !< Unit file handler.
 
   script = '#/usr/bin/env bash'
   IF (SIZE(self%clasg, dim=1) > 1) THEN
-    script = script//new_LINE('a')//'_completion()'
-    script = script//new_LINE('a')//'{'
-    script = script//new_LINE('a')//'  cur=${COMP_WORDS[COMP_CWORD]}'
-    script = script//new_LINE('a')//'  prev=${COMP_WORDS[COMP_CWORD - 1]}'
+    script = script//NEW_LINE('a')//'_completion()'
+    script = script//NEW_LINE('a')//'{'
+    script = script//NEW_LINE('a')//'  cur=${COMP_WORDS[COMP_CWORD]}'
+    script = script//NEW_LINE('a')//'  prev=${COMP_WORDS[COMP_CWORD - 1]}'
     ! script = script//new_line('a')//'  if [[ $prev == "--help" || $prev == "-h" || $prev == "--version" || $prev == "-v" ]] ; then'
     ! script = script//new_line('a')//'    COMPREPLY=()'
     ! script = script//new_line('a')//'  else'
-    script = script//new_LINE('a')//'  groups=('
+    script = script//NEW_LINE('a')//'  groups=('
     DO g = 1, SIZE(self%clasg, dim=1) - 1
       script = script//' "'//self%clasg(g)%group//'"'
     END DO
@@ -1865,11 +1865,11 @@ SUBROUTINE save_bash_completion(self, bash_file, error)
     !   script = script//new_line('a')//'    '//self%clasg(g)%group//'_clas=('//&
     !            self%clasg(g)%signature(bash_completion=.true., plain=.true.)//' )'
     ! enddo
-    script = script//new_LINE('a')//'  for g in ${groups[@]}; do'
-    script = script//new_LINE('a')//'    if [ "$prev" == "$g" ] ; then'
-    script = script//new_LINE('a')//'      group=$prev '
-    script = script//new_LINE('a')//'    fi'
-    script = script//new_LINE('a')//'  done'
+    script = script//NEW_LINE('a')//'  for g in ${groups[@]}; do'
+    script = script//NEW_LINE('a')//'    if [ "$prev" == "$g" ] ; then'
+    script = script//NEW_LINE('a')//'      group=$prev '
+    script = script//NEW_LINE('a')//'    fi'
+    script = script//NEW_LINE('a')//'  done'
     ! script = script//new_line('a')//'  fi'
     script = script//new_LINE('a')//'  if [ "$group" == "'//self%clasg(1)%group//'" ] ; then'
     script = script//self%clasg(1)%signature(bash_completion=.TRUE.)
@@ -1877,11 +1877,11 @@ SUBROUTINE save_bash_completion(self, bash_file, error)
       script = script//new_LINE('a')//'  elif [ "$group" == "'//self%clasg(g)%group//'" ] ; then'
       script = script//self%clasg(g)%signature(bash_completion=.TRUE.)
     END DO
-    script = script//new_LINE('a')//'  else'
+    script = script//NEW_LINE('a')//'  else'
     script = script//'    '//self%signature(bash_completion=.TRUE.)
-    script = script//new_LINE('a')//'  fi'
-    script = script//new_LINE('a')//'  return 0'
-    script = script//new_LINE('a')//'}'
+    script = script//NEW_LINE('a')//'  fi'
+    script = script//NEW_LINE('a')//'  return 0'
+    script = script//NEW_LINE('a')//'}'
       script = script//new_LINE('a')//'complete -F _completion '//basename(self%progname)
   ELSE
     script = script//new_LINE('a')//'complete -W "'//self%signature(bash_completion=.TRUE.)//'" '//basename(self%progname)
@@ -1897,29 +1897,29 @@ CONTAINS
   PURE FUNCTION basename(progname)
     CHARACTER(len=*), INTENT(in) :: progname !< Program name.
     CHARACTER(len=:), ALLOCATABLE :: basename !< Program name without full PATH.
-    INTEGER(I4P) :: pos      !< Counter.
+    INTEGER(I4P) :: pos !< Counter.
 
     basename = progname
     pos = INDEX(basename, '/', back=.TRUE.)
     IF (pos > 0) THEN
       basename = basename(pos + 1:)
     ELSE
-      pos = INDEX(basename, '\', back=.true.)
-      if (pos > 0) basename = basename(pos + 1:)
-    end if
-  end function basename
-end subroutine save_bash_completion
+      pos = INDEX(basename, '\', back=.TRUE.)
+      IF (pos > 0) basename = basename(pos + 1:)
+    END IF
+  END FUNCTION basename
+END SUBROUTINE save_bash_completion
 
-subroutine save_man_page(self, man_file, error)
+SUBROUTINE save_man_page(self, man_file, error)
   !< Save CLI usage as man page.
-  class(CommandLineInterface_), intent(in) :: self               !< CLI data.
-  character(*), intent(in) :: man_file           !< Output file name for saving man page.
-  integer(I4P), optional, intent(out) :: error              !< Error trapping flag.
-  character(len=:), allocatable :: man                !< Man page.
-  integer(I4P) :: idate(1:8)         !< Integer array for handling the date.
-  integer(I4P) :: e                  !< Counter.
-  integer(I4P) :: u                  !< Unit file handler.
-  character(*), parameter :: month(12) = ["Jan", &
+  CLASS(CommandLineInterface_), INTENT(in) :: self !< CLI data.
+  CHARACTER(*), INTENT(in) :: man_file !< Output file name for saving man page.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !< Error trapping flag.
+  CHARACTER(len=:), ALLOCATABLE :: man !< Man page.
+  INTEGER(I4P) :: idate(1:8) !< Integer array for handling the date.
+  INTEGER(I4P) :: e !< Counter.
+  INTEGER(I4P) :: u !< Unit file handler.
+  CHARACTER(*), PARAMETER :: month(12) = ["Jan", &
                                           "Feb", &
                                           "Mar", &
                                           "Apr", &
@@ -1930,53 +1930,53 @@ subroutine save_man_page(self, man_file, error)
                                           "Sep", &
                                           "Oct", &
                                           "Nov", &
-                                          "Dec"]  !< Months list.
+                                          "Dec"] !< Months list.
 
-  call date_and_time(values=idate)
+  CALL DATE_AND_TIME(values=idate)
   man = '.TH '//self%progname//' "1" "'//month(idate(2))//' '//trim(adjustl(strz(idate(1),4)))//'" "version '//self%version//&
         '" "'//self%progname//' Manual"'
-  man = man//new_line('a')//'.SH NAME'
+  man = man//NEW_LINE('a')//'.SH NAME'
   man = man//new_line('a')//self%progname//' - manual page for '//self%progname//' version '//self%version
-  man = man//new_line('a')//'.SH SYNOPSIS'
+  man = man//NEW_LINE('a')//'.SH SYNOPSIS'
   man = man//new_line('a')//'.B '//self%progname//new_line('a')//trim(adjustl(self%signature()))
   if (self%description /= '') man = man//new_line('a')//'.SH DESCRIPTION'//new_line('a')//self%description
-  if (self%clasg(0)%Na > 0) then
-    man = man//new_line('a')//'.SH OPTIONS'
+  IF (self%clasg(0)%Na > 0) THEN
+    man = man//NEW_LINE('a')//'.SH OPTIONS'
     man = man//new_line('a')//self%usage(no_header=.true.,no_examples=.true.,no_epilog=.true.,g=0)
-  end if
-  if (allocated(self%examples)) then
-    man = man//new_line('a')//'.SH EXAMPLES'
-    man = man//new_line('a')//'.PP'
-    man = man//new_line('a')//'.nf'
-    man = man//new_line('a')//'.RS'
-    do e = 1, size(self%examples, dim=1)
-      man = man//new_line('a')//trim(self%examples(e))
-    end do
-    man = man//new_line('a')//'.RE'
-    man = man//new_line('a')//'.fi'
-    man = man//new_line('a')//'.PP'
-  end if
+  END IF
+  IF (ALLOCATED(self%examples)) THEN
+    man = man//NEW_LINE('a')//'.SH EXAMPLES'
+    man = man//NEW_LINE('a')//'.PP'
+    man = man//NEW_LINE('a')//'.nf'
+    man = man//NEW_LINE('a')//'.RS'
+    DO e = 1, SIZE(self%examples, dim=1)
+      man = man//NEW_LINE('a')//TRIM(self%examples(e))
+    END DO
+    man = man//NEW_LINE('a')//'.RE'
+    man = man//NEW_LINE('a')//'.fi'
+    man = man//NEW_LINE('a')//'.PP'
+  END IF
   if (self%authors /= '') man = man//new_line('a')//'.SH AUTHOR'//new_line('a')//self%authors
   if (self%license /= '') man = man//new_line('a')//'.SH COPYRIGHT'//new_line('a')//self%license
-  open (newunit=u, file=trim(adjustl(man_file)))
-  if (present(error)) then
-    write (u, "(A)", iostat=error) man
-  else
-    write (u, "(A)") man
-  end if
-  close (u)
-end subroutine save_man_page
+  OPEN (newunit=u, file=TRIM(ADJUSTL(man_file)))
+  IF (PRESENT(error)) THEN
+    WRITE (u, "(A)", iostat=error) man
+  ELSE
+    WRITE (u, "(A)") man
+  END IF
+  CLOSE (u)
+END SUBROUTINE save_man_page
 
-subroutine save_usage_to_markdown(self, markdown_file, error)
+SUBROUTINE save_usage_to_markdown(self, markdown_file, error)
   !< Save CLI usage as markdown.
-  class(CommandLineInterface_), intent(in) :: self               !< CLI data.
-  character(*), intent(in) :: markdown_file      !< Output file name for saving man page.
-  integer(I4P), optional, intent(out) :: error              !< Error trapping flag.
-  character(len=:), allocatable :: man                !< Man page.
-  integer(I4P) :: idate(1:8)         !< Integer array for handling the date.
-  integer(I4P) :: e                  !< Counter.
-  integer(I4P) :: u                  !< Unit file handler.
-  character(*), parameter :: month(12) = ["Jan", &
+  CLASS(CommandLineInterface_), INTENT(in) :: self !< CLI data.
+  CHARACTER(*), INTENT(in) :: markdown_file !< Output file name for saving man page.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !< Error trapping flag.
+  CHARACTER(len=:), ALLOCATABLE :: man !< Man page.
+  INTEGER(I4P) :: idate(1:8) !< Integer array for handling the date.
+  INTEGER(I4P) :: e !< Counter.
+  INTEGER(I4P) :: u !< Unit file handler.
+  CHARACTER(*), PARAMETER :: month(12) = ["Jan", &
                                           "Feb", &
                                           "Mar", &
                                           "Apr", &
@@ -1987,50 +1987,50 @@ subroutine save_usage_to_markdown(self, markdown_file, error)
                                           "Sep", &
                                           "Oct", &
                                           "Nov", &
-                                          "Dec"]  !< Months list.
+                                          "Dec"] !< Months list.
 
-  call date_and_time(values=idate)
-  man = '# '//self%progname//new_line('a')
+  CALL DATE_AND_TIME(values=idate)
+  man = '# '//self%progname//NEW_LINE('a')
   man = man//new_line('a')//'Manual page for `'//self%progname//'` version '//self%version//new_line('a')
   man = man//new_line('a')//'`'//self%progname//' '//trim(adjustl(self%signature()))//'`'//new_line('a')
   man = man//new_line('a')//month(idate(2))//' '//trim(adjustl(strz(idate(1),4)))//new_line('a')
   if (self%description /= '') man = man//new_line('a')//'### Short description'//new_line('a')//new_line('a')//self%description
-  if (self%clasg(0)%Na > 0) then
-    man = man//new_line('a')//new_line('a')//'### Command line options:'
+  IF (self%clasg(0)%Na > 0) THEN
+    man = man//NEW_LINE('a')//NEW_LINE('a')//'### Command line options:'
     man = man//self%usage(no_header=.true.,no_examples=.true.,no_epilog=.true.,g=0,markdown=.true.)
-  end if
-  if (allocated(self%examples)) then
-    man = man//new_line('a')//new_line('a')//'### Examples'
-    do e = 1, size(self%examples, dim=1)
-      man = man//new_line('a')
-      man = man//new_line('a')//'`'//trim(self%examples(e))//'` '
-    end do
-  end if
-  open (newunit=u, file=trim(adjustl(markdown_file)))
-  if (present(error)) then
-    write (u, "(A)", iostat=error) man
-  else
-    write (u, "(A)") man
-  end if
-  close (u)
-end subroutine save_usage_to_markdown
+  END IF
+  IF (ALLOCATED(self%examples)) THEN
+    man = man//NEW_LINE('a')//NEW_LINE('a')//'### Examples'
+    DO e = 1, SIZE(self%examples, dim=1)
+      man = man//NEW_LINE('a')
+      man = man//NEW_LINE('a')//'`'//TRIM(self%examples(e))//'` '
+    END DO
+  END IF
+  OPEN (newunit=u, file=TRIM(ADJUSTL(markdown_file)))
+  IF (PRESENT(error)) THEN
+    WRITE (u, "(A)", iostat=error) man
+  ELSE
+    WRITE (u, "(A)") man
+  END IF
+  CLOSE (u)
+END SUBROUTINE save_usage_to_markdown
 
 ! private methods
-subroutine errored(self, error, pref, group, switch)
+SUBROUTINE errored(self, error, pref, group, switch)
   !< Trig error occurrence and print meaningful message.
-  class(CommandLineInterface_), intent(inout) :: self   !< Object data.
-  integer(I4P), intent(in) :: error  !< Error occurred.
-  character(*), optional, intent(in) :: pref   !< Prefixing string.
-  character(*), optional, intent(in) :: group  !< Group name.
-  character(*), optional, intent(in) :: switch !< CLA switch name.
-  character(len=:), allocatable :: prefd  !< Prefixing string.
+  CLASS(CommandLineInterface_), INTENT(inout) :: self !< Object data.
+  INTEGER(I4P), INTENT(in) :: error !< Error occurred.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: pref !< Prefixing string.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group !< Group name.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: switch !< CLA switch name.
+  CHARACTER(len=:), ALLOCATABLE :: prefd !< Prefixing string.
 
   self%error = error
-  if (self%error /= 0) then
-    prefd = ''; if (present(pref)) prefd = pref
+  IF (self%error /= 0) THEN
+    prefd = ''; IF (PRESENT(pref)) prefd = pref
     prefd = prefd//self%progname//': '//colorize('error', color_fg=self%error_color, style=self%error_style)
-    select case (self%error)
-    case (ERROR_MISSING_CLA)
+    SELECT CASE (self%error)
+    CASE (ERROR_MISSING_CLA)
       self%error_message = prefd//': there is no option "'//trim(adjustl(switch))//'"!'
     CASE (ERROR_MISSING_SELECTION_CLA)
       self%error_message = prefd//': to get an option value one of switch "name" or "position" must be provided!'
@@ -2050,10 +2050,30 @@ ELEMENTAL SUBROUTINE cli_assign_cli(lhs, rhs)
   CLASS(CommandLineInterface_), INTENT(inout) :: lhs !< Left hand side.
   TYPE(CommandLineInterface_), INTENT(in) :: rhs !< Right hand side.
 
+  ! Internal variables
+  INTEGER(I4P) :: tsize, ii, tsize1
+
   ! object members
   CALL lhs%assign_object(rhs)
   ! CommandLineInterface_ members
-  IF (ALLOCATED(rhs%clasg)) lhs%clasg = rhs%clasg
+  IF (ALLOCATED(rhs%clasg)) THEN
+    tsize = SIZE(rhs%clasg)
+    IF (.NOT. ALLOCATED(lhs%clasg)) THEN
+      ALLOCATE (lhs%clasg(tsize))
+    ELSE
+      tsize1 = SIZE(lhs%clasg)
+      IF (tsize1 .LT. tsize) THEN
+        DEALLOCATE (lhs%clasg)
+        ALLOCATE (lhs%clasg(tsize))
+      END IF
+    END IF
+
+    DO ii = 1, tsize
+      lhs%clasg(ii) = rhs%clasg(ii)
+    END DO
+
+  END IF
+
   IF (ALLOCATED(rhs%examples)) lhs%examples = rhs%examples
   lhs%disable_hv = rhs%disable_hv
 END SUBROUTINE cli_assign_cli
@@ -2061,6 +2081,6 @@ END SUBROUTINE cli_assign_cli
 ELEMENTAL SUBROUTINE finalize(self)
   !< Free dynamic memory when finalizing.
   TYPE(CommandLineInterface_), INTENT(inout) :: self !< CLI data.
-  CALL self%Deallocate()
+  CALL self%DEALLOCATE()
 END SUBROUTINE finalize
 ENDMODULE CommandLineInterface_Class
