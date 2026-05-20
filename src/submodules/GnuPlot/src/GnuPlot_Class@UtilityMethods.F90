@@ -24,82 +24,88 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE GetAxesSetting
-CHARACTER(*), PARAMETER :: myName = 'GetAxesSetting()'
-CHARACTER(*), PARAMETER :: prefix = ' axes '
-LOGICAL(LGT) :: isok
-CHARACTER(:), ALLOCATABLE :: astr
+SUBROUTINE Help_GetAxesSetting(axes, axesStatement)
+  CHARACTER(*), PARAMETER :: myName = "Help_GetAxesSetting"
+  CHARACTER(*), INTENT(IN) :: axes
+  TYPE(string), INTENT(OUT) :: axesStatement
+  CHARACTER(*), PARAMETER :: prefix = ' axes '
+  LOGICAL(LGT) :: isok
 
-astr = LowerCase(TRIM(ADJUSTL(axes_set)))
+  axesStatement = ""
 
-isok = LEN(astr) .EQ. 0
-IF (isok) THEN
-  axesSetting = ''
-  RETURN
-END IF
+  isok = LEN(axes) .GT. 0
+  IF (.NOT. isok) RETURN
 
-SELECT CASE (astr)
-CASE ('x1y1')
-  axesSetting = prefix//'x1y1'
-CASE ('x1y2')
-  axesSetting = prefix//'x1y2'
-CASE ('x2y1')
-  axesSetting = prefix//'x2y1'
-CASE ('x2y2')
-  axesSetting = prefix//'x2y2'
-CASE default
-  ! wrong strings
-  CALL e%raiseWarning(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: wrong axes set is sent. &
-    &    axes set can be on of: x1y1, x1y2, x2y1, x2y2')
-  axesSetting = ''
-  RETURN
-END SELECT
+  SELECT CASE (LowerCase(TRIM(ADJUSTL(axes))))
+  CASE ('x1y1')
+    axesStatement = prefix//'x1y1'
+  CASE ('x1y2')
+    axesStatement = prefix//'x1y2'
+  CASE ('x2y1')
+    axesStatement = prefix//'x2y1'
+  CASE ('x2y2')
+    axesStatement = prefix//'x2y2'
+  CASE default
+    CALL e%raiseWarning(modName//'::'//myName//' - '// &
+      & '[INTERNAL ERROR] :: wrong axes set is sent. &
+      &    axes set can be on of: x1y1, x1y2, x2y1, x2y2')
+  END SELECT
 
-END PROCEDURE GetAxesSetting
+END SUBROUTINE Help_GetAxesSetting
 
 !----------------------------------------------------------------------------
-!                                                         GetPlotCommand
+!
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE GetPlotCommand
-CHARACTER(10) :: axes_setting
-LOGICAL(LGT) :: acase
-TYPE(String) :: dataBlock0
-!check the axes set
-axes_setting = ""
-IF (PRESENT(axes_set)) &
-  CALL GetAxesSetting(axes_set, axes_setting)
+SUBROUTINE Help_GetUsingStatement(obj, usingStatement)
+  TYPE(GnuPlotPlotOpts_), INTENT(INOUT) :: obj
+  TYPE(String), INTENT(INOUT) :: usingStatement
 
-acase = PRESENT(lspec)
+  IF (.NOT. obj%scaleData) RETURN
+
+  usingStatement = " using "
+  usingStatement = usingStatement//"($1*"// &
+                   obj%dataScale(1)//"):"
+  usingStatement = usingStatement//"($2*"// &
+                   obj%dataScale(2)//") "
+
+END SUBROUTINE Help_GetUsingStatement
+
+!----------------------------------------------------------------------------
+!                                                         obj_SetPlotCommand
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetPlotCommand
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetPlotCommand()"
+#endif
+TYPE(String) :: dataBlock0, lspec0, &
+                usingStatement, axesStatement
+
+axesStatement = ""
+IF (PRESENT(axes)) CALL Help_GetAxesSetting(axes, axesStatement)
+
+usingStatement = " "
+CALL Help_GetUsingStatement(obj%opts%plotOpts, usingStatement)
+
 dataBlock0 = Input(default='"-"', option=dataBlockName)
+
+lspec0 = Input(default="", option=lspec)
 
 SELECT CASE (order)
 CASE (1)
 
-  IF (acase) THEN
-
-    plotCommand = 'plot '//dataBlock0//' '//TRIM(lspec)//axes_setting
-
-    RETURN
-  END IF
-
-  plotCommand = 'plot '//dataBlock0//' '//axes_setting
+  obj%plotCommand(1) = 'plot '//dataBlock0//usingStatement// &
+                       lspec0//axesStatement
 
 CASE DEFAULT
 
-  IF (acase) THEN
-
-    plotCommand = ', '//dataBlock0//' '//TRIM(lspec)//axes_setting
-
-    RETURN
-  END IF
-
-  plotCommand = ', '//dataBlock0//' '//axes_setting
+  obj%plotCommand(order) = ', '//dataBlock0//usingStatement// &
+                           lspec0//axesStatement
 
 END SELECT
 
-END PROCEDURE GetPlotCommand
+END PROCEDURE obj_SetPlotCommand
 
 !----------------------------------------------------------------------------
 !
@@ -132,24 +138,24 @@ CALL Help_WriteOptions()
 !----------------------------------
 
 CALL obj%pltfile%WRITE("# title")
-CALL Help_WriteLabelSetup(obj%title, isTitle=.TRUE.)
+CALL Help_WriteLabelSetup(obj%opts%title, isTitle=.TRUE.)
 
 !----------------------------------
 !                            labels
 !----------------------------------
 
 CALL obj%pltfile%WRITE("# labels")
-CALL Help_WriteLabelSetup(obj%xaxis%label, &
+CALL Help_WriteLabelSetup(obj%opts%xaxis%label, &
                           direction="x", isTitle=.FALSE.)
-CALL Help_WriteLabelSetup(obj%yaxis%label, &
+CALL Help_WriteLabelSetup(obj%opts%yaxis%label, &
                           direction="y", isTitle=.FALSE.)
-CALL Help_WriteLabelSetup(obj%zaxis%label, &
+CALL Help_WriteLabelSetup(obj%opts%zaxis%label, &
                           direction="z", isTitle=.FALSE.)
-CALL Help_WriteLabelSetup(obj%x2axis%label, &
+CALL Help_WriteLabelSetup(obj%opts%x2axis%label, &
                           direction="x2", isTitle=.FALSE.)
-CALL Help_WriteLabelSetup(obj%y2axis%label, &
+CALL Help_WriteLabelSetup(obj%opts%y2axis%label, &
                           direction="y2", isTitle=.FALSE.)
-CALL Help_WriteLabelSetup(obj%cbAxis%label, &
+CALL Help_WriteLabelSetup(obj%opts%cbAxis%label, &
                           direction="cb", isTitle=.FALSE.)
 
 !----------------------------------
@@ -157,16 +163,16 @@ CALL Help_WriteLabelSetup(obj%cbAxis%label, &
 !----------------------------------
 CALL obj%pltfile%WRITE("# ticks")
 !! primary axes
-CALL Help_WriteTickSetup(tick=obj%xaxis%tick, direction="x")
-CALL Help_WriteTickSetup(tick=obj%yaxis%tick, direction="y")
-CALL Help_WriteTickSetup(tick=obj%zaxis%tick, direction="z")
+CALL Help_WriteTickSetup(tick=obj%opts%xaxis%tick, direction="x")
+CALL Help_WriteTickSetup(tick=obj%opts%yaxis%tick, direction="y")
+CALL Help_WriteTickSetup(tick=obj%opts%zaxis%tick, direction="z")
 
 !! secondary axes
-CALL Help_WriteTickSetup(tick=obj%x2axis%tick, direction="x2")
-CALL Help_WriteTickSetup(tick=obj%y2axis%tick, direction="y2")
+CALL Help_WriteTickSetup(tick=obj%opts%x2axis%tick, direction="x2")
+CALL Help_WriteTickSetup(tick=obj%opts%y2axis%tick, direction="y2")
 
 !! colorbar axis
-CALL Help_WriteTickSetup(tick=obj%cbAxis%tick, direction="cb")
+CALL Help_WriteTickSetup(tick=obj%opts%cbAxis%tick, direction="cb")
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -177,9 +183,9 @@ CONTAINS
 
 SUBROUTINE Help_WriteDataStyle()
 
-  IF (obj%opts%datastyle%LEN() .GT. 0) THEN
+  IF (obj%opts%plotOpts%datastyle%LEN() .GT. 0) THEN
     CALL obj%pltfile%WRITE("# data style")
-    CALL obj%pltfile%WRITE("set style data "//obj%opts%datastyle)
+    CALL obj%pltfile%WRITE("set style data "//obj%opts%plotOpts%datastyle)
     CALL obj%pltfile%WriteBlank()
   END IF
 
@@ -188,18 +194,18 @@ END SUBROUTINE Help_WriteDataStyle
 SUBROUTINE Help_WriteOptions()
   INTEGER(I4B) :: ii
 
-  IF (.NOT. ALLOCATED(obj%options)) RETURN
+  IF (.NOT. ALLOCATED(obj%opts%options)) RETURN
 
   CALL obj%pltfile%WRITE("# options")
-  DO ii = 1, SIZE(obj%options)
-    CALL obj%pltfile%WRITE(obj%options(ii)%chars())
+  DO ii = 1, SIZE(obj%opts%options)
+    CALL obj%pltfile%WRITE(obj%opts%options(ii)%chars())
   END DO
   CALL obj%pltfile%WriteBlank()
 
 END SUBROUTINE Help_WriteOptions
 
 SUBROUTINE Help_WriteLabelSetup(label, direction, isTitle)
-  TYPE(Label_), INTENT(IN) :: label
+  TYPE(GnuPlotLabel_), INTENT(IN) :: label
   CHARACTER(*), OPTIONAL, INTENT(IN) :: direction
   LOGICAL(LGT), INTENT(IN) :: isTitle
   CHARACTER(:), ALLOCATABLE :: lblstring
@@ -242,7 +248,7 @@ SUBROUTINE Help_WriteLabelSetup(label, direction, isTitle)
 END SUBROUTINE Help_WriteLabelSetup
 
 SUBROUTINE Help_WriteTickSetup(tick, direction)
-  TYPE(Tick_), INTENT(IN) :: tick
+  TYPE(GnuPlotTick_), INTENT(IN) :: tick
   CHARACTER(*), INTENT(IN) :: direction
 
   IF (.NOT. tick%isConfigured) RETURN
@@ -325,8 +331,8 @@ CALL obj%Initiate()
 
 CALL obj%WritePlotSetup()
 
-DO ii = 1, SIZE(obj%scripts)
-  CALL obj%pltfile%WRITE(obj%scripts(ii)%chars())
+DO ii = 1, SIZE(obj%opts%scripts)
+  CALL obj%pltfile%WRITE(obj%opts%scripts(ii)%chars())
 END DO
 
 CALL obj%DEALLOCATE()

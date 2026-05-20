@@ -15,10 +15,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(GnuPlot_Class) SetMethods
-
+SUBMODULE(GnuPlotOpt_Class) SetMethods
+USE String_Class, ONLY: StrJoin, Reallocate
+USE StringUtility, ONLY: UpperCase
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
-
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -26,7 +27,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFilename
-CALL obj%opts%SetFilename(name)
+obj%filename = TRIM(name)
 END PROCEDURE obj_SetFilename
 
 !----------------------------------------------------------------------------
@@ -34,7 +35,16 @@ END PROCEDURE obj_SetFilename
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCommandline
-CALL obj%opts%SetCommandLine(chars)
+
+IF (LEN(chars) .EQ. 0) THEN
+  obj%commandline = ""
+  obj%runAfterWrite = .FALSE.
+  RETURN
+END IF
+
+obj%commandline = TRIM(chars)
+obj%runAfterWrite = .TRUE.
+
 END PROCEDURE obj_SetCommandline
 
 !----------------------------------------------------------------------------
@@ -42,7 +52,45 @@ END PROCEDURE obj_SetCommandline
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOptions
-CALL obj%opts%SetOptions(optionStr, reset)
+TYPE(String) :: tmpStr
+LOGICAL(LGT) :: reset0, overwrite0
+TYPE(string), ALLOCATABLE :: tmpTokens(:)
+INTEGER(I4B) :: tsize, ii, maxIndex, currentSize
+
+IF (optionStr%LEN() .EQ. 0) RETURN
+
+reset0 = Input(default=.TRUE., option=reset)
+overwrite0 = PRESENT(index)
+
+IF (overwrite0) reset0 = .FALSE.
+
+IF (reset0) THEN
+  CALL optionStr%Split(tokens=obj%options, sep=";")
+ELSE
+  IF (overwrite0) THEN
+    maxIndex = MAXVAL(index)
+    currentSize = SIZE(obj%options)
+    IF (maxIndex .GT. currentSize) THEN
+      ALLOCATE (tmpTokens(currentSize))
+      tmpTokens(1:currentSize) = obj%options
+      CALL Reallocate(obj%options, maxIndex)
+      obj%options(1:currentSize) = tmpTokens(1:currentSize)
+      DEALLOCATE (tmpTokens)
+    END IF
+
+    CALL optionStr%Split(tokens=tmpTokens, sep=";")
+    tsize = SIZE(tmpTokens)
+    DO ii = 1, tsize
+      obj%options(INDEX(ii)) = tmpTokens(ii)
+    END DO
+  ELSE
+    tmpStr = ""
+    IF (ALLOCATED(obj%options)) tmpStr = StrJoin(obj%options, sep=";")
+    tmpStr = tmpStr//";"//optionStr
+    CALL tmpStr%Split(tokens=obj%options, sep=";")
+  END IF
+END IF
+
 END PROCEDURE obj_SetOptions
 
 !----------------------------------------------------------------------------
@@ -50,7 +98,22 @@ END PROCEDURE obj_SetOptions
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetScripts
-CALL obj%opts%SetScripts(scriptStr, reset)
+TYPE(String) :: tmpStr
+LOGICAL(LGT) :: reset0
+
+IF (scriptStr%LEN() .EQ. 0) RETURN
+
+reset0 = Input(default=.TRUE., option=.TRUE.)
+
+IF (reset) THEN
+  CALL scriptstr%Split(tokens=obj%scripts, sep=";")
+ELSE
+  tmpStr = ""
+  IF (ALLOCATED(obj%scripts)) tmpStr = StrJoin(obj%scripts, sep=";")
+  tmpStr = tmpStr//";"//scriptStr
+  CALL tmpStr%Split(tokens=obj%scripts, sep=";")
+END IF
+
 END PROCEDURE obj_SetScripts
 
 !----------------------------------------------------------------------------
@@ -58,7 +121,15 @@ END PROCEDURE obj_SetScripts
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTerm
-CALL obj%opts%SetTerm(termType, termSize, termFont, termFontSize)
+
+obj%useDefaultTerm = .FALSE.
+
+obj%termType = Input(default=defaultOpt%termType, option=termType)
+obj%termSize = Input(default=defaultOpt%termSize, option=termSize)
+obj%termFont = Input(default=defaultOpt%termFont, option=termFont)
+obj%termFontSize = Input(default=defaultOpt%termFontSize, &
+                         option=termFontSize)
+
 END PROCEDURE obj_SetTerm
 
 !----------------------------------------------------------------------------
@@ -66,7 +137,8 @@ END PROCEDURE obj_SetTerm
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetXLim
-CALL obj%opts%SetXLim(lims)
+obj%xaxis%tick%isConfigured = .TRUE.
+obj%xaxis%tick%lims = lims
 END PROCEDURE obj_SetXLim
 
 !----------------------------------------------------------------------------
@@ -74,7 +146,8 @@ END PROCEDURE obj_SetXLim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetX2Lim
-CALL obj%opts%SetX2Lim(lims)
+obj%x2axis%tick%isConfigured = .TRUE.
+obj%x2axis%tick%lims = lims
 END PROCEDURE obj_SetX2Lim
 
 !----------------------------------------------------------------------------
@@ -82,7 +155,8 @@ END PROCEDURE obj_SetX2Lim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetYLim
-CALL obj%opts%SetYLim(lims)
+obj%yaxis%tick%isConfigured = .TRUE.
+obj%yaxis%tick%lims = lims
 END PROCEDURE obj_SetYLim
 
 !----------------------------------------------------------------------------
@@ -90,7 +164,8 @@ END PROCEDURE obj_SetYLim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetY2Lim
-CALL obj%opts%SetY2Lim(lims)
+obj%y2axis%tick%isConfigured = .TRUE.
+obj%y2axis%tick%lims = lims
 END PROCEDURE obj_SetY2Lim
 
 !----------------------------------------------------------------------------
@@ -98,7 +173,8 @@ END PROCEDURE obj_SetY2Lim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetZLim
-CALL obj%opts%SetZLim(lims)
+obj%zaxis%tick%isConfigured = .TRUE.
+obj%zaxis%tick%lims = lims
 END PROCEDURE obj_SetZLim
 
 !----------------------------------------------------------------------------
@@ -106,7 +182,8 @@ END PROCEDURE obj_SetZLim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCBLim
-CALL obj%opts%SetCBLim(lims)
+obj%cbAxis%tick%isConfigured = .TRUE.
+obj%cbAxis%tick%lims = lims
 END PROCEDURE obj_SetCBLim
 
 !----------------------------------------------------------------------------
@@ -114,7 +191,24 @@ END PROCEDURE obj_SetCBLim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetAxisLim
-CALL obj%opts%SetAxisLim(lims, direction)
+CHARACTER(*), PARAMETER :: myName = "obj_SetAxisLim"
+
+SELECT CASE (UpperCase(direction))
+CASE ("X")
+  CALL obj%SetXLim(lims)
+CASE ("X2")
+  CALL obj%SetX2Lim(lims)
+CASE ("Y")
+  CALL obj%SetYLim(lims)
+CASE ("Y2")
+  CALL obj%SetY2Lim(lims)
+CASE ("Z")
+  CALL obj%SetZLim(lims)
+CASE DEFAULT
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: unknown direction for label')
+END SELECT
+
 END PROCEDURE obj_SetAxisLim
 
 !----------------------------------------------------------------------------
@@ -122,7 +216,7 @@ END PROCEDURE obj_SetAxisLim
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetXScale
-CALL obj%opts%SetXScale(scaleChar, logBase)
+CALL Help_SetPlotScale(obj%xaxis%tick, scaleChar, logBase)
 END PROCEDURE obj_SetXScale
 
 !----------------------------------------------------------------------------
@@ -130,7 +224,7 @@ END PROCEDURE obj_SetXScale
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetX2Scale
-CALL obj%opts%SetX2Scale(scaleChar, logBase)
+CALL Help_SetPlotScale(obj%x2axis%tick, scaleChar, logBase)
 END PROCEDURE obj_SetX2Scale
 
 !----------------------------------------------------------------------------
@@ -138,7 +232,7 @@ END PROCEDURE obj_SetX2Scale
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetYScale
-CALL obj%opts%SetYScale(scaleChar, logBase)
+CALL Help_SetPlotScale(obj%yaxis%tick, scaleChar, logBase)
 END PROCEDURE obj_SetYScale
 
 !----------------------------------------------------------------------------
@@ -146,7 +240,7 @@ END PROCEDURE obj_SetYScale
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetY2Scale
-CALL obj%opts%SetY2Scale(scaleChar, logBase)
+CALL Help_SetPlotScale(obj%y2axis%tick, scaleChar, logBase)
 END PROCEDURE obj_SetY2Scale
 
 !----------------------------------------------------------------------------
@@ -154,7 +248,7 @@ END PROCEDURE obj_SetY2Scale
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetZScale
-CALL obj%opts%SetZScale(scaleChar, logBase)
+CALL Help_SetPlotScale(obj%zaxis%tick, scaleChar, logBase)
 END PROCEDURE obj_SetZScale
 
 !----------------------------------------------------------------------------
@@ -162,7 +256,7 @@ END PROCEDURE obj_SetZScale
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCBScale
-CALL obj%opts%SetCBScale(scaleChar, logBase)
+CALL Help_SetPlotScale(obj%cbAxis%tick, scaleChar, logBase)
 END PROCEDURE obj_SetCBScale
 
 !----------------------------------------------------------------------------
@@ -170,15 +264,55 @@ END PROCEDURE obj_SetCBScale
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetPlotScale
-CALL obj%opts%SetPlotScale(scaleChar, direction, logBase)
+CHARACTER(*), PARAMETER :: myName = "obj_SetPlotScale"
+
+SELECT CASE (UpperCase(direction))
+CASE ("X")
+  CALL obj%SetXScale(scaleChar, logBase)
+CASE ("X2")
+  CALL obj%SetX2Scale(scaleChar, logBase)
+CASE ("Y")
+  CALL obj%SetYScale(scaleChar, logBase)
+CASE ("Y2")
+  CALL obj%SetY2Scale(scaleChar, logBase)
+CASE ("Z")
+  CALL obj%SetZScale(scaleChar, logBase)
+CASE DEFAULT
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: unknown direction for plot scale')
+END SELECT
+
 END PROCEDURE obj_SetPlotScale
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE Help_SetPlotScale(obj, scaleChar, logBase)
+  TYPE(GnuPlotTick_), INTENT(INOUT) :: obj
+  CHARACTER(*), INTENT(IN) :: scaleChar
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: logBase
+
+  SELECT CASE (UpperCase(scaleChar))
+  CASE ("AUTO", "A")
+    obj%isConfigured = .TRUE.
+    obj%plotscale = 1_I4B
+  CASE ("LOG", "L")
+    obj%isConfigured = .TRUE.
+    obj%plotscale = 2_I4B
+    obj%logBase = Input(default=10_I4B, option=logBase)
+  CASE DEFAULT
+    obj%plotscale = 0_I4B ! no scale
+  END SELECT
+
+END SUBROUTINE Help_SetPlotScale
 
 !----------------------------------------------------------------------------
 !                                                             set_plottitle
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTitle
-CALL obj%opts%SetTitle(title, color, fontSize, fontName, rotate)
+CALL Help_SetLabel(obj%title, title, color, fontSize, fontName, rotate)
 END PROCEDURE obj_SetTitle
 
 !----------------------------------------------------------------------------
@@ -186,7 +320,7 @@ END PROCEDURE obj_SetTitle
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetXLabel
-CALL obj%opts%SetXLabel(label, color, fontSize, fontName, rotate)
+CALL Help_SetLabel(obj%xaxis%label, label, color, fontSize, fontName, rotate)
 END PROCEDURE obj_SetXLabel
 
 !----------------------------------------------------------------------------
@@ -194,7 +328,7 @@ END PROCEDURE obj_SetXLabel
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetX2Label
-CALL obj%opts%SetX2Label(label, color, fontSize, fontName, rotate)
+CALL Help_SetLabel(obj%x2axis%label, label, color, fontSize, fontName, rotate)
 END PROCEDURE obj_SetX2Label
 
 !----------------------------------------------------------------------------
@@ -202,7 +336,7 @@ END PROCEDURE obj_SetX2Label
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetYLabel
-CALL obj%opts%SetYLabel(label, color, fontSize, fontName, rotate)
+CALL Help_SetLabel(obj%yaxis%label, label, color, fontSize, fontName, rotate)
 END PROCEDURE obj_SetYLabel
 
 !----------------------------------------------------------------------------
@@ -210,7 +344,7 @@ END PROCEDURE obj_SetYLabel
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetY2Label
-CALL obj%opts%SetY2Label(label, color, fontSize, fontName, rotate)
+CALL Help_SetLabel(obj%y2axis%label, label, color, fontSize, fontName, rotate)
 END PROCEDURE obj_SetY2Label
 
 !----------------------------------------------------------------------------
@@ -218,7 +352,7 @@ END PROCEDURE obj_SetY2Label
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetZLabel
-CALL obj%opts%SetZLabel(label, color, fontSize, fontName, rotate)
+CALL Help_SetLabel(obj%zaxis%label, label, color, fontSize, fontName, rotate)
 END PROCEDURE obj_SetZLabel
 
 !----------------------------------------------------------------------------
@@ -226,7 +360,8 @@ END PROCEDURE obj_SetZLabel
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetCBLabel
-CALL obj%opts%SetCBLabel(label, color, fontSize, fontName, rotate)
+CALL Help_SetLabel(obj%cbAxis%label, label, color, fontSize, &
+                   fontName, rotate)
 END PROCEDURE obj_SetCBLabel
 
 !----------------------------------------------------------------------------
@@ -234,16 +369,82 @@ END PROCEDURE obj_SetCBLabel
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetAxisLabel
-CALL obj%opts%SetAxisLabel(direction, label, color, &
-                           fontSize, fontName, rotate)
+CHARACTER(*), PARAMETER :: myName = "obj_SetLabel"
+
+SELECT CASE (UpperCase(direction))
+CASE ("X")
+  CALL obj%SetXLabel(label, color, fontSize, fontName, rotate)
+CASE ("X2")
+  CALL obj%SetX2Label(label, color, fontSize, fontName, rotate)
+CASE ("Y")
+  CALL obj%SetYLabel(label, color, fontSize, fontName, rotate)
+CASE ("Y2")
+  CALL obj%SetY2Label(label, color, fontSize, fontName, rotate)
+CASE ("Z")
+  CALL obj%SetZLabel(label, color, fontSize, fontName, rotate)
+CASE default
+  CALL e%RaiseWarning(modName//'::'//myName//' - '// &
+    & '[INTERNAL ERROR] :: unknown direction for label')
+END SELECT
+
 END PROCEDURE obj_SetAxisLabel
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE Help_SetLabel(obj, label, color, fontSize, fontName, rotate)
+  TYPE(GnuPlotLabel_) :: obj
+  CHARACTER(*), INTENT(IN) :: label
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: color
+  CHARACTER(*), OPTIONAL, INTENT(IN) :: fontName
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: fontSize
+  INTEGER(I4B), OPTIONAL, INTENT(IN) :: rotate
+
+  IF (LEN_TRIM(label) .EQ. 0) RETURN
+
+  obj%isConfigured = .TRUE.
+  obj%text = TRIM(label)
+
+  IF (PRESENT(color)) obj%color = color
+
+  IF (PRESENT(fontName)) THEN
+    obj%fontname = fontName
+  ELSE
+    IF (.NOT. ALLOCATED(obj%fontname)) THEN
+      obj%fontname = ''
+    END IF
+  END IF
+
+  IF (PRESENT(fontSize)) obj%fontsize = fontSize
+
+  IF (PRESENT(rotate)) obj%rotate = rotate
+
+END SUBROUTINE Help_SetLabel
 
 !----------------------------------------------------------------------------
 !                                                       reset_to_defaults
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Reset
-CALL obj%opts%Reset()
+
+obj%useDefaultTerm = .TRUE.
+obj%useDefaultPreset = .TRUE.
+obj%filename = defaultOpt%filename
+
+IF (ALLOCATED(obj%options)) DEALLOCATE (obj%options)
+IF (ALLOCATED(obj%scripts)) DEALLOCATE (obj%scripts)
+
+obj%plotOpts%dataStyle = ""
+
+obj%pauseSeconds = 0.0_DFP
+obj%setMultiplot = .FALSE.
+obj%showAnimation = .FALSE.
+
+obj%commandline = defaultOpt%commandline
+obj%runAfterWrite = .TRUE.
+obj%pauseAfterDraw = .FALSE.
+
 END PROCEDURE obj_Reset
 
 !----------------------------------------------------------------------------
@@ -251,7 +452,7 @@ END PROCEDURE obj_Reset
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetUseDefaultPreset
-CALL obj%opts%SetUseDefaultPreset(abool)
+obj%useDefaultPreset = abool
 END PROCEDURE obj_SetUseDefaultPreset
 
 !----------------------------------------------------------------------------

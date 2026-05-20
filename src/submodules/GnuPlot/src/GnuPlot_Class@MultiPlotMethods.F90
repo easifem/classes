@@ -27,16 +27,16 @@ CONTAINS
 
 MODULE PROCEDURE obj_multiplot
 CHARACTER(*), PARAMETER :: myName = "obj_multiplot"
-IF (obj%showAnimation) THEN
+IF (obj%opts%showAnimation) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[ERROR] :: animation is not supported in multiplot mode')
 END IF
 
-obj%multiplotDims(1) = dims(1)
-obj%multiplotDims(2) = dims(2)
+obj%opts%multiplotDims(1) = dims(1)
+obj%opts%multiplotDims(2) = dims(2)
 
-obj%setMultiplot = .TRUE.
-obj%multiplotIndex = 1
+obj%opts%setMultiplot = .TRUE.
+obj%opts%multiplotIndex = 1
 
 CALL obj%Initiate()
 
