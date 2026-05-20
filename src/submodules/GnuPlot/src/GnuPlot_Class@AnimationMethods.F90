@@ -27,22 +27,22 @@ CONTAINS
 
 MODULE PROCEDURE obj_animationStart
 CHARACTER(*), PARAMETER :: myName = "obj_animationStart"
-IF (obj%setMultiplot) THEN
+IF (obj%opts%setMultiplot) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
     & '[ERROR] :: animation is not supported in multiplot mode')
 END IF
 
 IF (PRESENT(pauseSeconds)) THEN
-  obj%pauseSeconds = pauseSeconds
+  obj%opts%pauseSeconds = pauseSeconds
 ELSE
-  obj%pauseSeconds = defaultOpt%pauseSeconds
+  obj%opts%pauseSeconds = defaultOpt%pauseSeconds
 END IF
 
-obj%frameIndex = 0
+obj%opts%frameIndex = 0
 
 CALL obj%Initiate()
 
-obj%showAnimation = .TRUE.
+obj%opts%showAnimation = .TRUE.
 
 END PROCEDURE obj_animationStart
 
@@ -53,8 +53,8 @@ END PROCEDURE obj_animationStart
 MODULE PROCEDURE obj_animationShow
 CHARACTER(*), PARAMETER :: myName = "obj_animationShow"
 
-obj%frameIndex = 0
-obj%showAnimation = .FALSE.
+obj%opts%frameIndex = 0
+obj%opts%showAnimation = .FALSE.
 
 CALL obj%DEALLOCATE()
 

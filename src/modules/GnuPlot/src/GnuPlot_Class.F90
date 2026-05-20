@@ -25,109 +25,26 @@ USE String_Class, ONLY: String
 USE StringUtility, ONLY: LowerCase
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
+
 USE UserFunction_Class, ONLY: UserFunction_
+
+USE GnuPlotOpt_Class, ONLY: GnuPlotOpt_, &
+                            DefaultGnuplotOpt_, &
+                            GnuPlotLabel_, &
+                            GnuPlotAxis_, &
+                            GnuPlotTick_, &
+                            GnuPlotPlotOpts_
+
 IMPLICIT NONE
+
 PRIVATE
+
 PUBLIC :: GnuPlot_
-PUBLIC :: GnuPlotOpt_
+PUBLIC :: GnuPlotPointer_
 
 CHARACTER(*), PARAMETER :: modName = 'Gnuplot_Class'
 INTEGER(I4B), PARAMETER :: NOT_INITIALIZED = -32000
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2025-12-22
-! summary: Gnuplot Default Options
-
-TYPE GnuplotOpt_
-  CHARACTER(4) :: termType = 'wxt'
-  CHARACTER(15) :: termFont = 'Times New Roman'
-  CHARACTER(3) :: paletteName = "jet"
-  INTEGER(I4B) :: termFontSize = 10
-  INTEGER(I4B) :: numLevels = 10
-  INTEGER(I4B) :: termSize(2) = [640, 480]
-  CHARACTER(18) :: filename = "gnuplot_script"
-  CHARACTER(11) :: dataStyle = "linespoints"
-  CHARACTER(45) :: commentLine = &
-                   '# -------------------------------------------'
-  CHARACTER(17) :: commandLine = "gnuplot --persist"
-  REAL(DFP) :: pauseSeconds = 2.0_DFP
-  LOGICAL(LGT) :: fill = .FALSE.
-END TYPE GnuplotOpt_
-
-TYPE(GnuplotOpt_), PARAMETER :: defaultOpt = GnuplotOpt_()
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2025-12-22
-! summary:  Label_ for title and axis labels
-
-TYPE :: Label_
-  LOGICAL(LGT) :: isConfigured = .FALSE.
-  CHARACTER(:), ALLOCATABLE :: text
-  CHARACTER(:), ALLOCATABLE :: color
-  CHARACTER(:), ALLOCATABLE :: fontname
-  INTEGER(I4B) :: fontsize = NOT_INITIALIZED
-  INTEGER(I4B) :: rotate = NOT_INITIALIZED
-END TYPE Label_
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2025-12-22
-! summary:  Tick_ for axis ticks
-
-TYPE :: Tick_
-  LOGICAL(LGT) :: isConfigured = .FALSE.
-  INTEGER(I4B) :: plotscale = 0
-  INTEGER(I4B) :: logBase = 10
-  REAL(DFP) :: lims(2)
-  ! CHARACTER(:), ALLOCATABLE :: color
-  ! CHARACTER(:), ALLOCATABLE :: fontname
-  ! INTEGER(I4B) :: fontsize = NOT_INITIALIZED
-  ! INTEGER(I4B) :: rotate = NOT_INITIALIZED
-END TYPE Tick_
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2025-12-22
-! summary:  Axis_ type consist of label and tick
-
-TYPE :: Axis_
-  TYPE(String) :: name
-  TYPE(Label_) :: label
-  TYPE(Tick_) :: tick
-END TYPE Axis_
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2025-12-31
-! summary:  options for plotting (plot, contour etc)
-
-!TODO: implement import from toml
-TYPE :: PlotOpts_
-  TYPE(String), ALLOCATABLE :: lspecs(:)
-  LOGICAL(LGT) :: fill = .FALSE.
-  INTEGER(I4B) :: numLevels
-  REAL(DFP), ALLOCATABLE :: levels(:)
-  TYPE(String) :: paletteName
-  TYPE(String) :: dataStyle
-  ! datastyle: lines, points, linespoints
-END TYPE PlotOpts_
+TYPE(DefaultGnuplotOpt_), PARAMETER :: defaultOpt = DefaultGnuplotOpt_()
 
 !----------------------------------------------------------------------------
 !
@@ -138,50 +55,13 @@ END TYPE PlotOpts_
 ! summary: GnuPlot_ class
 
 TYPE :: GnuPlot_
-  TYPE(TxtFile_) :: pltfile
-
-  TYPE(PlotOpts_) :: opts
-
   LOGICAL(LGT) :: isInitiated = .FALSE.
 
-  LOGICAL(LGT) :: runAfterWrite = .TRUE.
+  TYPE(TxtFile_) :: pltfile
 
-  LOGICAL(LGT) :: pauseAfterDraw = .FALSE.
+  TYPE(GnuPlotOpt_) :: opts
 
-  TYPE(Label_) :: title
-  TYPE(Axis_) :: xaxis, yaxis, zaxis, x2axis, y2axis, &
-                 cbAxis
-
-  TYPE(String) :: filename
-  ! the name of physical file
-  ! to write the gnuplot script
-  TYPE(String) :: commandline
-
-  TYPE(String), ALLOCATABLE :: options(:)
-  ! vector of strings for gnuplot options
-  TYPE(String), ALLOCATABLE :: scripts(:)
-  ! vector of strings for gnuplot scripts
-
-  ! terminal
-  LOGICAL(LGT) :: useDefaultTerm = .TRUE.
-  TYPE(String) :: termType, termFont
-  ! termtype: wxt, qt, pngcairo, svg etc
-  ! termfont: Times New Roman etc
-  INTEGER(I4B) :: termFontSize
-  INTEGER(I4B) :: termSize(2)
-
-  ! animation
-  LOGICAL(LGT) :: showAnimation = .FALSE.
-  INTEGER(I4B) :: frameIndex
-  REAL(DFP) :: pauseSeconds = 0.0_DFP
-
-  ! multiplot parameters
-  LOGICAL(LGT) :: setMultiplot = .FALSE.
-  INTEGER(I4B) :: multiplotDims(2) ! row and col
-  INTEGER :: multiplotIndex
-
-  ! TODO: separate some configs
-  LOGICAL(LGT) :: useDefaultPreset = .TRUE.
+  TYPE(String) :: plotCommand(defaultOpt%maxNumberPlots)
 
   ! DATA pointer
   TYPE(RealMatrixPointer_), ALLOCATABLE :: xMats(:), yMats(:), zMats(:)
@@ -225,7 +105,27 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: contour3 => obj_contour3
   GENERIC, PUBLIC :: contour => contour1, contour2, contour3
 
-  !! @SET methods
+  ! @misc
+  PROCEDURE, PUBLIC, PASS(obj) :: RunScript => obj_RunScript
+  PROCEDURE, PUBLIC, PASS(obj) :: animationStart => obj_animationStart
+  PROCEDURE, PUBLIC, PASS(obj) :: animationShow => obj_animationShow
+
+  ! @Get (private)
+  PROCEDURE, PASS(obj) :: SetPlotCommand => obj_SetPlotCommand
+  ! @Write
+  PROCEDURE, PUBLIC, PASS(obj) :: WritePlotSetup => obj_WritePlotSetup
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteDataBlock => obj_writeDataBlock_xy
+
+  ! @TomlMethods
+  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
+
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
+    ImportFromToml2
+
+  ! @Set method through GnuplotOpt_
   PROCEDURE, PUBLIC, PASS(obj) :: SetTerm => obj_SetTerm
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetTitle => obj_SetTitle
@@ -262,24 +162,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Reset => obj_Reset
   PROCEDURE, PUBLIC, PASS(obj) :: SetUseDefaultPreset => &
     obj_SetUseDefaultPreset
-
-  ! @misc
-  PROCEDURE, PUBLIC, PASS(obj) :: RunScript => obj_RunScript
-  PROCEDURE, PUBLIC, PASS(obj) :: animationStart => obj_animationStart
-  PROCEDURE, PUBLIC, PASS(obj) :: animationShow => obj_animationShow
-
-  ! @Write
-  PROCEDURE, PUBLIC, PASS(obj) :: WritePlotSetup => obj_WritePlotSetup
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteDataBlock => obj_writeDataBlock_xy
-
-  ! @TomlMethods
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
-    obj_ImportFromToml2
-
-  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
-    ImportFromToml2
 
 END TYPE GnuPlot_
 
@@ -655,6 +537,189 @@ INTERFACE
     CHARACTER(*), INTENT(in), OPTIONAL :: paletteName
     LOGICAL(LGT), INTENT(in), OPTIONAL :: fill
   END SUBROUTINE obj_contour3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               SetPlotCommand@UtilityMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-05-05
+! summary:  Set Plot command with setting
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetPlotCommand(obj, order, lspec, axes, &
+                                       dataBlockName)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: order
+    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
+    CHARACTER(*), INTENT(IN), OPTIONAL :: axes
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: dataBlockName
+  END SUBROUTINE obj_SetPlotCommand
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               WritePlotSetup@UtilityMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2024-08-23
+!> author: Shion Shimizu
+! update: 2025-12-22
+! summary:  process command
+!
+!# Introduction
+!
+!   obj subroutine writes all the data into plot file
+!   to be read by gnuplot
+
+INTERFACE
+  MODULE SUBROUTINE obj_WritePlotSetup(obj)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_WritePlotSetup
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               write_xydata@UtilityMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2025-02-21
+! summary:  write_xydata to plt file
+!
+!# Introduction
+! Writes set of xy data into a file
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteDataBlock_xy(obj, x, y)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: x(:)
+    REAL(DFP), INTENT(IN) :: y(:)
+  END SUBROUTINE obj_WriteDataBlock_xy
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             reset_to_defaults@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:
+! summary:  reset to defaults
+
+! INTERFACE
+!   MODULE SUBROUTINE obj_Reset(obj)
+!     CLASS(GnuPlot_), INTENT(INOUT) :: obj
+!   END SUBROUTINE obj_Reset
+! END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             GetColorPalette
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  get color palettes hex code
+!...............................................................................
+! color_palettes create color palette as a
+! string to be written into gnuplot script file
+! the palettes credit goes to: Anna Schnider (https://github.com/aschn) and
+! Hagen Wierstorf (https://github.com/hagenw)
+!...............................................................................
+
+INTERFACE
+  MODULE FUNCTION GetColorPaletteScript(paletteName) RESULT(paletteScript)
+    CHARACTER(*), INTENT(IN) :: paletteName
+    CHARACTER(:), ALLOCATABLE :: paletteScript
+  END FUNCTION GetColorPaletteScript
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 runScript
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  run raw gnuplot scripts stored in obj%txtscript
+!..............................................................................
+! runscript sends the the script string (txtstring) into a script
+! file to be run by gnuplot
+!..............................................................................
+
+INTERFACE
+  MODULE SUBROUTINE obj_RunScript(obj)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_RunScript
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              animationStart
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary: set the setting to start an animation
+!-------------------------------------------------------------------------------
+! obj_animation_start: set the setting to start an animation
+! it simply set flags and open a script file to write data
+!-------------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_animationStart(obj, pauseSeconds)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    REAL(DFP), OPTIONAL, INTENT(IN) :: pauseSeconds
+  END SUBROUTINE obj_animationStart
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             animationShow
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date:   2024-09-22
+! summary:  show animation
+!-------------------------------------------------------------------------------
+! sub_animation_show: simply resets the animation flags
+! and finalize the plotting.
+!-------------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_animationShow(obj)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_animationShow
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-23
+! summary:  Import settings from toml
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2025-12-23
+! summary:  Import settings from toml
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1152,83 +1217,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             GetPlotCommand@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  line specification
-!
-! Get the command script for plot
-
-INTERFACE
-  MODULE SUBROUTINE GetPlotCommand(order, plotCommand, lspec, axes_set, &
-                                   dataBlockName)
-    INTEGER(I4B), INTENT(IN) :: order
-    CHARACTER(*), INTENT(IN), OPTIONAL :: lspec
-    CHARACTER(*), INTENT(IN), OPTIONAL :: axes_set
-    CHARACTER(*), INTENT(OUT) :: plotCommand
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: dataBlockName
-  END SUBROUTINE GetPlotCommand
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                           GetAxesSetting@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-! summary:  GetAxesSetting
-!
-
-INTERFACE
-  MODULE SUBROUTINE GetAxesSetting(axes_set, axesSetting)
-    CHARACTER(*), INTENT(IN) :: axes_set
-    CHARACTER(*), INTENT(OUT) :: axesSetting
-  END SUBROUTINE GetAxesSetting
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               WritePlotSetup@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-08-23
-!> author: Shion Shimizu
-! update: 2025-12-22
-! summary:  process command
-!
-!# Introduction
-!
-!   obj subroutine writes all the data into plot file
-!   to be read by gnuplot
-
-INTERFACE
-  MODULE SUBROUTINE obj_WritePlotSetup(obj)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_WritePlotSetup
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               write_xydata@UtilityMethods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2025-02-21
-! summary:  write_xydata to plt file
-!
-!# Introduction
-! Writes set of xy data into a file
-
-INTERFACE
-  MODULE SUBROUTINE obj_WriteDataBlock_xy(obj, x, y)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: x(:)
-    REAL(DFP), INTENT(IN) :: y(:)
-  END SUBROUTINE obj_WriteDataBlock_xy
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                             reset_to_defaults@SetMethods
 !----------------------------------------------------------------------------
 
@@ -1255,116 +1243,6 @@ INTERFACE
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
     LOGICAL(LGT), INTENT(IN) :: abool
   END SUBROUTINE obj_SetUseDefaultPreset
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             GetColorPalette
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-09-22
-! summary:  get color palettes hex code
-!...............................................................................
-! color_palettes create color palette as a
-! string to be written into gnuplot script file
-! the palettes credit goes to: Anna Schnider (https://github.com/aschn) and
-! Hagen Wierstorf (https://github.com/hagenw)
-!...............................................................................
-
-INTERFACE
-  MODULE FUNCTION GetColorPaletteScript(paletteName) RESULT(paletteScript)
-    CHARACTER(*), INTENT(IN) :: paletteName
-    CHARACTER(:), ALLOCATABLE :: paletteScript
-  END FUNCTION GetColorPaletteScript
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 runScript
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-09-22
-! summary:  run raw gnuplot scripts stored in obj%txtscript
-!..............................................................................
-! runscript sends the the script string (txtstring) into a script
-! file to be run by gnuplot
-!..............................................................................
-
-INTERFACE
-  MODULE SUBROUTINE obj_RunScript(obj)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_RunScript
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                              animationStart
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-09-22
-! summary: set the setting to start an animation
-!-------------------------------------------------------------------------------
-! obj_animation_start: set the setting to start an animation
-! it simply set flags and open a script file to write data
-!-------------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_animationStart(obj, pauseSeconds)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: pauseSeconds
-  END SUBROUTINE obj_animationStart
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             animationShow
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date:   2024-09-22
-! summary:  show animation
-!-------------------------------------------------------------------------------
-! sub_animation_show: simply resets the animation flags
-! and finalize the plotting.
-!-------------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_animationShow(obj)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_animationShow
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     ImportFromToml@Methods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2025-12-23
-! summary:  Import settings from toml
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     ImportFromToml@Methods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2025-12-23
-! summary:  Import settings from toml
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
-                                        printToml)
-    CLASS(GnuPlot_), INTENT(INOUT) :: obj
-    CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 !----------------------------------------------------------------------------

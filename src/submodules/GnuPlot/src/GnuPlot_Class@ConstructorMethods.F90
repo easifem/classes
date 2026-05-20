@@ -30,11 +30,11 @@ IF (obj%pltfile%IsOpen()) RETURN
 
 obj%isInitiated = .TRUE.
 
-IF (obj%showAnimation) THEN
-  obj%frameIndex = obj%frameIndex + 1
+IF (obj%opts%showAnimation) THEN
+  obj%opts%frameIndex = obj%opts%frameIndex + 1
 END IF
 
-CALL obj%pltfile%Initiate(filename=obj%filename//".plt", &
+CALL obj%pltfile%Initiate(filename=obj%opts%filename//".plt", &
                           status="REPLACE")
 CALL obj%pltfile%OPEN()
 
@@ -42,13 +42,15 @@ CALL Help_WriteSignature(obj%pltfile)
 
 CALL Help_WriteTerm(obj)
 
-IF (obj%useDefaultPreset) CALL Help_WriteDefaultPreset(obj%pltfile)
+IF (obj%opts%useDefaultPreset) CALL Help_WriteDefaultPreset(obj%pltfile)
 
-IF (obj%setMultiplot) CALL Help_WriteMultiPlotConfig( &
-  obj%pltfile, obj%multiplotDims(1), obj%multiplotDims(2))
+IF (obj%opts%setMultiplot) CALL Help_WriteMultiPlotConfig( &
+  obj%pltfile, obj%opts%multiplotDims(1), obj%opts%multiplotDims(2))
 
-IF (obj%runAfterWrite .AND. LEN(obj%commandline%chars()) .EQ. 0) &
-  obj%commandline = defaultOpt%commandLine
+IF (obj%opts%runAfterWrite .AND. &
+    LEN(obj%opts%commandline%chars()) .EQ. 0) THEN
+  obj%opts%commandline = defaultOpt%commandline
+END IF
 
 END PROCEDURE obj_Initiate
 
@@ -62,17 +64,17 @@ LOGICAL(LGT) :: finished
 
 IF (.NOT. obj%isInitiated) RETURN
 
-IF (obj%showAnimation) THEN
-  CALL obj%pltfile%WRITE("pause "//tostring(obj%pauseSeconds))
+IF (obj%opts%showAnimation) THEN
+  CALL obj%pltfile%WRITE("pause "//tostring(obj%opts%pauseSeconds))
   RETURN
 END IF
 
-IF (obj%setMultiplot) THEN
+IF (obj%opts%setMultiplot) THEN
   CALL CheckMultiPlot(obj, finished)
   IF (.NOT. finished) RETURN
 END IF
 
-IF (obj%pauseAfterDraw) THEN
+IF (obj%opts%pauseAfterDraw) THEN
   CALL obj%pltfile%WriteBlank()
   CALL obj%pltfile%WRITE("pause mouse keypress")
   CALL obj%pltfile%WRITE("if (exists('MOUSE_CHAR') && MOUSE_CHAR eq 'c' || MOUSE_KEY == -1) {")
@@ -81,18 +83,20 @@ IF (obj%pauseAfterDraw) THEN
   CALL obj%pltfile%WRITE("   } else {")
   call obj%pltfile%WRITE("    print 'Press c or q to quit, any other key to refresh'")
   CALL obj%pltfile%WRITE("   replot")
-  CALL obj%pltfile%WRITE("   load '"//obj%filename//".plt'")
+  CALL obj%pltfile%WRITE("   load '"//obj%opts%filename//".plt'")
   CALL obj%pltfile%WRITE("  }")
-  obj%commandline = "gnuplot "
+  obj%opts%commandline = "gnuplot "
 END IF
 
 IF (obj%pltfile%IsOpen()) THEN
   CALL obj%pltfile%DEALLOCATE()
-  obj%showAnimation = .FALSE.
+  obj%opts%showAnimation = .FALSE.
 END IF
 
-IF (obj%runAfterWrite) &
-  CALL execute_command_line(obj%commandline//" "//obj%filename//".plt")
+IF (obj%opts%runAfterWrite) THEN
+  CALL execute_command_line(obj%opts%commandline//" " &
+                            //obj%opts%filename//".plt")
+END IF
 
 obj%isInitiated = .FALSE.
 
@@ -134,7 +138,7 @@ END SUBROUTINE Help_WriteSignature
 SUBROUTINE Help_WriteTerm(obj)
   TYPE(GnuPlot_), INTENT(INOUT) :: obj
 
-  IF (obj%useDefaultTerm) THEN
+  IF (obj%opts%useDefaultTerm) THEN
     CALL obj%pltfile%WRITE("set term "//defaultOpt%termType//" size " &
                            //tostring(defaultOpt%termSize(1))//"," &
                            //tostring(defaultOpt%termSize(2)) &
@@ -142,12 +146,12 @@ SUBROUTINE Help_WriteTerm(obj)
                            '"'//defaultOpt%termFont//','// &
                            tostring(defaultOpt%termFontSize)//'"')
   ELSE
-    CALL obj%pltfile%WRITE("set term "//obj%termType//" size " &
-                           //tostring(obj%termSize(1))//"," &
-                           //tostring(obj%termSize(2)) &
+    CALL obj%pltfile%WRITE("set term "//obj%opts%termType//" size " &
+                           //tostring(obj%opts%termSize(1))//"," &
+                           //tostring(obj%opts%termSize(2)) &
                            //" enhanced font "// &
-                           '"'//obj%termFont//','// &
-                           tostring(obj%termFontSize)//'"')
+                           '"'//obj%opts%termFont//','// &
+                           tostring(obj%opts%termFontSize)//'"')
   END IF
 
   CALL obj%pltfile%WriteBlank()
@@ -211,17 +215,17 @@ SUBROUTINE CheckMultiPlot(obj, finished)
   LOGICAL(LGT), INTENT(out) :: finished
   INTEGER(I4B) :: ntotal, ncurrent
 
-  ncurrent = obj%multiplotIndex
-  ntotal = obj%multiplotDims(1) * obj%multiplotDims(2) - 1
+  ncurrent = obj%opts%multiplotIndex
+  ntotal = obj%opts%multiplotDims(1) * obj%opts%multiplotDims(2) - 1
   finished = ncurrent .GT. ntotal
 
   IF (.NOT. finished) THEN
-    obj%multiplotIndex = obj%multiplotIndex + 1
+    obj%opts%multiplotIndex = obj%opts%multiplotIndex + 1
     RETURN
   END IF
 
   CALL obj%pltfile%WRITE("unset multiplot")
-  obj%setMultiplot = .FALSE.
+  obj%opts%setMultiplot = .FALSE.
 
 END SUBROUTINE CheckMultiPlot
 

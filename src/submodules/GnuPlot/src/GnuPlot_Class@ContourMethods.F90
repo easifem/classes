@@ -31,7 +31,7 @@ CHARACTER(*), PARAMETER :: datablock = '$xyz'
 LOGICAL(LGT) :: fill0
 CHARACTER(:), ALLOCATABLE :: paletteName0
 
-obj%opts%datastyle = 'lines'
+obj%opts%plotOpts%datastyle = 'lines'
 CALL obj%Initiate()
 CALL obj%WritePlotSetup()
 
@@ -41,16 +41,16 @@ CALL obj%pltfile%WriteBlank()
 CALL obj%pltfile%WRITE('# create the contour')
 CALL obj%pltfile%WRITE('set contour base')
 
-fill0 = Input(default=obj%opts%fill, option=fill)
+fill0 = Input(default=obj%opts%plotOpts%fill, option=fill)
 IF (fill0) CALL obj%pltfile%WRITE('set contourfill cbtics')
 
 CALL obj%pltfile%WRITE('set cntrparam levels '// &
-                       tostring(obj%opts%numLevels))
+                       tostring(obj%opts%plotOpts%numLevels))
 
 CALL obj%pltfile%WRITE('unset surface')
 CALL obj%pltfile%WRITE('set view map')
 
-paletteName0 = Input(default=obj%opts%paletteName%chars(), &
+paletteName0 = Input(default=obj%opts%plotOpts%paletteName%chars(), &
                      option=paletteName)
 IF (LEN(paletteName0) .GT. 0) THEN
   CALL obj%pltfile%WRITE(GetColorPaletteScript(paletteName0))
@@ -112,7 +112,7 @@ CHARACTER(*), PARAMETER :: datablock1 = '$xyz', &
 LOGICAL(LGT) :: fill0
 CHARACTER(:), ALLOCATABLE :: paletteName0
 
-obj%opts%datastyle = 'lines'
+obj%opts%plotOpts%datastyle = 'lines'
 CALL obj%Initiate()
 CALL obj%WritePlotSetup()
 
@@ -126,7 +126,7 @@ CALL obj%pltfile%WriteBlank()
 CALL obj%pltfile%WRITE('# create the contour')
 CALL obj%pltfile%WRITE('set contour base')
 
-fill0 = Input(default=obj%opts%fill, option=fill)
+fill0 = Input(default=obj%opts%plotOpts%fill, option=fill)
 IF (fill0) CALL obj%pltfile%WRITE('set contourfill cbtics')
 
 CALL obj%pltfile%WRITE('set cntrparam levels 14')
@@ -134,7 +134,7 @@ CALL obj%pltfile%WRITE('set cntrparam levels 14')
 CALL obj%pltfile%WRITE('unset surface')
 CALL obj%pltfile%WRITE('set view map')
 
-paletteName0 = Input(default=obj%opts%paletteName%chars(), &
+paletteName0 = Input(default=obj%opts%plotOpts%paletteName%chars(), &
                      option=paletteName)
 IF (LEN(paletteName0) .GT. 0) THEN
   CALL obj%pltfile%WRITE(GetColorPaletteScript(paletteName0))

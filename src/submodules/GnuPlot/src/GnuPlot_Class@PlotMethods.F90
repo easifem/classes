@@ -34,7 +34,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_plot1()"
 INTEGER :: ii, nplot
 INTEGER(I4B), PARAMETER :: maxplot = 4
 CHARACTER(3) :: plottype
-CHARACTER(80) :: pltstring(4)
 LOGICAL(LGT) :: isok, doplot(4)
 
 #ifdef DEBUG_VER
@@ -43,7 +42,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 plottype = ''
-pltstring = ''
 nplot = 0
 
 doplot = .FALSE.
@@ -51,22 +49,22 @@ doplot(1) = Help_CheckInput(x1, y1)
 IF (.NOT. doplot(1)) CALL e%RaiseError(modName//'::'//myName//' - '// &
   & '[ERROR] :: x1 and y1 must be present for plot1')
 nplot = nplot + 1
-CALL GetPlotCommand(1, pltstring(1), ls1, axes1)
+CALL obj%SetPlotCommand(order=1, lspec=ls1, axes=axes1)
 
 doplot(2) = Help_CheckInput(x2, y2)
 IF (doplot(2)) THEN
   nplot = nplot + 1
-  CALL GetPlotCommand(nplot, pltstring(2), ls2, axes2)
+  CALL obj%SetPlotCommand(order=nplot, lspec=ls2, axes=axes2)
 END IF
 doplot(3) = Help_CheckInput(x3, y3)
 IF (doplot(3)) THEN
   nplot = nplot + 1
-  CALL GetPlotCommand(nplot, pltstring(3), ls3, axes3)
+  CALL obj%SetPlotCommand(order=nplot, lspec=ls3, axes=axes3)
 END IF
 doplot(4) = Help_CheckInput(x4, y4)
 IF (doplot(4)) THEN
   nplot = nplot + 1
-  CALL GetPlotCommand(nplot, pltstring(4), ls4, axes4)
+  CALL obj%SetPlotCommand(order=nplot, lspec=ls4, axes=axes4)
 END IF
 
 CALL obj%Initiate()
@@ -75,13 +73,13 @@ CALL obj%WritePlotSetup()
 
 isok = nplot .EQ. 1
 IF (isok) THEN
-  CALL obj%pltfile%WRITE(TRIM(pltstring(1)))
+  CALL obj%pltfile%WRITE(obj%plotCommand(1)%chars())
 ELSE
-  CALL obj%pltfile%WRITE(TRIM(pltstring(1)), advance="NO")
+  CALL obj%pltfile%WRITE(obj%plotCommand(1)%chars(), advance="NO")
   DO ii = 2, maxplot
     IF (doplot(ii)) THEN
       CALL obj%pltfile%WRITE(" \", advance="YES")
-      CALL obj%pltfile%WRITE(TRIM(pltstring(ii)), advance="NO")
+      CALL obj%pltfile%WRITE(obj%plotCommand(ii)%chars(), advance="NO")
     END IF
   END DO
   CALL obj%pltfile%WRITE("", advance="YES")
@@ -131,7 +129,6 @@ MODULE PROCEDURE obj_plot2
 CHARACTER(*), PARAMETER :: myName = "obj_plot2"
 
 INTEGER :: nx, ny, ns, number_of_curves, ii, jj, ierr
-CHARACTER(80), ALLOCATABLE :: pltstring(:)
 TYPE(String), ALLOCATABLE :: lspecs(:)
 
 nx = SIZE(xv)
@@ -146,54 +143,37 @@ CALL obj%Initiate()
 CALL obj%WritePlotSetup()
 
 number_of_curves = SIZE(ymat, dim=2)
-ALLOCATE (pltstring(number_of_curves), stat=ierr)
-IF (ierr /= 0) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Failed to allocate memory for pltstring')
-END IF
-
-pltstring(1:number_of_curves) = ''
 
 IF (PRESENT(lspec)) THEN
-
   CALL lspec%Split(tokens=lspecs, sep=';')
   ns = SIZE(lspecs)
-
-  IF (ns .LE. number_of_curves) THEN
-    DO ii = 1, ns
-      pltstring(ii) = lspecs(ii)%chars()
-    END DO
-  ELSE
-    DO ii = 1, number_of_curves
-      pltstring(ii) = lspecs(ii)%chars()
-    END DO
-  END IF
-
 END IF
 
 IF (PRESENT(lspec)) THEN
 
-  CALL GetPlotCommand(1, pltstring(1), lspecs(1)%chars())
+  CALL obj%SetPlotCommand(order=1, lspec=lspecs(1)%chars())
   ns = SIZE(lspecs)
   ! cylce through line specification will happen,
   ! when the number of lspces is less than number of curves
   DO ii = 1, number_of_curves
     jj = MOD(ii - 1, ns) + 1
-    CALL GetPlotCommand(ii, pltstring(ii), lspecs(jj)%chars())
+    CALL obj%SetPlotCommand(order=ii, lspec=lspecs(jj)%chars())
   END DO
 ELSE
-  pltstring(1) = ' plot "-" notitle,'
-  pltstring(2:number_of_curves - 1) = '"-" notitle,'
+  obj%plotCommand(1) = ' plot "-" notitle,'
+  DO ii = 2, number_of_curves - 1
+    obj%plotCommand(ii) = '"-" notitle,'
+  END DO
   IF (number_of_curves .GT. 1) THEN
-    pltstring(number_of_curves) = '"-" notitle'
+    obj%plotCommand(number_of_curves) = '"-" notitle'
   END IF
 END IF
 
 ! Write plot command and line styles and legend if any
 DO ii = 1, number_of_curves - 1
-  CALL obj%pltfile%WRITE(TRIM(pltstring(ii))//' \')
+  CALL obj%pltfile%WRITE(obj%plotCommand(ii)%chars()//' \')
 END DO
-CALL obj%pltfile%WRITE(TRIM(pltstring(number_of_curves)))
+CALL obj%pltfile%WRITE(obj%plotCommand(number_of_curves)%chars())
 
 ! Write data into script file
 DO jj = 1, number_of_curves
@@ -206,11 +186,6 @@ END DO
 
 CALL obj%DEALLOCATE()
 
-!Release memory
-IF (ALLOCATED(pltstring)) THEN
-  DEALLOCATE (pltstring)
-END IF
-
 END PROCEDURE obj_plot2
 
 !----------------------------------------------------------------------------
@@ -221,7 +196,6 @@ MODULE PROCEDURE obj_plot3
 CHARACTER(*), PARAMETER :: myName = "obj_plot3"
 INTEGER(I4B) :: mx, nx, my, ny, ns, number_of_curves, &
                 ii, jj, ierr
-CHARACTER(80), ALLOCATABLE :: pltstring(:)
 TYPE(String), ALLOCATABLE :: lspecs(:)
 
 mx = SIZE(xmat, dim=1)
@@ -243,52 +217,35 @@ CALL obj%Initiate()
 CALL obj%WritePlotSetup()
 
 number_of_curves = SIZE(ymat, dim=2)
-ALLOCATE (pltstring(number_of_curves), stat=ierr)
-IF (ierr /= 0) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[INTERNAL ERROR] :: Failed to allocate memory for pltstring')
-END IF
-
-pltstring(1:number_of_curves) = ''
 
 IF (PRESENT(lspec)) THEN
-
   CALL lspec%Split(tokens=lspecs, sep=';')
   ns = SIZE(lspecs)
-
-  IF (ns .LE. number_of_curves) THEN
-    DO ii = 1, ns
-      pltstring(ii) = lspecs(ii)%chars()
-    END DO
-  ELSE
-    DO ii = 1, number_of_curves
-      pltstring(ii) = lspecs(ii)%chars()
-    END DO
-  END IF
-
 END IF
 
 IF (PRESENT(lspec)) THEN
 
-  CALL GetPlotCommand(1, pltstring(1), lspecs(1)%chars())
+  CALL obj%SetPlotCommand(order=1, lspec=lspecs(1)%chars())
   ns = SIZE(lspecs)
 
   DO ii = 1, number_of_curves
     jj = MOD(ii - 1, ns) + 1
-    CALL GetPlotCommand(ii, pltstring(ii), lspecs(jj)%chars())
+    CALL obj%SetPlotCommand(order=ii, lspec=lspecs(jj)%chars())
   END DO
 ELSE
-  pltstring(1) = ' plot "-" notitle,'
-  pltstring(2:number_of_curves - 1) = '"-" notitle,'
+  obj%plotCommand(1) = ' plot "-" notitle,'
+  DO ii = 2, number_of_curves - 1
+    obj%plotCommand(ii) = '"-" notitle,'
+  END DO
   IF (number_of_curves .GT. 1) THEN
-    pltstring(number_of_curves) = '"-" notitle'
+    obj%plotCommand(number_of_curves) = '"-" notitle'
   END IF
 END IF
 
 DO ii = 1, number_of_curves - 1
-  CALL obj%pltfile%WRITE(TRIM(pltstring(ii))//' \')
+  CALL obj%pltfile%WRITE(obj%plotCommand(ii)%chars()//" \")
 END DO
-CALL obj%pltfile%WRITE(TRIM(pltstring(number_of_curves)))
+CALL obj%pltfile%WRITE(obj%plotCommand(number_of_curves)%chars())
 
 DO jj = 1, number_of_curves
   DO ii = 1, mx
@@ -299,10 +256,6 @@ DO jj = 1, number_of_curves
 END DO
 
 CALL obj%DEALLOCATE()
-
-IF (ALLOCATED(pltstring)) THEN
-  DEALLOCATE (pltstring)
-END IF
 
 END PROCEDURE obj_plot3
 
@@ -440,10 +393,10 @@ CHARACTER(:), ALLOCATABLE :: xlabel0, ylabel0
 REAL(DFP) :: xlim0(2), ylim0(2), areal
 TYPE(String) :: astr
 
-CALL obj%SetFilename(filename//'.plt')
+CALL obj%opts%SetFilename(filename//'.plt')
 
 astr = 'set terminal pngcairo; set output "'//filename//'.png"'
-CALL obj%SetOptions(astr)
+CALL obj%opts%SetOptions(astr)
 
 IF (PRESENT(xlim)) THEN
   xlim0 = xlim
@@ -459,19 +412,19 @@ IF (PRESENT(ylim)) THEN
 ELSE
   ylim0 = [MINVAL(yDATA(:)), MAXVAL(yDATA(:))]
   areal = (ylim0(2) - ylim0(1))
-  ylim0(1) = ylim0(1) - 0.1 * areal
-  ylim0(2) = ylim0(2) + 0.1 * areal
+  ylim0(1) = ylim0(1) - 0.1_DFP * areal
+  ylim0(2) = ylim0(2) + 0.1_DFP * areal
 END IF
 
 xlabel0 = Input(default="x", option=xlabel)
 ylabel0 = Input(default="y", option=ylabel)
 
-CALL obj%SetXlim(xlim0)
-CALL obj%SetYlim(ylim0)
-CALL obj%SetXLabel(xlabel0)
-CALL obj%SetYLabel(ylabel0)
+CALL obj%opts%SetXlim(xlim0)
+CALL obj%opts%SetYlim(ylim0)
+CALL obj%opts%SetXLabel(xlabel0)
+CALL obj%opts%SetYLabel(ylabel0)
 CALL obj%plot(x1=xDATA(:), y1=yDATA(:), ls1="w l")
-CALL obj%reset()
+CALL obj%opts%reset()
 
 END PROCEDURE obj_plotData1
 
@@ -522,7 +475,6 @@ MODULE PROCEDURE obj_AddPlot
 CHARACTER(*), PARAMETER :: myName = "obj_AddPlot()"
 
 CHARACTER(3) :: plottype
-CHARACTER(80) :: pltstring(4)
 LOGICAL(LGT) :: isok, isFirst, append0
 CHARACTER(:), ALLOCATABLE :: dataFileName, path
 
@@ -534,7 +486,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 append0 = Input(default=.TRUE., option=append)
 
 plottype = ''
-pltstring = ''
 
 isok = SIZE(x) .EQ. SIZE(y)
 IF (.NOT. isok) THEN
@@ -545,30 +496,32 @@ END IF
 
 isFirst = .NOT. obj%pltfile%isopen()
 IF (isFirst) THEN
-  obj%multiplotIndex = 1
+  obj%opts%multiplotIndex = 1
 ELSE
-  obj%multiplotIndex = obj%multiplotIndex + 1
+  obj%opts%multiplotIndex = obj%opts%multiplotIndex + 1
 END IF
 
-dataFileName = "data"//tostring(obj%multiplotIndex)//".csv"
+dataFileName = "data"//tostring(obj%opts%multiplotIndex)//".csv"
 
-CALL GetPlotCommand(obj%multiplotIndex, pltstring(1), ls, axes, &
-                    dataBlockName='"'//dataFileName//'"')
+CALL obj%SetPlotCommand(order=obj%opts%multiplotIndex, lspec=ls, &
+                        axes=axes, &
+                        dataBlockName='"'//dataFileName//'"')
 
 CALL obj%Initiate()
 
-isok = obj%multiplotIndex .EQ. 1
+isok = obj%opts%multiplotIndex .EQ. 1
 IF (isok) THEN
   CALL obj%WritePlotSetup()
   CALL obj%pltfile%WRITE('set datafile separator ","')
   CALL obj%pltfile%WriteBlank()
 END IF
 
-path = PathDir(obj%filename%chars())
+path = PathDir(obj%opts%filename%chars())
 ! Here datafile is created
 CALL Help_WriteDataFile(path//"/"//dataFileName, x, y)
 
-CALL obj%pltfile%WRITE(TRIM(pltstring(1)), advance="NO")
+CALL obj%pltfile%WRITE(obj%plotCommand(obj%opts%multiplotIndex)%chars(), &
+                       advance="NO")
 CALL obj%pltfile%WRITE(" \", advance="YES")
 
 IF (.NOT. append0) CALL obj%DEALLOCATE()
