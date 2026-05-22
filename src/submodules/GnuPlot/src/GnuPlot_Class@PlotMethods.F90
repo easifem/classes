@@ -475,8 +475,9 @@ MODULE PROCEDURE obj_AddPlot
 CHARACTER(*), PARAMETER :: myName = "obj_AddPlot()"
 
 CHARACTER(3) :: plottype
-LOGICAL(LGT) :: isok, isFirst, append0
-CHARACTER(:), ALLOCATABLE :: dataFileName, path
+LOGICAL(LGT) :: isok, append0
+CHARACTER(:), ALLOCATABLE :: dataFilePath, path
+TYPE(String) :: dataFileName0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -484,6 +485,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 append0 = Input(default=.TRUE., option=append)
+
+dataFileName0 = Input(default="data", option=dataFileName)
 
 plottype = ''
 
@@ -494,37 +497,38 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-isFirst = .NOT. obj%pltfile%isopen()
-IF (isFirst) THEN
-  obj%opts%multiplotIndex = 1
-ELSE
-  obj%opts%multiplotIndex = obj%opts%multiplotIndex + 1
-END IF
+obj%addPlotCount = obj%addPlotCount + 1
 
-dataFileName = "data"//tostring(obj%opts%multiplotIndex)//".csv"
+path = PathDir(obj%opts%filename%chars())
+dataFilePath = path//"/"//dataFileName0//tostring(obj%addPlotCount)//".csv"
 
-CALL obj%SetPlotCommand(order=obj%opts%multiplotIndex, lspec=ls, &
+CALL obj%SetPlotCommand(order=obj%addPlotCount, lspec=ls, &
                         axes=axes, &
-                        dataBlockName='"'//dataFileName//'"')
+                        dataBlockName='"'//dataFilePath//'"')
 
 CALL obj%Initiate()
 
-isok = obj%opts%multiplotIndex .EQ. 1
+isok = obj%addPlotCount .EQ. 1
 IF (isok) THEN
   CALL obj%WritePlotSetup()
   CALL obj%pltfile%WRITE('set datafile separator ","')
   CALL obj%pltfile%WriteBlank()
 END IF
 
-path = PathDir(obj%opts%filename%chars())
 ! Here datafile is created
-CALL Help_WriteDataFile(path//"/"//dataFileName, x, y)
+CALL Help_WriteDataFile(dataFilePath, x, y)
+IF (append0) THEN
+  CALL obj%pltfile%WRITE(obj%plotCommand(obj%addPlotCount)%chars(), &
+                         advance="NO")
+  CALL obj%pltfile%WRITE(" \", advance="YES")
+ELSE
+  CALL obj%pltfile%WRITE(obj%plotCommand(obj%addPlotCount)%chars())
+END IF
 
-CALL obj%pltfile%WRITE(obj%plotCommand(obj%opts%multiplotIndex)%chars(), &
-                       advance="NO")
-CALL obj%pltfile%WRITE(" \", advance="YES")
-
-IF (.NOT. append0) CALL obj%DEALLOCATE()
+IF (.NOT. append0) THEN
+  obj%addPlotCount = 0
+  CALL obj%DEALLOCATE()
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

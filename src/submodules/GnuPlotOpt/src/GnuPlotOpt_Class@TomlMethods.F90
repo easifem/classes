@@ -159,6 +159,23 @@ END SUBROUTINE ImportFileNameFromToml
 !
 !----------------------------------------------------------------------------
 
+SUBROUTINE ImportOutputFromToml(obj, table)
+  TYPE(GnuPlotOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  INTEGER(I4B) :: stat, origin
+  LOGICAL(LGT) :: isok
+
+  CALL GetValue(table=table, key="output", &
+                VALUE=obj%output, default_value="", &
+                origin=origin, stat=stat, isfound=isok)
+
+END SUBROUTINE ImportOutputFromToml
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 SUBROUTINE ImportTickSettingsFromToml(obj, table)
   TYPE(GnuPlotTick_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
@@ -390,19 +407,6 @@ SUBROUTINE ImportPlotOptsFromToml(obj, table)
   isok = ASSOCIATED(node)
   IF (.NOT. isok) RETURN
 
-  CALL GetValue(table=node, key="fill", VALUE=obj%plotOpts%fill, &
-                default_value=defaultOpt%fill, origin=origin, &
-                stat=stat, isfound=isok)
-
-  CALL GetValue(table=node, key="numLevels", VALUE=obj%plotOpts%numLevels, &
-                default_value=defaultOpt%numLevels, origin=origin, &
-                stat=stat, isfound=isok)
-
-  CALL GetValue(table=node, key="paletteName", &
-                VALUE=obj%plotOpts%paletteName, &
-                default_value=defaultOpt%paletteName, &
-                origin=origin, stat=stat, isfound=isok)
-
   CALL GetValue(table=node, key="dataStyle", &
                 VALUE=obj%plotOpts%dataStyle, &
                 default_value=defaultOpt%dataStyle, &
@@ -427,6 +431,54 @@ SUBROUTINE ImportPlotOptsFromToml(obj, table)
 END SUBROUTINE ImportPlotOptsFromToml
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportSplotOptsFromToml(obj, table)
+  CLASS(GnuPlotOpt_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B) :: stat, origin, tsize
+
+  LOGICAL(LGT) :: isok
+  TYPE(toml_table), POINTER :: node
+  CHARACTER(*), PARAMETER :: tomlName = "splotOpts"
+  REAL(DFP), ALLOCATABLE :: tempVec(:)
+
+  CALL toml_get(table, tomlName, node, origin=origin, &
+                requested=.FALSE., stat=stat)
+
+  isok = ASSOCIATED(node)
+  IF (.NOT. isok) RETURN
+
+  CALL GetValue(table=node, key="fill", VALUE=obj%splotOpts%fill, &
+                default_value=defaultOpt%fill, origin=origin, &
+                stat=stat, isfound=isok)
+
+  CALL GetValue(table=node, key="numLevels", VALUE=obj%splotOpts%numLevels, &
+                default_value=defaultOpt%numLevels, origin=origin, &
+                stat=stat, isfound=isok)
+
+  CALL GetValue(table=node, key="levels", &
+                VALUE=tempVec, origin=origin, stat=stat, isfound=isok)
+
+  obj%splotOpts%discreteLevel = .FALSE.
+  IF (isok) THEN
+    obj%splotOpts%discreteLevel = .TRUE.
+    tsize = SIZE(tempVec)
+    ALLOCATE (obj%splotOpts%levels(tsize))
+    obj%splotOpts%levels(1:tsize) = tempVec(1:tsize)
+  END IF
+
+  CALL GetValue(table=node, key="paletteName", &
+                VALUE=obj%splotOpts%paletteName, &
+                default_value=defaultOpt%paletteName, &
+                origin=origin, stat=stat, isfound=isok)
+
+  node => NULL()
+
+END SUBROUTINE ImportSplotOptsFromToml
+
+!----------------------------------------------------------------------------
 !                                                          ImportFromToml1
 !----------------------------------------------------------------------------
 
@@ -441,6 +493,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL ImportFileNameFromToml(obj, table)
+
+CALL ImportOutputFromToml(obj, table)
 
 CALL ImportCommandLineFromToml(obj, table)
 
@@ -457,6 +511,8 @@ CALL ImportAxisNamesFromToml(obj, table)
 CALL ImportAxisSettingsFromToml(obj, table)
 
 CALL ImportPlotOptsFromToml(obj, table)
+
+CALL ImportSplotOptsFromToml(obj, table)
 
 CALL ImportRunAfterWriteFromToml(obj, table)
 

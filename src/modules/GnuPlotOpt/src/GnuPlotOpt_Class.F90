@@ -132,15 +132,28 @@ END TYPE GnuPlotAxis_
 
 TYPE :: GnuPlotPlotOpts_
   TYPE(String), ALLOCATABLE :: lspecs(:)
-  LOGICAL(LGT) :: fill = .FALSE.
-  INTEGER(I4B) :: numLevels
-  REAL(DFP), ALLOCATABLE :: levels(:)
-  TYPE(String) :: paletteName
   TYPE(String) :: dataStyle
   ! datastyle: lines, points, linespoints
   LOGICAL(LGT) :: scaleData = .FALSE.
   TYPE(String) :: dataScale(3)
 END TYPE GnuPlotPlotOpts_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-05-21
+! summary:  Splot (Contour, surf) options
+
+TYPE :: GnuPlotSplotOpts_
+  TYPE(String), ALLOCATABLE :: lspecs(:)
+  LOGICAL(LGT) :: fill = .FALSE.
+  INTEGER(I4B) :: numLevels = 10
+  LOGICAL(LGT) :: discreteLevel = .FALSE.
+  REAL(DFP), ALLOCATABLE :: levels(:)
+  TYPE(String) :: paletteName
+END TYPE GnuPlotSplotOpts_
 
 !----------------------------------------------------------------------------
 !
@@ -154,6 +167,8 @@ TYPE :: GnuplotOpt_
 
   TYPE(GnuPlotPlotOpts_) :: plotOpts
 
+  TYPE(GnuPlotSplotOpts_) :: splotOpts
+
   LOGICAL(LGT) :: isInitiated = .FALSE.
 
   LOGICAL(LGT) :: runAfterWrite = .TRUE.
@@ -165,8 +180,9 @@ TYPE :: GnuplotOpt_
                         cbAxis
 
   TYPE(String) :: filename
-  ! the name of physical file
-  ! to write the gnuplot script
+  ! the name of physical file to write the gnuplot script
+  TYPE(String) :: output
+  ! the name of output used for pngcairo etc.
   TYPE(String) :: commandline
 
   TYPE(String), ALLOCATABLE :: options(:)
@@ -233,6 +249,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetCBScale => obj_SetCBScale
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetFilename => obj_SetFilename
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOutput => obj_SetOutput
   PROCEDURE, PUBLIC, PASS(obj) :: SetCommandLine => obj_SetCommandLine
   PROCEDURE, PUBLIC, PASS(obj) :: SetOptions => obj_SetOptions
   PROCEDURE, PUBLIC, PASS(obj) :: SetScripts => obj_SetScripts
@@ -345,6 +362,21 @@ INTERFACE
     CLASS(GnuPlotOpt_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_SetFilename
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     set_filename@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-05-22
+! summary:  Set Output
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOutput(obj, name)
+    CLASS(GnuPlotOpt_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetOutput
 END INTERFACE
 
 !----------------------------------------------------------------------------

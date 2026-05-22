@@ -34,6 +34,14 @@ END PROCEDURE obj_SetFilename
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_SetOutput
+obj%output = TRIM(name)
+END PROCEDURE obj_SetOutput
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 MODULE PROCEDURE obj_SetCommandline
 
 IF (LEN(chars) .EQ. 0) THEN

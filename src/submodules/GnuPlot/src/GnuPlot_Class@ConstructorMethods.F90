@@ -42,6 +42,8 @@ CALL Help_WriteSignature(obj%pltfile)
 
 CALL Help_WriteTerm(obj)
 
+CALL Help_WriteOutput(obj)
+
 IF (obj%opts%useDefaultPreset) CALL Help_WriteDefaultPreset(obj%pltfile)
 
 IF (obj%opts%setMultiplot) CALL Help_WriteMultiPlotConfig( &
@@ -157,6 +159,21 @@ SUBROUTINE Help_WriteTerm(obj)
   CALL obj%pltfile%WriteBlank()
 
 END SUBROUTINE Help_WriteTerm
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE Help_WriteOutput(obj)
+  TYPE(GnuPlot_), INTENT(INOUT) :: obj
+
+  IF (obj%opts%output%LEN() .EQ. 0) RETURN
+
+  CALL obj%pltfile%WRITE('set output "'//obj%opts%output//'"')
+
+  CALL obj%pltfile%WriteBlank()
+
+END SUBROUTINE Help_WriteOutput
 
 !----------------------------------------------------------------------------
 !

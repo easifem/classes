@@ -63,6 +63,8 @@ TYPE :: GnuPlot_
 
   TYPE(String) :: plotCommand(defaultOpt%maxNumberPlots)
 
+  INTEGER(I4B) :: addPlotCount = 0
+
   ! DATA pointer
   TYPE(RealMatrixPointer_), ALLOCATABLE :: xMats(:), yMats(:), zMats(:)
   TYPE(RealVectorPointer_), ALLOCATABLE :: xVecs(:), yVecs(:), zVecs(:)
@@ -155,6 +157,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetCBScale => obj_SetCBScale
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetFilename => obj_SetFilename
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOutput => obj_SetOutput
   PROCEDURE, PUBLIC, PASS(obj) :: SetCommandLine => obj_SetCommandLine
   PROCEDURE, PUBLIC, PASS(obj) :: SetOptions => obj_SetOptions
   PROCEDURE, PUBLIC, PASS(obj) :: SetScripts => obj_SetScripts
@@ -287,13 +290,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_AddPlot(obj, x, y, ls, axes, append)
+  MODULE SUBROUTINE obj_AddPlot(obj, x, y, ls, axes, append, dataFileName)
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: x(:)
     REAL(DFP), INTENT(IN), OPTIONAL :: y(:)
     CHARACTER(*), INTENT(IN), OPTIONAL :: ls
     CHARACTER(*), INTENT(IN), OPTIONAL :: axes
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: append
+    CHARACTER(*), INTENT(IN), OPTIONAL :: dataFileName
   END SUBROUTINE obj_AddPlot
 END INTERFACE
 
@@ -740,6 +744,21 @@ INTERFACE
     CLASS(GnuPlot_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_SetFilename
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-05-22
+! summary:  set output
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetOutput(obj, name)
+    CLASS(GnuPlot_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: name
+  END SUBROUTINE obj_SetOutput
 END INTERFACE
 
 !----------------------------------------------------------------------------
