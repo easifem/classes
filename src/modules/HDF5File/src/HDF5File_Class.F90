@@ -546,7 +546,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE preWrite( obj,rank,gdims,ldims,path,mem,dset_id,dspace_id,&
-               & gspace_id, plist_id, error, cnt, offset)
+                 & gspace_id, plist_id, error, cnt, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     INTEGER, INTENT(IN) :: rank
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
@@ -1293,7 +1293,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st1(obj, dsetname, vals, length_max, gdims_in, &
-               & cnt_in, offset_in)
+                 & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1343,7 +1343,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st2(obj, dsetname, vals, length_max, gdims_in, &
-               & cnt_in, offset_in)
+                 & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1393,7 +1393,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st3(obj, dsetname, vals, length_max, gdims_in, &
-               & cnt_in, offset_in)
+                 & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
