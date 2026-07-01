@@ -71,6 +71,10 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !! Storage format
   !! note: This variable is only for internal use
 
+  INTEGER(I4B) :: tSize = 0
+  !! Total length of the nodal field = tdof * tNodes
+  !! note: This variable is only for internal use
+
   INTEGER(I4B), ALLOCATABLE :: dof_spaceCompo(:)
   !! Spatial components
   !! note: This variable is only for internal use
@@ -84,10 +88,6 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
 
   CHARACTER(1), ALLOCATABLE :: dof_names_char(:)
   !! Single character name of physical variable
-  !! note: This variable is only for internal use
-
-  INTEGER(I4B) :: tSize = 0
-  !! Total length of the nodal field = tdof * tNodes
   !! note: This variable is only for internal use
 
   TYPE(RealVector_) :: realVec
@@ -457,52 +457,7 @@ INTERFACE AbstractNodeFieldDisplay
 END INTERFACE AbstractNodeFieldDisplay
 
 !----------------------------------------------------------------------------
-!                                                            IMPORT@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-24
-! summary:  Import data into HDF5File_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
-  END SUBROUTINE obj_Import
-END INTERFACE
-
-INTERFACE AbstractNodeFieldImport
-  MODULE PROCEDURE obj_Import
-END INTERFACE AbstractNodeFieldImport
-
-!----------------------------------------------------------------------------
-!                                                         Export@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-11-24
-! summary:  Export data into HDF5File_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-  END SUBROUTINE obj_Export
-END INTERFACE
-
-INTERFACE AbstractNodeFieldExport
-  MODULE PROCEDURE obj_Export
-END INTERFACE AbstractNodeFieldExport
-
-!----------------------------------------------------------------------------
-!                                                     ExportToVTK@IOMethods
+!                                                     ExportToVTK@VTKMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1141,6 +1096,51 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Reciprocal
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          IMPORT@HDFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Import abstract node field data from HDF5File_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs, geofedof, geofedofs)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+  END SUBROUTINE obj_Import
+END INTERFACE
+
+INTERFACE AbstractNodeFieldImport
+  MODULE PROCEDURE obj_Import
+END INTERFACE AbstractNodeFieldImport
+
+!----------------------------------------------------------------------------
+!                                                         Export@HDFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-24
+! summary:  Export data into HDF5File_
+
+INTERFACE
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE AbstractNodeFieldExport
+  MODULE PROCEDURE obj_Export
+END INTERFACE AbstractNodeFieldExport
 
 !----------------------------------------------------------------------------
 !
