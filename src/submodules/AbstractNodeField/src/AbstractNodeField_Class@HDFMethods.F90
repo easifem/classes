@@ -16,13 +16,13 @@
 
 SUBMODULE(AbstractNodeField_Class) HDFMethods
 USE String_Class, ONLY: String
+USE BaseType, ONLY: math => TypeMathOpt
 USE AbstractField_Class, ONLY: AbstractFieldImport
 USE AbstractField_Class, ONLY: AbstractFieldExport
 USE HDF5FileUtility, ONLY: ImportRealVector
 USE HDF5FileUtility, ONLY: ImportDOF
 USE HDF5FileUtility, ONLY: ExportRealVector
 USE HDF5FileUtility, ONLY: ImportRealVector
-USE HDF5FileUtility, ONLY: ExportDOF
 
 IMPLICIT NONE
 
@@ -38,7 +38,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
 TYPE(String) :: dsetname
-LOGICAL(LGT) :: abool
+TYPE(String), ALLOCATABLE :: tempStrs(:)
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -49,18 +51,54 @@ CALL AbstractFieldImport( &
   obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
   geofedof=geofedof, geofedofs=geofedofs)
 
-dsetname = TRIM(group)//"/tSize"
-abool = hdf5%pathExists(dsetname%chars())
-IF (abool) CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tSize)
+dsetname = TRIM(group)//"/INTR0/dof_tPhysicalVars"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
+                         vals=obj%dof_tPhysicalVars)
 
-dsetname = TRIM(group)//"/dof"
-abool = hdf5%pathExists(dsetname%chars())
-IF (abool) CALL ImportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
+dsetname = TRIM(group)//"/INTR0/dof_storageFMT"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
+                         vals=obj%dof_storageFMT)
 
-dsetname = TRIM(group)//"/realVec"
-abool = hdf5%pathExists(dsetname%chars())
-IF (abool) CALL ImportRealVector(obj=obj%realvec, hdf5=hdf5, &
-                                 group=dsetname%chars())
+dsetname = TRIM(group)//"/INTR0/tSize"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
+                         vals=obj%tSize)
+
+dsetname = TRIM(group)//"/INTR1/dof_spaceCompo"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
+                         vals=obj%dof_spaceCompo)
+
+dsetname = TRIM(group)//"/INTR1/dof_timeCompo"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
+                         vals=obj%dof_timeCompo)
+
+dsetname = TRIM(group)//"/INTR1/dof_tNodes"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
+                         vals=obj%dof_tNodes)
+
+! StringR1
+dsetname = TRIM(group)//"/StringR1/dof_names_char"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=tempStrs)
+  tsize = SIZE(tempStrs)
+  ALLOCATE (obj%dof_names_char(tSize))
+  DO ii = 1, tsize
+    obj%dof_names_char(ii) = tempStrs(ii)%slice(1, 1)
+    tempStrs(ii) = ""
+  END DO
+  DEALLOCATE (tempStrs)
+END IF
+
+dsetname = TRIM(group)//"/RealVectorR0/realVec"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) CALL ImportRealVector(obj=obj%realvec, hdf5=hdf5, &
+                                group=dsetname%chars())
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -76,8 +114,11 @@ MODULE PROCEDURE obj_Export
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
 #endif
+LOGICAL(LGT) :: isok
 
 TYPE(String) :: dsetname
+TYPE(String), ALLOCATABLE :: tempStrs(:)
+INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -86,16 +127,59 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL AbstractFieldExport(obj=obj, hdf5=hdf5, group=group)
 
+! Integer Scalars
+! ---------------
+! dof_tPhysicalVars
+dsetname = TRIM(group)//"/IntR0/dof_tPhysicalVars"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%dof_tPhysicalVars)
+
+! dof_storageFMT
+dsetname = TRIM(group)//"/IntR0/dof_storageFMT"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%dof_storageFMT)
+
 ! tSize
-dsetname = TRIM(group)//"/tSize"
+dsetname = TRIM(group)//"/IntR0/tSize"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tSize)
 
-! dof
-dsetname = TRIM(group)//"/dof"
-CALL ExportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%chars())
+! Integer Vectors
+! ---------------
+
+isok = ALLOCATED(obj%dof_spaceCompo)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/IntR1/dof_spaceCompo"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%dof_spaceCompo)
+END IF
+
+isok = ALLOCATED(obj%dof_timeCompo)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/IntR1/dof_timeCompo"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%dof_timeCompo)
+END IF
+
+isok = ALLOCATED(obj%dof_tNodes)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/IntR1/dof_tNodes"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%dof_tNodes)
+END IF
+
+! StringR1
+isok = ALLOCATED(obj%dof_names_char)
+IF (isok) THEN
+  tsize = SIZE(obj%dof_names_char)
+  ALLOCATE (tempStrs(tsize))
+  DO ii = 1, tsize
+    tempStrs(ii) = obj%dof_names_char(ii)
+  END DO
+  dsetname = TRIM(group)//"/StringR1/dof_names_char"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=tempStrs)
+  DO ii = 1, tsize
+    tempStrs(ii) = ""
+  END DO
+  DEALLOCATE (tempStrs)
+END IF
 
 ! realVec
-dsetname = TRIM(group)//"/realVec"
+dsetname = TRIM(group)//"/RealVectorR0/realVec"
 CALL ExportRealVector(obj=obj%realVec, hdf5=hdf5, group=dsetname%chars())
 
 ! info
@@ -106,7 +190,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
-!                                                               Include Error
+!                                                              Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

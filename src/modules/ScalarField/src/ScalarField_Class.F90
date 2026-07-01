@@ -44,6 +44,7 @@ PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
 PUBLIC :: ScalarFieldInitiate
 PUBLIC :: ScalarFieldImport
+PUBLIC :: ScalarFieldExport
 PUBLIC :: ScalarFieldDeallocate
 PUBLIC :: ScalarFieldSafeAllocate
 PUBLIC :: ScalarFieldApplyBodySource
@@ -65,13 +66,11 @@ TYPE, EXTENDS(AbstractNodeField_) :: ScalarField_
 CONTAINS
   PRIVATE
 
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate an instance of ScalarField_ by passing arguments
   FINAL :: obj_Final
 
-  ! SET:
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry, we call SetSingle method
@@ -99,7 +98,6 @@ CONTAINS
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Set7
   !! Set values to a vector
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get single entry
@@ -119,7 +117,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
 
-  ! SET:
   ! @DBCMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
     obj_ApplyDirichletBC1
@@ -133,12 +130,10 @@ CONTAINS
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
 
-  ! SET:
   ! @PointNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
 
-  ! SET:
   ! @SurfaceNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
     ApplySurfaceNeumannBC1 => obj_ApplySurfaceNeumannBC1
@@ -150,7 +145,6 @@ CONTAINS
     ApplySurfaceNeumannBC2
   !! Generic method for applying surface neumann boundary conditions
 
-  ! SET:
   ! @BodySourceMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource1 => &
     obj_ApplyBodySource1
@@ -163,14 +157,16 @@ CONTAINS
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
   !! Generic method for setting body source
 
-  ! IO:
-  ! @IOMethods
+  ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from HDF5 file
+  PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
+  !! Export data from HDF5 file
+
+  ! @VTKMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
 
-  ! IO:
-  ! @IOMethods
+  ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
   !! Initiate from toml
 END TYPE ScalarField_
@@ -293,7 +289,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -335,53 +331,6 @@ END INTERFACE
 INTERFACE ScalarFieldSafeAllocate
   MODULE PROCEDURE obj_ScalarFieldSafeAllocate1
 END INTERFACE ScalarFieldSafeAllocate
-
-!----------------------------------------------------------------------------
-!                                                                Import@IO
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Imports the content
-
-INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
-    CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
-  END SUBROUTINE obj_Import
-END INTERFACE
-
-INTERFACE ScalarFieldImport
-  MODULE PROCEDURE obj_Import
-END INTERFACE ScalarFieldImport
-
-!----------------------------------------------------------------------------
-!                                                     ExportToVTK@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2024-07-29
-! summary:  This routine called during WriteData_vtk
-!
-!# Introduction
-!
-! This routine is called during WriteData_vtk
-! It should be implemented by the child class
-
-INTERFACE
-  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    !! node field object
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    !! vtkfile object
-  END SUBROUTINE obj_ExportToVTK
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Set@SetMethods
@@ -429,7 +378,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -446,7 +395,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -471,7 +420,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -496,7 +445,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -522,7 +471,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -537,7 +486,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -552,35 +501,6 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN) :: addContribution
   END SUBROUTINE obj_Set8
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                            Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Set
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Set9( &
-!     obj, ivar, idof, VALUE, ivar_value, idof_value, scale, addContribution)
-!     CLASS(ScalarField_), INTENT(INOUT) :: obj
-!     INTEGER(I4B), INTENT(IN) :: ivar
-!     !! physical variable of obj
-!     INTEGER(I4B), INTENT(IN) :: idof
-!     !! local degree of freedom of physical variable ivar
-!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-!     !! right hand side in obj = value
-!     INTEGER(I4B), INTENT(IN) :: ivar_value
-!     !! physical variable of value
-!     INTEGER(I4B), INTENT(IN) :: idof_value
-!     !! local degree of freedom of physical variable ivar_value
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-!     !! scale
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-!     !! add or set
-!   END SUBROUTINE obj_Set9
-! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   SetByFunction@SetMethods
@@ -607,7 +527,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -628,7 +548,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -646,7 +566,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -668,7 +588,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -686,30 +606,6 @@ INTERFACE
     !! if true, then globalNodes are local nodes
   END SUBROUTINE obj_Get4
 END INTERFACE
-
-! !----------------------------------------------------------------------------
-! !                                                             Get@GetMethods
-! !----------------------------------------------------------------------------
-!
-! !> author: Vikas Sharma, Ph. D.
-! ! date: 2024-06-05
-! ! summary: value@[ivar, idof] = obj@[ivar, idof]
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_Get6(obj, ivar, idof, VALUE, ivar_value, idof_value)
-!     CLASS(ScalarField_), INTENT(IN) :: obj
-!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-!     !! obj = value
-!     INTEGER(I4B), INTENT(IN) :: ivar
-!     !! physical variable in obj
-!     INTEGER(I4B), INTENT(IN) :: idof
-!     !! local degree of freedom in obj (physical variable)
-!     INTEGER(I4B), INTENT(IN) :: ivar_value
-!     !! physical variable in value
-!     INTEGER(I4B), INTENT(IN) :: idof_value
-!     !! local degree of freedom in value (physical variable)
-!   END SUBROUTINE obj_Get6
-! END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   GetFEVariable@GetMethods
@@ -767,7 +663,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               ApplyDirichletBC@DBCMethods
+!                                                ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -783,7 +679,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               ApplyDirichletBC@DBCMethods
+!                                                ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -799,7 +695,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               ApplyDirichletBC@DBCMethods
+!                                                ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -859,7 +755,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ApplyNeumannBC@NBCMethods
+!                                                  ApplyNeumannBC@NBCMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -936,7 +832,7 @@ INTERFACE ScalarFieldApplyBodySource
 END INTERFACE ScalarFieldApplyBodySource
 
 !----------------------------------------------------------------------------
-!                                                SetFromToml@TomlMethods
+!                                                    SetFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -948,6 +844,77 @@ INTERFACE
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
   END SUBROUTINE obj_SetFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Import@HDFMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-07-01
+! summary: This routine Imports the content of scalar field from HDF5File
+
+INTERFACE
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
+                               timefedofs, geofedof, geofedofs)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+  END SUBROUTINE obj_Import
+END INTERFACE
+
+INTERFACE ScalarFieldImport
+  MODULE PROCEDURE obj_Import
+END INTERFACE ScalarFieldImport
+
+!----------------------------------------------------------------------------
+!                                                          Export@HDFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-01
+! summary: Export the content of ScalarField to HDF5 file.
+!
+!# Export
+!
+! Export the content of ScalarField to HDF5 file.
+
+INTERFACE
+  MODULE SUBROUTINE obj_Export(obj, hdf5, group)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE obj_Export
+END INTERFACE
+
+INTERFACE ScalarFieldExport
+  MODULE PROCEDURE obj_Export
+END INTERFACE ScalarFieldExport
+
+!----------------------------------------------------------------------------
+!                                                     ExportToVTK@VTKMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2026-07-01
+! summary:  This routine called during WriteData_vtk
+!
+!# ExportToVTK
+!
+! This routine is called during WriteData_vtk.
+! It should be implemented by the child class
+
+INTERFACE
+  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! node field object
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    !! vtkfile object
+  END SUBROUTINE obj_ExportToVTK
 END INTERFACE
 
 !----------------------------------------------------------------------------
