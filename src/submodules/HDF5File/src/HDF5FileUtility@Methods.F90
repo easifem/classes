@@ -641,6 +641,189 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE ImportIntVector
 
 !----------------------------------------------------------------------------
+!                                                        HDF5WriteCharVector
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE HDF5WriteCharVector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HD5WriteCharVector()"
+#endif
+TYPE(String) :: dsetname
+INTEGER(I4B) :: tsize, ii
+TYPE(String), ALLOCATABLE :: tempstr(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(VALUE)
+ALLOCATE (tempstr(tsize))
+
+DO ii = 1, tsize
+  tempstr(ii) = TRIM(VALUE(ii))
+END DO
+
+!> tDimension
+dsetname = TRIM(group)//"/"//TRIM(fieldname)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=tempstr)
+
+DO ii = 1, tsize
+  tempstr(ii) = ""
+END DO
+
+DEALLOCATE (tempstr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE HDF5WriteCharVector
+
+!----------------------------------------------------------------------------
+!                                                        HDF5WriteCharMatrix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE HDF5WriteCharMatrix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HD5WriteCharMatrix()"
+#endif
+TYPE(String) :: dsetname
+INTEGER(I4B) :: nrow, ncol, ii, jj
+TYPE(String), ALLOCATABLE :: tempstr(:, :)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+nrow = SIZE(VALUE, 1)
+ncol = SIZE(VALUE, 2)
+ALLOCATE (tempstr(nrow, ncol))
+
+DO jj = 1, ncol
+  DO ii = 1, nrow
+    tempstr(ii, jj) = TRIM(VALUE(ii, jj))
+  END DO
+END DO
+
+dsetname = TRIM(group)//"/"//TRIM(fieldname)
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=tempstr)
+
+DO jj = 1, ncol
+  DO ii = 1, nrow
+    tempstr(ii, jj) = ""
+  END DO
+END DO
+
+DEALLOCATE (tempstr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE HDF5WriteCharMatrix
+
+!----------------------------------------------------------------------------
+!                                                        HDF5ReadCharVector
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE HDF5ReadCharVector
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HD5ReadCharVector()"
+#endif
+TYPE(String) :: dsetname
+INTEGER(I4B) :: tsize, ii
+TYPE(String), ALLOCATABLE :: tempstr(:)
+CHARACTER(1) :: asource
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+dsetname = group//"/"//fieldname
+isok = hdf5%pathExists(dsetname%Chars())
+
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=tempstr)
+  IF (ALLOCATED(VALUE)) DEALLOCATE (VALUE)
+
+  tsize = SIZE(tempstr)
+  ALLOCATE (VALUE(tsize), source=asource)
+
+  DO ii = 1, tsize
+    VALUE(ii) = tempstr(ii)%slice(1, 1)
+  END DO
+
+  DO ii = 1, tsize
+    tempstr(ii) = ""
+  END DO
+
+  DEALLOCATE (tempstr)
+  dsetname = ""
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE HDF5ReadCharVector
+
+!----------------------------------------------------------------------------
+!                                                        HDF5ReadCharMatrix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE HDF5ReadCharMatrix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "HD5ReadCharMatrix()"
+#endif
+TYPE(String) :: dsetname
+INTEGER(I4B) :: nrow, ncol, ii, jj
+TYPE(String), ALLOCATABLE :: tempstr(:, :)
+CHARACTER(1) :: asource
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+dsetname = group//"/"//fieldname
+isok = hdf5%pathExists(dsetname%Chars())
+
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=tempstr)
+  IF (ALLOCATED(VALUE)) DEALLOCATE (VALUE)
+
+  nrow = SIZE(tempstr, 1)
+  ncol = SIZE(tempstr, 2)
+  ALLOCATE (VALUE(nrow, ncol), source=asource)
+
+  DO jj = 1, ncol
+    DO ii = 1, nrow
+      VALUE(ii, jj) = tempstr(ii, jj)%slice(1, 1)
+    END DO
+  END DO
+
+  DO jj = 1, ncol
+    DO ii = 1, nrow
+      tempstr(ii, jj) = ""
+    END DO
+  END DO
+
+  DEALLOCATE (tempstr)
+  dsetname = ""
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE HDF5ReadCharMatrix
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
