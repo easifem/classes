@@ -272,22 +272,30 @@ MODULE PROCEDURE ExportDOF
 CHARACTER(*), PARAMETER :: myName = "ExportDOF()"
 #endif
 TYPE(String) :: dsetname
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-dsetname = TRIM(group)//"/storageFMT"
+dsetname = TRIM(group)//"/IntR0/storageFMT"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%storageFMT)
 
-IF (ALLOCATED(obj%map)) THEN
-  dsetname = TRIM(group)//"/map"
+dsetname = TRIM(group)//"/IntR0/mapRow"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%mapRow)
+
+dsetname = TRIM(group)//"/IntR0/valMapSize"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%valMapSize)
+
+isok = ALLOCATED(obj%map)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/IntR2/map"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%map)
 END IF
 
 IF (ALLOCATED(obj%valMap)) THEN
-  dsetname = TRIM(group)//"/valMap"
+  dsetname = TRIM(group)//"/IntR1/valMap"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%valMap)
 END IF
 
@@ -543,11 +551,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 !> tDimension
-dsetname = TRIM(group)//"/tDimension"
+dsetname = TRIM(group)//"/IntR0/tDimension"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tDimension)
 
-!> Val
-dsetname = TRIM(group)//"/Val"
+!> val
+dsetname = TRIM(group)//"/RealR1/val"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%Val)
 
 #ifdef DEBUG_VER
@@ -574,7 +582,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 dsetname = TRIM(group)//"/tDimension"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tDimension)
 
-dsetname = TRIM(group)//"/Val"
+dsetname = TRIM(group)//"/val"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%Val)
 
 #ifdef DEBUG_VER

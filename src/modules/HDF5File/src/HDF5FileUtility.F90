@@ -51,11 +51,6 @@ PUBLIC :: HDF5GetEntities
 PUBLIC :: HDF5WriteVector
 PUBLIC :: HDF5WriteMatrix
 
-! PUBLIC :: ExportCharVector
-! PUBLIC :: ExportCharMatrix
-! PUBLIC :: ImportCharVector
-! PUBLIC :: ImportCharMatrix
-
 !----------------------------------------------------------------------------
 !                                                            HDF5GetEntities
 !----------------------------------------------------------------------------
