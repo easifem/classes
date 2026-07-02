@@ -906,7 +906,6 @@ END INTERFACE ScalarFieldExport
 !# ExportToVTK
 !
 ! This routine is called during WriteData_vtk.
-! It should be implemented by the child class
 
 INTERFACE
   MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
