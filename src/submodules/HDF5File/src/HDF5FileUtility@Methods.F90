@@ -322,15 +322,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-dsetname = TRIM(group)//"/storageFMT"
+dsetname = TRIM(group)//"/IntR0/storageFMT"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%storageFMT)
 
-dsetname = TRIM(group)//"/map"
+dsetname = TRIM(group)//"/IntR0/mapRow"
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%mapRow)
+
+dsetname = TRIM(group)//"/IntR0/valMapSize"
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%valMapSize)
+
+dsetname = TRIM(group)//"/IntR2/map"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) &
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%map)
 
-dsetname = TRIM(group)//"/valMap"
+dsetname = TRIM(group)//"/IntR1/valMap"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) &
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%valMap)
@@ -579,10 +585,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-dsetname = TRIM(group)//"/tDimension"
+dsetname = TRIM(group)//"/IntR0/tDimension"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tDimension)
 
-dsetname = TRIM(group)//"/val"
+dsetname = TRIM(group)//"/RealR1/val"
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%Val)
 
 #ifdef DEBUG_VER

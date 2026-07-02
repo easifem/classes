@@ -51,32 +51,32 @@ CALL AbstractFieldImport( &
   obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
   geofedof=geofedof, geofedofs=geofedofs)
 
-dsetname = TRIM(group)//"/INTR0/dof_tPhysicalVars"
+dsetname = TRIM(group)//"/IntR0/dof_tPhysicalVars"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
                          vals=obj%dof_tPhysicalVars)
 
-dsetname = TRIM(group)//"/INTR0/dof_storageFMT"
+dsetname = TRIM(group)//"/IntR0/dof_storageFMT"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
                          vals=obj%dof_storageFMT)
 
-dsetname = TRIM(group)//"/INTR0/tSize"
+dsetname = TRIM(group)//"/IntR0/tSize"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
                          vals=obj%tSize)
 
-dsetname = TRIM(group)//"/INTR1/dof_spaceCompo"
+dsetname = TRIM(group)//"/IntR1/dof_spaceCompo"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
                          vals=obj%dof_spaceCompo)
 
-dsetname = TRIM(group)//"/INTR1/dof_timeCompo"
+dsetname = TRIM(group)//"/IntR1/dof_timeCompo"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
                          vals=obj%dof_timeCompo)
 
-dsetname = TRIM(group)//"/INTR1/dof_tNodes"
+dsetname = TRIM(group)//"/IntR1/dof_tNodes"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
                          vals=obj%dof_tNodes)

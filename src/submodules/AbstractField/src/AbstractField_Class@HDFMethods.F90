@@ -18,6 +18,7 @@ SUBMODULE(AbstractField_Class) HDFMethods
 USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE HDF5FileUtility, ONLY: ExportDOF
+USE HDF5FileUtility, ONLY: ImportDOF
 
 IMPLICIT NONE
 
@@ -143,8 +144,8 @@ CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%engine)
 dname = TRIM(group)//"/StringR0/errorType"
 CALL hdf5%WRITE(dsetname=dname%chars(), vals=String(obj%errorType))
 
-! DOFR0
-dname = TRIM(group)//"/DOFR0/dof"
+! DofR0
+dname = TRIM(group)//"/DofR0/dof"
 CALL ExportDOF(obj=obj%dof, hdf5=hdf5, group=dname%Chars())
 
 ! fedof, geofedof, fedofs, geofedofs, timefedof, timefedofs,
@@ -314,6 +315,14 @@ isok = hdf5%pathExists(dsetname%chars())
 IF (isok) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
   obj%errorType = strval%Slice(1, 4)
+  strval = ""
+END IF
+
+! DofR0
+dsetname = TRIM(group)//"/DofR0/dof"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) THEN
+  CALL ImportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%Chars())
 END IF
 
 isok = PRESENT(fedof)
