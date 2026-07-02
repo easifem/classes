@@ -15,27 +15,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) VTKMethods
-USE BaseType, ONLY: TypeFEVariableScalar, &
-                    TypeFEVariableVector, &
-                    TypeFEVariableSpace, &
-                    TypeFEVariableSpaceTime, &
-                    IntVector_, &
-                    TypeFEVariableOpt
-
-USE Display_Method, ONLY: Display, ToString
-
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableVector
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: TypeFEVariableSpaceTime
+USE BaseType, ONLY: IntVector_
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-
 USE String_Class, ONLY: String
-
-USE FEVariable_Method, ONLY: OPERATOR(.RANK.), &
-                             OPERATOR(.vartype.), &
-                             FEVariable_Get => Get, &
-                             FEVariable_Deallocate => DEALLOCATE
-
-USE IntVector_Method, ONLY: IntVector_Initiate => Initiate, &
-                            ASSIGNMENT(=)
-
+USE FEVariable_Method, ONLY: OPERATOR(.RANK.)
+USE FEVariable_Method, ONLY: OPERATOR(.vartype.)
+USE FEVariable_Method, ONLY: FEVariable_Get => Get
+USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE IntVector_Method, ONLY: IntVector_Initiate => Initiate
+USE IntVector_Method, ONLY: ASSIGNMENT(=)
 IMPLICIT NONE
 
 CONTAINS
@@ -74,7 +70,6 @@ MODULE PROCEDURE obj_WriteData_vtk1
 CHARACTER(*), PARAMETER :: myname = "obj_WriteData_vtk1()"
 #endif
 
-LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 CLASS(AbstractMesh_), POINTER :: meshptr
 TYPE(String) :: location, action
 
@@ -88,7 +83,8 @@ CALL Writedata_vtk1_CheckError(obj=obj, vtk=vtk)
 #endif
 
 meshptr => obj%fedof%GetMeshPointer()
-CALL meshptr%ExportToVTK(vtk=vtk, openTag=yes, content=yes, closeTag=no)
+CALL meshptr%ExportToVTK(vtk=vtk, openTag=math%yes, content=math%yes, &
+                         closeTag=math%no)
 location = String('node')
 action = String('open')
 CALL vtk%WriteDataArray(location=location, action=action)
@@ -112,7 +108,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_WriteData_vtk1
 
 !----------------------------------------------------------------------------
-!                                                             WriteData
+!                                                                  WriteData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteData_vtk2
@@ -120,8 +116,8 @@ MODULE PROCEDURE obj_WriteData_vtk2
 CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk2()"
 #endif
 
-INTEGER(I4B), PARAMETER :: maxObjSize = 24 ! maximum size of obj
-LOGICAL(LGT), PARAMETER :: no = .FALSE., yes = .TRUE.
+INTEGER(I4B), PARAMETER :: maxObjSize = 24
+! maximum size of obj
 
 LOGICAL(LGT) :: isOK
 INTEGER(I4B), ALLOCATABLE :: nptrs(:)
@@ -165,11 +161,13 @@ DO iobj = 1, tfield
 
   isok = obj0%IsInitiated()
   CALL AssertError1(isok, myName, &
-            'AbstractNodeField_::obj('//ToString(iobj)//') is not Initiated.')
+                    'AbstractNodeField_::obj('// &
+                    ToString(iobj)//') is not Initiated.')
 
   isok = ASSOCIATED(obj0%fedof)
   CALL AssertError1(isok, myName, &
-      'AbstractNodeField_::obj('//ToString(iobj)//')%fedof is not associated')
+                    'AbstractNodeField_::obj('// &
+                    ToString(iobj)//')%fedof is not associated')
 END DO
 #endif
 
@@ -217,7 +215,8 @@ ALLOCATE (xij(3, tnodes))
 CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 
 CALL meshptr%ExportToVTK(vtk=vtk, nodeCoord=xij, &
-                         openTag=yes, content=yes, closeTag=no)
+                         openTag=math%yes, content=math%yes, &
+                         closeTag=math%no)
 
 location = String('node')
 action = String('open')
@@ -234,7 +233,7 @@ DO iobj = 1, tfield
   CALL ExportFieldToVTK( &
     obj=obj0, vtk=vtk, nptrs=nptrs, tPhysicalVars=tPhysicalVars(iobj), &
     dofNames=dofNames(tsize + 1:aint), spaceCompo=spaceCompo(iobj)%val, &
-    timeCompo=timeCompo(iobj)%val, islocal=no)
+    timeCompo=timeCompo(iobj)%val, islocal=math%no)
 
   tsize = aint
 END DO
@@ -316,8 +315,9 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
         r2 = FEVariable_Get(fevar, TypeFEVariableScalar, &
                             TypeFEVariableSpaceTime)
         DO itime = 1, timeCompo(ivar)
-          CALL vtk%WriteDataArray(name=String(name//"_t"//ToString(itime)), &
-                          x=r2(itime, :), numberOfComponents=spaceCompo(ivar))
+          CALL vtk%WriteDataArray( &
+            name=String(name//"_t"//ToString(itime)), &
+            x=r2(itime, :), numberOfComponents=spaceCompo(ivar))
         END DO
       END IF
 
@@ -337,15 +337,17 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
                             TypeFEVariableSpaceTime)
 
         DO itime = 1, timeCompo(ivar)
-          CALL vtk%WriteDataArray(name=String(name//"_t"//ToString(itime)), &
-                       x=r3(:, :, itime), numberOfComponents=spaceCompo(ivar))
+          CALL vtk%WriteDataArray( &
+            name=String(name//"_t"//ToString(itime)), &
+            x=r3(:, :, itime), numberOfComponents=spaceCompo(ivar))
         END DO
 
       END IF
 
-#ifdef DEBUG_VER
     CASE DEFAULT
-      CALL AssertError1(.FALSE., myName, 'No case found for fevar')
+
+#ifdef DEBUG_VER
+      CALL AssertError1(math%no, myName, 'No case found for fevar')
 #endif
 
     END SELECT

@@ -203,7 +203,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-alpha0 = 0.0_DFP; beta0 = 0.0_DFP; lambda0 = 0.5_DFP
+alpha0 = 0.0_DFP
+beta0 = 0.0_DFP
+lambda0 = 0.5_DFP
 
 IF (PRESENT(alpha)) alpha0 = alpha(1)
 IF (PRESENT(beta)) beta0 = beta(1)

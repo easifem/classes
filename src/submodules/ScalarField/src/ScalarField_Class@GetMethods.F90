@@ -34,7 +34,10 @@ USE FEVariable_Method, ONLY: QuadratureVariable
 USE MeshField_Class, ONLY: ScalarMeshFieldInitiate
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
 USE ReallocateUtility, ONLY: Reallocate
-USE RealVector_Method, ONLY: GetValue_, Get, GetValue
+USE RealVector_Method, ONLY: GetValue_
+USE RealVector_Method, ONLY: Get
+USE RealVector_Method, ONLY: GetValue
+USE Display_Method, ONLY: Display
 
 IMPLICIT NONE
 

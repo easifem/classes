@@ -83,13 +83,15 @@ TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = math%no
   !! It is true when we set the maxTotalNodeNumForBC
   !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
+  LOGICAL(LGT) :: saveErrorNorm = math%no
+  !! save error norm
+  LOGICAL(LGT) :: plotWithResult = math%no
+  !! do you want to plot exact solution with result
+  LOGICAL(LGT) :: plotErrorNorm = math%no
+  !! plot error norm
+
   INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
-  TYPE(String) :: name
-  !! name of the field
-  TYPE(String) :: engine
-  !! Engine of the field, for example
-  !! NATIVE_SERIAL, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_OMP, LIS_MPI
   INTEGER(I4B) :: maxTotalNodeNumForBC = math%zero_i
   !! maximum total node num for applying boundary conditions
   !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
@@ -111,6 +113,14 @@ TYPE, ABSTRACT :: AbstractField_
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
 
+  TYPE(String) :: name
+  !! name of the field
+  TYPE(String) :: engine
+  !! Engine of the field, for example
+  !! NATIVE_SERIAL, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_OMP, LIS_MPI
+  CHARACTER(4) :: errorType = "NONE"
+  !! errorType
+
   TYPE(DOF_) :: dof
   !! Degree of freedom object,
   !! which contains the information about how the different
@@ -130,13 +140,6 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE(UserFunction_), POINTER :: exact => NULL()
   !! reference function for displacement
   !! Reference displacement denotes the exact solution
-  LOGICAL(LGT) :: saveErrorNorm = math%no
-  !! save error norm
-  CHARACTER(4) :: errorType = "NONE"
-  !! errorType
-  LOGICAL(LGT) :: plotWithResult = math%no
-  !! do you want to plot exact solution with result
-  LOGICAL(LGT) :: plotErrorNorm = math%no
 
   TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
   !! Dirichlet boundary conditions
@@ -592,9 +595,17 @@ INTERFACE AbstractFieldImport
 END INTERFACE AbstractFieldImport
 
 !----------------------------------------------------------------------------
-!                                                          Export@IOMethods
+!                                                          Export@HDFMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-01
+! summary: Export AbstractField to HDF5 file
+!
+!# Export
+!
+! Export AbstractField data to HDF5 file.
+!
 INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
