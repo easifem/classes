@@ -486,15 +486,11 @@ END INTERFACE
 ! date:  2023-11-24
 ! summary:  Export data in vtkfile
 
-INTERFACE
+INTERFACE AbstractNodeFieldWriteData
   MODULE SUBROUTINE obj_WriteData_vtk1(obj, vtk)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
   END SUBROUTINE obj_WriteData_vtk1
-END INTERFACE
-
-INTERFACE AbstractNodeFieldWriteData
-  MODULE PROCEDURE obj_WriteData_vtk1
 END INTERFACE AbstractNodeFieldWriteData
 
 !----------------------------------------------------------------------------
@@ -505,15 +501,11 @@ END INTERFACE AbstractNodeFieldWriteData
 ! date:   2023-12-21
 ! summary:  Export data in vtkfile
 
-INTERFACE
+INTERFACE AbstractNodeFieldWriteData
   MODULE SUBROUTINE obj_WriteData_vtk2(obj, vtk)
     CLASS(AbstractNodeFieldPointer_), INTENT(INOUT) :: obj(:)
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
   END SUBROUTINE obj_WriteData_vtk2
-END INTERFACE
-
-INTERFACE AbstractNodeFieldWriteData
-  MODULE PROCEDURE obj_WriteData_vtk2
 END INTERFACE AbstractNodeFieldWriteData
 
 INTERFACE NodeFieldsWriteData
