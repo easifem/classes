@@ -133,6 +133,7 @@ CONTAINS
   !! Sets the parameters of finite element
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
+
   !! Get base interpolation
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
@@ -146,6 +147,9 @@ CONTAINS
   ! @QuadratureMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
+    obj_GetInterpolationPoints
+
 END TYPE AbstractOneDimFE_
 
 !----------------------------------------------------------------------------
@@ -719,6 +723,22 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                     GetQuadraturePoints@QuadratureMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-05-14
+! summary:  Get Interpolation points valid for lagrange
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetInterpolationPoints(obj, xij, nrow, ncol)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: xij(:, :)
+    INTEGER(I4B), INTENT(INOUT) :: nrow, ncol
+  END SUBROUTINE obj_GetInterpolationPoints
 END INTERFACE
 
 !----------------------------------------------------------------------------

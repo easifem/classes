@@ -148,6 +148,38 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (ALLOCATED(obj%xij)) THEN
+  nrow = SIZE(obj%xij, 1)
+  ncol = SIZE(obj%xij, 2)
+  xij(1:nrow, 1:ncol) = obj%xij
+ELSE
+  CALL InterpolationPoint_Line_( &
+    order=obj%order, ipType=obj%ipType, layout="VEFC", &
+    xij=obj%refelemCoord(1:1, 1:2), &
+    alpha=obj%alpha, beta=obj%beta, &
+    lambda=obj%lambda, ans=obj%xij, nrow=nrow, ncol=ncol)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetInterpolationPoints
+
+!----------------------------------------------------------------------------
 !                                                   GetTotalQuadraturePoints
 !----------------------------------------------------------------------------
 
