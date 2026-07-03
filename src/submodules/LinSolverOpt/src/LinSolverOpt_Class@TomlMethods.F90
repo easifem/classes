@@ -49,6 +49,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
+obj%isInit = .TRUE.
+
 CALL ImportEngineFromToml(obj=obj, table=table, origin=origin, &
                           stat=stat)
 
