@@ -192,6 +192,96 @@ END PROCEDURE obj_WriteData_vtk
 !
 !----------------------------------------------------------------------------
 
+MODULE PROCEDURE obj_WriteData_vtk2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk2()"
+#endif
+
+TYPE(VTKFile_) :: vtk
+TYPE(String) :: location, action
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL vtk%InitiateVTKFile( &
+  filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
+  DataStructureType=VTK_UNSTRUCTUREDGRID)
+
+CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
+                     content=.TRUE., closetag=.FALSE.)
+location = String('node')
+action = String('open')
+CALL vtk%WriteDataArray(location=location, action=action)
+
+CALL vtk%WriteDataArray(name=dataName, x=DATA, &
+                        numberOfComponents=1)
+
+action = String('close')
+CALL vtk%WriteDataArray(location=location, action=action)
+
+CALL vtk%WritePiece()
+CALL vtk%CLOSE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_WriteData_vtk2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteData_vtk3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk3()"
+#endif
+
+TYPE(VTKFile_) :: vtk
+TYPE(String) :: location, action
+INTEGER(I4B) :: tdata, ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tdata = SIZE(DATA, 1)
+
+CALL vtk%InitiateVTKFile( &
+  filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
+  DataStructureType=VTK_UNSTRUCTUREDGRID)
+
+CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
+                     content=.TRUE., closetag=.FALSE.)
+location = String('node')
+action = String('open')
+CALL vtk%WriteDataArray(location=location, action=action)
+
+DO ii = 1, tdata
+  CALL vtk%WriteDataArray(name=dataNames(ii), &
+                          x=DATA(ii, :), &
+                          numberOfComponents=1)
+END DO
+
+action = String('close')
+CALL vtk%WriteDataArray(location=location, action=action)
+
+CALL vtk%WritePiece()
+CALL vtk%CLOSE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_WriteData_vtk3
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 #include "../../include/errors.F90"
 
 END SUBMODULE VTKMethods
