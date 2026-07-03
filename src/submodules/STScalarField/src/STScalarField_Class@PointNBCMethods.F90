@@ -70,7 +70,8 @@ DO ibc = 1, tbc
   DO idof = 1, ncol
     CALL obj%Set( &
       globalNode=obj%nodenum(1:nrow), VALUE=obj%nodalvalue(1:nrow, idof), &
-      scale=scale, addContribution=math%yes, islocal=math%yes)
+      scale=scale, addContribution=math%yes, islocal=math%yes, &
+      timeCompo=idof)
   END DO
 END DO
 
