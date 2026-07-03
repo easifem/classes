@@ -68,6 +68,23 @@ INTERFACE ScalarFieldAssembleMassMatrix
 END INTERFACE ScalarFieldAssembleMassMatrix
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE ScalarFieldAssembleMassMatrix
+  MODULE SUBROUTINE ScalarFieldAssembleMassMatrix2( &
+    tanmat, nodeField, reset, scale)
+    CLASS(MatrixField_), INTENT(INOUT) :: tanmat
+    !! Matrix field to assemble
+    CLASS(ScalarField_), INTENT(INOUT) :: nodeField
+    !! Scalar field to get the fedof, mesh, and geofedof
+    LOGICAL(LGT), INTENT(IN) :: reset
+    !! if reset is true, then tanmat is set to zero before assembly
+    REAL(DFP), INTENT(IN) :: scale
+  END SUBROUTINE ScalarFieldAssembleMassMatrix2
+END INTERFACE ScalarFieldAssembleMassMatrix
+
+!----------------------------------------------------------------------------
 !                       VectorFieldAssembleMassMatrix@VectorFieldMethods
 !----------------------------------------------------------------------------
 
