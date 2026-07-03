@@ -1861,8 +1861,9 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetNptrsInBox_(obj, box, nptrs, tnodes, isStrict)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
-      !! If Kdtree is not init then we init it
+    !! If Kdtree is not init then we init it
     TYPE(BoundingBox_), INTENT(IN) :: box
+    !! bounding box
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
     !! it should allocated, size of nptrs should be .ge. tnodes
     INTEGER(I4B), INTENT(INOUT) :: tnodes

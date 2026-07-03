@@ -25,6 +25,7 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE FEVariable_Method, ONLY: NodalVariable
 USE FEVariable_Method, ONLY: FEVariable_Set => Set
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
