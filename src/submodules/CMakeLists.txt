@@ -408,5 +408,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/AssembleStiffnessMatrix/CMakeLists.txt)
 # semi-discrete algorithms
 include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
 
+# composite semi-discrete algorithms
+include(${CMAKE_CURRENT_LIST_DIR}/CSDAlgorithms/CMakeLists.txt)
+
 # time discontinous algorithms
 include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
