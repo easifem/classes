@@ -25,6 +25,7 @@ IMPLICIT NONE
 
 PRIVATE
 PUBLIC :: SDAlgorithm2_
+PUBLIC :: SDAlgorithm2Pointer_
 CHARACTER(*), PARAMETER :: modName = "SDAlgorithm2_Class()"
 
 !----------------------------------------------------------------------------
@@ -122,6 +123,14 @@ CONTAINS
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 END TYPE SDAlgorithm2_
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+TYPE SDAlgorithm2Pointer_
+  TYPE(SDAlgorithm2_), POINTER :: ptr => NULL()
+END TYPE SDAlgorithm2Pointer_
 
 !----------------------------------------------------------------------------
 !                                             NewmarkBeta@ConstructorMethods
