@@ -26,7 +26,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
-
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 PRIVATE
@@ -36,10 +36,6 @@ PUBLIC :: AbstractMaterialModelPointer_
 PUBLIC :: AbstractMaterialModelDeallocate
 PUBLIC :: AbstractMaterialModelDisplay
 PUBLIC :: TypeMaterialModelOpt
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "AbstractMaterialModel_Class"
-#endif
 
 INTEGER(I4B), PARAMETER :: MAX_MATERIAL_MODEL_NAME_LENGTH = 128
 
@@ -53,7 +49,8 @@ TYPE :: MaterialModelOpt_
   CHARACTER(19) :: newtonianFluid = "NEWTONIANFLUIDMODEL"
 END TYPE MaterialModelOpt_
 
-TYPE(MaterialModelOpt_), PARAMETER :: TypeMaterialModelOpt=MaterialModelOpt_()
+TYPE(MaterialModelOpt_), PARAMETER :: &
+  TypeMaterialModelOpt = MaterialModelOpt_()
 
 !----------------------------------------------------------------------------
 !                                                   AbstractMaterialModel_
