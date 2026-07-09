@@ -129,6 +129,10 @@ END TYPE AbstractMaterialPointer_
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Initiate the material
+!
+!# Initiate
+!
+! Initiate abstract material.
 
 INTERFACE AbstractMaterialInitiate
   MODULE SUBROUTINE obj_Initiate(obj, name)
@@ -144,6 +148,10 @@ END INTERFACE AbstractMaterialInitiate
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Deallocate data
+!
+!# Deallocate
+!
+! Deallocate abstract material.
 
 INTERFACE AbstractMaterialDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
@@ -158,6 +166,10 @@ END INTERFACE AbstractMaterialDeallocate
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary:  Deallocate vector of AbstractMaterial_
+!
+!# AbstractMaterialDeallocate
+!
+! Deallocate a vector of abstract material.
 
 INTERFACE AbstractMaterialDeallocate
   MODULE SUBROUTINE obj_Deallocate_Vector(obj)
@@ -172,6 +184,10 @@ END INTERFACE AbstractMaterialDeallocate
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary:  Deallocate vector of DirichletBCPointer_
+!
+!# AbstractMaterialDeallocate
+!
+! Deallocate vector of abstract material pointer.
 
 INTERFACE AbstractMaterialDeallocate
   MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
@@ -186,6 +202,10 @@ END INTERFACE AbstractMaterialDeallocate
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
 ! summary:  Add material
+!
+!# AddMaterial
+!
+! Add material name.
 
 INTERFACE
   MODULE SUBROUTINE obj_AddMaterial1(obj, name)
@@ -201,6 +221,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
 ! summary:  Add material
+!
+!# AddMaterial
+!
+! Add material name.
 
 INTERFACE
   MODULE SUBROUTINE obj_AddMaterial2(obj, name)
@@ -212,6 +236,10 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !                                                  ExpandMatProps@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-09
+! summary: Expand material properties
 
 INTERFACE
   MODULE SUBROUTINE obj_ExpandMatProps(obj)
@@ -226,11 +254,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-08-14
 ! summary:  Set the name of the material
+!
+!# SetName
+!
+! Set the name of abstract material.
 
 INTERFACE
   MODULE SUBROUTINE obj_SetName(obj, name)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-  !! Abstract Material object
+    !! Abstract Material object
     CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_SetName
 END INTERFACE
@@ -241,7 +273,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
-! summary:  Add material
+! summary:  Is material present
+!
+!# IsMaterialPresent
+!
+! Is material present.
 
 INTERFACE
   MODULE FUNCTION obj_IsMaterialPresent(obj, name) RESULT(ans)
@@ -258,6 +294,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
 ! summary:  Get material
+!
+!# GetMaterialPointer
+!
+! Get material pointer.
 
 INTERFACE
   MODULE FUNCTION obj_GetMaterialPointer(obj, name) RESULT(matPtr)
