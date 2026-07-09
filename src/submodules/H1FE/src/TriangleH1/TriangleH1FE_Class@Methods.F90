@@ -17,9 +17,12 @@
 !
 
 SUBMODULE(TriangleH1FE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt
-USE BaseType, ONLY: TypeFEVariableOpt, TypeInterpolationOpt
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: interpolOpt => TypeInterpolationOpt
 USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
 USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
 USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle
@@ -29,7 +32,7 @@ USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "TriangleH1FE_Class"
+CHARACTER(*), PARAMETER :: modName = "TriangleH1FE_Class@Methods.F90"
 #endif
 
 CONTAINS
@@ -71,7 +74,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%opt%Triangle_GetFacetQuadraturePoints( &
-  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
+  quad=quad, facetQuad=facetQuad, &
+  localFaceNumber=localFaceNumber)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -178,8 +182,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans = GetTotalDOF_Triangle(order=order(1), baseContinuity="H1", &
-                           baseInterpolation="")
+IF (ipType(1) .EQ. interpolOpt%Center) THEN
+  ans = 1_I4B
+ELSE
+  ans = GetTotalDOF_Triangle( &
+        order=order(1), &
+        baseContinuity="H1", &
+        baseInterpolation="")
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -210,6 +220,11 @@ lambda0 = 0.5_DFP
 IF (PRESENT(alpha)) alpha0 = alpha(1)
 IF (PRESENT(beta)) beta0 = beta(1)
 IF (PRESENT(lambda)) lambda0 = lambda(1)
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Calling InterpolationPoint_Triangle_()')
+#endif
 
 ! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
 CALL InterpolationPoint_Triangle_( &

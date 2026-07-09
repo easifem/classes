@@ -345,6 +345,14 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox_ => obj_GetNptrsInBox_
   !! Get node number in a box without allocation
 
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetElemNumberInBox => obj_GetElemNumberInBox
+  !! Get element number in a box
+
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    GetElemNumberInBox_ => obj_GetElemNumberInBox_
+  !! Get element number in a box without allocation
+
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => obj_GetInternalNptrs
   !! Returns a vector of internal node numbers
 
@@ -1861,8 +1869,9 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_GetNptrsInBox_(obj, box, nptrs, tnodes, isStrict)
     CLASS(AbstractMesh_), INTENT(INOUT) :: obj
-      !! If Kdtree is not init then we init it
+    !! If Kdtree is not init then we init it
     TYPE(BoundingBox_), INTENT(IN) :: box
+    !! bounding box
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
     !! it should allocated, size of nptrs should be .ge. tnodes
     INTEGER(I4B), INTENT(INOUT) :: tnodes
@@ -1874,6 +1883,51 @@ INTERFACE
     !! This is because we use radius of bounding box to find the points
     !! this is over estimation.
   END SUBROUTINE obj_GetNptrsInBox_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-07-03
+! summary: This routine returns element number in a box
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemNumberInBox(obj, box, elemNumber)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! If Kdtree is not init then we init it
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: elemNumber(:)
+    !! element number
+    TYPE(BoundingBox_), INTENT(IN) :: box
+    !! bounding box
+  END SUBROUTINE obj_GetElemNumberInBox
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetNptrs@GetMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-07-03
+! summary: This routine returns the global element number in a box
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetElemNumberInBox_(obj, box, elemNumber, &
+                                            tElements, nptrs, tNodes)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! If Kdtree is not init then we init it
+    TYPE(BoundingBox_), INTENT(IN) :: box
+    !! bounding box
+    INTEGER(I4B), INTENT(INOUT) :: elemNumber(:)
+    !! it should allocated, size of nptrs should be .ge. tnodes
+    INTEGER(I4B), INTENT(out) :: tElements
+    !! total nodes found
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! it should allocated, size of nptrs should be .ge. tnodes
+    INTEGER(I4B), INTENT(out) :: tNodes
+    !! total nodes found
+  END SUBROUTINE obj_GetElemNumberInBox_
 END INTERFACE
 
 !----------------------------------------------------------------------------
