@@ -314,6 +314,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary: Import material from HDF5 file
+!
+!# AbstractMaterialImport
+!
+! Abstract material from hdf5.
 
 INTERFACE AbstractMaterialImport
   MODULE SUBROUTINE obj_Import(obj, hdf5, group)
