@@ -15,66 +15,70 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMesh_Class) GetMethods
-USE HashTables, ONLY: HashTable_, Hashkey
+USE HashTables, ONLY: HashTable_
+USE HashTables, ONLY: Hashkey
 USE GlobalData, ONLY: MaxDFP, MinDFP
 USE ReallocateUtility, ONLY: Reallocate
-USE IntegerUtility, ONLY: RemoveDuplicates, RemoveDuplicates_
+USE IntegerUtility, ONLY: RemoveDuplicates
+USE IntegerUtility, ONLY: RemoveDuplicates_
 USE AppendUtility, ONLY: Append
-USE BoundingBox_Method, ONLY: Center, GetRadiusSqr, isInside, &
-                              BoundingBox_Initiate => Initiate
+USE BoundingBox_Method, ONLY: BoundingBoxCenter => Center
+USE BoundingBox_Method, ONLY: BoundingBoxGetRadiusSqr => GetRadiusSqr
+USE BoundingBox_Method, ONLY: BoundingBoxIsInside => IsInside
+USE BoundingBox_Method, ONLY: BoundingBoxInitiate => Initiate
 USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: Display, ToString
-USE ReferenceElement_Method, ONLY: &
-  GetEdgeConnectivity, &
-  GetFaceConnectivity, &
-  ElementOrder, &
-  TotalEntities, &
-  RefElemGetGeoParam
-
+USE ReferenceElement_Method, ONLY: GetEdgeConnectivity
+USE ReferenceElement_Method, ONLY: GetFaceConnectivity
+USE ReferenceElement_Method, ONLY: ElementOrder
+USE ReferenceElement_Method, ONLY: TotalEntities
+USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
 USE BaseType, ONLY: TypeRefelemOpt
-USE FacetData_Class, ONLY: FacetData_Iselement, &
-                           FacetData_GetParam
-USE Elemdata_Class, ONLY: INTERNAL_ELEMENT, &
-                          BOUNDARY_ELEMENT, &
-                          DOMAIN_BOUNDARY_ELEMENT, &
-                          Elemdata_GetTotalEntities, &
-                          Elemdata_GetConnectivity, &
-                          Elemdata_GetConnectivity2, &
-                          Elemdata_GetElementToElements, &
-                          Elemdata_GetGlobalNodesPointer, &
-                          Elemdata_GetTotalGlobalElements, &
-                          Elemdata_name, &
-                          Elemdata_topoName, &
-                          Elemdata_topoIndx, &
-                          Elemdata_GetOrientation, &
-                          Elemdata_GetCellOrient, &
-                          Elemdata_GetFaceOrient, &
-                          Elemdata_GetEdgeOrient, &
-                          Elemdata_Meshid, &
-                          Elemdata_localElemNum, &
-                          Elemdata_globalElemNum, &
-                          Elemdata_GetTotalGlobalNodes, &
-                          Elemdata_GetTotalGlobalVertexNodes, &
-                          Elemdata_IsBoundaryElement, &
-                          Elemdata_FindFace, &
-                          Elemdata_FindEdge, &
-                          Elemdata_GetGlobalFaceNumber, &
-                          Elemdata_GetGlobalEdgeNumber, &
-                          Elemdata_Order
-USE NodeData_Class, ONLY: INTERNAL_NODE, BOUNDARY_NODE, &
-                          NodeData_GetNodeType, &
-                          NodeData_GetGlobalNodeNum, &
-                          NodeData_GetTotalGlobalElements, &
-                          NodeData_GetGlobalElements, &
-                          NodeData_GetTotalGlobalNodes, &
-                          NodeData_GetGlobalNodes, &
-                          NodeData_GetGlobalNodes2, &
-                          NodeData_GetExtraGlobalNodes, &
-                          NodeData_GetTotalExtraGlobalNodes, &
-                          NodeData_GetNodeCoord
-USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
+USE FacetData_Class, ONLY: FacetData_Iselement
+USE FacetData_Class, ONLY: FacetData_GetParam
+USE Elemdata_Class, ONLY: INTERNAL_ELEMENT
+USE Elemdata_Class, ONLY: BOUNDARY_ELEMENT
+USE Elemdata_Class, ONLY: DOMAIN_BOUNDARY_ELEMENT
+USE Elemdata_Class, ONLY: Elemdata_GetTotalEntities
+USE Elemdata_Class, ONLY: Elemdata_GetConnectivity
+USE Elemdata_Class, ONLY: Elemdata_GetConnectivity2
+USE Elemdata_Class, ONLY: Elemdata_GetElementToElements
+USE Elemdata_Class, ONLY: Elemdata_GetGlobalNodesPointer
+USE Elemdata_Class, ONLY: Elemdata_GetTotalGlobalElements
+USE Elemdata_Class, ONLY: Elemdata_name
+USE Elemdata_Class, ONLY: Elemdata_topoName
+USE Elemdata_Class, ONLY: Elemdata_topoIndx
+USE Elemdata_Class, ONLY: Elemdata_GetOrientation
+USE Elemdata_Class, ONLY: Elemdata_GetCellOrient
+USE Elemdata_Class, ONLY: Elemdata_GetFaceOrient
+USE Elemdata_Class, ONLY: Elemdata_GetEdgeOrient
+USE Elemdata_Class, ONLY: Elemdata_Meshid
+USE Elemdata_Class, ONLY: Elemdata_localElemNum
+USE Elemdata_Class, ONLY: Elemdata_globalElemNum
+USE Elemdata_Class, ONLY: Elemdata_GetTotalGlobalNodes
+USE Elemdata_Class, ONLY: Elemdata_GetTotalGlobalVertexNodes
+USE Elemdata_Class, ONLY: Elemdata_IsBoundaryElement
+USE Elemdata_Class, ONLY: Elemdata_FindFace
+USE Elemdata_Class, ONLY: Elemdata_FindEdge
+USE Elemdata_Class, ONLY: Elemdata_GetGlobalFaceNumber
+USE Elemdata_Class, ONLY: Elemdata_GetGlobalEdgeNumber
+USE Elemdata_Class, ONLY: Elemdata_Order
+USE NodeData_Class, ONLY: INTERNAL_NODE
+USE NodeData_Class, ONLY: BOUNDARY_NODE
+USE NodeData_Class, ONLY: NodeData_GetNodeType
+USE NodeData_Class, ONLY: NodeData_GetGlobalNodeNum
+USE NodeData_Class, ONLY: NodeData_GetTotalGlobalElements
+USE NodeData_Class, ONLY: NodeData_GetGlobalElements
+USE NodeData_Class, ONLY: NodeData_GetTotalGlobalNodes
+USE NodeData_Class, ONLY: NodeData_GetGlobalNodes
+USE NodeData_Class, ONLY: NodeData_GetGlobalNodes2
+USE NodeData_Class, ONLY: NodeData_GetExtraGlobalNodes
+USE NodeData_Class, ONLY: NodeData_GetTotalExtraGlobalNodes
+USE NodeData_Class, ONLY: NodeData_GetNodeCoord
+USE Kdtree2_Module, ONLY: Kdtree2_r_nearest
+USE Kdtree2_Module, ONLY: Kdtree2_n_nearest
 USE BaseType, ONLY: TypeMeshOpt
-
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 INTEGER(I4B), PARAMETER :: MaxNodesInElement = TypeMeshOpt%maxNNE
@@ -512,32 +516,37 @@ END PROCEDURE obj_GetNptrsInBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox_
-! nptrs = box.Nptrs.obj%nodeCoord
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
+#endif
 REAL(DFP) :: qv(3), r2
 INTEGER(I4B) :: ii, jj, kk, nsd, tsize
-! CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox_()"
 LOGICAL(LGT) :: isok, abool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
 IF (.NOT. isok) THEN
   CALL obj%InitiateKdtree()
 END IF
 
-qv = Center(box)
-r2 = GetRadiusSqr(box)
+qv = BoundingBoxCenter(box)
+r2 = BoundingBoxGetRadiusSqr(box)
 nsd = obj%GetNSD()
 
 CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:nsd), r2=r2, &
-               nfound=tnodes, nalloc=SIZE(obj%kdresult), results=obj%kdresult)
+                       nfound=tnodes, nalloc=SIZE(obj%kdresult), &
+                       results=obj%kdresult)
 
-isok = Input(default=.TRUE., option=isStrict)
+isok = Input(default=math%yes, option=isStrict)
 
 IF (.NOT. isok) THEN
-  !$OMP PARALLEL DO PRIVATE(ii)
   DO ii = 1, tnodes
     nptrs(ii) = obj%GetGlobalNodeNumber(obj%kdresult(ii)%idx)
   END DO
-  !$OMP END PARALLEL DO
   RETURN
 END IF
 
@@ -547,7 +556,7 @@ DO ii = 1, tnodes
 
   kk = obj%kdresult(ii)%idx
   CALL NodeData_GetNodeCoord(obj=obj%nodeData(kk)%ptr, ans=qv, tsize=tsize)
-  abool = IsInside(box, qv(1:nsd))
+  abool = BoundingBoxIsInside(box, qv(1:nsd))
   IF (abool) THEN
     jj = jj + 1
     nptrs(jj) = obj%GetGlobalNodeNumber(kk)
@@ -557,7 +566,61 @@ END DO
 
 tnodes = jj
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetNptrsInBox_
+
+!----------------------------------------------------------------------------
+!                                                         GetElemNumberInBox
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNumberInBox
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNumberInBox()"
+#endif
+INTEGER(I4B), ALLOCATABLE :: nptrs(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetNptrsInBox(box=box, nptrs=nptrs, isStrict=math%yes)
+elemNumber = obj%GetNodeToElements(globalNode=nptrs, islocal=math%no)
+IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemNumberInBox
+
+!----------------------------------------------------------------------------
+!                                                         GetElemNumberInBox_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNumberInBox_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetElemNumberInBox_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetNptrsInBox_(box=box, nptrs=nptrs, tnodes=tnodes, &
+                        isStrict=math%yes)
+CALL obj%GetNodeToElements2_(ans=elemNumber, tsize=tElements, &
+                             globalNode=nptrs(1:tnodes), islocal=math%no)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetElemNumberInBox_
 
 !----------------------------------------------------------------------------
 !                                                          GetInternalNptrs
@@ -1183,11 +1246,16 @@ END PROCEDURE obj_GetTotalBoundaryElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox1
-! CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox1()"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox1()"
+#endif
 REAL(DFP) :: lim(6), x(3)
 INTEGER(I4B) :: nsd, tnodes, ii, tsize
 
-!> main
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 nsd = obj%GetNSD()
 tnodes = obj%GetTotalNodes()
@@ -1207,8 +1275,12 @@ DO ii = 1, tnodes
   lim(6) = MAX(lim(6), x(3))
 END DO
 
-CALL BoundingBox_Initiate(obj=ans, nsd=3_I4B, lim=lim)
+CALL BoundingBoxInitiate(obj=ans, nsd=3_I4B, lim=lim)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetBoundingBox1
 
 !----------------------------------------------------------------------------
@@ -1216,9 +1288,17 @@ END PROCEDURE obj_GetBoundingBox1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingBox2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingBox2()"
+#endif
 INTEGER(I4B) :: nsd, tsize, ii
 REAL(DFP) :: lim(6)
 LOGICAL(LGT) :: mask(SIZE(nodes, 1), SIZE(nodes, 2))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 lim = 0.0_DFP
 nsd = SIZE(nodes, 1)
@@ -1232,7 +1312,12 @@ END DO
 lim(1:nsd * 2:2) = MINVAL(nodes(1:nsd, :), dim=2, mask=mask)
 lim(2:nsd * 2:2) = MAXVAL(nodes(1:nsd, :), dim=2, mask=mask)
 
-CALL BoundingBox_Initiate(obj=ans, nsd=nsd, lim=lim)
+CALL BoundingBoxInitiate(obj=ans, nsd=nsd, lim=lim)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetBoundingBox2
 
 !----------------------------------------------------------------------------
@@ -1818,7 +1903,7 @@ tsize = a - 1
 
 IF (tsize .LE. 1) RETURN
 
-CALL RemoveDuplicates_(obj=ans(1:tsize), tsize=tsize, isSorted=.FALSE.)
+CALL RemoveDuplicates_(obj=ans(1:tsize), tsize=tsize, isSorted=math%no)
 END PROCEDURE obj_GetNodeToElements2_
 
 !----------------------------------------------------------------------------
