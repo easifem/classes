@@ -22,11 +22,11 @@ USE FEVariable_DivisionMethod, ONLY: OPERATOR(/)
 USE FEVariable_AdditionMethod, ONLY: OPERATOR(+)
 USE FEVariable_UnaryMethod, ONLY: OPERATOR(**), Sqrt
 USE InputUtility, ONLY: Input
-
 IMPLICIT NONE
 
-REAL(DFP), PARAMETER :: one = 1.0_DFP, zero = 0.0_DFP, minus_one = -1.0_DFP, &
-                        half = 0.5_DFP, two = 2.0_DFP
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "LinearElasticModelUtility@Methods.F90"
+#endif
 
 CONTAINS
 
@@ -46,13 +46,13 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-C = zero
-invC = zero
-a = youngsModulus / (one + nu) / (one - two * nu)
-C(1, 1) = (one - nu) * a
+C = math%zero
+invC = math%zero
+a = youngsModulus / (math%one + nu) / (math%one - math%two * nu)
+C(1, 1) = (math%one - nu) * a
 C(2, 2) = C(1, 1)
 C(3, 3) = C(1, 1)
-C(4, 4) = a * half * (one - two * nu)
+C(4, 4) = a * math%half * (math%one - math%two * nu)
 C(5, 5) = C(4, 4)
 C(6, 6) = C(4, 4)
 C(1, 2) = nu * a
@@ -61,11 +61,11 @@ C(2, 1) = C(1, 2)
 C(2, 3) = C(1, 2)
 C(3, 1) = C(1, 2)
 C(3, 2) = C(1, 2)
-a = one / youngsModulus
+a = math%one / youngsModulus
 invC(1, 1) = a
 invC(2, 2) = invC(1, 1)
 invC(3, 3) = invC(1, 1)
-invC(4, 4) = a * two * (one + nu)
+invC(4, 4) = a * math%two * (math%one + nu)
 invC(5, 5) = invC(4, 4)
 invC(6, 6) = invC(4, 4)
 invC(1, 2) = -nu * a
@@ -97,18 +97,18 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-C = zero
-invC = zero
-a = youngsModulus / (one - nu * nu)
+C = math%zero
+invC = math%zero
+a = youngsModulus / (math%one - nu * nu)
 C(1, 1) = a
 C(2, 2) = C(1, 1)
-C(3, 3) = a * (one - nu) * half
+C(3, 3) = a * (math%one - nu) * math%half
 C(1, 2) = a * nu
 C(2, 1) = C(1, 2)
-a = one / youngsModulus
+a = math%one / youngsModulus
 invC(1, 1) = a
 invC(2, 2) = invC(1, 1)
-invC(3, 3) = a * two * (one + nu)
+invC(3, 3) = a * math%two * (math%one + nu)
 invC(1, 2) = -nu * a
 invC(2, 1) = invC(1, 2)
 
@@ -134,18 +134,18 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-C = zero
-invC = zero
-a = youngsModulus / (one - two * nu) / (one + nu)
-C(1, 1) = a * (one - nu)
+C = math%zero
+invC = math%zero
+a = youngsModulus / (math%one - math%two * nu) / (math%one + nu)
+C(1, 1) = a * (math%one - nu)
 C(2, 2) = C(1, 1)
-C(3, 3) = a * (one - two * nu) * half
+C(3, 3) = a * (math%one - math%two * nu) * math%half
 C(1, 2) = a * nu
 C(2, 1) = C(1, 2)
-a = (one + nu) / youngsModulus
-invC(1, 1) = a * (one - nu)
+a = (math%one + nu) / youngsModulus
+invC(1, 1) = a * (math%one - nu)
 invC(2, 2) = invC(1, 1)
-invC(3, 3) = two * a
+invC(3, 3) = math%two * a
 invC(1, 2) = -nu * a
 invC(2, 1) = invC(1, 2)
 
@@ -187,6 +187,7 @@ CASE (2)
 CASE (3)
   CALL Get3DC(C=C(1:6, 1:6), E=E, nu=nu, &
               lambda=lambda, mu=mu, K=K)
+CASE DEFAULT
 END SELECT
 
 #ifdef DEBUG_VER
@@ -214,12 +215,12 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
 E0 = GetYoungsModulus(E=E, nu=nu, lambda=lambda, mu=mu, K=K)
 nu0 = GetPoissonRatio(E=E, nu=nu, lambda=lambda, mu=mu, K=K)
 
-C = zero
-a = E0 / (one + nu0) / (one - two * nu0)
-C(1, 1) = (one - nu0) * a
+C = math%zero
+a = E0 / (math%one + nu0) / (math%one - math%two * nu0)
+C(1, 1) = (math%one - nu0) * a
 C(2, 2) = C(1, 1)
 C(3, 3) = C(1, 1)
-C(4, 4) = a * half * (one - two * nu0)
+C(4, 4) = a * math%half * (math%one - math%two * nu0)
 C(5, 5) = C(4, 4)
 C(6, 6) = C(4, 4)
 C(1, 2) = nu0 * a
@@ -254,14 +255,14 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
 E0 = GetYoungsModulus(E=E, nu=nu, lambda=lambda, mu=mu, K=K)
 nu0 = GetPoissonRatio(E=E, nu=nu, lambda=lambda, mu=mu, K=K)
 
-C = zero
-a = E0 / (one - nu0 * nu0)
+C = math%zero
+a = E0 / (math%one - nu0 * nu0)
 C(1, 1) = a
 C(2, 2) = C(1, 1)
-C(3, 3) = a * (one - nu0) * half
+C(3, 3) = a * (math%one - nu0) * math%half
 C(1, 2) = a * nu0
 C(2, 1) = C(1, 2)
-a = one / E0
+a = math%one / E0
 
 #ifdef DEBUG_VER
 CALL err%RaiseInformation(modName//'::'//myName//' - '// &
@@ -288,11 +289,11 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
 E0 = GetYoungsModulus(E=E, nu=nu, lambda=lambda, mu=mu, K=K)
 nu0 = GetPoissonRatio(E=E, nu=nu, lambda=lambda, mu=mu, K=K)
 
-C = zero
-a = E0 / (one - two * nu0) / (one + nu0)
-C(1, 1) = a * (one - nu0)
+C = math%zero
+a = E0 / (math%one - math%two * nu0) / (math%one + nu0)
+C(1, 1) = a * (math%one - nu0)
 C(2, 2) = C(1, 1)
-C(3, 3) = a * (one - two * nu0) * half
+C(3, 3) = a * (math%one - math%two * nu0) * math%half
 C(1, 2) = a * nu0
 C(2, 1) = C(1, 2)
 
@@ -492,40 +493,50 @@ IF (isok) THEN
   RETURN
 END IF
 
-acase = 'FFFF' ! Lam, G, E, K
+acase = 'FFFF'
+! Lam, G, E, K
 
-isok = PRESENT(lambda); IF (isok) acase(1:1) = 'T'
-isok = PRESENT(G); IF (isok) acase(2:2) = 'T'; IF (isok) G0 = G
-isok = PRESENT(mu); IF (isok) acase(2:2) = 'T'; IF (isok) G0 = mu
-isok = PRESENT(E); IF (isok) acase(3:3) = 'T'
-isok = PRESENT(K); IF (isok) acase(4:4) = 'T'
+isok = PRESENT(lambda)
+IF (isok) acase(1:1) = 'T'
+
+isok = PRESENT(G)
+IF (isok) acase(2:2) = 'T'
+IF (isok) G0 = G
+isok = PRESENT(mu)
+IF (isok) acase(2:2) = 'T'
+IF (isok) G0 = mu
+
+isok = PRESENT(E)
+IF (isok) acase(3:3) = 'T'
+
+isok = PRESENT(K)
+IF (isok) acase(4:4) = 'T'
 
 SELECT CASE (acase)
 CASE ('TTFF')
   ! isLambda and isG
-  ans = lambda * half / (lambda + G0)
+  ans = lambda * math%half / (lambda + G0)
 CASE ('TFTF')
   ! isLambda and isE
-  r = SQRT(E * E + 9.0_DFP * lambda * lambda + two * E * lambda)
-  ans = two * lambda / (E + lambda + r)
+  r = SQRT(E * E + 9.0_DFP * lambda * lambda + math%two * E * lambda)
+  ans = math%two * lambda / (E + lambda + r)
 CASE ('FTTF')
   ! isG and isE
-  ans = (E - two * G0) * half / G0
+  ans = (E - math%two * G0) * math%half / G0
 CASE ('TFFT')
   ! isLambda and isK
   ans = lambda / (3.0_DFP * K - lambda)
 CASE ('FTFT')
   ! isG and isK
-  ans = (3.0_DFP * K - two * G0) / (6.0_DFP * K + two * G0)
+  ans = (3.0_DFP * K - math%two * G0) / (6.0_DFP * K + math%two * G0)
 CASE ('FFTT')
   ! isE and isK
   ans = (3.0_DFP * K - E) / 6.0_DFP * K
-#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myName, &
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
                     'No case found for acase='//acase)
 #endif
-
 END SELECT
 
 #ifdef DEBUG_VER
@@ -552,7 +563,8 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-acase = 'FFFF' ! Lam, G, E, Nu
+acase = 'FFFF'
+! Lam, G, E, Nu
 
 isok = PRESENT(lambda)
 IF (isok) THEN
@@ -581,38 +593,38 @@ END IF
 SELECT CASE (acase)
 CASE ('FFTT')
   ! IF (isE .AND. isNu) THEN
-  lam = EE * nu / (one + nu) / (one - two * nu)
-  G = EE * half / (one + nu)
+  lam = EE * nu / (math%one + nu) / (math%one - math%two * nu)
+  G = EE * math%half / (math%one + nu)
 
 CASE ('FTTF')
   ! ELSE IF (isG .AND. isE) THEN
-  lam = G * (EE - two * G) / (3.0 * G - EE)
-  nu = (EE - two * G) * half / G
+  lam = G * (EE - math%two * G) / (math%three * G - EE)
+  nu = (EE - math%two * G) * math%half / G
 
 CASE ('FTFT')
   ! ELSE IF (isG .AND. isNu) THEN
-  lam = two * G * nu / (one - two * nu)
-  EE = two * G * (one + nu)
+  lam = math%two * G * nu / (math%one - math%two * nu)
+  EE = math%two * G * (math%one + nu)
 
 CASE ('TTFF')
   ! ELSE IF (isLam .AND. isG) THEN
-  EE = G * (3.0 * lam + two * G) / (lam + G)
-  nu = lam * half / (lam + G)
+  EE = G * (math%three * lam + math%two * G) / (lam + G)
+  nu = lam * math%half / (lam + G)
 
 CASE ('TFTF')
   ! ELSE IF (isLam .AND. isE) THEN
-  r = SQRT(EE * EE + 9.0 * lam * lam + two * EE * lam)
-  G = (EE - 3.0 * lam + r) / 4.0
-  nu = two * lam / (EE + lam + r)
+  r = SQRT(EE * EE + 9.0_DFP * lam * lam + math%two * EE * lam)
+  G = (EE - 3.0_DFP * lam + r) / 4.0_DFP
+  nu = math%two * lam / (EE + lam + r)
 
 CASE ('TFFT')
   ! ELSE IF (isLam .AND. isNu) THEN
-  EE = lam * (one + nu) * (one - two * nu) / nu
-  G = lam * (one - two * nu) * half / nu
+  EE = lam * (math%one + nu) * (math%one - math%two * nu) / nu
+  G = lam * (math%one - math%two * nu) * math%half / nu
 
-#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myName, &
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
                     'No case found for acase='//acase)
 #endif
 

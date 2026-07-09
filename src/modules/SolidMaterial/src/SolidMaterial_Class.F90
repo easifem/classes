@@ -65,8 +65,9 @@ PUBLIC :: SolidMaterialNamesFromToml
 ! date: 1 Oct 2021
 ! summary: SolidMaterial class for material modeling of solids
 !
-!# Introduction
-! SolidMaterial class is a child of [[AbstractMaterial_]].
+!# SolidMaterial_
+!
+! SolidMaterial class is a child of AbstractMaterial_.
 ! It is used for modeling the behavior of solids.
 
 TYPE, EXTENDS(AbstractMaterial_) :: SolidMaterial_
@@ -75,26 +76,21 @@ TYPE, EXTENDS(AbstractMaterial_) :: SolidMaterial_
 CONTAINS
   PRIVATE
 
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
-  ! IO:
   ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
 
-  ! IO:
   ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetStressStrainModelPointer => &
     obj_GetStressStrainModelPointer
