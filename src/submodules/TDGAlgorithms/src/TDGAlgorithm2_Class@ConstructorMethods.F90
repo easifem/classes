@@ -64,23 +64,20 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 INTEGER(I4B) :: i1
-REAL(DFP) :: alpha0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-
 obj%isInit = .TRUE.
 
-obj%name(1:4) = "TDG "
 obj%nrow = elemsd%nns
 obj%ncol = obj%nrow
 
-alpha0 = Input(default=math%one, option=alpha)
-obj%alpha = alpha0
+IF (PRESENT(alpha)) THEN
+  obj%alpha = alpha
+END IF
 
 CALL GetCt(obj, elemsd)
 
@@ -313,7 +310,7 @@ SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
     CALL Elemsd_Set(obj=linearElemsd, val=subsetRefTime, &
                     N=linearElemsd%N, dNdXi=linearElemsd%dNdXi)
     quadPoints(1, 1:subsetNipt) = linearElemsd%coord(1, 1:subsetNipt)
-    ja = linearElemsd%jacobian(1, 1, 1)
+    ! ja = linearElemsd%jacobian(1, 1, 1)
     CALL QuadPoint_Initiate(obj=subsetQuad, &
                             points=quadPoints(:, 1:subsetNipt))
 
@@ -321,7 +318,7 @@ SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
 
     DO jj = 1, nrow
       DO kk = 1, subsetNipt
-        scale = subsetElemsd%ws(kk) * ja * math%half
+        scale = subsetElemsd%ws(kk) * elemsd%js(1) * math%half
         obj%bt(jj, ii) = obj%bt(jj, ii) + &
                          scale * subsetElemsd%N(jj, kk)
       END DO
