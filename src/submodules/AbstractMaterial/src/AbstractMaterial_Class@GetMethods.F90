@@ -19,6 +19,12 @@ SUBMODULE(AbstractMaterial_Class) GetMethods
 USE Display_Method, ONLY: ToString
 USE HashTables, ONLY: Hashkey
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMaterial_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

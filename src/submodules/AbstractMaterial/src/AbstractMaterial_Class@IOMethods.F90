@@ -16,13 +16,18 @@
 !
 
 SUBMODULE(AbstractMaterial_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
-USE HashTables, ONLY: HashKey, &
-                      HashTableIter_, &
-                      HashKey_, &
-                      HashTableIter
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE HashTables, ONLY: HashKey
+USE HashTables, ONLY: HashKey_
+USE HashTables, ONLY: HashTableIter
+USE HashTables, ONLY: HashTableIter_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMaterial_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
