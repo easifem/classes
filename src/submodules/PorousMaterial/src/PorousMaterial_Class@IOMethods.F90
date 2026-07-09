@@ -17,9 +17,14 @@
 
 SUBMODULE(PorousMaterial_Class) IOMethods
 USE AbstractMaterial_Class, ONLY: AbstractMaterialDisplay
-USE Display_Method, ONLY: Display, ToString
-!! ToString method is needed in display_vector and display_vector_ptr
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "PorousMaterial_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

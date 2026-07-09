@@ -15,9 +15,16 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(PorousMaterial_Class) SetMethods
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE MaterialFactory, ONLY: PorousMaterialFactory
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "PorousMaterial_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -76,7 +83,7 @@ CALL AssertError1(isok, myName, &
 
 isok = .NOT. ASSOCIATED(obj(materialNo)%ptr)
 CALL AssertError1(isok, myName, &
-       'PorousMaterial('//ToString(materialNo)//')%ptr is already associated.')
+      'PorousMaterial('//ToString(materialNo)//')%ptr is already associated.')
 #endif
 
 IF (abool) THEN

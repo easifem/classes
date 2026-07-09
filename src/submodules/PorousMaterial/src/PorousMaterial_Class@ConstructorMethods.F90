@@ -17,10 +17,15 @@
 SUBMODULE(PorousMaterial_Class) ConstructorMethods
 USE Display_Method, ONLY: ToString
 USE MaterialFactory, ONLY: PoroMechanicsModelFactory
-USE AbstractMaterial_Class, ONLY: AbstractMaterialInitiate, &
-                                  AbstractMaterialDeallocate
-
+USE AbstractMaterial_Class, ONLY: AbstractMaterialInitiate
+USE AbstractMaterial_Class, ONLY: AbstractMaterialDeallocate
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "PorousMaterial_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

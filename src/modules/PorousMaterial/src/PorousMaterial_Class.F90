@@ -18,7 +18,7 @@
 ! date: 27 Aug 2021
 ! summary: This module defines a class called [[PorousMaterial_]]
 !
-!# Introduction
+!# PorousMaterial_Class
 !
 ! This module defines a class called [[PorousMaterial_]], which defines a
 ! Porous material and its behavior. Other than defining the class,
@@ -38,14 +38,9 @@ USE MeshSelection_Class, ONLY: MeshSelectionPointer_, MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
-
 IMPLICIT NONE
 
 PRIVATE
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "PorousMaterial_Class"
-#endif
 
 PUBLIC :: PorousMaterial_
 PUBLIC :: PorousMaterialPointer_
@@ -76,26 +71,21 @@ TYPE, EXTENDS(AbstractMaterial_) :: PorousMaterial_
 CONTAINS
   PRIVATE
 
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
-  ! IO:
   ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
 
-  ! IO:
   ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetStressStrainModelPointer => &
     obj_GetStressStrainModelPointer
@@ -170,14 +160,10 @@ END INTERFACE
 ! it is associated.
 !@endwarning
 
-INTERFACE
+INTERFACE PorousMaterialDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(PorousMaterial_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE PorousMaterialDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE PorousMaterialDeallocate
 
 !----------------------------------------------------------------------------
@@ -202,14 +188,10 @@ END INTERFACE
 ! date:  2023-09-09
 ! summary:  Deallocate the vector
 
-INTERFACE
+INTERFACE PorousMaterialDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
     TYPE(PorousMaterial_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE Deallocate_Vector
-END INTERFACE
-
-INTERFACE PorousMaterialDeallocate
-  MODULE PROCEDURE Deallocate_Vector
 END INTERFACE PorousMaterialDeallocate
 
 !----------------------------------------------------------------------------
@@ -220,14 +202,10 @@ END INTERFACE PorousMaterialDeallocate
 ! date:  2023-09-09
 ! summary:  Deallocate the vector of pointer
 
-INTERFACE
+INTERFACE PorousMaterialDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(PorousMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE
-
-INTERFACE PorousMaterialDeallocate
-  MODULE PROCEDURE Deallocate_Ptr_Vector
 END INTERFACE PorousMaterialDeallocate
 
 !----------------------------------------------------------------------------
@@ -238,15 +216,11 @@ END INTERFACE PorousMaterialDeallocate
 ! date:  2023-09-09
 ! summary:  Reallocate the vector
 
-INTERFACE
+INTERFACE PorousMaterialReallocate
   MODULE SUBROUTINE Reallocate_Vector(obj, tsize)
     TYPE(PorousMaterial_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     INTEGER(I4B), INTENT(IN) :: tsize
   END SUBROUTINE Reallocate_Vector
-END INTERFACE
-
-INTERFACE PorousMaterialReallocate
-  MODULE PROCEDURE Reallocate_Vector
 END INTERFACE PorousMaterialReallocate
 
 !----------------------------------------------------------------------------
@@ -257,15 +231,11 @@ END INTERFACE PorousMaterialReallocate
 ! date:  2023-09-09
 ! summary:  Reallocate the vector of pointer
 
-INTERFACE
+INTERFACE PorousMaterialReallocate
   MODULE SUBROUTINE Reallocate_Ptr_Vector(obj, tsize)
     TYPE(PorousMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     INTEGER(I4B), INTENT(IN) :: tsize
   END SUBROUTINE Reallocate_Ptr_Vector
-END INTERFACE
-
-INTERFACE PorousMaterialReallocate
-  MODULE PROCEDURE Reallocate_Ptr_Vector
 END INTERFACE PorousMaterialReallocate
 
 !----------------------------------------------------------------------------
@@ -312,16 +282,12 @@ END INTERFACE
 ! date: 27 Aug 2021
 ! summary: This routine displays the content of the instance
 
-INTERFACE
+INTERFACE PorousMaterialDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(PorousMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
-END INTERFACE
-
-INTERFACE PorousMaterialDisplay
-  MODULE PROCEDURE obj_Display
 END INTERFACE PorousMaterialDisplay
 
 !----------------------------------------------------------------------------
@@ -376,7 +342,7 @@ END INTERFACE PorousMaterialDisplay
 ! Note that this method will not initiate obj(materialNo)%ptr
 ! After this call user has to call Initiate method on it
 
-INTERFACE
+INTERFACE AddPorousMaterial
   MODULE SUBROUTINE obj_AddPorousMaterial( &
     obj, tMaterials, materialNo, materialName, PorousMaterialToMesh, &
     region)
@@ -395,10 +361,6 @@ INTERFACE
     ! If both are present, the we set
     ! PorousMaterialToMesh(materialNo) = region
   END SUBROUTINE obj_AddPorousMaterial
-END INTERFACE
-
-INTERFACE AddPorousMaterial
-  MODULE PROCEDURE obj_AddPorousMaterial
 END INTERFACE AddPorousMaterial
 
 !----------------------------------------------------------------------------
@@ -409,16 +371,12 @@ END INTERFACE AddPorousMaterial
 ! date: 2023-12-08
 ! summary:  Get a Porous material pointer
 
-INTERFACE
+INTERFACE GetPorousMaterialPointer
   MODULE FUNCTION obj_GetPorousMaterialPointer(obj, materialNo) RESULT(ans)
     TYPE(PorousMaterialPointer_), INTENT(INOUT) :: obj(:)
     INTEGER(I4B), INTENT(IN) :: materialNo
     CLASS(PorousMaterial_), POINTER :: ans
   END FUNCTION obj_GetPorousMaterialPointer
-END INTERFACE
-
-INTERFACE GetPorousMaterialPointer
-  MODULE PROCEDURE obj_GetPorousMaterialPointer
 END INTERFACE GetPorousMaterialPointer
 
 !----------------------------------------------------------------------------
@@ -467,7 +425,7 @@ END INTERFACE
 !  from the array of toml table
 !  If the array of toml is not found then the size of obj will be set to 0
 
-INTERFACE
+INTERFACE PorousMaterialImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, table, materialNames, tsize, &
                                         region, dom)
     TYPE(PorousMaterialPointer_), INTENT(INOUT) :: obj(:)
@@ -491,10 +449,6 @@ INTERFACE
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
     !! Domain to which the materials belong
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE
-
-INTERFACE PorousMaterialImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE PorousMaterialImportFromToml
 
 !----------------------------------------------------------------------------
@@ -505,7 +459,7 @@ END INTERFACE PorousMaterialImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE
+INTERFACE PorousMaterialImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename, &
                                         printToml, tsize, region, dom)
     TYPE(PorousMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
@@ -525,10 +479,6 @@ INTERFACE
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
     !! Domain to which the materials belong
   END SUBROUTINE obj_ImportFromToml3
-END INTERFACE
-
-INTERFACE PorousMaterialImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml3
 END INTERFACE PorousMaterialImportFromToml
 
 !----------------------------------------------------------------------------

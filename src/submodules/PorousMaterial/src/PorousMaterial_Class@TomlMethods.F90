@@ -17,7 +17,8 @@
 
 SUBMODULE(PorousMaterial_Class) TomlMethods
 USE MeshSelection_Class, ONLY: MeshSelectionReallocate
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE MaterialFactory, ONLY: PoroMechanicsModelFactory
 USE MaterialFactory, ONLY: PorousMaterialFactory
 USE TomlUtility, ONLY: GetValue
@@ -26,6 +27,12 @@ USE AbstractMaterial_Class, ONLY: AbstractMaterialImportFromToml
 USE StringUtility, ONLY: StringDeallocate => DEALLOCATE
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "PorousMaterial_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

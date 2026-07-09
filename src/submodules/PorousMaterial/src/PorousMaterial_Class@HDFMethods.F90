@@ -17,10 +17,16 @@
 
 SUBMODULE(PorousMaterial_Class) HDFMethods
 USE Display_Method, ONLY: ToString
-USE AbstractMaterial_Class, ONLY: AbstractMaterialImport, &
-                                  AbstractMaterialExport
+USE AbstractMaterial_Class, ONLY: AbstractMaterialImport
+USE AbstractMaterial_Class, ONLY: AbstractMaterialExport
 USE MaterialFactory, ONLY: PoroMechanicsModelFactory
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "PorousMaterial_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
