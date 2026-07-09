@@ -48,4 +48,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 END PROCEDURE obj_Deallocate
 
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
 END SUBMODULE ConstructorMethods
