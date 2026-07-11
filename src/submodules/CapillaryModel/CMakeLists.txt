@@ -19,7 +19,7 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
     ${PROJECT_NAME}
     PRIVATE
-        ${src_path}/PorousMaterial_Class@Methods.F90
-        ${src_path}/PorousMaterial_Class@TomlMethods.F90
-        ${src_path}/PorousMaterial_Class@HDFMethods.F90
+        ${src_path}/AbstractCapillaryModel_Class@Methods.F90
+        ${src_path}/VanGenuchtenModel_Class@Methods.F90
+        ${src_path}/CapillaryFactory.F90
 )

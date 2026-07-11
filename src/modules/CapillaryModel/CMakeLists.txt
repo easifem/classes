@@ -19,6 +19,6 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
     ${PROJECT_NAME}
     PRIVATE
-        # ${src_path}/LinearElasticModelUtility.F90
-        ${src_path}/CapillaryModel_Class.F90
+        ${src_path}/AbstractCapillaryModel_Class.F90
+        ${src_path}/VanGenuchtenModel_Class.F90
 )

@@ -38,8 +38,8 @@ USE MeshSelection_Class, ONLY: MeshSelectionPointer_, MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
+USE AbstractCapillaryModel_Class, ONLY: AbstractCapillaryModel_
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: PorousMaterial_
@@ -67,7 +67,9 @@ PUBLIC :: PorousMaterialDisplay
 
 TYPE, EXTENDS(AbstractMaterial_) :: PorousMaterial_
   CLASS(AbstractSolidMechanicsModel_), POINTER :: stressStrainModel => NULL()
-    !! Pointer to stress strain material behavior of Porouss
+  !! Pointer to stress strain material behavior of porous medium
+  CLASS(AbstractCapillaryModel_), POINTER :: capillaryModel => NULL()
+  !! pointer to capillary model
 CONTAINS
   PRIVATE
 
@@ -89,6 +91,13 @@ CONTAINS
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetStressStrainModelPointer => &
     obj_GetStressStrainModelPointer
+  !! Get stressStrainModel pointer stored inside PorousMaterial
+  PROCEDURE, PUBLIC, PASS(obj) :: GetCapillaryModelPointer => &
+    obj_GetCapillaryModelPointer
+  !! Get capillaryModel pointer stored inside PorousMaterial
+  PROCEDURE, PUBLIC, PASS(obj) :: IsCapillaryModelAssociated => &
+    obj_IsCapillaryModelAssociated
+  !! Returns true if capillaryModel pointer is associated
 END TYPE PorousMaterial_
 
 !----------------------------------------------------------------------------
@@ -132,13 +141,17 @@ END TYPE PorousMaterialPointer_
 ! stressStrainModel and call Initiate method on it.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, name, stressStrainModel)
+  MODULE SUBROUTINE obj_Initiate(obj, name, stressStrainModel, &
+                                 capillaryModel)
     CLASS(PorousMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! It is the name of the material
     CHARACTER(*), OPTIONAL, INTENT(IN) :: stressStrainModel
     !! Name of the child-class of `AbstractPorousMechanicsModel_`
     !! For example `LinearElasticModel`
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: capillaryModel
+    !! Name of the child-class of `AbstractCapillaryModel_`
+    !! For example `VanGanuchetan`
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -380,18 +393,60 @@ INTERFACE GetPorousMaterialPointer
 END INTERFACE GetPorousMaterialPointer
 
 !----------------------------------------------------------------------------
-!                                     GetStressStrainModelPointer@GetMethods
+!                                         GetStressStrainModelPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-02-10
 ! summary: Get stressStrainModel pointer
+!
+!# GetStressStrainModelPointer
+!
+! Get stressStrainModel pointer stored inside PorousMaterial.
 
 INTERFACE
   MODULE FUNCTION obj_GetStressStrainModelPointer(obj) RESULT(ans)
     CLASS(PorousMaterial_), INTENT(IN) :: obj
     CLASS(AbstractSolidMechanicsModel_), POINTER :: ans
   END FUNCTION obj_GetStressStrainModelPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           GetCapillaryModelPointer@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-10
+! summary: Get capillaryModel pointer
+!
+!# GetCapillaryModelPointer
+!
+! Get capillaryModel pointer from porousMaterial.
+
+INTERFACE
+  MODULE FUNCTION obj_GetCapillaryModelPointer(obj) RESULT(ans)
+    CLASS(PorousMaterial_), INTENT(IN) :: obj
+    CLASS(AbstractCapillaryModel_), POINTER :: ans
+  END FUNCTION obj_GetCapillaryModelPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         IsCapillaryModelAssociated@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-10
+! summary: Get status of capillaryModel pointer
+!
+!# IsCapillaryModelAssociated
+!
+! Returns true if capillaryModel pointer from porousMaterial.
+
+INTERFACE
+  MODULE FUNCTION obj_IsCapillaryModelAssociated(obj) RESULT(ans)
+    CLASS(PorousMaterial_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsCapillaryModelAssociated
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -426,8 +481,8 @@ END INTERFACE
 !  If the array of toml is not found then the size of obj will be set to 0
 
 INTERFACE PorousMaterialImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, table, materialNames, tsize, &
-                                        region, dom)
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, table, materialNames, tsize, region, dom)
     TYPE(PorousMaterialPointer_), INTENT(INOUT) :: obj(:)
     !! Should be allocated outside
     !! The size should be atleast size of materialNames
@@ -460,8 +515,8 @@ END INTERFACE PorousMaterialImportFromToml
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE PorousMaterialImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml3(obj, tomlName, afile, filename, &
-                                        printToml, tsize, region, dom)
+  MODULE SUBROUTINE obj_ImportFromToml3( &
+    obj, tomlName, afile, filename, printToml, tsize, region, dom)
     TYPE(PorousMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: tomlName
     !! tomlName

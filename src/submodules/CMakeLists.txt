@@ -276,6 +276,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
 # NewtonianFluidModel
 include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
 
+# CapillaryModel
+include(${CMAKE_CURRENT_LIST_DIR}/CapillaryModel/CMakeLists.txt)
+
 # AbstractMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
 

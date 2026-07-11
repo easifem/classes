@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -15,59 +16,77 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(PorousMaterial_Class) GetMethods
-USE Display_Method, ONLY: ToString
+SUBMODULE(VanGenuchtenModel_Class) Methods
+USE TomlUtility, ONLY: GetValue
+USE tomlf, ONLY: toml_get => get_value
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: &
-  modName = "PorousMaterial_Class@GetMethods.F90"
+CHARACTER(*), PARAMETER :: modName = "VanGenuchten_Class@Methods.F90"
 #endif
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                   GetPorousMaterialPointer
+!                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetPorousMaterialPointer
+MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPorousMaterialPointer()"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
+INTEGER(I4B) :: ii, origin, stat
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tsize = SIZE(obj)
+CALL obj%DEALLOCATE()
+obj%name = "VanGenuchten"
+obj%totalParameters = 5_I4B
+obj%paramNames(1) = "ng"
+obj%paramNames(2) = "mg"
+obj%paramNames(3) = "pg"
+obj%paramNames(4) = "smin"
+obj%paramNames(5) = "smax"
 
 #ifdef DEBUG_VER
-isok = materialNo .LE. tsize
-CALL AssertError1(isok, myName, &
-     'materialNo = '//Tostring(materialNo)//' is greater than total &
-     &materials = '//Tostring(tsize))
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        'Reading ng ...')
 #endif
 
-ans => NULL()
-ans => obj(materialNo)%ptr
+DO ii = 1, obj%totalParameters
+  CALL GetValue(table=table, &
+                key=TRIM(obj%paramNames(ii)), &
+                VALUE=obj%params(ii), &
+                default_value=math%zero, &
+                isFound=isok, &
+                origin=origin, &
+                stat=stat)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    TRIM(obj%paramNames(ii))// &
+                    " is not found in the toml table.")
+#endif
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetPorousMaterialPointer
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
-!                                                GetStressStrainModelPointer
+!                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetStressStrainModelPointer
+MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetStressStrainModelPointer()"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 #endif
 
 #ifdef DEBUG_VER
@@ -75,18 +94,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-ans => obj%stressStrainModel
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetStressStrainModelPointer
+END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
-!                                                            Include Error
+!                                                              Include error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
 
-END SUBMODULE GetMethods
+END SUBMODULE Methods

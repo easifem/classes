@@ -389,9 +389,9 @@ END INTERFACE AbstractMeshFieldInitiate
 !# Initiate
 !
 ! We first search the name in material.
-! If the name is found in the material  then we get the pointer to
+! If the name is found in the material then we get the pointer to
 ! user function corresponding to the material name.
-! Then we call Initiate3 method
+! Then we call Initiate6 method
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate5(obj, quadField, material, name, &
