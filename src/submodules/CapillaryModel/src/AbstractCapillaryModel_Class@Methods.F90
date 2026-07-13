@@ -221,16 +221,40 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+CALL obj%GetSaturation(params=params, suction=suction%val(1:suction%len), &
+                       isSuction=isSuction, ans=ans%val)
+ans%tshape = suction%tshape
+ans%s(1:ans%tshape) = suction%s(1:suction%tshape)
+ans%len = suction%len
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetSaturation3
+
+!----------------------------------------------------------------------------
+!                                                              GetSaturation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaturation4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation4()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%GetSaturation(params=params%val, suction=suction, &
+                       isSuction=isSuction, ans=ans)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSaturation4
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml

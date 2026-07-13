@@ -28,6 +28,87 @@ CHARACTER(*), PARAMETER :: modName = "VanGenuchten_Class@Methods.F90"
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                              GetSaturation
+!----------------------------------------------------------------------------
+
+PURE FUNCTION SaturationModel1(ng, mg, pg, smin, smax, suction) RESULT(ans)
+  REAL(DFP), INTENT(IN) :: ng, mg, pg, smin, smax, suction
+  REAL(DFP) :: ans
+  ans = (smax - smin) / (math%one + (suction / pg)**ng)**mg + smin
+END FUNCTION SaturationModel1
+
+!----------------------------------------------------------------------------
+!                                                              GetSaturation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaturation1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation1()"
+#endif
+
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (isSuction) THEN
+  areal = suction
+ELSE
+  areal = -suction
+END IF
+
+ans = SaturationModel1(ng=params(1), mg=params(2), pg=params(3), &
+                       smin=params(4), smax=params(5), suction=areal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSaturation1
+
+!----------------------------------------------------------------------------
+!                                                              GetSaturation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaturation2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation2()"
+#endif
+
+INTEGER(I4B) :: tsize, ii
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(suction)
+
+IF (isSuction) THEN
+  DO ii = 1, tsize
+    ans(ii) = SaturationModel1(ng=params(1), mg=params(2), pg=params(3), &
+                               smin=params(4), smax=params(5), &
+                               suction=suction(ii))
+  END DO
+ELSE
+  DO ii = 1, tsize
+    areal = -suction(ii)
+    ans(ii) = SaturationModel1(ng=params(1), mg=params(2), pg=params(3), &
+                               smin=params(4), smax=params(5), &
+                               suction=areal)
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSaturation2
+
+!----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 

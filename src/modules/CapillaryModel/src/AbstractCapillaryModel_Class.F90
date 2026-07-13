@@ -72,10 +72,14 @@ CONTAINS
   !! Get saturation
   PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation2 => obj_GetSaturation2
   !! Get saturation
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation3 => obj_GetSaturation3
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetSaturation3 => obj_GetSaturation3
+  !! Get saturation
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetSaturation4 => obj_GetSaturation4
   !! Get saturation
   GENERIC, PUBLIC :: GetSaturation => GetSaturation1, GetSaturation2, &
-    GetSaturation3
+    GetSaturation3, GetSaturation4
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import abstract capillary model from toml
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -205,12 +209,13 @@ END INTERFACE
 ! Get saturation from input parameters and suction.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSaturation1(obj, params, totalParameters, &
-                                       suction, ans)
+  MODULE SUBROUTINE obj_GetSaturation1(obj, params, suction, isSuction, ans)
     CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: params(:)
-    INTEGER(I4B), INTENT(IN) :: totalParameters
     REAL(DFP), INTENT(IN) :: suction
+    LOGICAL(LGT), INTENT(IN) :: isSuction
+    !! if it is true then suction is suction, otherwise suction is
+    !! fluid pressure, and suction is given by -suction.
     REAL(DFP), INTENT(OUT) :: ans
   END SUBROUTINE obj_GetSaturation1
 END INTERFACE
@@ -228,12 +233,14 @@ END INTERFACE
 ! Get a vector of saturations from parameters and saturations.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSaturation2(obj, params, totalParameters, &
-                                       suction, ans)
+  MODULE SUBROUTINE obj_GetSaturation2(obj, params, suction, isSuction, &
+                                       ans)
     CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: params(:)
-    INTEGER(I4B), INTENT(IN) :: totalParameters
     REAL(DFP), INTENT(IN) :: suction(:)
+    LOGICAL(LGT), INTENT(IN) :: isSuction
+    !! if it is true then suction is suction, otherwise suction is
+    !! fluid pressure, and suction is given by -suction.
     REAL(DFP), INTENT(INOUT) :: ans(:)
   END SUBROUTINE obj_GetSaturation2
 END INTERFACE
@@ -252,14 +259,40 @@ END INTERFACE
 ! The saturations is also returned as FEVariable.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSaturation3(obj, params, totalParameters, &
-                                       suction, ans)
+  MODULE SUBROUTINE obj_GetSaturation3(obj, params, suction, isSuction, ans)
     CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: params(:)
-    INTEGER(I4B), INTENT(IN) :: totalParameters
     TYPE(FEVariable_), INTENT(IN) :: suction
+    LOGICAL(LGT), INTENT(IN) :: isSuction
+    !! if it is true then suction is suction, otherwise suction is
+    !! fluid pressure, and suction is given by -suction.
     TYPE(FEVariable_), INTENT(INOUT) :: ans
   END SUBROUTINE obj_GetSaturation3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetSaturation@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Get FEVariable of saturations from parameters and saturations
+!
+!# GetSaturation
+!
+! Get FEVariable of saturations from parameters and saturations.
+! The saturations is also returned as FEVariable.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSaturation4(obj, params, suction, isSuction, ans)
+    CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
+    TYPE(FEVariable_), INTENT(IN) :: params
+    TYPE(FEVariable_), INTENT(IN) :: suction
+    LOGICAL(LGT), INTENT(IN) :: isSuction
+    !! if it is true then suction is suction, otherwise suction is
+    !! fluid pressure, and suction is given by -suction.
+    TYPE(FEVariable_), INTENT(INOUT) :: ans
+  END SUBROUTINE obj_GetSaturation4
 END INTERFACE
 
 !----------------------------------------------------------------------------

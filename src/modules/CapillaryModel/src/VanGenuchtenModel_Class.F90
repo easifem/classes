@@ -18,6 +18,7 @@
 
 MODULE VanGenuchtenModel_Class
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: FEVariable_
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
@@ -39,10 +40,15 @@ PUBLIC :: VanGenuchtenModelPointer_
 !
 !# VanGenuchtenModel_
 !
-! Abstract capillary models.
+! Van Genuchten capillary models. The following parameters are defined
+! in that order: ng, mg, pg, smin, smax
 
 TYPE, EXTENDS(AbstractCapillaryModel_) :: VanGenuchtenModel_
 CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation1 => obj_GetSaturation1
+  !! Get saturation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation2 => obj_GetSaturation2
+  !! Get saturation
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import abstract capillary model from toml
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -56,6 +62,54 @@ END TYPE VanGenuchtenModel_
 TYPE :: VanGenuchtenModelPointer_
   CLASS(VanGenuchtenModel_), POINTER :: ptr => NULL()
 END TYPE VanGenuchtenModelPointer_
+
+!----------------------------------------------------------------------------
+!                                                     GetSaturation@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Get saturation from input parameters and suction
+!
+!# GetSaturation
+!
+! Get saturation from input parameters and suction.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSaturation1(obj, params, suction, isSuction, ans)
+    CLASS(VanGenuchtenModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: params(:)
+    REAL(DFP), INTENT(IN) :: suction
+    LOGICAL(LGT), INTENT(IN) :: isSuction
+    !! if it is true then suction is suction, otherwise suction is
+    !! fluid pressure, and suction is given by -suction.
+    REAL(DFP), INTENT(OUT) :: ans
+  END SUBROUTINE obj_GetSaturation1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetSaturation@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Get a vector of saturations from parameters and saturations
+!
+!# GetSaturation
+!
+! Get a vector of saturations from parameters and saturations.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSaturation2(obj, params, suction, isSuction, ans)
+    CLASS(VanGenuchtenModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: params(:)
+    REAL(DFP), INTENT(IN) :: suction(:)
+    LOGICAL(LGT), INTENT(IN) :: isSuction
+    !! if it is true then suction is suction, otherwise suction is
+    !! fluid pressure, and suction is given by -suction.
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+  END SUBROUTINE obj_GetSaturation2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
