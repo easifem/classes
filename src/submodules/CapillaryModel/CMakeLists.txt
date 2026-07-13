@@ -21,5 +21,6 @@ target_sources(
     PRIVATE
         ${src_path}/AbstractCapillaryModel_Class@Methods.F90
         ${src_path}/VanGenuchtenModel_Class@Methods.F90
+        ${src_path}/VanGenuchtenMualemModel_Class@Methods.F90
         ${src_path}/CapillaryFactory.F90
 )

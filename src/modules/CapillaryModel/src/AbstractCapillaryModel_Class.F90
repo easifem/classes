@@ -68,18 +68,18 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetParameters => obj_GetParameters
   !! Get parameters of abstract capillary model
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation1 => obj_GetSaturation1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetValue1 => obj_GetValue1
   !! Get saturation
-  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation2 => obj_GetSaturation2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetValue2 => obj_GetValue2
   !! Get saturation
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetSaturation3 => obj_GetSaturation3
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetValue3 => &
+    obj_GetValue3
   !! Get saturation
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
-    GetSaturation4 => obj_GetSaturation4
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetValue4 => &
+    obj_GetValue4
   !! Get saturation
-  GENERIC, PUBLIC :: GetSaturation => GetSaturation1, GetSaturation2, &
-    GetSaturation3, GetSaturation4
+  GENERIC, PUBLIC :: GetValue => GetValue1, GetValue2, &
+    GetValue3, GetValue4
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import abstract capillary model from toml
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -197,102 +197,114 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetSaturation@Methods
+!                                                           GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-07-13
-! summary: Get saturation from input parameters and suction
+! summary: Get Sw and Krw from input parameters and suction
 !
-!# GetSaturation
+!# GetValue
 !
-! Get saturation from input parameters and suction.
+! Get Sw and Krw from input parameters and suction.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSaturation1(obj, params, suction, isSuction, ans)
+  MODULE SUBROUTINE obj_GetValue1(obj, params, suction, isSuction, sw, &
+                                  krw)
     CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: params(:)
     REAL(DFP), INTENT(IN) :: suction
     LOGICAL(LGT), INTENT(IN) :: isSuction
     !! if it is true then suction is suction, otherwise suction is
     !! fluid pressure, and suction is given by -suction.
-    REAL(DFP), INTENT(OUT) :: ans
-  END SUBROUTINE obj_GetSaturation1
+    REAL(DFP), INTENT(OUT) :: sw
+    !! Saturation
+    REAL(DFP), INTENT(OUT) :: krw
+    !! Relative permeability of water
+  END SUBROUTINE obj_GetValue1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetSaturation@Methods
+!                                                           GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-07-13
-! summary: Get a vector of saturations from parameters and saturations
+! summary: Get a vector of Sw and Krw from parameters and suctions
 !
-!# GetSaturation
+!# GetValue
 !
-! Get a vector of saturations from parameters and saturations.
+! Get a vector of Sw and Krw from parameters and suctions.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSaturation2(obj, params, suction, isSuction, &
-                                       ans)
+  MODULE SUBROUTINE obj_GetValue2(obj, params, suction, isSuction, &
+                                  sw, krw)
     CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: params(:)
     REAL(DFP), INTENT(IN) :: suction(:)
     LOGICAL(LGT), INTENT(IN) :: isSuction
     !! if it is true then suction is suction, otherwise suction is
     !! fluid pressure, and suction is given by -suction.
-    REAL(DFP), INTENT(INOUT) :: ans(:)
-  END SUBROUTINE obj_GetSaturation2
+    REAL(DFP), INTENT(INOUT) :: sw(:)
+    !! degree of saturation
+    REAL(DFP), INTENT(INOUT) :: krw(:)
+    !! relative permeability
+  END SUBROUTINE obj_GetValue2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetSaturation@Methods
+!                                                           GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-07-13
-! summary: Get FEVariable of saturations from parameters and saturations
+! summary: Get FEVariable of Sw and Krw from parameters and suctions
 !
-!# GetSaturation
+!# GetValue
 !
-! Get FEVariable of saturations from parameters and saturations.
-! The saturations is also returned as FEVariable.
+! Get FEVariable of Sw and Krw from parameters and suctions.
+! Sw and Krw is also returned as FEVariable.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSaturation3(obj, params, suction, isSuction, ans)
+  MODULE SUBROUTINE obj_GetValue3(obj, params, suction, isSuction, sw, krw)
     CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: params(:)
     TYPE(FEVariable_), INTENT(IN) :: suction
     LOGICAL(LGT), INTENT(IN) :: isSuction
     !! if it is true then suction is suction, otherwise suction is
     !! fluid pressure, and suction is given by -suction.
-    TYPE(FEVariable_), INTENT(INOUT) :: ans
-  END SUBROUTINE obj_GetSaturation3
+    TYPE(FEVariable_), INTENT(INOUT) :: sw
+    !! degree of saturation
+    TYPE(FEVariable_), INTENT(INOUT) :: krw
+    !! relative permeability of water
+  END SUBROUTINE obj_GetValue3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     GetSaturation@Methods
+!                                                           GetValue@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-07-13
-! summary: Get FEVariable of saturations from parameters and saturations
+! summary: Get FEVariable of Sw and Krw from parameters and saturations
 !
-!# GetSaturation
+!# GetValue
 !
-! Get FEVariable of saturations from parameters and saturations.
-! The saturations is also returned as FEVariable.
+! Get FEVariable of Sw and Krw from parameters and saturations.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetSaturation4(obj, params, suction, isSuction, ans)
+  MODULE SUBROUTINE obj_GetValue4(obj, params, suction, isSuction, sw, krw)
     CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: params
     TYPE(FEVariable_), INTENT(IN) :: suction
     LOGICAL(LGT), INTENT(IN) :: isSuction
     !! if it is true then suction is suction, otherwise suction is
     !! fluid pressure, and suction is given by -suction.
-    TYPE(FEVariable_), INTENT(INOUT) :: ans
-  END SUBROUTINE obj_GetSaturation4
+    TYPE(FEVariable_), INTENT(INOUT) :: sw
+    !! Degree of saturation of water
+    TYPE(FEVariable_), INTENT(INOUT) :: krw
+    !! Relative permeability of water
+  END SUBROUTINE obj_GetValue4
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -158,12 +158,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetParameters
 
 !----------------------------------------------------------------------------
-!                                                              GetSaturation
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetSaturation1
+MODULE PROCEDURE obj_GetValue1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation1()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetValue1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -180,15 +180,15 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetSaturation1
+END PROCEDURE obj_GetValue1
 
 !----------------------------------------------------------------------------
-!                                                              GetSaturation
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetSaturation2
+MODULE PROCEDURE obj_GetValue2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation2()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetValue2()"
 #endif
 
 #ifdef DEBUG_VER
@@ -205,15 +205,15 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetSaturation2
+END PROCEDURE obj_GetValue2
 
 !----------------------------------------------------------------------------
-!                                                            GetSaturation
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetSaturation3
+MODULE PROCEDURE obj_GetValue3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation3()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetValue3()"
 #endif
 
 #ifdef DEBUG_VER
@@ -221,25 +221,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%GetSaturation(params=params, suction=suction%val(1:suction%len), &
-                       isSuction=isSuction, ans=ans%val)
-ans%tshape = suction%tshape
-ans%s(1:ans%tshape) = suction%s(1:suction%tshape)
-ans%len = suction%len
+CALL obj%GetValue(params=params, suction=suction%val(1:suction%len), &
+                  isSuction=isSuction, sw=sw%val, krw=krw%val)
+sw%tshape = suction%tshape
+krw%tshape = suction%tshape
+sw%s(1:suction%tshape) = suction%s(1:suction%tshape)
+krw%s(1:krw%tshape) = suction%s(1:suction%tshape)
+sw%len = suction%len
+krw%len = suction%len
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetSaturation3
+END PROCEDURE obj_GetValue3
 
 !----------------------------------------------------------------------------
-!                                                              GetSaturation
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetSaturation4
+MODULE PROCEDURE obj_GetValue4
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation4()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetValue4()"
 #endif
 
 #ifdef DEBUG_VER
@@ -247,14 +250,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%GetSaturation(params=params%val, suction=suction, &
-                       isSuction=isSuction, ans=ans)
+CALL obj%GetValue(params=params%val, suction=suction, &
+                  isSuction=isSuction, sw=sw, krw=krw)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_GetSaturation4
+END PROCEDURE obj_GetValue4
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml

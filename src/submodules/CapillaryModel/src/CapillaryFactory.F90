@@ -19,7 +19,8 @@ MODULE CapillaryFactory
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE StringUtility, ONLY: UpperCase
 USE AbstractCapillaryModel_Class, ONLY: AbstractCapillaryModel_
-USE VanGenuchtenModel_Class, ONLY: VanGenuchtenModel_
+! USE VanGenuchtenModel_Class, ONLY: VanGenuchtenModel_
+USE VanGenuchtenMualemModel_Class, ONLY: VanGenuchtenMualemModel_
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
@@ -57,8 +58,16 @@ FUNCTION CapillaryModelFactory(name) RESULT(ans)
   astr = UpperCase(TRIM(name))
 
   SELECT CASE (astr)
-  CASE ("VANGENUCHTEN")
-    ALLOCATE (VanGenuchtenModel_ :: ans)
+  CASE ("VANGENUCHTENMUALEM")
+    ALLOCATE (VanGenuchtenMualemModel_ :: ans)
+
+  CASE ("VANGENUCHTENBURDINE")
+    ! ALLOCATE (VanGenuchtenMualemModel_ :: ans)
+
+#ifdef DEBUG_VER
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      'VANGENUCHTENBURDINE model is not implemented yet:')
+#endif
 
   CASE ("BROOKSCOREY")
 

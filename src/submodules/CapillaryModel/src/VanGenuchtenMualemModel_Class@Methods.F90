@@ -16,13 +16,14 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(VanGenuchtenModel_Class) Methods
+SUBMODULE(VanGenuchtenMualemModel_Class) Methods
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "VanGenuchten_Class@Methods.F90"
+CHARACTER(*), PARAMETER :: &
+  modName = "VanGenuchtenMualemModel_Class@Methods.F90"
 #endif
 
 CONTAINS
@@ -31,14 +32,22 @@ CONTAINS
 !                                                              GetSaturation
 !----------------------------------------------------------------------------
 
-PURE FUNCTION SwModel(ng, mg, pg, smin, smax, suction) RESULT(ans)
-  REAL(DFP), INTENT(IN) :: ng, mg, pg, smin, smax, suction
-  REAL(DFP) :: ans
-  ans = (smax - smin) / (math%one + (suction / pg)**ng)**mg + smin
-END FUNCTION SwModel
+PURE SUBROUTINE SwKrwModel(ng, pg, smin, smax, k, suction, sw, krw)
+  REAL(DFP), INTENT(IN) :: ng, pg, smin, smax, k, suction
+  REAL(DFP), INTENT(OUT) :: sw, krw
+  !! internal variables
+  REAL(DFP) :: mg, swe, mg_inv
+
+  mg = math%one - math%one / ng
+  mg_inv = math%one / mg
+  swe = math%one / (math%one + (suction / pg)**ng)**mg
+
+  sw = (smax - smin) * swe + smin
+  krw = (swe**k) * (math%one - (math%one - swe**mg_inv)**mg)**math%two_i
+END SUBROUTINE SwKrwModel
 
 !----------------------------------------------------------------------------
-!                                                              GetSaturation
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetValue1
@@ -59,8 +68,8 @@ ELSE
   areal = -suction
 END IF
 
-sw = SwModel(ng=params(1), mg=params(2), pg=params(3), &
-             smin=params(4), smax=params(5), suction=areal)
+CALL SwKrwModel(ng=params(1), pg=params(2), smin=params(3), smax=params(4), &
+                k=params(5), suction=areal, sw=sw, krw=krw)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -69,7 +78,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetValue1
 
 !----------------------------------------------------------------------------
-!                                                              GetSaturation
+!                                                                   GetValue
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetValue2
@@ -89,16 +98,16 @@ tsize = SIZE(suction)
 
 IF (isSuction) THEN
   DO ii = 1, tsize
-    sw(ii) = SwModel(ng=params(1), mg=params(2), pg=params(3), &
-                     smin=params(4), smax=params(5), &
-                     suction=suction(ii))
+    CALL SwKrwModel(ng=params(1), pg=params(2), smin=params(3), &
+                    smax=params(4), k=params(5), suction=suction(ii), &
+                    sw=sw(ii), krw=krw(ii))
   END DO
 ELSE
   DO ii = 1, tsize
     areal = -suction(ii)
-    sw(ii) = SwModel(ng=params(1), mg=params(2), pg=params(3), &
-                     smin=params(4), smax=params(5), &
-                     suction=areal)
+    CALL SwKrwModel(ng=params(1), pg=params(2), smin=params(3), &
+                    smax=params(4), k=params(5), suction=areal, &
+                    sw=sw(ii), krw=krw(ii))
   END DO
 END IF
 
@@ -126,20 +135,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%DEALLOCATE()
-obj%name = "VanGenuchten"
+obj%name = "VanGenuchtenMualem"
 obj%totalParameters = 5_I4B
 obj%paramNames(1) = "ng"
-obj%paramNames(2) = "mg"
-obj%paramNames(3) = "pg"
-obj%paramNames(4) = "smin"
-obj%paramNames(5) = "smax"
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading ng ...')
-#endif
+obj%paramNames(2) = "pg"
+obj%paramNames(3) = "smin"
+obj%paramNames(4) = "smax"
+obj%paramNames(5) = "k"
 
 DO ii = 1, obj%totalParameters
+
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading '//TRIM(obj%paramNames(ii))//" ...")
+#endif
+
   CALL GetValue(table=table, &
                 key=TRIM(obj%paramNames(ii)), &
                 VALUE=obj%params(ii), &
