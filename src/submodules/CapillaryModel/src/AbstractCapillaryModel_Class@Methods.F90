@@ -158,6 +158,81 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetParameters
 
 !----------------------------------------------------------------------------
+!                                                              GetSaturation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaturation1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSaturation1
+
+!----------------------------------------------------------------------------
+!                                                              GetSaturation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaturation2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSaturation2
+
+!----------------------------------------------------------------------------
+!                                                            GetSaturation
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSaturation3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSaturation3()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSaturation3
+
+!----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 

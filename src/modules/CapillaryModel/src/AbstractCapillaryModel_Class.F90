@@ -18,6 +18,7 @@
 
 MODULE AbstractCapillaryModel_Class
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: FEVariable_
 USE GlobalData, ONLY: DFP, I4B, LGT
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
@@ -67,6 +68,14 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetParameters => obj_GetParameters
   !! Get parameters of abstract capillary model
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation1 => obj_GetSaturation1
+  !! Get saturation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation2 => obj_GetSaturation2
+  !! Get saturation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSaturation3 => obj_GetSaturation3
+  !! Get saturation
+  GENERIC, PUBLIC :: GetSaturation => GetSaturation1, GetSaturation2, &
+    GetSaturation3
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import abstract capillary model from toml
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -181,6 +190,76 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: ans(:)
     INTEGER(I4B), INTENT(OUT) :: tsize
   END SUBROUTINE obj_GetParameters
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetSaturation@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Get saturation from input parameters and suction
+!
+!# GetSaturation
+!
+! Get saturation from input parameters and suction.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSaturation1(obj, params, totalParameters, &
+                                       suction, ans)
+    CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: params(:)
+    INTEGER(I4B), INTENT(IN) :: totalParameters
+    REAL(DFP), INTENT(IN) :: suction
+    REAL(DFP), INTENT(OUT) :: ans
+  END SUBROUTINE obj_GetSaturation1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetSaturation@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Get a vector of saturations from parameters and saturations
+!
+!# GetSaturation
+!
+! Get a vector of saturations from parameters and saturations.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSaturation2(obj, params, totalParameters, &
+                                       suction, ans)
+    CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: params(:)
+    INTEGER(I4B), INTENT(IN) :: totalParameters
+    REAL(DFP), INTENT(IN) :: suction(:)
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+  END SUBROUTINE obj_GetSaturation2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetSaturation@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Get FEVariable of saturations from parameters and saturations
+!
+!# GetSaturation
+!
+! Get FEVariable of saturations from parameters and saturations.
+! The saturations is also returned as FEVariable.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetSaturation3(obj, params, totalParameters, &
+                                       suction, ans)
+    CLASS(AbstractCapillaryModel_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: params(:)
+    INTEGER(I4B), INTENT(IN) :: totalParameters
+    TYPE(FEVariable_), INTENT(IN) :: suction
+    TYPE(FEVariable_), INTENT(INOUT) :: ans
+  END SUBROUTINE obj_GetSaturation3
 END INTERFACE
 
 !----------------------------------------------------------------------------
