@@ -35,6 +35,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%opt%DEALLOCATE()
 obj%isInit = .FALSE.
+obj%verbosity = 0
 obj%ierr = 0
 obj%iter = 0
 obj%tol = 0.0

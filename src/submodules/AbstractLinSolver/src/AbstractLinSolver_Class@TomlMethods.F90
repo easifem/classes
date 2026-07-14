@@ -33,6 +33,10 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
 #endif
 
+CHARACTER(:), ALLOCATABLE :: key
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: origin, stat
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ImportFromToml()')
@@ -40,7 +44,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 CALL obj%opt%ImportFromToml(table=table)
+key = "verbosity"
+CALL GetValue(table=table, key=key, VALUE=obj%verbosity, &
+              default_value=math%zero_i, isFound=isok, &
+              origin=origin, stat=stat)
 CALL obj%Initiate()
+
+key = ""
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -75,7 +85,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 #endif
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER

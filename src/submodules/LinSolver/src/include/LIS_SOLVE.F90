@@ -57,7 +57,8 @@ SUBROUTINE _SUBROUTINE_NAME_(obj, sol, rhs)
 
       CALL obj%SetParam(ierr=obj%ipar(1), iter=obj%ipar(7))
 
-      CALL DisplayConvergence(iter=obj%ipar(7), fpar=obj%FPAR)
+      CALL DisplayConvergence(iter=obj%ipar(7), fpar=obj%FPAR, &
+                              verbosity=obj%verbosity)
       EXIT main_loop
 
     END IF

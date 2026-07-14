@@ -165,9 +165,10 @@ END SUBROUTINE CHECKERROR
 !                                                        DisplayConvergence
 !----------------------------------------------------------------------------
 
-SUBROUTINE DisplayConvergence(iter, FPAR)
+SUBROUTINE DisplayConvergence(iter, FPAR, verbosity)
   INTEGER(I4B), INTENT(IN) :: iter
   REAL(DFP), INTENT(IN) :: FPAR(:)
+  INTEGER(I4B), INTENT(IN) :: verbosity
 
   ! internal variable
 #ifdef DEBUG_VER
@@ -191,22 +192,24 @@ SUBROUTINE DisplayConvergence(iter, FPAR)
                     'Convergence is achieved')
 #endif
 
-  CALL Blanklines(nol=2, unitno=unitno)
-  CALL EqualLine(unitno=unitno)
+  IF (verbosity .NE. 0) THEN
+    CALL Blanklines(nol=2, unitno=unitno)
+    CALL EqualLine(unitno=unitno)
 
-  CALL Display(iter, "Number of Matrix-Vector Multiplication: ", &
-               unitno=unitno)
-  CALL Display(fpar(3), "Initial residual/error norm: ", &
-               unitno=unitno)
-  CALL Display(fpar(4), "Target residual/error norm: ", &
-               unitno=unitno)
-  CALL Display(fpar(6), "Current residual/error norm: ", &
-               unitno=unitno)
-  CALL Display(fpar(5), "Current residual norm: ", &
-               unitno=unitno)
-  CALL Display(fpar(7), "Convergence rate: ", &
-               unitno=unitno)
-  CALL EqualLine(unitNo=unitNo)
+    CALL Display(iter, "Number of Matrix-Vector Multiplication: ", &
+                 unitno=unitno)
+    CALL Display(fpar(3), "Initial residual/error norm: ", &
+                 unitno=unitno)
+    CALL Display(fpar(4), "Target residual/error norm: ", &
+                 unitno=unitno)
+    CALL Display(fpar(6), "Current residual/error norm: ", &
+                 unitno=unitno)
+    CALL Display(fpar(5), "Current residual norm: ", &
+                 unitno=unitno)
+    CALL Display(fpar(7), "Convergence rate: ", &
+                 unitno=unitno)
+    CALL EqualLine(unitNo=unitNo)
+  END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -413,7 +416,8 @@ SUBROUTINE _SUBROUTINE_NAME_(obj, sol, rhs)
 
       CALL obj%SetParam(ierr=obj%ipar(1), iter=obj%ipar(7))
 
-      CALL DisplayConvergence(iter=obj%ipar(7), fpar=obj%FPAR)
+      CALL DisplayConvergence(iter=obj%ipar(7), fpar=obj%FPAR, &
+                              verbosity=obj%verbosity)
       EXIT main_loop
 
     END IF
