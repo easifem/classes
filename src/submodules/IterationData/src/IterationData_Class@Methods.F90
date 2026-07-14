@@ -276,6 +276,94 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetMaxIter
 
 !----------------------------------------------------------------------------
+!                                                          SetResidualError0
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetResidualError0
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetResidualError0()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%residualError0 = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetResidualError0
+
+!----------------------------------------------------------------------------
+!                                                           SetResidualError
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetResidualError
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetResidualError()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%residualError = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetResidualError
+
+!----------------------------------------------------------------------------
+!                                                          SetSolutionError0
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetSolutionError0
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetSolutionError0()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%SolutionError0 = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetSolutionError0
+
+!----------------------------------------------------------------------------
+!                                                           SetSolutionError
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetSolutionError
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetSolutionError()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%SolutionError = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetSolutionError
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

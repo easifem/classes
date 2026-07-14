@@ -93,6 +93,14 @@ CONTAINS
   !! Initiate iteration data
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxIter => obj_GetMaxIter
   !! Get maximum number of iteration.
+  PROCEDURE, PUBLIC, PASS(obj) :: SetResidualError0 => obj_SetResidualError0
+  !! Set residualError0
+  PROCEDURE, PUBLIC, PASS(obj) :: SetResidualError => obj_SetResidualError
+  !! Set residualError
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSolutionError0 => obj_SetSolutionError0
+  !! Set SolutionError0
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSolutionError => obj_SetSolutionError
+  !! Set SolutionError
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
@@ -227,6 +235,82 @@ INTERFACE
     CLASS(IterationData_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxIter
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 SetResidualError0@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Set residualError0
+!
+!# SetResidualError0
+!
+! Set residualError0
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetResidualError0(obj, VALUE)
+    CLASS(IterationData_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetResidualError0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 SetResidualError@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Set residualError
+!
+!# SetResidualError
+!
+! Set residualError
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetResidualError(obj, VALUE)
+    CLASS(IterationData_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetResidualError
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 SetSolutionError0@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Set SolutionError0
+!
+!# SetSolutionError0
+!
+! Set SolutionError0
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSolutionError0(obj, VALUE)
+    CLASS(IterationData_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetSolutionError0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 SetSolutionError@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Set SolutionError
+!
+!# SetSolutionError
+!
+! Set SolutionError
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSolutionError(obj, VALUE)
+    CLASS(IterationData_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetSolutionError
 END INTERFACE
 
 !----------------------------------------------------------------------------
