@@ -413,3 +413,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
 
 # time discontinous algorithms
 include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# IterationData
+# ----------------------------------------------------------------------------
+
+# IterationData
+include(${CMAKE_CURRENT_LIST_DIR}/IterationData/CMakeLists.txt)

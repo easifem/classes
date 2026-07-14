@@ -1,0 +1,10 @@
+[IterationData]
+name = "Picard"
+maxIter = 100
+residualRelativeTolerance = 1.0E-5
+residualAbsoluteTolerance = 1.0E-5
+solutionRelativeTolerance = 1.0E-5
+solutionAbsoluteTolerance = 1.0E-5
+convergenceType = "relative"       # "absolute", "both"
+convergenceIn = "residual"         # "solution", "both"
+normType = "L2"                    # "L1", "Infinity"
