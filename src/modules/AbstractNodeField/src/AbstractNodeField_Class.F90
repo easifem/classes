@@ -197,6 +197,8 @@ CONTAINS
   !! Returns the L1 norm
   PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
   !! Returns the infinity norm
+  PROCEDURE, PUBLIC, PASS(obj) :: Norm => obj_Norm
+  !! Returns the L2, L1, LInfinity norm
   PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
   !! dot product
   PROCEDURE, PUBLIC, PASS(obj) :: PMUL => obj_PMUL
@@ -1041,6 +1043,23 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_Normi
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Norm@BlasMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 24 Jan 2022
+! summary: This function can return L1, L2, or Infinity norm
+
+INTERFACE
+  MODULE FUNCTION obj_Norm(obj, normType) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: normType
+    !! normType is defined in TypeConvergenceOpt in BaseType
+    REAL(DFP) :: ans
+  END FUNCTION obj_Norm
 END INTERFACE
 
 !----------------------------------------------------------------------------
