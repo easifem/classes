@@ -44,7 +44,7 @@ TYPE :: IterationData_
   !! Status if iteration data is initiated or not
   LOGICAL(LGT) :: converged = math%no
   !! Status of convergence
-  INTEGER(I4B) :: maxIter = 100
+  INTEGER(I4B) :: maxIter = 100_DFP
   !! Maximum number of iterations allowed
   INTEGER(I4B) :: iterationNumber = math%one_i
   !! Iteration number
