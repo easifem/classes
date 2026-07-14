@@ -71,7 +71,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ApplyDirichletBC1
 
 !----------------------------------------------------------------------------
-!
+!                                                           ApplyDirichletBC
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ApplyDirichletBC2
@@ -138,6 +138,109 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_ApplyDirichletBC3
+
+!----------------------------------------------------------------------------
+!                                                       ApplyZeroDirichletBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyZeroDirichletBC1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyZeroDirichletBC1()"
+#endif
+
+INTEGER(I4B) :: tsize, iNodeOnNode, iNodeOnEdge, iNodeOnFace
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbc=dbc)
+
+tsize = obj%GetMaxTotalNodeNumForBC()
+
+CALL Reallocate(obj%nodenum, tsize, isExpand=math%yes, &
+                expandFactor=expandFactor)
+
+CALL dbc%GetNodeNumber(fedof=obj%fedof, nodeNum=obj%nodeNum, tsize=tsize, &
+                       iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+                       iNodeOnEdge=iNodeOnEdge)
+
+CALL obj%Set( &
+  globalNode=obj%nodenum(1:tsize), VALUE=math%zero, islocal=math%yes)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyZeroDirichletBC1
+
+!----------------------------------------------------------------------------
+!                                                      ApplyZeroDirichletBC2
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyZeroDirichletBC2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyZeroDirichletBC2()"
+#endif
+
+INTEGER(I4B), PARAMETER :: expandFactor = 2
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ibc, tbc, tsize, iNodeOnNode, iNodeOnEdge, iNodeOnFace
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%SetMaxTotalNodeNumForBC(dbcvec=dbc)
+tsize = obj%GetMaxTotalNodeNumForBC()
+
+CALL Reallocate(obj%nodenum, tsize, isExpand=math%yes, &
+                expandFactor=expandFactor)
+
+tbc = SIZE(dbc)
+DO ibc = 1, tbc
+  isok = ASSOCIATED(dbc(ibc)%ptr)
+  IF (.NOT. isok) CYCLE
+
+  CALL dbc(ibc)%ptr%GetNodeNumber( &
+    fedof=obj%fedof, nodeNum=obj%nodeNum, tsize=tsize, &
+    iNodeOnNode=iNodeOnNode, iNodeOnFace=iNodeOnFace, &
+    iNodeOnEdge=iNodeOnEdge)
+
+  CALL obj%Set(globalNode=obj%nodenum(1:tsize), VALUE=math%zero, &
+               islocal=math%yes)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyZeroDirichletBC2
+
+!----------------------------------------------------------------------------
+!                                                           ApplyDirichletBC
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ApplyZeroDirichletBC3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ApplyZeroDirichletBC3()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%ApplyZeroDirichletBC(dbc=obj%dbc)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ApplyZeroDirichletBC3
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
