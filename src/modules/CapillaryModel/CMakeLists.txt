@@ -20,7 +20,6 @@ target_sources(
     ${PROJECT_NAME}
     PRIVATE
         ${src_path}/AbstractCapillaryModel_Class.F90
-        ${src_path}/VanGenuchtenModel_Class.F90
         ${src_path}/VanGenuchtenMualemModel_Class.F90
         ${src_path}/GardnerModel_Class.F90
 )

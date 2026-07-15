@@ -19,7 +19,6 @@ MODULE CapillaryFactory
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE StringUtility, ONLY: UpperCase
 USE AbstractCapillaryModel_Class, ONLY: AbstractCapillaryModel_
-! USE VanGenuchtenModel_Class, ONLY: VanGenuchtenModel_
 USE VanGenuchtenMualemModel_Class, ONLY: VanGenuchtenMualemModel_
 USE GardnerModel_Class, ONLY: GardnerModel_
 USE BaseType, ONLY: math => TypeMathOpt
