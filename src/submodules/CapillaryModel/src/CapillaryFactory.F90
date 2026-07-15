@@ -21,6 +21,7 @@ USE StringUtility, ONLY: UpperCase
 USE AbstractCapillaryModel_Class, ONLY: AbstractCapillaryModel_
 ! USE VanGenuchtenModel_Class, ONLY: VanGenuchtenModel_
 USE VanGenuchtenMualemModel_Class, ONLY: VanGenuchtenMualemModel_
+USE GardnerModel_Class, ONLY: GardnerModel_
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
@@ -69,18 +70,14 @@ FUNCTION CapillaryModelFactory(name) RESULT(ans)
                       'VANGENUCHTENBURDINE model is not implemented yet:')
 #endif
 
+  CASE ("GARDNER")
+    ALLOCATE (GardnerModel_ :: ans)
+
   CASE ("BROOKSCOREY")
 
 #ifdef DEBUG_VER
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       'Brooks-Corey model is not implemented yet:')
-#endif
-
-  CASE ("GARDNER")
-
-#ifdef DEBUG_VER
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      'Gardner model is not implemented yet:')
 #endif
 
   CASE DEFAULT
