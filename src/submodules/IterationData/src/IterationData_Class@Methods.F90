@@ -95,22 +95,22 @@ obj%residualError = 0.0
 obj%residualError0 = 0.0
 obj%solutionError = 0.0
 obj%solutionError0 = 0.0
-obj%solutionRelTolerance = 1.0E-5
-obj%solutionAbsTolerance = 1.0E-5
-obj%residualRelTolerance = 1.0E-5
-obj%residualAbsTolerance = 1.0E-5
+obj%solutionRelTolerance = 1.0E-5_DFP
+obj%solutionAbsTolerance = 1.0E-5_DFP
+obj%residualRelTolerance = 1.0E-5_DFP
+obj%residualAbsTolerance = 1.0E-5_DFP
 obj%convergenceType = 0
 obj%convergenceIn = 0
 obj%normType = 0
-obj%converged = .FALSE.
+obj%converged = math%no
 obj%timeAtStart = 0.0
 obj%timeAtEnd = 0.0
 
-isok = ALLOCATED(obj%convergenceData)
-IF (isok) DEALLOCATE (obj%convergenceData)
+isok = ALLOCATED(obj%residualHistory)
+IF (isok) DEALLOCATE (obj%residualHistory)
 
-isok = ALLOCATED(obj%header)
-IF (isok) DEALLOCATE (obj%header)
+isok = ALLOCATED(obj%solutionHistory)
+IF (isok) DEALLOCATE (obj%solutionHistory)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -127,14 +127,25 @@ MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 CALL Display(msg, unitNo=unitNo)
+
+CALL Display(obj%isInit, 'isInit: ', unitNo=unitNo)
+CALL Display(obj%converged, 'converged: ', unitNo=unitNo)
+CALL Display(obj%storeHistory, 'storeHistory: ', unitNo=unitNo)
+
 CALL Display(obj%maxIter, 'maxIter: ', unitNo=unitNo)
 CALL Display(obj%iterationNumber, 'iterationNumber: ', unitNo=unitNo)
+CALL Display(obj%convergenceType, 'convergenceType: ', unitNo=unitNo)
+CALL Display(obj%convergenceIn, 'convergenceIn: ', unitNo=unitNo)
+CALL Display(obj%normType, 'normType: ', unitNo=unitNo)
+
 CALL Display(obj%residualError0, 'residualError0: ', unitNo=unitNo)
 CALL Display(obj%residualError, 'residualError: ', unitNo=unitNo)
 CALL Display(obj%residualRelTolerance, 'residualRelTolerance: ', &
@@ -149,12 +160,20 @@ CALL Display(obj%solutionRelTolerance, 'solutionRelTolerance: ', &
 CALL Display(obj%solutionAbsTolerance, 'solutionAbsTolerance: ', &
              unitNo=unitNo)
 
-CALL Display(obj%convergenceType, 'convergenceType: ', unitNo=unitNo)
-CALL Display(obj%convergenceIn, 'convergenceIn: ', unitNo=unitNo)
-CALL Display(obj%normType, 'normType: ', unitNo=unitNo)
-CALL Display(obj%converged, 'converged: ', unitNo=unitNo)
 CALL Display(obj%timeAtStart, 'timeAtStart: ', unitNo=unitNo)
 CALL Display(obj%timeAtEnd, 'timeAtEnd: ', unitNo=unitNo)
+
+isok = ALLOCATED(obj%residualHistory)
+CALL Display(isok, "residualHistory ALLOCATED:", unitNo=unitNo)
+IF (isok) THEN
+  CALL Display(obj%residualHistory, "residualHistory: ", unitNo=unitNo)
+END IF
+
+isok = ALLOCATED(obj%solutionHistory)
+CALL Display(isok, "solutionHistory ALLOCATED:", unitNo=unitNo)
+IF (isok) THEN
+  CALL Display(obj%solutionHistory, "solutionHistory: ", unitNo=unitNo)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -168,9 +187,9 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_IsConverged
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_IsConverged"
+CHARACTER(*), PARAMETER :: myName = "obj_IsConverged()"
 #endif
-LOGICAL(LGT) :: abool
+LOGICAL(LGT) :: ans1, ans2
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -182,68 +201,90 @@ SELECT CASE (obj%convergenceIn)
   ! Convergence in residual
 CASE (TypeConvergenceOpt%res)
 
-  abool = obj%convergenceType .EQ. TypeConvergenceOpt%relative
+  SELECT CASE (obj%convergenceType)
+  CASE (TypeConvergenceOpt%relative)
+    ans = obj%residualError .LE. &
+          (obj%residualRelTolerance * obj%residualError0)
 
-  IF (abool) THEN
+  CASE (TypeConvergenceOpt%absolute)
+    ans = obj%residualError .LE. obj%residualAbsTolerance
 
-    ans = CheckConvergence(errorAtStart=obj%residualError0, &
-                           errorAtEnd=obj%residualError, &
-                           tolerance=obj%residualRelTolerance)
+  CASE (TypeConvergenceOpt%both)
+    ans = obj%residualError .LE. &
+          (obj%residualRelTolerance * obj%residualError0 &
+           + obj%residualAbsTolerance)
 
-  ELSE
-
-    ans = CheckConvergence(errorAtStart=math%one, &
-                           errorAtEnd=obj%residualError, &
-                           tolerance=obj%residualAbsTolerance)
-
-  END IF
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "No case found for obj%convergenceType (1)")
+#endif
+  END SELECT
 
   ! Convergence in sol
 CASE (TypeConvergenceOpt%sol)
 
-  abool = obj%convergenceType .EQ. TypeConvergenceOpt%relative
+  SELECT CASE (obj%convergenceType)
+  CASE (TypeConvergenceOpt%relative)
+    ans = obj%solutionError .LE. &
+          (obj%solutionRelTolerance * obj%solutionError0)
 
-  IF (abool) THEN
+  CASE (TypeConvergenceOpt%absolute)
+    ans = obj%solutionError .LE. obj%solutionAbsTolerance
 
-    ans = CheckConvergence(errorAtStart=obj%solutionError0, &
-                           errorAtEnd=obj%solutionError, &
-                           tolerance=obj%solutionRelTolerance)
+  CASE (TypeConvergenceOpt%both)
+    ans = obj%solutionError .LE. &
+          (obj%solutionRelTolerance * obj%solutionError0 &
+           + obj%solutionAbsTolerance)
 
-  ELSE
-
-    ans = CheckConvergence(errorAtStart=math%one, &
-                           errorAtEnd=obj%solutionError, &
-                           tolerance=obj%solutionAbsTolerance)
-
-  END IF
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "No case found for obj%convergenceType (2)")
+#endif
+  END SELECT
 
   ! Convergence in both solution and residual
 CASE (TypeConvergenceOpt%both)
 
-  abool = obj%convergenceType .EQ. TypeConvergenceOpt%relative
+  SELECT CASE (obj%convergenceType)
+  CASE (TypeConvergenceOpt%relative)
+    ans1 = obj%solutionError .LE. &
+           (obj%solutionRelTolerance * obj%solutionError0)
 
-  IF (abool) THEN
+    ans2 = obj%residualError .LE. &
+           (obj%residualRelTolerance * obj%residualError0)
+    ans = ans1 .AND. ans2
 
-    ans = CheckConvergence(errorAtStart=obj%residualError0, &
-                           errorAtEnd=obj%residualError, &
-                           tolerance=obj%residualRelTolerance) &
-          .AND. &
-          CheckConvergence(errorAtStart=obj%solutionError0, &
-                           errorAtEnd=obj%solutionError, &
-                           tolerance=obj%solutionRelTolerance)
+  CASE (TypeConvergenceOpt%absolute)
+    ans1 = obj%solutionError .LE. obj%solutionAbsTolerance
+    ans2 = obj%residualError .LE. obj%residualAbsTolerance
+    ans = ans1 .AND. ans2
 
-  ELSE
+  CASE (TypeConvergenceOpt%both)
+    ans1 = obj%solutionError .LE. &
+           (obj%solutionRelTolerance * obj%solutionError0 &
+            + obj%solutionAbsTolerance)
 
-    ans = CheckConvergence(errorAtStart=math%one, &
-                           errorAtEnd=obj%residualError, &
-                           tolerance=obj%residualAbsTolerance) .AND. &
-          CheckConvergence(errorAtStart=math%one, &
-                           errorAtEnd=obj%solutionError, &
-                           tolerance=obj%solutionAbsTolerance)
+    ans2 = obj%residualError .LE. &
+           (obj%residualRelTolerance * obj%residualError0 &
+            + obj%residualAbsTolerance)
 
-  END IF
+    ans = ans1 .AND. ans2
+
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "No case found for obj%convergenceType (3)")
+#endif
+  END SELECT
 
 CASE DEFAULT
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "No case found for obj%convergenceIn")
+#endif
 
 END SELECT
 
@@ -274,6 +315,50 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetMaxIter
+
+!----------------------------------------------------------------------------
+!                                                                GetNormType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNormType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetNormType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%normType
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetNormType
+
+!----------------------------------------------------------------------------
+!                                                          GetIterationNumber
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIterationNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetIterationNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%iterationNumber
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetIterationNumber
 
 !----------------------------------------------------------------------------
 !                                                          SetResidualError0
@@ -312,6 +397,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%residualError = VALUE
+IF (obj%storeHistory) obj%residualHistory(obj%iterationNumber) = VALUE
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -356,6 +442,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%SolutionError = VALUE
+IF (obj%storeHistory) obj%solutionHistory(obj%iterationNumber) = VALUE
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -364,17 +451,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetSolutionError
 
 !----------------------------------------------------------------------------
-!
+!                                                         SetIterationNumber
 !----------------------------------------------------------------------------
 
-PURE FUNCTION CheckConvergence(errorAtStart, errorAtEnd, tolerance) &
-  RESULT(ans)
-  REAL(DFP), INTENT(IN) :: errorAtStart
-  REAL(DFP), INTENT(IN) :: errorAtEnd
-  REAL(DFP), INTENT(IN) :: tolerance
-  LOGICAL(LGT) :: ans
-  ans = (errorAtEnd) .LE. (tolerance * errorAtStart)
-END FUNCTION CheckConvergence
+MODULE PROCEDURE obj_SetIterationNumber
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetIterationNumber()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%iterationNumber = VALUE
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetIterationNumber
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

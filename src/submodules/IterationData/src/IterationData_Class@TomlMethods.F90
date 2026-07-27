@@ -21,6 +21,7 @@ USE tomlf, ONLY: toml_get => get_value
 USE ConvergenceOptUtility, ONLY: ConvergenceType_ToInt
 USE ConvergenceOptUtility, ONLY: ConvergenceIn_ToInt
 USE ConvergenceOptUtility, ONLY: NormType_ToInt
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -51,6 +52,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 obj%isInit = math%yes
 
+key = "storeHistory"
+CALL GetValue(table=table, key=key, VALUE=obj%storeHistory, &
+              default_value=math%no, &
+              isFound=isok, origin=origin, stat=stat)
+
 key = "name"
 CALL GetValue(table=table, key=key, VALUE=obj%name, default_value="NONE", &
               isFound=isok, origin=origin, stat=stat)
@@ -64,6 +70,11 @@ key = "maxIter"
 CALL GetValue(table=table, key=key, VALUE=obj%maxIter, &
               default_value=TypeIterationData%maxIter, &
               isFound=isok, origin=origin, stat=stat)
+
+IF (obj%storeHistory) THEN
+  ALLOCATE (obj%residualHistory(0:obj%maxIter))
+  ALLOCATE (obj%solutionHistory(0:obj%maxIter))
+END IF
 
 key = "residualRelativeTolerance"
 CALL GetValue(table=table, key=key, VALUE=obj%residualRelTolerance, &

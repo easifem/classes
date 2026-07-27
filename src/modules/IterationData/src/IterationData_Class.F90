@@ -44,9 +44,11 @@ TYPE :: IterationData_
   !! Status if iteration data is initiated or not
   LOGICAL(LGT) :: converged = math%no
   !! Status of convergence
+  LOGICAL(LGT) :: storeHistory = math%no
+  !! store residual and solution error history
   INTEGER(I4B) :: maxIter = 100_DFP
   !! Maximum number of iterations allowed
-  INTEGER(I4B) :: iterationNumber = math%one_i
+  INTEGER(I4B) :: iterationNumber = math%zero_i
   !! Iteration number
   INTEGER(I4B) :: convergenceType = TypeConvergenceOpt%relative
   !! Type of convergence
@@ -76,11 +78,10 @@ TYPE :: IterationData_
   !! Present time
   TYPE(String) :: name
   !! name of the iteration scheme
-  REAL(DFP), ALLOCATABLE :: convergenceData(:, :)
-  !! History of convergence data
-  !! each column corresponding to a iteration
-  TYPE(String), ALLOCATABLE :: header(:)
-  !! header for convergenceData
+  REAL(DFP), ALLOCATABLE :: residualHistory(:)
+  !! History of residual data
+  REAL(DFP), ALLOCATABLE :: solutionHistory(:)
+  !! History of solution data
 
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
@@ -93,6 +94,11 @@ CONTAINS
   !! Initiate iteration data
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxIter => obj_GetMaxIter
   !! Get maximum number of iteration.
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNormType => obj_GetNormType
+  !! Get normType
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIterationNumber => &
+    obj_GetIterationNumber
+  !! Get iteration number
   PROCEDURE, PUBLIC, PASS(obj) :: SetResidualError0 => obj_SetResidualError0
   !! Set residualError0
   PROCEDURE, PUBLIC, PASS(obj) :: SetResidualError => obj_SetResidualError
@@ -101,6 +107,9 @@ CONTAINS
   !! Set SolutionError0
   PROCEDURE, PUBLIC, PASS(obj) :: SetSolutionError => obj_SetSolutionError
   !! Set SolutionError
+  PROCEDURE, PUBLIC, PASS(obj) :: SetIterationNumber => &
+    obj_SetIterationNumber
+  !! Set iteration number
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
@@ -111,8 +120,7 @@ END TYPE IterationData_
 !
 !----------------------------------------------------------------------------
 
-TYPE(IterationData_), PARAMETER :: TypeIterationData = &
-                                   IterationData_(header=NULL())
+TYPE(IterationData_), PARAMETER :: TypeIterationData = IterationData_()
 
 !----------------------------------------------------------------------------
 !
@@ -238,6 +246,44 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                        GetNormType@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Returns normType stored in obj
+!
+!# GetNormType
+!
+!  Returns NormType stored in obj
+
+INTERFACE
+  MODULE FUNCTION obj_GetNormType(obj) RESULT(ans)
+    CLASS(IterationData_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetNormType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetIterationNumber@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-13
+! summary: Returns iteration number stored in obj
+!
+!# GetIterationNumber
+!
+!  Returns iteration number stored in obj.
+
+INTERFACE
+  MODULE FUNCTION obj_GetIterationNumber(obj) RESULT(ans)
+    CLASS(IterationData_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetIterationNumber
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                 SetResidualError0@Methods
 !----------------------------------------------------------------------------
 
@@ -311,6 +357,25 @@ INTERFACE
     CLASS(IterationData_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
   END SUBROUTINE obj_SetSolutionError
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 SetIterationNumber@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Set iteration number
+!
+!# SetIterationNumber
+!
+! Set iterationNumber.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetIterationNumber(obj, VALUE)
+    CLASS(IterationData_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: VALUE
+  END SUBROUTINE obj_SetIterationNumber
 END INTERFACE
 
 !----------------------------------------------------------------------------
