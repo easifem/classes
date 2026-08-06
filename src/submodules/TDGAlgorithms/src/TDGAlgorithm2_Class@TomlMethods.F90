@@ -19,10 +19,55 @@
 SUBMODULE(TDGAlgorithm2_Class) TomlMethods
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
+USE String_Class, ONLY: String
+USE StringUtility, ONLY: UpperCase
 
 IMPLICIT NONE
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE LCVMethodImportFromToml(obj, table, astr, origin, stat)
+  CLASS(TDGAlgorithm2_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), INTENT(INOUT) :: astr
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "LCVMethodImportFromToml()"
+#endif
+  LOGICAL(LGT) :: isok
+  TYPE(toml_table), POINTER :: node
+  REAL(DFP) :: alpha
+  REAL(DFP), PARAMETER :: defaultAlpha = 1.0_DFP
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=.FALSE., stat=stat)
+
+  alpha = defaultAlpha
+
+  isok = ASSOCIATED(node)
+  IF (isok) THEN
+    CALL GetValue(table=node, key="alpha", VALUE=alpha, &
+                  default_value=defaultAlpha, origin=origin, stat=stat)
+  END IF
+
+  node => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE LCVMethodImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                             ImportFromToml
@@ -33,12 +78,35 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: found
+TYPE(String) :: astr
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
+
+CALL GetValue(table=table, key="methodName", VALUE=astr, &
+              default_value="UV", origin=origin, stat=stat, &
+              isfound=found)
+
+obj%name = UpperCase(astr%slice(1, 1))
+
+SELECT CASE (obj%name)
+
+CASE ("U") !UV
+  obj%alpha = 1.0_DFP
+CASE ("V") !V
+  obj%alpha = 0.0_DFP
+CASE ("L") !LCV
+  CALL LCVMethodImportFromToml(obj=obj, table=table, astr=astr, &
+                               origin=origin, stat=stat)
+CASE DEFAULT
+  obj%alpha = 1.0_DFP
+END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

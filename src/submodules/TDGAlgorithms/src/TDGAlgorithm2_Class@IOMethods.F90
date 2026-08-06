@@ -52,6 +52,8 @@ CALL Display(obj%name, "name: ", unitno=unitno)
 CALL Display(obj%nrow, "nrow: ", unitno=unitno)
 CALL Display(obj%ncol, "ncol: ", unitno=unitno)
 
+CALL Display(obj%alpha, "alpha: ", unitno=unitno)
+
 nrow = obj%nrow
 ncol = obj%ncol
 

@@ -23,6 +23,25 @@ USE MassMatrix_Method, ONLY: MassMatrix_
 USE ProductUtility, ONLY: OuterProd_
 USE BaseType, ONLY: math => TypeMathOpt
 USE Lapack_Method, ONLY: GetInvMat
+USE FEFactoryUtility, ONLY: OneDimFEFactory
+
+USE BaseType, ONLY: elemOpt => TypeElemNameOpt
+USE BaseType, ONLY: quadOpt => TypeQuadratureOpt
+
+USE QuadraturePoint_Method, ONLY: QuadPoint_Initiate => Initiate, &
+                                  Quad_Size => Size, &
+                                  Quad_Display => Display
+
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
+                                Elemsd_Allocate => ALLOCATE, &
+                                HierarchicalElemShapeData, &
+                                Elemsd_Set => Set, &
+                                Elemsd_Initiate => Initiate, &
+                                OrthogonalElemShapeData
+
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
 
 IMPLICIT NONE
 CONTAINS
@@ -44,20 +63,21 @@ MODULE PROCEDURE obj_Initiate
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
-INTEGER(I4B) :: i1, i2
+INTEGER(I4B) :: i1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-
 obj%isInit = .TRUE.
 
-obj%name(1:4) = "TDG "
 obj%nrow = elemsd%nns
 obj%ncol = obj%nrow
+
+IF (PRESENT(alpha)) THEN
+  obj%alpha = alpha
+END IF
 
 CALL GetCt(obj, elemsd)
 
@@ -67,7 +87,7 @@ CALL GetWt(obj, elemsd)
 
 CALL GetAt(obj, elemsd, facetElemsd)
 
-CALL GetBt(obj, elemsd, facetElemsd)
+CALL GetBt(obj, elemsd, facetElemsd, fe)
 
 CALL GetKt(obj, elemsd)
 
@@ -99,6 +119,7 @@ END PROCEDURE obj_Initiate
 SUBROUTINE GetKt(obj, elemsd)
   CLASS(TDGAlgorithm2_), INTENT(INOUT) :: obj
   TYPE(ElemShapeData_), INTENT(IN) :: elemsd
+
   INTEGER(I4B) :: nrow, ncol, ips, ii, jj
   REAL(DFP) :: scale
 
@@ -151,6 +172,7 @@ SUBROUTINE GetMt(obj, elemsd, facetElemsd)
                    nips=elemsd%nips, nns1=elemsd%nns, nns2=elemsd%nns, &
                    ans=obj%mt, nrow=obj%nrow, ncol=obj%ncol)
 
+  ! jump contribution
   CALL OuterProd_(a=facetElemsd%N(1:obj%nrow, 1), &
                   b=facetElemsd%N(1:obj%nrow, 1), &
                   ans=obj%mt, nrow=i1, ncol=i2, scale=math%one, &
@@ -175,8 +197,10 @@ SUBROUTINE GetWt(obj, elemsd)
 
   obj%wt(1:nrow, 1:ncol) = obj%mt(1:nrow, 1:ncol) ! temp mass + jump contri
   CALL GetInvMat(obj%wt(1:nrow, 1:ncol))
+
   obj%wmt(1:nrow, 1:ncol) = &
     MATMUL(obj%wt(1:nrow, 1:ncol), obj%ct(1:nrow, 1:ncol))
+
   obj%wmt(1:nrow, 1:ncol) = TRANSPOSE(obj%wmt(1:nrow, 1:ncol))
 
 END SUBROUTINE GetWt
@@ -221,25 +245,89 @@ END SUBROUTINE GetAt
 ! Getting Bt
 ! This should be called after GetWt
 
-SUBROUTINE GetBt(obj, elemsd, facetElemsd)
+SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
   CLASS(TDGAlgorithm2_), INTENT(INOUT) :: obj
   TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
-  INTEGER(I4B) :: nrow, ncol
+  CLASS(AbstractOneDimFE_), INTENT(INOUT) :: fe
+
+  INTEGER(I4B) :: nrow, ncol, ii, jj, kk, quadOrder, subsetNipt
+  REAL(DFP) :: tmpBt(obj%nrow, elemsd%nips), &
+               quadPoints(2, elemsd%nips), &
+               subsetRefTime(1, 2), subsetTime(1, 2), scale, ja
+  TYPE(ElemShapeData_) :: linearElemsd, subsetElemsd
+  TYPE(QuadraturePoint_) :: quad, subsetQuad
+  CLASS(AbstractOneDimFE_), POINTER :: subfe => NULL()
+  CHARACTER(:), ALLOCATABLE :: ipType, baseType
 
   nrow = obj%nrow
   ncol = elemsd%nips
 
-  obj%bt(1:nrow, 1:ncol) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
-                                  elemsd%N(1:nrow, 1:ncol))
-
-  ! obj%bt(1:nrow, 1:ncol) = obj%bt(1:nrow, 1:ncol) * math%half
-  obj%bt(1:nrow, 1:ncol) = obj%bt(1:nrow, 1:ncol)
-
   obj%bt_right(1:nrow) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
                                 facetElemsd%N(1:nrow, 2))
 
-  ! obj%bt_right(1:nrow) = obj%bt_right(1:nrow) * math%half
   obj%bt_right(1:nrow) = obj%bt_right(1:nrow)
+
+  !----------------------------------
+  !                       BT for uvst
+  !----------------------------------
+
+  obj%bt(1:nrow, 1:ncol) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
+                                  elemsd%N(1:nrow, 1:ncol))
+
+  obj%bt(1:nrow, 1:ncol) = obj%alpha * obj%bt(1:nrow, 1:ncol)
+
+  IF (obj%alpha .EQ. math%one) RETURN
+
+  !----------------------------------
+  !                       BT for vst
+  !----------------------------------
+
+  tmpBt(1:nrow, 1:ncol) = obj%bt(1:nrow, 1:ncol)
+
+  obj%bt(1:nrow, 1:ncol) = math%zero
+
+  baseType = fe%GetBaseContinuity()
+  ipType = fe%GetBaseInterpolation()
+  subfe => OneDimFEFactory(baseType, ipType)
+
+  CALL subfe%Copy(fe)
+  CALL subfe%GetParam(quadratureOrder=quadOrder)
+  CALL subfe%SetOrder(1)
+  CALL subfe%SetQuadratureOrder(quadOrder)
+
+  CALL fe%GetQuadraturePoints(quad)
+  CALL subfe%GetQuadraturePoints(subsetQuad)
+  CALL subfe%GetLocalElemShapeData(linearElemsd, subsetQuad)
+
+  subsetRefTime(1, 1) = -math%one
+  quadPoints = subsetQuad%points
+  subsetNipt = SIZE(quadPoints, 2)
+
+  DO ii = 1, ncol
+
+    subsetRefTime(1, 2) = quad%points(1, ii)
+
+    CALL Elemsd_Set(obj=linearElemsd, val=subsetRefTime, &
+                    N=linearElemsd%N, dNdXi=linearElemsd%dNdXi)
+    quadPoints(1, 1:subsetNipt) = linearElemsd%coord(1, 1:subsetNipt)
+    ! ja = linearElemsd%jacobian(1, 1, 1)
+    CALL QuadPoint_Initiate(obj=subsetQuad, &
+                            points=quadPoints(:, 1:subsetNipt))
+
+    CALL fe%GetLocalElemShapeData(subsetElemsd, subsetQuad)
+
+    DO jj = 1, nrow
+      DO kk = 1, subsetNipt
+        scale = subsetElemsd%ws(kk) * elemsd%js(1) * math%half
+        obj%bt(jj, ii) = obj%bt(jj, ii) + &
+                         scale * subsetElemsd%N(jj, kk)
+      END DO
+    END DO
+
+  END DO
+
+  obj%bt(1:nrow, 1:ncol) = tmpBt(1:nrow, 1:ncol) + &
+                           (1.0_DFP - obj%alpha) * obj%bt(1:nrow, 1:ncol)
 
 END SUBROUTINE GetBt
 
@@ -295,7 +383,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 obj%isInit = .FALSE.
 
-obj%name = "TDG1"
+obj%name = "TDG2"
+obj%alpha = 1.0_DFP
 obj%nrow = 0_I4B
 obj%ncol = 0_I4B
 

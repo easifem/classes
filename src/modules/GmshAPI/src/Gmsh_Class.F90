@@ -184,12 +184,13 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE FUNCTION obj_Initialize(obj, argv, readConfigFiles, run) &
+  MODULE FUNCTION obj_Initialize(obj, argv, readConfigFiles, run, fltk) &
     RESULT(ans)
     CLASS(Gmsh_), INTENT(INOUT) :: obj
     CHARACTER(*), OPTIONAL, INTENT(IN) :: argv(:)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: readConfigFiles
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: run
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: fltk
     INTEGER(I4B) :: ans
   END FUNCTION obj_Initialize
 END INTERFACE
