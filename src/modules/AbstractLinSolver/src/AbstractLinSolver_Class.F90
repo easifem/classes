@@ -29,6 +29,7 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE LinSolverOpt_Class, ONLY: TypeLinSolverOpt, LinSolverOpt_
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 
@@ -71,6 +72,8 @@ TYPE, ABSTRACT :: AbstractLinSolver_
   !! Error code returned by the solver
   INTEGER(I4B) :: iter = 0
   !! Current iteration number
+  INTEGER(I4B) :: verbosity = 0
+  !! level of verbosity for checking the performance of linsolver
   REAL(DFP) :: tol = 0.0_DFP
   !! Tolerance for testing convergence
   REAL(DFP) :: normRes = 0.0_DFP
@@ -89,21 +92,18 @@ TYPE, ABSTRACT :: AbstractLinSolver_
 CONTAINS
   PRIVATE
 
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the object with arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate Data
 
-  ! SET:
   ! @SetMethods
   PROCEDURE(obj_Set), PUBLIC, DEFERRED, PASS(obj) :: Set
   !! Set the matrix and preconditioning matrix
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Set param
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
@@ -116,19 +116,16 @@ CONTAINS
   PROCEDURE(obj_solve), PUBLIC, DEFERRED, PASS(obj) :: Solve
   !! Solve system of linear equation
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_display
   !! Display the content
 
-  ! IO:
   ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Importing linsolver from external file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Exporting linsolver from external file
 
-  ! IO:
   ! @TomlMethods
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2

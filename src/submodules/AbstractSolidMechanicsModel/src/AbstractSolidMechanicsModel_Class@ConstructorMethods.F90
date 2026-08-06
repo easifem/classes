@@ -18,6 +18,12 @@
 SUBMODULE(AbstractSolidMechanicsModel_Class) ConstructorMethods
 USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModelDeallocate
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractSolidMechanicsModel_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -35,8 +41,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL AbstractMaterialModelDeallocate(obj)
-obj%isPStress = .FALSE.
-obj%isPStrain = .FALSE.
+obj%isPStress = math%no
+obj%isPStrain = math%no
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

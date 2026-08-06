@@ -22,8 +22,13 @@ USE StringUtility, ONLY: UpperCase
 USE FPL_Method, ONLY: Set, CheckEssentialParam
 USE AbstractSolidMechanicsModel_Class, ONLY: &
   AbstractSolidMechanicsModelDeallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "LinearElasticModel_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

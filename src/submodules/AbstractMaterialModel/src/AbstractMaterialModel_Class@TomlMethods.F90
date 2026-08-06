@@ -19,6 +19,12 @@ SUBMODULE(AbstractMaterialModel_Class) TomlMethods
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMaterialModel_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -44,14 +50,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+                  'the toml file :: cannot find ['//tomlName// &
+                  "] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node)

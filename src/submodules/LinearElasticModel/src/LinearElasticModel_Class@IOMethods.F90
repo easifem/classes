@@ -20,9 +20,15 @@
 ! summary: This submodule contains input-output methods
 
 SUBMODULE(LinearElasticModel_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "LinearElasticModel_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

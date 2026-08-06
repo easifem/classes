@@ -21,9 +21,16 @@
 
 SUBMODULE(LinearElasticModel_Class) TomlMethods
 USE EyeUtility, ONLY: eye
-USE TomlUtility, ONLY: GetValue, GetValue_
+USE TomlUtility, ONLY: GetValue
+USE TomlUtility, ONLY: GetValue_
 USE tomlf, ONLY: toml_get => get_value
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "LinearElasticModel_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

@@ -22,8 +22,8 @@
 MODULE AbstractMaterial_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE String_Class, ONLY: String
-USE UserFunction_Class, ONLY: UserFunction_, &
-                              UserFunctionPointer_
+USE UserFunction_Class, ONLY: UserFunction_
+USE UserFunction_Class, ONLY: UserFunctionPointer_
 USE ExceptionHandler_Class, ONLY: e
 USE HDF5File_Class, ONLY: HDF5File_
 USE TxtFile_Class, ONLY: TxtFile_
@@ -31,7 +31,7 @@ USE tomlf, ONLY: toml_table
 USE HashTables, ONLY: HashTable_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE MeshSelection_Class, ONLY: MeshSelection_
-
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 PRIVATE
@@ -45,19 +45,15 @@ PUBLIC :: AbstractMaterialDisplay
 PUBLIC :: AbstractMaterialImportFromToml
 PUBLIC :: TypeMaterial
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "AbstractMaterial_Class"
-#endif
-
-REAL(DFP), PARAMETER :: expandScale1 = 2
-REAL(DFP), PARAMETER :: expandScale2 = 1.2
+REAL(DFP), PARAMETER :: expandScale1 = math%two
+REAL(DFP), PARAMETER :: expandScale2 = 1.2_DFP
 INTEGER(I4B), PARAMETER :: thresholdSize = 20
 CHARACTER(*), PARAMETER :: toml_mat_prop_name = "property"
 !! tomlName.property is the table of table or table which
 !! contains the file name, see ImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                          TypeMaterial_
+!                                                              TypeMaterial_
 !----------------------------------------------------------------------------
 
 TYPE :: TypeMaterial_
@@ -68,7 +64,7 @@ END TYPE TypeMaterial_
 TYPE(TypeMaterial_), PARAMETER :: TypeMaterial = TypeMaterial_()
 
 !----------------------------------------------------------------------------
-!                                                         AbstractMaterial_
+!                                                          AbstractMaterial_
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -77,8 +73,8 @@ TYPE(TypeMaterial_), PARAMETER :: TypeMaterial = TypeMaterial_()
 
 TYPE, ABSTRACT :: AbstractMaterial_
   PRIVATE
-  LOGICAL(LGT) :: isInit = .FALSE.
-  INTEGER(I4B) :: tProperties = 0_I4B
+  LOGICAL(LGT) :: isInit = math%no
+  INTEGER(I4B) :: tProperties = math%zero_i
   !! Total number of properties
   TYPE(String) :: name
     !! name of the material
@@ -89,32 +85,26 @@ TYPE, ABSTRACT :: AbstractMaterial_
 CONTAINS
   PRIVATE
 
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
-  ! IO:
   ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
 
-  ! IO:
   ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaterialPointer => &
     obj_GetMaterialPointer
   PROCEDURE, PUBLIC, PASS(obj) :: IsMaterialPresent => obj_IsMaterialPresent
 
-  ! SET:
   ! @SetMethods
   PROCEDURE, PASS(obj) :: AddMaterial1 => obj_AddMaterial1
   PROCEDURE, PASS(obj) :: AddMaterial2 => obj_AddMaterial2
@@ -133,12 +123,16 @@ TYPE :: AbstractMaterialPointer_
 END TYPE AbstractMaterialPointer_
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Initiate the material
+!
+!# Initiate
+!
+! Initiate abstract material.
 
 INTERFACE AbstractMaterialInitiate
   MODULE SUBROUTINE obj_Initiate(obj, name)
@@ -148,21 +142,21 @@ INTERFACE AbstractMaterialInitiate
 END INTERFACE AbstractMaterialInitiate
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 26 Oct 2021
 ! summary: Deallocate data
+!
+!# Deallocate
+!
+! Deallocate abstract material.
 
-INTERFACE
+INTERFACE AbstractMaterialDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE AbstractMaterialDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractMaterialDeallocate
 
 !----------------------------------------------------------------------------
@@ -172,15 +166,15 @@ END INTERFACE AbstractMaterialDeallocate
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary:  Deallocate vector of AbstractMaterial_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
-    CLASS(AbstractMaterial_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE obj_Deallocate_Vector
-END INTERFACE
+!
+!# AbstractMaterialDeallocate
+!
+! Deallocate a vector of abstract material.
 
 INTERFACE AbstractMaterialDeallocate
-  MODULE PROCEDURE obj_Deallocate_Vector
+  MODULE SUBROUTINE obj_Deallocate_Vector(obj)
+    CLASS(AbstractMaterial_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE AbstractMaterialDeallocate
 
 !----------------------------------------------------------------------------
@@ -190,24 +184,28 @@ END INTERFACE AbstractMaterialDeallocate
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary:  Deallocate vector of DirichletBCPointer_
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
-    TYPE(AbstractMaterialPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE obj_Deallocate_Ptr_Vector
-END INTERFACE
+!
+!# AbstractMaterialDeallocate
+!
+! Deallocate vector of abstract material pointer.
 
 INTERFACE AbstractMaterialDeallocate
-  MODULE PROCEDURE obj_Deallocate_Ptr_Vector
+  MODULE SUBROUTINE obj_Deallocate_Ptr_Vector(obj)
+    TYPE(AbstractMaterialPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+  END SUBROUTINE obj_Deallocate_Ptr_Vector
 END INTERFACE AbstractMaterialDeallocate
 
 !----------------------------------------------------------------------------
-!                                                    AddMaterial@SetMethods
+!                                                     AddMaterial@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
 ! summary:  Add material
+!
+!# AddMaterial
+!
+! Add material name.
 
 INTERFACE
   MODULE SUBROUTINE obj_AddMaterial1(obj, name)
@@ -223,6 +221,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
 ! summary:  Add material
+!
+!# AddMaterial
+!
+! Add material name.
 
 INTERFACE
   MODULE SUBROUTINE obj_AddMaterial2(obj, name)
@@ -232,8 +234,12 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 ExpandMatProps@SetMethods
+!                                                  ExpandMatProps@SetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-07-09
+! summary: Expand material properties
 
 INTERFACE
   MODULE SUBROUTINE obj_ExpandMatProps(obj)
@@ -248,11 +254,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-08-14
 ! summary:  Set the name of the material
+!
+!# SetName
+!
+! Set the name of abstract material.
 
 INTERFACE
   MODULE SUBROUTINE obj_SetName(obj, name)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
-  !! Abstract Material object
+    !! Abstract Material object
     CHARACTER(*), INTENT(IN) :: name
   END SUBROUTINE obj_SetName
 END INTERFACE
@@ -263,7 +273,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
-! summary:  Add material
+! summary:  Is material present
+!
+!# IsMaterialPresent
+!
+! Is material present.
 
 INTERFACE
   MODULE FUNCTION obj_IsMaterialPresent(obj, name) RESULT(ans)
@@ -280,6 +294,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-22
 ! summary:  Get material
+!
+!# GetMaterialPointer
+!
+! Get material pointer.
 
 INTERFACE
   MODULE FUNCTION obj_GetMaterialPointer(obj, name) RESULT(matPtr)
@@ -296,17 +314,17 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-27
 ! summary: Import material from HDF5 file
+!
+!# AbstractMaterialImport
+!
+! Abstract material from hdf5.
 
-INTERFACE
+INTERFACE AbstractMaterialImport
   MODULE SUBROUTINE obj_Import(obj, hdf5, group)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Import
-END INTERFACE
-
-INTERFACE AbstractMaterialImport
-  MODULE PROCEDURE obj_Import
 END INTERFACE AbstractMaterialImport
 
 !----------------------------------------------------------------------------
@@ -317,16 +335,12 @@ END INTERFACE AbstractMaterialImport
 ! date: 2025-07-27
 ! summary: Export material to HDF5 file
 
-INTERFACE
+INTERFACE AbstractMaterialExport
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(AbstractMaterial_), INTENT(IN) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
-END INTERFACE
-
-INTERFACE AbstractMaterialExport
-  MODULE PROCEDURE obj_Export
 END INTERFACE AbstractMaterialExport
 
 !----------------------------------------------------------------------------
@@ -337,16 +351,12 @@ END INTERFACE AbstractMaterialExport
 ! date: 2025-07-27
 ! summary: Display material information
 
-INTERFACE
+INTERFACE AbstractMaterialDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
   END SUBROUTINE obj_Display
-END INTERFACE
-
-INTERFACE AbstractMaterialDisplay
-  MODULE PROCEDURE obj_Display
 END INTERFACE AbstractMaterialDisplay
 
 !----------------------------------------------------------------------------
@@ -363,17 +373,13 @@ END INTERFACE AbstractMaterialDisplay
 ! Domain is needed for calling importFromToml on region.
 ! See MeshSelection_ ImportFromToml for more details.
 
-INTERFACE
+INTERFACE AbstractMaterialImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, region, dom)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-INTERFACE AbstractMaterialImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE AbstractMaterialImportFromToml
 
 !----------------------------------------------------------------------------
@@ -384,7 +390,7 @@ END INTERFACE AbstractMaterialImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE
+INTERFACE AbstractMaterialImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
                                         printToml, region, dom)
     CLASS(AbstractMaterial_), INTENT(INOUT) :: obj
@@ -395,10 +401,6 @@ INTERFACE
     TYPE(MeshSelection_), OPTIONAL, INTENT(INOUT) :: region
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE
-
-INTERFACE AbstractMaterialImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE AbstractMaterialImportFromToml
 
 !----------------------------------------------------------------------------

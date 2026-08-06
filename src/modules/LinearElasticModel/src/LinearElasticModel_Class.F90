@@ -33,14 +33,11 @@ USE LinearElasticModelUtility, ONLY: Get_PlaneStress_C_InvC
 USE LinearElasticModelUtility, ONLY: Get_PlaneStrain_C_InvC
 USE LinearElasticModelUtility, ONLY: Get_3D_C_InvC
 USE ElasticityOpt_Class, ONLY: ElasticityOpt_, TypeElasticityOpt
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 
 PRIVATE
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "LinearElasticModel_Class"
-#endif
 
 PUBLIC :: LinearElasticModel_
 PUBLIC :: TypeLinearElasticModel

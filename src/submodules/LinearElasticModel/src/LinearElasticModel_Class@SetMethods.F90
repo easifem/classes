@@ -17,8 +17,13 @@
 
 SUBMODULE(LinearElasticModel_Class) SetMethods
 USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "LinearElasticModel_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -95,9 +100,10 @@ CASE (TypeElasticityOpt%transIsotropic)
 CASE (TypeElasticityOpt%orthotropic)
   CALL LinearElasticModelSetData_Ortho(obj=obj, DATA=DATA)
 
-#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(TypeMathOpt%no, myName, &
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
                     'No case found for elasticityType = '// &
                     ToString(obj%elasticityType))
 #endif

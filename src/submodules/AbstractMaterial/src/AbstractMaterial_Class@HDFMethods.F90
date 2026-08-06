@@ -19,6 +19,11 @@ SUBMODULE(AbstractMaterial_Class) HDFMethods
 USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMaterial_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

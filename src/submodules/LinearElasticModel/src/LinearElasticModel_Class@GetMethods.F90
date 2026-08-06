@@ -18,6 +18,12 @@
 SUBMODULE(LinearElasticModel_Class) GetMethods
 USE Display_Method, ONLY: ToString
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "LinearElasticModel_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

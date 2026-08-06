@@ -19,10 +19,9 @@ MODULE LinearElasticModelUtility
 USE GlobalData, ONLY: DFP, LGT, I4B
 USE ExceptionHandler_Class, ONLY: err => e
 USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 PRIVATE
-
-CHARACTER(*), PARAMETER :: modName = "LinearElasticModelUtility"
 
 PUBLIC :: GetYoungsModulus
 PUBLIC :: GetYoungsModulusFEVar

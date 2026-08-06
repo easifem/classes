@@ -17,6 +17,12 @@
 
 SUBMODULE(AbstractSolidMechanicsModel_Class) SetMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractSolidMechanicsModel_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

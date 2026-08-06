@@ -49,6 +49,7 @@ IF (.NOT. isok) THEN
 END IF
 
 CALL obj%opt%Display("AbstractLinSolver options:", unitno=unitno)
+CALL Display(obj%verbosity, "verbosity: ", unitNo=unitno)
 CALL Display(obj%ierr, "ierr: ", unitNo=unitno)
 CALL Display(obj%iter, "iter: ", unitNo=unitno)
 CALL Display(obj%tol, "tol: ", unitNo=unitno)

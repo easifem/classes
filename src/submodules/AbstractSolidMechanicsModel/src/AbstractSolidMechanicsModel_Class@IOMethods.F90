@@ -19,6 +19,12 @@ SUBMODULE(AbstractSolidMechanicsModel_Class) IOMethods
 USE Display_Method, ONLY: Display
 USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModelDisplay
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractSolidMechanicsModel_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -37,7 +43,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL Display(msg, unitNo=unitNo)
 CALL AbstractMaterialModelDisplay(obj=obj, &
-                            msg="AbstractSolidMaterialModel: ", unitNo=unitNo)
+                                  msg="AbstractSolidMaterialModel: ", &
+                                  unitNo=unitNo)
 CALL Display(obj%isPStress, msg="isPStress: ", unitNo=unitNo)
 CALL Display(obj%isPStrain, msg="isPStrain: ", unitNo=unitNo)
 

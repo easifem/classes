@@ -24,6 +24,9 @@ USE RealVector_Method, ONLY: Dot_Product
 USE RealVector_Method, ONLY: PMUL
 USE RealVector_Method, ONLY: Reciprocal
 USE RealVector_Method, ONLY: SCAL
+USE BaseType, ONLY: TypeConvergenceOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: ToString
 
 IMPLICIT NONE
 
@@ -211,6 +214,40 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Normi
+
+!----------------------------------------------------------------------------
+!                                                                       Norm
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Norm
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Norm()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+SELECT CASE (normType)
+CASE (TypeConvergenceOpt%normL1)
+  ans = obj%Norm1()
+CASE (TypeConvergenceOpt%normL2)
+  ans = obj%NORM2()
+CASE (TypeConvergenceOpt%normInfinity)
+  ans = obj%Normi()
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "No case found for normType="//ToString(normType))
+#endif
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Norm
 
 !----------------------------------------------------------------------------
 !                                                                DOT_PRODUCT

@@ -276,6 +276,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/LinearElasticModel/CMakeLists.txt)
 # NewtonianFluidModel
 include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
 
+# CapillaryModel
+include(${CMAKE_CURRENT_LIST_DIR}/CapillaryModel/CMakeLists.txt)
+
 # AbstractMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
 
@@ -410,3 +413,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/SDAlgorithms/CMakeLists.txt)
 
 # time discontinous algorithms
 include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# IterationData
+# ----------------------------------------------------------------------------
+
+# IterationData
+include(${CMAKE_CURRENT_LIST_DIR}/IterationData/CMakeLists.txt)

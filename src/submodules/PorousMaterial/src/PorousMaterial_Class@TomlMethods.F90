@@ -17,15 +17,22 @@
 
 SUBMODULE(PorousMaterial_Class) TomlMethods
 USE MeshSelection_Class, ONLY: MeshSelectionReallocate
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE MaterialFactory, ONLY: PoroMechanicsModelFactory
 USE MaterialFactory, ONLY: PorousMaterialFactory
+USE CapillaryFactory, ONLY: CapillaryModelFactory
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
 USE AbstractMaterial_Class, ONLY: AbstractMaterialImportFromToml
 USE StringUtility, ONLY: StringDeallocate => DEALLOCATE
-
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "PorousMaterial_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -37,6 +44,8 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
+CHARACTER(*), PARAMETER :: stressStrainModelKey = "stressStrainModel"
+CHARACTER(*), PARAMETER :: capillaryModelKey = "capillaryModel"
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
 TYPE(String) :: astr
@@ -52,44 +61,71 @@ CALL obj%DEALLOCATE()
 CALL AbstractMaterialImportFromToml(obj=obj, table=table, region=region, &
                                     dom=dom)
 
-CALL GetValue(table=table, key="stressStrainModel", &
+! Get stressStrainModelKey
+CALL GetValue(table=table, key=stressStrainModelKey, &
               VALUE=astr, default_value="NONE", origin=origin, &
               stat=stat, isFound=isok)
 
-! If stressStrainModel not found in the config file
-! then we simply return
-IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
+IF (.NOT. isok) THEN
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-         'stressStrainModel not found in the config file. Nothing to import.')
-
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  node => NULL()
-  astr = ""
-  RETURN
+                    stressStrainModelKey//' not found in toml file.')
 END IF
+#endif
 
 ! The following code is executed when stressStrainModel is found in
 ! the config file
-node => NULL()
-CALL toml_get(table, astr%chars(), node, &
-              origin=origin, requested=.FALSE., stat=stat)
+IF (isok) THEN
+  node => NULL()
+  CALL toml_get(table, astr%chars(), node, &
+                origin=origin, requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(node)
-CALL AssertError1(isok, myName, &
-                  "stressStrainModel"//'='//astr//', but table '// &
-                  astr//' not found.')
+  isok = ASSOCIATED(node)
+  CALL AssertError1(isok, myName, &
+                    stressStrainModelKey//'='//astr//', but table '// &
+                    astr//' not found.')
 #endif
 
-obj%stressStrainModel => PoroMechanicsModelFactory(astr%chars())
+  obj%stressStrainModel => PoroMechanicsModelFactory(astr%chars())
 
-CALL obj%stressStrainModel%ImportFromToml(table=node)
+  CALL obj%stressStrainModel%ImportFromToml(table=node)
+END IF
 
 node => NULL()
 astr = ""
+isok = math%no
+
+! Get capillaryModelKey
+CALL GetValue(table=table, key=capillaryModelKey, &
+              VALUE=astr, default_value="NONE", origin=origin, &
+              stat=stat, isFound=isok)
+
+#ifdef DEBUG_VER
+IF (.NOT. isok) THEN
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    capillaryModelKey//' not found in toml file.')
+END IF
+#endif
+
+! The following code is executed when capillaryModel is found in
+! the config file
+IF (isok) THEN
+  node => NULL()
+  CALL toml_get(table, astr%chars(), node, &
+                origin=origin, requested=math%no, stat=stat)
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(node)
+  CALL AssertError1(isok, myName, &
+                    capillaryModelKey//'='//astr//', but table '// &
+                    astr//' not found.')
+#endif
+
+  obj%capillaryModel => CapillaryModelFactory(astr%chars())
+
+  CALL obj%capillaryModel%ImportFromToml(table=node)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -122,14 +158,15 @@ mysize = SIZE(materialNames)
 tsize = 0
 DO ii = 1, mysize
   node => NULL()
-  CALL toml_get(table, materialNames(ii)%chars(), node, origin=origin, &
-                requested=.FALSE., stat=stat)
+  CALL toml_get(table, materialNames(ii)%chars(), node, &
+                origin=origin, requested=math%no, stat=stat)
 
   isok = ASSOCIATED(node)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &
-               'Cannot find/read materialName='//materialNames(ii)%chars()// &
+                    'Cannot find/read materialName='// &
+                    materialNames(ii)%chars()// &
                     ' in the config file.')
 #endif
 
@@ -148,7 +185,6 @@ DO ii = 1, mysize
   END IF
 
   CALL obj(ii)%ptr%SetName(materialNames(ii)%chars())
-
 END DO
 
 node => NULL()
@@ -236,14 +272,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
-      'following error occured while reading the toml file :: cannot find [' &
-                  //tomlName//"] table in config.")
+      'following error occured while reading &
+      &the toml file :: cannot find [' &
+      //tomlName//"] table in config.")
 #endif
 
 CALL PorousMaterialNamesFromToml(table=node, materialNames=materialNames, &
@@ -269,7 +306,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ImportFromToml3
 
 !----------------------------------------------------------------------------
-!                                                             Include Error
+!                                                              Include Error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

@@ -130,6 +130,18 @@ CONTAINS
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
 
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyZeroDirichletBC1 => &
+    obj_ApplyZeroDirichletBC1
+  !! Apply Zero Dirichlet Boundary Condition
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyZeroDirichletBC2 => &
+    obj_ApplyZeroDirichletBC2
+  !! Apply Zero Dirichlet Boundary Condition
+  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyZeroDirichletBC3 => &
+    obj_ApplyZeroDirichletBC3
+  !! Apply Zero Dirichlet Boundary Condition
+  GENERIC, PUBLIC :: ApplyZeroDirichletBC => ApplyZeroDirichletBC1, &
+    ApplyZeroDirichletBC2, ApplyZeroDirichletBC3
+
   ! @PointNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
@@ -711,6 +723,63 @@ INTERFACE
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: times
   END SUBROUTINE obj_ApplyDirichletBC3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            ApplyZeroDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Apply Zero Dirichlet boundary condition
+!
+!# ApplyZeroDirichletBC
+!
+! Apply zero Dirichlet boundary conditions.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyZeroDirichletBC1(obj, dbc)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBC_), INTENT(INOUT) :: dbc
+  END SUBROUTINE obj_ApplyZeroDirichletBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            ApplyZeroDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Apply zero dirichlet boundary conditions
+!
+!# ApplyZeroDirichletBC
+!
+! Apply zero Dirichlet boundary conditions.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyZeroDirichletBC2(obj, dbc)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+  END SUBROUTINE obj_ApplyZeroDirichletBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                            ApplyZeroDirichletBC@DBCMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 2026-07-14
+! summary: Apply zero Dirichlet boundary condition
+!
+!# ApplyZeroDirichletBC
+!
+! Apply zero Dirichlet boundary condition
+! This method calls ApplyZeroDirichletBC2 with obj%dbc
+
+INTERFACE
+  MODULE SUBROUTINE obj_ApplyZeroDirichletBC3(obj)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_ApplyZeroDirichletBC3
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -84,53 +84,60 @@ CALL AssertError1(isok, myName, &
                   'HDF5 file does not have write permission')
 #endif
 
-dsetname = TRIM(group)//"/fieldType"
+dsetname = TRIM(group)//"/BoolR0/isInit"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=dsetname)
+
+dsetname = TRIM(group)//"/IntR0/fieldType"
 strval = typefield%ToString(obj%fieldType)
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=strval)
 
-dsetname = TRIM(group)//"/name"
+dsetname = TRIM(group)//"/StringR0/name"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%name)
 
-dsetname = TRIM(group)//"/engine"
+dsetname = TRIM(group)//"/StringR0/engine"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%engine)
 
-dsetname = TRIM(group)//"/tSize"
+dsetname = TRIM(group)//"/IntR0/tSize"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%tSize)
 
-dsetname = TRIM(group)//"/defineOn"
+dsetname = TRIM(group)//"/IntR0/defineOn"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%defineOn)
 
-dsetname = TRIM(group)//"/rank"
+dsetname = TRIM(group)//"/IntR0/rank"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%rank)
 
-dsetname = TRIM(group)//"/varType"
+dsetname = TRIM(group)//"/IntR0/varType"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%varType)
 
-isok = ALLOCATED(obj%val)
-IF (isok) THEN
-  dsetname = TRIM(group)//"/val"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%val)
-END IF
-
-isok = ALLOCATED(obj%indxVal)
-IF (isok) THEN
-  dsetname = TRIM(group)//"/indxVal"
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxVal)
-END IF
-
-dsetname = TRIM(group)//"/totalShape"
+dsetname = TRIM(group)//"/IntR0/totalShape"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%totalShape)
+
+dsetname = TRIM(group)//"/IntR1/maxShape"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), &
+                vals=obj%maxShape(1:obj%totalShape))
 
 isok = ALLOCATED(obj%ss)
 IF (isok) THEN
-  dsetname = TRIM(group)//"/shape"
+  dsetname = TRIM(group)//"/IntR1/ss"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%ss)
 END IF
 
 isok = ALLOCATED(obj%indxShape)
 IF (isok) THEN
-  dsetname = TRIM(group)//"/indxShape"
+  dsetname = TRIM(group)//"/IntR1/indxShape"
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxShape)
+END IF
+
+isok = ALLOCATED(obj%indxVal)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/IntR1/indxVal"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%indxVal)
+END IF
+
+isok = ALLOCATED(obj%val)
+IF (isok) THEN
+  dsetname = TRIM(group)//"/RealR1/val"
+  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%val)
 END IF
 
 #ifdef DEBUG_VER

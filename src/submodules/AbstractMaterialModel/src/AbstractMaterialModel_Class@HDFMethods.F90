@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(AbstractMaterialModel_Class) HDFMethods
-! USE Display_Method, ONLY: Display
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMaterialModel_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -36,8 +41,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+                  'This method should be implemented by the child class.')
 #endif
 
 #ifdef DEBUG_VER
@@ -62,8 +66,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
-                  'child classes')
+                  'This method should be implemented by the child class.')
 #endif
 
 #ifdef DEBUG_VER

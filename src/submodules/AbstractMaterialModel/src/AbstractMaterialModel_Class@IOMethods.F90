@@ -18,6 +18,12 @@
 SUBMODULE(AbstractMaterialModel_Class) IOMethods
 USE Display_Method, ONLY: Display
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMaterialModel_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

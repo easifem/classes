@@ -332,16 +332,19 @@ include(${CMAKE_CURRENT_LIST_DIR}/LinearPoroElasticModel/CMakeLists.txt)
 # NewtonianFluidModel
 include(${CMAKE_CURRENT_LIST_DIR}/NewtonianFluidModel/CMakeLists.txt)
 
+# CapillaryModel
+include(${CMAKE_CURRENT_LIST_DIR}/CapillaryModel/CMakeLists.txt)
+
 # AbstractMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/AbstractMaterial/CMakeLists.txt)
 
 # SolidMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/SolidMaterial/CMakeLists.txt)
 
-# fluidMaterial
+# FluidMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/FluidMaterial/CMakeLists.txt)
 
-# porousMaterial
+# PorousMaterial
 include(${CMAKE_CURRENT_LIST_DIR}/PorousMaterial/CMakeLists.txt)
 
 # SolidMechanicsModel
@@ -500,3 +503,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/CSDAlgorithms/CMakeLists.txt)
 
 # time discontinous algorithms
 include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# IterationData
+# ----------------------------------------------------------------------------
+
+# IterationData
+include(${CMAKE_CURRENT_LIST_DIR}/IterationData/CMakeLists.txt)

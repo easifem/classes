@@ -128,6 +128,8 @@ MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 #endif
 
+INTEGER(I4B) :: tsize
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
@@ -135,9 +137,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./include/localNodeError.F90"
 
-VALUE = NodalVariable( &
-        Get(obj=obj%realVec, nodenum=globalNode, dataType=math%one), &
-        TypeFEVariableScalar, TypeFEVariableSpace)
+#ifdef DEBUG_VER
+CALL AssertError1(VALUE%isInit, myName, &
+                  "value is not initiated")
+#endif
+
+CALL obj%Get(VALUE=VALUE%val, globalNode=globalNode, islocal=islocal, &
+             tsize=tsize)
+VALUE%tshape = 1
+VALUE%s(1) = tsize
+VALUE%defineOn = TypeFieldOpt%nodal
+VALUE%varType = TypeFieldOpt%space
+VALUE%rank = TypeFieldOpt%scalar
+VALUE%len = tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

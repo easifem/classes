@@ -159,8 +159,8 @@ SUBROUTINE ReadIdofFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Reading idof ...')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading idof ...')
 #endif
 
   CALL GetValue(table=table, key="idof", VALUE=obj%idof, &

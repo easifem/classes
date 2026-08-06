@@ -28,6 +28,7 @@ USE FPL, ONLY: ParameterList_
 USE AbstractMaterialModel_Class, ONLY: AbstractMaterialModel_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 
@@ -37,10 +38,6 @@ PUBLIC :: AbstractSolidMechanicsModel_
 PUBLIC :: AbstractSolidMechanicsModelPointer_
 PUBLIC :: AbstractSolidMechanicsModelDeallocate
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "AbstractSolidMechanicsModel_Class"
-#endif
-
 !----------------------------------------------------------------------------
 !                                              AbstractSolidMechanicsModel_
 !----------------------------------------------------------------------------
@@ -48,23 +45,20 @@ CHARACTER(*), PARAMETER :: modName = "AbstractSolidMechanicsModel_Class"
 TYPE, ABSTRACT, EXTENDS(AbstractMaterialModel_) :: &
   AbstractSolidMechanicsModel_
   PRIVATE
-  LOGICAL(LGT) :: isPStress = .FALSE.
+  LOGICAL(LGT) :: isPStress = math%no
   !! Is Plane Stress
-  LOGICAL(LGT) :: isPStrain = .FALSE.
+  LOGICAL(LGT) :: isPStrain = math%no
   !! Is Plane Strain
 
 CONTAINS
   PRIVATE
 
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
 
-  ! GET:
   ! @GetMethods
   PROCEDURE(obj_GetElasticParam), DEFERRED, PUBLIC, PASS(obj) :: &
     GetElasticParam
@@ -84,7 +78,6 @@ CONTAINS
     obj_isPlaneStress
   !! Get the PStress
 
-  ! SET:
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetPlaneStress => &
     obj_SetPlaneStress
@@ -110,14 +103,10 @@ END TYPE AbstractSolidMechanicsModelPointer_
 ! date: 27 Aug 2021
 ! summary: Deallocate data
 
-INTERFACE
+INTERFACE AbstractSolidMechanicsModelDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractSolidMechanicsModel_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE AbstractSolidMechanicsModelDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractSolidMechanicsModelDeallocate
 
 !----------------------------------------------------------------------------

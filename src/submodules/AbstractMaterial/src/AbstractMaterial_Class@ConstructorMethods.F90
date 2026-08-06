@@ -19,8 +19,13 @@ SUBMODULE(AbstractMaterial_Class) ConstructorMethods
 USE FPL_Method, ONLY: Set, GetValue
 USE Display_Method, ONLY: ToString
 USE UserFunction_Class, ONLY: UserFunctionDeallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMaterial_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
