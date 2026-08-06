@@ -20,11 +20,14 @@ USE TxtFile_Class, ONLY: TxtFile_
 USE ExceptionHandler_Class, ONLY: e
 USE tomlf, ONLY: toml_table
 USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: QuadraturePoint_
+USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 
 IMPLICIT NONE
 
 PRIVATE
 PUBLIC :: TDGAlgorithm2_
+
 CHARACTER(*), PARAMETER :: modName = "TDGAlgorithm2_Class()"
 
 INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 20
@@ -38,6 +41,9 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 20
 ! summary:  Velocity based time discontinuous Galerkin algorithm
 
 TYPE :: TDGAlgorithm2_
+  REAL(DFP) :: alpha = 1.0_DFP
+  !! user defined parameter
+
   LOGICAL(LGT) :: isInit = .FALSE.
   !! Flag to check if the object is initiated
 
@@ -169,9 +175,13 @@ END INTERFACE
 ! summary: Initiate Newmark-Beta method
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd)
+  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, &
+                                 fe, alpha)
     CLASS(TDGAlgorithm2_), INTENT(INOUT) :: obj
     TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
+    CLASS(AbstractOneDimFE_), INTENT(inout) :: fe
+    ! This is required for vst scheme alpha \= 1
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
   END SUBROUTINE obj_Initiate
 END INTERFACE
 

@@ -33,6 +33,7 @@ USE NodeData_Class, ONLY: NodeData_, NodeDataPointer_
 USE NodeDataList_Class, ONLY: NodeDataList_
 USE NodeDataBinaryTree_Class, ONLY: NodeDataBinaryTree_
 USE FacetData_Class, ONLY: FacetData_
+USE String_Class, ONLY: String
 USE Kdtree2_Module, ONLY: Kdtree2_, Kdtree2Result_
 
 IMPLICIT NONE
@@ -830,7 +831,12 @@ CONTAINS
   !! Export mesh to a VTKfile
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
   !! Write mesh into vtk file
-  GENERIC, PUBLIC :: WriteData => WriteData_vtk
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk2 => obj_WriteData_vtk2
+  !! Write mesh into vtk file
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk3 => obj_WriteData_vtk3
+  !! Write mesh into vtk file
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_vtk2, &
+    WriteData_vtk3
 
 END TYPE AbstractMesh_
 
@@ -1140,6 +1146,34 @@ INTERFACE
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
   END SUBROUTINE obj_WriteData_vtk
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData_vtk2(obj, filename, DATA, dataName)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    REAL(DFP), INTENT(IN) :: DATA(:)
+    TYPE(String), INTENT(IN) :: dataName
+  END SUBROUTINE obj_WriteData_vtk2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData_vtk3(obj, filename, DATA, dataNames)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    REAL(DFP), INTENT(IN) :: DATA(:, :)
+    ! row: number of data
+    ! column: number of nodes in mesh
+    TYPE(String), INTENT(IN) :: dataNames(:)
+  END SUBROUTINE obj_WriteData_vtk3
 END INTERFACE
 
 !----------------------------------------------------------------------------

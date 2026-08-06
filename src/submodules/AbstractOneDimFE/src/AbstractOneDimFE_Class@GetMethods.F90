@@ -255,6 +255,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInterpolationPoints
+CALL obj%opt%GetInterpolationPoints(xij, nrow, ncol)
+END PROCEDURE obj_GetInterpolationPoints
+
+!----------------------------------------------------------------------------
 !                                                       GetBaseInterpolation
 !----------------------------------------------------------------------------
 

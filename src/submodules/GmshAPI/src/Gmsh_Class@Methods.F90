@@ -39,6 +39,7 @@ USE GmshUtility, ONLY: optval_str_array
 USE GmshUtility, ONLY: size_gmsh_str_array
 USE GmshUtility, ONLY: istring_
 USE GmshUtility, ONLY: optval_c_bool
+USE InputUtility, ONLY: Input
 
 IMPLICIT NONE
 
@@ -126,8 +127,10 @@ IF (isok) THEN
 END IF
 #endif
 
-ALLOCATE (obj%fltk)
-CALL obj%fltk%Initiate()
+IF (Input(default=.TRUE., option=fltk)) THEN
+  ALLOCATE (obj%fltk)
+  CALL obj%fltk%Initiate()
+END IF
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(obj%onelab)

@@ -124,6 +124,86 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE ScalarFieldAssembleMassMatrix1
 
 !----------------------------------------------------------------------------
+!                                         ScalarFieldAssembleMassMatrix
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE ScalarFieldAssembleMassMatrix2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleMassMatrix2()"
+#endif
+
+INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
+                tcellCon, ks_i, ks_j, xij_i, xij_j, maxQuadPoints
+TYPE(QuadraturePoint_) :: quad
+TYPE(ElemshapeData_) :: elemsd, geoelemsd
+REAL(DFP), ALLOCATABLE :: xij(:, :), ks(:, :)
+INTEGER(I4B), ALLOCATABLE :: cellCon(:)
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(FEDOF_), POINTER :: fedof, geofedof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+fedof => nodeField%fedof
+mesh => fedof%GetMeshPointer()
+geofedof => nodeField%geofedof
+tElements = mesh%GetTotalElements()
+
+IF (reset) CALL tanmat%set(VALUE=math%zero)
+
+maxNNEGeo = geofedof%GetMaxTotalConnectivity()
+maxNNE = fedof%GetMaxTotalConnectivity()
+maxQuadPoints = fedof%GetMaxTotalQuadraturePoints()
+
+CALL Reallocate(xij, 3, maxNNEGeo)
+CALL Reallocate(cellCon, maxNNE)
+CALL Reallocate(ks, maxNNE, maxNNE)
+
+DO iel = 1, tElements
+
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+  CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
+  geofeptr => geofedof%GetFEPointer(globalElement=iel, &
+                                    islocal=math%yes)
+
+  CALL mesh%GetNodeCoord( &
+    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
+    globalElement=iel)
+
+  CALL fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                              ans=cellcon, tsize=tcellCon, opt="A")
+
+  CALL feptr%GetGlobalElemShapeData2( &
+    geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
+    quad=quad)
+
+  ks = math%zero
+  CALL MassMatrix_(test=elemsd, trial=elemsd, &
+                   ans=ks, nrow=ks_i, ncol=ks_j)
+
+  CALL tanmat%Set( &
+    globalNode=cellcon(1:tcellCon), islocal=math%yes, &
+    VALUE=ks(1:ks_i, 1:ks_j), storageFMT=defaultOpt%storageFormatDOF, &
+    scale=scale, addContribution=math%yes)
+END DO
+
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(ks)) DEALLOCATE (ks)
+IF (ALLOCATED(cellCon)) DEALLOCATE (cellCon)
+NULLIFY (feptr, geofeptr, mesh, fedof, geofedof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE ScalarFieldAssembleMassMatrix2
+
+!----------------------------------------------------------------------------
 !                                                          Include error
 !----------------------------------------------------------------------------
 
