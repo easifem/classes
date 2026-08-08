@@ -97,11 +97,14 @@ obj%name = UpperCase(astr%slice(1, 1))
 
 SELECT CASE (obj%name)
 
-CASE ("U") !UV
+CASE ("U")
+  !UV
   obj%alpha = 1.0_DFP
-CASE ("V") !V
+CASE ("V")
+  !V
   obj%alpha = 0.0_DFP
-CASE ("L") !LCV
+CASE ("L")
+  !LCV
   CALL LCVMethodImportFromToml(obj=obj, table=table, astr=astr, &
                                origin=origin, stat=stat)
 CASE DEFAULT
