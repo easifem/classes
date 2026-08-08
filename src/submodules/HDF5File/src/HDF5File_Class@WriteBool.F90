@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(HDF5File_Class) WriteBool
-USE BaseMethod
+USE HDF5, ONLY: H5T_NATIVE_CHARACTER, H5DWRITE_F
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "HDF5File_Class@WriteBool.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -31,8 +36,11 @@ CONTAINS
 #define mem_type_bool
 
 MODULE PROCEDURE hdf5_write_b0
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_b0()"
+#endif
 #define rank 0
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_b0
 
@@ -41,8 +49,11 @@ END PROCEDURE hdf5_write_b0
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_b1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_b1()"
+#endif
 #define rank 1
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_b1
 
@@ -51,8 +62,11 @@ END PROCEDURE hdf5_write_b1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_b2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_b2()"
+#endif
 #define rank 2
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_b2
 
@@ -61,13 +75,18 @@ END PROCEDURE hdf5_write_b2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_b3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_b3()"
+#endif
 #define rank 3
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_b3
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE WriteBool

@@ -23,7 +23,13 @@
   INTEGER(HSIZE_T), DIMENSION(rank) :: ldims, gdims, offset, cnt
 #endif
   INTEGER(HID_T) :: mem, dspace_id, dset_id, gspace_id, plist_id
-  INTEGER(I4B) :: ii, jj, kk
+  INTEGER(I4B) :: ii, jj, kk, ierr
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
 ! stash offset
   DO ii = 1, rank
 #if rank==0
@@ -84,10 +90,15 @@
 
 #ifdef mem_type_bool
   IF (ierr == 0) &
- CALL h5dwrite_f(dset_id,mem,charvals,gdims,ierr,dspace_id,gspace_id,plist_id)
+ CALL H5DWRITE_F(dset_id,mem,charvals,gdims,ierr,dspace_id,gspace_id,plist_id)
 #else
   IF (ierr == 0) &
-    CALL h5dwrite_f(dset_id,mem,vals,gdims,ierr,dspace_id,gspace_id,plist_id)
+    CALL H5DWRITE_F(dset_id,mem,vals,gdims,ierr,dspace_id,gspace_id,plist_id)
 #endif
 
   CALL postWrite(Obj, ierr, dset_id, dspace_id, gspace_id, plist_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif

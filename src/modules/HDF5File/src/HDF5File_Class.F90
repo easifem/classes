@@ -16,28 +16,27 @@
 !
 
 MODULE HDF5File_Class
-USE GlobalData
+USE GlobalData, ONLY: LGT, DFP, I4B, REAL32, REAL64, INT32
 USE String_Class, ONLY: String
-USE HDF5
+USE BaseType, ONLY: math => TypeMathOpt
+USE HDF5, ONLY: HID_T, HSIZE_T, HSSIZE_T
 ! USE H5LT
 ! USE H5Fortran
-USE ExceptionHandler_Class, ONLY: e, EXCEPTION_MAX_MESG_LENGTH
-USE AbstractFile_Class
+USE ExceptionHandler_Class, ONLY: e
+USE AbstractFile_Class, ONLY: AbstractFile_
 IMPLICIT NONE
 
 PRIVATE
 PUBLIC :: HDF5File_
 PUBLIC :: HDF5FilePointer_
-
 ! PUBLIC :: HDF5Open, HDF5Close, HDF5Quiet
-CHARACTER(LEN=*), PARAMETER :: modName = 'HDF5File_Class'
+
 INTEGER(I4B), PARAMETER :: MAXSTRLEN = 1024
-INTEGER(I4B), SAVE :: ierr = 0
 INTEGER(I4B), SAVE :: nhdf5fileinuse = 0
 !! Variable for keeping track of the number of hdf5 files initialized
 !! This variable will be used in logic to call the h5close_f(error)
 !! which closes the interface.
-LOGICAL(LGT), SAVE :: libh5Open = .FALSE.
+LOGICAL(LGT), SAVE :: libh5Open = math%no
 !! Variable to make sure that the hdf5 interface was opened, and thus
 !! can then be closed.
 
@@ -46,10 +45,10 @@ LOGICAL(LGT), SAVE :: libh5Open = .FALSE.
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:         8 May 2021
-! summary:         HDF5 File
+! date: 2026-08-08
+! summary: HDF5 File
 !
-!# Introduction
+!# HDF5File_
 !
 ! Reading from HDF5 binary files. As implemented, there are three modes for
 ! accessing a file can be opened as:
@@ -64,23 +63,23 @@ LOGICAL(LGT), SAVE :: libh5Open = .FALSE.
 ! New mode overwrites any file by the same name and starts from scratch.
 
 TYPE, EXTENDS(AbstractFile_) :: HDF5File_
-  LOGICAL(LGT) :: isInit = .FALSE.
+  LOGICAL(LGT) :: isInit = math%no
     !! Initialization status
-  LOGICAL(LGT) :: hasCompression = .FALSE.
+  LOGICAL(LGT) :: hasCompression = math%no
     !! Whether or not the file uses compression for writing
   INTEGER(I4B), PRIVATE :: zlibOpt = -1
     !! Option for gzip compression -1 (no filter) or [0-9].
     !! these options are defined by HDF5.
-  LOGICAL(LGT), PRIVATE :: newstat = .FALSE.
+  LOGICAL(LGT), PRIVATE :: newstat = math%no
     !! The 'new' status of a file
   TYPE(String) :: fullname
     !! full name of the file
-  INTEGER(I4B), PRIVATE :: unitno = -1
+  INTEGER(I4B), PRIVATE :: unitno = math%minus_one_i
     !! unit number of the file
   !TYPE(MPI_EnvType),POINTER  :: pe => NULL()
-  LOGICAL(LGT), PRIVATE :: overwriteStat = .FALSE.
+  LOGICAL(LGT), PRIVATE :: overwriteStat = math%no
     !! When .TRUE., file data can be overwritten
-  INTEGER(HID_T) :: file_id = 0
+  INTEGER(HID_T) :: file_id = math%zero_i
     !! File id assigned by the HDF5 library when file is opened
 CONTAINS
   PRIVATE
@@ -558,15 +557,16 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
- MODULE SUBROUTINE preWrite( obj,rank,gdims,ldims,path,mem,dset_id,dspace_id,&
-                                    & gspace_id, plist_id, error, cnt, offset)
+  MODULE SUBROUTINE preWrite(obj, rank, gdims, ldims, path, mem, dset_id, &
+                             dspace_id, gspace_id, plist_id, error, &
+                             cnt, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     INTEGER, INTENT(IN) :: rank
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
     !! global data space dimensions, i.e. shape
     INTEGER(HSIZE_T), INTENT(IN) :: ldims(:)
     !! local data space dimension
-    CHARACTER(LEN=*), INTENT(INOUT) :: path
+    CHARACTER(*), INTENT(IN) :: path
     !! path of data set
     INTEGER(HID_T), INTENT(IN) :: mem
     !!
@@ -591,10 +591,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:         9 May 2021
-! summary: Computes the optimal chunk size for a data set for writing with compression
+! date: 2026-08-08
+! summary: Computes the optimal chunk size for a data set for writing with
+!          compression
 !
-!# Introduction
+!# ChunkSize
+!
 ! Choosing the chunk size is EXTREMELY important to managing the memory
 ! overhead of the HDF5 library when using compression. A detailed discussion
 ! can be found on the HDF5 website:
@@ -1306,7 +1308,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st1(obj, dsetname, vals, length_max, gdims_in, &
-                                           & cnt_in, offset_in)
+                                                          & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1356,7 +1358,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st2(obj, dsetname, vals, length_max, gdims_in, &
-                                           & cnt_in, offset_in)
+                                                          & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1406,7 +1408,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st3(obj, dsetname, vals, length_max, gdims_in, &
-                                           & cnt_in, offset_in)
+                                                          & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname

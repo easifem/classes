@@ -16,8 +16,13 @@
 !
 
 SUBMODULE(HDF5File_Class) WriteReal32
-USE BaseMethod
+USE HDF5, ONLY: H5T_NATIVE_REAL, H5DWRITE_F
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "HDF5File_Class@WriteReal32.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,8 +34,11 @@ CONTAINS
 #define mem_type H5T_NATIVE_REAL
 
 MODULE PROCEDURE hdf5_write_s0
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s0()"
+#endif
 #define rank 0
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s0
 
@@ -39,8 +47,11 @@ END PROCEDURE hdf5_write_s0
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_s1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s1()"
+#endif
 #define rank 1
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s1
 
@@ -49,8 +60,11 @@ END PROCEDURE hdf5_write_s1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_s2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s2()"
+#endif
 #define rank 2
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s2
 
@@ -59,8 +73,11 @@ END PROCEDURE hdf5_write_s2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_s3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s3()"
+#endif
 #define rank 3
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s3
 
@@ -69,8 +86,11 @@ END PROCEDURE hdf5_write_s3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_s4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s4()"
+#endif
 #define rank 4
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s4
 
@@ -79,8 +99,11 @@ END PROCEDURE hdf5_write_s4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_s5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s5()"
+#endif
 #define rank 5
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s5
 
@@ -89,8 +112,11 @@ END PROCEDURE hdf5_write_s5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_s6
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s6()"
+#endif
 #define rank 6
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s6
 
@@ -99,13 +125,18 @@ END PROCEDURE hdf5_write_s6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE hdf5_write_s7
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "hdf5_write_s7()"
+#endif
 #define rank 7
-#include "./write.inc"
+#include "./include/write.F90"
 #undef rank
 END PROCEDURE hdf5_write_s7
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE WriteReal32
