@@ -16,6 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(OneDimBasisOpt_Class) GetMethods
+USE BaseType, ONLY: math => TypeMathOpt
 USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
 USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
 USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
@@ -255,7 +256,8 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Calling Elemsd_Allocate() ...')
 #endif
 
-CALL Elemsd_Allocate(obj=elemsd, nsd=1_I4B, xidim=1_I4B, nns=tdof, nips=nips)
+CALL Elemsd_Allocate(obj=elemsd, nsd=math%one_i, xidim=math%one_i, &
+                     nns=tdof, nips=nips)
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
@@ -269,8 +271,9 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Allocating internal arrays')
 #endif
 
-CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%xij, 3, tdof, isExpand=math%yes, &
+                expandFactor=math%two_i)
+CALL Reallocate(obj%coeff, tdof, tdof, isExpand=math%yes, expandFactor=2_I4B)
 CALL Reallocate(obj%xx, nips, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
 
