@@ -69,7 +69,7 @@ obj%fe => OneDimFEFactory(table=table)
 #ifdef DEBUG_VER
 isok = ASSOCIATED(obj%fe)
 CALL AssertError1(isok, myName, &
-                  'fe pointer returned from OneDimFEFactory is NULL pointer.')
+                  'fe pointer returned from OneDimFEFactory is NULL.')
 #endif
 
 CALL obj%fe%ImportFromToml(table=table)
