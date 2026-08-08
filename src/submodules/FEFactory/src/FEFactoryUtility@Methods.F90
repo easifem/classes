@@ -501,8 +501,8 @@ CASE ("HIER", "HEIR")
 CASE ("ORTH")
   ALLOCATE (OneDimOrthogonalFE_ :: ans)
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     "No case found for acase="//acase)
 #endif
