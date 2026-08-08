@@ -24,7 +24,11 @@ USE HDF5
 USE ExceptionHandler_Class, ONLY: e, EXCEPTION_MAX_MESG_LENGTH
 USE AbstractFile_Class
 IMPLICIT NONE
+
 PRIVATE
+PUBLIC :: HDF5File_
+PUBLIC :: HDF5FilePointer_
+
 ! PUBLIC :: HDF5Open, HDF5Close, HDF5Quiet
 CHARACTER(LEN=*), PARAMETER :: modName = 'HDF5File_Class'
 INTEGER(I4B), PARAMETER :: MAXSTRLEN = 1024
@@ -80,13 +84,14 @@ TYPE, EXTENDS(AbstractFile_) :: HDF5File_
     !! File id assigned by the HDF5 library when file is opened
 CONTAINS
   PRIVATE
+  PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => hdf5_open
   PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => hdf5_close
   PROCEDURE, PUBLIC, PASS(Obj) :: delete => hdf5_delete
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => hdf5_initiate
   PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => hdf5_clear
   PROCEDURE, PUBLIC, PASS(Obj) :: setOverwriteStat => &
-    & hdf5_setOverwriteStat
+    hdf5_setOverwriteStat
   PROCEDURE, PUBLIC, PASS(Obj) :: getUnitNo => hdf5_getUnitNo
   PROCEDURE, PUBLIC, PASS(Obj) :: isNew => hdf5_isNew
   PROCEDURE, PUBLIC, PASS(Obj) :: setNewStat => hdf5_setNewStat
@@ -100,102 +105,110 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(Obj) :: getChunkSize => hdf5_getChunkSize
   PROCEDURE, PUBLIC, PASS(Obj) :: isCompressed => hdf5_isCompressed
   PROCEDURE, PASS(Obj) :: &
-    & hdf5_write_d0, hdf5_write_d1, hdf5_write_d2, &
-    & hdf5_write_d3, hdf5_write_d4, hdf5_write_d5, &
-    & hdf5_write_d6, hdf5_write_d7, &
-    & hdf5_write_s0, hdf5_write_s1, hdf5_write_s2, &
-    & hdf5_write_s3, hdf5_write_s4, hdf5_write_s5, &
-    & hdf5_write_s6, hdf5_write_s7, &
-    & hdf5_write_b0, hdf5_write_b1, hdf5_write_b2, &
-    & hdf5_write_b3, &
-    & hdf5_write_n0, hdf5_write_n1, hdf5_write_n2, &
-    & hdf5_write_n3, hdf5_write_n4, hdf5_write_n5, &
-    & hdf5_write_n6, hdf5_write_n7, &
-    & hdf5_write_st0, hdf5_write_st1, hdf5_write_st1_helper, &
-    & hdf5_write_st2, hdf5_write_st2_helper, &
-    & hdf5_write_c1
+    hdf5_write_d0, hdf5_write_d1, hdf5_write_d2, &
+    hdf5_write_d3, hdf5_write_d4, hdf5_write_d5, &
+    hdf5_write_d6, hdf5_write_d7, &
+    hdf5_write_s0, hdf5_write_s1, hdf5_write_s2, &
+    hdf5_write_s3, hdf5_write_s4, hdf5_write_s5, &
+    hdf5_write_s6, hdf5_write_s7, &
+    hdf5_write_b0, hdf5_write_b1, hdf5_write_b2, &
+    hdf5_write_b3, &
+    hdf5_write_n0, hdf5_write_n1, hdf5_write_n2, &
+    hdf5_write_n3, hdf5_write_n4, hdf5_write_n5, &
+    hdf5_write_n6, hdf5_write_n7, &
+    hdf5_write_st0, hdf5_write_st1, hdf5_write_st1_helper, &
+    hdf5_write_st2, hdf5_write_st2_helper, &
+    hdf5_write_c1
   GENERIC, PUBLIC :: WRITE => &
-    & hdf5_write_d0, hdf5_write_d1, hdf5_write_d2, &
-    & hdf5_write_d3, hdf5_write_d4, hdf5_write_d5, &
-    & hdf5_write_d6, hdf5_write_d7, &
-    & hdf5_write_s0, hdf5_write_s1, hdf5_write_s2, &
-    & hdf5_write_s3, hdf5_write_s4, hdf5_write_s5, &
-    & hdf5_write_s6, hdf5_write_s7, &
-    & hdf5_write_b0, hdf5_write_b1, hdf5_write_b2, &
-    & hdf5_write_b3, &
-    & hdf5_write_n0, hdf5_write_n1, hdf5_write_n2, &
-    & hdf5_write_n3, hdf5_write_n4, hdf5_write_n5, &
-    & hdf5_write_n6, hdf5_write_n7, &
-    & hdf5_write_st0, hdf5_write_st1, hdf5_write_st1_helper, &
-    & hdf5_write_st2, hdf5_write_st2_helper, &
-    & hdf5_write_c1
+    hdf5_write_d0, hdf5_write_d1, hdf5_write_d2, &
+    hdf5_write_d3, hdf5_write_d4, hdf5_write_d5, &
+    hdf5_write_d6, hdf5_write_d7, &
+    hdf5_write_s0, hdf5_write_s1, hdf5_write_s2, &
+    hdf5_write_s3, hdf5_write_s4, hdf5_write_s5, &
+    hdf5_write_s6, hdf5_write_s7, &
+    hdf5_write_b0, hdf5_write_b1, hdf5_write_b2, &
+    hdf5_write_b3, &
+    hdf5_write_n0, hdf5_write_n1, hdf5_write_n2, &
+    hdf5_write_n3, hdf5_write_n4, hdf5_write_n5, &
+    hdf5_write_n6, hdf5_write_n7, &
+    hdf5_write_st0, hdf5_write_st1, hdf5_write_st1_helper, &
+    hdf5_write_st2, hdf5_write_st2_helper, &
+    hdf5_write_c1
   PROCEDURE, PASS(Obj) :: &
-    & hdf5_read_d0, hdf5_read_d1, hdf5_read_d2, &
-    & hdf5_read_d3, hdf5_read_d4, hdf5_read_d5, &
-    & hdf5_read_d6, hdf5_read_d7, &
-    & hdf5_read_s0, hdf5_read_s1, hdf5_read_s2, &
-    & hdf5_read_s3, hdf5_read_s4, hdf5_read_s5, &
-    & hdf5_read_s6, hdf5_read_s7, &
-    & hdf5_read_n0, hdf5_read_n1, hdf5_read_n2, &
-    & hdf5_read_n3, hdf5_read_n4, hdf5_read_n5, &
-    & hdf5_read_n6, hdf5_read_n7, &
-    & hdf5_read_st0, hdf5_read_st0_helper, &
-    & hdf5_read_st1, hdf5_read_st1_helper, &
-    & hdf5_read_st2, hdf5_read_st2_helper, &
-    & hdf5_read_c1, hdf5_read_b0, hdf5_read_b1, &
-    & hdf5_read_b2, hdf5_read_b3
-
+    hdf5_read_d0, hdf5_read_d1, hdf5_read_d2, &
+    hdf5_read_d3, hdf5_read_d4, hdf5_read_d5, &
+    hdf5_read_d6, hdf5_read_d7, &
+    hdf5_read_s0, hdf5_read_s1, hdf5_read_s2, &
+    hdf5_read_s3, hdf5_read_s4, hdf5_read_s5, &
+    hdf5_read_s6, hdf5_read_s7, &
+    hdf5_read_n0, hdf5_read_n1, hdf5_read_n2, &
+    hdf5_read_n3, hdf5_read_n4, hdf5_read_n5, &
+    hdf5_read_n6, hdf5_read_n7, &
+    hdf5_read_st0, hdf5_read_st0_helper, &
+    hdf5_read_st1, hdf5_read_st1_helper, &
+    hdf5_read_st2, hdf5_read_st2_helper, &
+    hdf5_read_c1, hdf5_read_b0, hdf5_read_b1, &
+    hdf5_read_b2, hdf5_read_b3
   GENERIC, PUBLIC :: READ => &
-    & hdf5_read_d0, hdf5_read_d1, hdf5_read_d2, &
-    & hdf5_read_d3, hdf5_read_d4, hdf5_read_d5, &
-    & hdf5_read_d6, hdf5_read_d7, &
-    & hdf5_read_s0, hdf5_read_s1, hdf5_read_s2, &
-    & hdf5_read_s3, hdf5_read_s4, hdf5_read_s5, &
-    & hdf5_read_s6, hdf5_read_s7, &
-    & hdf5_read_n0, hdf5_read_n1, hdf5_read_n2, &
-    & hdf5_read_n3, hdf5_read_n4, hdf5_read_n5, &
-    & hdf5_read_n6, hdf5_read_n7, &
-    & hdf5_read_st0, hdf5_read_st0_helper, &
-    & hdf5_read_st1, hdf5_read_st1_helper, &
-    & hdf5_read_st2, hdf5_read_st2_helper, &
-    & hdf5_read_c1, hdf5_read_b0, hdf5_read_b1, &
-    & hdf5_read_b2, hdf5_read_b3
-
+    hdf5_read_d0, hdf5_read_d1, hdf5_read_d2, &
+    hdf5_read_d3, hdf5_read_d4, hdf5_read_d5, &
+    hdf5_read_d6, hdf5_read_d7, &
+    hdf5_read_s0, hdf5_read_s1, hdf5_read_s2, &
+    hdf5_read_s3, hdf5_read_s4, hdf5_read_s5, &
+    hdf5_read_s6, hdf5_read_s7, &
+    hdf5_read_n0, hdf5_read_n1, hdf5_read_n2, &
+    hdf5_read_n3, hdf5_read_n4, hdf5_read_n5, &
+    hdf5_read_n6, hdf5_read_n7, &
+    hdf5_read_st0, hdf5_read_st0_helper, &
+    hdf5_read_st1, hdf5_read_st1_helper, &
+    hdf5_read_st2, hdf5_read_st2_helper, &
+    hdf5_read_c1, hdf5_read_b0, hdf5_read_b1, &
+    hdf5_read_b2, hdf5_read_b3
   PROCEDURE, PASS(Obj) :: &
-    & hdf5_write_attribute_st0, hdf5_write_attribute_c0, &
-    & hdf5_write_attribute_i0, hdf5_write_attribute_d0
-
+    hdf5_write_attribute_st0, hdf5_write_attribute_c0, &
+    hdf5_write_attribute_i0, hdf5_write_attribute_d0
   GENERIC, PUBLIC :: WriteAttribute => &
-    & hdf5_write_attribute_st0, hdf5_write_attribute_c0, &
-    & hdf5_write_attribute_i0, hdf5_write_attribute_d0
-
+    hdf5_write_attribute_st0, hdf5_write_attribute_c0, &
+    hdf5_write_attribute_i0, hdf5_write_attribute_d0
   PROCEDURE, PASS(Obj) :: &
-    & hdf5_read_attribute_st0, hdf5_read_attribute_c0, &
-    & hdf5_read_attribute_i0, hdf5_read_attribute_d0
-
+    hdf5_read_attribute_st0, hdf5_read_attribute_c0, &
+    hdf5_read_attribute_i0, hdf5_read_attribute_d0
   GENERIC, PUBLIC :: ReadAttribute => &
-    & hdf5_read_attribute_st0, hdf5_read_attribute_c0, &
-    & hdf5_read_attribute_i0, hdf5_read_attribute_d0
-
+    hdf5_read_attribute_st0, hdf5_read_attribute_c0, &
+    hdf5_read_attribute_i0, hdf5_read_attribute_d0
   PROCEDURE, PUBLIC, PASS(Obj) :: getDataShape
   PROCEDURE, PUBLIC, PASS(Obj) :: getDataType
-
 END TYPE HDF5File_
-
-PUBLIC :: HDF5File_
 
 TYPE :: HDF5FilePointer_
   CLASS(HDF5File_), POINTER :: ptr => NULL()
 END TYPE HDF5FilePointer_
 
-PUBLIC :: HDF5FilePointer_
+!----------------------------------------------------------------------------
+!                                              IsInitiated@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> authors: Vikas Sharma, Ph. D.
+! date: 8 May 2021
+! summary: Returns true if HDF5File is initiated
+!
+!# IsInitiated
+!
+! This methods return true if HDFFile is initiated.
+
+INTERFACE
+  MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_IsInitiated
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 Open
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
-! date:         8 May 2021
+! date: 8 May 2021
 ! summary: Open HDF5 file
 !
 !# Introduction
@@ -546,7 +559,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE preWrite( obj,rank,gdims,ldims,path,mem,dset_id,dspace_id,&
-                 & gspace_id, plist_id, error, cnt, offset)
+                                    & gspace_id, plist_id, error, cnt, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     INTEGER, INTENT(IN) :: rank
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
@@ -1293,7 +1306,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st1(obj, dsetname, vals, length_max, gdims_in, &
-                 & cnt_in, offset_in)
+                                           & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1343,7 +1356,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st2(obj, dsetname, vals, length_max, gdims_in, &
-                 & cnt_in, offset_in)
+                                           & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1393,7 +1406,7 @@ END INTERFACE
 
 INTERFACE
  MODULE SUBROUTINE hdf5_write_st3(obj, dsetname, vals, length_max, gdims_in, &
-                 & cnt_in, offset_in)
+                                           & cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 data type
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
