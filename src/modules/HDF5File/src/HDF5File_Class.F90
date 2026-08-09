@@ -646,11 +646,13 @@ END INTERFACE
 !
 !# Introduction
 !
-! This routine writes a Real64 datatype scalar to a dataset of name and path which is specified by `dsetname` by using the shape specified by `gdims_in`, if present.
+! This routine writes a Real64 datatype scalar to a dataset of name
+! and path which is specified by `dsetname` by using the
+! shape specified by `gdims_in`, if present.
 
 INTERFACE
   MODULE SUBROUTINE hdf5_write_d0(obj, dsetname, vals, gdims_in, cnt_in, &
-    & offset_in)
+                                  offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 File object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
