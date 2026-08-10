@@ -22,7 +22,6 @@ target_sources(
         ${src_path}/TDGAlgorithm1_Class@ConstructorMethods.F90
         ${src_path}/TDGAlgorithm1_Class@IOMethods.F90
         ${src_path}/TDGAlgorithm1_Class@TomlMethods.F90
-        ${src_path}/TDGAlgorithm2_Class@ConstructorMethods.F90
-        ${src_path}/TDGAlgorithm2_Class@IOMethods.F90
+        ${src_path}/TDGAlgorithm2_Class@Methods.F90
         ${src_path}/TDGAlgorithm2_Class@TomlMethods.F90
 )

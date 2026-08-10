@@ -21,6 +21,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE tomlf, ONLY: toml_table
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: math => TypeMathOpt
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 
 IMPLICIT NONE
@@ -41,103 +42,133 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 20
 ! summary:  Velocity based time discontinuous Galerkin algorithm
 
 TYPE :: TDGAlgorithm2_
-  REAL(DFP) :: alpha = 1.0_DFP
+  REAL(DFP) :: alpha = math%one
   !! user defined parameter
 
-  LOGICAL(LGT) :: isInit = .FALSE.
+  LOGICAL(LGT) :: isInit = math%no
   !! Flag to check if the object is initiated
 
   CHARACTER(4) :: name = "TDG2"
 
-  INTEGER(I4B) :: nrow = 0_I4B, ncol = 0_I4B
+  INTEGER(I4B) :: nrow = math%zero_i, ncol = math%zero_i
   !! Number of rows and columns in ct, mt, mtplus matrices
 
-  REAL(DFP) :: initialGuess(MAX_ORDER_TIME + 4) = 0.0_DFP
+  REAL(DFP) :: initialGuess(MAX_ORDER_TIME + 4) = math%zero
   !! coefficient for initial guess of solution
-  LOGICAL(LGT) :: initialGuess_zero(MAX_ORDER_TIME + 4) = .TRUE.
+  LOGICAL(LGT) :: initialGuess_zero(MAX_ORDER_TIME + 4) = math%yes
 
-  REAL(DFP) :: dis(MAX_ORDER_TIME + 4) = 0.0_DFP
+  REAL(DFP) :: jumpDis(MAX_ORDER_TIME + 4) = math%zero
+  !! coefficient for computing jump of displacement
+  !! jumpDisp = jumpDis(1)*Un+jumpDis(2)*Vn*dt +jumpDis(3)*An*dt^2 &
+  !!          + jumpDis(4)*sol(1) + ...
+  !! jumpDis(1) coefficient of displacement at time tn
+  !! jumpDis(2) coefficient of velocity at time tn
+  !! jumpDis(3) coefficient of acceleration at time tn
+  !! jumpDis(4:MAX_ORDER_TIME+4) coefficient of solution dof at time
+  !! t1, t2, ...
+  LOGICAL(LGT) :: jumpDis_zero(MAX_ORDER_TIME + 4) = math%yes
+
+  REAL(DFP) :: jumpVel(MAX_ORDER_TIME + 4) = math%zero
+  !! coefficient for computing jump of displacement
+  !! jumpVelp = jumpVel(1)*Un+jumpVel(2)*Vn*dt +jumpVel(3)*An*dt^2 &
+  !!          + jumpVel(4)*sol(1) + ...
+  !! jumpVel(1) coefficient of displacement at time tn
+  !! jumpVel(2) coefficient of velocity at time tn
+  !! jumpVel(3) coefficient of acceleration at time tn
+  !! jumpVel(4:MAX_ORDER_TIME+4) coefficient of solution dof at time
+  !! t1, t2, ...
+  LOGICAL(LGT) :: jumpVel_zero(MAX_ORDER_TIME + 4) = math%yes
+
+  REAL(DFP) :: dis(MAX_ORDER_TIME + 4) = math%zero
   !! dis coefficient for displacement update
-  !! displacement = dis(1)*Un+dis(2)*Vn*dt +dis(3)*An*dt^2+ dis(4)*sol(1) * dt + ...
+  !! displacement = dis(1)*Un+dis(2)*Vn*dt +dis(3)*An*dt^2 &
+  !!              + dis(4)*sol(1) * dt + ...
   !! dis(1) coefficient of displacement at time tn
   !! dis(2) coefficient of velocity at time tn
   !! dis(3) coefficient of acceleration at time tn
   !! dis(4:MAX_ORDER_TIME+4) coefficient of solution dof at time t1, t2, ...
-  LOGICAL(LGT) :: dis_zero(MAX_ORDER_TIME + 4) = .TRUE.
+  LOGICAL(LGT) :: dis_zero(MAX_ORDER_TIME + 4) = math%yes
 
-  REAL(DFP) :: vel(MAX_ORDER_TIME + 4) = 0.0_DFP
+  REAL(DFP) :: vel(MAX_ORDER_TIME + 4) = math%zero
   !! vel coefficient for velocity update
-  !! velocity = vel(1)*Un / dt + vel(2) * Vn  + vel(3)*An *dt + vel(4) * sol(1) + ...
+  !! velocity = vel(1)*Un / dt + vel(2) * Vn  + vel(3)*An *dt &
+  !!          + vel(4) * sol(1) + ...
   !! vel(1) coefficient of displacement at time tn
   !! vel(2) coefficient of velocity at time tn
   !! vel(3) coefficient of acceleration at time tn
   !! vel(4:MAX_ORDER_TIME+4) coefficient of solution dof at time t1, t2, ...
-  LOGICAL(LGT) :: vel_zero(MAX_ORDER_TIME + 4) = .TRUE.
+  LOGICAL(LGT) :: vel_zero(MAX_ORDER_TIME + 4) = math%yes
 
-  REAL(DFP) :: acc(MAX_ORDER_TIME + 4) = 0.0_DFP
+  REAL(DFP) :: acc(MAX_ORDER_TIME + 4) = math%zero
   !! acc coefficient for acceleration update
-  !! acceleration = (1)*Un / dt^2 + acc(2) * Vn^2  + acc(3) * An + acc(4) * sol(1) / dt + ...
+  !! acceleration = (1)*Un / dt^2 + acc(2) * Vn^2  + acc(3) * An &
+  !!              + acc(4) * sol(1) / dt + ...
   !! acc(1) coefficient of displacement at time tn
   !! acc(2) coefficient of velocity at time tn
   !! acc(3) coefficient of acceleration at time tn
   !! acc(4:MAX_ORDER_TIME+4) coefficient of solution dof at time t1, t2, ...
-  LOGICAL(LGT) :: acc_zero(MAX_ORDER_TIME + 4) = .TRUE.
+  LOGICAL(LGT) :: acc_zero(MAX_ORDER_TIME + 4) = math%yes
 
-  REAL(DFP) :: mt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: mt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = math%zero
   !! coefficient for mass matrix M
   !! This is equivalent to temporal convective matrix +
   !! jump contribution (mtplus)
 
-  REAL(DFP) :: ct(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: ct(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = math%zero
   !! coefficient for damping matrix C*dt
   !! This is equivalent to temporal mass matrix
 
-  REAL(DFP) :: kt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: kt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = math%zero
   !! coefficient for stiffness matrix K * dt^2
   !! This is equivalent to T^t*\tilde{T}
   !! \tilde{T} is displacement-velocity function derived from
   !! the kinematical condition \dot{u}=v
 
-  REAL(DFP) :: bt(MAX_ORDER_TIME + 1, 2 * MAX_ORDER_TIME + 2) = 0.0_DFP
+  REAL(DFP) :: bt(MAX_ORDER_TIME + 1, 2 * MAX_ORDER_TIME + 2) = math%zero
   !! sub matrix used to derive kt
 
-  REAL(DFP) :: bt_right(MAX_ORDER_TIME + 1) = 0.0_DFP
-  !! bt at theta +1
+  REAL(DFP) :: bt_left(MAX_ORDER_TIME + 1) = math%zero
+  !! bt at tn
+  REAL(DFP) :: bt_right(MAX_ORDER_TIME + 1) = math%zero
+  !! bt at tn+1
 
-  REAL(DFP) :: wt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: wmt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: wt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: wmt(MAX_ORDER_TIME + 1, MAX_ORDER_TIME + 1) = math%zero
   !! transpose of wt*mt
   !! needed to make bt
   !! this matrix is made when we call GetWt
 
-  REAL(DFP) :: at(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: at(MAX_ORDER_TIME + 1) = math%zero
   !! At matrix
 
-  REAL(DFP) :: at_right = 0.0_DFP
-  !! At at theta +1
+  REAL(DFP) :: at_left = math%zero
+  !! At at tn
 
-  REAL(DFP) :: tat(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: at_right = math%zero
+  !! At at tn+1
+
+  REAL(DFP) :: tat(MAX_ORDER_TIME + 1) = math%zero
   !! integral of shape function of time times at
 
-  REAL(DFP) :: rhs_m_u1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_m_v1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_m_a1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_k_u1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_k_v1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_k_a1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_c_u1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_c_v1(MAX_ORDER_TIME + 1) = 0.0_DFP
-  REAL(DFP) :: rhs_c_a1(MAX_ORDER_TIME + 1) = 0.0_DFP
+  REAL(DFP) :: rhs_m_u1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_m_v1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_m_a1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_k_u1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_k_v1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_k_a1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_c_u1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_c_v1(MAX_ORDER_TIME + 1) = math%zero
+  REAL(DFP) :: rhs_c_a1(MAX_ORDER_TIME + 1) = math%zero
 
-  LOGICAL(LGT) :: rhs_m_u1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_m_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_m_a1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_k_u1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_k_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_k_a1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_c_u1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_c_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
-  LOGICAL(LGT) :: rhs_c_a1_zero(MAX_ORDER_TIME + 1) = .TRUE.
+  LOGICAL(LGT) :: rhs_m_u1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_m_v1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_m_a1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_k_u1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_k_v1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_k_a1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_c_u1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_c_v1_zero(MAX_ORDER_TIME + 1) = math%yes
+  LOGICAL(LGT) :: rhs_c_a1_zero(MAX_ORDER_TIME + 1) = math%yes
 
 CONTAINS
   PRIVATE

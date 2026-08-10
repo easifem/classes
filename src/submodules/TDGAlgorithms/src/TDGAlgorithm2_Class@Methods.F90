@@ -24,25 +24,18 @@ USE ProductUtility, ONLY: OuterProd_
 USE BaseType, ONLY: math => TypeMathOpt
 USE Lapack_Method, ONLY: GetInvMat
 USE FEFactoryUtility, ONLY: OneDimFEFactory
-
+USE Display_Method, ONLY: Display
 USE BaseType, ONLY: elemOpt => TypeElemNameOpt
 USE BaseType, ONLY: quadOpt => TypeQuadratureOpt
-
-USE QuadraturePoint_Method, ONLY: QuadPoint_Initiate => Initiate, &
-                                  Quad_Size => Size, &
-                                  Quad_Display => Display
-
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE, &
-                                HierarchicalElemShapeData, &
-                                Elemsd_Set => Set, &
-                                Elemsd_Initiate => Initiate, &
-                                OrthogonalElemShapeData
-
-#ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
-#endif
-
+USE QuadraturePoint_Method, ONLY: QuadPoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: Quad_Size => Size
+USE QuadraturePoint_Method, ONLY: Quad_Display => Display
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: Elemsd_Initiate => Initiate
+USE ElemshapeData_Method, ONLY: OrthogonalElemShapeData
 IMPLICIT NONE
 CONTAINS
 
@@ -70,7 +63,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 
 obj%nrow = elemsd%nns
 obj%ncol = obj%nrow
@@ -93,12 +86,19 @@ CALL GetKt(obj, elemsd)
 
 obj%dis(1) = obj%at_right
 
+obj%jumpDis(1) = obj%at_left - math%one
+
+obj%jumpVel(2) = math%minus_one
+
 DO i1 = 1, obj%nrow
   obj%dis(i1 + 3) = obj%bt_right(i1)
+  obj%jumpDis(i1 + 3) = obj%bt_left(i1)
   obj%vel(i1 + 3) = facetElemsd%N(i1, 2)
+  obj%jumpVel(i1 + 3) = facetElemsd%N(i1, 1)
   obj%acc(i1 + 3) = facetElemsd%dNdXt(i1, 1, 2)
   obj%rhs_m_v1(i1) = facetElemsd%N(i1, 1)
-  obj%rhs_k_u1(i1) = -obj%tat(i1) ! minus sign
+  obj%rhs_k_u1(i1) = -obj%tat(i1)
+  ! minus sign
 END DO
 
 CALL obj%MakeZeros()
@@ -229,6 +229,7 @@ SUBROUTINE GetAt(obj, elemsd, facetElemsd)
   obj%tat(1:nrow) = math%zero
 
   obj%at_right = DOT_PRODUCT(facetElemsd%N(1:nrow, 2), temp(1:nrow))
+  obj%at_left = DOT_PRODUCT(facetElemsd%N(1:nrow, 1), temp(1:nrow))
 
   DO ii = 1, tsize
     obj%at(ii) = DOT_PRODUCT(elemsd%N(1:nrow, ii), temp(1:nrow))
@@ -253,7 +254,7 @@ SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
   INTEGER(I4B) :: nrow, ncol, ii, jj, kk, quadOrder, subsetNipt
   REAL(DFP) :: tmpBt(obj%nrow, elemsd%nips), &
                quadPoints(2, elemsd%nips), &
-               subsetRefTime(1, 2), subsetTime(1, 2), scale, ja
+               subsetRefTime(1, 2), scale
   TYPE(ElemShapeData_) :: linearElemsd, subsetElemsd
   TYPE(QuadraturePoint_) :: quad, subsetQuad
   CLASS(AbstractOneDimFE_), POINTER :: subfe => NULL()
@@ -265,12 +266,10 @@ SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
   obj%bt_right(1:nrow) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
                                 facetElemsd%N(1:nrow, 2))
 
-  obj%bt_right(1:nrow) = obj%bt_right(1:nrow)
+  obj%bt_left(1:nrow) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
+                               facetElemsd%N(1:nrow, 1))
 
-  !----------------------------------
-  !                       BT for uvst
-  !----------------------------------
-
+  ! BT for uvst
   obj%bt(1:nrow, 1:ncol) = MATMUL(obj%wmt(1:nrow, 1:nrow), &
                                   elemsd%N(1:nrow, 1:ncol))
 
@@ -278,10 +277,7 @@ SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
 
   IF (obj%alpha .EQ. math%one) RETURN
 
-  !----------------------------------
-  !                       BT for vst
-  !----------------------------------
-
+  ! BT for vst
   tmpBt(1:nrow, 1:ncol) = obj%bt(1:nrow, 1:ncol)
 
   obj%bt(1:nrow, 1:ncol) = math%zero
@@ -348,6 +344,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%initialGuess_zero = obj%initialGuess.approxeq.myzero
+obj%jumpDis_zero = obj%jumpDis.approxeq.myzero
+obj%jumpVel_zero = obj%jumpVel.approxeq.myzero
 obj%dis_zero = obj%dis.approxeq.myzero
 obj%vel_zero = obj%vel.approxeq.myzero
 obj%acc_zero = obj%acc.approxeq.myzero
@@ -381,61 +379,164 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%isInit = .FALSE.
+obj%isInit = math%no
 
 obj%name = "TDG2"
-obj%alpha = 1.0_DFP
-obj%nrow = 0_I4B
-obj%ncol = 0_I4B
+obj%alpha = math%one
+obj%nrow = math%zero_i
+obj%ncol = math%zero_i
 
-obj%initialGuess = 0.0_DFP
-obj%initialGuess_zero = .TRUE.
+obj%initialGuess = math%zero
+obj%initialGuess_zero = math%yes
 
-obj%dis = 0.0_DFP
-obj%dis_zero = .TRUE.
+obj%jumpDis = math%zero
+obj%jumpDis_zero = math%yes
 
-obj%vel = 0.0_DFP
-obj%vel_zero = .TRUE.
+obj%jumpVel = math%zero
+obj%jumpVel_zero = math%yes
 
-obj%acc = 0.0_DFP
-obj%acc_zero = .TRUE.
+obj%dis = math%zero
+obj%dis_zero = math%yes
 
-obj%mt = 0.0_DFP
-obj%ct = 0.0_DFP
-obj%bt = 0.0_DFP
-obj%bt_right = 0.0_DFP
-obj%wt = 0.0_DFP
-obj%wmt = 0.0_DFP
-obj%at = 0.0_DFP
-obj%at_right = 0.0_DFP
-obj%tat = 0.0_DFP
-obj%kt = 0.0_DFP
+obj%vel = math%zero
+obj%vel_zero = math%yes
 
-obj%rhs_m_u1 = 0.0_DFP
-obj%rhs_m_v1 = 0.0_DFP
-obj%rhs_m_a1 = 0.0_DFP
-obj%rhs_c_u1 = 0.0_DFP
-obj%rhs_c_v1 = 0.0_DFP
-obj%rhs_c_a1 = 0.0_DFP
-obj%rhs_k_u1 = 0.0_DFP
-obj%rhs_k_v1 = 0.0_DFP
-obj%rhs_k_a1 = 0.0_DFP
+obj%acc = math%zero
+obj%acc_zero = math%yes
 
-obj%rhs_m_u1_zero = .TRUE.
-obj%rhs_m_v1_zero = .TRUE.
-obj%rhs_m_a1_zero = .TRUE.
-obj%rhs_c_u1_zero = .TRUE.
-obj%rhs_c_v1_zero = .TRUE.
-obj%rhs_c_a1_zero = .TRUE.
-obj%rhs_k_u1_zero = .TRUE.
-obj%rhs_k_v1_zero = .TRUE.
-obj%rhs_k_a1_zero = .TRUE.
+obj%mt = math%zero
+obj%ct = math%zero
+obj%bt = math%zero
+obj%bt_right = math%zero
+obj%bt_left = math%zero
+obj%wt = math%zero
+obj%wmt = math%zero
+obj%at = math%zero
+obj%at_right = math%zero
+obj%at_left = math%zero
+obj%tat = math%zero
+obj%kt = math%zero
+
+obj%rhs_m_u1 = math%zero
+obj%rhs_m_v1 = math%zero
+obj%rhs_m_a1 = math%zero
+obj%rhs_c_u1 = math%zero
+obj%rhs_c_v1 = math%zero
+obj%rhs_c_a1 = math%zero
+obj%rhs_k_u1 = math%zero
+obj%rhs_k_v1 = math%zero
+obj%rhs_k_a1 = math%zero
+
+obj%rhs_m_u1_zero = math%yes
+obj%rhs_m_v1_zero = math%yes
+obj%rhs_m_a1_zero = math%yes
+obj%rhs_c_u1_zero = math%yes
+obj%rhs_c_v1_zero = math%yes
+obj%rhs_c_a1_zero = math%yes
+obj%rhs_k_u1_zero = math%yes
+obj%rhs_k_v1_zero = math%yes
+obj%rhs_k_a1_zero = math%yes
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                    Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+INTEGER(I4B) :: nrow, ncol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Display(msg, unitno=unitno)
+CALL Display(obj%isInit, "isInit: ", unitno=unitno)
+
+IF (.NOT. obj%isInit) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+CALL Display(obj%alpha, "alpha: ", unitno=unitno)
+CALL Display(obj%name, "name: ", unitno=unitno)
+CALL Display(obj%nrow, "nrow: ", unitno=unitno)
+CALL Display(obj%ncol, "ncol: ", unitno=unitno)
+
+nrow = obj%nrow
+ncol = obj%ncol
+
+CALL Display(obj%initialGuess(1:nrow + 3), "initialGuess: ", &
+             unitno=unitno, advance="NO")
+CALL Display(obj%initialGuess_zero(1:nrow + 3), "initialGuess_zero: ", &
+             unitno=unitno)
+
+CALL Display(obj%jumpDis(1:nrow + 3), "jumpDis: ", unitno=unitno, &
+             advance="NO")
+CALL Display(obj%jumpDis_zero(1:nrow + 3), "jumpDis_zero: ", unitno=unitno)
+
+CALL Display(obj%jumpVel(1:nrow + 3), "jumpVel: ", unitno=unitno, &
+             advance="NO")
+CALL Display(obj%jumpVel_zero(1:nrow + 3), "jumpVel_zero: ", unitno=unitno)
+
+CALL Display(obj%dis(1:nrow + 3), "dis: ", unitno=unitno, &
+             advance="NO")
+CALL Display(obj%dis_zero(1:nrow + 3), "dis_zero: ", unitno=unitno)
+
+CALL Display(obj%vel(1:nrow + 3), "vel: ", unitno=unitno, advance="NO")
+CALL Display(obj%vel_zero(1:nrow + 3), "vel_zero: ", unitno=unitno)
+
+CALL Display(obj%acc(1:nrow + 3), "acc: ", unitno=unitno, advance="NO")
+CALL Display(obj%acc_zero(1:nrow + 3), "acc_zero: ", unitno=unitno)
+
+CALL Display(obj%mt(1:nrow, 1:ncol), "mt: ", unitno=unitno)
+CALL Display(obj%ct(1:nrow, 1:ncol), "ct: ", unitno=unitno)
+CALL Display(obj%kt(1:nrow, 1:ncol), "kt: ", unitno=unitno)
+
+CALL Display(obj%rhs_m_u1(1:nrow), "rhs_m_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_u1_zero(1:nrow), "rhs_m_u1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_m_v1(1:nrow), "rhs_m_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_v1_zero(1:nrow), "rhs_m_v1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_m_a1(1:nrow), "rhs_m_a1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_a1_zero(1:nrow), "rhs_m_a1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_c_u1(1:nrow), "rhs_c_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_c_u1_zero(1:nrow), "rhs_c_u1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_c_v1(1:nrow), "rhs_c_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_c_v1_zero(1:nrow), "rhs_c_v1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_c_a1(1:nrow), "rhs_c_a1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_c_a1_zero(1:nrow), "rhs_c_a1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_k_u1(1:nrow), "rhs_k_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_u1_zero(1:nrow), "rhs_k_u1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_k_v1(1:nrow), "rhs_k_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_v1_zero(1:nrow), "rhs_k_v1_zero: ", unitno=unitno)
+
+CALL Display(obj%rhs_k_a1(1:nrow), "rhs_k_a1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_a1_zero(1:nrow), "rhs_k_a1_zero: ", unitno=unitno)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                             Include errors
