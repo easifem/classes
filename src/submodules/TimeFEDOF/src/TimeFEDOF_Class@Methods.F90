@@ -17,10 +17,201 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(TimeFEDOF_Class) GetMethods
+SUBMODULE(TimeFEDOF_Class) Methods
+USE FEFactoryUtility, ONLY: OneDimFEFactory
+USE StringUtility, ONLY: UpperCase
+USE Display_Method, ONLY: Display
+
 IMPLICIT NONE
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+
+obj%isInit = .TRUE.
+obj%opt => timeOpt
+
+obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
+IF (obj%baseInterpolation == "LAGR") obj%isLagrange = .TRUE.
+
+#ifdef DEBUG_VER
+IF (obj%isLagrange) THEN
+  isok = PRESENT(ipType)
+  CALL AssertError1(isok, myName, "ipType should be present")
+END IF
+#endif
+
+obj%baseContinuity = UpperCase(baseContinuity(1:2))
+
+obj%fe => OneDimFEFactory(baseContinuity=obj%baseContinuity, &
+                          baseInterpolation=obj%baseInterpolation)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%fe)
+CALL AssertError1(isok, myName, "obj%fe is not associated")
+#endif
+
+CALL obj%fe%Initiate( &
+  baseContinuity=obj%baseContinuity, order=order, &
+  baseInterpolation=obj%baseInterpolation, ipType=ipType, &
+  basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
+  feType=feType, dofType=dofType, transformType=transformType, &
+  quadratureType=quadratureType, quadratureOrder=quadratureOrder, &
+  quadratureIsOrder=quadratureIsOrder, quadratureNips=quadratureNips, &
+  quadratureIsNips=quadratureIsNips, quadratureAlpha=quadratureAlpha, &
+  quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
+
+obj%cellOrder = INT(order, kind=INT8)
+obj%tdof = order + 1
+
+isok = PRESENT(scaleForQuadOrder)
+IF (isok) obj%scaleForQuadOrder = INT(scaleForQuadOrder, kind=INT8)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = .FALSE.
+obj%isLagrange = .FALSE.
+obj%isMaxConSet = .FALSE.
+obj%isMaxQuadPointSet = .FALSE.
+obj%tdof = 0
+obj%maxCon = 0
+obj%maxQuadPoint = 0
+obj%baseContinuity = "H1"
+obj%baseInterpolation = "LAGR"
+obj%scaleForQuadOrder = 2_INT8
+obj%cellOrder = 0
+
+obj%opt => NULL()
+
+isok = ASSOCIATED(obj%fe)
+IF (isok) CALL obj%fe%DEALLOCATE()
+obj%fe => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Deallocate
+
+!----------------------------------------------------------------------------
+!                                                                    Copy
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Copy
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Copy()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%isInit = obj2%isInit
+obj%isLagrange = obj2%isLagrange
+obj%isMaxConSet = obj2%isMaxConSet
+obj%isMaxQuadPointSet = obj2%isMaxQuadPointSet
+obj%tdof = obj2%tdof
+obj%maxCon = obj2%maxCon
+obj%maxQuadPoint = obj2%maxQuadPoint
+obj%baseContinuity = obj2%baseContinuity
+obj%baseInterpolation = obj2%baseInterpolation
+obj%scaleForQuadOrder = obj2%scaleForQuadOrder
+obj%cellOrder = obj2%cellOrder
+obj%opt => obj2%opt
+obj%fe => obj2%fe
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_Copy
+
+!----------------------------------------------------------------------------
+!                                                                    Display
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Display(msg, unitno=unitno)
+CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
+
+CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
+CALL Display(obj%isMaxConSet, "isMaxConSet: ", unitno=unitno)
+CALL Display(obj%isMaxQuadPointSet, "isMaxQuadPointSet: ", unitno=unitno)
+CALL Display(obj%tdof, "tdof: ", unitno=unitno)
+CALL Display(obj%maxCon, "maxCon: ", unitno=unitno)
+CALL Display(obj%maxQuadPoint, "maxQuadPoint: ", unitno=unitno)
+CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
+CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)
+CALL Display(obj%scaleForQuadOrder, "scaleForQuadOrder: ", unitno=unitno)
+CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno)
+
+isok = ASSOCIATED(obj%opt)
+CALL Display(isok, "opt ASSOCIATED: ", unitno=unitno)
+IF (isok) THEN
+  CALL obj%opt%Display(msg="opt: ", unitno=unitno)
+END IF
+
+isok = ASSOCIATED(obj%fe)
+CALL Display(isok, "fe ASSOCIATED: ", unitno=unitno)
+IF (isok) THEN
+  CALL obj%fe%Display(msg="fe: ", unitno=unitno)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !                                                               IsInitiated
@@ -216,9 +407,37 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetMaxTotalQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                                      SetFE
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFE
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFE()"
+#endif
+
+INTEGER(I4B) :: cellOrder
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+cellOrder = obj%cellOrder
+CALL obj%fe%SetOrder(order=cellOrder)
+! CALL obj%fe%SetOrientation(cellOrient=cellOrient)
+cellOrder = cellOrder * obj%scaleForQuadOrder
+CALL obj%fe%SetQuadratureOrder(order=cellOrder)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetFE
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
 
-END SUBMODULE GetMethods
+END SUBMODULE Methods
