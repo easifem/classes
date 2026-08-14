@@ -118,7 +118,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
 INTEGER(I4B) :: origin, stat
-LOGICAL(LGT) :: isFound
+LOGICAL(LGT) :: isFound, isTotalTimeSteps, isStartTime, isEndTime, isDt
 TYPE(String) :: astr
 
 #ifdef DEBUG_VER
@@ -164,7 +164,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, key="totalTimeSteps", &
               VALUE=obj%totalTimeSteps, &
               default_value=TypeTimeOpt%totalTimeSteps, &
-              origin=origin, stat=stat, isFound=isFound)
+              origin=origin, stat=stat, isFound=isTotalTimeSteps)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -174,7 +174,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, key="dt", &
               VALUE=obj%dt, &
               default_value=TypeTimeOpt%dt, &
-              origin=origin, stat=stat, isFound=isFound)
+              origin=origin, stat=stat, isFound=isDt)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -184,7 +184,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, key="startTime", &
               VALUE=obj%startTime, &
               default_value=TypeTimeOpt%startTime, &
-              origin=origin, stat=stat, isFound=isFound)
+              origin=origin, stat=stat, isFound=isStartTime)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -194,7 +194,37 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, key="endTime", &
               VALUE=obj%endTime, &
               default_value=TypeTimeOpt%endTime, &
-              origin=origin, stat=stat, isFound=isFound)
+              origin=origin, stat=stat, isFound=isEndTime)
+
+IF (isStartTime .AND. isEndTime .AND. isTotalTimeSteps) THEN
+  obj%dt = (obj%endTime - obj%startTime) / obj%totalTimeSteps
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. isDt, myName, &
+               "startTime, endTime, totalTimeSteps are given, &
+                & no need for dt")
+#endif
+END IF
+
+IF (isStartTime .AND. isEndTime .AND. isDt) THEN
+  obj%totalTimeSteps = CEILING((obj%endTime - obj%startTime) / obj%dt)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. isTotalTimeSteps, myName, &
+               "startTime, endTime, dt are given, &
+                & no need for totalTimeSteps")
+#endif
+END IF
+
+IF (isStartTime .AND. isTotalTimeSteps .AND. isDt) THEN
+  obj%endTime = obj%startTime + obj%dt * obj%totalTimeSteps
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. isEndTime, myName, &
+               "startTime, dt, totalTimeSteps are given, &
+                & no need for endTime")
+#endif
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

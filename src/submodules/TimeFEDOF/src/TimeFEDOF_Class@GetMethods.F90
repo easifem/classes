@@ -185,7 +185,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetMaxTotalConnectivity
 
 !----------------------------------------------------------------------------
-!                                                    GetMaxTotalQuadraturePoints
+!                                                GetMaxTotalQuadraturePoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxTotalQuadraturePoints
