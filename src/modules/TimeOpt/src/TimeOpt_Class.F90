@@ -21,13 +21,11 @@ USE String_Class, ONLY: String
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 USE ExceptionHandler_Class, ONLY: e
-
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 PRIVATE
-
 PUBLIC :: TimeOpt_, TypeTimeOpt
-CHARACTER(*), PARAMETER :: modName = "TimeOpt_Class"
 
 !----------------------------------------------------------------------------
 !                                                                   TimeOpt_
@@ -38,28 +36,28 @@ CHARACTER(*), PARAMETER :: modName = "TimeOpt_Class"
 ! summary: This class contains options related to time discretization
 
 TYPE :: TimeOpt_
-  LOGICAL(LGT) :: isInit = .FALSE.
+  LOGICAL(LGT) :: isInit = math%no
   !! Flag to check if the object is initialized or not
 
-  INTEGER(I4B) :: static = 0
+  INTEGER(I4B) :: static = math%zero_i
   !! PDE defines a Static problem
 
-  INTEGER(I4B) :: steady = 0
+  INTEGER(I4B) :: steady = math%zero_i
   !! PDE defines a Static problem
 
-  INTEGER(I4B) :: pseudostatic = 1
+  INTEGER(I4B) :: pseudostatic = math%one_i
   !! PDE defines a Static problem
 
-  INTEGER(I4B) :: transient = 2
+  INTEGER(I4B) :: transient = math%two_i
   !! PDE defines a Transient problem
 
-  INTEGER(I4B) :: dynamic = 2
+  INTEGER(I4B) :: dynamic = math%two_i
   !! PDE defines a Transient problem
 
-  INTEGER(I4B) :: default = 2
+  INTEGER(I4B) :: default = math%two_i
   !! Default time dependency
 
-  INTEGER(I4B) :: timeDependency = 2
+  INTEGER(I4B) :: timeDependency = math%two_i
   !! time dependency of the problem
   !! it can be set to one of the following
   !! static, steady, pseudostatic, transient, dynamic
@@ -67,22 +65,22 @@ TYPE :: TimeOpt_
   CHARACTER(9) :: default_char = "TRANSIENT"
   !! Default time dependency
 
-  INTEGER(I4B) :: totalTimeSteps = 1
+  INTEGER(I4B) :: totalTimeSteps = math%one_i
   !! Total number of time steps
 
-  INTEGER(I4B) :: currentTimeStep = 1
+  INTEGER(I4B) :: currentTimeStep = math%one_i
   !! Current time step
 
-  REAL(DFP) :: currentTime = 0.0
+  REAL(DFP) :: currentTime = math%zero
   !! Current time
 
-  REAL(DFP) :: dt = 0.0
+  REAL(DFP) :: dt = math%zero
   !! Time step
 
-  REAL(DFP) :: startTime = 0.0
+  REAL(DFP) :: startTime = math%zero
   !! Start time
 
-  REAL(DFP) :: endTime = 0.0
+  REAL(DFP) :: endTime = math%zero
   !! End time
 
 CONTAINS
@@ -112,12 +110,16 @@ CONTAINS
   !! Update time step
   PROCEDURE, PUBLIC, PASS(obj) :: UpdateCurrentTime => obj_UpdateCurrentTime
   !! Update current time
+  PROCEDURE, PUBLIC, PASS(obj) :: GetStartTime => obj_GetStartTime
+  !! Get final time of the simulation
   PROCEDURE, PUBLIC, PASS(obj) :: GetEndTime => obj_GetEndTime
   !! Get final time of the simulation
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the object
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Check if the object is initialized
+  PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
+  !! Set parameters of time opt
 END TYPE TimeOpt_
 
 !----------------------------------------------------------------------------
@@ -336,6 +338,21 @@ INTERFACE
     CLASS(TimeOpt_), INTENT(IN) :: obj
     REAL(DFP) :: ans
   END FUNCTION obj_GetEndTime
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               GetStartTime
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-09
+! summary: Get the final time of the simulation
+
+INTERFACE
+  MODULE FUNCTION obj_GetStartTime(obj) RESULT(ans)
+    CLASS(TimeOpt_), INTENT(IN) :: obj
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetStartTime
 END INTERFACE
 
 !----------------------------------------------------------------------------
