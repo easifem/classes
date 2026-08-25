@@ -144,7 +144,7 @@ CONTAINS
 END TYPE TimeFEDOF_
 
 !----------------------------------------------------------------------------
-!                                                             TimeFEDOFPointer_
+!                                                          TimeFEDOFPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: TimeFEDOFPointer_
@@ -152,7 +152,7 @@ TYPE :: TimeFEDOFPointer_
 END TYPE TimeFEDOFPointer_
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -228,7 +228,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Copy@ConstructorMethods
+!                                                    Copy@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -247,7 +247,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
