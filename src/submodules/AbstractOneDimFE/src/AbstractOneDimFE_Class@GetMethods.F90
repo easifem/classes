@@ -23,6 +23,7 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
+USE InputUtility, ONLY: Input
 
 IMPLICIT NONE
 CONTAINS
@@ -166,13 +167,18 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalTimeElemShapeData()"
 
 INTEGER(I4B) :: order
 REAL(DFP) :: xij(1, 2)
+LOGICAL(LGT) :: doNotInitQuad0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%GetQuadraturePoints(quad=quad)
+doNotInitQuad0 = Input(option=doNotInitQuad, default=math%no)
+
+IF (.NOT. doNotInitQuad0) THEN
+  CALL obj%GetQuadraturePoints(quad=quad)
+END IF
 
 CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
@@ -253,6 +259,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                                         GetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%opt%GetQuadratureOrder()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetQuadratureOrder
 
 !----------------------------------------------------------------------------
 !

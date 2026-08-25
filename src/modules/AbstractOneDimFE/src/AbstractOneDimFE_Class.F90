@@ -120,8 +120,8 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Get local element shape data for cell element and local face number
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
-    obj_GetGlobalElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetGlobalElemShapeData => obj_GetGlobalElemShapeData
   !! Get global element shape data
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetGlobalTimeElemShapeData => obj_GetGlobalTimeElemShapeData
@@ -147,8 +147,11 @@ CONTAINS
   ! @QuadratureMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
-    obj_GetInterpolationPoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetInterpolationPoints => obj_GetInterpolationPoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadratureOrder => &
+    obj_GetQuadratureOrder
+  !! Get quadrature order
 
 END TYPE AbstractOneDimFE_
 
@@ -670,7 +673,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalTimeElemShapeData( &
-    obj, elemsd, times, geoelemsd, quad)
+    obj, elemsd, times, geoelemsd, quad, doNotInitQuad)
     CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
     !! Abstract finite element
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
@@ -683,6 +686,10 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! time quadrature points, this will be constructed inside
     !! the routine
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: doNotInitQuad
+    !! If doNotInitQuad is true then we skip initiating the quad
+    !! In this case quad is given.
+    !! Default value of doNotInitQuad is false.
   END SUBROUTINE obj_GetGlobalTimeElemShapeData
 END INTERFACE
 
@@ -723,6 +730,21 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetQuadratureOrder@QuadratureMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-19
+! summary: Get the quadrature Order for the finite element
+
+INTERFACE
+  MODULE FUNCTION obj_GetQuadratureOrder(obj) RESULT(ans)
+    CLASS(AbstractOneDimFE_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetQuadratureOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
