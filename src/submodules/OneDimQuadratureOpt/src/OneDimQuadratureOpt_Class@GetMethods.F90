@@ -16,10 +16,10 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(OneDimQuadratureOpt_Class) GetMethods
-USE LineInterpolationUtility, ONLY: QuadratureNumber_Line, &
-                                    QuadraturePoint_Line_
+USE LineInterpolationUtility, ONLY: QuadratureNumber_Line
+USE LineInterpolationUtility, ONLY: QuadraturePoint_Line_
 USE ReallocateUtility, ONLY: Reallocate
-
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 CONTAINS
@@ -124,6 +124,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetQuadraturePoints
+
+!----------------------------------------------------------------------------
+!                                                         GetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%isOrder) THEN
+  ans = obj%order
+ELSE
+  ans = math%zero_i
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetQuadratureOrder
 
 !----------------------------------------------------------------------------
 !
