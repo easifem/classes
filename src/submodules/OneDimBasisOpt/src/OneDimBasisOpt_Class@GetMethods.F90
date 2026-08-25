@@ -149,6 +149,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
+!                                                         GetQuadratureOrder
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetQuadratureOrder
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadratureOrder()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%quadOpt%GetQuadratureOrder()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetQuadratureOrder
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

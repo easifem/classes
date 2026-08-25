@@ -350,14 +350,15 @@ SUBROUTINE ImportQuadOptFromToml(obj, table, origin, stat, isFound)
 #ifdef DEBUG_VER
   IF (.NOT. isFound) THEN
     CALL e%raiseDebug(modName//'::'//myName//' - '// &
-       'quadOptName not found in toml, proceeding with default value: '//astr)
+       'quadOptName not found in toml, proceeding &
+      &with default value: '//astr)
   END IF
 #endif
 
   !! Get the node from toml table with name quadOptName
   node => NULL()
-  CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-                stat=stat)
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=math%no, stat=stat)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -485,14 +486,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+                  'the toml file :: cannot find ['//tomlName// &
+                  "] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node)

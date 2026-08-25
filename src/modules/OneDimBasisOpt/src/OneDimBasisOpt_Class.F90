@@ -21,6 +21,7 @@ USE BaseType, ONLY: ipopt => TypeInterpolationOpt
 USE BaseType, ONLY: polyopt => TypePolynomialOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_
 USE TxtFile_Class, ONLY: TxtFile_
@@ -178,9 +179,13 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get the quadrature points
+  !
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadratureOrder => &
+    obj_GetQuadratureOrder
+  !! Get the quadrature Order
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
-    obj_GetInterpolationPoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetInterpolationPoints => obj_GetInterpolationPoints
   !! Get the interpolation points
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
@@ -544,6 +549,22 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
     !! Quadrature points
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         GetQuadratureOrder
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-19
+! summary:  Get the quadratuere Order
+
+INTERFACE
+  MODULE FUNCTION obj_GetQuadratureOrder(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    !! OneDimBasisOpt
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetQuadratureOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
