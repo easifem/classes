@@ -33,7 +33,6 @@ PUBLIC :: FEDOF_
 PUBLIC :: FEDOFPointer_
 PUBLIC :: FEDOFSetSparsity
 
-CHARACTER(*), PARAMETER :: modName = "FEDOF_Class"
 CHARACTER(*), PARAMETER :: DEFAULT_BASETYPE = "Monomial"
 CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
 REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
@@ -59,7 +58,6 @@ TYPE :: FEDOF_
   LOGICAL(LGT) :: isMaxQuadPointSet = .FALSE.
   !! It is set to true when maxQuadPoint is set in
   !! GetMaxTotalQuadraturePoints
-
   INTEGER(I4B) :: tdof = 0
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = 0
@@ -74,12 +72,10 @@ TYPE :: FEDOF_
   !! maximum number of connectivity
   INTEGER(I4B) :: maxQuadPoint = 0
   !! maximum number of quadrature points
-
   CHARACTER(2) :: baseContinuity = "H1"
   !! continuity or conformity of basis defined on reference
   !! element, following values are allowed
   !! H1, HCurl, HDiv, DG
-
   CHARACTER(4) :: baseInterpolation = "LAGR"
   !! Type of basis functions used for interpolation on reference
   !! element, Following values are allowed
@@ -88,21 +84,16 @@ TYPE :: FEDOF_
   !! ORTHO: OrthogonalInterpolation
   !! HERM: HermitInterpolation
   !! SERE: SerendipityInterpolation
-
   INTEGER(INT8) :: scaleForQuadOrder = 2_INT8
   !! Scale for quadrature order
   !! Quadrature order = element order * scaleForQuadOrder
   !! This is used for constructing the quadrature points
-
   INTEGER(INT8) :: maxCellOrder = 0_INT8
   !! maximum value of cell order
-
   INTEGER(INT8) :: maxFaceOrder = 0_INT8
   !! maximum value of face order
-
   INTEGER(INT8) :: maxEdgeOrder = 0_INT8
   !! maximum value of edge order
-
   INTEGER(INT8), ALLOCATABLE :: cellOrder(:)
   !! Order of each cell
   !! the size of cellOrder is equal to the obj%tCells
@@ -111,43 +102,35 @@ TYPE :: FEDOF_
   !! Get the cell number of an element (this is global element number)
   !! convert it to the local element number
   !! use this local element number to get cell order from cellOrder
-
   INTEGER(INT8), ALLOCATABLE :: faceOrder(:)
   !! order of each face
-
   INTEGER(INT8), ALLOCATABLE :: edgeOrder(:)
   !! order of each edge
-
   INTEGER(I4B), ALLOCATABLE :: edgeIA(:)
   !! sparsity for edge, the size of edgeJA is equal to the total number of
   !! degrees of freedom on edge,
   !! the size of edgeIA is equal to the total number of edges + 1
   !! The degrees of freedom of iedge is stored in
   !! edgeJA(edgeIA(iedge):edgeIA(iedge+1)-1)
-
   INTEGER(I4B), ALLOCATABLE :: faceIA(:)
   !! sparsity for face, the size of faceJA is equal to the total number of
   !! degrees of freedom on face,
   !! the size of faceIA is equal to the total number of faces + 1
   !! The degrees of freedom of iface is stored in
   !! faceJA(faceIA(iface):faceIA(iface+1)-1)
-
   INTEGER(I4B), ALLOCATABLE :: cellIA(:)
   !! sparsity for cell, the size of cellJA is equal to the total number of
   !! degrees of freedom on cell,
   !! the size of cellIA is equal to the total number of cells + 1
   !! The degrees of freedom of icell is stored in
   !! cellJA(cellIA(icell):cellIA(icell+1)-1)
-
   TYPE(AbstractFEPointer_) :: fe(8)
   !! pointer to finite element object
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
   !! pyramid
-
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
   !! Pointer to domain
   CLASS(AbstractDomain_), POINTER :: dom => NULL()
-
 CONTAINS
   PRIVATE
 
@@ -698,7 +681,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-06
-! summary:  Allocate the sizes of cellOrder, faceOrder, edgeOrder, edgeIA,
+! summary: Allocate the sizes of cellOrder, faceOrder, edgeOrder, edgeIA,
 ! faceIA, cellIA
 
 INTERFACE
@@ -1612,16 +1595,12 @@ END INTERFACE
 ! date:  2023-11-08
 ! summary:  Initiate param from the toml file
 
-INTERFACE
+INTERFACE FEDOFImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE
-
-INTERFACE FEDOFImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml1
 END INTERFACE FEDOFImportFromToml
 
 !----------------------------------------------------------------------------
@@ -1632,7 +1611,7 @@ END INTERFACE FEDOFImportFromToml
 ! date:  2023-11-08
 ! summary:  Initiate kernel from the toml file
 
-INTERFACE
+INTERFACE FEDOFImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
                                         filename, printToml, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
@@ -1642,10 +1621,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
     CLASS(AbstractDomain_), OPTIONAL, INTENT(IN) :: dom
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE
-
-INTERFACE FEDOFImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml2
 END INTERFACE FEDOFImportFromToml
 
 !----------------------------------------------------------------------------

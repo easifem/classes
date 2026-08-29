@@ -18,10 +18,12 @@
 !
 
 SUBMODULE(FEDOF_Class) IOMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@IOMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

@@ -27,11 +27,13 @@ USE ElemData_Class, ONLY: ElemData_GetCell
 USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
 USE BaseType, ONLY: TypeMeshOpt
 USE Display_Method, ONLY: ToString
-#ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
-#endif
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@GetMethods.F90"
+#endif
 
 CONTAINS
 

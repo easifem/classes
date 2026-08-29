@@ -23,8 +23,11 @@ USE CSRMatrix_Method, ONLY: CSRMatrix_GetMatrixProp => GetMatrixProp
 USE Display_Method, ONLY: ToString, Display
 USE FEDomainConnectivity_Class, ONLY: FEDomainConnectivity_
 USE BaseType, ONLY: TypeMeshOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@SetSparsityMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------

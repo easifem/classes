@@ -18,7 +18,6 @@
 !
 
 SUBMODULE(FEDOF_Class) TomlMethods
-! USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
 USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
@@ -27,6 +26,10 @@ USE FEFactoryUtility, ONLY: FEFactory
 USE ReferenceElement_Method, ONLY: GetElementIndex
 USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@TomlMethods.F90"
+#endif
 
 CONTAINS
 

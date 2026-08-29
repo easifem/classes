@@ -37,11 +37,13 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE ReferenceElement_Method, ONLY: GetElementIndex
 USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE FEFactoryUtility, ONLY: FEFactory
-#ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
-#endif
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
@@ -332,7 +334,7 @@ cellLoop: DO iel = 1, obj%tCells
     jj = ElemData_GetEdge(elemdata, ii)
     isok = foundEdges(jj)
 
-    ! if edge node found
+    ! if edge not found
     IF (.NOT. isok) THEN
       myorder = INT(obj%edgeOrder(jj), kind=INT8)
       tsize = ElemData_GetTotalEdgeDOF( &
