@@ -20,7 +20,6 @@ USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
 USE Display_Method, ONLY: Display
 USE ReallocateUtility, ONLY: Reallocate
-USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -29,6 +28,158 @@ CHARACTER(*), PARAMETER :: modName = &
 #endif
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = math%yes
+obj%domain(1:2) = domain(1:2)
+obj%totalElements = totalElements
+obj%totalNodes = totalElements + 1
+obj%isElemLengthUniform = math%yes
+CALL Reallocate(obj%elemLength, 1)
+obj%elemLength(1) = (domain(2) - domain(1)) / REAL(totalElements, kind=DFP)
+obj%xij = math%zero
+CALL obj%SetNodeCoord()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = math%yes
+obj%domain(1:2) = domain(1:2)
+obj%isElemLengthUniform = math%yes
+CALL Reallocate(obj%elemLength, 1)
+obj%elemLength(1) = elemLength
+obj%totalElements = INT((domain(2) - domain(1)) / elemLength, kind=I4B)
+obj%totalNodes = obj%totalElements + 1
+obj%xij = math%zero
+CALL obj%SetNodeCoord()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
+#endif
+
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = math%yes
+obj%domain(1:2) = domain(1:2)
+obj%totalElements = totalElements
+obj%totalNodes = obj%totalElements + 1
+obj%xij = math%zero
+
+tsize = SIZE(elemLength)
+
+IF (tsize .EQ. 1) THEN
+  CALL Reallocate(obj%elemLength, 1)
+  obj%isElemLengthUniform = math%yes
+  obj%elemLength(1) = elemLength(1)
+  RETURN
+END IF
+
+CALL Reallocate(obj%elemLength, totalElements)
+obj%isElemLengthUniform = math%no
+
+DO ii = 1, totalElements
+  obj%elemLength(ii) = elemLength(ii)
+END DO
+
+CALL obj%SetNodeCoord()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate3
+
+!----------------------------------------------------------------------------
+!                                                               SetNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetNodeCoord
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetNodeCoord()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Reallocate(obj%nodeCoord, obj%totalNodes)
+
+obj%nodeCoord(1) = obj%domain(1)
+
+IF (obj%isElemLengthUniform) THEN
+
+  DO ii = 2, obj%totalNodes
+    obj%nodeCoord(ii) = obj%nodeCoord(ii - 1) + obj%elemLength(1)
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+DO ii = 2, obj%totalNodes
+  obj%nodeCoord(ii) = obj%nodeCoord(ii - 1) + obj%elemLength(ii - 1)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetNodeCoord
 
 !----------------------------------------------------------------------------
 !                                                                 SetParam
@@ -147,14 +298,16 @@ tsize = SIZE(VALUE)
 #ifdef DEBUG_VER
 isok = .NOT. ALLOCATED(obj%elemLength)
 CALL AssertError1(isok, myName, &
-               "elemLength array si already allocated. Call deallocate first")
+               "elemLength array si already allocated. &
+                &Call deallocate first")
 
 IF (tsize .NE. 1) THEN
   isok = tsize .EQ. obj%totalElements
   CALL AssertError1(isok, myName, &
-                    "size of value is not equal to 1, "//CHAR_LF// &
-              " in this case size of value should be equal to totalElements" &
-                    //CHAR_LF//" tsize = "//ToString(tsize)// &
+                    "size of value is not equal to 1, "// &
+                    " in this case size of value should be &
+                    &equal to totalElements"// &
+                    " tsize = "//ToString(tsize)// &
                     " totalElements = "//ToString(tsize))
 END IF
 #endif
@@ -249,7 +402,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetTotalElements
 
 !----------------------------------------------------------------------------
-!                                                             GetTotalNodes
+!                                                              GetTotalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes
@@ -277,8 +430,9 @@ END PROCEDURE obj_GetTotalNodes
 MODULE PROCEDURE obj_GetElemLength
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetElemLength()"
-LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -296,19 +450,13 @@ IF (obj%isElemLengthUniform) THEN
   RETURN
 END IF
 
-#ifdef DEBUG_VER
-isok = indx .LE. obj%totalElements
-CALL AssertError1(isok, "obj_GetElemLength", &
-                  "Index out of bounds: indx = "//ToString(indx))
-#endif
-
-ans = obj%elemLength(indx)
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+ans = obj%elemLength(iel)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetElemLength
 
 !----------------------------------------------------------------------------
@@ -329,18 +477,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL Display(msg, unitno=unitno)
-CALL Display(obj%domain, "domain: ", unitno=unitno)
-CALL Display(obj%totalNodes, "totalNodes: ", unitno=unitno)
+CALL Display(obj%isInit, "isInit: ", unitno=unitno)
+IF (.NOT. obj%isInit) RETURN
+
 CALL Display(obj%isElemLengthUniform, "isElemLengthUniform: ", &
              unitno=unitno)
+CALL Display(obj%domain, "domain: ", unitno=unitno)
 CALL Display(obj%totalElements, "totalElements: ", unitno=unitno)
+CALL Display(obj%totalNodes, "totalNodes: ", unitno=unitno)
 
 isok = ALLOCATED(obj%elemLength)
+CALL Display(isok, "elemLength is ALLOCATED: ", unitno=unitno)
 IF (isok) THEN
-  CALL Display(isok, "elemLength is allocated: ", unitno=unitno)
   aint = SIZE(obj%elemLength)
-  CALL Display(aint, "elemLength size: ", unitno=unitno)
+  CALL Display(aint, "elemLength SIZE: ", unitno=unitno)
   CALL Display(obj%elemLength, "elemLength: ", unitno=unitno)
+END IF
+
+isok = ALLOCATED(obj%nodeCoord)
+CALL Display(isok, "nodeCoord is ALLOCATED: ", unitno=unitno)
+IF (isok) THEN
+  aint = SIZE(obj%nodeCoord)
+  CALL Display(aint, "nodeCoord SIZE: ", unitno=unitno)
+  CALL Display(obj%nodeCoord, "nodeCoord: ", unitno=unitno)
 END IF
 
 #ifdef DEBUG_VER
@@ -389,66 +548,30 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_DisplayMeshInfo
 
 !----------------------------------------------------------------------------
-!                                                     ImportFromToml@Methods
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                     ImportFromToml@Methods
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ImportFromToml2
-
-!----------------------------------------------------------------------------
 !                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%isElemLengthUniform = math%no
 obj%domain = math%zero
 obj%totalElements = 0
 obj%totalNodes = 0
 IF (ALLOCATED(obj%elemLength)) DEALLOCATE (obj%elemLength)
 obj%xij = 0.0_DFP
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -510,10 +633,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+ans = globalNode
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -552,15 +672,17 @@ MODULE PROCEDURE obj_GetConnectivity_
 CHARACTER(*), PARAMETER :: myName = "obj_GetConnectivity_()"
 #endif
 
+INTEGER(I4B) :: iel
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+tsize = 2
+iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+ans(1) = iel
+ans(2) = iel + 1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -569,109 +691,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
-!                                                                   Initiate
+!                                                               GetNodeCoord
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate1
+MODULE PROCEDURE obj_GetNodeCoord
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord()"
 #endif
+
+INTEGER(I4B) :: inode
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-obj%isInit = math%yes
-obj%domain(1:2) = domain(1:2)
-obj%totalElements = totalElements
-obj%totalNodes = totalElements + 1
-obj%isElemLengthUniform = math%yes
-CALL Reallocate(obj%elemLength, 1)
-obj%elemLength(1) = (domain(2) - domain(1)) / REAL(totalElements, kind=DFP)
-obj%xij = math%zero
+inode = obj%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
+ans = obj%nodeCoord(inode)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = math%yes
-obj%domain(1:2) = domain(1:2)
-obj%isElemLengthUniform = math%yes
-CALL Reallocate(obj%elemLength, 1)
-obj%elemLength(1) = elemLength
-obj%totalElements = INT((domain(2) - domain(1)) / elemLength, kind=I4B)
-obj%totalNodes = obj%totalElements + 1
-obj%xij = math%zero
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-#endif
-
-INTEGER(I4B) :: ii, tsize
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isInit = math%yes
-obj%domain(1:2) = domain(1:2)
-obj%totalElements = totalElements
-obj%totalNodes = obj%totalElements + 1
-obj%xij = math%zero
-
-tsize = SIZE(elemLength)
-
-IF (tsize .EQ. 1) THEN
-  CALL Reallocate(obj%elemLength, 1)
-  obj%isElemLengthUniform = math%yes
-  obj%elemLength(1) = elemLength(1)
-  RETURN
-END IF
-
-CALL Reallocate(obj%elemLength, totalElements)
-obj%isElemLengthUniform = math%no
-
-DO ii = 1, totalElements
-  obj%elemLength(ii) = elemLength(ii)
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Initiate3
+END PROCEDURE obj_GetNodeCoord
 
 !----------------------------------------------------------------------------
 !                                                                     Error
