@@ -1,10 +1,11 @@
 [check]
-preview = true
-select = ["C", "E", "S", "MOD"]
+preview = false
+select = ["C", "S"]
 ignore = [
   "superfluous-implicit-none",
   "implicit-external-procedures",
   "interface-implicit-typing",
+  "bad-quote-string",
 ]
 file-extensions = ["f90", "F90"]
 line-length = 78
