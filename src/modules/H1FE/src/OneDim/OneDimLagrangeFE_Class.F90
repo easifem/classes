@@ -362,8 +362,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetDOFValueFromTimeFunction( &
-    obj, elemsd, times, func, ans, tsize, massMat, ipiv, funcValue, &
-    onlyFaceBubble)
+    obj, elemsd, times, func, ans, tsize, massMat, ipiv, &
+    funcValue, onlyFaceBubble)
     CLASS(OneDimLagrangeFE_), INTENT(INOUT) :: obj
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
     !! time element shape data

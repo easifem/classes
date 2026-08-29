@@ -195,27 +195,34 @@ MODULE PROCEDURE obj_GetTimeDOFValueFromSTFunction
 CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromSTFunction()"
 #endif
 
-INTEGER(I4B) :: ii
-REAL(DFP) :: args(4)
+INTEGER(I4B) :: ii, targs, tSpaceArgs
+REAL(DFP) :: args(4), xi
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+targs = func%GetNumArgs()
+tSpaceArgs = MAX(targs - 1, math%zero_i)
+
 args = math%zero
-args(1:nsd) = x(1:nsd)
+args(1:tSpaceArgs) = x(1:tSpaceArgs)
 
 IF (onlyFaceBubble) THEN
   tsize = MAX(elemsd%nns - 2, 0)
   DO ii = 1, tsize
-    args(4) = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    xi = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    args(targs) = (math%one - xi) * math%half * times(1) &
+                  + (math%one + xi) * math%half * times(2)
     CALL func%Get(args=args, val=ans(ii))
   END DO
 ELSE
   tsize = elemsd%nns
   DO ii = 1, tsize
-    args(4) = obj%opt%GetInterpolationPoint(indx=ii)
+    xi = obj%opt%GetInterpolationPoint(indx=ii)
+    args(targs) = (math%one - xi) * math%half * times(1) &
+                  + (math%one + xi) * math%half * times(2)
     CALL func%Get(args=args, val=ans(ii))
   END DO
 END IF
@@ -270,7 +277,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromSpaceFunction()"
 #endif
 
 INTEGER(I4B) :: ii
-REAL(DFP) :: args(1)
+REAL(DFP) :: args(1), xi
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -280,13 +287,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 IF (onlyFaceBubble) THEN
   tsize = MAX(elemsd%nns - 2, 0)
   DO ii = 1, tsize
-    args(1) = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    xi = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    args(1) = (math%one - xi) * math%half * x(1) &
+              + (math%one + xi) * math%half * x(2)
     CALL func%Get(args=args, val=ans(ii))
   END DO
 ELSE
   tsize = elemsd%nns
   DO ii = 1, tsize
-    args(1) = obj%opt%GetInterpolationPoint(indx=ii)
+    xi = obj%opt%GetInterpolationPoint(indx=ii)
+    args(1) = (math%one - xi) * math%half * x(1) &
+              + (math%one + xi) * math%half * x(2)
     CALL func%Get(args=args, val=ans(ii))
   END DO
 END IF
@@ -307,7 +318,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromTimeFunction()"
 #endif
 
 INTEGER(I4B) :: ii
-REAL(DFP) :: args(1)
+REAL(DFP) :: args(1), xi
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -317,13 +328,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 IF (onlyFaceBubble) THEN
   tsize = MAX(elemsd%nns - 2, 0)
   DO ii = 1, tsize
-    args(1) = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    xi = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    args(1) = (math%one - xi) * math%half * times(1) &
+              + (math%one + xi) * math%half * times(2)
     CALL func%Get(args=args, val=ans(ii))
   END DO
 ELSE
   tsize = elemsd%nns
   DO ii = 1, tsize
-    args(1) = obj%opt%GetInterpolationPoint(indx=ii)
+    xi = obj%opt%GetInterpolationPoint(indx=ii)
+    args(1) = (math%one - xi) * math%half * times(1) &
+              + (math%one + xi) * math%half * times(2)
     CALL func%Get(args=args, val=ans(ii))
   END DO
 END IF
