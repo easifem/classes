@@ -189,6 +189,10 @@ CONTAINS
   !! Get the interpolation points
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetInterpolationPoint => obj_GetInterpolationPoint
+  !! Get an interpolation points
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
   !! Get total number of quadrature points
 
@@ -582,8 +586,27 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: xij(:, :)
     !! interplation points
     INTEGER(I4B), INTENT(INOUT) :: nrow, ncol
-
   END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetInterpolationPoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-08-30
+! summary: Get an interpolation points
+
+INTERFACE
+  MODULE FUNCTION obj_GetInterpolationPoint(obj, indx) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    !! OneDimBasisOpt
+    INTEGER(I4B), INTENT(IN) :: indx
+    !! index of interpolation points
+    !! indx=1,2 denotes left and right end points
+    !! indx=3,4,... denote internal points
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetInterpolationPoint
 END INTERFACE
 
 !----------------------------------------------------------------------------

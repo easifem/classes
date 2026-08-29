@@ -180,15 +180,14 @@ IF (.NOT. doNotInitQuad0) THEN
   CALL obj%GetQuadraturePoints(quad=quad)
 END IF
 
-CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-
 order = obj%GetOrder()
-CALL obj%SetOrder(order=math%one_i)
 
+CALL obj%SetOrder(order=math%one_i)
 CALL obj%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
 
 CALL obj%SetOrder(order=order)
 
+CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 CALL obj%GetGlobalElemShapeData(geoelemsd=geoelemsd, xij=xij, elemsd=elemsd)
 
 #ifdef DEBUG_VER
@@ -221,16 +220,15 @@ IF (.NOT. doNotInitQuad0) THEN
   CALL obj%GetQuadraturePoints(quad=quad)
 END IF
 
-CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
-
 order = obj%GetOrder()
-CALL obj%SetOrder(order=1_I4B)
 
+CALL obj%SetOrder(order=math%one_i)
 CALL obj%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
 
 CALL obj%SetOrder(order=order)
 xij(1, 1:2) = times(1:2)
 
+CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 CALL obj%GetGlobalElemShapeData(geoelemsd=geoelemsd, xij=xij, elemsd=elemsd)
 
 #ifdef DEBUG_VER
@@ -257,20 +255,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-refelemCoord = 0.0_DFP
+refelemCoord = math%zero
 CALL obj%opt%GetRefElemCoord(ans=refelemCoord, nrow=i1, ncol=i2)
 
 CALL QuadraturePoint_Initiate(obj=quad, points=refelemCoord)
-CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
 order = obj%GetOrder()
-CALL obj%SetOrder(order=math%one_i)
 
+CALL obj%SetOrder(order=math%one_i)
 CALL obj%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
 
 CALL obj%SetOrder(order=order)
 xij(1, 1:2) = times(1:2)
 
+CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 CALL obj%GetGlobalElemShapeData(geoelemsd=geoelemsd, xij=xij, elemsd=elemsd)
 
 #ifdef DEBUG_VER

@@ -171,7 +171,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadratureOrder
 
 !----------------------------------------------------------------------------
-!
+!                                                      GetInterpolationPoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetInterpolationPoints
@@ -179,28 +179,65 @@ MODULE PROCEDURE obj_GetInterpolationPoints
 CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (ALLOCATED(obj%xij)) THEN
-  nrow = SIZE(obj%xij, 1)
-  ncol = SIZE(obj%xij, 2)
-  xij(1:nrow, 1:ncol) = obj%xij
-ELSE
-  CALL InterpolationPoint_Line_( &
-    order=obj%order, ipType=obj%ipType, layout="VEFC", &
-    xij=obj%refelemCoord(1:1, 1:2), &
-    alpha=obj%alpha, beta=obj%beta, &
-    lambda=obj%lambda, ans=obj%xij, nrow=nrow, ncol=ncol)
-END IF
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%xij)
+CALL AssertError1(isok, myName, "xij is not ALLOCATED.")
+#endif
+
+! IF (.NOT. isok) THEN
+!   CALL InterpolationPoint_Line_( &
+!     order=obj%order, ipType=obj%ipType, layout="VEFC", &
+!     xij=obj%refelemCoord(1:1, 1:2), alpha=obj%alpha, &
+!     beta=obj%beta, lambda=obj%lambda, ans=obj%xij, &
+!     nrow=nrow, ncol=ncol)
+! ELSE
+nrow = SIZE(obj%xij, 1)
+ncol = SIZE(obj%xij, 2)
+! END IF
+
+xij(1:nrow, 1:ncol) = obj%xij(1:nrow, 1:ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetInterpolationPoints
+
+!----------------------------------------------------------------------------
+!                                                       GetInterpolationPoint
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInterpolationPoint
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoint()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%xij)
+CALL AssertError1(isok, myName, "xij is not ALLOCATED.")
+#endif
+
+ans = obj%xij(1, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetInterpolationPoint
 
 !----------------------------------------------------------------------------
 !                                                   GetTotalQuadraturePoints
@@ -293,11 +330,14 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Allocating internal arrays')
 #endif
 
-CALL Reallocate(obj%xij, 3, tdof, isExpand=math%yes, &
+CALL Reallocate(obj%xij, math%three_i, tdof, isExpand=math%yes, &
                 expandFactor=math%two_i)
-CALL Reallocate(obj%coeff, tdof, tdof, isExpand=math%yes, expandFactor=2_I4B)
-CALL Reallocate(obj%xx, nips, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%coeff, tdof, tdof, isExpand=math%yes, &
+                expandFactor=math%two_i)
+CALL Reallocate(obj%xx, nips, tdof, isExpand=math%yes, &
+                expandFactor=math%two_i)
+CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=math%yes, &
+                expandFactor=math%two_i)
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
