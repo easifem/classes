@@ -18,6 +18,11 @@
 !
 
 SUBMODULE(OneDimFEDOF_Class) TomlMethods
+USE TomlUtility, ONLY: GetValue
+USE tomlf, ONLY: toml_get => get_value
+USE String_Class, ONLY: String
+USE FEFactoryUtility, ONLY: OneDimFEFactory
+
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -28,169 +33,6 @@ CHARACTER(*), PARAMETER :: modName = &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-
-! TYPE(String) :: baseContinuity, baseInterpolation, astr, baseTypeStr(3)
-! INTEGER(I4B) :: ipType, origin, stat, tBaseType, ii, baseType0(3), &
-!                 tAlpha, tBeta, tLambda
-! REAL(DFP) :: alpha(3), beta(3), lambda(3)
-! LOGICAL(LGT) :: isFound, abool, islocal
-! INTEGER(I4B), ALLOCATABLE :: order(:)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START]')
-! #endif
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading baseContinuity...')
-! #endif
-!
-! CALL GetValue(table=table, key="baseContinuity", VALUE=baseContinuity, &
-!   default_value=obj%baseContinuity, origin=origin, stat=stat, isFound=isFound)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading baseInterpolation...')
-! #endif
-!
-! ! baseInterpolation
-! CALL GetValue(table=table, key="baseInterpolation", VALUE=baseInterpolation, &
-!   default_value=obj%baseInterpolation, origin=origin, stat=stat, isFound=isFound)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading ipType...')
-! #endif
-! ! ipType
-! CALL GetValue(table=table, key="ipType", VALUE=astr, &
-!       default_value=DEFAULT_IPTYPE, origin=origin, stat=stat, isFound=isFound)
-! ipType = BaseInterpolation_ToInteger(astr%chars())
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading baseType...')
-! #endif
-!
-! ! baseType
-! CALL GetValue_(table=table, key="baseType", VALUE=baseTypeStr, &
-!                tsize=tBaseType, origin=origin, stat=stat, isFound=isFound)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Total baseType found is '//ToString(tBaseType))
-! #endif
-!
-! DO ii = 1, tBaseType
-!   baseType0(ii) = BaseType_ToInteger(baseTypeStr(ii)%chars())
-! END DO
-!
-! ! if baseType is not found, then set it to default which is DEFAULT_BASETYPE
-! abool = tBaseType .EQ. 0 .OR. (.NOT. isFound)
-! IF (abool) THEN
-!   tBaseType = SIZE(baseType0)
-!   DO ii = 1, tBaseType
-!     baseType0(ii) = BaseType_ToInteger(DEFAULT_BASETYPE)
-!   END DO
-! END IF
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading alpha...')
-! #endif
-!
-! ! alpha
-! CALL GetValue_(table=table, key="alpha", VALUE=alpha, &
-!                tsize=tAlpha, origin=origin, stat=stat, isFound=isFound)
-! abool = tAlpha .EQ. 0 .OR. (.NOT. isFound)
-! IF (abool) THEN
-!   tAlpha = SIZE(alpha)
-!   alpha = DEFAULT_ALPHA
-! END IF
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading beta...')
-! #endif
-!
-! ! beta
-! CALL GetValue_(table=table, key="beta", VALUE=beta, &
-!                tsize=tBeta, origin=origin, stat=stat, isFound=isFound)
-! abool = tBeta .EQ. 0 .OR. (.NOT. isFound)
-! IF (abool) THEN
-!   tBeta = SIZE(beta)
-!   beta = DEFAULT_BETA
-! END IF
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading lambda...')
-! #endif
-!
-! ! lambda
-! CALL GetValue_(table=table, key="lambda", VALUE=lambda, &
-!                tsize=tLambda, origin=origin, stat=stat, isFound=isFound)
-! abool = tLambda .EQ. 0 .OR. (.NOT. isFound)
-! IF (abool) THEN
-!   tLambda = SIZE(lambda)
-!   lambda = DEFAULT_LAMBDA
-! END IF
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading islocal...')
-! #endif
-!
-! ! islocal
-! CALL GetValue(table=table, key="islocal", VALUE=islocal, &
-!              default_value=.FALSE., origin=origin, stat=stat, isFound=isFound)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         'Reading order...')
-! #endif
-!
-! ! order
-! CALL GetValue(table=table, key="order", VALUE=order, &
-!               origin=origin, stat=stat, isFound=isFound)
-! IF (.NOT. isFound) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     'order not found in toml file.')
-!   RETURN
-! END IF
-!
-! ! Index in order vector is based on global numbering of cells
-! ! we need to convert it to local numbering
-!
-! CALL obj%Initiate(mesh=mesh, order=order, baseContinuity=baseContinuity%chars(), &
-!      baseInterpolation=baseInterpolation%chars(), ipType=ipType, basisType=baseType0, &
-!                   alpha=alpha, beta=beta, lambda=lambda, islocal=islocal)
-!
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
 !                                                            ImportFromToml
 !----------------------------------------------------------------------------
 
@@ -199,58 +41,181 @@ MODULE PROCEDURE obj_ImportFromToml2
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 #endif
 
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+                        '[START]')
 #endif
 
-! TYPE(toml_table), ALLOCATABLE :: table
-! TYPE(toml_table), POINTER :: node
-! INTEGER(I4B) :: origin, stat
-! LOGICAL(LGT) :: isok
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START]')
-! #endif
-!
-! CALL GetValue(table=table, afile=afile, filename=filename)
-!
-! node => NULL()
-! CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-!               stat=stat)
-!
-! isok = ASSOCIATED(node)
-! IF (.NOT. isok) THEN
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     'following error occured while reading '// &
-!              'the toml file :: cannot find ['//tomlName//"] table in config.")
-! END IF
-!
-! CALL obj%ImportFromToml(table=node, mesh=mesh)
-!
-! #ifdef DEBUG_VER
-! IF (PRESENT(printToml)) THEN
-!   CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-!                unitNo=stdout)
-! END IF
-! #endif
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END]')
-! #endif
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
+              stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+IF (.NOT. isok) THEN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    'following error occured while reading '// &
+                    'the toml file :: cannot find ['//tomlName// &
+                    "] table in config.")
+END IF
+#endif
+
+CALL obj%ImportFromToml(table=node, mesh=mesh)
+
+node => NULL()
+DEALLOCATE (table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
 END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
+!                                                             ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+INTEGER(I4B), ALLOCATABLE :: order(:)
+LOGICAL(LGT) :: islocal, isFound
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL obj%DEALLOCATE()
+obj%isInit = math%yes
+obj%mesh => mesh
+obj%tCells = obj%mesh%GetTotalElements()
+obj%tNodes = obj%mesh%GetTotalVertexNodes()
+
+islocal = math%no
+CALL ImportOrderFromToml(table=table, order=order, islocal=islocal, &
+                         isFound=isFound)
+
+#ifdef DEBUG_VER
+CALL AssertError1(isFound, myName, "order not found in toml table")
+#endif
+
+CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table)
+
+CALL obj%AllocateSizes()
+CALL obj%SetCellOrder(order=order, islocal=islocal)
+
+! make fe
+obj%fe => OneDimFEFactory(table=table)
+CALL obj%fe%ImportFromToml(table=table)
+
+! get few things from obj%fe
+obj%baseInterpolation = obj%fe%GetBaseInterpolation()
+obj%baseContinuity = obj%fe%GetBaseContinuity()
+IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
+
+DEALLOCATE (order)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                         ImportOrderFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: order(:)
+  LOGICAL(LGT), INTENT(OUT) :: islocal
+  LOGICAL(LGT), INTENT(OUT) :: isFound
+
+  ! Internal variables
+  INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportOrderFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading islocal...')
+#endif
+
+  ! islocal
+  CALL GetValue(table=table, key="islocal", VALUE=islocal, &
+                default_value=math%yes, origin=origin, stat=stat, &
+                isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          'Reading order...')
+#endif
+
+  ! order
+  CALL GetValue(table=table, key="order", VALUE=order, &
+                origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportOrderFromToml
+
+!----------------------------------------------------------------------------
+!                                            ImportScaleForQuadOrderFromToml
+!----------------------------------------------------------------------------
+
+SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
+  CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+
+  ! define internal variables
+  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isFound
+  INTEGER(I4B), PARAMETER :: default_value = 2
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ImportScaleForQuadOrderFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL GetValue( &
+    table=table, key="scaleForQuadOrder", VALUE=obj%scaleForQuadOrder, &
+    default_value=default_value, origin=origin, stat=stat, isFound=isFound)
+
+#ifdef DEBUG_VER
+  IF (.NOT. isFound) THEN
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                      'scaleForQuadOrder not found, using default value ')
+  END IF
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE ImportScaleForQuadOrderFromToml
 
 !----------------------------------------------------------------------------
 !                                                             Include errors

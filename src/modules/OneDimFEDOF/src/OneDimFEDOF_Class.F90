@@ -23,6 +23,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: CSRMatrix_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemshapeData_
+USE BaseType, ONLY: math => TypeMathOpt
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE OneDimDomain_Class, ONLY: OneDimDomain_
 USE TxtFile_Class, ONLY: TxtFile_
@@ -32,14 +33,6 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: OneDimFEDOF_
 PUBLIC :: OneDimFEDOFPointer_
-
-! PUBLIC :: OneDimFEDOFSetSparsity
-
-CHARACTER(*), PARAMETER :: DEFAULT_BASETYPE = "Monomial"
-CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
-REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
-REAL(DFP), PARAMETER :: DEFAULT_BETA = 0.0_DFP
-REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
 
 !----------------------------------------------------------------------------
 !                                                              OneDimFEDOF_
@@ -51,17 +44,43 @@ REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
 
 TYPE :: OneDimFEDOF_
   PRIVATE
-  LOGICAL(LGT) :: isinit = .FALSE.
+  LOGICAL(LGT) :: isinit = math%no
   !! It is set to true when OneDimFEDOF is initiated
-  INTEGER(I4B) :: tdof = 0
+  LOGICAL(LGT) :: isLagrange = math%yes
+  !! It is set to true when baseInterpolation are lagrangian
+  LOGICAL(LGT) :: isMaxConSet = math%no
+  !! It is set to true when maxCon is set in GetMaxTotalConnectivity
+  LOGICAL(LGT) :: isMaxQuadPointSet = math%no
+  !! It is set to true when maxQuadPoint is set in
+  !! GetMaxTotalQuadraturePoints
+  INTEGER(I4B) :: tdof = math%zero_i
   !! Total number of degrees of freedom
-  INTEGER(I4B) :: maxTotalConnectivity = 0
+  INTEGER(I4B) :: tCells = math%zero_i
+  !! Total number of cells
+  INTEGER(I4B) :: tNodes = math%zero_i
+  !! Total number of vertex nodes
+  INTEGER(I4B) :: maxCon = math%zero_i
   !! maximum number of connectivity
-
-  INTEGER(INT8) :: maxCellOrder = 0_INT8
+  INTEGER(I4B) :: maxQuadPoint = math%zero_i
+  !! maximum number of quadrature points
+  INTEGER(I4B) :: maxCellOrder = math%zero_i
   !! maximum value of cell order
-
-  INTEGER(INT8), ALLOCATABLE :: cellOrder(:)
+  INTEGER(I4B) :: scaleForQuadOrder = math%two_i
+  !! scale calculating the order of required quadrature
+  !! quadratureOrder=scaleForQuadOrder*cellOrder
+  CHARACTER(2) :: baseContinuity = "H1"
+  !! continuity or conformity of basis defined on reference
+  !! element, following values are allowed
+  !! H1, HCurl, HDiv, DG
+  CHARACTER(4) :: baseInterpolation = "LAGR"
+  !! Type of basis functions used for interpolation on reference
+  !! element, Following values are allowed
+  !! LAGR: LagrangeInterpolation
+  !! HIER: HierarchyInterpolation
+  !! ORTHO: OrthogonalInterpolation
+  !! HERM: HermitInterpolation
+  !! SERE: SerendipityInterpolation
+  INTEGER(I4B), ALLOCATABLE :: cellOrder(:)
   !! Order of each cell
   !! the size of cellOrder is equal to the obj%tCells
   !! Get connectivity of an element
@@ -69,33 +88,29 @@ TYPE :: OneDimFEDOF_
   !! Get the cell number of an element (this is global element number)
   !! convert it to the local element number
   !! use this local element number to get cell order from cellOrder
-
   INTEGER(I4B), ALLOCATABLE :: cellIA(:)
   !! sparsity for cell,
-  !! the size of cellIA is equal to the total number of cells + 1
+  !! the size of cellIA is equal to the tCells + 1
   !! The degrees of freedom of icell is stored in
   !! cellJA(cellIA(icell):cellIA(icell+1)-1)
-
   CLASS(AbstractOneDimFE_), POINTER :: fe => NULL()
   !! pointer to finite element object
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
   !! pyramid
-
   CLASS(OneDimDomain_), POINTER :: mesh => NULL()
   !! Pointer to domain
 
 CONTAINS
   PRIVATE
 
-  !CONSTRUCTOR:
   !@ConstructorMethods
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate OneDimFEDOF by using homogeneous order
   PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate OneDimFEDOF by using inhomogeneous order
-  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate OneDimFEDOF from order vector defined for global elements
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate4
+  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
   !! Generic method for initiating OneDimFEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy
@@ -104,14 +119,18 @@ CONTAINS
   !! Deallocate the data
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Returns true of the OneDimFEDOF is initiated
+  PROCEDURE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
+  !! allocate sizes of arrays inside the onedimfedof, used while
+  !! constructing the object
 
-  !IO:
   !@IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of OneDimFEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayCellOrder => &
     obj_DisplayCellOrder
   !! Display cell order
+
+  !@TomlMethods
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -119,19 +138,15 @@ CONTAINS
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Import from toml file
 
-  !SET:
   !@SetMethods
   PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
   !! Set the cell order, this is a private method
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetSparsity => obj_SetSparsity1
   !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
   !! This is for non block matrix
-  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
-  !! Set sparsity in the CSRMatrix by using single OneDimFEDOF
-  !! This is for non block matrix
-  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFE => obj_SetFE
+  !! Set finite element for a given globalElement
 
-  !GET:
   !@GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
   !! Get the case name of OneDimFEDOF, it returns
@@ -165,10 +180,15 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
   !! Get the maximum size of connectivity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalQuadraturePoints => &
+    obj_GetMaxTotalQuadraturePoints
+  !! Get the maximum size of quadrature
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
+  !! Get FE pointer
 END TYPE OneDimFEDOF_
 
 !----------------------------------------------------------------------------
-!                                                             OneDimFEDOFPointer_
+!                                                        OneDimFEDOFPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: OneDimFEDOFPointer_
@@ -176,21 +196,23 @@ TYPE :: OneDimFEDOFPointer_
 END TYPE OneDimFEDOFPointer_
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                           Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
 !
-!# Introduction
+!# Initiate
+!
 ! This method makes order0(1) from order and calls obj_Initiate2.
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1( &
     obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
     basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
-    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
+    scaleForQuadOrder)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
@@ -233,23 +255,30 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scaleForQuadOrder
+    !! scale for order of quadrature
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                           Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
+!
+!# Initiate
+!
+! This method initiate one dimensional fedof. In this routine we
+! can specify order for each element.
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &
     obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
     basisType, alpha, beta, lambda, islocal, quadratureType, &
     quadratureOrder, quadratureNips, quadratureAlpha, quadratureBeta, &
-    quadratureLambda)
+    quadratureLambda, scaleForQuadOrder)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     !! Finite degree of freedom object
     INTEGER(I4B), INTENT(IN) :: order(:)
@@ -307,18 +336,20 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scaleForQuadOrder
+    !! scale for order of quadrature
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               Initiate@ConstructorMethods
+!                                                           Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
-! summary: Initiate an instance of fe dof
+! summary: Initiate an instance of OneDimFEDOF
 !
-!# Introduction
+!# Initiate
 !
 ! This routine is similar to the obj_Initiate2, but the order of the
 ! element is defined for global element numbers.
@@ -329,10 +360,11 @@ END INTERFACE
 ! This routine will make order0(:) from order(:,:) and call initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4( &
+  MODULE SUBROUTINE obj_Initiate3( &
     obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
     basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
-    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
+    scaleForQuadOrder)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order(:, :)
     !! The number of columns in order is equal to total number of elements
@@ -383,18 +415,21 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
-  END SUBROUTINE obj_Initiate4
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: scaleForQuadOrder
+    !! scale for order of quadrature
+  END SUBROUTINE obj_Initiate3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Copy@ConstructorMethods
+!                                                                Copy@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-23
-! summary: This method Copy obj2 in obj
+! summary: This method copy obj2 in obj
 !
-!# Introduction
+!# Copy
+!
 ! This method is used to copy the contents of obj2 in obj.
 ! This method is same as the assignment operator (=).
 
@@ -406,7 +441,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             Deallocate@ConstructorMethods
+!                                                         Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -420,7 +455,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                              IsInitiated@ConstructorMethods
+!                                                         IsInitiated@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -435,7 +470,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Display@IOMethods
+!                                                       AllocateSizes@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-06
+! summary:  Allocate the sizes of cellOrder and cellIA
+!
+!# AllocateSizes
+!
+! Allocate the sizes of cellOrder and cellIA
+
+INTERFACE
+  MODULE SUBROUTINE obj_AllocateSizes(obj)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_AllocateSizes
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Display@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -451,7 +504,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Display@IOMethods
+!                                                   DisplayCellOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -469,7 +522,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -485,7 +538,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                 ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -493,14 +546,14 @@ END INTERFACE
 ! summary:  Initiate kernel from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
-                                        filename, printToml, mesh)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, mesh, afile, &
+                                        filename, printToml)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
+    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-    CLASS(OneDimDomain_), OPTIONAL, INTENT(IN) :: mesh
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
@@ -529,7 +582,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             SetSparsity@SetSparsityMethods
+!                                                         SetSparsity@Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -544,52 +597,32 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetSparsity@SetMethod
+!                                                              SetFE@Methods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: This routine Set the sparsity pattern in [[CSRMatrix_]] object
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-22
+! summary: Set the finite element for a global element
 !
 !# Introduction
 !
-! This routine Sets the sparsity pattern in [[CSRMatrix_]] object.
+! This method sets the finite element for a given global element number.
+! This method transfer data from FEDOF to FE object. For example,
+! - It sets order of the finite element and quadrature
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity2(obj, col_OneDimFEDOF, cellToCell, mat, &
-                                     ivar, jvar)
+  MODULE SUBROUTINE obj_SetFE(obj, globalElement, islocal)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
-    !! Abstract mesh class
-    CLASS(OneDimFEDOF_), INTENT(INOUT) :: col_OneDimFEDOF
-    !! Abstract mesh class
-    INTEGER(I4B), INTENT(IN) :: cellToCell(:)
-    !! cell To Cell connectivity between mesh of obj and col_OneDimFEDOF
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-    !! [[CSRMatrix_]] object
-    INTEGER(I4B), INTENT(IN) :: ivar
-    !! physical variable in row
-    INTEGER(I4B), INTENT(IN) :: jvar
-    !! physical variable in column
-  END SUBROUTINE obj_SetSparsity2
+    !! FEDOF object
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    !! global element number
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then global element is local element
+  END SUBROUTINE obj_SetFE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            SetSparsity@SetSparsityMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 12 Oct 2021
-! summary: Set sparsity in [[CSRMatrix_]] from [[AbstractDomain_]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetSparsity3(OneDimFEDOFs, mat)
-    CLASS(OneDimFEDOFPointer_), INTENT(INOUT) :: OneDimFEDOFs(:)
-    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
-  END SUBROUTINE obj_SetSparsity3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                     GetCaseName@GetMethods
+!                                                         GetCaseName@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -638,10 +671,14 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
 ! summary: Get the connectivity
+!
+!# GetConnectivity_
+!
+! Get the connectivity of an element.
 
 INTERFACE
- MODULE SUBROUTINE obj_GetConnectivity_(obj, ans, tsize, opt, globalElement, &
-                                         islocal)
+  MODULE SUBROUTINE obj_GetConnectivity_(obj, ans, tsize, opt, &
+                                         globalElement, islocal)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     !! OneDimFEDOF object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -712,7 +749,8 @@ END INTERFACE
 ! summary: Get total cell degree of freedom
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalCellDOF(obj, globalElement, islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalCellDOF(obj, globalElement, islocal) &
+    RESULT(ans)
     CLASS(OneDimFEDOF_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -777,7 +815,8 @@ END INTERFACE
 ! summary: Returns total number of dof in the OneDimFEDOF with opt filter
 
 INTERFACE
-MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalDOF3(obj, globalElement, opt, islocal) &
+    RESULT(ans)
     CLASS(OneDimFEDOF_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global or local element number
@@ -821,8 +860,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!                                                      GetCellOrder@GetMethods
+!                                                   GetCellOrder@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -830,19 +868,16 @@ END INTERFACE
 ! summary:  Get the order of cell
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetCellOrder(obj, cellOrder, tCellOrder, &
-                                     globalElement, islocal)
+  MODULE FUNCTION obj_GetCellOrder(obj, globalElement, islocal) RESULT(ans)
     CLASS(OneDimFEDOF_), INTENT(IN) :: obj
     !! OneDimFEDOF object
-    INTEGER(I4B), INTENT(INOUT) :: cellOrder(:)
-    !! cell order
-    INTEGER(I4B), INTENT(OUT) :: tCellOrder
-    !! size of data written in cellOrder
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global or local element number
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     !! if true then globalElement is local element
-  END SUBROUTINE obj_GetCellOrder
+    INTEGER(I4B) :: ans
+    !! cell order
+  END FUNCTION obj_GetCellOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -855,9 +890,43 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetMaxTotalConnectivity(obj) RESULT(ans)
-    CLASS(OneDimFEDOF_), INTENT(IN) :: obj
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetMaxTotalConnectivity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetMaxTotalQuadraturePoints@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-17
+! summary: Get maximum number of quadrature points in an element
+!
+!# GetMaxTotalQuadraturePoints
+!
+! This method returns the maximum number of quadrature points in an element
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalQuadraturePoints(obj) RESULT(ans)
+    CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       GetFEPointer@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-10-21
+! summary:  Get the finite element pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetFEPointer(obj) RESULT(ans)
+    CLASS(OneDimFEDOF_), INTENT(IN) :: obj
+    CLASS(AbstractOneDimFE_), POINTER :: ans
+  END FUNCTION obj_GetFEPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
