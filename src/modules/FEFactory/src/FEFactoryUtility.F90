@@ -74,17 +74,13 @@ END INTERFACE FEFactory
 ! summary:  Internal routine for creating pointer form baseContinuity
 ! and baseInterpolation
 
-INTERFACE
+INTERFACE OneDimFEFactory
   MODULE FUNCTION OneDimFEFactory1(baseContinuity, baseInterpolation) &
     RESULT(ans)
     CHARACTER(*), INTENT(IN) :: baseContinuity
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     CLASS(AbstractOneDimFE_), POINTER :: ans
   END FUNCTION OneDimFEFactory1
-END INTERFACE
-
-INTERFACE OneDimFEFactory
-  MODULE PROCEDURE OneDimFEFactory1
 END INTERFACE OneDimFEFactory
 
 !----------------------------------------------------------------------------
@@ -97,5 +93,9 @@ INTERFACE OneDimFEFactory
     CLASS(AbstractOneDimFE_), POINTER :: ans
   END FUNCTION OneDimFEFactory2
 END INTERFACE OneDimFEFactory
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE FEFactoryUtility

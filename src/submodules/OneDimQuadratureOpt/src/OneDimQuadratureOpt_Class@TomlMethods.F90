@@ -348,7 +348,8 @@ CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+                  'the toml file :: cannot find ['// &
+                  tomlName//"] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node)
