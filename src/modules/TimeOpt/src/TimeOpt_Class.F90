@@ -38,48 +38,34 @@ PUBLIC :: TimeOpt_, TypeTimeOpt
 TYPE :: TimeOpt_
   LOGICAL(LGT) :: isInit = math%no
   !! Flag to check if the object is initialized or not
-
   INTEGER(I4B) :: static = math%zero_i
   !! PDE defines a Static problem
-
   INTEGER(I4B) :: steady = math%zero_i
   !! PDE defines a Static problem
-
   INTEGER(I4B) :: pseudostatic = math%one_i
   !! PDE defines a Static problem
-
   INTEGER(I4B) :: transient = math%two_i
   !! PDE defines a Transient problem
-
   INTEGER(I4B) :: dynamic = math%two_i
   !! PDE defines a Transient problem
-
   INTEGER(I4B) :: default = math%two_i
   !! Default time dependency
-
   INTEGER(I4B) :: timeDependency = math%two_i
   !! time dependency of the problem
   !! it can be set to one of the following
   !! static, steady, pseudostatic, transient, dynamic
-
   CHARACTER(9) :: default_char = "TRANSIENT"
   !! Default time dependency
-
   INTEGER(I4B) :: totalTimeSteps = math%one_i
   !! Total number of time steps
-
   INTEGER(I4B) :: currentTimeStep = math%one_i
   !! Current time step
-
   REAL(DFP) :: currentTime = math%zero
   !! Current time
-
   REAL(DFP) :: dt = math%zero
   !! Time step
-
   REAL(DFP) :: startTime = math%zero
   !! Start time
-
   REAL(DFP) :: endTime = math%zero
   !! End time
 
