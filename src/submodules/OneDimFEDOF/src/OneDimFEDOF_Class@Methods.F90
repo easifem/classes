@@ -81,7 +81,6 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
-LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
@@ -92,19 +91,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = math%yes
-obj%mesh => mesh
-obj%tCells = obj%mesh%GetTotalElements()
-obj%tNodes = obj%mesh%GetTotalVertexNodes()
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(obj%mesh)
-CALL AssertError1(isok, myName, "mesh is not associated")
-#endif
-
 obj%scaleForQuadOrder = Input(option=scaleForQuadOrder, default=math%two_i)
-
-CALL obj%AllocateSizes()
-CALL obj%SetCellOrder(order=order, islocal=islocal)
 
 ! make fe
 obj%fe => OneDimFEFactory(baseInterpolation=baseInterpolation, &
@@ -122,6 +109,12 @@ CALL obj%fe%Initiate( &
 obj%baseInterpolation = obj%fe%GetBaseInterpolation()
 obj%baseContinuity = obj%fe%GetBaseContinuity()
 IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
+
+obj%mesh => mesh
+obj%tCells = obj%mesh%GetTotalElements()
+obj%tNodes = obj%mesh%GetTotalVertexNodes()
+CALL obj%AllocateSizes()
+CALL obj%SetCellOrder(order=order, islocal=islocal)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -878,9 +871,10 @@ ELSE
 
   DO ii = 1, tsize
     isok = obj%mesh%IsElementPresent(globalElement=ii, islocal=islocal)
-    IF (.NOT. isok) CYCLE
-    jj = obj%mesh%GetLocalElemNumber(globalElement=ii, islocal=islocal)
-    obj%cellOrder(jj) = order(ii)
+    IF (isok) THEN
+      jj = obj%mesh%GetLocalElemNumber(globalElement=ii, islocal=islocal)
+      obj%cellOrder(jj) = order(ii)
+    END IF
   END DO
 
 END IF
@@ -892,13 +886,14 @@ obj%cellIA(1) = obj%tNodes + 1
 obj%tdof = obj%tNodes
 DO ii = 1, obj%tCells
   isok = obj%mesh%IsElementPresent(globalElement=ii, islocal=islocal)
-  IF (.NOT. isok) CYCLE
-  jj = obj%mesh%GetLocalElemNumber(globalElement=ii, islocal=islocal)
+  IF (isok) THEN
+    jj = obj%mesh%GetLocalElemNumber(globalElement=ii, islocal=islocal)
 
-  tsize = MAX(obj%cellOrder(jj) - 1, 0)
-  obj%tdof = obj%tdof + tsize
+    tsize = MAX(obj%cellOrder(jj) - 1, 0)
+    obj%tdof = obj%tdof + tsize
 
-  obj%cellIA(jj + 1) = obj%cellIA(jj) + tsize
+    obj%cellIA(jj + 1) = obj%cellIA(jj) + tsize
+  END IF
 END DO
 
 #ifdef DEBUG_VER

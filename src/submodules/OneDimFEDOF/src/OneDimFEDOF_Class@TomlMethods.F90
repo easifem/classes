@@ -97,10 +97,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 obj%isInit = math%yes
-obj%mesh => mesh
-obj%tCells = obj%mesh%GetTotalElements()
-obj%tNodes = obj%mesh%GetTotalVertexNodes()
-
+CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table)
 islocal = math%no
 CALL ImportOrderFromToml(table=table, order=order, islocal=islocal, &
                          isFound=isFound)
@@ -108,11 +105,6 @@ CALL ImportOrderFromToml(table=table, order=order, islocal=islocal, &
 #ifdef DEBUG_VER
 CALL AssertError1(isFound, myName, "order not found in toml table")
 #endif
-
-CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table)
-
-CALL obj%AllocateSizes()
-CALL obj%SetCellOrder(order=order, islocal=islocal)
 
 ! make fe
 obj%fe => OneDimFEFactory(table=table)
@@ -123,7 +115,13 @@ obj%baseInterpolation = obj%fe%GetBaseInterpolation()
 obj%baseContinuity = obj%fe%GetBaseContinuity()
 IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
 
-DEALLOCATE (order)
+obj%mesh => mesh
+obj%tCells = obj%mesh%GetTotalElements()
+obj%tNodes = obj%mesh%GetTotalVertexNodes()
+CALL obj%AllocateSizes()
+CALL obj%SetCellOrder(order=order, islocal=islocal)
+
+IF (ALLOCATED(order)) DEALLOCATE (order)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

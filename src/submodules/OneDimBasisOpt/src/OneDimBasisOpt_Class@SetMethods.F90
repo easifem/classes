@@ -19,6 +19,10 @@ SUBMODULE(OneDimBasisOpt_Class) SetMethods
 USE StringUtility, ONLY: UpperCase
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

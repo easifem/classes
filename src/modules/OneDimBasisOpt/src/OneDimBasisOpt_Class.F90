@@ -26,14 +26,10 @@ USE ExceptionHandler_Class, ONLY: e
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: OneDimBasisOpt_, TypeOneDimBasisOpt
-
-CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class"
 
 !----------------------------------------------------------------------------
 !                                                             BasisOpt_Class

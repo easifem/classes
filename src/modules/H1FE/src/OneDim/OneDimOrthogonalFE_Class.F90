@@ -17,13 +17,10 @@
 MODULE OneDimOrthogonalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-USE BaseType, ONLY: QuadraturePoint_, &
-                    ElemShapedata_
-
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapedata_
 USE ExceptionHandler_Class, ONLY: e
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: OneDimOrthogonalFE_
@@ -31,10 +28,8 @@ PUBLIC :: OneDimOrthogonalFEPointer_
 PUBLIC :: FiniteElementDeallocate
 PUBLIC :: OneDimOrthogonalFEPointer
 
-CHARACTER(*), PARAMETER :: modName = "OneDimOrthogonalFE_Class"
-
 !----------------------------------------------------------------------------
-!                                                      OneDimOrthogonalFE_
+!                                                        OneDimOrthogonalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

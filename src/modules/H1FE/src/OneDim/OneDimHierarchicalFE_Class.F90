@@ -17,21 +17,16 @@
 MODULE OneDimHierarchicalFE_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-USE BaseType, ONLY: QuadraturePoint_, &
-                    ElemShapedata_
-
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapedata_
 USE ExceptionHandler_Class, ONLY: e
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: OneDimHierarchicalFE_
 PUBLIC :: OneDimHierarchicalFEPointer_
 PUBLIC :: FiniteElementDeallocate
 PUBLIC :: OneDimHierarchicalFEPointer
-
-CHARACTER(*), PARAMETER :: modName = "OneDimHierarchicalFE_Class"
 
 !----------------------------------------------------------------------------
 !                                                      OneDimHierarchicalFE_

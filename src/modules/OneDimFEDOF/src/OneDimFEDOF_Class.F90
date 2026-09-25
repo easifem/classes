@@ -209,15 +209,13 @@ END TYPE OneDimFEDOFPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1( &
-    obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
+    obj, order, baseContinuity, baseInterpolation, fetype, ipType, &
     basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
     quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
-    scaleForQuadOrder)
+    scaleForQuadOrder, mesh)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
-    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
-    !! cell mesh
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
@@ -257,6 +255,8 @@ INTERFACE
     !! Ultraspherical parameter for quadrature
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: scaleForQuadOrder
     !! scale for order of quadrature
+    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
+    !! cell mesh
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -275,18 +275,16 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &
-    obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
+    obj, order, baseContinuity, baseInterpolation, fetype, ipType, &
     basisType, alpha, beta, lambda, islocal, quadratureType, &
     quadratureOrder, quadratureNips, quadratureAlpha, quadratureBeta, &
-    quadratureLambda, scaleForQuadOrder)
+    quadratureLambda, scaleForQuadOrder, mesh)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     !! Finite degree of freedom object
     INTEGER(I4B), INTENT(IN) :: order(:)
     !! Inhomogeneous value of order
     !! This is order of each cell element
     !! see the note on islocal
-    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
-    !! cell mesh
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis (regularity)
     !! Read the docs of AbstractOneDimFE
@@ -338,6 +336,8 @@ INTERFACE
     !! Ultraspherical parameter for quadrature
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: scaleForQuadOrder
     !! scale for order of quadrature
+    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
+    !! cell mesh
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -361,18 +361,16 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate3( &
-    obj, order, mesh, baseContinuity, baseInterpolation, fetype, ipType, &
+    obj, order, baseContinuity, baseInterpolation, fetype, ipType, &
     basisType, alpha, beta, lambda, quadratureType, quadratureOrder, &
     quadratureNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
-    scaleForQuadOrder)
+    scaleForQuadOrder, mesh)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order(:, :)
     !! The number of columns in order is equal to total number of elements
     !! The number of rows in order is equal to 2
     !! The first row contains the global element number
     !! the second rows contains the order of that element
-    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
-    !! mesh
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis function
     !! Read the docs of AbstractOneDimFE
@@ -417,6 +415,8 @@ INTERFACE
     !! Ultraspherical parameter for quadrature
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: scaleForQuadOrder
     !! scale for order of quadrature
+    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
+    !! mesh
   END SUBROUTINE obj_Initiate3
 END INTERFACE
 
@@ -550,7 +550,7 @@ INTERFACE
                                         filename, printToml)
     CLASS(OneDimFEDOF_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
-    CLASS(OneDimDomain_), TARGET, INTENT(IN) :: mesh
+    CLASS(OneDimDomain_), OPTIONAL, TARGET, INTENT(IN) :: mesh
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml

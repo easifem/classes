@@ -61,6 +61,34 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate1
 
 !----------------------------------------------------------------------------
+!                                                               ChangeDomain
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ChangeDomain
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ChangeDomain()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+obj%domain(1:2) = domain(1:2)
+IF (obj%isElemLengthUniform) THEN
+  obj%elemLength(1) = (domain(2) - domain(1)) &
+                      / REAL(obj%totalElements, kind=DFP)
+END IF
+obj%xij = math%zero
+CALL obj%SetNodeCoord()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ChangeDomain
+
+!----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
@@ -714,6 +742,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetNodeCoord
+
+!----------------------------------------------------------------------------
+!                                                        GetElemNumFromCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetElemNumFromCoord
+LOGICAL(LGT) :: found
+INTEGER(I4B) :: lo, hi, mid
+
+ans = -1
+! not found / out of range
+
+IF ((nodeCoord < obj%nodeCoord(1)) &
+    .OR. (nodeCoord > obj%nodeCoord(obj%totalNodes))) RETURN
+
+lo = 1
+hi = obj%totalNodes - 1
+
+found = math%no
+mainloop: DO WHILE (lo <= hi)
+  mid = (lo + hi) / 2
+  IF ((nodeCoord >= obj%nodeCoord(mid)) &
+      .AND. (nodeCoord <= obj%nodeCoord(mid + 1))) THEN
+    ans = mid
+    found = math%yes
+  ELSE IF (nodeCoord < obj%nodeCoord(mid)) THEN
+    hi = mid - 1
+  ELSE
+    lo = mid + 1
+  END IF
+
+  IF (found) THEN
+    EXIT mainloop
+  END IF
+END DO mainloop
+END PROCEDURE obj_GetElemNumFromCoord
 
 !----------------------------------------------------------------------------
 !                                                                     Error

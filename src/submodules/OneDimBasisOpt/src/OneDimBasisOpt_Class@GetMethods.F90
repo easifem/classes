@@ -22,6 +22,7 @@ USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
 USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
 USE LineInterpolationUtility, ONLY: LagrangeEvalAll_Line_
 USE LineInterpolationUtility, ONLY: LagrangeGradientEvalAll_Line_
+USE LineInterpolationUtility, ONLY: LagrangeLaplacianEvalAll_Line_
 USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_
 USE LineInterpolationUtility, ONLY: HeirarchicalBasisGradient_Line_
 USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_
@@ -33,12 +34,12 @@ USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ReallocateUtility, ONLY: Reallocate
 USE SwapUtility, ONLY: SWAP_
 ! USE ReverseUtility, ONLY: Reverse
+USE Display_Method, ONLY: Display
+IMPLICIT NONE
 
 #ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
+CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class@GetMethods.F90"
 #endif
-
-IMPLICIT NONE
 
 CONTAINS
 
@@ -392,6 +393,24 @@ CALL LagrangeGradientEvalAll_Line_( &
 CALL SWAP_(a=elemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
            i1=2, i2=3, i3=1)
 
+! Laplacian
+CALL LagrangeLaplacianEvalAll_Line_( &
+  order=obj%order, &
+  x=quad%points(1:quad%txi, 1:nips), &
+  xij=obj%xij(1:indx(1), 1:indx(2)), &
+  ans=obj%temp(:, :, 1), &
+  nrow=indx(8), ncol=indx(9), &
+  coeff=obj%coeff(1:tdof, 1:tdof), &
+  xx=obj%xx(1:nips, 1:tdof), &
+  firstCall=math%no, &
+  basisType=obj%basisType, &
+  alpha=obj%alpha, beta=obj%beta, &
+  lambda=obj%lambda)
+
+DO CONCURRENT(ii=1:indx(9), jj=1:indx(8))
+  elemsd%NLaplacian(ii, jj) = obj%temp(jj, ii, 1)
+END DO
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -485,11 +504,6 @@ CALL Elemsd_Allocate( &
 CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
 
 CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
 
 CALL OrthogonalBasis_Line_( &
   order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &

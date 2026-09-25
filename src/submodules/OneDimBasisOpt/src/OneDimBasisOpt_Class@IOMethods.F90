@@ -19,6 +19,10 @@ SUBMODULE(OneDimBasisOpt_Class) IOMethods
 USE Display_Method, ONLY: Display
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

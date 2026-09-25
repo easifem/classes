@@ -22,8 +22,11 @@ USE TomlUtility, ONLY: GetValue
 USE FEVariable_Method, ONLY: FEVariable_ToInteger
 USE BaseInterpolation_Method, ONLY: BaseType_ToInteger
 USE BaseInterpolation_Method, ONLY: InterpolationPoint_ToInteger
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class@TomlMethods.F90"
+#endif
 
 CONTAINS
 
@@ -156,6 +159,7 @@ SUBROUTINE ImportBasisTypeFromToml(obj, table, origin, stat, basisType, &
     table=table, key="basisType", VALUE=basisType_char, &
     default_value=TypeOneDimBasisOpt%basisType_char, origin=origin, &
     stat=stat, isFound=isFound)
+
   basisType = BaseType_ToInteger(basisType_char%chars())
 
 #ifdef DEBUG_VER

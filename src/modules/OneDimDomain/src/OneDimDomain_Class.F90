@@ -89,6 +89,8 @@ CONTAINS
   !! Set the parameters of the object
   PROCEDURE, PUBLIC, PASS(obj) :: SetDomain => obj_SetDomain
   !! Set obj%domain
+  PROCEDURE, PUBLIC, PASS(obj) :: ChangeDomain => obj_ChangeDomain
+  !! Change obj%domain
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalElements => obj_SetTotalElements
   !! Set obj%totalElements
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalNodes => obj_SetTotalNodes
@@ -128,6 +130,9 @@ CONTAINS
   !! Is element present.
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => obj_GetNodeCoord
   !! Get nodal coordinates
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemNumFromCoord => &
+    obj_GetElemNumFromCoord
+  !! Get element number which contains a given node coord
 
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
@@ -142,7 +147,7 @@ END TYPE OneDimDomain_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-22
-! summary:  This method is used to initiate the object
+! summary: This method is used to initiate the object
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, domain, totalElements)
@@ -249,6 +254,21 @@ INTERFACE
     CLASS(OneDimDomain_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: domain(2)
   END SUBROUTINE obj_SetDomain
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ChangeDomain
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  This method Changes the domain of the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_ChangeDomain(obj, domain)
+    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: domain(2)
+  END SUBROUTINE obj_ChangeDomain
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -536,6 +556,18 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     REAL(DFP) :: ans
   END FUNCTION obj_GetNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetElemNumFromCoord@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetElemNumFromCoord(obj, nodeCoord) RESULT(ans)
+    CLASS(OneDimDomain_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: nodeCoord
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetElemNumFromCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------

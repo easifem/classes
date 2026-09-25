@@ -198,13 +198,17 @@ CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno)
 isok = ASSOCIATED(obj%opt)
 CALL Display(isok, "opt ASSOCIATED: ", unitno=unitno)
 IF (isok) THEN
+  CALL Display(" ", unitno=unitno)
   CALL obj%opt%Display(msg="opt: ", unitno=unitno)
+  CALL Display(" ", unitno=unitno)
 END IF
 
 isok = ASSOCIATED(obj%fe)
 CALL Display(isok, "fe ASSOCIATED: ", unitno=unitno)
 IF (isok) THEN
+  CALL Display(" ", unitno=unitno)
   CALL obj%fe%Display(msg="fe: ", unitno=unitno)
+  CALL Display(" ", unitno=unitno)
 END IF
 
 #ifdef DEBUG_VER

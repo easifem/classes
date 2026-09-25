@@ -24,6 +24,11 @@ USE BaseInterpolation_Method, ONLY: InterpolationPoint_ToChar
 USE FEVariable_Method, ONLY: FEVariable_ToChar
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "OneDimBasisOpt_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
