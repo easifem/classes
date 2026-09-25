@@ -59,7 +59,6 @@ TYPE :: TimeFEDOF_
   !! maximum number of connectivity
   INTEGER(I4B) :: maxQuadPoint = 0
   !! maximum number of quadrature points
-
   CHARACTER(2) :: baseContinuity = "H1"
   !! continuity or conformity of basis defined on reference
   !! element, following values are allowed
@@ -70,15 +69,12 @@ TYPE :: TimeFEDOF_
   !! LAGR: LagrangeInterpolation
   !! HIER: HierarchyInterpolation
   !! ORTHO: OrthogonalInterpolation
-
   INTEGER(INT8) :: scaleForQuadOrder = 2_INT8
   !! Scale for quadrature order
   !! Quadrature order = element order * scaleForQuadOrder
   !! This is used for constructing the quadrature points
-
   INTEGER(INT8) :: cellOrder = 0
   !! Order of time element
-
   CLASS(TimeOpt_), POINTER :: opt => NULL()
   !! option related to the time domain discretization
   CLASS(AbstractOneDimFE_), POINTER :: fe => NULL()
