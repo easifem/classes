@@ -24,4 +24,7 @@ target_sources(
         ${src_path}/TDGAlgorithm1_Class@TomlMethods.F90
         ${src_path}/TDGAlgorithm2_Class@Methods.F90
         ${src_path}/TDGAlgorithm2_Class@TomlMethods.F90
+        ${src_path}/TDGAlgorithm3_Class@Methods.F90
+        ${src_path}/UvStfemAlgorithm_Class@Methods.F90
+        ${src_path}/UStfemAlgorithm_Class@Methods.F90
 )

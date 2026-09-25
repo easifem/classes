@@ -16,7 +16,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-SUBMODULE(TDGAlgorithm2_Class) ConstructorMethods
+SUBMODULE(TDGAlgorithm2_Class) Methods
 USE ApproxUtility, ONLY: OPERATOR(.approxeq.)
 USE InputUtility, ONLY: Input
 USE MassMatrix_Method, ONLY: MassMatrix_
@@ -544,4 +544,4 @@ END PROCEDURE obj_Display
 
 #include "../../include/errors.F90"
 
-END SUBMODULE ConstructorMethods
+END SUBMODULE Methods

@@ -37,7 +37,7 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER_TIME = 20
 !
 !----------------------------------------------------------------------------
 
-!> author: Shion Shimizu
+!> author: Vikas Sharma
 ! date: 2025-12-12
 ! summary:  Velocity based time discontinuous Galerkin algorithm
 

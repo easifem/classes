@@ -21,4 +21,7 @@ target_sources(
     PRIVATE
         ${src_path}/TDGAlgorithm1_Class.F90
         ${src_path}/TDGAlgorithm2_Class.F90
+        ${src_path}/TDGAlgorithm3_Class.F90
+        ${src_path}/UvStfemAlgorithm_Class.F90
+        ${src_path}/UStfemAlgorithm_Class.F90
 )
