@@ -17,6 +17,7 @@
 
 SUBMODULE(OneDimBasisOpt_Class) TomlMethods
 USE String_Class, ONLY: String
+USE Display_Method, ONLY: Display
 USE tomlf, ONLY: toml_get => get_value
 USE TomlUtility, ONLY: GetValue
 USE FEVariable_Method, ONLY: FEVariable_ToInteger
@@ -31,12 +32,141 @@ CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class@TomlMethods.F90"
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+INTEGER(I4B) :: origin, stat, order, ipType, basisType, feType
+LOGICAL(LGT) :: isFound, isSpectral
+TYPE(String) :: baseContinuity, baseInterpolation
+REAL(DFP) :: alpha, beta, lambda
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL ImportBaseInterpolationFromToml( &
+  table=table, origin=origin, stat=stat, &
+  baseInterpolation=baseInterpolation, isFound=isFound)
+
+CALL ImportBaseContinuityFromToml( &
+  table=table, origin=origin, stat=stat, &
+  baseContinuity=baseContinuity, isFound=isFound)
+
+CALL ImportIpTypeFromToml( &
+  table=table, origin=origin, stat=stat, ipType=ipType, &
+  isFound=isFound)
+
+CALL ImportBasisTypeFromToml( &
+  table=table, origin=origin, stat=stat, basisType=basisType, &
+  isFound=isFound)
+
+CALL ImportAlphaFromToml( &
+  table=table, origin=origin, stat=stat, alpha=alpha, &
+  isFound=isFound)
+
+CALL ImportBetaFromToml( &
+  table=table, origin=origin, stat=stat, beta=beta, &
+  isFound=isFound)
+
+CALL ImportLambdaFromToml( &
+  table=table, origin=origin, stat=stat, lambda=lambda, &
+  isFound=isFound)
+
+CALL ImportOrderFromToml( &
+  table=table, origin=origin, stat=stat, order=order, &
+  isFound=isFound)
+
+CALL ImportFeTypeFromToml( &
+  table=table, origin=origin, stat=stat, feType=feType, &
+  isFound=isFound)
+
+CALL ImportIsSpectralFromToml( &
+  table=table, origin=origin, stat=stat, isSpectral=isSpectral, &
+  isFound=isFound)
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Initiating obj without quadOpt...')
+#endif
+
+CALL obj%Initiate( &
+  baseContinuity=baseContinuity%chars(), &
+  baseInterpolation=baseInterpolation%chars(), &
+  feType=feType, &
+  ipType=ipType, &
+  basisType=basisType, &
+  alpha=alpha, beta=beta, lambda=lambda, &
+  order=order, &
+  isSpectral=isSpectral)
+
+IF (.NOT. obj%isSpectral) THEN
+  CALL ImportQuadOptFromToml( &
+    obj=obj, table=table, origin=origin, stat=stat, isFound=isFound)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
+#endif
+
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, stat
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
+#endif
+
+CALL GetValue(table=table, afile=afile, filename=filename)
+
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
+              stat=stat)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  'following error occured while reading '// &
+                  'the toml file :: cannot find ['//tomlName// &
+                  "] table in config.")
+#endif
+
+CALL obj%ImportFromToml(table=node)
+
+node => NULL()
+DEALLOCATE (table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
+#endif
+
+END PROCEDURE obj_ImportFromToml2
+
+!----------------------------------------------------------------------------
 !                                             ImportBaseInterpolationFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportBaseInterpolationFromToml(obj, table, origin, stat, &
+SUBROUTINE ImportBaseInterpolationFromToml(table, origin, stat, &
                                            baseInterpolation, isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   TYPE(String), INTENT(INOUT) :: baseInterpolation
@@ -66,9 +196,8 @@ END SUBROUTINE ImportBaseInterpolationFromToml
 !                                                ImportBaseContinuityFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportBaseContinuityFromToml(obj, table, origin, stat, &
+SUBROUTINE ImportBaseContinuityFromToml(table, origin, stat, &
                                         baseContinuity, isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   TYPE(String), INTENT(INOUT) :: baseContinuity
@@ -98,9 +227,8 @@ END SUBROUTINE ImportBaseContinuityFromToml
 !                                                        ImportIpTypeFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportIpTypeFromToml(obj, table, origin, stat, ipType, &
+SUBROUTINE ImportIpTypeFromToml(table, origin, stat, ipType, &
                                 isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   INTEGER(I4B), INTENT(INOUT) :: ipType
@@ -136,9 +264,8 @@ END SUBROUTINE ImportIpTypeFromToml
 !                                                     ImportBasisTypeFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportBasisTypeFromToml(obj, table, origin, stat, basisType, &
+SUBROUTINE ImportBasisTypeFromToml(table, origin, stat, basisType, &
                                    isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   INTEGER(I4B), INTENT(INOUT) :: basisType
@@ -172,8 +299,7 @@ END SUBROUTINE ImportBasisTypeFromToml
 !                                                         ImportAlphaFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportAlphaFromToml(obj, table, origin, stat, alpha, isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+SUBROUTINE ImportAlphaFromToml(table, origin, stat, alpha, isFound)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   REAL(DFP), INTENT(INOUT) :: alpha
@@ -202,8 +328,7 @@ END SUBROUTINE ImportAlphaFromToml
 !                                                          ImportBetaFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportBetaFromToml(obj, table, origin, stat, beta, isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+SUBROUTINE ImportBetaFromToml(table, origin, stat, beta, isFound)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   REAL(DFP), INTENT(INOUT) :: beta
@@ -232,8 +357,7 @@ END SUBROUTINE ImportBetaFromToml
 !                                                        ImportLambdaFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportLambdaFromToml(obj, table, origin, stat, lambda, isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+SUBROUTINE ImportLambdaFromToml(table, origin, stat, lambda, isFound)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   REAL(DFP), INTENT(INOUT) :: lambda
@@ -262,8 +386,7 @@ END SUBROUTINE ImportLambdaFromToml
 !                                                         ImportOrderFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportOrderFromToml(obj, table, origin, stat, order, isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+SUBROUTINE ImportOrderFromToml(table, origin, stat, order, isFound)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   INTEGER(I4B), INTENT(INOUT) :: order
@@ -292,8 +415,7 @@ END SUBROUTINE ImportOrderFromToml
 !                                                        ImportFeTypeFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportFeTypeFromToml(obj, table, origin, stat, feType, isFound)
-  CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+SUBROUTINE ImportFeTypeFromToml(table, origin, stat, feType, isFound)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), INTENT(INOUT) :: origin, stat
   INTEGER(I4B), INTENT(INOUT) :: feType
@@ -390,128 +512,39 @@ SUBROUTINE ImportQuadOptFromToml(obj, table, origin, stat, isFound)
 END SUBROUTINE ImportQuadOptFromToml
 
 !----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
+!                                                   ImportIsSpectralFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml1
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
-#endif
-
-INTEGER(I4B) :: origin, stat, order, ipType, basisType, feType
-LOGICAL(LGT) :: isFound
-TYPE(String) :: baseContinuity, baseInterpolation
-REAL(DFP) :: alpha, beta, lambda
+SUBROUTINE ImportIsSpectralFromToml(table, origin, stat, isSpectral, &
+                                    isFound)
+  TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+  LOGICAL(LGT), INTENT(INOUT) :: isSpectral
+  LOGICAL(LGT), INTENT(INOUT) :: isFound
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CHARACTER(*), PARAMETER :: myName = "ImportIsSpectralFromToml()"
 #endif
-
-CALL ImportBaseInterpolationFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, &
-  baseInterpolation=baseInterpolation, isFound=isFound)
-
-CALL ImportBaseContinuityFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, &
-  baseContinuity=baseContinuity, isFound=isFound)
-
-CALL ImportIpTypeFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, ipType=ipType, &
-  isFound=isFound)
-
-CALL ImportBasisTypeFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, basisType=basisType, &
-  isFound=isFound)
-
-CALL ImportAlphaFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, alpha=alpha, &
-  isFound=isFound)
-
-CALL ImportBetaFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, beta=beta, &
-  isFound=isFound)
-
-CALL ImportLambdaFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, lambda=lambda, &
-  isFound=isFound)
-
-CALL ImportOrderFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, order=order, &
-  isFound=isFound)
-
-CALL ImportFeTypeFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, feType=feType, &
-  isFound=isFound)
 
 #ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Initiating obj without quadOpt...')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
 #endif
-
-CALL obj%Initiate( &
-  baseContinuity=baseContinuity%chars(), &
-  baseInterpolation=baseInterpolation%chars(), &
-  feType=feType, &
-  ipType=ipType, &
-  basisType=basisType, &
-  alpha=alpha, beta=beta, lambda=lambda, &
-  order=order)
-
-CALL ImportQuadOptFromToml( &
-  obj=obj, table=table, origin=origin, stat=stat, isFound=isFound)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Reading isSpectral from toml...')
 #endif
 
-END PROCEDURE obj_ImportFromToml1
-
-!----------------------------------------------------------------------------
-!                                                   ImportFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-LOGICAL(LGT) :: isok
-#endif
-
-TYPE(toml_table), ALLOCATABLE :: table
-TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+  CALL GetValue( &
+    table=table, key="isSpectral", VALUE=isSpectral, origin=origin, &
+    stat=stat, default_value=TypeOneDimBasisOpt%isSpectral, isFound=isFound)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
-
-CALL GetValue(table=table, afile=afile, filename=filename)
-
-node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
-              stat=stat)
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(node)
-CALL AssertError1(isok, myName, &
-                  'following error occured while reading '// &
-                  'the toml file :: cannot find ['//tomlName// &
-                  "] table in config.")
-#endif
-
-CALL obj%ImportFromToml(table=node)
-
-node => NULL()
-DEALLOCATE (table)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-
-END PROCEDURE obj_ImportFromToml2
+END SUBROUTINE ImportIsSpectralFromToml
 
 !----------------------------------------------------------------------------
 !

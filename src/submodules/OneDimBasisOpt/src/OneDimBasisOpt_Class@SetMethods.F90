@@ -55,6 +55,7 @@ IF (PRESENT(lambda)) obj%lambda = lambda
 IF (PRESENT(firstCall)) obj%firstCall = firstCall
 IF (PRESENT(dofType)) obj%dofType = dofType
 IF (PRESENT(transformType)) obj%transformType = transformType
+IF (PRESENT(isSpectral)) obj%isSpectral = isSpectral
 
 CALL obj%quadOpt%SetParam( &
   quadratureType=quadratureType, order=quadratureOrder, &
@@ -102,12 +103,20 @@ MODULE PROCEDURE obj_SetQuadratureOrder
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureOrder()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%quadOpt%SetOrder(order=order)
+isok = obj%isSpectral .AND. (obj%baseInterpolation .EQ. "LAGR")
+
+IF (isok) THEN
+  CALL obj%quadOpt%SetNips(nips=obj%tdof)
+ELSE
+  CALL obj%quadOpt%SetOrder(order=order)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -125,13 +134,22 @@ MODULE PROCEDURE obj_SetQuadratureType
 CHARACTER(*), PARAMETER :: myName = "obj_SetQuadratureType()"
 #endif
 
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%quadOpt%SetQuadratureType( &
-  quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
+isok = obj%isSpectral .AND. (obj%baseInterpolation .EQ. "LAGR")
+
+IF (isok) THEN
+  CALL obj%quadOpt%SetQuadratureType( &
+    quadratureType=obj%ipType, alpha=alpha, beta=beta, lambda=lambda)
+ELSE
+  CALL obj%quadOpt%SetQuadratureType( &
+    quadratureType=quadratureType, alpha=alpha, beta=beta, lambda=lambda)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
