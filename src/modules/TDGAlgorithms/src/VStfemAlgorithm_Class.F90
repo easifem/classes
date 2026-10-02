@@ -14,7 +14,7 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-MODULE UStfemAlgorithm_Class
+MODULE VStfemAlgorithm_Class
 USE GlobalData, ONLY: I4B, DFP, LGT
 USE TxtFile_Class, ONLY: TxtFile_
 USE ExceptionHandler_Class, ONLY: e
@@ -26,22 +26,22 @@ USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 IMPLICIT NONE
 PRIVATE
 
-PUBLIC :: UStfemAlgorithm_
+PUBLIC :: VStfemAlgorithm_
 
 !----------------------------------------------------------------------------
-!                                                           UStfemAlgorithm_
+!                                                           VStfemAlgorithm_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma
 ! date: 2025-12-12
 ! summary:  Displacement based time discontinuous Galerkin algorithm
 !
-!# UStfemAlgorithm_
+!# VStfemAlgorithm_
 !
 ! This is like TDGAlgorithm3_ but in this case stiffMatCoeff is not
 ! identity
 
-TYPE :: UStfemAlgorithm_
+TYPE :: VStfemAlgorithm_
   LOGICAL(LGT) :: isInit = math%no
   !! Flag to check if the object is initiated
   INTEGER(I4B) :: nrow = math%zero_i, ncol = math%zero_i
@@ -61,7 +61,7 @@ TYPE :: UStfemAlgorithm_
   REAL(DFP), ALLOCATABLE, DIMENSION(:) :: rhs_m_u1, rhs_k_u1, rhs_c_u1, &
                                           rhs_m_v1, rhs_k_v1, rhs_c_v1, &
                                           initialGuess, jumpDis, jumpVel, &
-                                          dis, vel, acc, kt_inv_tn
+                                          dis, vel, acc
   !! initialGuess: coefficient for initial guess of solution
   !! jumpDis: coefficient for computing jump of displacement
   !!          jumpDisp = jumpDis(1)*Un+jumpDis(2)*Vn*dt +jumpDis(3)*An*dt^2 &
@@ -101,8 +101,7 @@ TYPE :: UStfemAlgorithm_
   !!      acc(3) coefficient of acceleration at time tn
   !!      acc(4:MAX_ORDER_TIME+4) coefficient of solution dof at t1, t2, ...
   REAL(DFP), ALLOCATABLE, DIMENSION(:, :) :: massMatCoeff, dampMatCoeff, &
-                                             stiffMatCoeff, forceCoeff, mt, &
-                                             kt_inv, kt_inv_mt, kt
+                                             stiffMatCoeff, forceCoeff
   !! mt: (T,dTdt)_In + TnxTn
   !! kt: (T,T)_In
   !! invKt: inverse of kt matrix
@@ -118,7 +117,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
-END TYPE UStfemAlgorithm_
+END TYPE VStfemAlgorithm_
 
 !----------------------------------------------------------------------------
 !                                                        IsInitiated@Methods
@@ -130,7 +129,7 @@ END TYPE UStfemAlgorithm_
 
 INTERFACE
   MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
-    CLASS(UStfemAlgorithm_), INTENT(IN) :: obj
+    CLASS(VStfemAlgorithm_), INTENT(IN) :: obj
     LOGICAL(LGT) :: ans
   END FUNCTION obj_IsInitiated
 END INTERFACE
@@ -145,7 +144,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_AllocateData(obj, nnt)
-    CLASS(UStfemAlgorithm_), INTENT(INOUT) :: obj
+    CLASS(VStfemAlgorithm_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: nnt
   END SUBROUTINE obj_AllocateData
 END INTERFACE
@@ -160,7 +159,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, alpha, scalingOpt)
-    CLASS(UStfemAlgorithm_), INTENT(INOUT) :: obj
+    CLASS(VStfemAlgorithm_), INTENT(INOUT) :: obj
     TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
     CHARACTER(1), OPTIONAL, INTENT(IN) :: scalingOpt
@@ -173,11 +172,11 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-06
-! summary: Reset the UStfemAlgorithm_ object to zero values
+! summary: Reset the VStfemAlgorithm_ object to zero values
 
 INTERFACE
   MODULE SUBROUTINE obj_MakeZeros(obj)
-    CLASS(UStfemAlgorithm_), INTENT(INOUT) :: obj
+    CLASS(VStfemAlgorithm_), INTENT(INOUT) :: obj
     ! internal varibales
     REAL(DFP), PARAMETER :: myzero = 0.0_DFP
   END SUBROUTINE obj_MakeZeros
@@ -193,7 +192,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(UStfemAlgorithm_), INTENT(INOUT) :: obj
+    CLASS(VStfemAlgorithm_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
   END SUBROUTINE obj_Display
@@ -209,7 +208,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
-    CLASS(UStfemAlgorithm_), INTENT(INOUT) :: obj
+    CLASS(VStfemAlgorithm_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
 END INTERFACE
 
@@ -217,4 +216,4 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
-END MODULE UStfemAlgorithm_Class
+END MODULE VStfemAlgorithm_Class

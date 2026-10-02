@@ -53,3 +53,4 @@ settings.json
 TODO.md
 
 tui-journal
+.cache/
