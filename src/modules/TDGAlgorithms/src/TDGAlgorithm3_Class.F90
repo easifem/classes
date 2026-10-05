@@ -104,7 +104,8 @@ TYPE :: TDGAlgorithm3_
                                             invKt = math%zero, &
                                             massMatCoeff = math%zero, &
                                             dampMatCoeff = math%zero, &
-                                            stiffMatCoeff = math%zero
+                                            stiffMatCoeff = math%zero, &
+                                            forceCoeff = math%zero
   !! mt: (T,dTdt)_In + TnxTn
   !! kt: (T,T)_In
   !! invKt: inverse of kt matrix
@@ -164,10 +165,11 @@ END INTERFACE
 ! summary: Initiate Newmark-Beta method
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, alpha)
+  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, alpha, scalingOpt)
     CLASS(TDGAlgorithm3_), INTENT(INOUT) :: obj
     TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: scalingOpt
   END SUBROUTINE obj_Initiate
 END INTERFACE
 

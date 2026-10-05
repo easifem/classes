@@ -83,6 +83,8 @@ CALL MassMatrix_(test=elemsd, trial=elemsd, ans=obj%kt, nrow=ii, &
 ! Calculate inverse of kt
 CALL GetInvMat(A=obj%kt(1:nns, 1:nns), invA=obj%invKt(1:nns, 1:nns))
 
+obj%forceCoeff(1:nns, 1:nns) = obj%invKt(1:nns, 1:nns)
+
 ! make mt: part 1: (T, dT/dt)_In
 obj%mt(1:nns, 1:nns) = math%zero
 CALL MassMatrix_(N=elemsd%N, &
