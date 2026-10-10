@@ -22,7 +22,6 @@ USE GlobalData, ONLY: DFP, I4B, LGT, INT8
 USE ExceptionHandler_Class, ONLY: e
 USE BaseType, ONLY: QuadraturePoint_, ElemshapeData_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-USE TimeOpt_Class, ONLY: TimeOpt_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
 
@@ -75,16 +74,12 @@ TYPE :: TimeFEDOF_
   !! This is used for constructing the quadrature points
   INTEGER(INT8) :: cellOrder = 0
   !! Order of time element
-  CLASS(TimeOpt_), POINTER :: opt => NULL()
-  !! option related to the time domain discretization
   CLASS(AbstractOneDimFE_), POINTER :: fe => NULL()
   !! pointer to finite element object
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
   !! pyramid
 
 CONTAINS
-  PRIVATE
-
   !CONSTRUCTOR:
   !@ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
@@ -101,9 +96,9 @@ CONTAINS
   !@IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of TimeFEDOF
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Import from toml file
@@ -115,8 +110,6 @@ CONTAINS
   !! baseContinuity+baseInterpolation
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
   !! Retuns the total degrees of freedom in TimeFEDOF
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeOptPointer => obj_GetTimeOptPointer
-  !! Get the pointer to timeOpt
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
@@ -155,12 +148,12 @@ END TYPE TimeFEDOFPointer_
 ! date: 2024-05-14
 ! summary: Initiate an instance of fe dof
 !
-!# Introduction
+!# Initiate
 ! This method makes order0(1) from order and calls obj_Initiate2.
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
-    obj, order, timeOpt, baseContinuity, baseInterpolation, feType, ipType, &
+    obj, order, baseContinuity, baseInterpolation, feType, ipType, &
     basisType, alpha, beta, lambda, dofType, transformType, &
     quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
     quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
@@ -168,8 +161,6 @@ INTERFACE
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: order
     !! homogeneous value of order
-    TYPE(TimeOpt_), TARGET, INTENT(IN) :: timeOpt
-    !! cell mesh
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of basis (regularity)
     CHARACTER(*), INTENT(IN) :: baseInterpolation
@@ -296,10 +287,9 @@ END INTERFACE
 ! summary:  Initiate param from the toml file
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, timeOpt)
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(TimeOpt_), TARGET, INTENT(IN) :: timeOpt
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -313,13 +303,12 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
-                                        filename, printToml, timeOpt)
+                                        filename, printToml)
     CLASS(TimeFEDOF_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-    CLASS(TimeOpt_), OPTIONAL, INTENT(IN) :: timeOpt
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
@@ -351,21 +340,6 @@ INTERFACE
     CLASS(TimeFEDOF_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetTotalDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetTimeOptPointer@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-05-23
-! summary: Get the pointer to TimeOpt object
-
-INTERFACE
-  MODULE FUNCTION obj_GetTimeOptPointer(obj) RESULT(ans)
-    CLASS(TimeFEDOF_), INTENT(IN) :: obj
-    CLASS(TimeOpt_), POINTER :: ans
-  END FUNCTION obj_GetTimeOptPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -51,7 +51,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
-obj%opt => timeOpt
 
 ! cellOrder
 CALL ImportCellOrderFromToml(obj=obj, table=table, origin=origin, stat=stat)
@@ -121,7 +120,7 @@ CALL AssertError1(isok, myName, &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, timeOpt=timeOpt)
+CALL obj%ImportFromToml(table=node)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

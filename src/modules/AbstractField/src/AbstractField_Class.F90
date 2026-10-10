@@ -66,8 +66,6 @@ PUBLIC :: AbstractFieldImport
 PUBLIC :: AbstractFieldExport
 PUBLIC :: AbstractFieldDeallocate
 PUBLIC :: AbstractField_
-PUBLIC :: AbstractFieldReadFEDOFFromToml
-PUBLIC :: AbstractFieldReadTimeFEDOFFromToml
 
 !----------------------------------------------------------------------------
 !                                                           AbstractField_
@@ -161,7 +159,6 @@ TYPE, ABSTRACT :: AbstractField_
   !! are applied.
 
 CONTAINS
-  PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
@@ -183,17 +180,17 @@ CONTAINS
   !! Import data From hdf5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import data From toml file
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import data From toml file
-  PROCEDURE, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
   !! Import data From toml file
-  PROCEDURE, PASS(obj) :: ImportFromToml4 => obj_ImportFromToml4
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml4 => obj_ImportFromToml4
   !! Import data From toml file
-  PROCEDURE, PASS(obj) :: ImportFromToml5 => obj_ImportFromToml5
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml5 => obj_ImportFromToml5
   !! Import data From toml file
-  PROCEDURE, PASS(obj) :: ImportFromToml6 => obj_ImportFromToml6
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml6 => obj_ImportFromToml6
   !! Import data From toml file
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2, &
     ImportFromToml3, ImportFromToml4, ImportFromToml5, ImportFromToml6
@@ -252,18 +249,18 @@ CONTAINS
     obj_isConstant
   !! It returns true if the field is constant field
   !!  This routine should be implemented by child classes
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetFEDOFPointer1 => &
     obj_GetFEDOFPointer1
   !! Get the FEDOF pointer, a single pointer is returned
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer2 => &
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetFEDOFPointer2 => &
     obj_GetFEDOFPointer2
   !! Get the fedof pointer, a vector of pointers is returned
   GENERIC, PUBLIC :: GetFEDOFPointer => GetFEDOFPointer1, &
     GetFEDOFPointer2
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer1 => &
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetTimeFEDOFPointer1 => &
     obj_GetTimeFEDOFPointer1
   !! Get the timefedof pointer, a single pointer is returned
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer2 => &
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetTimeFEDOFPointer2 => &
     obj_GetTimeFEDOFPointer2
   !! Get the TimeFEDOF pointer, a vector of pointers is returned
   GENERIC, PUBLIC :: GetTimeFEDOFPointer => GetTimeFEDOFPointer1, &
@@ -287,7 +284,7 @@ CONTAINS
   !! Get the mesh field corresponding to abstract field
   PROCEDURE, PASS(obj) :: &
     GetMaxTotalNodeNumForBC1 => obj_GetMaxTotalNodeNumForBC1
-  PROCEDURE, PASS(obj) :: &
+  PROCEDURE, PRIVATE, PASS(obj) :: &
     GetMaxTotalNodeNumForBC2 => obj_GetMaxTotalNodeNumForBC2
   !! Get the maximum node number for applying boundary conditions
   !! This will call GetTotalNodeNum on every dbc, nbc, nbc_point
@@ -296,34 +293,34 @@ CONTAINS
   GENERIC, PUBLIC :: GetMaxTotalNodeNumForBC => &
     GetMaxTotalNodeNumForBC1, GetMaxTotalNodeNumForBC2
 
-  PROCEDURE, PASS(obj) :: GetTotalNodeLoc1 => &
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc1 => &
     obj_GetTotalNodeLoc1
   !! Get size of NodeLoc(globalNode, spaceCompo, timeCompo, ivar)
-  PROCEDURE, PASS(obj) :: GetTotalNodeLoc2 => &
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc2 => &
     obj_GetTotalNodeLoc2
   !! Get size of NodeLoc(AbstractBC, ivar)
-  PROCEDURE, PASS(obj) :: GetTotalNodeLoc3 => &
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc3 => &
     obj_GetTotalNodeLoc3
   !! Get size of NodeLoc(Vector of AbstractBCPointer, ivar)
   GENERIC, PUBLIC :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
     GetTotalNodeLoc3
   !! Generic method to get the size of NodeLoc
 
-  PROCEDURE, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
   !! Get location of global node number
-  PROCEDURE, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
   !! Get location of global node number from AbstractBC
-  PROCEDURE, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
   !! Get location of global node number from DirichletBCPointer
   GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2, &
     GetNodeLoc3
   !! Generic method for getting location of nodes
 
-  PROCEDURE, PASS(obj) :: GetNodeLoc_1 => obj_GetNodeLoc_1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_1 => obj_GetNodeLoc_1
   !! Like GetNodeLoc1 but without allocation
-  PROCEDURE, PASS(obj) :: GetNodeLoc_2 => obj_GetNodeLoc_2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_2 => obj_GetNodeLoc_2
   !! Like GetNodeLoc1 but without allocation
-  PROCEDURE, PASS(obj) :: GetNodeLoc_3 => obj_GetNodeLoc_3
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_3 => obj_GetNodeLoc_3
   !! Like GetNodeLoc1 but without allocation
   GENERIC, PUBLIC :: GetNodeLoc_ => GetNodeLoc_1, GetNodeLoc_2, &
     GetNodeLoc_3
@@ -332,16 +329,16 @@ CONTAINS
     obj_GetDirichletBCIndex
   !! Get the Dirichlet BC indices
 
-  PROCEDURE, PASS(obj) :: GetDirichletBCIndex1_ => &
+  PROCEDURE, PRIVATE, PASS(obj) :: GetDirichletBCIndex1_ => &
     obj_GetDirichletBCIndex1_
   !! Get the Dirichlet BC indices from dbc stored internally
-  PROCEDURE, PASS(obj) :: GetDirichletBCIndex2_ => &
+  PROCEDURE, PRIVATE, PASS(obj) :: GetDirichletBCIndex2_ => &
     obj_GetDirichletBCIndex2_
   !! Get the Dirichlet BC indices from given DirichletBCPointer_
   GENERIC, PUBLIC :: GetDirichletBCIndex_ => GetDirichletBCIndex1_, &
     GetDirichletBCIndex2_
 
-  PROCEDURE, PASS(obj) :: &
+  PROCEDURE, PRIVATE, PASS(obj) :: &
     GetTotalDirichletBCIndex1 => obj_GetTotalDirichletBCIndex1, &
     GetTotalDirichletBCIndex2 => obj_GetTotalDirichletBCIndex2
   !! Get the size of Dirichlet BC indices
@@ -354,7 +351,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
   !! Set all the values to a constant scalar value
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: &
     SetMaxTotalNodeNumForBC1 => obj_SetMaxTotalNodeNumForBC1, &
     SetMaxTotalNodeNumForBC2 => obj_SetMaxTotalNodeNumForBC2
   GENERIC, PUBLIC :: SetMaxTotalNodeNumForBC &
@@ -619,44 +616,6 @@ INTERFACE AbstractFieldExport
 END INTERFACE AbstractFieldExport
 
 !----------------------------------------------------------------------------
-!                                  AbstractFieldReadOptsFromToml@TomlMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-24
-! summary:  Read options for intiating AbstractField from toml table
-!
-!# Introduction
-! This method reads options for intiating AbstractField from toml table.
-! The arguments details are given in Initiate4 and Initiate5 methods.
-! This method will be called internally by ImportFromToml methods.
-! We do not want to initiate AbstractField from param.
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadOptsFromToml( &
-    table, name, engine, fieldType, spaceCompo, isSpaceCompo, &
-    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
-    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
-    isPhysicalVarNamesScalar)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    !! Toml table
-    TYPE(String), INTENT(OUT) :: name
-    TYPE(String), INTENT(OUT) :: engine
-    INTEGER(I4B), INTENT(OUT) :: fieldType
-    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: spaceCompo(:)
-    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompo
-    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompoScalar
-    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: timeCompo(:)
-    LOGICAL(LGT), INTENT(OUT) :: isTimeCompo
-    LOGICAL(LGT), INTENT(OUT) :: isTimeCompoScalar
-    INTEGER(I4B), INTENT(OUT) :: tPhysicalVarNames
-    CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: physicalVarNames(:)
-    LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNames
-    LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNamesScalar
-  END SUBROUTINE AbstractFieldReadOptsFromToml
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
@@ -681,7 +640,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
-                                        timefedof, dom, timeOpt)
+                                        timefedof, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
@@ -702,9 +661,6 @@ INTERFACE
     !! Abstract domain object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! TimeOpt_ is needed when timefedof is not initiated
-    !! Read more at TimeOpt_Class.F90
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -722,7 +678,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2( &
-    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    obj, tomlName, fedof, geofedof, timefedof, dom, afile, &
     filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -737,9 +693,6 @@ INTERFACE
     !! Abstract domain object
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! TimeOpt_ is needed when timefedof is not intiated
-    !! Read more at obj_ImportFromToml1
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     !! txt file where toml config is stored
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
@@ -770,7 +723,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml3( &
-    obj, table, fedof, geofedof, timefedof, dom, timeOpt)
+    obj, table, fedof, geofedof, timefedof, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
@@ -792,9 +745,6 @@ INTERFACE
     !! It is needed when fedof is not initiated.
     !! When we call ImportFromToml method of fedof
     !! In this case all fedofs will have same domain
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! TimeOpt_ is needed when timefedof is not initiated
-    !! Read more at TimeOpt_Class.F90
   END SUBROUTINE obj_ImportFromToml3
 END INTERFACE
 
@@ -808,7 +758,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml4( &
-    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    obj, tomlName, fedof, geofedof, timefedof, dom, afile, &
     filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -820,8 +770,6 @@ INTERFACE
     !! Read the docs of obj_ImportFromToml3
     CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
     !! Read the docs of obj_ImportFromToml3
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! Read the docs of obj_ImportFromToml1
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     !! text file where toml config is stored
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
@@ -852,7 +800,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml5( &
-    obj, table, fedof, geofedof, timefedof, dom, timeOpt)
+    obj, table, fedof, geofedof, timefedof, dom)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     TYPE(toml_table), INTENT(INOUT) :: table
     TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
@@ -864,8 +812,6 @@ INTERFACE
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
     !! Read the docs of obj_ImportFromToml3
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! Read the docs of obj_ImportFromToml1
   END SUBROUTINE obj_ImportFromToml5
 END INTERFACE
 
@@ -879,7 +825,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml6( &
-    obj, tomlName, fedof, geofedof, timefedof, dom, timeOpt, afile, &
+    obj, tomlName, fedof, geofedof, timefedof, dom, afile, &
     filename, printToml)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -887,318 +833,10 @@ INTERFACE
     TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
     TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
       timefedof(:)
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml6
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                      AbstractFieldReadUserFunctionFromToml
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-06
-! summary:  Abstract field read user function from toml
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadUserFunctionFromToml(obj, table)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE AbstractFieldReadUserFunctionFromToml
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   AbstractFieldReadFEDOFFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-15
-! summary:  Safely read fedof From toml file,
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! If fedof is not initiated then it will be initiated by
-! calling fedof%ImportFromToml(node) method.
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml1(table, fedof, dom)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
-    !! if fedof is not initiated then it will be initiated by
-    !! calling fedof%ImportFromToml(node) method.
-    !! where node is the table field called "space".
-    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
-    !! Abstract domain object
-    !! It is needed when fedof is not initiated.
-    !! When we call ImportFromToml method of fedof
-  END SUBROUTINE AbstractFieldReadFEDOFFromToml1
-END INTERFACE
-
-INTERFACE AbstractFieldReadFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml1
-END INTERFACE AbstractFieldReadFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                                    AbstractFieldReadFEDOFFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-06
-! summary: Safely read fedof From toml file for block node fields
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! If fedof is not initiated then it will be initiated by
-!   calling fedof%ImportFromToml(node) method.
-! In this case we will initiate different fedof for each physical
-! variables
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, dom)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
-    !! The size of fedof should be total number of physical variables
-    !! If fedof is allocated then all its ptr should be associated
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-  END SUBROUTINE AbstractFieldReadFEDOFFromToml2
-END INTERFACE
-
-INTERFACE AbstractFieldReadFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml2
-END INTERFACE AbstractFieldReadFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                                    AbstractFieldReadFEDOFFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-06
-! summary: Safely read fedof From toml file for block node fields
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! If fedof is not initiated then it will be initiated by
-!   calling fedof%ImportFromToml(node) method.
-! In this case we will initiate different fedof for each physical
-! variables
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, dom)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
-    !! The size of fedof should be total number of physical variables
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-  END SUBROUTINE AbstractFieldReadFEDOFFromToml3
-END INTERFACE
-
-INTERFACE AbstractFieldReadFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadFEDOFFromToml3
-END INTERFACE AbstractFieldReadFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                              AbstractFieldReadGeoFEDOFFromToml@TomlMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-15
-! summary:  Safely read fedof From toml file,
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! If fedof is not initiated then it will be initiated by
-! calling fedof%ImportFromToml(node) method.
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1(table, fedof, dom)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
-    !! if fedof is not initiated then it will be initiated by
-    !! calling fedof%ImportFromToml(node) method.
-    !! where node is the table field called "space".
-    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
-    !! Abstract domain object
-    !! It is needed when fedof is not initiated.
-    !! When we call ImportFromToml method of fedof
-  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1
-END INTERFACE
-
-INTERFACE AbstractFieldReadGeoFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml1
-END INTERFACE AbstractFieldReadGeoFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                                 AbstractFieldReadGeoFEDOFFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-06
-! summary: Safely read fedof From toml file for block node fields
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! If fedof is not initiated then it will be initiated by
-!   calling fedof%ImportFromToml(node) method.
-! In this case we will initiate different fedof for each physical
-! variables
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2(table, fedof, dom)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
-    !! The size of fedof should be total number of physical variables
-    !! If fedof is allocated then all its ptr should be associated
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2
-END INTERFACE
-
-INTERFACE AbstractFieldReadGeoFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml2
-END INTERFACE AbstractFieldReadGeoFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                                 AbstractFieldReadGeoFEDOFFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-06
-! summary: Safely read fedof From toml file for block node fields
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! If fedof is not initiated then it will be initiated by
-!   calling fedof%ImportFromToml(node) method.
-! In this case we will initiate different fedof for each physical
-! variables
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3(table, fedof, dom)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:)
-    !! The size of fedof should be total number of physical variables
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
-    !! Read docs of AbstractFieldReadFEDOFFromToml1
-  END SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3
-END INTERFACE
-
-INTERFACE AbstractFieldReadGeoFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadGeoFEDOFFromToml3
-END INTERFACE AbstractFieldReadGeoFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                               AbstractFieldReadTimeFEDOFFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-15
-! summary:  Safely read timefedof From toml file,
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! - If timefedof is not present then this method does nothing
-! - If timefedof is present and it is initiated then it will do nothing
-! - If timefedof is present and it is not initiated then it will be initiated
-! by calling timefedof%ImportFromToml(node) method.
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1( &
-    table, timefedof, timeOpt)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(INOUT) :: timefedof
-    !! Timefedof, read the docs above
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! TimeOpt is need when timefedof is being initiated
-    !! Read more at TimeOpt_Class.F90
-  END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1
-END INTERFACE
-
-INTERFACE AbstractFieldReadTimeFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml1
-END INTERFACE AbstractFieldReadTimeFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                               AbstractFieldReadTimeFEDOFFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-25
-! summary:  Safely read timefedof From toml file,
-!
-!# Introduction
-!   This method is used by ReadFromToml methods
-! - If timefedof is not present then this method does nothing
-! - If timefedof is present and it is initiated then it will do nothing
-! - If timefedof is present and it is not initiated then it will be initiated
-! by calling timefedof%ImportFromToml(node) method.
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2(table, timefedof, &
-                                                        timeOpt)
-    TYPE(toml_table), INTENT(INOUT) :: table
-    TYPE(TimeFEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: &
-      timefedof(:)
-    !! Timefedof, read the docs above
-    CLASS(TimeOpt_), OPTIONAL, TARGET, INTENT(IN) :: timeOpt
-    !! TimeOpt is need when timefedof is being initiated
-    !! Read more at TimeOpt_Class.F90
-  END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2
-END INTERFACE
-
-INTERFACE AbstractFieldReadTimeFEDOFFromToml
-  MODULE PROCEDURE AbstractFieldReadTimeFEDOFFromToml2
-END INTERFACE AbstractFieldReadTimeFEDOFFromToml
-
-!----------------------------------------------------------------------------
-!                                     AbstractFieldReadDBCFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-15
-! summary: Read DBC from toml file
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadDBCFromToml(obj, table)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE AbstractFieldReadDBCFromToml
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                     AbstractFieldReadNBCFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-24
-! summary: Read NBC from toml file
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadNBCFromToml(obj, table)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE AbstractFieldReadNBCFromToml
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                 AbstractFieldReadPointNBCFromToml@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-24
-! summary: Read NBC from toml file
-
-INTERFACE
-  MODULE SUBROUTINE AbstractFieldReadPointNBCFromToml(obj, table)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(toml_table), INTENT(INOUT) :: table
-  END SUBROUTINE AbstractFieldReadPointNBCFromToml
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1212,10 +850,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_WriteData_hdf5
 END INTERFACE
-
-INTERFACE AbstractFieldWriteData
-  MODULE PROCEDURE obj_WriteData_hdf5
-END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
 !                                                      WriteData@IOMethods
@@ -1231,10 +865,6 @@ INTERFACE
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
   END SUBROUTINE obj_WriteData_vtk
 END INTERFACE
-
-INTERFACE AbstractFieldWriteData
-  MODULE PROCEDURE obj_WriteData_vtk
-END INTERFACE AbstractFieldWriteData
 
 !----------------------------------------------------------------------------
 !                                                       SetParam@SetMethods

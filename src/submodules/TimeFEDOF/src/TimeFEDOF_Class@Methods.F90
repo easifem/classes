@@ -45,7 +45,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
-obj%opt => timeOpt
 
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
 IF (obj%baseInterpolation == "LAGR") obj%isLagrange = .TRUE.
@@ -117,8 +116,6 @@ obj%baseInterpolation = "LAGR"
 obj%scaleForQuadOrder = 2_INT8
 obj%cellOrder = 0
 
-obj%opt => NULL()
-
 isok = ASSOCIATED(obj%fe)
 IF (isok) CALL obj%fe%DEALLOCATE()
 obj%fe => NULL()
@@ -154,7 +151,6 @@ obj%baseContinuity = obj2%baseContinuity
 obj%baseInterpolation = obj2%baseInterpolation
 obj%scaleForQuadOrder = obj2%scaleForQuadOrder
 obj%cellOrder = obj2%cellOrder
-obj%opt => obj2%opt
 obj%fe => obj2%fe
 
 #ifdef DEBUG_VER
@@ -194,14 +190,6 @@ CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
 CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)
 CALL Display(obj%scaleForQuadOrder, "scaleForQuadOrder: ", unitno=unitno)
 CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno)
-
-isok = ASSOCIATED(obj%opt)
-CALL Display(isok, "opt ASSOCIATED: ", unitno=unitno)
-IF (isok) THEN
-  CALL Display(" ", unitno=unitno)
-  CALL obj%opt%Display(msg="opt: ", unitno=unitno)
-  CALL Display(" ", unitno=unitno)
-END IF
 
 isok = ASSOCIATED(obj%fe)
 CALL Display(isok, "fe ASSOCIATED: ", unitno=unitno)
@@ -254,14 +242,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetTotalDOF
-
-!----------------------------------------------------------------------------
-!                                                           GetMeshPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTimeOptPointer
-ans => obj%opt
-END PROCEDURE obj_GetTimeOptPointer
 
 !----------------------------------------------------------------------------
 !                                                       GetBaseInterpolation
