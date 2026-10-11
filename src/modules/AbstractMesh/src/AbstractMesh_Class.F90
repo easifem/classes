@@ -831,12 +831,14 @@ CONTAINS
   !! Export mesh to a VTKfile
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
   !! Write mesh into vtk file
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk2 => obj_WriteData_vtk2
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk_r1 => obj_WriteData_vtk_r1
   !! Write mesh into vtk file
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk3 => obj_WriteData_vtk3
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk_r2 => obj_WriteData_vtk_r2
   !! Write mesh into vtk file
-  GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_vtk2, &
-    WriteData_vtk3
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk_r3 => obj_WriteData_vtk_r3
+  !! Write mesh into vtk file
+  GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_vtk_r1, &
+    WriteData_vtk_r2, WriteData_vtk_r3
 
 END TYPE AbstractMesh_
 
@@ -1153,12 +1155,12 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_WriteData_vtk2(obj, filename, DATA, dataName)
+  MODULE SUBROUTINE obj_WriteData_vtk_r1(obj, filename, DATA, dataName)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     REAL(DFP), INTENT(IN) :: DATA(:)
     TYPE(String), INTENT(IN) :: dataName
-  END SUBROUTINE obj_WriteData_vtk2
+  END SUBROUTINE obj_WriteData_vtk_r1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1166,14 +1168,32 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE obj_WriteData_vtk3(obj, filename, DATA, dataNames)
+  MODULE SUBROUTINE obj_WriteData_vtk_r2(obj, filename, DATA, dataNames, &
+                                         isSingleData)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     REAL(DFP), INTENT(IN) :: DATA(:, :)
-    ! row: number of data
+    ! row: number of data or number of components of data
     ! column: number of nodes in mesh
     TYPE(String), INTENT(IN) :: dataNames(:)
-  END SUBROUTINE obj_WriteData_vtk3
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSingleData
+  END SUBROUTINE obj_WriteData_vtk_r2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteData_vtk_r3(obj, filename, DATA, dataNames)
+    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    REAL(DFP), INTENT(IN) :: DATA(:, :, :)
+    ! dim1: number of data
+    ! dim2: number of components of each data
+    ! dim3: number of nodes in mesh
+    TYPE(String), INTENT(IN) :: dataNames(:)
+  END SUBROUTINE obj_WriteData_vtk_r3
 END INTERFACE
 
 !----------------------------------------------------------------------------
