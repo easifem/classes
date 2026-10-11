@@ -49,13 +49,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
-obj%isInit = .TRUE.
+obj%isInit = math%yes
 
 CALL obj%SetParam( &
-  firstCall=.TRUE., order=order, fetype=fetype, doftype=doftype, &
+  firstCall=math%yes, order=order, fetype=fetype, doftype=doftype, &
   transformType=transformType, ipType=ipType, basisType=basisType, &
   alpha=alpha, beta=beta, lambda=lambda, baseContinuity=baseContinuity, &
-  baseInterpolation=baseInterpolation)
+  baseInterpolation=baseInterpolation, isSpectral=isSpectral)
 
 obj%tdof = obj%order + 1
 
@@ -67,16 +67,29 @@ astr = ""
 
 obj%refelemCoord(1:1, 1:2) = RefCoord_Line(obj%refelemDomain)
 
-CALL obj%quadOpt%Initiate( &
-  quadratureType=quadratureType, order=quadratureOrder, &
-  nips=quadratureNips, alpha=quadratureAlpha, beta=quadratureBeta, &
-  lambda=quadratureLambda, isOrder=quadratureIsOrder, &
-  isNips=quadratureIsNips, refelemCoord=obj%refelemCoord, &
-  refelemDomain=obj%refelemDomain)
+IF (obj%isSpectral .AND. (obj%baseInterpolation .EQ. "LAGR")) THEN
 
-obj%basisType_char = BaseType_ToChar(obj%basisType, isupper=.TRUE.)
-obj%ipType_char = InterpolationPoint_ToChar(obj%ipType, isupper=.TRUE.)
-obj%feType_char = FEVariable_ToChar(obj%feType, isupper=.TRUE.)
+  CALL obj%quadOpt%Initiate( &
+    quadratureType=ipType, nips=obj%tdof, &
+    alpha=quadratureAlpha, beta=quadratureBeta, &
+    lambda=quadratureLambda, isOrder=math%no, &
+    isNips=math%yes, refelemCoord=obj%refelemCoord, &
+    refelemDomain=obj%refelemDomain)
+
+ELSE
+
+  CALL obj%quadOpt%Initiate( &
+    quadratureType=quadratureType, order=quadratureOrder, &
+    nips=quadratureNips, alpha=quadratureAlpha, beta=quadratureBeta, &
+    lambda=quadratureLambda, isOrder=quadratureIsOrder, &
+    isNips=quadratureIsNips, refelemCoord=obj%refelemCoord, &
+    refelemDomain=obj%refelemDomain)
+
+END IF
+
+obj%basisType_char = BaseType_ToChar(obj%basisType, isupper=math%yes)
+obj%ipType_char = InterpolationPoint_ToChar(obj%ipType, isupper=math%yes)
+obj%feType_char = FEVariable_ToChar(obj%feType, isupper=math%yes)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -141,6 +154,7 @@ obj%refelemCoord = obj2%refelemCoord
 obj%basisType_char = obj2%basisType_char
 obj%ipType_char = obj2%ipType_char
 obj%feType_char = obj2%feType_char
+obj%isSpectral = obj2%isSpectral
 
 CALL obj%quadOpt%Copy(obj2%quadOpt)
 

@@ -48,6 +48,11 @@ TYPE :: OneDimBasisOpt_
   LOGICAL(LGT) :: firstCall = .TRUE.
   !! flag to check if the shape functions are constructed from scratch or not
 
+  LOGICAL(LGT) :: isSpectral = .FALSE.
+  !! If isSpectral is true then we use quadrature points same as
+  !! interpolation points, make sure in this case you use
+  !! baseInterpolation="LAGR"
+
   INTEGER(I4B) :: tdof = 0
   !! total number of degrees of freedom
   !! this is equal to order + 1  in one dimension case
@@ -247,7 +252,8 @@ INTERFACE
     obj, baseContinuity, baseInterpolation, feType, ipType, &
     basisType, alpha, beta, lambda, dofType, transformType, order, &
     quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
-    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
+    isSpectral)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     !! Finite element object
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -304,6 +310,9 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpectral
+    !! if isSpectral is true, then we quad points are same as
+    !! interpolation points
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -357,7 +366,7 @@ INTERFACE
     obj, order, fetype, ipType, basisType, alpha, beta, lambda, &
     refElemDomain, baseContinuity, baseInterpolation, firstCall, &
     quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-    quadratureBeta, quadratureLambda, dofType, transformType)
+    quadratureBeta, quadratureLambda, dofType, transformType, isSpectral)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order of element (isotropic order)
@@ -395,6 +404,7 @@ INTERFACE
     !! Quadrature lambda parameter
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpectral
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
