@@ -188,6 +188,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetVarType => &
     obj_GetVarType
   !! Get varType of the field
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetDefineOn => &
+    obj_GetDefineOn
+  !! Get varType of the field
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalShape => &
     obj_GetTotalShape
   !! Get total shape of data, this the size of shape vector
@@ -740,6 +743,25 @@ INTERFACE
     CLASS(AbstractMeshField_), INTENT(IN) :: obj
     INTEGER(I4B) :: ans
   END FUNCTION obj_GetVarType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetDefineOn@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the DefineOn of obj
+!
+!# GetDefineOn
+!
+! Get the DefineOn of obj
+
+INTERFACE
+  MODULE FUNCTION obj_GetDefineOn(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetDefineOn
 END INTERFACE
 
 !----------------------------------------------------------------------------
