@@ -69,9 +69,6 @@ TYPE, EXTENDS(AbstractNodeField_) :: VectorField_
   INTEGER(I4B) :: spaceCompo = math%zero_i
   INTEGER(I4B), ALLOCATABLE :: idofs(:)
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copying
@@ -80,58 +77,66 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   FINAL :: obj_Final
 
-  ! SET:
   ! @SetMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a Vector values
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values to a given vector
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set selected values to given Vector
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set selected values to given vector
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! obj@spaceCompo = value (if value is a scalar)
   !! obj@spaceCompo = value@spaceCompo (if value is vector )
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set values to a vector by using triplet
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set values to a vector by using triplet
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
   !! Set nodal values of a space component
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
   !! Set a single value
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
   !! Set values by using a FEVariable
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all values to the constant value
   !! WE call SetAll method here
-  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
+  PROCEDURE, PRIVATE, PASS(obj) :: Set13 => obj_Set13
   !! obj = value (we call copy method here)
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set values from the user function
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13
+  PROCEDURE, PUBLIC, PASS(obj) :: SetHigherOrderNodeCoord => &
+    obj_SetHigherOrderNodeCoord
+  !! In this case passed vector object denotes the nodeCoord of mesh
+  !! The value will be set by using the mesh of lower order.
+  !! This routine will be used for postprocessing via VTU file
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLagrangeDOF => &
+    obj_SetLagrangeDOF
+  !! In this case we pass VectorField object which is a Lagrange Field
+  !! possibly higher order, we set the DOF of this field
+  !! by using the passed vector field
 
-  ! GET:
   ! @GetMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! returns vector values at single node or
   !! get all nodal values of a space-components
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! returns all entries in rank2 array of real
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! returns selected values in rank2 aray of real
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! returns selected values of a space components
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get a single value
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get nodal values of a vector in FEVariable
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
   !! Get value of vector field in the ScalarField or another VectorField
   !! value = obj@spaceCompo (if value is ScalarField_)
   !! value@spaceCompo = obj@spaceCompo (if value is VectorField_)
@@ -143,43 +148,38 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
 
-  ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyDirichletBC1 => obj_ApplyDirichletBC1
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyDirichletBC2 => obj_ApplyDirichletBC2
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyDirichletBC3 => obj_ApplyDirichletBC3
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
 
-  ! SET:
   ! @PointNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
   !! Apply point neumann boundary condition
 
-  ! SET:
   ! @SurfaceNBCMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ApplySurfaceNeumannBC => &
     obj_ApplySurfaceNeumannBC
   !! Apply Surface neumann boundary condition
 
-  ! SET:
   ! @BodySourceMethods
-  PROCEDURE, PASS(obj) :: ApplyBodySource1 => &
+  PROCEDURE, PRIVATE, PASS(obj) :: ApplyBodySource1 => &
     obj_ApplyBodySource1
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
-  PROCEDURE, PASS(obj) :: ApplyBodySource2 => &
+  PROCEDURE, PRIVATE, PASS(obj) :: ApplyBodySource2 => &
     obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, ApplyBodySource2
   !! Generic method for setting body source
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of VectorField
@@ -189,8 +189,12 @@ CONTAINS
   !! Export data to HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
   !! Export data to VTK file
+  PROCEDURE, PUBLIC, PASS(obj) :: ExportHigherOrderNodeCoordToVTK &
+    => obj_ExportHigherOrderNodeCoordToVTK
+  !! In this case VectorField represents the nodecoord of higher
+  !! order mesh. We export these nodecoord into VTKFile as mesh.
+  !! The connectivity is taken from the VectorField_ itself.
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
   !! Initiate from toml
@@ -463,6 +467,33 @@ INTERFACE
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
     !! vtkfile object
   END SUBROUTINE obj_ExportToVTK
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                ExportHighOrderNodeCoordToVTK@VTKMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-12
+! summary: Export higher order nodecoord to VTKFile.
+!
+!# ExportHighOrderNodeCoordToVTK
+!
+! Export higher order node coord to VTKFile.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ExportHigherOrderNodeCoordToVTK( &
+    obj, vtk, filename, opentag, content, closetag)
+    CLASS(VectorField_), INTENT(IN) :: obj
+    TYPE(VTKFile_), INTENT(INOUT) :: vtk
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: opentag
+    !! Default is true
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: closetag
+    !! Default is true
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: content
+    !! Default is true
+  END SUBROUTINE obj_ExportHigherOrderNodeCoordToVTK
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -928,47 +959,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-29
-! summary: Set values
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Set13(&
-!     obj, ivar, idof, VALUE, ivar_value, idof_value, scale, addContribution)
-!     CLASS(VectorField_), INTENT(INOUT) :: obj
-!     INTEGER(I4B), INTENT(IN) :: ivar
-!     INTEGER(I4B), INTENT(IN) :: idof
-!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-!     INTEGER(I4B), INTENT(IN) :: ivar_value
-!     INTEGER(I4B), INTENT(IN) :: idof_value
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-!   END SUBROUTINE obj_Set13
-! END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 2023-03-29
-! summary: Set values
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetFromSTVectorField( &
-!     obj, VALUE, timeCompo, scale, addContribution)
-!     CLASS(VectorField_), INTENT(INOUT) :: obj
-!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-!     INTEGER(I4B), INTENT(IN) :: timeCompo
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-!   END SUBROUTINE obj_SetFromSTVectorField
-! END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -995,6 +985,35 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
     !! time component, not used
   END SUBROUTINE obj_SetByFunction
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetHigerOrderNodeCoord@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2026-10-12
+! summary: Set by user function
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetHigherOrderNodeCoord(obj)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetHigherOrderNodeCoord
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  SetLagrangeDOF@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2026-10-12
+! summary: Set Lagrange degree of freedom value
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLagrangeDOF(obj, obj2)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj2
+  END SUBROUTINE obj_SetLagrangeDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------

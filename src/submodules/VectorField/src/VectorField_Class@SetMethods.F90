@@ -18,7 +18,6 @@
 SUBMODULE(VectorField_Class) SetMethods
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE ArangeUtility, ONLY: Arange
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableConstant
@@ -27,33 +26,21 @@ USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: TypeFEVariableVector
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 USE BaseType, ONLY: math => TypeMathOpt
-USE BlockNodeField_Class, ONLY: Blocknodefield_
-USE Display_Method, ONLY: tostring
 USE DOF_Method, ONLY: GetIDOF
 USE DOF_Method, ONLY: GetIndex_
 USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: GetNodeLoc_
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
-USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
+USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
+USE ElemShapeData_Method, ONLY: GetInterpolation_
 USE FEVariable_Method, ONLY: Get
-USE GlobalData, ONLY: Constant
-USE GlobalData, ONLY: NODES_FMT
-USE GlobalData, ONLY: NONE
-USE GlobalData, ONLY: Scalar
-USE GlobalData, ONLY: Space
-USE GlobalData, ONLY: Vector
 USE InputUtility, ONLY: Input
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
+USE QuadraturePoint_Method, ONLY: QuadraturePointInitiate => Initiate
 USE ReallocateUtility, ONLY: Reallocate
-USE RealVector_Method, ONLY: Set, Add, GetPointer
 USE SafeSizeUtility, ONLY: SafeSize
-USE ScalarField_Class, ONLY: ScalarField_
-USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 USE StringUtility, ONLY: UpperCase
-USE STScalarField_Class, ONLY: STScalarField_
-USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-USE STVectorField_Class, ONLY: STVectorField_
-USE VectorFieldLis_Class, ONLY: VectorFieldLis_
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -89,7 +76,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
-                  "STScalarField_::obj not initiated")
+                  "VectorField_::obj not initiated")
 #endif
 
 #ifdef DEBUG_VER
@@ -138,12 +125,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
-                  'STScalarField_::obj is not initiated')
+                  'VectorField_::obj is not initiated')
 #endif
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%fieldType .EQ. TypeFieldOpt%constant, myName, &
-                  'Not callable for constant STScalar field')
+                  'Not callable for constant VectorField_')
 #endif
 
 DO idof = 1, obj%spaceCompo
@@ -178,7 +165,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
-                  'STScalarField_::obj is not initiated')
+                  'VectorField_::obj is not initiated')
 #endif
 
 #ifdef DEBUG_VER
@@ -221,7 +208,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
-                  'STScalarField::obj is not initiated')
+                  'VectorField_::obj is not initiated')
 #endif
 
 #ifdef DEBUG_VER
@@ -291,7 +278,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
-                  'STScalarField_::obj is not initiated')
+                  'VectorField_::obj is not initiated')
 #endif
 
 #ifdef DEBUG_VER
@@ -477,7 +464,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
-                  "STScalarField_::obj not initiated")
+                  "VectorField_::obj not initiated")
 
 isok = spaceCompo .LE. obj%spaceCompo
 CALL AssertError1(isok, myName, "spaceCompois out of bound")
@@ -589,13 +576,13 @@ CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
 
 SELECT CASE (VALUE%vartype)
 
-CASE (Constant)
+CASE (TypeFieldOpt%constant)
   CALL obj%Set( &
     VALUE=GET(VALUE, TypeFEVariableVector, TypeFEVariableConstant), &
     globalNode=globalNode, scale=scale, addContribution=addContribution, &
     islocal=islocal)
 
-CASE (Space)
+CASE (TypeFieldOpt%space)
   CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableVector, TypeFEVariableSpace), &
                globalNode=globalNode, scale=scale, islocal=islocal, &
                addContribution=addContribution, &
@@ -657,7 +644,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
-                  "STScalarFieldLis_::obj is not initiated")
+                  "VectorField_::obj is not initiated")
 #endif
 
 SELECT TYPE (VALUE)
@@ -672,7 +659,7 @@ TYPE IS (VectorField_)
 #ifdef DEBUG_VER
 CLASS DEFAULT
   CALL AssertError1(math%no, myName, &
-                    'Unknown type of ScalarField_::value')
+                    'Unknown type of VectorField_::value')
 #endif
 END SELECT
 
@@ -748,13 +735,18 @@ SUBROUTINE Help_SetByScalarFunction(obj, func, times, spaceCompo)
   LOGICAL(LGT) :: isok
 #endif
 
+  INTEGER(I4B), PARAMETER :: MAX_TOPO_SIZE = 8
   CLASS(AbstractMesh_), POINTER :: meshptr
   CLASS(AbstractFE_), POINTER :: feptr, geofeptr
   INTEGER(I4B) :: telements, iel, maxNNS, maxGeoNNS, maxNips, tans, &
                   xij_i, xij_j, tcon, ii
-  TYPE(QuadraturePoint_) :: quad(8), facetQuad(8), cellQuad
-  TYPE(ElemShapeData_) :: cellElemsd, geoCellElemsd, geoElemsd(8), &
-                          geoFacetElemsd(8), elemsd(8), facetElemsd(8)
+  TYPE(QuadraturePoint_) :: quad(MAX_TOPO_SIZE), facetQuad(MAX_TOPO_SIZE)
+  TYPE(QuadraturePoint_) :: cellQuad
+  TYPE(ElemShapeData_) :: cellElemsd, geoCellElemsd
+  TYPE(ElemShapeData_) :: geoElemsd(MAX_TOPO_SIZE), &
+                          geoFacetElemsd(MAX_TOPO_SIZE), &
+                          elemsd(MAX_TOPO_SIZE), &
+                          facetElemsd(MAX_TOPO_SIZE)
   REAL(DFP) :: times0
   REAL(DFP), ALLOCATABLE :: xij(:, :), ans(:), massMat(:, :), &
                             funcValue(:), temp(:)
@@ -819,17 +811,17 @@ SUBROUTINE Help_SetByScalarFunction(obj, func, times, spaceCompo)
   DEALLOCATE (massMat, ipiv, xij, ans, temp, con, funcValue)
 
   DO ii = 1, SIZE(quad)
-    CALL QuadraturePoint_Deallocate(quad(ii))
-    CALL QuadraturePoint_Deallocate(facetQuad(ii))
-    CALL ElemShapeData_Deallocate(elemsd(ii))
-    CALL ElemShapeData_Deallocate(facetElemsd(ii))
-    CALL ElemShapeData_Deallocate(geoElemsd(ii))
-    CALL ElemShapeData_Deallocate(geoFacetElemsd(ii))
+    CALL QuadraturePointDeallocate(quad(ii))
+    CALL QuadraturePointDeallocate(facetQuad(ii))
+    CALL ElemShapeDataDeallocate(elemsd(ii))
+    CALL ElemShapeDataDeallocate(facetElemsd(ii))
+    CALL ElemShapeDataDeallocate(geoElemsd(ii))
+    CALL ElemShapeDataDeallocate(geoFacetElemsd(ii))
   END DO
 
-  CALL QuadraturePoint_Deallocate(cellQuad)
-  CALL ElemShapeData_Deallocate(cellElemsd)
-  CALL ElemShapeData_Deallocate(geoCellElemsd)
+  CALL QuadraturePointDeallocate(cellQuad)
+  CALL ElemShapeDataDeallocate(cellElemsd)
+  CALL ElemShapeDataDeallocate(geoCellElemsd)
 
   NULLIFY (meshptr, feptr, geofeptr)
 
@@ -852,14 +844,19 @@ SUBROUTINE Help_SetByVectorFunction(obj, func, times)
   LOGICAL(LGT) :: isok
 #endif
 
+  INTEGER(I4B), PARAMETER :: MAX_TOPO_SIZE = 8
   CLASS(AbstractMesh_), POINTER :: meshptr
   CLASS(AbstractFE_), POINTER :: feptr, geofeptr
   INTEGER(I4B) :: telements, iel, maxNNS, maxGeoNNS, maxNips, tans, &
-                  xij_i, xij_j, tcon, ii, spaceCompo(1), &
-                  icompo
-  TYPE(QuadraturePoint_) :: quad(8), facetQuad(8), cellQuad
-  TYPE(ElemShapeData_) :: cellElemsd, geoCellElemsd, geoElemsd(8), &
-                          geoFacetElemsd(8), elemsd(8), facetElemsd(8)
+                  xij_i, xij_j, tcon, ii, icompo
+  INTEGER(I4B) :: spaceCompo(1)
+  TYPE(QuadraturePoint_) :: cellQuad
+  TYPE(QuadraturePoint_) :: quad(MAX_TOPO_SIZE), facetQuad(MAX_TOPO_SIZE)
+  TYPE(ElemShapeData_) :: cellElemsd, geoCellElemsd
+  TYPE(ElemShapeData_) :: geoElemsd(MAX_TOPO_SIZE), &
+                          geoFacetElemsd(MAX_TOPO_SIZE), &
+                          elemsd(MAX_TOPO_SIZE), &
+                          facetElemsd(MAX_TOPO_SIZE)
   REAL(DFP) :: times0
   REAL(DFP), ALLOCATABLE :: xij(:, :), ans(:, :), massMat(:, :), &
                             funcValue(:), temp(:)
@@ -922,23 +919,23 @@ SUBROUTINE Help_SetByVectorFunction(obj, func, times)
 
     ! (obj, ans, tsize, opt, globalElement, islocal)
     CALL obj%Set(VALUE=ans(1:spaceCompo(1), 1:tans), globalNode=con(1:tcon), &
-                 islocal=.TRUE., storageFMT=NODES_FMT)
+                 islocal=.TRUE., storageFMT=TypeFieldOpt%storageFormatNodes)
   END DO
 
   DEALLOCATE (massMat, ipiv, xij, ans, temp, con, funcValue)
 
   DO ii = 1, SIZE(quad)
-    CALL QuadraturePoint_Deallocate(quad(ii))
-    CALL QuadraturePoint_Deallocate(facetQuad(ii))
-    CALL ElemShapeData_Deallocate(elemsd(ii))
-    CALL ElemShapeData_Deallocate(facetElemsd(ii))
-    CALL ElemShapeData_Deallocate(geoElemsd(ii))
-    CALL ElemShapeData_Deallocate(geoFacetElemsd(ii))
+    CALL QuadraturePointDeallocate(quad(ii))
+    CALL QuadraturePointDeallocate(facetQuad(ii))
+    CALL ElemShapeDataDeallocate(elemsd(ii))
+    CALL ElemShapeDataDeallocate(facetElemsd(ii))
+    CALL ElemShapeDataDeallocate(geoElemsd(ii))
+    CALL ElemShapeDataDeallocate(geoFacetElemsd(ii))
   END DO
 
-  CALL QuadraturePoint_Deallocate(cellQuad)
-  CALL ElemShapeData_Deallocate(cellElemsd)
-  CALL ElemShapeData_Deallocate(geoCellElemsd)
+  CALL QuadraturePointDeallocate(cellQuad)
+  CALL ElemShapeDataDeallocate(cellElemsd)
+  CALL ElemShapeDataDeallocate(geoCellElemsd)
 
   NULLIFY (meshptr, feptr, geofeptr)
 
@@ -947,6 +944,234 @@ SUBROUTINE Help_SetByVectorFunction(obj, func, times)
                           '[END] ')
 #endif
 END SUBROUTINE Help_SetByVectorFunction
+
+!----------------------------------------------------------------------------
+!                                                     SetHigerOrderNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetHigherOrderNodeCoord
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetHigherOrderNodeCoord()"
+#endif
+
+INTEGER(I4B) :: iel, tElements, ii, maxGeoNNS, maxCon, &
+                elemCoord_i, elemCoord_j, xij_i, xij_j, tfecon
+INTEGER(I4B) :: cellOrder(3), ipType(3)
+INTEGER(I4B), ALLOCATABLE :: fecon(:)
+CLASS(AbstractFE_), POINTER :: feptr
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(FEDOF_), POINTER :: fedof
+REAL(DFP), ALLOCATABLE :: xij(:, :), elemCoord(:, :)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+fedof => obj%fedof
+mesh => fedof%GetMeshPointer()
+tElements = mesh%GetTotalElements()
+maxGeoNNS = mesh%GetMaxNNE()
+maxCon = fedof%GetMaxTotalConnectivity()
+
+CALL Reallocate(elemCoord, math%three_i, maxGeoNNS)
+CALL Reallocate(xij, math%three_i, maxCon)
+CALL Reallocate(fecon, maxCon)
+
+cell_loop: DO iel = 1, tElements
+  isok = mesh%isElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE cell_loop
+
+  CALL fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                              ans=fecon, tsize=tfecon, opt="A")
+
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+  CALL fedof%GetCellOrder(ans=cellOrder, tsize=ii, globalElement=iel, &
+                          islocal=math%yes)
+  cellOrder(2:3) = cellOrder(1)
+
+  ipType(1) = feptr%GetIpType()
+  ipType(2:3) = ipType(1)
+
+  CALL mesh%GetNodeCoord( &
+    globalElement=iel, nodeCoord=elemCoord, nrow=elemCoord_i, &
+    ncol=elemCoord_j, islocal=math%yes)
+
+  CALL feptr%GetInterpolationPoints( &
+    xij=elemCoord(1:elemCoord_i, 1:elemCoord_j), ans=xij, nrow=xij_i, &
+    ncol=xij_j, order=cellOrder, ipType=ipType)
+
+  CALL obj%Set(VALUE=xij(1:obj%spaceCompo, 1:xij_j), &
+               globalNode=fecon(1:tfecon), &
+               islocal=math%yes, scale=math%one, &
+               addContribution=math%no, &
+               storageFMT=TypeFieldOpt%storageFormatNodes)
+END DO cell_loop
+
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(elemCoord)) DEALLOCATE (elemCoord)
+IF (ALLOCATED(fecon)) DEALLOCATE (fecon)
+NULLIFY (fedof, mesh, feptr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetHigherOrderNodeCoord
+
+!----------------------------------------------------------------------------
+!                                                             SetLagrangeDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetLagrangeDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetLagrangeDOF()"
+#endif
+
+INTEGER(I4B) :: iel, tElements, ii, maxCon, &
+                tfecon, tElements2, tfecon2, maxCon2, maxGeoNNS2, &
+                refElemCoord2_i, refElemCoord2_j, &
+                xij_i, xij_j, elemCoord2_i, elemCoord2_j, &
+                nodalValue2_i, nodalValue2_j, &
+                nodalValue1_i, nodalValue1_j
+INTEGER(I4B) :: cellOrder(3), ipType(3)
+LOGICAL(LGT) :: isok
+TYPE(QuadraturePoint_) :: quad
+TYPE(ElemShapeData_) :: geoelemsd2, elemsd2
+INTEGER(I4B), ALLOCATABLE :: fecon(:), fecon2(:)
+REAL(DFP), ALLOCATABLE :: elemCoord2(:, :), &
+                          refElemCoord2(:, :), &
+                          xij(:, :), &
+                          nodalValue1(:, :), &
+                          nodalValue2(:, :)
+CLASS(AbstractFE_), POINTER :: feptr, feptr2, geofeptr2
+CLASS(AbstractMesh_), POINTER :: mesh, mesh2
+CLASS(FEDOF_), POINTER :: fedof, fedof2, geofedof2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+fedof => obj%fedof
+mesh => fedof%GetMeshPointer()
+tElements = mesh%GetTotalElements()
+maxCon = fedof%GetMaxTotalConnectivity()
+
+fedof2 => obj2%fedof
+geofedof2 => obj2%geofedof
+mesh2 => fedof2%GetMeshPointer()
+tElements2 = mesh2%GetTotalElements()
+maxGeoNNS2 = geofedof2%GetMaxTotalConnectivity()
+maxCon2 = fedof2%GetMaxTotalConnectivity()
+
+!check
+#ifdef DEBUG_VER
+CALL AssertError2(tElements, tElements2, myName, &
+                  "a=tElements in obj, b=tElements in obj2")
+#endif
+
+!check
+#ifdef DEBUG_VER
+CALL AssertError2(obj%spaceCompo, obj2%spaceCompo, myName, &
+                  "a=spaceCompo in obj, b=spaceCompo in obj2")
+#endif
+
+CALL Reallocate(fecon, maxCon)
+CALL Reallocate(nodalValue1, obj%spaceCompo, maxCon)
+CALL Reallocate(xij, obj%spaceCompo + 1, maxCon)
+
+CALL Reallocate(refElemCoord2, math%three_i, maxGeoNNS2)
+CALL Reallocate(fecon2, maxCon2)
+CALL Reallocate(elemCoord2, math%three_i, maxGeoNNS2)
+CALL Reallocate(nodalValue2, obj2%spaceCompo, maxCon2)
+
+cell_loop: DO iel = 1, tElements
+  isok = mesh2%isElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE cell_loop
+
+  CALL fedof2%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                               ans=fecon2, tsize=tfecon2, opt="A")
+
+  CALL fedof2%SetFE(globalElement=iel, islocal=math%yes)
+  feptr2 => fedof2%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+  CALL feptr2%GetRefElemCoord(ans=refElemCoord2, nrow=refElemCoord2_i, &
+                              ncol=refElemCoord2_j)
+
+  ! Get cellorder and ipType from obj
+  CALL fedof%GetCellOrder(ans=cellOrder, tsize=ii, globalElement=iel, &
+                          islocal=math%yes)
+  cellOrder(2:3) = cellOrder(1)
+  CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+  ipType(1) = feptr%GetIpType()
+  ipType(2:3) = ipType(1)
+
+  ! Get interpolation points from feptr2
+  CALL feptr2%GetInterpolationPoints( &
+    xij=refElemCoord2(1:refElemCoord2_i, 1:refElemCoord2_j), &
+    ans=xij, nrow=xij_i, ncol=xij_j, order=cellOrder, ipType=ipType)
+
+  ! Create quadrature points
+  CALL QuadraturePointInitiate(obj=quad, points=xij(:, 1:xij_j))
+
+  ! Get elemCoord2 from mesh2
+  CALL mesh2%GetNodeCoord(nodeCoord=elemCoord2, nrow=elemCoord2_i, &
+                          ncol=elemCoord2_j, globalElement=iel, &
+                          islocal=math%yes)
+
+  CALL geofedof2%SetFE(globalElement=iel, islocal=math%yes)
+  geofeptr2 => geofedof2%GetFEPointer(globalElement=iel, &
+                                      islocal=math%yes)
+
+  ! Get elemsd2 from feptr2
+  CALL feptr2%GetGlobalElemShapeData2( &
+    geofeptr=geofeptr2, elemsd=elemsd2, geoelemsd=geoelemsd2, &
+    xij=elemCoord2, quad=quad, doNotInitQuad=math%yes)
+
+  ! Get nodal value from obj2
+  CALL obj2%Get(VALUE=nodalValue2, globalNode=fecon2(1:tfecon2), &
+                islocal=math%yes, nrow=nodalValue2_i, ncol=nodalValue2_j, &
+                storageFMT=TypeFieldOpt%storageFormatNodes)
+
+  ! use elemsd2 to get the interpolation value
+  CALL GetInterpolation_(obj=elemsd2, ans=nodalValue1, &
+                         val=nodalValue2(1:nodalValue2_i, 1:nodalValue2_j), &
+                         nrow=nodalValue1_i, ncol=nodalValue1_j, &
+                         scale=math%one, addContribution=math%no)
+
+  CALL fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                              ans=fecon, tsize=tfecon, opt="A")
+
+  ! Set the values in obj
+  CALL obj%Set(VALUE=nodalValue1(1:nodalValue1_i, 1:nodalValue1_j), &
+               globalNode=fecon(1:tfecon), &
+               islocal=math%yes, scale=math%one, &
+               addContribution=math%no, &
+               storageFMT=TypeFieldOpt%storageFormatNodes)
+END DO cell_loop
+
+CALL ElemShapeDataDeallocate(elemsd2)
+CALL ElemShapeDataDeallocate(geoelemsd2)
+CALL QuadraturePointDeallocate(quad)
+IF (ALLOCATED(fecon)) DEALLOCATE (fecon)
+IF (ALLOCATED(fecon2)) DEALLOCATE (fecon2)
+IF (ALLOCATED(elemCoord2)) DEALLOCATE (elemCoord2)
+IF (ALLOCATED(refElemCoord2)) DEALLOCATE (refElemCoord2)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(nodalValue1)) DEALLOCATE (nodalValue1)
+IF (ALLOCATED(nodalValue2)) DEALLOCATE (nodalValue2)
+NULLIFY (feptr, feptr2, geofeptr2, mesh, mesh2, fedof, fedof2, geofedof2)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetLagrangeDOF
 
 !----------------------------------------------------------------------------
 !
