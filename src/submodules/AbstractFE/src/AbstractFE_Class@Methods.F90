@@ -1000,6 +1000,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetRefElemCoord
 
 !----------------------------------------------------------------------------
+!                                                                  GetIpType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIpType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetIpType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%opt%GetIpType()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetIpType
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

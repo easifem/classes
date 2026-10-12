@@ -119,6 +119,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
   !! Get the base continuity
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetIpType => &
+    obj_GetIpType
+  !! Get the base continuity
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get local element shape data for cell element
@@ -1151,6 +1154,17 @@ INTERFACE
     CLASS(AbstractFE_), INTENT(IN) :: obj
     CHARACTER(2) :: ans
   END FUNCTION obj_GetBaseContinuity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetBaseContinuity@Methods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetIpType(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetIpType
 END INTERFACE
 
 !----------------------------------------------------------------------------
