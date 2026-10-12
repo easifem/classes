@@ -25,9 +25,9 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_getFileParts
-  path=obj%path
-  fileName=obj%fileName
-  ext=obj%ext
+path = obj%path
+fileName = obj%fileName
+ext = obj%ext
 END PROCEDURE aFile_getFileParts
 
 !----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ END PROCEDURE aFile_getFileParts
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_getFilePath
-  path = obj%path
+path = obj%path
 END PROCEDURE aFile_getFilePath
 
 !----------------------------------------------------------------------------
@@ -43,7 +43,7 @@ END PROCEDURE aFile_getFilePath
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_getFileName
-  fileName = obj%fileName
+fileName = obj%fileName
 END PROCEDURE aFile_getFileName
 
 !----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ END PROCEDURE aFile_getFileName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE aFile_getFileExt
-  ext = obj%ext
+ext = obj%ext
 END PROCEDURE aFile_getFileExt
 
 END SUBMODULE GetMethods
