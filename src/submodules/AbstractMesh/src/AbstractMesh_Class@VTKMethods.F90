@@ -107,9 +107,9 @@ IF (Content_) THEN
 
   offsets(0) = 0
 
-  DO ii = 1, ncells
+  cell_loop: DO ii = 1, ncells
     isok = obj%isElementActive(globalElement=ii, islocal=.TRUE.)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE cell_loop
 
     elemtype = obj%GetElemType(globalElement=ii, islocal=.TRUE.)
 
@@ -134,7 +134,7 @@ IF (Content_) THEN
       connectivity(offsets(ii) - nne + jj) = cellcon(vtkindx(jj)) - 1
     END DO
 
-  END DO
+  END DO cell_loop
 
   tsize = offsets(ncells)
 
