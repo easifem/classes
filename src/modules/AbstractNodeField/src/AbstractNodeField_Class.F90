@@ -483,6 +483,17 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2023-11-24
 ! summary:  Export data in vtkfile
+!
+!# WriteData
+!
+! Write data of AbstractNodeField_ in VTKFile_.
+! This routine does following tasks:
+!
+! 1. Get mesh pointer from AbstractNodeField and write the mesh in VTKFile
+! 2. Write the data of AbstractNodeField into VTKFile by calling &
+!    ExportToVTK, which should be implemented by the child class of
+!    AbstractNodeField
+!
 
 INTERFACE AbstractNodeFieldWriteData
   MODULE SUBROUTINE obj_WriteData_vtk1(obj, vtk)
