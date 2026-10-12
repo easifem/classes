@@ -332,6 +332,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
   !! Get the base continuity
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIpType => obj_GetIpType
+  !! Get interpolation type
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
   !! Get cell order
   PROCEDURE, PUBLIC, PASS(obj) :: GetFaceOrder => obj_GetFaceOrder
@@ -1442,6 +1444,17 @@ INTERFACE
     CLASS(BasisOpt_), INTENT(IN) :: obj
     CHARACTER(2) :: ans
   END FUNCTION obj_GetBaseContinuity
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetBaseContinuity@GetMethods
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE FUNCTION obj_GetIpType(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetIpType
 END INTERFACE
 
 !----------------------------------------------------------------------------
