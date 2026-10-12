@@ -83,10 +83,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
+! Check error
 #ifdef DEBUG_VER
 CALL Writedata_vtk1_CheckError(obj=obj, vtk=vtk)
 #endif
 
+! Export mesh to VTKFile_
 meshptr => obj%fedof%GetMeshPointer()
 CALL meshptr%ExportToVTK(vtk=vtk, openTag=math%yes, content=math%yes, &
                          closeTag=math%no)
@@ -94,6 +96,7 @@ location = String('node')
 action = String('open')
 CALL vtk%WriteDataArray(location=location, action=action)
 
+! Export data to VTKFile_
 CALL obj%ExportToVTK(vtk=vtk)
 
 action = String('close')
