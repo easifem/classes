@@ -186,8 +186,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-alpha1 = 0.0_DFP; beta1 = 0.0_DFP; lambda1 = 0.5_DFP
-alpha2 = 0.0_DFP; beta2 = 0.0_DFP; lambda2 = 0.5_DFP
+alpha1 = 0.0_DFP
+beta1 = 0.0_DFP
+lambda1 = 0.5_DFP
+alpha2 = 0.0_DFP
+beta2 = 0.0_DFP
+lambda2 = 0.5_DFP
 
 order1 = order(1)
 order2 = order1
