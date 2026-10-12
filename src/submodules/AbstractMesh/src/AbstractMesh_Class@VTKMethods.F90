@@ -159,7 +159,7 @@ IF (ALLOCATED(xij)) DEALLOCATE (xij)
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
-!                                                                  WriteData
+!                                                                 WriteData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteData_vtk

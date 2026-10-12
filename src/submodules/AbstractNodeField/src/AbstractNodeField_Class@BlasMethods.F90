@@ -27,8 +27,12 @@ USE RealVector_Method, ONLY: SCAL
 USE BaseType, ONLY: TypeConvergenceOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@BlasMethods.F90"
+#endif
 
 CONTAINS
 

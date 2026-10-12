@@ -32,6 +32,11 @@ USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer
 USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

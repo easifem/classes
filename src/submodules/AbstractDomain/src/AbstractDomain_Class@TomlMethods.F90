@@ -15,11 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractDomain_Class) TomlMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
 USE StringUtility, ONLY: GetExtension
-USE tomlf, ONLY: toml_serialize
 USE tomlf, ONLY: toml_get => get_value
 USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
@@ -168,15 +166,6 @@ CALL AssertError1(isok, myName, &
 #endif
 
 CALL obj%ImportFromToml(table=node)
-
-#ifdef DEBUG_VER
-isok = PRESENT(printToml)
-IF (isok) THEN
-  CALL Display(toml_serialize(node), &
-               "AbstractDomain toml config: "//CHAR_LF, &
-               unitno=stdout)
-END IF
-#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

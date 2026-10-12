@@ -18,13 +18,11 @@ SUBMODULE(AbstractField_Class) TomlMethods
 USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
 USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE GlobalData, ONLY: stdout, CHAR_LF
 USE NeumannBC_Class, ONLY: NeumannBCImportFromToml
 USE StringUtility, ONLY: UpperCase
 USE tomlf, ONLY: toml_array
 USE tomlf, ONLY: toml_get => get_value
 USE tomlf, ONLY: toml_len => len
-USE tomlf, ONLY: toml_serialize
 USE TomlUtility, ONLY: GetValue
 USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
@@ -142,13 +140,6 @@ CALL AssertError1(isok, myName, &
 CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
                         timefedof=timefedof, dom=dom)
 
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
-               CHAR_LF, unitno=stdout)
-END IF
-#endif
-
 node => NULL()
 
 #ifdef DEBUG_VER
@@ -232,14 +223,6 @@ CALL AssertError1(isok, myName, &
 CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
                         timefedof=timefedof, dom=dom)
 
-#ifdef DEBUG_VER
-isok = PRESENT(printToml)
-IF (isok) THEN
-  CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
-               CHAR_LF, unitno=stdout)
-END IF
-#endif
-
 node => NULL()
 
 #ifdef DEBUG_VER
@@ -322,14 +305,6 @@ CALL AssertError1(isok, myName, &
 
 CALL obj%ImportFromToml(table=node, fedof=fedof, geofedof=geofedof, &
                         timefedof=timefedof, dom=dom)
-
-#ifdef DEBUG_VER
-isok = PRESENT(printToml)
-IF (isok) THEN
-  CALL Display(toml_serialize(node), myname//" Domain toml config: "// &
-               CHAR_LF, unitno=stdout)
-END IF
-#endif
 
 node => NULL()
 

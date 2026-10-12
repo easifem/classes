@@ -15,7 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(FEDomain_Class) IOMethods
-USE Display_Method
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: BlankLines
 USE FEMesh_Class, ONLY: FEMesh_, FEMesh_Pointer
 USE AbstractDomain_Class, ONLY: AbstractDomainDisplay, &
                                 AbstractDomainDisplayDomainInfo, &

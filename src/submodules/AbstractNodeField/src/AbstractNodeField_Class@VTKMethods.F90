@@ -34,6 +34,11 @@ USE IntVector_Method, ONLY: IntVector_Initiate => Initiate
 USE IntVector_Method, ONLY: ASSIGNMENT(=)
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@VTKMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

@@ -24,8 +24,13 @@ USE DOF_Method, ONLY: DOF_Initiate => Initiate
 USE AbstractField_Class, ONLY: AbstractFieldInitiate
 USE AbstractField_Class, ONLY: AbstractFieldDeallocate
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

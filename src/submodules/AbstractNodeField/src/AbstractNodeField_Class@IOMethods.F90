@@ -18,8 +18,12 @@ SUBMODULE(AbstractNodeField_Class) IOMethods
 USE Display_Method, ONLY: Display
 USE DOF_Method, ONLY: DOF_Display => Display
 USE AbstractField_Class, ONLY: AbstractFieldDisplay
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@IOMethods.F90"
+#endif
 
 CONTAINS
 
