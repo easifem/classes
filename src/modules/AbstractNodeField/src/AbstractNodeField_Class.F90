@@ -47,10 +47,6 @@ PUBLIC :: AbstractNodeFieldSetParam
 PUBLIC :: AbstractNodeFieldGetFEVariable
 PUBLIC :: NodeFieldsWriteData
 
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "AbstractNodeField_Class"
-#endif
-
 INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 ! INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
@@ -95,8 +91,6 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !! note: This variable is only for internal use
 
 CONTAINS
-  PRIVATE
-
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
@@ -137,11 +131,11 @@ CONTAINS
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
-  PROCEDURE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
   !! get many values from indices
-  PROCEDURE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
   !! get many values from trides
-  PROCEDURE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
+  PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
   !! get many values from trides
 
   GENERIC, PUBLIC :: GetMultiple => GetMultiple1, GetMultiple2, &
@@ -165,26 +159,28 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: SetFromHDF5 => obj_SetFromHDF5
+  !! Set values from hdf5
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
   !! Set all the values to a constant scalar value
-  PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
+  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
   !! Set multiple entries using indices
-  PROCEDURE, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
+  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
   !! Set multiple entries using range
-  PROCEDURE, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
+  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
   !! Set multiple entries using range
-  PROCEDURE, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
+  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
   !! Set multiple entries using range
   GENERIC, PUBLIC :: SetMultiple => SetMultiple1, SetMultiple2, &
     SetMultiple3, SetMultiple4
 
   ! GET:
   ! @BlasMethods
-  PROCEDURE, PASS(obj) :: AXPY1 => obj_AXPY1
-  PROCEDURE, PASS(obj) :: AXPY2 => obj_AXPY2
-  PROCEDURE, PASS(obj) :: AXPY3 => obj_AXPY3
+  PROCEDURE, PRIVATE, PASS(obj) :: AXPY1 => obj_AXPY1
+  PROCEDURE, PRIVATE, PASS(obj) :: AXPY2 => obj_AXPY2
+  PROCEDURE, PRIVATE, PASS(obj) :: AXPY3 => obj_AXPY3
   GENERIC, PUBLIC :: AXPY => AXPY1, AXPY2, AXPY3
   !! Y = Y + scale * X ...
   PROCEDURE, PUBLIC, PASS(obj) :: SCAL => obj_SCAL
@@ -587,6 +583,22 @@ END INTERFACE
 INTERFACE AbstractNodeFieldSetParam
   MODULE PROCEDURE obj_SetParam
 END INTERFACE AbstractNodeFieldSetParam
+
+!----------------------------------------------------------------------------
+!                                                     SetFromHDF5@HDFMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-11
+! summary: Set value from HDF5
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetFromHDF5(obj, hdf5, group)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    CHARACTER(*), INTENT(IN) :: group
+  END SUBROUTINE obj_SetFromHDF5
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                       SetSingle@SetMethods

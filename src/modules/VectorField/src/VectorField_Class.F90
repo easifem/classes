@@ -23,6 +23,7 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: math => TypeMathOpt
 USE DirichletBC_Class, ONLY: DirichletBCPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_
 USE ExceptionHandler_Class, ONLY: e
@@ -65,7 +66,7 @@ PUBLIC :: VectorFieldSafeAllocate
 !{!pages/docs-api/VectorField/VectorField_.md!}
 
 TYPE, EXTENDS(AbstractNodeField_) :: VectorField_
-  INTEGER(I4B) :: spaceCompo = 0_I4B
+  INTEGER(I4B) :: spaceCompo = math%zero_i
   INTEGER(I4B), ALLOCATABLE :: idofs(:)
 CONTAINS
   PRIVATE
@@ -415,7 +416,7 @@ INTERFACE VectorFieldDisplay
 END INTERFACE VectorFieldDisplay
 
 !----------------------------------------------------------------------------
-!                                                                Import@IO
+!                                                         Import@HDF5Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
@@ -436,23 +437,19 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                  Export@IO
+!                                                         Export@HDF5Methods
 !----------------------------------------------------------------------------
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE
+INTERFACE VectorFieldExport
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
-END INTERFACE
-
-INTERFACE VectorFieldExport
-  MODULE PROCEDURE obj_Export
 END INTERFACE VectorFieldExport
 
 !----------------------------------------------------------------------------

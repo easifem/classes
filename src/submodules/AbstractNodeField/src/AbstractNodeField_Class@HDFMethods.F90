@@ -22,9 +22,12 @@ USE AbstractField_Class, ONLY: AbstractFieldExport
 USE HDF5FileUtility, ONLY: ImportRealVector
 USE HDF5FileUtility, ONLY: ImportDOF
 USE HDF5FileUtility, ONLY: ExportRealVector
-USE HDF5FileUtility, ONLY: ImportRealVector
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@HDFMethods.F90"
+#endif
 
 CONTAINS
 
@@ -51,39 +54,74 @@ CALL AbstractFieldImport( &
   obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
   geofedof=geofedof, geofedofs=geofedofs)
 
+! Integer Scalars
+! ---------------
+! dof_tPhysicalVars
 dsetname = TRIM(group)//"/IntR0/dof_tPhysicalVars"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
-                         vals=obj%dof_tPhysicalVars)
+isok = hdf5%pathExists(dsetname%Chars())
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=obj%dof_tPhysicalVars)
+END IF
 
+! dof_storageFMT
 dsetname = TRIM(group)//"/IntR0/dof_storageFMT"
 isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
-                         vals=obj%dof_storageFMT)
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%dof_storageFMT)
+END IF
 
+! tSize
 dsetname = TRIM(group)//"/IntR0/tSize"
 isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
-                         vals=obj%tSize)
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%tSize)
+END IF
+
+! Integer Vectors
+! ---------------
 
 dsetname = TRIM(group)//"/IntR1/dof_spaceCompo"
 isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
-                         vals=obj%dof_spaceCompo)
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%dof_spaceCompo)
+END IF
 
 dsetname = TRIM(group)//"/IntR1/dof_timeCompo"
 isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
-                         vals=obj%dof_timeCompo)
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%dof_timeCompo)
+END IF
 
 dsetname = TRIM(group)//"/IntR1/dof_tNodes"
 isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), &
-                         vals=obj%dof_tNodes)
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%dof_tNodes)
+END IF
 
 ! StringR1
 dsetname = TRIM(group)//"/StringR1/dof_names_char"
 isok = hdf5%pathExists(dsetname%chars())
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
 IF (isok) THEN
   CALL hdf5%READ(dsetname=dsetname%Chars(), vals=tempStrs)
   tsize = SIZE(tempStrs)
@@ -97,8 +135,12 @@ END IF
 
 dsetname = TRIM(group)//"/RealVectorR0/realVec"
 isok = hdf5%pathExists(dsetname%chars())
-IF (isok) CALL ImportRealVector(obj=obj%realvec, hdf5=hdf5, &
-                                group=dsetname%chars())
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL ImportRealVector(obj=obj%realvec, hdf5=hdf5, group=dsetname%chars())
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -124,6 +166,15 @@ INTEGER(I4B) :: ii, tsize
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+IF (.NOT. obj%IsInitiated()) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
 CALL AbstractFieldExport(obj=obj, hdf5=hdf5, group=group)
 

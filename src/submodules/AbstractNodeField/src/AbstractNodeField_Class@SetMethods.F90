@@ -19,8 +19,15 @@ USE InputUtility, ONLY: Input
 USE RealVector_Method, ONLY: RealVectorSet => Set
 USE RealVector_Method, ONLY: RealVectorAdd => Add
 USE BaseType, ONLY: math => TypeMathOpt
-
+USE String_Class, ONLY: String
+USE HDF5FileUtility, ONLY: ImportRealVector
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -277,6 +284,54 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetAll
+
+!----------------------------------------------------------------------------
+!                                                                SetFromHDF5
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFromHDF5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFromHDF5()"
+#endif
+
+LOGICAL(LGT) :: isok
+TYPE(String) :: dsetname
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsInitiated()
+CALL AssertError1(isok, myName, "hdf5 not initiated.")
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, "hdf5 not open.")
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsRead()
+CALL AssertError1(isok, myName, "hdf5 does not have read access.")
+#endif
+
+! realVec
+dsetname = TRIM(group)//"/RealVectorR0/realVec"
+isok = hdf5%pathExists(dsetname%chars())
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL ImportRealVector(obj=obj%realvec, hdf5=hdf5, group=dsetname%chars())
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetFromHDF5
 
 !----------------------------------------------------------------------------
 !                                                              Include error

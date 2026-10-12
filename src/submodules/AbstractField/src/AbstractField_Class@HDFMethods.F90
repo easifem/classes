@@ -46,11 +46,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (.NOT. obj%IsInitiated()) THEN
 #ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'AbstractField_::obj%isInitiated is not initiated')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
+  RETURN
+END IF
 
 ! Check
 #ifdef DEBUG_VER
@@ -172,17 +174,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = .NOT. obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'The instance of AbstractField_ is already initiated')
-#endif
-
+! Check
 #ifdef DEBUG_VER
 isok = hdf5%isOpen()
 CALL AssertError1(isok, myName, 'HDF5 file is not opened')
 #endif
 
+! Check
 #ifdef DEBUG_VER
 isok = hdf5%isRead()
 CALL AssertError1(isok, myName, 'HDF5 file does not have read permission')
@@ -192,6 +190,7 @@ obj%isInit = math%yes
 
 ! Bool0
 
+! isMaxTotalNodeNumForBCSet
 dsetname = TRIM(group)//"/Bool0/isMaxTotalNodeNumForBCSet"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) THEN
