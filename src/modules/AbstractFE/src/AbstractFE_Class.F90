@@ -867,7 +867,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData2( &
-    obj, geofeptr, elemsd, geoelemsd, xij, quad)
+    obj, geofeptr, elemsd, geoelemsd, xij, quad, doNotInitQuad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj, geofeptr
     !! Abstract finite element
     !! Abstract finite element for geometry
@@ -885,6 +885,9 @@ INTERFACE
     !! The number of rows in xij should be same as the spatial dimension
     !! The number of columns should be same as the number of nodes
     !! present in the reference element in geoElemsd.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: doNotInitQuad
+    !! Default value is false, but if present and true, then
+    !! we do not initiate quadrature points
   END SUBROUTINE obj_GetGlobalElemShapeData2
 END INTERFACE
 

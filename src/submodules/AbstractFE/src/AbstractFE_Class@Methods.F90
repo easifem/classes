@@ -482,16 +482,22 @@ MODULE PROCEDURE obj_GetGlobalElemShapeData2
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData2()"
 #endif
 
+LOGICAL(LGT) :: doNotInitQuad0
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%GetQuadraturePoints(quad=quad)
+doNotInitQuad0 = Input(default=math%no, option=doNotInitQuad)
+
+IF (.NOT. doNotInitQuad0) THEN
+  CALL obj%GetQuadraturePoints(quad=quad)
+END IF
+
 CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
-CALL obj%GetGlobalElemShapeData( &
-  elemsd=elemsd, xij=xij, geoelemsd=geoelemsd)
+CALL obj%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, geoelemsd=geoelemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
