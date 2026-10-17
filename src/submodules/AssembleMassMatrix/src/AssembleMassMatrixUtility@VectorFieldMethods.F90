@@ -22,6 +22,7 @@ USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE FEDOF_Class, ONLY: FEDOF_
 USE FEVariable_Method, ONLY: QuadratureVariable
+USE FEVariable_Method, ONLY: NodalVariable
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemshapeData_
 USE BaseType, ONLY: FEVariable_
@@ -76,9 +77,9 @@ CALL Reallocate(xij, 3, maxNNEGeo)
 CALL Reallocate(cellCon, maxNNE)
 CALL Reallocate(ks, spaceCompo(1) * maxNNE, spaceCompo(1) * maxNNE)
 
-rhoVar = QuadratureVariable(tsize=maxQuadPoints, &
-                            varType=TypeFEVariableSpace, &
-                            rank=TypeFEVariableScalar)
+rhoVar = NodalVariable(tsize=maxQuadPoints, &
+                       varType=TypeFEVariableSpace, &
+                       rank=TypeFEVariableScalar)
 
 DO iel = 1, tElements
 

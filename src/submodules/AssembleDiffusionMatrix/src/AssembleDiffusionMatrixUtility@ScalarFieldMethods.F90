@@ -27,7 +27,10 @@ USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemshapeData_
 USE BaseType, ONLY: FEVariable_
 USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: math => TypeMathOpt
+USE FEVariable_Method, ONLY: QuadratureVariable
+USE FEVariable_Method, ONLY: NodalVariable
 
 #ifdef DEBUG_VER
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
@@ -51,7 +54,8 @@ CHARACTER(*), PARAMETER :: myName = "ScalarFieldAssembleDiffusionMatrix1()"
 #endif
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
-                tcellCon, ks_i, ks_j, xij_i, xij_j
+                tcellCon, ks_i, ks_j, xij_i, xij_j, &
+                maxQuadPoints
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
 REAL(DFP), ALLOCATABLE :: xij(:, :), ks(:, :)
@@ -75,10 +79,15 @@ IF (reset) CALL tanmat%set(VALUE=math%zero)
 
 maxNNEGeo = geofedof%GetMaxTotalConnectivity()
 maxNNE = fedof%GetMaxTotalConnectivity()
+maxQuadPoints = mesh%GetTotalNodes()
 
 CALL Reallocate(xij, 3, maxNNEGeo)
 CALL Reallocate(cellCon, maxNNE)
 CALL Reallocate(ks, maxNNE, maxNNE)
+
+diffCoeffVar = NodalVariable(tsize=maxQuadPoints, &
+                             varType=TypeFEVariableSpace, &
+                             rank=TypeFEVariableScalar)
 
 DO iel = 1, tElements
 
