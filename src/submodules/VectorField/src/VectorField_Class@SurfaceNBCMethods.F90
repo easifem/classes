@@ -32,6 +32,11 @@ USE AbstractFE_Class, ONLY: AbstractFE_
 USE ForceVector_Method, ONLY: ForceVector_
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+
+#ifdef DEBUG_VER
+USE Display_Method, ONLY: Display
+#endif
+
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -75,17 +80,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 spaceCompo = obj%GetSpaceCompo(1)
@@ -107,6 +101,10 @@ DO ibc = 1, tbc
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
 
+  CALL nbcField%SetAll(VALUE=math%zero)
+
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
+
   CALL VectorFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
     mesh=mesh, nbcField=nbcField, scale=scale, xij=xij, &
@@ -115,6 +113,8 @@ DO ibc = 1, tbc
     geoElemsd=geoElemsd, geoFacetElemsd=geoFacetElemsd, &
     facetCon=facetCon)
 END DO
+
+nbc => NULL()
 
 DEALLOCATE (xij, facetCon, forceVec, nbcValue)
 
