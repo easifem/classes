@@ -514,7 +514,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 SELECT CASE (obj%baseInterpolation(1:1))
-CASE ("L") !! Lagrange
+CASE ("L")
+  ! Lagrange
   CALL obj%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
                               errCheck=.FALSE.)
 
@@ -529,7 +530,7 @@ CASE ("L") !! Lagrange
   CALL obj%SetAnisotropicOrder(anisoOrder=anisoOrder, errCheck=errCheck)
 
 CASE ("H")
-!! Hierarchical
+  ! Hierarchical
   CALL obj%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
                               errCheck=errCheck)
 
@@ -745,133 +746,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE Quadrangle_SetQuadratureType
 
 !----------------------------------------------------------------------------
-!                                                         Line_FixOrientOfXij
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Line_FixOrientOfXij
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "Line_FixOrientOfXij()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Nothing to do here.')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE Line_FixOrientOfXij
-
-!----------------------------------------------------------------------------
-!                                                  Quadrangle_FixOrientOfXij
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Quadrangle_FixOrientOfXij
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "Quadrangle_FixOrientOfXij()"
-#endif
-
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: n1, n2
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-isok = (obj%order .GT. 2_I4B) .AND. obj%isFaceOrient
-
-IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    'Nothing to do here.')
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-n1 = 1
-n2 = 4
-
-! Edge-1: 1 --> 2
-n1 = n2 + 1
-n2 = n2 + obj%order - 1
-isok = obj%faceOrient(1, 1) .EQ. math%minus_one_i
-IF (isok) THEN
-  CALL Reverse(ans=xij, r1=math%one_i, r2=nrow, c1=n1, c2=n2, &
-               dim=math%two_i)
-END IF
-
-! Edge-2: 2 --> 3
-n1 = n2 + 1
-n2 = n2 + obj%order - 1
-isok = obj%faceOrient(1, 2) .EQ. math%minus_one_i
-IF (isok) THEN
-  CALL Reverse(ans=xij, r1=math%one_i, r2=nrow, c1=n1, c2=n2, &
-               dim=math%two_i)
-END IF
-
-! Edge-3: 3 --> 4
-n1 = n2 + 1
-n2 = n2 + obj%order - 1
-isok = obj%faceOrient(1, 3) .EQ. math%minus_one_i
-IF (isok) THEN
-  CALL Reverse(ans=xij, r1=math%one_i, r2=nrow, c1=n1, c2=n2, &
-               dim=math%two_i)
-END IF
-
-! Edge-4: 4 --> 1
-n1 = n2 + 1
-n2 = n2 + obj%order - 1
-isok = obj%faceOrient(1, 4) .EQ. math%minus_one_i
-IF (isok) THEN
-  CALL Reverse(ans=xij, r1=math%one_i, r2=nrow, c1=n1, c2=n2, &
-               dim=math%two_i)
-END IF
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE Quadrangle_FixOrientOfXij
-
-!----------------------------------------------------------------------------
-!                                                    Triangle_FixOrientOfXij
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE Triangle_FixOrientOfXij
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "Triangle_FixOrientOfXij()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Nothing to do here.')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE Triangle_FixOrientOfXij
-
-!----------------------------------------------------------------------------
 !                                                  Quadrangle_FixOrientNptrs
 !----------------------------------------------------------------------------
 
@@ -953,15 +827,55 @@ MODULE PROCEDURE Triangle_FixOrientOfNptrs
 CHARACTER(*), PARAMETER :: myName = "Triangle_FixOrientOfNptrs()"
 #endif
 
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: n1, n2
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+isok = (obj%order .GT. math%two_i) .AND. obj%isFaceOrient
+
+IF (.NOT. isok) THEN
 #ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Nothing to do here.')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Nothing to do here.')
 #endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+n1 = 1
+n2 = 3
+
+! Edge-1: 1 --> 2
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 1) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+! Edge-2: 2 --> 3
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 2) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+! Edge-3: 3 --> 1
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 3) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

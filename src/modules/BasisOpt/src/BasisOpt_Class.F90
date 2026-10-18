@@ -305,12 +305,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetEdgeOrientation => &
     obj_SetEdgeOrientation
   !! Set the Edge orientation
-  PROCEDURE, PUBLIC, PASS(obj) :: Line_FixOrientOfXij
-  !! Fix orientation of interpolation points on line
-  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_FixOrientOfXij
-  !! Fix orientation of interpolation points
-  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_FixOrientOfXij
-  !! Fix orientation of interpolation points
   PROCEDURE, PUBLIC, PASS(obj) :: Line_FixOrientOfNptrs
   !! Fix orientation of connectivity of line
   PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_FixOrientOfNptrs
@@ -835,63 +829,6 @@ INTERFACE
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_SetEdgeOrientation
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             Line_FixOrientOfXij@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-10-13
-! summary: Fix the orientation of interpolation points on line
-
-INTERFACE
-  MODULE SUBROUTINE Line_FixOrientOfXij(obj, xij, nrow, ncol)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! Basis options
-    REAL(DFP), INTENT(INOUT) :: xij(:, :)
-    !! Interpolation points which will be fixed
-    INTEGER(I4B), INTENT(IN) :: nrow, ncol
-    !! Extent of data to be read from xij
-  END SUBROUTINE Line_FixOrientOfXij
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                       Quadrangle_FixOrientOfXij@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-10-13
-! summary: Fix the Orient of interpolation points on quadrangle
-
-INTERFACE
-  MODULE SUBROUTINE Quadrangle_FixOrientOfXij(obj, xij, nrow, ncol)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! Basis options
-    REAL(DFP), INTENT(INOUT) :: xij(:, :)
-    !! Interpolation points which will be fixed
-    INTEGER(I4B), INTENT(IN) :: nrow, ncol
-    !! Extent of data to be read from xij
-  END SUBROUTINE Quadrangle_FixOrientOfXij
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                         Triangle_FixOrientOfXij@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-10-13
-! summary: Fix the Orient of interpolation points on triangle
-
-INTERFACE
-  MODULE SUBROUTINE Triangle_FixOrientOfXij(obj, xij, nrow, ncol)
-    CLASS(BasisOpt_), INTENT(INOUT) :: obj
-    !! Basis options
-    REAL(DFP), INTENT(INOUT) :: xij(:, :)
-    !! Interpolation points which will be fixed
-    INTEGER(I4B), INTENT(IN) :: nrow, ncol
-    !! Extent of data to be read from xij
-  END SUBROUTINE Triangle_FixOrientOfXij
 END INTERFACE
 
 !----------------------------------------------------------------------------
