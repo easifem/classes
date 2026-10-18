@@ -111,7 +111,6 @@ TYPE :: UStfemAlgorithm_
   !! stiffMatCoeff: coefficient for stiffness matrix K
   !! forceCoeff: coefficient for external force vector
 CONTAINS
-  PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: AllocateData => obj_AllocateData

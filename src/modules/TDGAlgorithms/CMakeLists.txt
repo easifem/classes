@@ -23,6 +23,9 @@ target_sources(
         ${src_path}/TDGAlgorithm2_Class.F90
         ${src_path}/TDGAlgorithm3_Class.F90
         ${src_path}/UvStfemAlgorithm_Class.F90
+        ${src_path}/AbstractStfemAlgorithm2_Class.F90
         ${src_path}/UStfemAlgorithm_Class.F90
         ${src_path}/VStfemAlgorithm_Class.F90
+        ${src_path}/UStfemAlgorithm2_Class.F90
+        ${src_path}/VStfemAlgorithm2_Class.F90
 )
