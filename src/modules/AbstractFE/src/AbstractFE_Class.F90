@@ -51,8 +51,6 @@ TYPE, ABSTRACT :: AbstractFE_
   !! basis options
 
 CONTAINS
-  PRIVATE
-
   ! CONSTRUCTOR:
   !@ConstructorMethods
 
@@ -173,6 +171,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
   !! Get total number of Interpolation points
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  !! This subroutine fixes the orientation of connectivity
 
   ! GET:
   ! @FacetDOFMethods
@@ -1217,6 +1217,28 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
     !! Jacobi and Ultraspherical parameters
   END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    FixOrientOfNptrs@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-18
+! summary: Fix the orientation of connectivity
+!
+! This subroutine fixes the orientation of connectivity.
+! This is necessary for getting Lagrange DOF for visualization.
+
+INTERFACE
+  MODULE SUBROUTINE obj_FixOrientOfNptrs(obj, nptrs, tsize)
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! nodal coordinates of reference element
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! extent of data to be read from xij
+  END SUBROUTINE obj_FixOrientOfNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------

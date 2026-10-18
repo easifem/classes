@@ -305,6 +305,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetEdgeOrientation => &
     obj_SetEdgeOrientation
   !! Set the Edge orientation
+  PROCEDURE, PUBLIC, PASS(obj) :: Line_FixOrientOfNptrs
+  !! Fix orientation of connectivity of line
+  PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_FixOrientOfNptrs
+  !! Fix orientation of connectivity of quadrangle
+  PROCEDURE, PUBLIC, PASS(obj) :: Triangle_FixOrientOfNptrs
+  !! Fix orientation of connectivity of triangle
 
   !GET:
   ! @GetMethods
@@ -823,6 +829,72 @@ INTERFACE
     !! user can ignore this option
     !! for dev: this option checks the errors in debug mode
   END SUBROUTINE obj_SetEdgeOrientation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    FixOrientOfNptrs@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-18
+! summary: Fix the orientation of connectivity
+!
+! This subroutine fixes the orientation of connectivity.
+! This is necessary for getting Lagrange DOF for visualization.
+
+INTERFACE
+  MODULE SUBROUTINE Line_FixOrientOfNptrs(obj, nptrs, tsize)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! nodal coordinates of reference element
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! extent of data to be read from xij
+  END SUBROUTINE Line_FixOrientOfNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    FixOrientOfNptrs@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-18
+! summary: Fix the orientation of connectivity
+!
+! This subroutine fixes the orientation of connectivity.
+! This is necessary for getting Lagrange DOF for visualization.
+
+INTERFACE
+  MODULE SUBROUTINE Quadrangle_FixOrientOfNptrs(obj, nptrs, tsize)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! nodal coordinates of reference element
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! extent of data to be read from xij
+  END SUBROUTINE Quadrangle_FixOrientOfNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    FixOrientOfNptrs@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-18
+! summary: Fix the orientation of connectivity
+!
+! This subroutine fixes the orientation of connectivity.
+! This is necessary for getting Lagrange DOF for visualization.
+
+INTERFACE
+  MODULE SUBROUTINE Triangle_FixOrientOfNptrs(obj, nptrs, tsize)
+    CLASS(BasisOpt_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! nodal coordinates of reference element
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! extent of data to be read from xij
+  END SUBROUTINE Triangle_FixOrientOfNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------

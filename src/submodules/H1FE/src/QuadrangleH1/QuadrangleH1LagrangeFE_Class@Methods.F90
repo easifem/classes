@@ -194,8 +194,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%opt%QuadrangleH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, xij=xij, &
-                                                      geoelemsd=geoelemsd)
+CALL obj%opt%QuadrangleH1LagFE_GetGlobalElemShapeData( &
+  elemsd=elemsd, xij=xij, geoelemsd=geoelemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

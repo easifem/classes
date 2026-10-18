@@ -57,6 +57,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
   !! Get the interpolation points
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  !! This subroutine fixes the orientation of connectivity
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   !! Set the orientation of element
   PROCEDURE, PUBLIC, PASS(obj) :: &
@@ -203,6 +205,28 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
     !! Jacobi and Ultraspherical parameters
   END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    FixOrientOfNptrs@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-18
+! summary: Fix the orientation of connectivity
+!
+! This subroutine fixes the orientation of connectivity.
+! This is necessary for getting Lagrange DOF for visualization.
+
+INTERFACE
+  MODULE SUBROUTINE obj_FixOrientOfNptrs(obj, nptrs, tsize)
+    CLASS(QuadrangleH1FE_), INTENT(INOUT) :: obj
+    !! Abstract finite elemenet
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! nodal coordinates of reference element
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! extent of data to be read from xij
+  END SUBROUTINE obj_FixOrientOfNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------

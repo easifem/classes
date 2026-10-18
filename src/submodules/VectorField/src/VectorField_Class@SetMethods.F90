@@ -1004,11 +1004,25 @@ cell_loop: DO iel = 1, tElements
     xij=elemCoord(1:elemCoord_i, 1:elemCoord_j), ans=xij, nrow=xij_i, &
     ncol=xij_j, order=cellOrder, ipType=ipType)
 
+  !! nrow and ncol in the following are readonly, so no problem
+  CALL feptr%FixOrientOfNptrs(nptrs=fecon, tsize=tfecon)
+
   CALL obj%Set(VALUE=xij(1:obj%spaceCompo, 1:xij_j), &
                globalNode=fecon(1:tfecon), &
                islocal=math%yes, scale=math%one, &
                addContribution=math%no, &
                storageFMT=TypeFieldOpt%storageFormatNodes)
+
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'start')
+
+  CALL Display(fecon(1:tfecon), "fecon", 10)
+  CALL Display(" ", 10)
+  CALL Display(xij(1:obj%spaceCompo, 7:8), "xij(7:8): ", 10)
+  CALL Display(xij(1:obj%spaceCompo, 11:12), "xij(11:12): ", 10)
+  CALL Display(" ", 10)
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'stop')
 END DO cell_loop
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)

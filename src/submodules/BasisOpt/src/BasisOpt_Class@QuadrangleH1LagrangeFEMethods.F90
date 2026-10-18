@@ -152,9 +152,11 @@ IF (.NOT. bool1) THEN
   RETURN
 END IF
 
-n1 = 1; n2 = 4
+n1 = 1
+n2 = 4
 ! Edge-1: 1 --> 2
-n1 = n2 + 1; n2 = n2 + obj%order - 1
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
 isok = bool1 .AND. (obj%faceOrient(1, 1) .EQ. -1_I4B)
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
@@ -167,7 +169,8 @@ IF (isok) THEN
 END IF
 
 ! Edge-2: 2 --> 3
-n1 = n2 + 1; n2 = n2 + obj%order - 1
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
 isok = bool1 .AND. (obj%faceOrient(1, 2) .EQ. -1_I4B)
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
@@ -180,7 +183,8 @@ IF (isok) THEN
 END IF
 
 ! Edge-3: 3 --> 4
-n1 = n2 + 1; n2 = n2 + obj%order - 1
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
 isok = bool1 .AND. (obj%faceOrient(1, 3) .EQ. -1_I4B)
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
@@ -193,7 +197,8 @@ IF (isok) THEN
 END IF
 
 ! Edge-4: 4 --> 1
-n1 = n2 + 1; n2 = n2 + obj%order - 1
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
 isok = bool1 .AND. (obj%faceOrient(1, 4) .EQ. -1_I4B)
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)

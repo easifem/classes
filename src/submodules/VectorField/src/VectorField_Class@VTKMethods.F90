@@ -88,6 +88,7 @@ INTEGER(I4B), ALLOCATABLE :: vtkindx(:), connectivity(:), &
 REAL(DFP), ALLOCATABLE :: xij(:, :)
 CLASS(AbstractMesh_), POINTER :: mesh
 CLASS(FEDOF_), POINTER :: fedof
+CLASS(AbstractFE_), POINTER :: feptr
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -96,6 +97,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 mesh => NULL()
 fedof => NULL()
+feptr => NULL()
 
 IF (.NOT. vtk%isInitiated) THEN
 
@@ -166,9 +168,15 @@ IF (Content_) THEN
 
     offsets(iel) = offsets(iel - 1) + ii
 
+    CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+    feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
     ! Get local connectivity
     CALL fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                                 ans=cellcon, tsize=jj, opt="A")
+
+    ! Fix the orientation of cellcon
+    CALL feptr%FixOrientOfNptrs(nptrs=cellcon, tsize=jj)
 
 #ifdef DEBUG_VER
     CALL AssertError2(ii, jj, myName, &
