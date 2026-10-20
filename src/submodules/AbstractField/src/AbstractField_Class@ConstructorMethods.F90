@@ -72,6 +72,9 @@ obj%local_n = obj2%local_n
 obj%is = obj2%is
 obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
+
+obj%dof = obj2%dof
+
 obj%fedof => obj2%fedof
 obj%geofedof => obj2%geofedof
 
@@ -127,7 +130,15 @@ IF (isok) THEN
   END DO
 END IF
 
-obj%dof = obj2%dof
+isok = ALLOCATED(obj2%nodalValue)
+IF (isok) THEN
+  obj%nodalValue = obj2%nodalValue
+END IF
+
+isok = ALLOCATED(obj2%nodeNum)
+IF (isok) THEN
+  obj%nodeNum = obj2%nodeNum
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

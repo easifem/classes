@@ -24,6 +24,7 @@ USE BasisOpt_Class, ONLY: TypeBasisOpt
 USE OneDimBasisOpt_Class, ONLY: TypeOneDimBasisOpt
 USE TomlUtility, ONLY: GetValue
 USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: math => TypeMathOpt
 
 USE LineH1LagrangeFE_Class, ONLY: LineH1LagrangeFE_
 USE LineH1HierarchicalFE_Class, ONLY: LineH1HierarchicalFE_
@@ -95,6 +96,12 @@ CASE (TypeElemNameOpt%prism)
 CASE (TypeElemNameOpt%pyramid)
   ans => FEFactoryPyramid(baseContinuity=baseContinuity, &
                           baseInterpolation=baseInterpolation)
+CASE DEFAULT
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for elemType")
+#endif
+
 END SELECT
 
 #ifdef DEBUG_VER
@@ -202,9 +209,10 @@ FUNCTION FEFactoryLine(baseContinuity, baseInterpolation) RESULT(ans)
   CASE ("H1HIER", "H1HEIR")
     ALLOCATE (LineH1HierarchicalFE_ :: ans)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT

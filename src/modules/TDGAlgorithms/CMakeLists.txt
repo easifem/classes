@@ -28,4 +28,5 @@ target_sources(
         ${src_path}/VStfemAlgorithm_Class.F90
         ${src_path}/UStfemAlgorithm2_Class.F90
         ${src_path}/VStfemAlgorithm2_Class.F90
+        ${src_path}/StfemAlgorithm2FactoryUtility.F90
 )

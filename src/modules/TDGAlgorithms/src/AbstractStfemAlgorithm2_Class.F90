@@ -147,6 +147,10 @@ CONTAINS
     Display => obj_Display
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     MakeZeros => obj_MakeZeros
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
+    ImportFromToml2 => obj_ImportFromToml2
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 END TYPE AbstractStfemAlgorithm2_
 
 !----------------------------------------------------------------------------
@@ -240,6 +244,96 @@ INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractStfemAlgorithm2_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ImportFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-06
+! summary: Import data from toml table
+!
+! This method imports the data from the toml table into the object.
+! It is a private method and is called by the public method ImportFromToml.
+! The toml table is passed as an argument to this method.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B, DFP, LGT
+! USE AbstractStfemAlgorithm2_Class, ONLY: AbstractStfemAlgorithm2_
+! USE StfemAlgorithm2FactoryUtility, ONLY: StfemAlgorithm2Factory
+! USE TomlUtility, ONLY: GetValue
+! USE tomlf, ONLY: toml_table
+! USE tomlf, ONLY: toml_get => get_value
+! USE BaseType, ONLY: math => TypeMathOpt
+! IMPLICIT NONE
+!
+! CLASS(AbstractStfemAlgorithm2_), POINTER :: obj
+! TYPE(toml_table), ALLOCATABLE :: table
+! TYPE(toml_table), POINTER :: node
+! INTEGER(I4B) :: origin, stat
+! CHARACTER(*), PARAMETER :: tomlName = "UStfemAlgorithm2"
+! CHARACTER(*), PARAMETER :: filename = "StfemAlgorithm2_test_1.toml"
+!
+! obj => NULL()
+! node => NULL()
+!
+! CALL GetValue(table=table, filename=filename)
+!
+! CALL toml_get(table, tomlName, node, origin=origin, &
+!               requested=math%no, stat=stat)
+!
+! obj => StfemAlgorithm2Factory(table)
+!
+! CALL obj%ImportFromToml(tomlName=tomlName, filename=filename)
+!
+! END PROGRAM main
+!```
+!
+! Example of config file
+!
+! ```toml
+! [UStfemAlgorithm2]
+! name = "UStfemAlgorithm2"
+! scalingOpt="K"
+!
+! [VStfemAlgorithm2]
+! name = "UStfemAlgorithm2"
+! scalingOpt="K"
+!```
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table)
+    CLASS(AbstractStfemAlgorithm2_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ImportFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-08
+! summary:  Initiate kernel from the toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, afile, filename, printToml)
+    CLASS(AbstractStfemAlgorithm2_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    ! internal variables
+    CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+    TYPE(toml_table), ALLOCATABLE :: table
+    TYPE(toml_table), POINTER :: node
+    INTEGER(I4B) :: origin, stat
+  END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
 !----------------------------------------------------------------------------

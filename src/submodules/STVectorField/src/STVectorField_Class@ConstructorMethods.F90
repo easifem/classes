@@ -25,6 +25,7 @@ USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 USE ReallocateUtility, ONLY: Reallocate
 USE SafeSizeUtility, ONLY: SafeSize
 USE ArangeUtility, ONLY: Arange
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -103,7 +104,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL obj%DEALLOCATE()
 
-timeCompoMade = .FALSE.
+timeCompoMade = math%no
 istimefedof = PRESENT(timefedof)
 IF (istimefedof) THEN
   timeCompoMade = timefedof%IsInitiated()
@@ -116,7 +117,7 @@ IF (.NOT. timeCompoMade) THEN
   CALL AssertError1(isok, myName, "timeCompo is not present")
 #endif
   dof_timeCompo(1) = timeCompo(1)
-  timeCompoMade = .TRUE.
+  timeCompoMade = math%yes
 END IF
 
 #ifdef DEBUG_VER
@@ -147,12 +148,13 @@ CALL AbstractNodeFieldInitiate( &
   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
   local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
   storageFMT=obj%GetStorageFMT(), spaceCompo=dof_spaceCompo, &
-  isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., timeCompo=dof_timeCompo, &
-  isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
+  isSpaceCompo=math%yes, isSpaceCompoScalar=math%yes, &
+  timeCompo=dof_timeCompo, &
+  isTimeCompo=math%yes, isTimeCompoScalar=math%yes, &
   tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
-  isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
-  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., &
-  isTNodesScalar=.TRUE., geofedof=geofedof)
+  isPhysicalVarNames=math%yes, isPhysicalVarNamesScalar=math%yes, &
+  tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=math%yes, &
+  isTNodesScalar=math%yes, geofedof=geofedof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

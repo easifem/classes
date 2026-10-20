@@ -83,14 +83,13 @@ TYPE :: TDGAlgorithm1_
   LOGICAL(LGT) :: rhs_k_v1_zero(MAX_ORDER_TIME + 1) = .TRUE.
 
 CONTAINS
-  PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: MakeZeros => obj_MakeZeros
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
 END TYPE TDGAlgorithm1_
 
