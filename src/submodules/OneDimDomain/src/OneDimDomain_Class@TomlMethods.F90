@@ -119,7 +119,10 @@ IF (abool) case_id = 1
 abool = isDomain .AND. isElemLength .AND. isElemLengthUniform
 IF (abool) case_id = 2
 
-abool = isDomain .AND. isTotalElements .AND. (.NOT. isElemLengthUniform)
+abool = isDomain .AND. &
+        isTotalElements .AND. &
+        (.NOT. isElemLengthUniform) .AND. &
+        (case_id .NE. 1)
 IF (abool) case_id = 3
 
 SELECT CASE (case_id)
