@@ -320,22 +320,22 @@ INTERFACE AbstractBCInitiate
     !! Boundary
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     !! Domain
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN), OPTIONAL:: name
     !! name of boundary condition
     !! default is AbstractBC
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN), OPTIONAL:: idof
     !! degree of freedom number
     !! default is 0
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodalValueType
+    INTEGER(I4B), INTENT(IN), OPTIONAL:: nodalValueType
     !! Space, Time, SpaceTime, Constant
     !! default is -1
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUserFunction
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isUserFunction
     !! set true when userfucntion is used; default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isNormal
     !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isTangent
     !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUseExternal
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isUseExternal
     !! default is false
   END SUBROUTINE obj_Initiate
 END INTERFACE AbstractBCInitiate
@@ -568,13 +568,13 @@ END INTERFACE AbstractBCImportFromToml
 
 INTERFACE AbstractBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, &
-                                        filename, printToml)
+    filename, printToml)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    TYPE(TxtFile_), INTENT(INOUT), OPTIONAL:: afile
+    CHARACTER(*), INTENT(IN), OPTIONAL:: filename
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: printToml
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE AbstractBCImportFromToml
 
@@ -616,7 +616,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), INTENT(IN), OPTIONAL:: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -821,7 +821,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, fedof, geofedof, nodeNum, nodalValue, &
-                             nrow, ncol, times)
+    nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -834,7 +834,7 @@ INTERFACE
     !! ncol = 1 or size of times
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
     !! number of rows and cols written in nodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL:: times
     !! times vector is only used when usefunction is true in obj
   END SUBROUTINE obj_Get1
 END INTERFACE
@@ -853,7 +853,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, fedof, geofedof, timefedof, nodeNum, &
-                             nodalValue, nrow, ncol, times)
+    nodalValue, nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -944,20 +944,20 @@ INTERFACE
     useFunction, nodalValueType, isUseExternal, isUserFunction, &
     isElemToFace, isElemToEdge)
     CLASS(AbstractBC_), INTENT(IN) :: obj
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByMeshID
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByElemNum
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByNodeNum
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isTangent
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isNormal
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useFunction
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: idof
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUseExternal
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUserFunction
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToFace
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToEdge
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isInitiated
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByBox
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByMeshID
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByElemNum
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByNodeNum
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isTangent
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isNormal
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: useFunction
+    INTEGER(I4B), INTENT(OUT), OPTIONAL:: idof
+    INTEGER(I4B), INTENT(OUT), OPTIONAL:: nodalValueType
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isUseExternal
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isUserFunction
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isElemToFace
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isElemToEdge
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
@@ -997,19 +997,19 @@ INTERFACE
     obj, constantNodalValue, spaceNodalValue, &
     timeNodalValue, spaceTimeNodalValue, userFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
+    REAL(DFP), INTENT(IN), OPTIONAL:: constantNodalValue
     !! constant nodal value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
+    REAL(DFP), INTENT(IN), OPTIONAL:: spaceNodalValue(:)
     !! space nodal value
     !! size should be same as the number of boundary nodes
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
+    REAL(DFP), INTENT(IN), OPTIONAL:: timeNodalValue(:)
     !! time nodal value
     !! size is total number of time nodes
-    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
+    REAL(DFP), INTENT(IN), OPTIONAL:: spaceTimeNodalValue(:, :)
     !! space time nodal value
     !! rowsize is total number of boundary nodes
     !! colsize is total number of time nodes
-    TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
+    TYPE(UserFunction_), TARGET, INTENT(IN), OPTIONAL:: userFunction
     !! user function
   END SUBROUTINE obj_Set
 END INTERFACE
@@ -1190,13 +1190,13 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     !! quadrature for element and facet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
-                                           geoFacetElemsd
+      geoFacetElemsd
     !! Element shape data on cell and facet
     REAL(DFP), INTENT(INOUT) :: xij(:, :)
     !! xij for element
     INTEGER(I4B), INTENT(OUT) :: xij_i, xij_j
     !! size of data written in xij
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), INTENT(IN), OPTIONAL:: times(:)
     !! times vector is only used when usefunction is true in obj
   END SUBROUTINE obj_GetNBCValue
 END INTERFACE
