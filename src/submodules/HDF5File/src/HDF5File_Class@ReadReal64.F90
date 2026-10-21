@@ -18,6 +18,7 @@
 SUBMODULE(HDF5File_Class) ReadReal64
 USE HDF5, ONLY: H5T_NATIVE_DOUBLE, H5DREAD_F
 USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -32,31 +33,32 @@ CONTAINS
 
 MODULE PROCEDURE obj_read_d0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d0()"
 #endif
-TYPE(String) :: path
-INTEGER(HSIZE_T), DIMENSION(1) :: dims
-INTEGER(I4B), PARAMETER :: rank = 0
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: ierr
+  TYPE(String) :: path
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 0
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 ! Read the dataset
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, ierr)
-mem = H5T_NATIVE_DOUBLE
-IF (ierr >= 0) &
-  CALL H5DREAD_F(dset_id, mem, vals, dims, ierr)
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, ierr)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, ierr)
+  mem = H5T_NATIVE_DOUBLE
+  IF (ierr .GE. 0) THEN
+    CALL H5DREAD_F(dset_id, mem, vals, dims, ierr)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, ierr)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d0
 
@@ -66,35 +68,82 @@ END PROCEDURE obj_read_d0
 
 MODULE PROCEDURE obj_read_d1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d1"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d1"
 #endif
-TYPE(String) :: path
-INTEGER(HSIZE_T), DIMENSION(1) :: dims
-INTEGER(I4B), PARAMETER :: rank = 1
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: error
+  TYPE(String) :: path
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 1
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 ! Allocate space if needed, make sure it is the right size
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL Reallocate(vals, INT(dims, I4B))
-  mem = H5T_NATIVE_DOUBLE
-  CALL H5DREAD_F(dset_id, mem, vals, dims, error)
-END IF
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+    CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d1
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__d1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__d1()"
+#endif
+  TYPE(String) :: path
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 1
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+  INTEGER(I4B) :: mysize
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  tsize = math%zero_i
+
+  ! Allocate space if needed, make sure it is the right size
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+
+#ifdef DEBUG_VER
+    mysize = SIZE(vals)
+    CALL AssertError3(a=INT(dims(1), I4B), b=mysize, myName=myName, &
+      msg='a=dims(1) from hdf5File, b=SIZE(vals)')
+#endif
+
+    ! CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+    tsize = INT(dims(1), I4B)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__d1
 
 !----------------------------------------------------------------------------
 !                                                                       Read
@@ -102,34 +151,81 @@ END PROCEDURE obj_read_d1
 
 MODULE PROCEDURE obj_read_d2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d2()"
 #endif
-TYPE(String) :: path
-INTEGER(HSIZE_T), DIMENSION(2) :: dims
-INTEGER(I4B), PARAMETER :: rank = 2
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: error
+  TYPE(String) :: path
+  INTEGER(HSIZE_T), DIMENSION(2) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 2
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL Reallocate(vals, INT(dims, I4B))
-  mem = H5T_NATIVE_DOUBLE
-  CALL H5DREAD_F(dset_id, mem, vals, dims, error)
-END IF
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+    CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d2
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__d2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__d2()"
+#endif
+  TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 2
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  nrow = math%zero_i
+  ncol = math%zero_i
+
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+
+#ifdef DEBUG_VER
+    CALL AssertError3(a=INT(dims(1), I4B), b=SIZE(vals, 1), &
+      myName=myName, msg='a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(a=INT(dims(2), I4B), b=SIZE(vals, 2), &
+      myName=myName, msg='a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+#endif
+
+    nrow = INT(dims(1), I4B)
+    ncol = INT(dims(2), I4B)
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals(1:nrow, 1:ncol), dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__d2
 
 !----------------------------------------------------------------------------
 !                                                                      Read
@@ -137,34 +233,85 @@ END PROCEDURE obj_read_d2
 
 MODULE PROCEDURE obj_read_d3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d3()"
 #endif
-INTEGER(I4B), PARAMETER :: rank = 3
-TYPE(String) :: path
-INTEGER(HSIZE_T), DIMENSION(rank) :: dims
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: error
+  INTEGER(I4B), PARAMETER :: rank = 3
+  TYPE(String) :: path
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL Reallocate(vals, INT(dims, I4B))
-  mem = H5T_NATIVE_DOUBLE
-  CALL H5DREAD_F(dset_id, mem, vals, dims, error)
-END IF
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+    CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d3
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__d3
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__d3()"
+#endif
+  TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 3
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  dim1 = math%zero_i
+  dim2 = math%zero_i
+  dim3 = math%zero_i
+
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+
+#ifdef DEBUG_VER
+    CALL AssertError3(a=INT(dims(1), I4B), b=SIZE(vals, 1), &
+      myName=myName, msg='a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(a=INT(dims(2), I4B), b=SIZE(vals, 2), &
+      myName=myName, msg='a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+    CALL AssertError3(a=INT(dims(3), I4B), b=SIZE(vals, 3), &
+      myName=myName, msg='a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+#endif
+
+    dim1 = INT(dims(1), I4B)
+    dim2 = INT(dims(2), I4B)
+    dim3 = INT(dims(3), I4B)
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3), dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__d3
 
 !----------------------------------------------------------------------------
 !                                                                       Read
@@ -172,34 +319,90 @@ END PROCEDURE obj_read_d3
 
 MODULE PROCEDURE obj_read_d4
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d4()"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d4()"
 #endif
-INTEGER(I4B), PARAMETER :: rank = 4
-TYPE(String) :: path
-INTEGER(HSIZE_T), DIMENSION(rank) :: dims
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: error
+  INTEGER(I4B), PARAMETER :: rank = 4
+  TYPE(String) :: path
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL Reallocate(vals, INT(dims, I4B))
-  mem = H5T_NATIVE_DOUBLE
-  CALL H5DREAD_F(dset_id, mem, vals, dims, error)
-END IF
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+    CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d4
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__d4
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__d4()"
+#endif
+  TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 4
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  dim1 = math%zero_i
+  dim2 = math%zero_i
+  dim3 = math%zero_i
+  dim4 = math%zero_i
+
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+
+#ifdef DEBUG_VER
+    CALL AssertError3(a=INT(dims(1), I4B), b=SIZE(vals, 1), &
+      myName=myName, msg='a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(a=INT(dims(2), I4B), b=SIZE(vals, 2), &
+      myName=myName, msg='a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+    CALL AssertError3(a=INT(dims(3), I4B), b=SIZE(vals, 3), &
+      myName=myName, msg='a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+    CALL AssertError3(a=INT(dims(4), I4B), b=SIZE(vals, 4), &
+      myName=myName, msg='a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+#endif
+
+    dim1 = INT(dims(1), I4B)
+    dim2 = INT(dims(2), I4B)
+    dim3 = INT(dims(3), I4B)
+    dim4 = INT(dims(4), I4B)
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4), &
+      dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__d4
 
 !----------------------------------------------------------------------------
 !                                                                       Read
@@ -207,34 +410,94 @@ END PROCEDURE obj_read_d4
 
 MODULE PROCEDURE obj_read_d5
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d5()"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d5()"
 #endif
-INTEGER(I4B), PARAMETER :: rank = 5
-INTEGER(HSIZE_T), DIMENSION(rank) :: dims
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: error
-TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 5
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+  TYPE(String) :: path
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL Reallocate(vals, INT(dims, I4B))
-  mem = H5T_NATIVE_DOUBLE
-  CALL H5DREAD_F(dset_id, mem, vals, dims, error)
-END IF
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+    CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d5
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__d5
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__d5()"
+#endif
+  TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 5
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  dim1 = math%zero_i
+  dim2 = math%zero_i
+  dim3 = math%zero_i
+  dim4 = math%zero_i
+  dim5 = math%zero_i
+
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+
+#ifdef DEBUG_VER
+    CALL AssertError3(a=INT(dims(1), I4B), b=SIZE(vals, 1), &
+      myName=myName, msg='a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(a=INT(dims(2), I4B), b=SIZE(vals, 2), &
+      myName=myName, msg='a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+    CALL AssertError3(a=INT(dims(3), I4B), b=SIZE(vals, 3), &
+      myName=myName, msg='a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+    CALL AssertError3(a=INT(dims(4), I4B), b=SIZE(vals, 4), &
+      myName=myName, msg='a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+    CALL AssertError3(a=INT(dims(5), I4B), b=SIZE(vals, 5), &
+      myName=myName, msg='a=dims(5) from hdf5File, b=SIZE(vals, 5)')
+#endif
+
+    dim1 = INT(dims(1), I4B)
+    dim2 = INT(dims(2), I4B)
+    dim3 = INT(dims(3), I4B)
+    dim4 = INT(dims(4), I4B)
+    dim5 = INT(dims(5), I4B)
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4, &
+      1:dim5), dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__d5
 
 !----------------------------------------------------------------------------
 !                                                                      Read
@@ -242,34 +505,98 @@ END PROCEDURE obj_read_d5
 
 MODULE PROCEDURE obj_read_d6
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d6()"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d6()"
 #endif
-INTEGER(I4B), PARAMETER :: rank = 6
-TYPE(String) :: path
-INTEGER(HSIZE_T), DIMENSION(rank) :: dims
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: error
+  INTEGER(I4B), PARAMETER :: rank = 6
+  TYPE(String) :: path
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL Reallocate(vals, INT(dims, I4B))
-  mem = H5T_NATIVE_DOUBLE
-  CALL H5DREAD_F(dset_id, mem, vals, dims, error)
-END IF
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+    CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d6
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__d6
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__d6()"
+#endif
+  TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 6
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  dim1 = math%zero_i
+  dim2 = math%zero_i
+  dim3 = math%zero_i
+  dim4 = math%zero_i
+  dim5 = math%zero_i
+  dim6 = math%zero_i
+
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+
+#ifdef DEBUG_VER
+    CALL AssertError3(a=INT(dims(1), I4B), b=SIZE(vals, 1), &
+      myName=myName, msg='a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(a=INT(dims(2), I4B), b=SIZE(vals, 2), &
+      myName=myName, msg='a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+    CALL AssertError3(a=INT(dims(3), I4B), b=SIZE(vals, 3), &
+      myName=myName, msg='a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+    CALL AssertError3(a=INT(dims(4), I4B), b=SIZE(vals, 4), &
+      myName=myName, msg='a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+    CALL AssertError3(a=INT(dims(5), I4B), b=SIZE(vals, 5), &
+      myName=myName, msg='a=dims(5) from hdf5File, b=SIZE(vals, 5)')
+    CALL AssertError3(a=INT(dims(6), I4B), b=SIZE(vals, 6), &
+      myName=myName, msg='a=dims(6) from hdf5File, b=SIZE(vals, 6)')
+#endif
+
+    dim1 = INT(dims(1), I4B)
+    dim2 = INT(dims(2), I4B)
+    dim3 = INT(dims(3), I4B)
+    dim4 = INT(dims(4), I4B)
+    dim5 = INT(dims(5), I4B)
+    dim6 = INT(dims(6), I4B)
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4, &
+      1:dim5, 1:dim6), dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__d6
 
 !----------------------------------------------------------------------------
 !                                                                      Read
@@ -277,34 +604,102 @@ END PROCEDURE obj_read_d6
 
 MODULE PROCEDURE obj_read_d7
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_d7()"
+  CHARACTER(*), PARAMETER :: myName = "obj_read_d7()"
 #endif
-INTEGER(I4B), PARAMETER :: rank = 7
-INTEGER(HSIZE_T), DIMENSION(rank) :: dims
-INTEGER(HID_T) :: mem
-INTEGER(HID_T) :: dspace_id, dset_id
-INTEGER(I4B) :: error
-TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 7
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+  TYPE(String) :: path
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-path = dsetname
-CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL Reallocate(vals, INT(dims, I4B))
-  mem = H5T_NATIVE_DOUBLE
-  CALL H5DREAD_F(dset_id, mem, vals, dims, error)
-END IF
-CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+    CALL Reallocate(vals, INT(dims, I4B))
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals, dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_read_d7
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__d7
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__d7()"
+#endif
+  TYPE(String) :: path
+  INTEGER(I4B), PARAMETER :: rank = 7
+  INTEGER(HSIZE_T), DIMENSION(rank) :: dims
+  INTEGER(HID_T) :: mem
+  INTEGER(HID_T) :: dspace_id, dset_id
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  dim1 = math%zero_i
+  dim2 = math%zero_i
+  dim3 = math%zero_i
+  dim4 = math%zero_i
+  dim5 = math%zero_i
+  dim6 = math%zero_i
+  dim7 = math%zero_i
+
+  path = dsetname
+  CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
+  IF (error >= 0) THEN
+
+#ifdef DEBUG_VER
+    CALL AssertError3(a=INT(dims(1), I4B), b=SIZE(vals, 1), &
+      myName=myName, msg='a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(a=INT(dims(2), I4B), b=SIZE(vals, 2), &
+      myName=myName, msg='a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+    CALL AssertError3(a=INT(dims(3), I4B), b=SIZE(vals, 3), &
+      myName=myName, msg='a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+    CALL AssertError3(a=INT(dims(4), I4B), b=SIZE(vals, 4), &
+      myName=myName, msg='a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+    CALL AssertError3(a=INT(dims(5), I4B), b=SIZE(vals, 5), &
+      myName=myName, msg='a=dims(5) from hdf5File, b=SIZE(vals, 5)')
+    CALL AssertError3(a=INT(dims(6), I4B), b=SIZE(vals, 6), &
+      myName=myName, msg='a=dims(6) from hdf5File, b=SIZE(vals, 6)')
+    CALL AssertError3(a=INT(dims(7), I4B), b=SIZE(vals, 7), &
+      myName=myName, msg='a=dims(7) from hdf5File, b=SIZE(vals, 7)')
+#endif
+
+    dim1 = INT(dims(1), I4B)
+    dim2 = INT(dims(2), I4B)
+    dim3 = INT(dims(3), I4B)
+    dim4 = INT(dims(4), I4B)
+    dim5 = INT(dims(5), I4B)
+    dim6 = INT(dims(6), I4B)
+    dim7 = INT(dims(7), I4B)
+    mem = H5T_NATIVE_DOUBLE
+    CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4, &
+      1:dim5, 1:dim6, 1:dim7), dims, error)
+  END IF
+  CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__d7
 
 !----------------------------------------------------------------------------
 !
