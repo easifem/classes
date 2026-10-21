@@ -25,8 +25,8 @@ opt/
 bin/
 easifem/
 */build/
-examples/
-**/examples/
+# examples/
+# **/examples/
 build/
 src/build/
 src/modules/build/

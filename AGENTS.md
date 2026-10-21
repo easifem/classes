@@ -60,6 +60,17 @@ fortitude check src/
 - Consider pFUnit or FRUIT frameworks
 - Follow the module structure pattern
 
+### Examples and tests
+
+- Example/test programs are standalone programs named
+  `<Name>_test_<N>.F90` in `src/modules/<Module>/examples/`.
+- Do not add the GPL header to test programs. A test file starts
+  directly with its `!> author:` docblock (or with `PROGRAM main`).
+- These programs are the source for the `Examples` section of the
+  docblocks (see "FORD Docblock Style").
+- Do not compile the library or run examples without explicit
+  permission from the user.
+
 ## Code Style Guidelines
 
 ### File Organization
@@ -257,7 +268,7 @@ END TYPE TypeName_
 ! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
 ! [GPL3 license text - lines 1-15]
 
-!> authors: Your Name, Ph. D.
+!> author: Your Name, Ph. D.
 ! date: YYYY-MM-DD
 ! update:
 !   - YYYY-MM-DD: Description of update
@@ -270,6 +281,111 @@ END TYPE TypeName_
 - Use `!!` for inline variable documentation
 - Reference external docs: `!{!pages/docs-api/Module/topic.md!}`
 - Section markers: `! @SectionName`
+
+#### FORD Docblock Style
+
+Rules for the docblock above each `INTERFACE` (and above each `TYPE`):
+
+1. Use `!>` only on the *first line* of a docblock. All the following
+   lines of the same block use a plain `!`.
+2. The first line is always `!> author: Name, Ph. D.` (singular
+   `author`, not `authors`). Do not add title lines such as
+   `!# Initiate`, `!# Introduction`, `!> Subroutine: name`; the name is
+   already given by the declaration that follows the block.
+3. Mandatory fields: `date:`, an optional `update:` list
+   (`!   - YYYY-MM-DD: description`), and `summary:`. A summary that
+   needs more than one line continues on an indented `!` line.
+4. After the fields, use the following sections in this order (omit a
+   section only if it does not apply):
+   - Description: one or more paragraphs explaining what the routine
+     does, its algorithm steps, and the rules it follows.
+   - `Arguments:` short list `name : TYPE - meaning`; give array shapes
+     with `SIZE(...)` where relevant.
+   - `Returns:` only for functions.
+   - `Formula:` only when there is real mathematics (data layout,
+     index rules, etc.); use LaTeX display math `$$ ... $$`.
+   - `Examples` (see below).
+   - `See also:` links to related procedures with `[[ProcName]]`.
+5. Keep the `!!` inline comments on every dummy argument. They are the
+   source of truth for argument meaning; fill in the missing ones.
+6. For type-bound procedures, the full docblock goes on the
+   `INTERFACE` of the specific procedure (`obj_XXX`). Inside
+   `TYPE ... CONTAINS`, each binding keeps only a one-line `!!`
+   comment. The `TYPE` itself gets a docblock describing the data
+   layout and the meaning of its components.
+7. Keep docblocks factual. Do not copy-paste descriptions from another
+   routine without adapting them (argument names, called methods,
+   section banners must match the routine being documented).
+8. Wrap every docblock line to 78 characters or less. Use only simple
+   LaTeX that the documentation renderer supports.
+
+#### Examples Section in Docblocks
+
+- Every public routine (or generic interface) has one `Examples`
+  section, written as `! Examples` on its own line. Do not name it
+  `Example`, and do not add a separate short `Example:` snippet.
+- The example is a complete, runnable program: `PROGRAM main` ...
+  `END PROGRAM main`, with all `USE ..., ONLY:` lines (one item per
+  line), `IMPLICIT NONE`, declarations, the calls, and `CALL OK(...)`
+  checks from `Test_Method` so the result can be verified.
+- Fence the program with `` !```fortran `` and `` !``` `` on their own
+  comment lines. Every line in the block starts with `! ` (plain `!`
+  and one space); never `!>`.
+- The program is normally the same as the matching test in
+  `src/modules/<Module>/examples/`, without the `!> author:` docblock
+  of the test file. Helper procedures go after `CONTAINS` inside the
+  program.
+- For generic interfaces (`Initiate`, `Set`, `Insert`, ...) write one
+  example per distinct use case, not one per specific procedure. Thin
+  wrapper procedures refer to the main one via `See also:`.
+- Use only the current API. Old examples in the website docs that use
+  removed APIs (for example `ParameterList_`-based initiation) must be
+  updated before being used.
+
+Example docblock:
+
+```fortran
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-02-27
+! summary: Get the rank of mesh field
+!
+! Returns the rank (scalar, vector, or matrix) of the data stored in
+! obj.
+!
+! Arguments:
+!   obj : CLASS(AbstractMeshField_) - mesh field
+!
+! Returns:
+!   ans : INTEGER(I4B) - rank of the field
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE MeshField_Class, ONLY: MeshField_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(MeshField_) :: obj
+! ! ... initiate obj ...
+! CALL OK(obj%GetRank() .EQ. 0_I4B, "GetRank")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetVarType]]
+
+INTERFACE
+  MODULE FUNCTION obj_GetRank(obj) RESULT(ans)
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj
+    !! mesh field
+    INTEGER(I4B) :: ans
+    !! rank of the field
+  END FUNCTION obj_GetRank
+END INTERFACE
+```
+
+(The example above is abbreviated; real docblocks must contain the
+complete program.)
 
 #### Section Delimiters
 
@@ -356,7 +472,7 @@ END INTERFACE GetValue
 1. **Always separate interface from implementation** using module/submodule pattern
 2. **Keep line length ≤ 78 characters** (fortitude.toml standard)
 3. **Use explicit ONLY clauses** in all USE statements
-4. **Document all public interfaces** with FORD-compatible comments
+4. **Document all public interfaces** with FORD docblocks (see "FORD Docblock Style"), including a runnable `Examples` program
 5. **Add GPL3 header** to all new files
 6. **Use preprocessor guards** for debug code
 7. **Follow camelCase** for variables, `EntityName_` for types

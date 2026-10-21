@@ -1,0 +1,55 @@
+[timeOpt]
+timeDependency = "Transient"
+dt = 0.1
+startTime = 0.0
+endTime = 1.0
+
+[field1]
+name = "field1"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+# space component, the default value is 1
+# for scalar fields you can omit this
+# for vector fields you must specify this value
+
+fedofName = "space"
+# fedofName contains the name of the subtable which
+# contains the fedof data for this field.
+
+geofedofName = "geofedof"
+# geofedof name
+
+timefedofName = "time"
+# timefedofName contains the name of the subtable which
+# contains the timefedof data for this field.
+
+[field1.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[field1.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+[field1.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+# order = 2
+
+[field1.time]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+[field1.time.quadOpt]
+quadratureType = "GaussLegendre"
