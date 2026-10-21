@@ -171,7 +171,6 @@ TYPE :: TDGAlgorithm2_
   LOGICAL(LGT) :: rhs_c_a1_zero(MAX_ORDER_TIME + 1) = math%yes
 
 CONTAINS
-  PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate

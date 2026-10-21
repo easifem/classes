@@ -444,7 +444,7 @@ SUBROUTINE MakeUpdateCoeffs(obj, facetElemsd, nnt, tempVec)
   !  Tn+1 * mt_inv * kt
   !     step1: using rhs_k_a1 as temp storage
   tempVec = MATMUL(facetElemsd%N(1:nnt, 2), obj%mt_inv)
-  obj%vel(4:nnt + 3) = MATMUL(tempVec, obj%kt)
+  obj%dis(4:nnt + 3) = MATMUL(tempVec, obj%kt)
 
   ! update acc
   ! update acc: coeff for u0:
@@ -456,9 +456,8 @@ SUBROUTINE MakeUpdateCoeffs(obj, facetElemsd, nnt, tempVec)
   obj%acc(2:3) = math%zero
 
   ! update acc: coeff for nnt solution
-  !  Tn+1 * mt_inv * mt
-  tempVec = MATMUL(facetElemsd%dNdXt(1:nnt, 1, 2), obj%mt_inv)
-  obj%acc(4:nnt + 3) = MATMUL(tempVec(1:nnt), obj%kt)
+  obj%acc(4:nnt + 3) = facetElemsd%dNdXt(1:nnt, 1, 2)
+
   !     step2: reset rhs_k_a1
   tempVec = math%zero
 

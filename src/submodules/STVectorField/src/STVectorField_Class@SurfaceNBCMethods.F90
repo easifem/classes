@@ -283,7 +283,6 @@ SUBROUTINE STVectorFieldAssembleSurfaceSource( &
 
   END DO
 
-  STOP
   NULLIFY (feptr, geofeptr)
 
 #ifdef DEBUG_VER
