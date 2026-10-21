@@ -27,6 +27,7 @@ easifem/
 */build/
 # examples/
 # **/examples/
+**/examples/**/CMakeLists.txt
 build/
 src/build/
 src/modules/build/
