@@ -47,14 +47,15 @@ END TYPE UStfemAlgorithm2_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-11-06
-! summary: Initiate Newmark-Beta method
+! date: 2026-10-21
+! summary: Initiate UStfemAlgorithm2
+!
+! Initiate UStfemAlgorithm2. Default value of scalingOpt is "M"
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, alpha, scalingOpt)
+  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, scalingOpt)
     CLASS(UStfemAlgorithm2_), INTENT(INOUT) :: obj
     TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
     CHARACTER(1), OPTIONAL, INTENT(IN) :: scalingOpt
   END SUBROUTINE obj_Initiate
 END INTERFACE

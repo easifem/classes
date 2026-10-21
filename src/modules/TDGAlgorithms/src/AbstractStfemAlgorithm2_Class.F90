@@ -192,10 +192,9 @@ END INTERFACE
 ! summary: Initiate Newmark-Beta method
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, alpha, scalingOpt)
+  MODULE SUBROUTINE obj_Initiate(obj, elemsd, facetElemsd, scalingOpt)
     CLASS(AbstractStfemAlgorithm2_), INTENT(INOUT) :: obj
     TYPE(ElemShapeData_), INTENT(IN) :: elemsd, facetElemsd
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
     CHARACTER(1), OPTIONAL, INTENT(IN) :: scalingOpt
   END SUBROUTINE obj_Initiate
 END INTERFACE

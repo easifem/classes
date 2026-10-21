@@ -52,13 +52,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = math%yes
-obj%scalingOpt = UpperCase(scalingOpt)
 nnt = elemsd%nns
 obj%nrow = nnt
 obj%ncol = nnt
 CALL obj%AllocateData(nnt=nnt)
 
-SELECT CASE (scalingOpt)
+IF (PRESENT(scalingOpt)) THEN
+  obj%scalingOpt = UpperCase(scalingOpt)
+END IF
+
+SELECT CASE (obj%scalingOpt)
 CASE ("K")
   CALL InitiateVStfem_kt(obj=obj, elemsd=elemsd, facetElemsd=facetElemsd)
 CASE ("I")
