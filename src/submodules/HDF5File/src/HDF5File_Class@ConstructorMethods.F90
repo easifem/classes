@@ -54,7 +54,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
@@ -504,7 +518,21 @@ END PROCEDURE obj_clear
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_setOverWriteStat
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_setOverWriteStat()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%overwriteStat = bool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_setOverWriteStat
 
 !----------------------------------------------------------------------------
@@ -528,7 +556,21 @@ END PROCEDURE obj_isNew
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_setNewStat
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_setNewStat()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 obj%newstat = bool
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_setNewStat
 
 !----------------------------------------------------------------------------
