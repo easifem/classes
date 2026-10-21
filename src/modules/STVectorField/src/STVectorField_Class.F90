@@ -435,16 +435,12 @@ END INTERFACE STVectorFieldImport
 ! date: 16 July 2021
 ! summary: This routine Exports the content
 
-INTERFACE
+INTERFACE STVectorFieldExport
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
-END INTERFACE
-
-INTERFACE STVectorFieldExport
-  MODULE PROCEDURE obj_Export
 END INTERFACE STVectorFieldExport
 
 !----------------------------------------------------------------------------

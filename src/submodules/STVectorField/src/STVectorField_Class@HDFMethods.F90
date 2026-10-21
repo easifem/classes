@@ -122,14 +122,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (.NOT. obj%IsInitiated()) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 
 ! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
+dsetname = TRIM(group)//"/IntR0/timeCompo"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%timeCompo)
 
 ! spaceCompo
-dsetname = TRIM(group)//"/spaceCompo"
+dsetname = TRIM(group)//"/IntR0/spaceCompo"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
 #ifdef DEBUG_VER
