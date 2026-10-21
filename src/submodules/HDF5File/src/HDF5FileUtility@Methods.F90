@@ -159,6 +159,11 @@ CHARACTER(*), PARAMETER :: myName = "HDF5ReadRealVector()"
 LOGICAL(LGT) :: isok0
 CHARACTER(:), ALLOCATABLE :: astr
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 astr = group//"/"//fieldname
 isok0 = hdf5%pathExists(astr)
 
@@ -173,6 +178,11 @@ END IF
 #endif
 
 astr = ""
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE HDF5ReadRealVector
 
 !----------------------------------------------------------------------------

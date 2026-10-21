@@ -225,6 +225,11 @@ CHARACTER(*), PARAMETER :: myName = 'obj_close()'
 LOGICAL(LGT) :: lastStopOnError
 INTEGER(I4B) :: ierr
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 lastStopOnError = e%isStopOnError()
 CALL e%SetStopOnError(math%no)
 
@@ -924,6 +929,11 @@ INTERFACE
 END INTERFACE
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL AssertError1(obj%pathExists(source_path), myName, &
                   'Target of new link must exist in file!')
 #endif
@@ -1324,6 +1334,11 @@ END PROCEDURE compute_chunk_size
 MODULE PROCEDURE postWrite
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = 'postWrite()'
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
 #ifdef DEBUG_VER
