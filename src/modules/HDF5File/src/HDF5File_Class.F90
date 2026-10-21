@@ -171,7 +171,9 @@ CONTAINS
     obj_read__s7, &
     obj_read__n1, obj_read__n2, obj_read__n3, &
     obj_read__n4, obj_read__n5, obj_read__n6, &
-    obj_read__n7
+    obj_read__n7, &
+    obj_read__b1, obj_read__b2, obj_read__b3, &
+    obj_read__st1, obj_read__st2, obj_read__st3
   GENERIC, PUBLIC :: READ_ => &
     obj_read__d1, obj_read__d2, obj_read__d3, &
     obj_read__d4, obj_read__d5, obj_read__d6, &
@@ -181,7 +183,9 @@ CONTAINS
     obj_read__s7, &
     obj_read__n1, obj_read__n2, obj_read__n3, &
     obj_read__n4, obj_read__n5, obj_read__n6, &
-    obj_read__n7
+    obj_read__n7, &
+    obj_read__b1, obj_read__b2, obj_read__b3, &
+    obj_read__st1, obj_read__st2, obj_read__st3
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_write_attribute_st0, obj_write_attribute_c0, &
     obj_write_attribute_i0, obj_write_attribute_d0
@@ -2987,6 +2991,43 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                                 Read_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read an array of rank-1 of String without allocating vals
+!
+! Read an array of rank-1 of String into vals without allocating
+! memory for vals. The extent of the data written in vals is returned in
+! tsize; the data is stored in vals(1:tsize).
+!
+! The extents are set to zero at the start. vals should be large enough
+! to hold the dataset along every dimension; in DEBUG mode an error is
+! raised otherwise.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - array to fill, SIZE(vals) >= tsize
+!   tsize : INTEGER(I4B) - size of data written in vals
+!
+! See also: [[obj_read_st1]], [[obj_read__d1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_read__st1(obj, dsetname, vals, tsize)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! Dataset name with full path
+    TYPE(String), INTENT(INOUT) :: vals(:)
+    !! vals will be filled with entries read from the dataset
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! The size of data written in vals
+  END SUBROUTINE obj_read__st1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -3024,6 +3065,46 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                                 Read_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read an array of rank-2 of String without allocating vals
+!
+! Read an array of rank-2 of String into vals without allocating
+! memory for vals. The extent of the data written in vals is returned in
+! nrow, ncol; the data is stored in vals(1:nrow, 1:ncol).
+!
+! The extents are set to zero at the start. vals should be large enough
+! to hold the dataset along every dimension; in DEBUG mode an error is
+! raised otherwise.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - array to fill, SIZE(vals, i) >= extent i
+!   nrow : INTEGER(I4B) - number of rows written in vals
+!   ncol : INTEGER(I4B) - number of columns written in vals
+!
+! See also: [[obj_read_st2]], [[obj_read__d2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_read__st2(obj, dsetname, vals, nrow, ncol)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! Dataset name with full path
+    TYPE(String), INTENT(INOUT) :: vals(:, :)
+    !! vals will be filled with entries read from the dataset
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written in vals
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns written in vals
+  END SUBROUTINE obj_read__st2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -3058,6 +3139,49 @@ INTERFACE
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
   END SUBROUTINE obj_read_ca3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 Read_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read an array of rank-3 of String without allocating vals
+!
+! Read an array of rank-3 of String into vals without allocating
+! memory for vals. The extent of the data written in vals is returned in
+! dim1, dim2, dim3; the data is stored in vals(1:dim1, 1:dim2, 1:dim3).
+!
+! The extents are set to zero at the start. vals should be large enough
+! to hold the dataset along every dimension; in DEBUG mode an error is
+! raised otherwise.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - array to fill, SIZE(vals, i) >= extent i
+!   dim1 : INTEGER(I4B) - extent of data along dimension 1
+!   dim2 : INTEGER(I4B) - extent of data along dimension 2
+!   dim3 : INTEGER(I4B) - extent of data along dimension 3
+!
+! See also: [[obj_read_st3]], [[obj_read__d3]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_read__st3(obj, dsetname, vals, dim1, dim2, dim3)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! Dataset name with full path
+    TYPE(String), INTENT(INOUT) :: vals(:, :, :)
+    !! vals will be filled with entries read from the dataset
+    INTEGER(I4B), INTENT(OUT) :: dim1
+    !! extent of data written in vals along dimension 1
+    INTEGER(I4B), INTENT(OUT) :: dim2
+    !! extent of data written in vals along dimension 2
+    INTEGER(I4B), INTENT(OUT) :: dim3
+    !! extent of data written in vals along dimension 3
+  END SUBROUTINE obj_read__st3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3109,6 +3233,43 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                                 Read_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read an array of rank-1 of LOGICAL without allocating vals
+!
+! Read an array of rank-1 of LOGICAL into vals without allocating
+! memory for vals. The extent of the data written in vals is returned in
+! tsize; the data is stored in vals(1:tsize).
+!
+! The extents are set to zero at the start. vals should be large enough
+! to hold the dataset along every dimension; in DEBUG mode an error is
+! raised otherwise.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - array to fill, SIZE(vals) >= tsize
+!   tsize : INTEGER(I4B) - size of data written in vals
+!
+! See also: [[obj_read_b1]], [[obj_read__d1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_read__b1(obj, dsetname, vals, tsize)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! Dataset name with full path
+    LOGICAL(LGT), INTENT(INOUT) :: vals(:)
+    !! vals will be filled with entries read from the dataset
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! The size of data written in vals
+  END SUBROUTINE obj_read__b1
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
@@ -3125,6 +3286,46 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                                 Read_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read an array of rank-2 of LOGICAL without allocating vals
+!
+! Read an array of rank-2 of LOGICAL into vals without allocating
+! memory for vals. The extent of the data written in vals is returned in
+! nrow, ncol; the data is stored in vals(1:nrow, 1:ncol).
+!
+! The extents are set to zero at the start. vals should be large enough
+! to hold the dataset along every dimension; in DEBUG mode an error is
+! raised otherwise.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - array to fill, SIZE(vals, i) >= extent i
+!   nrow : INTEGER(I4B) - number of rows written in vals
+!   ncol : INTEGER(I4B) - number of columns written in vals
+!
+! See also: [[obj_read_b2]], [[obj_read__d2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_read__b2(obj, dsetname, vals, nrow, ncol)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! Dataset name with full path
+    LOGICAL(LGT), INTENT(INOUT) :: vals(:, :)
+    !! vals will be filled with entries read from the dataset
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written in vals
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns written in vals
+  END SUBROUTINE obj_read__b2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
@@ -3138,6 +3339,49 @@ INTERFACE
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
   END SUBROUTINE obj_read_b3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 Read_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read an array of rank-3 of LOGICAL without allocating vals
+!
+! Read an array of rank-3 of LOGICAL into vals without allocating
+! memory for vals. The extent of the data written in vals is returned in
+! dim1, dim2, dim3; the data is stored in vals(1:dim1, 1:dim2, 1:dim3).
+!
+! The extents are set to zero at the start. vals should be large enough
+! to hold the dataset along every dimension; in DEBUG mode an error is
+! raised otherwise.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - array to fill, SIZE(vals, i) >= extent i
+!   dim1 : INTEGER(I4B) - extent of data along dimension 1
+!   dim2 : INTEGER(I4B) - extent of data along dimension 2
+!   dim3 : INTEGER(I4B) - extent of data along dimension 3
+!
+! See also: [[obj_read_b3]], [[obj_read__d3]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_read__b3(obj, dsetname, vals, dim1, dim2, dim3)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! Dataset name with full path
+    LOGICAL(LGT), INTENT(INOUT) :: vals(:, :, :)
+    !! vals will be filled with entries read from the dataset
+    INTEGER(I4B), INTENT(OUT) :: dim1
+    !! extent of data written in vals along dimension 1
+    INTEGER(I4B), INTENT(OUT) :: dim2
+    !! extent of data written in vals along dimension 2
+    INTEGER(I4B), INTENT(OUT) :: dim3
+    !! extent of data written in vals along dimension 3
+  END SUBROUTINE obj_read__b3
 END INTERFACE
 
 !----------------------------------------------------------------------------

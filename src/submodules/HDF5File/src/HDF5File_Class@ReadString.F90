@@ -353,6 +353,44 @@ MODULE PROCEDURE obj_read_ca1
 END PROCEDURE obj_read_ca1
 
 !----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__st1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__st1()"
+#endif
+  TYPE(String), ALLOCATABLE :: temp(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  tsize = math%zero_i
+
+! obj_read_st1_helper handles both storage formats of strings
+  CALL obj_read_st1_helper(obj, dsetname, temp)
+
+  IF (ALLOCATED(temp)) THEN
+    tsize = SIZE(temp)
+
+#ifdef DEBUG_VER
+    CALL AssertError3(tsize, SIZE(vals), myName, &
+      'a=tsize from hdf5File, b=SIZE(vals)')
+#endif
+
+    vals(1:tsize) = temp
+    DEALLOCATE(temp)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__st1
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -508,6 +546,48 @@ MODULE PROCEDURE obj_read_ca2
     '[END] ')
 #endif
 END PROCEDURE obj_read_ca2
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__st2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__st2()"
+#endif
+  TYPE(String), ALLOCATABLE :: temp(:, :)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  nrow = math%zero_i
+  ncol = math%zero_i
+
+! obj_read_st2_helper handles both storage formats of strings
+  CALL obj_read_st2_helper(obj, dsetname, temp)
+
+  IF (ALLOCATED(temp)) THEN
+    nrow = SIZE(temp, 1)
+    ncol = SIZE(temp, 2)
+
+#ifdef DEBUG_VER
+    CALL AssertError3(nrow, SIZE(vals, 1), myName, &
+      'a=nrow from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(ncol, SIZE(vals, 2), myName, &
+      'a=ncol from hdf5File, b=SIZE(vals, 2)')
+#endif
+
+    vals(1:nrow, 1:ncol) = temp
+    DEALLOCATE(temp)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__st2
 
 !----------------------------------------------------------------------------
 !
@@ -669,6 +749,52 @@ MODULE PROCEDURE obj_read_ca3
     '[END] ')
 #endif
 END PROCEDURE obj_read_ca3
+
+!----------------------------------------------------------------------------
+!                                                                      Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_read__st3
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_read__st3()"
+#endif
+  TYPE(String), ALLOCATABLE :: temp(:, :, :)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  dim1 = math%zero_i
+  dim2 = math%zero_i
+  dim3 = math%zero_i
+
+! obj_read_st3_helper handles both storage formats of strings
+  CALL obj_read_st3_helper(obj, dsetname, temp)
+
+  IF (ALLOCATED(temp)) THEN
+    dim1 = SIZE(temp, 1)
+    dim2 = SIZE(temp, 2)
+    dim3 = SIZE(temp, 3)
+
+#ifdef DEBUG_VER
+    CALL AssertError3(dim1, SIZE(vals, 1), myName, &
+      'a=dim1 from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(dim2, SIZE(vals, 2), myName, &
+      'a=dim2 from hdf5File, b=SIZE(vals, 2)')
+    CALL AssertError3(dim3, SIZE(vals, 3), myName, &
+      'a=dim3 from hdf5File, b=SIZE(vals, 3)')
+#endif
+
+    vals(1:dim1, 1:dim2, 1:dim3) = temp
+    DEALLOCATE(temp)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_read__st3
 
 !----------------------------------------------------------------------------
 !
