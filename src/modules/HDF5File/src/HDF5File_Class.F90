@@ -15,6 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: HDF5 file class
+!
+! This module defines HDF5File_, which reads and writes HDF5 files.
+
 MODULE HDF5File_Class
 USE GlobalData, ONLY: LGT, DFP, I4B, REAL32, REAL64, INT32
 USE String_Class, ONLY: String
@@ -44,23 +50,40 @@ LOGICAL(LGT), SAVE :: libh5Open = math%no
 !                                                                  HDF5File_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 2026-08-08
-! summary: HDF5 File
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: HDF5 file
 !
-!# HDF5File_
+! HDF5File_ reads and writes HDF5 binary files. A file is used in four steps:
+! Initiate (set the file name and the access mode), Open, the read and write
+! calls, and Deallocate (close the file).
 !
-! Reading from HDF5 binary files. As implemented, there are three modes for
-! accessing a file can be opened as:
-! - 'read'
-! - 'write'
-! - 'new'.
-! Read mode opens an existing HDF5 file and allows the client code to
-! interrogate that file and extract data without permissions to alter the
-! file.
-! Write mode opens an existing HDF5 file and allows the client code to alter
-! its contents.
-! New mode overwrites any file by the same name and starts from scratch.
+! The access modes are NEW, READ, WRITE and OVERWRITE; see Initiate. Data is
+! stored in datasets which are addressed by a path such as
+! "/group/subgroup/data". Groups are created by Mkdir and Mkalldir, and
+! missing groups are created by Write.
+!
+! - Write writes data of rank 0 to 7 of Real64, Real32 and Int32, rank 0 to 3
+!   of logical, rank 0 to 2 of String, and character variables.
+! - Read reads the same data and allocates the array (logical up to rank 2).
+! - Read_ reads arrays without allocating them and returns the extent of the
+!   data: rank 1 to 7 of Real64, Real32 and Int32, and rank 1 to 3 of logical
+!   and String.
+! - WriteAttribute and ReadAttribute handle attributes of groups and datasets.
+!
+! Components:
+!
+! - isInit: true if the object is initiated
+! - hasCompression: true if datasets are written with compression
+! - zlibOpt: gzip compression level, -1 means no compression
+! - newstat: true if Open must create the file
+! - fullname: full name of the file
+! - unitno: Fortran unit number, used only to delete the file
+! - overwriteStat: true if datasets can be overwritten
+! - file_id: file id given by the HDF5 library
+!
+! See also: [[obj_initiate]], [[obj_open]], [[obj_write_d1]], [[obj_read_d1]],
+!   [[obj_read__d1]]
 
 TYPE, EXTENDS(AbstractFile_) :: HDF5File_
   LOGICAL(LGT) :: isInit = math%no
@@ -83,25 +106,44 @@ TYPE, EXTENDS(AbstractFile_) :: HDF5File_
   !! File id assigned by the HDF5 library when file is opened
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
+  !! Returns true if the object is initiated
   PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => obj_open
+  !! Open the file
   PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => obj_close
+  !! Close the file
   PROCEDURE, PUBLIC, PASS(Obj) :: delete => obj_delete
+  !! Delete the file from disk
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => obj_initiate
+  !! Initiate the file object
   PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => obj_clear
+  !! Deallocate the file object
   PROCEDURE, PUBLIC, PASS(Obj) :: setOverwriteStat => &
     obj_setOverwriteStat
+  !! Set whether datasets can be overwritten
   PROCEDURE, PUBLIC, PASS(Obj) :: getUnitNo => obj_getUnitNo
+  !! Get the unit number
   PROCEDURE, PUBLIC, PASS(Obj) :: isNew => obj_isNew
+  !! Returns true if the file is new
   PROCEDURE, PUBLIC, PASS(Obj) :: setNewStat => obj_setNewStat
+  !! Set whether the file is new
   PROCEDURE, PUBLIC, PASS(Obj) :: ls => obj_ls
+  !! List the contents of a group
   PROCEDURE, PUBLIC, PASS(Obj) :: mkdir => obj_mkdir
+  !! Create a group
   PROCEDURE, PUBLIC, PASS(Obj) :: mkalldir => obj_mkalldir
+  !! Create a group and its parents
   PROCEDURE, PUBLIC, PASS(Obj) :: ngrp => obj_ngrp
+  !! Number of objects in a group
   PROCEDURE, PUBLIC, PASS(Obj) :: isGroup => obj_isGroup
+  !! Returns true if a path is a group
   PROCEDURE, PUBLIC, PASS(Obj) :: pathExists => obj_pathExists
+  !! Returns true if a path exists
   PROCEDURE, PUBLIC, PASS(Obj) :: createHardLink => obj_createHardLink
+  !! Create a hard link
   PROCEDURE, PUBLIC, PASS(Obj) :: getChunkSize => obj_getChunkSize
+  !! Get the chunk size of a dataset
   PROCEDURE, PUBLIC, PASS(Obj) :: isCompressed => obj_isCompressed
+  !! Returns true if compression is used
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_write_d0, obj_write_d1, obj_write_d2, &
     obj_write_d3, obj_write_d4, obj_write_d5, &
@@ -117,6 +159,7 @@ CONTAINS
     obj_write_st0, obj_write_st1, obj_write_st1_helper, &
     obj_write_st2, obj_write_st2_helper, &
     obj_write_c1
+  !! Specific procedures of WRITE
   GENERIC, PUBLIC :: WRITE => &
     obj_write_d0, obj_write_d1, obj_write_d2, &
     obj_write_d3, obj_write_d4, obj_write_d5, &
@@ -132,6 +175,7 @@ CONTAINS
     obj_write_st0, obj_write_st1, obj_write_st1_helper, &
     obj_write_st2, obj_write_st2_helper, &
     obj_write_c1
+  !! Write data to a dataset
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_read_d0, obj_read_d1, obj_read_d2, &
     obj_read_d3, obj_read_d4, obj_read_d5, &
@@ -147,6 +191,7 @@ CONTAINS
     obj_read_st2, obj_read_st2_helper, &
     obj_read_c1, obj_read_b0, obj_read_b1, &
     obj_read_b2, obj_read_b3
+  !! Specific procedures of READ
   GENERIC, PUBLIC :: READ => &
     obj_read_d0, obj_read_d1, obj_read_d2, &
     obj_read_d3, obj_read_d4, obj_read_d5, &
@@ -162,6 +207,7 @@ CONTAINS
     obj_read_st2, obj_read_st2_helper, &
     obj_read_c1, obj_read_b0, obj_read_b1, &
     obj_read_b2, obj_read_b3
+  !! Read data from a dataset
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_read__d1, obj_read__d2, obj_read__d3, &
     obj_read__d4, obj_read__d5, obj_read__d6, &
@@ -174,6 +220,7 @@ CONTAINS
     obj_read__n7, &
     obj_read__b1, obj_read__b2, obj_read__b3, &
     obj_read__st1, obj_read__st2, obj_read__st3
+  !! Specific procedures of READ_
   GENERIC, PUBLIC :: READ_ => &
     obj_read__d1, obj_read__d2, obj_read__d3, &
     obj_read__d4, obj_read__d5, obj_read__d6, &
@@ -186,25 +233,38 @@ CONTAINS
     obj_read__n7, &
     obj_read__b1, obj_read__b2, obj_read__b3, &
     obj_read__st1, obj_read__st2, obj_read__st3
+  !! Read data without allocating the array
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_write_attribute_st0, obj_write_attribute_c0, &
     obj_write_attribute_i0, obj_write_attribute_d0
+  !! Specific procedures of WriteAttribute
   GENERIC, PUBLIC :: WriteAttribute => &
     obj_write_attribute_st0, obj_write_attribute_c0, &
     obj_write_attribute_i0, obj_write_attribute_d0
+  !! Write an attribute
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_read_attribute_st0, obj_read_attribute_c0, &
     obj_read_attribute_i0, obj_read_attribute_d0
+  !! Specific procedures of ReadAttribute
   GENERIC, PUBLIC :: ReadAttribute => &
     obj_read_attribute_st0, obj_read_attribute_c0, &
     obj_read_attribute_i0, obj_read_attribute_d0
+  !! Read an attribute
   PROCEDURE, PUBLIC, PASS(Obj) :: getDataShape
+  !! Get the shape of a dataset
   PROCEDURE, PUBLIC, PASS(Obj) :: getDataType
+  !! Get the data type of a dataset
 END TYPE HDF5File_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Pointer to an HDF5 file object
+!
+! Container of a pointer to HDF5File_, used to store files in arrays.
 
 TYPE :: HDF5FilePointer_
   CLASS(HDF5File_), POINTER :: ptr => NULL()
@@ -214,18 +274,53 @@ END TYPE HDF5FilePointer_
 !                                              IsInitiated@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2021
-! summary: Returns true if HDF5File is initiated
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Returns true if the HDF5 file object is initiated
 !
-!# IsInitiated
+! The object is initiated by Initiate and reset by Deallocate.
 !
-! This methods return true if HDFFile is initiated.
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!
+! Returns:
+!   ans : LOGICAL(LGT) - true if obj is initiated
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "IsInitiated_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL OK(.NOT. obj%IsInitiated(), "not initiated")
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL OK(obj%IsInitiated(), "IsInitiated")
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%IsInitiated(), "not initiated after Deallocate")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_initiate]], [[obj_clear]]
 
 INTERFACE
   MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     LOGICAL(LGT) :: ans
+    !! true if obj is initiated
   END FUNCTION obj_IsInitiated
 END INTERFACE
 
@@ -233,17 +328,61 @@ END INTERFACE
 !                                                                 Open
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 8 May 2021
-! summary: Open HDF5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Open the HDF5 file
 !
-!# Introduction
-! This routine implements the abstract open routine in the [[AbstractFile_]].
-! It uses the HDF5 library interface that was initialized to open the file.
+! Open the file which was set by Initiate. Open does nothing if obj is not
+! initiated.
+!
+! - mode NEW: the file is created; an existing file with the same name is
+!   truncated. The new status is then set to false, so a second Open (after
+!   Close) opens the file without truncating it.
+! - mode WRITE or OVERWRITE: the file is opened with read-write access.
+! - mode READ: the file is opened with read-only access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Open_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL OK(obj%IsOpen(), "Open")
+! CALL obj%WRITE(dsetname="/x", vals=1.0_DFP)
+! CALL obj%CLOSE()
+!
+! CALL obj%OPEN()
+! CALL OK(obj%IsOpen(), "Open again")
+! CALL OK(obj%PathExists("/x"), "data is kept after Open again")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_initiate]], [[obj_close]]
 
 INTERFACE
   MODULE SUBROUTINE obj_open(obj)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
   END SUBROUTINE obj_open
 END INTERFACE
 
@@ -251,18 +390,53 @@ END INTERFACE
 !                                                                 Close
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 May 2021
-! summary:         Close HDF5File
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Close the HDF5 file
 !
-!# Introduction
+! Close the file. The object stays initiated, so the file can be opened again
+! with Open. Close does nothing if the file is not open.
 !
-! This routine implements the abstract @c fclose routine in the base file
-! type.
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Close_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%CLOSE()
+! CALL OK(.NOT. obj%IsOpen(), "Close")
+! CALL OK(obj%IsInitiated(), "still initiated after Close")
+!
+! CALL obj%CLOSE()
+! CALL OK(.NOT. obj%IsOpen(), "Close a closed file")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_open]], [[obj_clear]]
 
 INTERFACE
   MODULE SUBROUTINE obj_close(obj)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
   END SUBROUTINE obj_close
 END INTERFACE
 
@@ -270,18 +444,60 @@ END INTERFACE
 !                                                                 Delete
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 May 2021
-! summary:         Delete HDF5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Delete the HDF5 file from disk
 !
-!# Introduction
-! This routine implements the abstract @c fdelete routine in the base file
-! type. Mimicking FileType_Fortran logical structure.  We do not clear the
-! file after it is deleted.
+! Delete the file by opening it with the Fortran OPEN statement on the unit
+! number of obj (see GetUnitNo) and closing it with STATUS='DELETE'. Close the
+! file before calling Delete.
+!
+! The object is not deallocated; its open status is set to false. Delete does
+! nothing if obj is not initiated.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Delete_test_1.h5"
+! TYPE(HDF5File_) :: obj
+! LOGICAL(LGT) :: isok
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%CLOSE()
+! INQUIRE (FILE=filename, EXIST=isok)
+! CALL OK(isok, "file exists")
+!
+! CALL obj%Delete()
+! INQUIRE (FILE=filename, EXIST=isok)
+! CALL OK(.NOT. isok, "Delete")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_clear]], [[obj_getUnitNo]]
 
 INTERFACE
   MODULE SUBROUTINE obj_delete(obj)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
   END SUBROUTINE obj_delete
 END INTERFACE
 
@@ -289,38 +505,141 @@ END INTERFACE
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 May 2021
-! summary:         Initializes an HDF5 file object.
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Initiate an HDF5 file object
 !
-!# Introduction
-! This routine initializes an HDF5 file object by setting the objects
-! attributes, initializing the HDF5 library interface and calling the @c open
-! routine.
+! Set the file name and the access mode, and initialize the HDF5 library.
+! Initiate does not open the file; call Open after Initiate. The directory of
+! filename is created if it does not exist.
 !
-! Use setOverwriteStat to change the status to 'OVERWRITE'.
+! The access mode is not case sensitive:
 !
-!@note
-! Note that when overwriting datasets, new datasets must be the same type and
-! shape as the existing one being overwritten; otherwise an exception will be
-! thrown.
-!@endnote
+! - NEW: read and write access. The file is created by Open; an existing file
+!   with the same name is truncated. Datasets can be overwritten.
+! - READ: read access. The file must exist.
+! - WRITE: write access. The file must exist. Existing datasets can not be
+!   overwritten unless SetOverwriteStat(.TRUE.) is called.
+! - OVERWRITE (or READWRITE): read and write access. The file must exist.
+!   Datasets can be overwritten.
+!
+! When a dataset is overwritten, the new data must have the same type and must
+! not be larger than the old data.
+!
+! If zlibOpt is present and zlibOpt >= 0, datasets with more than 1 MB of data
+! along a dimension are chunked and written with gzip compression of level
+! zlibOpt.
+!
+! In DEBUG mode an error is raised if obj is already initiated, if the mode is
+! unknown, or if the file does not exist in mode READ, WRITE or OVERWRITE.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   filename : CHARACTER(*) - path of the file
+!   mode : CHARACTER(*) - NEW, READ, WRITE or OVERWRITE
+!   zlibOpt : INTEGER(I4B), optional - gzip compression level [0-9]
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Initiate_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL OK(obj%IsInitiated(), "IsInitiated")
+! CALL OK(obj%IsNew(), "IsNew")
+! CALL OK(obj%IsRead(), "IsRead")
+! CALL OK(obj%IsWrite(), "IsWrite")
+! CALL OK(.NOT. obj%IsOpen(), "not open before Open")
+!
+! CALL obj%OPEN()
+! CALL OK(obj%IsOpen(), "IsOpen")
+! CALL OK(.NOT. obj%IsNew(), "not new after Open")
+!
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%IsInitiated(), "Deallocate")
+! END PROGRAM main
+!```
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Initiate_test_2.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! REAL(DFP) :: aval
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! ! create the file
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/a", vals=1.0_DFP)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL OK(obj%IsRead() .AND. (.NOT. obj%IsWrite()), "mode READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/a", vals=aval)
+! CALL OK(ABS(aval - 1.0_DFP) .LT. tol, "read in mode READ")
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="WRITE")
+! CALL OK(obj%IsWrite() .AND. (.NOT. obj%IsRead()), "mode WRITE")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/b", vals=2.0_DFP)
+! CALL OK(obj%PathExists("/b"), "write in mode WRITE")
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="OVERWRITE")
+! CALL OK(obj%IsWrite() .AND. obj%IsRead(), "mode OVERWRITE")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/a", vals=3.0_DFP)
+! CALL obj%READ(dsetname="/a", vals=aval)
+! CALL OK(ABS(aval - 3.0_DFP) .LT. tol, "overwrite in mode OVERWRITE")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_open]], [[obj_clear]], [[obj_setOverwriteStat]],
+!   [[obj_isCompressed]]
 
 INTERFACE
   MODULE SUBROUTINE obj_initiate(Obj, filename, mode, zlibOpt)
     CLASS(HDF5File_), INTENT(INOUT) :: Obj
-    !! the object to be initialized
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: filename
-    !! filename the relative path to the file on the filesystem
+    !! path of the file on the file system
     CHARACTER(LEN=*), INTENT(IN) :: mode
-    !! Access mode, which can be 'READ', 'WRITE', 'OVERWRITE', or 'NEW'
-    !! 'READ', 'WRITE', and 'OVERWRITE' all require the file to exist.
-    !! 'WRITE' gives write access but will fail if the user tries to overwrite
-    !! 'OVERWRITE' will allow the user to overwrite existing data in the file.
-    !! 'NEW' will create the file, overwriting any existing files with the
-    !!  same name.
+    !! access mode: 'NEW', 'READ', 'WRITE' or 'OVERWRITE'
+    !! 'READ', 'WRITE' and 'OVERWRITE' need an existing file
+    !! 'WRITE' does not allow overwriting datasets
+    !! 'NEW' creates the file and truncates an existing one
     INTEGER(I4B), INTENT(IN), OPTIONAL :: zlibOpt
-    !! numeric option for GZIP compression [0-9] uses compression
+    !! gzip compression level [0-9]; no compression if absent
   END SUBROUTINE obj_initiate
 END INTERFACE
 
@@ -328,21 +647,68 @@ END INTERFACE
 !                                                                 clear
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         6 June 2021
-! summary: Destructs an HDF5 file object
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-06
+! summary: Deallocate the HDF5 file object
 !
-!# Introduction
+! Close the file (or delete it when delete is true) and reset obj to its
+! default state. The HDF5 library is closed when no HDF5 file object is
+! initiated any more. Deallocate does nothing if obj is not initiated.
 !
-! This routine releases resources used for interacting with the HDF5 file. It
-! closes or deletes the file and the HDF5 library interface. The structure
-! was taken from the Fortran file.
+! When delete is true the file is not closed first, so call Close before
+! Deallocate.
 !
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   delete : LOGICAL(LGT), optional - if true, delete the file; default is
+!       false
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Deallocate_test_1.h5"
+! TYPE(HDF5File_) :: obj
+! LOGICAL(LGT) :: isok
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%IsInitiated(), "Deallocate")
+! CALL OK(.NOT. obj%IsOpen(), "file is closed")
+! INQUIRE (FILE=filename, EXIST=isok)
+! CALL OK(isok, "file is kept")
+!
+! CALL obj%Initiate(filename=filename, mode="WRITE")
+! CALL obj%OPEN()
+! CALL obj%CLOSE()
+! CALL obj%DEALLOCATE(delete=.TRUE.)
+! INQUIRE (FILE=filename, EXIST=isok)
+! CALL OK(.NOT. isok, "Deallocate with delete")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_close]], [[obj_delete]]
 
 INTERFACE
   MODULE SUBROUTINE obj_clear(obj, Delete)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: Delete
+    !! if true, the file is deleted from disk; default is false
   END SUBROUTINE obj_clear
 END INTERFACE
 
@@ -350,15 +716,69 @@ END INTERFACE
 !                                                          setOverwriteStat
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         6 June 2021
-! summary:         Sets the value for the status of whether or not the file will be
-! overwritable.
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-06
+! summary: Set whether datasets in the file can be overwritten
+!
+! When the overwrite status is true, Write overwrites an existing dataset and
+! WriteAttribute overwrites an existing attribute; otherwise writing an
+! existing dataset gives an error. Initiate sets it to true for modes NEW and
+! OVERWRITE, and to false for modes READ and WRITE.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   bool : LOGICAL(LGT) - true to allow overwriting
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "SetOverwriteStat_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! REAL(DFP), ALLOCATABLE :: found(:)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/a", vals=[1.0_DFP, 2.0_DFP])
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="WRITE")
+! CALL obj%SetOverwriteStat(.TRUE.)
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/a", vals=[3.0_DFP, 4.0_DFP])
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/a", vals=found)
+! CALL OK(ALL(ABS(found - [3.0_DFP, 4.0_DFP]) .LT. tol), &
+!         "SetOverwriteStat")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_initiate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_setOverwriteStat(obj, bool)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     LOGICAL(LGT), INTENT(IN) :: bool
+    !! true to allow overwriting datasets and attributes
   END SUBROUTINE obj_setOverwriteStat
 END INTERFACE
 
@@ -366,14 +786,55 @@ END INTERFACE
 !                                                                 getUnitNo
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 6 June 2021
-! summary: gets the unit number used by the HDF5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-06
+! summary: Get the unit number of the HDF5 file
+!
+! Initiate assigns a free unit number (99 or lower). It is only used by
+! Delete, because the HDF5 library does not use Fortran units. The unit number
+! is -1 if obj is not initiated.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!
+! Returns:
+!   ans : INTEGER(I4B) - unit number
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "GetUnitNo_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL OK(obj%GetUnitNo() .EQ. -1, "GetUnitNo before Initiate")
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL OK(obj%GetUnitNo() .GT. 0, "GetUnitNo after Initiate")
+! CALL obj%DEALLOCATE()
+! CALL OK(obj%GetUnitNo() .EQ. -1, "GetUnitNo after Deallocate")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_delete]]
 
 INTERFACE
   MODULE PURE FUNCTION obj_getUnitNo(obj) RESULT(ans)
     CLASS(HDF5File_), INTENT(IN) :: obj
+    !! HDF5 file object
     INTEGER(I4B) :: ans
+    !! unit number, -1 if not initiated
   END FUNCTION obj_getUnitNo
 END INTERFACE
 
@@ -381,14 +842,53 @@ END INTERFACE
 !                                                                 isNew
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         6 June 2021
-! summary: Returns whether or not the HDF5 file is new.
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-06
+! summary: Returns true if the HDF5 file is new
+!
+! A file initiated with mode NEW is new until Open creates it.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!
+! Returns:
+!   ans : LOGICAL(LGT) - true if the file is new
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "IsNew_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL OK(obj%IsNew(), "IsNew after Initiate")
+! CALL obj%OPEN()
+! CALL OK(.NOT. obj%IsNew(), "IsNew after Open")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_setNewStat]]
 
 INTERFACE
   MODULE PURE FUNCTION obj_isNew(obj) RESULT(ans)
     CLASS(HDF5File_), INTENT(IN) :: obj
+    !! HDF5 file object
     LOGICAL(LGT) :: ans
+    !! true if the file is new
   END FUNCTION obj_isNew
 END INTERFACE
 
@@ -396,14 +896,56 @@ END INTERFACE
 !                                                                 setNewStat
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         6 June 2021
-! summary: Sets whether or not the HDF5 file is new.
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-06
+! summary: Set whether the HDF5 file is new
+!
+! When the new status is true, Open creates the file and truncates an existing
+! file with the same name. Open sets it to false after creating the file.
+! Initiate sets it to true for mode NEW.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   bool : LOGICAL(LGT) - new status
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "SetNewStat_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%SetNewStat(.FALSE.)
+! CALL OK(.NOT. obj%IsNew(), "SetNewStat false")
+! CALL obj%SetNewStat(.TRUE.)
+! CALL OK(obj%IsNew(), "SetNewStat true")
+! CALL obj%OPEN()
+! CALL OK(obj%IsOpen(), "Open creates the file")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_isNew]], [[obj_open]]
 
 INTERFACE
   MODULE SUBROUTINE obj_setNewStat(obj, bool)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     LOGICAL(LGT), INTENT(IN) :: bool
+    !! true if the file is new
   END SUBROUTINE obj_setNewStat
 END INTERFACE
 
@@ -411,23 +953,79 @@ END INTERFACE
 !                                                                       ls
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 may 2021
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
 ! summary: List the contents of a group
 !
-!# Introduction
+! Return the names of the objects (groups and datasets) in the group path, in
+! increasing alphabetical order. objs is deallocated first; if path is not a
+! group, objs is returned unallocated.
 !
-! This routine is useful for discovering the contents of an HDF5 file. A path
-! to a group in the file is provided in the subroutine call and the names of
-! its constituents is stored in the objs list. If objs is passed in,
-! it will be deallocated and reallocated to the proper size to store the
-! names of all of the objects in the group.
+! In DEBUG mode an error is raised if obj is not initiated or the file is not
+! open.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*) - path of the group
+!   objs : TYPE(String), ALLOCATABLE - names of the objects
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Ls_test_1.h5"
+! TYPE(HDF5File_) :: obj
+! TYPE(String), ALLOCATABLE :: objs(:)
+! LOGICAL(LGT) :: isok
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+!
+! CALL obj%Mkdir("/b")
+! CALL obj%Mkdir("/a")
+! CALL obj%WRITE(dsetname="/c", vals=1.0_DFP)
+!
+! CALL obj%Ls(path="/", objs=objs)
+! isok = SIZE(objs) .EQ. 3
+! IF (isok) THEN
+!   isok = (objs(1)%chars() .EQ. "a") .AND. &
+!          (objs(2)%chars() .EQ. "b") .AND. &
+!          (objs(3)%chars() .EQ. "c")
+! END IF
+! CALL OK(isok, "Ls('/')")
+!
+! CALL obj%Ls(path="/c", objs=objs)
+! CALL OK(.NOT. ALLOCATED(objs), "Ls of a dataset")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ngrp]], [[obj_isGroup]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ls(obj, path, objs)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path of the group
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: objs(:)
+    !! names of the objects in the group
   END SUBROUTINE obj_ls
 END INTERFACE
 
@@ -435,19 +1033,63 @@ END INTERFACE
 !                                                                     mkdir
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 May 2021
-! summary: Creates a new group in the HDF file.
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Create a group in the HDF5 file
 !
-!# Introduction
+! Create the group path. Missing parent groups are created first. If the group
+! exists and overwriting is allowed, nothing is done.
 !
-! This routine is used to create a new group in an HDF5 file. It can only be
-! called if the file has write access
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*) - path of the group
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Mkdir_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+!
+! CALL obj%Mkdir("/grp1")
+! CALL OK(obj%IsGroup("/grp1"), "Mkdir /grp1")
+!
+! CALL obj%Mkdir("/grp2/grp2a")
+! CALL OK(obj%IsGroup("/grp2"), "parent group /grp2")
+! CALL OK(obj%IsGroup("/grp2/grp2a"), "Mkdir /grp2/grp2a")
+! CALL OK(obj%Ngrp("/") .EQ. 2, "Ngrp('/')")
+! CALL OK(obj%Ngrp("/grp2") .EQ. 1, "Ngrp('/grp2')")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_mkalldir]], [[obj_isGroup]]
 
 INTERFACE
   MODULE RECURSIVE SUBROUTINE obj_mkdir(obj, path)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path of the group to create
   END SUBROUTINE obj_mkdir
 END INTERFACE
 
@@ -455,18 +1097,63 @@ END INTERFACE
 !                                                                 mkalldir
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 may 2021
-! summary:
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Create a group and all its parent groups
 !
-!# Introduction
-! This routine is used to create a new group in an HDF5 file. It can only be
-! called if the file has write access.
+! Create every missing group in path. Groups which exist already are not
+! changed.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*) - path of the group
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Mkalldir_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+!
+! CALL obj%Mkalldir("/grp4/grp4a/grp4a1")
+! CALL OK(obj%IsGroup("/grp4"), "/grp4")
+! CALL OK(obj%IsGroup("/grp4/grp4a"), "/grp4/grp4a")
+! CALL OK(obj%IsGroup("/grp4/grp4a/grp4a1"), "/grp4/grp4a/grp4a1")
+!
+! ! existing groups are left as they are
+! CALL obj%Mkalldir("/grp4/grp4a/grp4a2")
+! CALL OK(obj%Ngrp("/grp4/grp4a") .EQ. 2, "Ngrp('/grp4/grp4a')")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_mkdir]]
 
 INTERFACE
   MODULE SUBROUTINE obj_mkalldir(obj, path)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path of the group to create
   END SUBROUTINE obj_mkalldir
 END INTERFACE
 
@@ -474,15 +1161,67 @@ END INTERFACE
 !                                                                 ngrp
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 may 2021
-! summary:         This function returns how many objects are in the group path
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Get the number of objects in a group
+!
+! Returns the number of objects (groups and datasets) in the group path. In
+! DEBUG mode an error is raised if obj is not initiated or the file is not
+! open.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*) - path of the group
+!
+! Returns:
+!   ans : INTEGER(I4B) - number of objects in the group
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Ngrp_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+!
+! CALL OK(obj%Ngrp("/") .EQ. 0, "Ngrp of an empty file")
+! CALL obj%Mkdir("/g1")
+! CALL obj%Mkdir("/g2")
+! CALL obj%WRITE(dsetname="/d", vals=1.0_DFP)
+! CALL obj%WRITE(dsetname="/g1/d", vals=1.0_DFP)
+! CALL OK(obj%Ngrp("/") .EQ. 3, "Ngrp('/')")
+! CALL OK(obj%Ngrp("/g1") .EQ. 1, "Ngrp('/g1')")
+! CALL OK(obj%Ngrp("/g2") .EQ. 0, "Ngrp('/g2')")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ls]]
 
 INTERFACE
   MODULE FUNCTION obj_ngrp(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path of the group
     INTEGER(I4B) :: Ans
+    !! number of objects in the group
   END FUNCTION obj_ngrp
 END INTERFACE
 
@@ -490,15 +1229,63 @@ END INTERFACE
 !                                                                 isGroup
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 may 2021
-! summary:         This function returns a logical corresponding to whether the group specified by path is a group or not.
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-08
+! summary: Returns true if a path is a group
+!
+! Returns true if path exists and is a group. Returns false if path is a
+! dataset, does not exist, or the file is not open.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*) - path in the file
+!
+! Returns:
+!   ans : LOGICAL(LGT) - true if path is a group
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "IsGroup_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+!
+! CALL obj%Mkdir("/grp")
+! CALL obj%WRITE(dsetname="/grp/data", vals=1.0_DFP)
+! CALL OK(obj%IsGroup("/grp"), "group")
+! CALL OK(.NOT. obj%IsGroup("/grp/data"), "dataset is not a group")
+! CALL OK(.NOT. obj%IsGroup("/missing"), "missing path")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_pathExists]]
 
 INTERFACE
   MODULE FUNCTION obj_isGroup(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path in the file
     LOGICAL(LGT) :: Ans
+    !! true if path is a group
   END FUNCTION obj_isGroup
 END INTERFACE
 
@@ -506,15 +1293,64 @@ END INTERFACE
 !                                                                 pathExists
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 May 2021
-! summary:         Checks if Path exits
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-09
+! summary: Returns true if a path exists in the HDF5 file
+!
+! Every part of path is checked, so a path with a missing parent group does
+! not exist. The path can be a group or a dataset. Returns false if the file
+! is not open.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*) - path in the file
+!
+! Returns:
+!   ans : LOGICAL(LGT) - true if path exists
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "PathExists_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+!
+! CALL obj%WRITE(dsetname="/grp1/grp2/data", vals=1.0_DFP)
+! CALL OK(obj%PathExists("/grp1"), "group")
+! CALL OK(obj%PathExists("/grp1/grp2/data"), "dataset")
+! CALL OK(.NOT. obj%PathExists("/grp1/missing"), "missing")
+! CALL OK(.NOT. obj%PathExists("/missing/data"), "missing parent")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_isGroup]]
 
 INTERFACE
   MODULE FUNCTION obj_pathExists(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(IN) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path in the file
     LOGICAL(LGT) :: Ans
+    !! true if path exists
   END FUNCTION obj_pathExists
 END INTERFACE
 
@@ -522,15 +1358,63 @@ END INTERFACE
 !                                                             CreateHardLink
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 May 2021
-! summary:         Create hard link
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-09
+! summary: Create a hard link to an object
+!
+! Create link_path as a second name of the object at source_path. source_path
+! must exist and link_path must not exist.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   source_path : CHARACTER(*) - path of the existing object
+!   link_path : CHARACTER(*) - path of the new link
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "CreateHardLink_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! REAL(DFP) :: aval
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+!
+! CALL obj%WRITE(dsetname="/data", vals=5.0_DFP)
+! CALL obj%CreateHardLink(source_path="/data", link_path="/link")
+! CALL OK(obj%PathExists("/link"), "CreateHardLink")
+! CALL obj%READ(dsetname="/link", vals=aval)
+! CALL OK(ABS(aval - 5.0_DFP) .LT. tol, "read through the link")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_pathExists]]
 
 INTERFACE
   MODULE SUBROUTINE obj_createHardLink(obj, source_path, link_path)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: source_path
+    !! path of the existing object
     CHARACTER(LEN=*), INTENT(IN) :: link_path
+    !! path of the new link
   END SUBROUTINE obj_createHardLink
 END INTERFACE
 
@@ -538,19 +1422,77 @@ END INTERFACE
 !                                                             getChunkSize
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 May 2021
-! summary:         Returns the chunk size of a dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-05-09
+! summary: Get the chunk size of a dataset
 !
-!# Introduction
-! If a dataset does not have chunking or does not exist, then cdims is
-! returned unallocated.
+! Only compressed datasets are chunked (see Initiate). If the dataset is not
+! chunked or does not exist, cdims is returned unallocated.
+!
+! In DEBUG mode an error is raised if obj is not initiated or the file is not
+! open.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*) - path of the dataset
+!   cdims : INTEGER(HSIZE_T), ALLOCATABLE - chunk dimensions
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: LGT
+! USE HDF5, ONLY: HSIZE_T
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "GetChunkSize_test_1.h5"
+! INTEGER, PARAMETER :: n = 200000
+! TYPE(HDF5File_) :: obj
+! REAL(DFP), ALLOCATABLE :: big(:)
+! INTEGER(HSIZE_T), ALLOCATABLE :: cdims(:)
+! LOGICAL(LGT) :: isok
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! ALLOCATE (big(n))
+! big = 1.0_DFP
+!
+! CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=5)
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/small", vals=[1.0_DFP, 2.0_DFP])
+! CALL obj%WRITE(dsetname="/big", vals=big)
+!
+! CALL obj%GetChunkSize(path="/small", cdims=cdims)
+! CALL OK(.NOT. ALLOCATED(cdims), "small dataset is not chunked")
+!
+! CALL obj%GetChunkSize(path="/big", cdims=cdims)
+! isok = ALLOCATED(cdims)
+! IF (isok) isok = (SIZE(cdims) .EQ. 1) .AND. (cdims(1) .LT. n)
+! CALL OK(isok, "big dataset is chunked")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_isCompressed]]
 
 INTERFACE
   MODULE SUBROUTINE obj_getChunkSize(obj, path, cdims)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path of the dataset
     INTEGER(HSIZE_T), ALLOCATABLE, INTENT(OUT) :: cdims(:)
+    !! chunk dimensions; unallocated if the dataset is not chunked
   END SUBROUTINE obj_getChunkSize
 END INTERFACE
 
@@ -558,24 +1500,66 @@ END INTERFACE
 !                                                             isCompressed
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Returns whether an HDF5 File or data set has compression
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Returns true if the file or a dataset uses compression
 !
-! # Introduction
+! - If path is absent, returns true if the file was initiated with zlibOpt >=
+!   0.
+! - If path is present, returns true if the dataset has a deflate, szip or
+!   nbit filter. The dataset must exist.
 !
-! - If the path is present, then whether or not the dataset is compressed is
-! returned.
-! - If the path is ommitted then the value of the hasCompression attribute is
-! returned.
-! - If a non-existent path is passed, a DBC error is thrown.
+! In DEBUG mode an error is raised if obj is not initiated or the file is not
+! open.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   path : CHARACTER(*), optional - path of the dataset
+!
+! Returns:
+!   ans : LOGICAL(LGT) - true if compression is used
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "IsCompressed_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=5)
+! CALL obj%OPEN()
+! CALL OK(obj%IsCompressed(), "with zlibOpt")
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL OK(.NOT. obj%IsCompressed(), "without zlibOpt")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_initiate]], [[obj_getChunkSize]]
 
 INTERFACE
   MODULE FUNCTION obj_isCompressed(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    CHARACTER(LEN=*), INTENT(IN), OPTIONAL:: path
-    !! The path to a dataset in the file, which must exist
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: path
+    !! path of a dataset in the file, which must exist
     LOGICAL(LGT) :: Ans
+    !! true if compression is used
   END FUNCTION obj_isCompressed
 END INTERFACE
 
@@ -583,33 +1567,53 @@ END INTERFACE
 !                                                                 PreWrite
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Prepare a dataset for writing
+!
+! Create the dataspaces and the dataset creation property list, create the
+! missing parent groups of path, and create the dataset (or open it when it
+! exists and overwriting is allowed). When the file uses compression and the
+! dataset has more than 1 MB of data along a dimension, the dataset is chunked
+! and compressed. This routine is used by all Write routines; postWrite closes
+! what it opens.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access. An error is also raised when an
+! existing dataset is smaller than the new data.
+!
+! See also: [[postWrite]], [[compute_chunk_size]]
+
 INTERFACE
   MODULE SUBROUTINE preWrite(obj, rank, gdims, ldims, path, mem, dset_id, &
     dspace_id, gspace_id, plist_id, error, &
     cnt, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     INTEGER, INTENT(IN) :: rank
+    !! rank of the dataset
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
-    !! global data space dimensions, i.e. shape
+    !! global dataspace dimensions, i.e. shape
     INTEGER(HSIZE_T), INTENT(IN) :: ldims(:)
-    !! local data space dimension
+    !! local dataspace dimensions
     CHARACTER(*), INTENT(IN) :: path
-    !! path of data set
+    !! path of the dataset
     INTEGER(HID_T), INTENT(IN) :: mem
-    !!
+    !! HDF5 memory data type of the data
     INTEGER(HID_T), INTENT(OUT) :: dset_id
-    !! data set id
+    !! dataset id
     INTEGER(HID_T), INTENT(OUT) :: dspace_id
     !! local dataspace id
     INTEGER(HID_T), INTENT(OUT) :: gspace_id
     !! global dataspace id
     INTEGER(HID_T), INTENT(OUT) :: plist_id
-    !! dataset properties id
+    !! property list id of the write operation
     INTEGER(I4B), INTENT(OUT) :: error
-    !! error flag
+    !! error flag, zero on success
     INTEGER(HSIZE_T), INTENT(IN) :: cnt(:)
-    !! count
+    !! count; not used at present
     INTEGER(HSSIZE_T), INTENT(IN) :: offset(:)
+    !! offset; not used at present
   END SUBROUTINE preWrite
 END INTERFACE
 
@@ -617,34 +1621,27 @@ END INTERFACE
 !                                                                 ChunkSize
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2026-08-08
-! summary: Computes the optimal chunk size for a data set for writing with
-!          compression
+! summary: Compute the chunk size of a compressed dataset
 !
-!# ChunkSize
+! The chunk size controls the memory used by the HDF5 library for compression,
+! see https://support.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html
 !
-! Choosing the chunk size is EXTREMELY important to managing the memory
-! overhead of the HDF5 library when using compression. A detailed discussion
-! can be found on the HDF5 website:
+! Each chunk dimension is the smaller of the dataset dimension and the number
+! of entries in 1 MB. Only memory use is considered, not the speed of reading
+! and writing.
 !
-! https://support.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html
-!
-! Here we choose a chunk size that is the smaller of 1 MB and the maximum size
-! of the data set to be chunked to limit excessive memory overhead.
-!
-! This way of choosing the chunk size ONLY considers the memory overhead. It's
-! still possible this could result in an increased execution time (via
-! addtional I/O operations). In the future it may be worth revisiting to
-! to optimize chunk sizes for both.
+! See also: [[preWrite]]
 
 INTERFACE
   MODULE SUBROUTINE compute_chunk_size(mem, gdims, cdims)
     INTEGER(HID_T), INTENT(IN) :: mem
+    !! HDF5 data type of the dataset
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
-    !! the global dimensions of the data set
+    !! global dimensions of the dataset
     INTEGER(HSIZE_T), INTENT(OUT) :: cdims(:)
-    !! the chunk dimensions to use
+    !! chunk dimensions to use
   END SUBROUTINE compute_chunk_size
 END INTERFACE
 
@@ -652,15 +1649,31 @@ END INTERFACE
 !                                                                 postwrite
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Close the objects opened by preWrite
+!
+! Close the dataset, the dataspaces and the property list. In DEBUG mode an
+! error is raised if error is not zero, that is, if the write failed, or if an
+! object can not be closed.
+!
+! See also: [[preWrite]]
+
 INTERFACE
   MODULE SUBROUTINE postWrite(obj, error, dset_id, dspace_id, gspace_id, &
     plist_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     INTEGER(I4B), INTENT(INOUT) :: error
+    !! error flag of the write operation
     INTEGER(HID_T), INTENT(INOUT) :: dset_id
+    !! dataset id
     INTEGER(HID_T), INTENT(INOUT) :: dspace_id
+    !! local dataspace id
     INTEGER(HID_T), INTENT(INOUT) :: gspace_id
+    !! global dataspace id
     INTEGER(HID_T), INTENT(INOUT) :: plist_id
+    !! property list id
   END SUBROUTINE postWrite
 END INTERFACE
 
@@ -668,29 +1681,42 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary: Write double precision scalar data
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a scalar of Real64
 !
-!# Introduction
+! Write a scalar of Real64 to the dataset dsetname. Missing groups in dsetname
+! are created. An existing dataset is overwritten when overwriting is allowed
+! (see SetOverwriteStat); the new data must have the same type and must not be
+! larger than the old data.
 !
-! This routine writes a Real64 datatype scalar to a dataset of name
-! and path which is specified by `dsetname` by using the
-! shape specified by `gdims_in`, if present.
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_d1]], [[obj_read_d0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d0(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 File object
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals
-    !! Value to be written
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Global dimension; Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in
+    !! a scalar of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d0
 END INTERFACE
 
@@ -698,23 +1724,94 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Write a rank-1 array of Real64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-1 array of Real64
+!
+! Write a rank-1 array of Real64 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Write_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! REAL(DFP) :: s, v(5), m(3, 4), t(2, 3, 4)
+! REAL(DFP) :: s1
+! REAL(DFP), ALLOCATABLE :: v1(:), m1(:, :), t1(:, :, :)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! s = 2.0_DFP
+! CALL RANDOM_NUMBER(v)
+! CALL RANDOM_NUMBER(m)
+! CALL RANDOM_NUMBER(t)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/rank0/s", vals=s)
+! CALL obj%WRITE(dsetname="/rank1/v", vals=v)
+! CALL obj%WRITE(dsetname="/rank2/m", vals=m)
+! CALL obj%WRITE(dsetname="/rank3/t", vals=t)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/rank0/s", vals=s1)
+! CALL obj%READ(dsetname="/rank1/v", vals=v1)
+! CALL obj%READ(dsetname="/rank2/m", vals=m1)
+! CALL obj%READ(dsetname="/rank3/t", vals=t1)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(ABS(s1 - s) .LT. tol, "rank 0")
+! CALL OK(ALL(ABS(v1 - v) .LT. tol), "rank 1")
+! CALL OK(ALL(ABS(m1 - m) .LT. tol), "rank 2")
+! CALL OK(ALL(ABS(t1 - t) .LT. tol), "rank 3")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_d1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d1(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! hdf5 file object
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals(:)
-    !! Rank-1 array of reals which will be written in hdf5 file
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! a rank-1 array of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d1
 END INTERFACE
 
@@ -722,23 +1819,42 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Write a rank-2 array of Real64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-2 array of Real64
+!
+! Write a rank-2 array of Real64 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_d1]], [[obj_read_d2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d2(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! hdf5 file object
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals(:, :)
-    !! Rank-2 array of Real64
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(2)
-    !! Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(2)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(2)
+    !! a rank-2 array of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(2)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(2)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d2
 END INTERFACE
 
@@ -746,9 +1862,26 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Write a rank-3 array of Real64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-3 array of Real64
+!
+! Write a rank-3 array of Real64 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_d1]], [[obj_read_d3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d3(obj, dsetname, vals, gdims_in, cnt_in, &
@@ -756,13 +1889,15 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals(:, :, :)
-    !! Rank 3 array of real64
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(3)
-    !! Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(3)
+    !! a rank-3 array of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(3)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(3)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d3
 END INTERFACE
 
@@ -770,9 +1905,26 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Write a rank-4 array of Real64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-4 array of Real64
+!
+! Write a rank-4 array of Real64 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_d1]], [[obj_read_d4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d4(obj, dsetname, vals, gdims_in, cnt_in, &
@@ -780,13 +1932,15 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals(:, :, :, :)
-    !! Rank4 array of real64
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(4)
-    !! Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(4)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(4)
+    !! a rank-4 array of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(4)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(4)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(4)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d4
 END INTERFACE
 
@@ -794,9 +1948,26 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Write a rank-5 array of Real64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-5 array of Real64
+!
+! Write a rank-5 array of Real64 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_d1]], [[obj_read_d5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d5(obj, dsetname, vals, gdims_in, cnt_in, &
@@ -804,13 +1975,15 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals(:, :, :, :, :)
-    !! Rank5 array of Real64
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(5)
-    !! Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(5)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(5)
+    !! a rank-5 array of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(5)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(5)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(5)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d5
 END INTERFACE
 
@@ -818,9 +1991,26 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Write a rank-6 array of Real64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-6 array of Real64
+!
+! Write a rank-6 array of Real64 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_d1]], [[obj_read_d6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d6(obj, dsetname, vals, gdims_in, cnt_in, &
@@ -828,13 +2018,15 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals(:, :, :, :, :, :)
-    !! Rank6 array of datatype Real64
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(6)
-    !! Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(6)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(6)
+    !! a rank-6 array of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(6)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(6)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(6)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d6
 END INTERFACE
 
@@ -842,9 +2034,26 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Write a rank-7 array of Real64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-7 array of Real64
+!
+! Write a rank-7 array of Real64 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_d1]], [[obj_read_d7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_d7(obj, dsetname, vals, gdims_in, cnt_in, &
@@ -852,13 +2061,15 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL64), INTENT(IN) :: vals(:, :, :, :, :, :, :)
-    !! Rank7 array of real64
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(7)
-    !! Shape of data to write with
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(7)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(7)
+    !! a rank-7 array of Real64 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(7)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(7)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(7)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_d7
 END INTERFACE
 
@@ -866,17 +2077,42 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a scalar of Real32
+!
+! Write a scalar of Real32 to the dataset dsetname. Missing groups in dsetname
+! are created. An existing dataset is overwritten when overwriting is allowed
+! (see SetOverwriteStat); the new data must have the same type and must not be
+! larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_s1]], [[obj_read_s0]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s0(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in
+    !! a scalar of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s0
 END INTERFACE
 
@@ -884,15 +2120,90 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a rank-1 array of Real32
+!
+! Write a rank-1 array of Real32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: REAL32
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Write_test_2.h5"
+! REAL(REAL32), PARAMETER :: tol = 1.0E-6_REAL32
+! TYPE(HDF5File_) :: obj
+! REAL(REAL32) :: s, v(5), m(3, 4)
+! REAL(REAL32) :: s1
+! REAL(REAL32), ALLOCATABLE :: v1(:), m1(:, :)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! s = 2.0_REAL32
+! CALL RANDOM_NUMBER(v)
+! CALL RANDOM_NUMBER(m)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/s", vals=s)
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/s", vals=s1)
+! CALL obj%READ(dsetname="/v", vals=v1)
+! CALL obj%READ(dsetname="/m", vals=m1)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(ABS(s1 - s) .LT. tol, "rank 0")
+! CALL OK(ALL(ABS(v1 - v) .LT. tol), "rank 1")
+! CALL OK(ALL(ABS(m1 - m) .LT. tol), "rank 2")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_s1]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s1(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals(:)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! a rank-1 array of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s1
 END INTERFACE
 
@@ -900,15 +2211,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a rank-2 array of Real32
+!
+! Write a rank-2 array of Real32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_s1]], [[obj_read_s2]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s2(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals(:, :)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(2)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(2)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(2)
+    !! a rank-2 array of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(2)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(2)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s2
 END INTERFACE
 
@@ -916,15 +2254,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a rank-3 array of Real32
+!
+! Write a rank-3 array of Real32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_s1]], [[obj_read_s3]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s3(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals(:, :, :)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(3)
+    !! a rank-3 array of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(3)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(3)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s3
 END INTERFACE
 
@@ -932,15 +2297,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a rank-4 array of Real32
+!
+! Write a rank-4 array of Real32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_s1]], [[obj_read_s4]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s4(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals(:, :, :, :)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(4)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(4)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(4)
+    !! a rank-4 array of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(4)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(4)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(4)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s4
 END INTERFACE
 
@@ -948,15 +2340,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a rank-5 array of Real32
+!
+! Write a rank-5 array of Real32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_s1]], [[obj_read_s5]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s5(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals(:, :, :, :, :)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(5)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(5)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(5)
+    !! a rank-5 array of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(5)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(5)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(5)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s5
 END INTERFACE
 
@@ -964,15 +2383,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a rank-6 array of Real32
+!
+! Write a rank-6 array of Real32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_s1]], [[obj_read_s6]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s6(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals(:, :, :, :, :, :)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(6)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(6)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(6)
+    !! a rank-6 array of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(6)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(6)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(6)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s6
 END INTERFACE
 
@@ -980,15 +2426,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a rank-7 array of Real32
+!
+! Write a rank-7 array of Real32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_s1]], [[obj_read_s7]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_s7(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(IN) :: vals(:, :, :, :, :, :, :)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(7)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(7)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(7)
+    !! a rank-7 array of Real32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(7)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(7)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(7)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_s7
 END INTERFACE
 
@@ -996,9 +2469,27 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes logical scalar to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a scalar of logical
+!
+! Write a scalar of logical to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. Logical values are stored as the
+! characters 'T' and 'F'.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_b1]], [[obj_read_b0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_b0(obj, dsetname, vals, gdims_in, &
@@ -1006,13 +2497,15 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(IN) :: vals
-    !! Logical scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in
+    !! a scalar of logical to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_b0
 END INTERFACE
 
@@ -1020,23 +2513,90 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-1 array logical scalar to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-1 array of logical
+!
+! Write a rank-1 array of logical to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. Logical values are stored as the
+! characters 'T' and 'F'.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Write_test_4.h5"
+! TYPE(HDF5File_) :: obj
+! LOGICAL(LGT) :: s, v(3), m(2, 2)
+! LOGICAL(LGT) :: s1
+! LOGICAL(LGT), ALLOCATABLE :: v1(:), m1(:, :)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! s = .TRUE.
+! v = [.TRUE., .FALSE., .TRUE.]
+! m = RESHAPE([.TRUE., .FALSE., .FALSE., .TRUE.], [2, 2])
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/s", vals=s)
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/s", vals=s1)
+! CALL obj%READ(dsetname="/v", vals=v1)
+! CALL obj%READ(dsetname="/m", vals=m1)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(s1 .EQV. s, "rank 0")
+! CALL OK(ALL(v1 .EQV. v), "rank 1")
+! CALL OK(ALL(m1 .EQV. m), "rank 2")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_b1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_b1(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 file data
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(IN) :: vals(:)
-    !! Rank-1 array of logical type
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! a rank-1 array of logical to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_b1
 END INTERFACE
 
@@ -1044,9 +2604,27 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-4 array logical scalar to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-2 array of logical
+!
+! Write a rank-2 array of logical to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. Logical values are stored as the
+! characters 'T' and 'F'.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_b1]], [[obj_read_b2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_b2(obj, dsetname, vals, gdims_in, &
@@ -1054,13 +2632,15 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(IN) :: vals(:, :)
-    !! Rank 2, array of logical data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(2)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(2)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(2)
+    !! a rank-2 array of logical to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(2)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(2)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_b2
 END INTERFACE
 
@@ -1068,23 +2648,43 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-3 array logical scalar to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-3 array of logical
+!
+! Write a rank-3 array of logical to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. Logical values are stored as the
+! characters 'T' and 'F'.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_b1]], [[obj_read_b3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_b3(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(IN) :: vals(:, :, :)
-    !! Rank 2, array of logical data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(3)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(3)
+    !! a rank-3 array of logical to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(3)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(3)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_b3
 END INTERFACE
 
@@ -1092,23 +2692,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a scalar of Int32
+!
+! Write a scalar of Int32 to the dataset dsetname. Missing groups in dsetname
+! are created. An existing dataset is overwritten when overwriting is allowed
+! (see SetOverwriteStat); the new data must have the same type and must not be
+! larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_n1]], [[obj_read_n0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n0(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals
-    !! Rank 0, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! a scalar of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n0
 END INTERFACE
 
@@ -1116,23 +2735,89 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-1 array of int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-1 array of Int32
+!
+! Write a rank-1 array of Int32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Write_test_3.h5"
+! TYPE(HDF5File_) :: obj
+! INTEGER(I4B) :: s, v(5), m(2, 3)
+! INTEGER(I4B) :: s1
+! INTEGER(I4B), ALLOCATABLE :: v1(:), m1(:, :)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! s = 7
+! v = [1, 2, 3, 4, 5]
+! m = RESHAPE([1, 2, 3, 4, 5, 6], [2, 3])
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/s", vals=s)
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/s", vals=s1)
+! CALL obj%READ(dsetname="/v", vals=v1)
+! CALL obj%READ(dsetname="/m", vals=m1)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(s1 .EQ. s, "rank 0")
+! CALL OK(ALL(v1 .EQ. v), "rank 1")
+! CALL OK(ALL(m1 .EQ. m), "rank 2")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_n1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n1(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals(:)
-    !! Rank 0, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! a rank-1 array of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n1
 END INTERFACE
 
@@ -1140,23 +2825,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-2 array of int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-2 array of Int32
+!
+! Write a rank-2 array of Int32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_n1]], [[obj_read_n2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n2(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals(:, :)
-    !! Rank 2, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(2)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(2)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(2)
+    !! a rank-2 array of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(2)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(2)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n2
 END INTERFACE
 
@@ -1164,23 +2868,42 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-3 array of int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-3 array of Int32
+!
+! Write a rank-3 array of Int32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_n1]], [[obj_read_n3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n3(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals(:, :, :)
-    !! Rank 3, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(3)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(3)
+    !! a rank-3 array of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(3)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(3)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n3
 END INTERFACE
 
@@ -1188,23 +2911,42 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-4 array of int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-4 array of Int32
+!
+! Write a rank-4 array of Int32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_n1]], [[obj_read_n4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n4(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :)
-    !! Rank 4, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(4)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(4)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(4)
+    !! a rank-4 array of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(4)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(4)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(4)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n4
 END INTERFACE
 
@@ -1212,23 +2954,42 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-5 array of int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-5 array of Int32
+!
+! Write a rank-5 array of Int32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_n1]], [[obj_read_n5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n5(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :, :)
-    !! Rank 5, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(5)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(5)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(5)
+    !! a rank-5 array of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(5)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(5)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(5)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n5
 END INTERFACE
 
@@ -1236,23 +2997,42 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-6 array of int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-6 array of Int32
+!
+! Write a rank-6 array of Int32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_n1]], [[obj_read_n6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n6(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :, :, :)
-    !! Rank 6, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(6)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(6)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(6)
+    !! a rank-6 array of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(6)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(6)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(6)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n6
 END INTERFACE
 
@@ -1260,23 +3040,42 @@ END INTERFACE
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes rank-7 array of int32 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-7 array of Int32
+!
+! Write a rank-7 array of Int32 to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(INT32) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_n1]], [[obj_read_n7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_n7(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     INTEGER(INT32), INTENT(IN) :: vals(:, :, :, :, :, :, :)
-    !! Rank 7, array of int32 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(7)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(7)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(7)
+    !! a rank-7 array of Int32 to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(7)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(7)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(7)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_n7
 END INTERFACE
 
@@ -1284,23 +3083,43 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a scalar of String
+!
+! Write a scalar of String to the dataset dsetname. Missing groups in dsetname
+! are created. An existing dataset is overwritten when overwriting is allowed
+! (see SetOverwriteStat); the new data must have the same type and must not be
+! larger than the old data. The string is stored with length LEN_TRIM(vals),
+! so trailing blanks are removed.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_st1_helper]], [[obj_read_st0_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_st0(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     TYPE(String), INTENT(IN) :: vals
-    !! Rank 0, array of int64 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! a scalar of String to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_st0
 END INTERFACE
 
@@ -1308,23 +3127,101 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-1 array of String
+!
+! Write a rank-1 array of String to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. length_max is the length of the
+! longest string in vals; the data is written by obj_write_st1. cnt_in and
+! offset_in are not passed on.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Write_test_5.h5"
+! TYPE(HDF5File_) :: obj
+! TYPE(String) :: s, v(2), m(2, 2)
+! TYPE(String) :: s1
+! TYPE(String), ALLOCATABLE :: v1(:), m1(:, :)
+! LOGICAL(LGT) :: isok
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! s = "name"
+! v(1) = "hello"
+! v(2) = "world"
+! m(1, 1) = "a"
+! m(2, 1) = "b"
+! m(1, 2) = "c"
+! m(2, 2) = "d"
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/s", vals=s)
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/s", vals=s1)
+! CALL obj%READ(dsetname="/v", vals=v1)
+! CALL obj%READ(dsetname="/m", vals=m1)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(s1%chars() .EQ. "name", "scalar")
+! isok = (v1(1)%chars() .EQ. "hello") .AND. (v1(2)%chars() .EQ. "world")
+! CALL OK(isok, "rank 1")
+! isok = (m1(1, 1)%chars() .EQ. "a") .AND. (m1(2, 1)%chars() .EQ. "b") &
+!        .AND. (m1(1, 2)%chars() .EQ. "c") &
+!        .AND. (m1(2, 2)%chars() .EQ. "d")
+! CALL OK(isok, "rank 2")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_write_st1]], [[obj_read_st1_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_st1_helper(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     TYPE(String), INTENT(IN) :: vals(:)
-    !! Rank 0, array of int64 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! a rank-1 array of String to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_st1_helper
 END INTERFACE
 
@@ -1332,25 +3229,47 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-1 array of String
+!
+! Write a rank-1 array of String to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. Every string is stored with the fixed
+! length length_max.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data to write
+!   length_max : INTEGER(I4B) - length of the longest string
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_st1_helper]], [[obj_write_st1_helper]],
+!   [[obj_read_st1_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_st1(obj, dsetname, vals, length_max, &
     gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     TYPE(String), INTENT(IN) :: vals(:)
-    !! Rank 0, array of int64 data types
+    !! a rank-1 array of String to write
     INTEGER(I4B), INTENT(IN) :: length_max
-    !! The length of the longest stringType to be written
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(1)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(1)
+    !! length of the longest string in vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(1)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(1)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_st1
 END INTERFACE
 
@@ -1358,23 +3277,44 @@ END INTERFACE
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-2 array of String
+!
+! Write a rank-2 array of String to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. length_max is the length of the
+! longest string in vals; the data is written by obj_write_st2.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_st1_helper]], [[obj_write_st2]],
+!   [[obj_read_st2_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_st2_helper(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     TYPE(String), INTENT(IN) :: vals(:, :)
-    !! Rank 0, array of int64 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(2)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(2)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(2)
+    !! a rank-2 array of String to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(2)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(2)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_st2_helper
 END INTERFACE
 
@@ -1382,25 +3322,47 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-2 array of String
+!
+! Write a rank-2 array of String to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. Every string is stored with the fixed
+! length length_max.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data to write
+!   length_max : INTEGER(I4B) - length of the longest string
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_st1_helper]], [[obj_write_st2_helper]],
+!   [[obj_read_st2_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_st2(obj, dsetname, vals, length_max, &
     gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     TYPE(String), INTENT(IN) :: vals(:, :)
-    !! Rank 0, array of int64 data types
+    !! a rank-2 array of String to write
     INTEGER(I4B), INTENT(IN) :: length_max
-    !! The length of the longest stringType to be written
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(2)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(2)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(2)
+    !! length of the longest string in vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(2)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(2)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_st2
 END INTERFACE
 
@@ -1408,23 +3370,45 @@ END INTERFACE
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-3 array of String
+!
+! Write a rank-3 array of String to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. length_max is the length of the
+! longest string in vals; the data is written by obj_write_st3. This routine
+! is not bound to the WRITE generic.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_st1_helper]], [[obj_write_st3]],
+!   [[obj_read_st3_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_st3_helper(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     TYPE(String), INTENT(IN) :: vals(:, :, :)
-    !! Rank 0, array of int64 data types
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(3)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(3)
+    !! a rank-3 array of String to write
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(3)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(3)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_st3_helper
 END INTERFACE
 
@@ -1432,25 +3416,47 @@ END INTERFACE
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Writes scalar int64 datatype to hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Write a rank-3 array of String
+!
+! Write a rank-3 array of String to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. Every string is stored with the fixed
+! length length_max. This routine is not bound to the WRITE generic.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data to write
+!   length_max : INTEGER(I4B) - length of the longest string
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! See also: [[obj_write_st1_helper]], [[obj_write_st3_helper]],
+!   [[obj_read_st3_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_st3(obj, dsetname, vals, length_max, &
     gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
-    !! HDF5 data type
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name and path
+    !! dataset name with full path
     TYPE(String), INTENT(IN) :: vals(:, :, :)
-    !! Rank 0, array of int64 data types
+    !! a rank-3 array of String to write
     INTEGER(I4B), INTENT(IN) :: length_max
-    !! The length of the longest stringType to be written
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: gdims_in(3)
-    !! Shape of data to write
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: cnt_in(3)
-    INTEGER(I4B), INTENT(IN), OPTIONAL:: offset_in(3)
+    !! length of the longest string in vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in(3)
+    !! global shape of the dataset, default is the shape of vals
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: cnt_in(3)
+    !! number of entries to write; not used at present
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_st3
 END INTERFACE
 
@@ -1458,15 +3464,82 @@ END INTERFACE
 !                                                                 Write
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Write a character variable
+!
+! Write a character variable to the dataset dsetname. Missing groups in
+! dsetname are created. An existing dataset is overwritten when overwriting is
+! allowed (see SetOverwriteStat); the new data must have the same type and
+! must not be larger than the old data. The variable is stored as a rank-1
+! array of single characters. It can be read in a character variable or in a
+! String.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open, or it does not have write access.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : CHARACTER(*) - data to write
+!   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
+!       offset of the data
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Write_test_6.h5"
+! TYPE(HDF5File_) :: obj
+! CHARACTER(LEN=11) :: cval
+! TYPE(String) :: strval
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/greeting", vals="hello world")
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/greeting", vals=cval)
+! CALL obj%READ(dsetname="/greeting", vals=strval)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(cval .EQ. "hello world", "read in character")
+! CALL OK(strval%chars() .EQ. "hello world", "read in String")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_c1]], [[obj_read_st0_helper]]
+
 INTERFACE
   MODULE SUBROUTINE obj_write_c1(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     CHARACTER(LEN=*), INTENT(IN) :: vals
+    !! character variable to write
     INTEGER(I4B), INTENT(IN), OPTIONAL :: gdims_in
+    !! number of characters to write, default is LEN(vals)
     INTEGER(I4B), DIMENSION(1), INTENT(IN), OPTIONAL :: cnt_in
+    !! number of entries to write; not used at present
     INTEGER(I4B), DIMENSION(1), INTENT(IN), OPTIONAL :: offset_in
+    !! offset of vals in the dataset; not used at present
   END SUBROUTINE obj_write_c1
 END INTERFACE
 
@@ -1474,16 +3547,36 @@ END INTERFACE
 !                                                             preRead
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Open a dataset for reading
+!
+! Open the dataset and get its dimensions. For rank 0, dims is set to 1. This
+! routine is used by all Read routines; postRead closes what it opens.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open or does not have read access, the dataset can not be opened, or the
+! rank of the dataset is not rank.
+!
+! See also: [[postRead]]
+
 INTERFACE
   MODULE SUBROUTINE preRead(obj, path, rank, dset_id, dspace_id, &
     dims, error)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path of the dataset
     INTEGER(I4B), INTENT(IN) :: rank
+    !! expected rank of the dataset
     INTEGER(HID_T), INTENT(INOUT) :: dset_id
+    !! dataset id
     INTEGER(HID_T), INTENT(INOUT) :: dspace_id
+    !! dataspace id
     INTEGER(HSIZE_T), INTENT(INOUT) :: dims(:)
+    !! dimensions of the dataset
     INTEGER(I4B), INTENT(OUT) :: error
+    !! error flag, negative on failure
   END SUBROUTINE preRead
 END INTERFACE
 
@@ -1491,15 +3584,71 @@ END INTERFACE
 !                                                               getDataShape
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 June 2021
-! summary:         the shape of the data array; size-0 implies a scalar dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-08
+! summary: Get the shape of a dataset
+!
+! Returns the shape of the dataset dsetname. The shape of a scalar dataset has
+! size zero.
+!
+! In DEBUG mode an error is raised if obj is not initiated, the file is not
+! open or does not have read access, or the dataset can not be opened.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!
+! Returns:
+!   dataShape : INTEGER(I4B), ALLOCATABLE - shape of the dataset
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "GetDataShape_test_1.h5"
+! TYPE(HDF5File_) :: obj
+! REAL(DFP) :: mat(3, 4)
+! INTEGER(I4B), ALLOCATABLE :: dshape(:)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! mat = 1.0_DFP
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/mat", vals=mat)
+! CALL obj%WRITE(dsetname="/scalar", vals=1.0_DFP)
+!
+! dshape = obj%GetDataShape("/mat")
+! CALL OK(ALL(dshape .EQ. [3, 4]), "GetDataShape of a matrix")
+! dshape = obj%GetDataShape("/scalar")
+! CALL OK(SIZE(dshape) .EQ. 0, "GetDataShape of a scalar")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[getDataType]]
 
 INTERFACE
   MODULE FUNCTION getDataShape(obj, dsetname) RESULT(dataShape)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE :: dataShape(:)
+    !! shape of the dataset; size zero for a scalar
   END FUNCTION getDataShape
 END INTERFACE
 
@@ -1507,15 +3656,69 @@ END INTERFACE
 !                                                               getDataType
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 June 2021
-! summary: returns the shape of the dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-08
+! summary: Get the data type of a dataset
+!
+! Returns 'Rea' for a 32 or 64 bit real, 'Int' for a 32 or 64 bit integer,
+! 'STR' for a string, and 'N/A' for a real or integer of another precision. In
+! DEBUG mode an error is raised for other data types.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!
+! Returns:
+!   dataType : CHARACTER(3) - 'Rea', 'Int', 'STR' or 'N/A'
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "GetDataType_test_1.h5"
+! TYPE(HDF5File_) :: obj
+! TYPE(String) :: strval
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! strval = "hello"
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/real", vals=1.0_DFP)
+! CALL obj%WRITE(dsetname="/int", vals=1_I4B)
+! CALL obj%WRITE(dsetname="/str", vals=strval)
+!
+! CALL OK(obj%GetDataType("/real") .EQ. "Rea", "real")
+! CALL OK(obj%GetDataType("/int") .EQ. "Int", "integer")
+! CALL OK(obj%GetDataType("/str") .EQ. "STR", "string")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[getDataShape]]
 
 INTERFACE
   MODULE FUNCTION getDataType(obj, dsetname) RESULT(dataType)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     CHARACTER(LEN=3) :: dataType
+    !! 'Rea', 'Int', 'STR' or 'N/A'
   END FUNCTION getDataType
 END INTERFACE
 
@@ -1523,17 +3726,28 @@ END INTERFACE
 !                                                            postRead
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 June 2021
-! summary:
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-08
+! summary: Close the objects opened by preRead
+!
+! Close the dataset and the dataspace. If error is not zero, an error is
+! raised; for a compressed dataset with large chunks a warning about memory
+! use is raised first.
+!
+! See also: [[preRead]]
 
 INTERFACE
   MODULE SUBROUTINE postRead(obj, path, dset_id, dspace_id, error)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
+    !! path of the dataset
     INTEGER(HID_T), INTENT(INOUT) :: dset_id
+    !! dataset id
     INTEGER(HID_T), INTENT(INOUT) :: dspace_id
+    !! dataspace id
     INTEGER(I4B), INTENT(INOUT) :: error
+    !! error flag of the read operation
   END SUBROUTINE postRead
 END INTERFACE
 
@@ -1541,15 +3755,30 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read a scalar of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a scalar of Real64
+!
+! Read a scalar of Real64 from the dataset dsetname.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - data read from the dataset
+!
+! See also: [[obj_read_d1]], [[obj_write_d0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals
+    !! a scalar of Real64 read from the dataset
   END SUBROUTINE obj_read_d0
 END INTERFACE
 
@@ -1557,15 +3786,77 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-1 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-1 array of Real64
+!
+! Read a rank-1 array of Real64 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Read_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! REAL(DFP) :: v(4), m(2, 3)
+! REAL(DFP), ALLOCATABLE :: v1(:), m1(:, :)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! v = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP]
+! CALL RANDOM_NUMBER(m)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%DEALLOCATE()
+!
+! ALLOCATE (v1(10), m1(2, 5))
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/v", vals=v1)
+! CALL obj%READ(dsetname="/m", vals=m1)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(SIZE(v1) .EQ. 4, "rank 1 reallocated")
+! CALL OK(ALL(ABS(v1 - v) .LT. tol), "rank 1 values")
+! CALL OK(ALL(SHAPE(m1) .EQ. [2, 3]), "rank 2 reallocated")
+! CALL OK(ALL(ABS(m1 - m) .LT. tol), "rank 2 values")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_write_d1]], [[obj_read__d1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! a rank-1 array of Real64 read from the dataset
   END SUBROUTINE obj_read_d1
 END INTERFACE
 
@@ -1573,24 +3864,97 @@ END INTERFACE
 !                                                                 Read_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 7 June 2021
-! summary: Read an array of rank-1 of REAL64
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-1 array of Real64 without allocating vals
 !
-! Read an array of rank-1 of REAL64 without allocating memory for vals.
-! The size of the array is returned in tsize.
-! The size of the array should be known before calling this subroutine.
+! Read a rank-1 array of Real64 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in tsize; the data is
+! stored in vals(1:tsize), and the rest of vals is not changed.
+!
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
+!   tsize : INTEGER(I4B) - size of data written in vals
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Read__test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! REAL(DFP) :: v(3), m(2, 3), t(2, 2, 2)
+! REAL(DFP) :: vbuf(10), mbuf(5, 5), tbuf(3, 3, 3)
+! INTEGER(I4B) :: tsize, nrow, ncol, dim1, dim2, dim3
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL RANDOM_NUMBER(v)
+! CALL RANDOM_NUMBER(m)
+! CALL RANDOM_NUMBER(t)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%WRITE(dsetname="/t", vals=t)
+! CALL obj%DEALLOCATE()
+!
+! vbuf = -1.0_DFP
+! mbuf = -1.0_DFP
+! tbuf = -1.0_DFP
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ_(dsetname="/v", vals=vbuf, tsize=tsize)
+! CALL obj%READ_(dsetname="/m", vals=mbuf, nrow=nrow, ncol=ncol)
+! CALL obj%READ_(dsetname="/t", vals=tbuf, dim1=dim1, dim2=dim2, &
+!                dim3=dim3)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(tsize .EQ. 3, "rank 1 tsize")
+! CALL OK(ALL(ABS(vbuf(1:tsize) - v) .LT. tol), "rank 1 values")
+! CALL OK(ALL(vbuf(tsize + 1:) .EQ. -1.0_DFP), "rank 1 rest")
+!
+! CALL OK((nrow .EQ. 2) .AND. (ncol .EQ. 3), "rank 2 nrow, ncol")
+! CALL OK(ALL(ABS(mbuf(1:nrow, 1:ncol) - m) .LT. tol), "rank 2 values")
+! CALL OK(ALL(mbuf(nrow + 1:, :) .EQ. -1.0_DFP), "rank 2 rest")
+!
+! CALL OK(ALL([dim1, dim2, dim3] .EQ. 2), "rank 3 dim1, dim2, dim3")
+! CALL OK(ALL(ABS(tbuf(1:dim1, 1:dim2, 1:dim3) - t) .LT. tol), &
+!         "rank 3 values")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_d1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__d1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals(:)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! The size of data written in vals
+    !! size of data written in vals
   END SUBROUTINE obj_read__d1
 END INTERFACE
 
@@ -1598,15 +3962,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-2 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-2 array of Real64
+!
+! Read a rank-2 array of Real64 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_d1]], [[obj_write_d2]], [[obj_read__d2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! a rank-2 array of Real64 read from the dataset
   END SUBROUTINE obj_read_d2
 END INTERFACE
 
@@ -1616,15 +3996,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-2 of REAL64 without allocating vals
+! summary: Read a rank-2 array of Real64 without allocating vals
 !
-! Read an array of rank-2 of REAL64 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! nrow, ncol; the data is stored in vals(1:nrow, 1:ncol).
+! Read a rank-2 array of Real64 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in nrow, ncol; the data
+! is stored in vals(1:nrow, 1:ncol), and the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -1640,7 +4020,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals(:, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: nrow
@@ -1654,15 +4034,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-3 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-3 array of Real64
+!
+! Read a rank-3 array of Real64 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_d1]], [[obj_write_d3]], [[obj_read__d3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    !! a rank-3 array of Real64 read from the dataset
   END SUBROUTINE obj_read_d3
 END INTERFACE
 
@@ -1672,24 +4068,22 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-3 of REAL64 without allocating vals
+! summary: Read a rank-3 array of Real64 without allocating vals
 !
-! Read an array of rank-3 of REAL64 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3;
-! the data is stored in vals(1:dim1, ..., 1:dim3).
+! Read a rank-3 array of Real64 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3; the
+! data is stored in vals(1:dim1, ..., 1:dim3), and the rest of vals is not
+! changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
+!   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
 ! See also: [[obj_read__d1]], [[obj_read_d3]]
 
@@ -1698,7 +4092,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals(:, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -1714,15 +4108,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-4 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-4 array of Real64
+!
+! Read a rank-4 array of Real64 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_d1]], [[obj_write_d4]], [[obj_read__d4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
+    !! a rank-4 array of Real64 read from the dataset
   END SUBROUTINE obj_read_d4
 END INTERFACE
 
@@ -1732,25 +4142,22 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-4 of REAL64 without allocating vals
+! summary: Read a rank-4 array of Real64 without allocating vals
 !
-! Read an array of rank-4 of REAL64 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4;
-! the data is stored in vals(1:dim1, ..., 1:dim4).
+! Read a rank-4 array of Real64 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4; the data is stored in vals(1:dim1, ..., 1:dim4), and the rest of vals
+! is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
+!   dim1, ..., dim4 : INTEGER(I4B) - extent of data along each dimension
 !
 ! See also: [[obj_read__d1]], [[obj_read_d4]]
 
@@ -1760,7 +4167,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals(:, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -1778,15 +4185,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-5 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-5 array of Real64
+!
+! Read a rank-5 array of Real64 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_d1]], [[obj_write_d5]], [[obj_read__d5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
+    !! a rank-5 array of Real64 read from the dataset
   END SUBROUTINE obj_read_d5
 END INTERFACE
 
@@ -1796,26 +4219,22 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-5 of REAL64 without allocating vals
+! summary: Read a rank-5 array of Real64 without allocating vals
 !
-! Read an array of rank-5 of REAL64 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5;
-! the data is stored in vals(1:dim1, ..., 1:dim5).
+! Read a rank-5 array of Real64 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5; the data is stored in vals(1:dim1, ..., 1:dim5), and the rest of
+! vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
+!   dim1, ..., dim5 : INTEGER(I4B) - extent of data along each dimension
 !
 ! See also: [[obj_read__d1]], [[obj_read_d5]]
 
@@ -1825,7 +4244,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals(:, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -1845,15 +4264,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-6 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-6 array of Real64
+!
+! Read a rank-6 array of Real64 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_d1]], [[obj_write_d6]], [[obj_read__d6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
+    !! a rank-6 array of Real64 read from the dataset
   END SUBROUTINE obj_read_d6
 END INTERFACE
 
@@ -1863,27 +4298,22 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-6 of REAL64 without allocating vals
+! summary: Read a rank-6 array of Real64 without allocating vals
 !
-! Read an array of rank-6 of REAL64 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5, dim6;
-! the data is stored in vals(1:dim1, ..., 1:dim6).
+! Read a rank-6 array of Real64 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5, dim6; the data is stored in vals(1:dim1, ..., 1:dim6), and the
+! rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
-!   dim6 : INTEGER(I4B) - extent of data along dimension 6
+!   dim1, ..., dim6 : INTEGER(I4B) - extent of data along each dimension
 !
 ! See also: [[obj_read__d1]], [[obj_read_d6]]
 
@@ -1893,7 +4323,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals(:, :, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -1915,15 +4345,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-7 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-7 array of Real64
+!
+! Read a rank-7 array of Real64 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_d1]], [[obj_write_d7]], [[obj_read__d7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_d7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
+    !! a rank-7 array of Real64 read from the dataset
   END SUBROUTINE obj_read_d7
 END INTERFACE
 
@@ -1933,28 +4379,22 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-7 of REAL64 without allocating vals
+! summary: Read a rank-7 array of Real64 without allocating vals
 !
-! Read an array of rank-7 of REAL64 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-! the data is stored in vals(1:dim1, ..., 1:dim7).
+! Read a rank-7 array of Real64 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5, dim6, dim7; the data is stored in vals(1:dim1, ..., 1:dim7), and
+! the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
-!   dim6 : INTEGER(I4B) - extent of data along dimension 6
-!   dim7 : INTEGER(I4B) - extent of data along dimension 7
+!   dim1, ..., dim7 : INTEGER(I4B) - extent of data along each dimension
 !
 ! See also: [[obj_read__d1]], [[obj_read_d7]]
 
@@ -1964,7 +4404,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -1988,15 +4428,30 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read a scalar of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a scalar of Real32
+!
+! Read a scalar of Real32 from the dataset dsetname.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32) - data read from the dataset
+!
+! See also: [[obj_read_s1]], [[obj_write_s0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals
+    !! a scalar of Real32 read from the dataset
   END SUBROUTINE obj_read_s0
 END INTERFACE
 
@@ -2004,15 +4459,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-1 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-1 array of Real32
+!
+! Read a rank-1 array of Real32 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_write_s1]], [[obj_write_s1]], [[obj_read__s1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! a rank-1 array of Real32 read from the dataset
   END SUBROUTINE obj_read_s1
 END INTERFACE
 
@@ -2022,34 +4493,81 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-1 of REAL32 without allocating vals
+! summary: Read a rank-1 array of Real32 without allocating vals
 !
-! Read an array of rank-1 of REAL32 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! tsize; the data is stored in vals(1:tsize).
+! Read a rank-1 array of Real32 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in tsize; the data is
+! stored in vals(1:tsize), and the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
-!   vals : REAL(REAL32) - array to fill, SIZE(vals) >= tsize
+!   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
 !   tsize : INTEGER(I4B) - size of data written in vals
 !
-! See also: [[obj_read_s1]], [[obj_read__d1]]
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: REAL32
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Read__test_2.h5"
+! REAL(REAL32), PARAMETER :: tol = 1.0E-6_REAL32
+! TYPE(HDF5File_) :: obj
+! REAL(REAL32) :: rv(4), rbuf(10)
+! INTEGER(I4B) :: iv(2, 3), ibuf(4, 4)
+! INTEGER(I4B) :: tsize, nrow, ncol
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL RANDOM_NUMBER(rv)
+! iv = RESHAPE([1, 2, 3, 4, 5, 6], [2, 3])
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/rv", vals=rv)
+! CALL obj%WRITE(dsetname="/iv", vals=iv)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ_(dsetname="/rv", vals=rbuf, tsize=tsize)
+! CALL obj%READ_(dsetname="/iv", vals=ibuf, nrow=nrow, ncol=ncol)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(tsize .EQ. 4, "Real32 tsize")
+! CALL OK(ALL(ABS(rbuf(1:tsize) - rv) .LT. tol), "Real32 values")
+! CALL OK((nrow .EQ. 2) .AND. (ncol .EQ. 3), "integer nrow, ncol")
+! CALL OK(ALL(ibuf(1:nrow, 1:ncol) .EQ. iv), "integer values")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_s1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__s1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals(:)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! The size of data written in vals
+    !! size of data written in vals
   END SUBROUTINE obj_read__s1
 END INTERFACE
 
@@ -2057,15 +4575,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-2 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-2 array of Real32
+!
+! Read a rank-2 array of Real32 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_s1]], [[obj_write_s2]], [[obj_read__s2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! a rank-2 array of Real32 read from the dataset
   END SUBROUTINE obj_read_s2
 END INTERFACE
 
@@ -2075,15 +4609,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-2 of REAL32 without allocating vals
+! summary: Read a rank-2 array of Real32 without allocating vals
 !
-! Read an array of rank-2 of REAL32 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! nrow, ncol; the data is stored in vals(1:nrow, 1:ncol).
+! Read a rank-2 array of Real32 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in nrow, ncol; the data
+! is stored in vals(1:nrow, 1:ncol), and the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -2092,14 +4626,14 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read_s2]], [[obj_read__d2]]
+! See also: [[obj_read__s1]], [[obj_read_s2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__s2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals(:, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: nrow
@@ -2113,15 +4647,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-3 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-3 array of Real32
+!
+! Read a rank-3 array of Real32 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_s1]], [[obj_write_s3]], [[obj_read__s3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    !! a rank-3 array of Real32 read from the dataset
   END SUBROUTINE obj_read_s3
 END INTERFACE
 
@@ -2131,32 +4681,31 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-3 of REAL32 without allocating vals
+! summary: Read a rank-3 array of Real32 without allocating vals
 !
-! Read an array of rank-3 of REAL32 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3; the data is stored in vals(1:dim1, 1:dim2, 1:dim3).
+! Read a rank-3 array of Real32 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3; the
+! data is stored in vals(1:dim1, ..., 1:dim3), and the rest of vals is not
+! changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
+!   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_s3]], [[obj_read__d3]]
+! See also: [[obj_read__s1]], [[obj_read_s3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__s3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals(:, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2172,15 +4721,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-4 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-4 array of Real32
+!
+! Read a rank-4 array of Real32 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_s1]], [[obj_write_s4]], [[obj_read__s4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
+    !! a rank-4 array of Real32 read from the dataset
   END SUBROUTINE obj_read_s4
 END INTERFACE
 
@@ -2190,27 +4755,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-4 of REAL32 without allocating vals
+! summary: Read a rank-4 array of Real32 without allocating vals
 !
-! Read an array of rank-4 of REAL32 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4;
-! the data is stored in vals(1:dim1, ..., 1:dim4).
+! Read a rank-4 array of Real32 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4; the data is stored in vals(1:dim1, ..., 1:dim4), and the rest of vals
+! is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
+!   dim1, ..., dim4 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_s4]], [[obj_read__d4]]
+! See also: [[obj_read__s1]], [[obj_read_s4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__s4(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2218,7 +4780,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals(:, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2236,15 +4798,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-5 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-5 array of Real32
+!
+! Read a rank-5 array of Real32 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_s1]], [[obj_write_s5]], [[obj_read__s5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
+    !! a rank-5 array of Real32 read from the dataset
   END SUBROUTINE obj_read_s5
 END INTERFACE
 
@@ -2254,28 +4832,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-5 of REAL32 without allocating vals
+! summary: Read a rank-5 array of Real32 without allocating vals
 !
-! Read an array of rank-5 of REAL32 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5;
-! the data is stored in vals(1:dim1, ..., 1:dim5).
+! Read a rank-5 array of Real32 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5; the data is stored in vals(1:dim1, ..., 1:dim5), and the rest of
+! vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
+!   dim1, ..., dim5 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_s5]], [[obj_read__d5]]
+! See also: [[obj_read__s1]], [[obj_read_s5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__s5(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2283,7 +4857,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals(:, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2303,15 +4877,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-6 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-6 array of Real32
+!
+! Read a rank-6 array of Real32 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_s1]], [[obj_write_s6]], [[obj_read__s6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
+    !! a rank-6 array of Real32 read from the dataset
   END SUBROUTINE obj_read_s6
 END INTERFACE
 
@@ -2321,29 +4911,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-6 of REAL32 without allocating vals
+! summary: Read a rank-6 array of Real32 without allocating vals
 !
-! Read an array of rank-6 of REAL32 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5, dim6;
-! the data is stored in vals(1:dim1, ..., 1:dim6).
+! Read a rank-6 array of Real32 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5, dim6; the data is stored in vals(1:dim1, ..., 1:dim6), and the
+! rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
-!   dim6 : INTEGER(I4B) - extent of data along dimension 6
+!   dim1, ..., dim6 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_s6]], [[obj_read__d6]]
+! See also: [[obj_read__s1]], [[obj_read_s6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__s6(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2351,7 +4936,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals(:, :, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2373,15 +4958,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-7 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-7 array of Real32
+!
+! Read a rank-7 array of Real32 from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_s1]], [[obj_write_s7]], [[obj_read__s7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_s7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
+    !! a rank-7 array of Real32 read from the dataset
   END SUBROUTINE obj_read_s7
 END INTERFACE
 
@@ -2391,30 +4992,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-7 of REAL32 without allocating vals
+! summary: Read a rank-7 array of Real32 without allocating vals
 !
-! Read an array of rank-7 of REAL32 into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-! the data is stored in vals(1:dim1, ..., 1:dim7).
+! Read a rank-7 array of Real32 from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5, dim6, dim7; the data is stored in vals(1:dim1, ..., 1:dim7), and
+! the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
-!   dim6 : INTEGER(I4B) - extent of data along dimension 6
-!   dim7 : INTEGER(I4B) - extent of data along dimension 7
+!   dim1, ..., dim7 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_s7]], [[obj_read__d7]]
+! See also: [[obj_read__s1]], [[obj_read_s7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__s7(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2422,7 +5017,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2446,15 +5041,30 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read a scalar of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a scalar of Int32
+!
+! Read a scalar of Int32 from the dataset dsetname.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B) - data read from the dataset
+!
+! See also: [[obj_read_n1]], [[obj_write_n0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals
+    !! a scalar of Int32 read from the dataset
   END SUBROUTINE obj_read_n0
 END INTERFACE
 
@@ -2462,15 +5072,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-1 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-1 array of Int32
+!
+! Read a rank-1 array of Int32 from the dataset dsetname. vals is allocated to
+! the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_write_n1]], [[obj_write_n1]], [[obj_read__n1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! a rank-1 array of Int32 read from the dataset
   END SUBROUTINE obj_read_n1
 END INTERFACE
 
@@ -2480,34 +5106,34 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-1 of I4B without allocating vals
+! summary: Read a rank-1 array of integer without allocating vals
 !
-! Read an array of rank-1 of I4B into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! tsize; the data is stored in vals(1:tsize).
+! Read a rank-1 array of integer from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in tsize; the data is
+! stored in vals(1:tsize), and the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
-!   vals : INTEGER(I4B) - array to fill, SIZE(vals) >= tsize
+!   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
 !   tsize : INTEGER(I4B) - size of data written in vals
 !
-! See also: [[obj_read_n1]], [[obj_read__d1]]
+! See also: [[obj_read__s1]], [[obj_read_n1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__n1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals(:)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! The size of data written in vals
+    !! size of data written in vals
   END SUBROUTINE obj_read__n1
 END INTERFACE
 
@@ -2515,15 +5141,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-2 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-2 array of Int32
+!
+! Read a rank-2 array of Int32 from the dataset dsetname. vals is allocated to
+! the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_n1]], [[obj_write_n2]], [[obj_read__n2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! a rank-2 array of Int32 read from the dataset
   END SUBROUTINE obj_read_n2
 END INTERFACE
 
@@ -2533,15 +5175,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-2 of I4B without allocating vals
+! summary: Read a rank-2 array of integer without allocating vals
 !
-! Read an array of rank-2 of I4B into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! nrow, ncol; the data is stored in vals(1:nrow, 1:ncol).
+! Read a rank-2 array of integer from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in nrow, ncol; the data
+! is stored in vals(1:nrow, 1:ncol), and the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -2550,14 +5192,14 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read_n2]], [[obj_read__d2]]
+! See also: [[obj_read__s1]], [[obj_read_n2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__n2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals(:, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: nrow
@@ -2571,15 +5213,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-3 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-3 array of Int32
+!
+! Read a rank-3 array of Int32 from the dataset dsetname. vals is allocated to
+! the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_n1]], [[obj_write_n3]], [[obj_read__n3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    !! a rank-3 array of Int32 read from the dataset
   END SUBROUTINE obj_read_n3
 END INTERFACE
 
@@ -2589,32 +5247,31 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-3 of I4B without allocating vals
+! summary: Read a rank-3 array of integer without allocating vals
 !
-! Read an array of rank-3 of I4B into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3; the data is stored in vals(1:dim1, 1:dim2, 1:dim3).
+! Read a rank-3 array of integer from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3; the
+! data is stored in vals(1:dim1, ..., 1:dim3), and the rest of vals is not
+! changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
+!   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_n3]], [[obj_read__d3]]
+! See also: [[obj_read__s1]], [[obj_read_n3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__n3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals(:, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2630,15 +5287,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-4 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-4 array of Int32
+!
+! Read a rank-4 array of Int32 from the dataset dsetname. vals is allocated to
+! the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_n1]], [[obj_write_n4]], [[obj_read__n4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
+    !! a rank-4 array of Int32 read from the dataset
   END SUBROUTINE obj_read_n4
 END INTERFACE
 
@@ -2648,27 +5321,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-4 of I4B without allocating vals
+! summary: Read a rank-4 array of integer without allocating vals
 !
-! Read an array of rank-4 of I4B into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4;
-! the data is stored in vals(1:dim1, ..., 1:dim4).
+! Read a rank-4 array of integer from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4; the data is stored in vals(1:dim1, ..., 1:dim4), and the rest of vals
+! is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
+!   dim1, ..., dim4 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_n4]], [[obj_read__d4]]
+! See also: [[obj_read__s1]], [[obj_read_n4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__n4(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2676,7 +5346,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals(:, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2694,15 +5364,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-5 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-5 array of Int32
+!
+! Read a rank-5 array of Int32 from the dataset dsetname. vals is allocated to
+! the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_n1]], [[obj_write_n5]], [[obj_read__n5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
+    !! a rank-5 array of Int32 read from the dataset
   END SUBROUTINE obj_read_n5
 END INTERFACE
 
@@ -2712,28 +5398,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-5 of I4B without allocating vals
+! summary: Read a rank-5 array of integer without allocating vals
 !
-! Read an array of rank-5 of I4B into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5;
-! the data is stored in vals(1:dim1, ..., 1:dim5).
+! Read a rank-5 array of integer from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5; the data is stored in vals(1:dim1, ..., 1:dim5), and the rest of
+! vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
+!   dim1, ..., dim5 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_n5]], [[obj_read__d5]]
+! See also: [[obj_read__s1]], [[obj_read_n5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__n5(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2741,7 +5423,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals(:, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2761,15 +5443,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-6 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-6 array of Int32
+!
+! Read a rank-6 array of Int32 from the dataset dsetname. vals is allocated to
+! the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_n1]], [[obj_write_n6]], [[obj_read__n6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
+    !! a rank-6 array of Int32 read from the dataset
   END SUBROUTINE obj_read_n6
 END INTERFACE
 
@@ -2779,29 +5477,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-6 of I4B without allocating vals
+! summary: Read a rank-6 array of integer without allocating vals
 !
-! Read an array of rank-6 of I4B into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5, dim6;
-! the data is stored in vals(1:dim1, ..., 1:dim6).
+! Read a rank-6 array of integer from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5, dim6; the data is stored in vals(1:dim1, ..., 1:dim6), and the
+! rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
-!   dim6 : INTEGER(I4B) - extent of data along dimension 6
+!   dim1, ..., dim6 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_n6]], [[obj_read__d6]]
+! See also: [[obj_read__s1]], [[obj_read_n6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__n6(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2809,7 +5502,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals(:, :, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2831,15 +5524,31 @@ END INTERFACE
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         7 June 2021
-! summary:         Read an array of rank-7 of real64 datatype from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-07
+! summary: Read a rank-7 array of Int32
+!
+! Read a rank-7 array of Int32 from the dataset dsetname. vals is allocated to
+! the shape of the dataset; it is reallocated if it has another shape.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_n1]], [[obj_write_n7]], [[obj_read__n7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_n7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
+    !! a rank-7 array of Int32 read from the dataset
   END SUBROUTINE obj_read_n7
 END INTERFACE
 
@@ -2849,30 +5558,24 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-7 of I4B without allocating vals
+! summary: Read a rank-7 array of integer without allocating vals
 !
-! Read an array of rank-7 of I4B into vals without allocating memory
-! for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3, dim4, dim5, dim6, dim7;
-! the data is stored in vals(1:dim1, ..., 1:dim7).
+! Read a rank-7 array of integer from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3,
+! dim4, dim5, dim6, dim7; the data is stored in vals(1:dim1, ..., 1:dim7), and
+! the rest of vals is not changed.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
-!   dim4 : INTEGER(I4B) - extent of data along dimension 4
-!   dim5 : INTEGER(I4B) - extent of data along dimension 5
-!   dim6 : INTEGER(I4B) - extent of data along dimension 6
-!   dim7 : INTEGER(I4B) - extent of data along dimension 7
+!   dim1, ..., dim7 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_n7]], [[obj_read__d7]]
+! See also: [[obj_read__s1]], [[obj_read_n7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__n7(obj, dsetname, vals, dim1, dim2, dim3, &
@@ -2880,7 +5583,7 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -2904,15 +5607,33 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 June 2021
-! summary:         Read a string from dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-08
+! summary: Read a scalar of String
+!
+! Read a scalar of String from the dataset dsetname. Strings can be stored in
+! two ways, and this routine finds out which one is used:
+!
+! - as fixed-length strings, written by Write with String data; then
+!   obj_read_st0 is called with the length of the stored strings.
+! - as an array of single characters, written by Write with a character
+!   variable; then obj_read_ca0 is called.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data read from the dataset
+!
+! See also: [[obj_read_st2_helper]], [[obj_write_st0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_st0_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), INTENT(INOUT) :: vals
+    !! a scalar of String read from the dataset
   END SUBROUTINE obj_read_st0_helper
 END INTERFACE
 
@@ -2920,16 +5641,34 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 June 2021
-! summary:         Read a string from dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-08
+! summary: Read a scalar of String of fixed length
+!
+! Read a scalar of String stored as fixed-length strings of length length_max.
+! C null characters are removed.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   length_max : INTEGER(I4B) - length of the stored strings
+!   vals : TYPE(String) - data read from the dataset
+!
+! See also: [[obj_read_st0_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_st0(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), INTENT(IN) :: length_max
+    !! length of the stored strings
     TYPE(String), INTENT(INOUT) :: vals
+    !! a scalar of String read from the dataset
   END SUBROUTINE obj_read_st0
 END INTERFACE
 
@@ -2937,15 +5676,31 @@ END INTERFACE
 !                                                                     Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 June 2021
-! summary:         Read a string from dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-08
+! summary: Read a scalar of String stored as single characters
+!
+! Read a rank-1 array of single characters into one String. This routine is
+! used by obj_read_st0_helper and is not bound to the READ generic.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals plus one.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String) - data read from the dataset
+!
+! See also: [[obj_read_st0_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_ca0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), INTENT(INOUT) :: vals
+    !! a scalar of String read from the dataset
   END SUBROUTINE obj_read_ca0
 END INTERFACE
 
@@ -2953,15 +5708,37 @@ END INTERFACE
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         8 June 2021
-! summary:         Read a string from dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-08
+! summary: Read a rank-1 array of String
+!
+! Read a rank-1 array of String from the dataset dsetname. Strings can be
+! stored in two ways, and this routine finds out which one is used:
+!
+! - as fixed-length strings, written by Write with String data; then
+!   obj_read_st1 is called with the length of the stored strings.
+! - as an array of single characters, written by Write with a character
+!   variable; then obj_read_ca1 is called.
+!
+! vals is allocated to the shape of the dataset; it is reallocated if any
+! dimension differs.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st2_helper]], [[obj_write_st1_helper]],
+!   [[obj_read__st1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_st1_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! a rank-1 array of String read from the dataset
   END SUBROUTINE obj_read_st1_helper
 END INTERFACE
 
@@ -2969,12 +5746,35 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-1 array of String of fixed length
+!
+! Read a rank-1 array of String stored as fixed-length strings of length
+! length_max. C null characters are removed. vals is allocated to the shape of
+! the dataset; it is reallocated if any dimension differs.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   length_max : INTEGER(I4B) - length of the stored strings
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st1_helper]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_st1(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), INTENT(IN) :: length_max
+    !! length of the stored strings
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! a rank-1 array of String read from the dataset
   END SUBROUTINE obj_read_st1
 END INTERFACE
 
@@ -2982,11 +5782,32 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-1 array of String stored as single characters
+!
+! Read a rank-2 array of single characters into a rank-1 array of String; the
+! first dimension holds the characters of each string. This routine is used by
+! obj_read_st1_helper and is not bound to the READ generic.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals plus one.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st1_helper]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_ca1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! a rank-1 array of String read from the dataset
   END SUBROUTINE obj_read_ca1
 END INTERFACE
 
@@ -2996,34 +5817,91 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-1 of String without allocating vals
+! summary: Read a rank-1 array of String without allocating vals
 !
-! Read an array of rank-1 of String into vals without allocating
-! memory for vals. The extent of the data written in vals is returned in
-! tsize; the data is stored in vals(1:tsize).
+! Read a rank-1 array of String from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in tsize; the data is
+! stored in vals(1:tsize), and the rest of vals is not changed. The data is
+! read with obj_read_st1_helper in a local array and copied to vals.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
-!   vals : TYPE(String) - array to fill, SIZE(vals) >= tsize
+!   vals : TYPE(String) - array to fill, SIZE(vals, i) >= extent i
 !   tsize : INTEGER(I4B) - size of data written in vals
 !
-! See also: [[obj_read_st1]], [[obj_read__d1]]
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Read__test_4.h5"
+! TYPE(HDF5File_) :: obj
+! TYPE(String) :: v(2), m(2, 2)
+! TYPE(String) :: vbuf(5), mbuf(3, 3)
+! INTEGER(I4B) :: tsize, nrow, ncol
+! LOGICAL(LGT) :: isok
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! v(1) = "hello"
+! v(2) = "world"
+! m(1, 1) = "a"
+! m(2, 1) = "b"
+! m(1, 2) = "c"
+! m(2, 2) = "d"
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ_(dsetname="/v", vals=vbuf, tsize=tsize)
+! CALL obj%READ_(dsetname="/m", vals=mbuf, nrow=nrow, ncol=ncol)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(tsize .EQ. 2, "rank 1 tsize")
+! isok = (vbuf(1)%chars() .EQ. "hello") .AND. &
+!        (vbuf(2)%chars() .EQ. "world")
+! CALL OK(isok, "rank 1 values")
+! CALL OK((nrow .EQ. 2) .AND. (ncol .EQ. 2), "rank 2 nrow, ncol")
+! isok = (mbuf(1, 1)%chars() .EQ. "a") .AND. &
+!        (mbuf(2, 2)%chars() .EQ. "d")
+! CALL OK(isok, "rank 2 values")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_st1_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__st1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     TYPE(String), INTENT(INOUT) :: vals(:)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! The size of data written in vals
+    !! size of data written in vals
   END SUBROUTINE obj_read__st1
 END INTERFACE
 
@@ -3031,11 +5909,86 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-2 array of String
+!
+! Read a rank-2 array of String from the dataset dsetname. Strings can be
+! stored in two ways, and this routine finds out which one is used:
+!
+! - as fixed-length strings, written by Write with String data; then
+!   obj_read_st2 is called with the length of the stored strings.
+! - as an array of single characters, written by Write with a character
+!   variable; then obj_read_ca2 is called.
+!
+! vals is allocated to the shape of the dataset; it is reallocated if any
+! dimension differs.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Read_test_2.h5"
+! TYPE(HDF5File_) :: obj
+! TYPE(String) :: m(2, 3)
+! TYPE(String), ALLOCATABLE :: m1(:, :)
+! LOGICAL(LGT) :: isok
+! INTEGER :: i, j
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! DO j = 1, 3
+!   DO i = 1, 2
+!     m(i, j) = "x"
+!   END DO
+! END DO
+! m(2, 3) = "y"
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%DEALLOCATE()
+!
+! ! only the second dimension differs from the dataset
+! ALLOCATE (m1(2, 5))
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ(dsetname="/m", vals=m1)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(ALL(SHAPE(m1) .EQ. [2, 3]), "reallocated")
+! isok = (m1(1, 1)%chars() .EQ. "x") .AND. (m1(2, 3)%chars() .EQ. "y")
+! CALL OK(isok, "values")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_write_st2_helper]], [[obj_read__st2]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_st2_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! a rank-2 array of String read from the dataset
   END SUBROUTINE obj_read_st2_helper
 END INTERFACE
 
@@ -3043,12 +5996,35 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-2 array of String of fixed length
+!
+! Read a rank-2 array of String stored as fixed-length strings of length
+! length_max. C null characters are removed. vals is allocated to the shape of
+! the dataset; it is reallocated if any dimension differs.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   length_max : INTEGER(I4B) - length of the stored strings
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st2_helper]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_st2(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), INTENT(IN) :: length_max
+    !! length of the stored strings
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! a rank-2 array of String read from the dataset
   END SUBROUTINE obj_read_st2
 END INTERFACE
 
@@ -3056,12 +6032,33 @@ END INTERFACE
 !                                                                       Read
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-2 array of String stored as single characters
+!
+! Read a rank-3 array of single characters into a rank-2 array of String; the
+! first dimension holds the characters of each string. This routine is used by
+! obj_read_st2_helper and is not bound to the READ generic.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals plus one.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st2_helper]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_ca2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
-  END SUBROUTINE
+    !! a rank-2 array of String read from the dataset
+  END SUBROUTINE obj_read_ca2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3070,15 +6067,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-2 of String without allocating vals
+! summary: Read a rank-2 array of String without allocating vals
 !
-! Read an array of rank-2 of String into vals without allocating
-! memory for vals. The extent of the data written in vals is returned in
-! nrow, ncol; the data is stored in vals(1:nrow, 1:ncol).
+! Read a rank-2 array of String from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in nrow, ncol; the data
+! is stored in vals(1:nrow, 1:ncol), and the rest of vals is not changed. The
+! data is read with obj_read_st2_helper in a local array and copied to vals.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -3087,14 +6085,14 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read_st2]], [[obj_read__d2]]
+! See also: [[obj_read__st1]], [[obj_read_st2_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__st2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     TYPE(String), INTENT(INOUT) :: vals(:, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: nrow
@@ -3108,11 +6106,37 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-3 array of String
+!
+! Read a rank-3 array of String from the dataset dsetname. Strings can be
+! stored in two ways, and this routine finds out which one is used:
+!
+! - as fixed-length strings, written by Write with String data; then
+!   obj_read_st3 is called with the length of the stored strings.
+! - as an array of single characters, written by Write with a character
+!   variable; then obj_read_ca3 is called.
+!
+! vals is allocated to the shape of the dataset; it is reallocated if any
+! dimension differs. This routine is not bound to the READ generic.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st2_helper]], [[obj_write_st3_helper]],
+!   [[obj_read__st3]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_st3_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    !! a rank-3 array of String read from the dataset
   END SUBROUTINE obj_read_st3_helper
 END INTERFACE
 
@@ -3120,12 +6144,36 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-3 array of String of fixed length
+!
+! Read a rank-3 array of String stored as fixed-length strings of length
+! length_max. C null characters are removed. vals is allocated to the shape of
+! the dataset; it is reallocated if any dimension differs. This routine is not
+! bound to the READ generic.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   length_max : INTEGER(I4B) - length of the stored strings
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st3_helper]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_st3(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     INTEGER(I4B), INTENT(IN) :: length_max
+    !! length of the stored strings
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    !! a rank-3 array of String read from the dataset
   END SUBROUTINE obj_read_st3
 END INTERFACE
 
@@ -3133,11 +6181,32 @@ END INTERFACE
 !                                                                       Read
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Read a rank-3 array of String stored as single characters
+!
+! Read a rank-4 array of single characters into a rank-3 array of String; the
+! first dimension holds the characters of each string. This routine is used by
+! obj_read_st3_helper and is not bound to the READ generic.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals plus one.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : TYPE(String), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_st3_helper]]
+
 INTERFACE
   MODULE SUBROUTINE obj_read_ca3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    !! a rank-3 array of String read from the dataset
   END SUBROUTINE obj_read_ca3
 END INTERFACE
 
@@ -3147,32 +6216,32 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-3 of String without allocating vals
+! summary: Read a rank-3 array of String without allocating vals
 !
-! Read an array of rank-3 of String into vals without allocating
-! memory for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3; the data is stored in vals(1:dim1, 1:dim2, 1:dim3).
+! Read a rank-3 array of String from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3; the
+! data is stored in vals(1:dim1, ..., 1:dim3), and the rest of vals is not
+! changed. The data is read with obj_read_st3_helper in a local array and
+! copied to vals.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
+!   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_st3]], [[obj_read__d3]]
+! See also: [[obj_read__st1]], [[obj_read_st3_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__st3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     TYPE(String), INTENT(INOUT) :: vals(:, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -3188,15 +6257,32 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read string from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a character variable
+!
+! Read a dataset of single characters, written by Write with a character
+! variable, into vals. vals is set to blanks first. LEN(vals) must not be
+! smaller than the size of the dataset.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank one.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : CHARACTER(*) - data read from the dataset
+!
+! See also: [[obj_write_c1]], [[obj_read_st0_helper]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_c1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     CHARACTER(LEN=*), INTENT(INOUT) :: vals
+    !! character variable read from the dataset
   END SUBROUTINE obj_read_c1
 END INTERFACE
 
@@ -3204,15 +6290,31 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read Boolean from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a scalar of logical
+!
+! Read a scalar of logical from the dataset dsetname. The characters 'T' and
+! 'F' stored by Write are converted to logical values.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT) - data read from the dataset
+!
+! See also: [[obj_read_b1]], [[obj_write_b0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_b0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(INOUT) :: vals
+    !! a scalar of logical read from the dataset
   END SUBROUTINE obj_read_b0
 END INTERFACE
 
@@ -3220,15 +6322,32 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read Boolean from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a rank-1 array of logical
+!
+! Read a rank-1 array of logical from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape. The
+! characters 'T' and 'F' stored by Write are converted to logical values.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_write_b1]], [[obj_write_b1]], [[obj_read__b1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_b1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! a rank-1 array of logical read from the dataset
   END SUBROUTINE obj_read_b1
 END INTERFACE
 
@@ -3238,34 +6357,87 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-1 of LOGICAL without allocating vals
+! summary: Read a rank-1 array of logical without allocating vals
 !
-! Read an array of rank-1 of LOGICAL into vals without allocating
-! memory for vals. The extent of the data written in vals is returned in
-! tsize; the data is stored in vals(1:tsize).
+! Read a rank-1 array of logical from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in tsize; the data is
+! stored in vals(1:tsize), and the rest of vals is not changed. The data is
+! read in a local character array and converted to logical values.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
-!   vals : LOGICAL(LGT) - array to fill, SIZE(vals) >= tsize
+!   vals : LOGICAL(LGT) - array to fill, SIZE(vals, i) >= extent i
 !   tsize : INTEGER(I4B) - size of data written in vals
 !
-! See also: [[obj_read_b1]], [[obj_read__d1]]
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "Read__test_3.h5"
+! TYPE(HDF5File_) :: obj
+! LOGICAL(LGT) :: v(3), m(2, 2), t(2, 1, 2)
+! LOGICAL(LGT) :: vbuf(5), mbuf(3, 3), tbuf(2, 2, 2)
+! INTEGER(I4B) :: tsize, nrow, ncol, dim1, dim2, dim3
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! v = [.TRUE., .FALSE., .TRUE.]
+! m = RESHAPE([.TRUE., .FALSE., .FALSE., .TRUE.], [2, 2])
+! t = RESHAPE([.TRUE., .FALSE., .FALSE., .TRUE.], [2, 1, 2])
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/v", vals=v)
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%WRITE(dsetname="/t", vals=t)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%READ_(dsetname="/v", vals=vbuf, tsize=tsize)
+! CALL obj%READ_(dsetname="/m", vals=mbuf, nrow=nrow, ncol=ncol)
+! CALL obj%READ_(dsetname="/t", vals=tbuf, dim1=dim1, dim2=dim2, &
+!                dim3=dim3)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(tsize .EQ. 3, "rank 1 tsize")
+! CALL OK(ALL(vbuf(1:tsize) .EQV. v), "rank 1 values")
+! CALL OK((nrow .EQ. 2) .AND. (ncol .EQ. 2), "rank 2 nrow, ncol")
+! CALL OK(ALL(mbuf(1:nrow, 1:ncol) .EQV. m), "rank 2 values")
+! CALL OK(ALL([dim1, dim2, dim3] .EQ. [2, 1, 2]), "rank 3 extents")
+! CALL OK(ALL(tbuf(1:dim1, 1:dim2, 1:dim3) .EQV. t), "rank 3 values")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_b1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__b1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(INOUT) :: vals(:)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! The size of data written in vals
+    !! size of data written in vals
   END SUBROUTINE obj_read__b1
 END INTERFACE
 
@@ -3273,15 +6445,32 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read Boolean from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a rank-2 array of logical
+!
+! Read a rank-2 array of logical from the dataset dsetname. vals is allocated
+! to the shape of the dataset; it is reallocated if it has another shape. The
+! characters 'T' and 'F' stored by Write are converted to logical values.
+!
+! In DEBUG mode an error is raised if the file is not open with read access,
+! the dataset can not be opened, or its rank is not the rank of vals.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_b1]], [[obj_write_b2]], [[obj_read__b2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_b2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! a rank-2 array of logical read from the dataset
   END SUBROUTINE obj_read_b2
 END INTERFACE
 
@@ -3291,15 +6480,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-2 of LOGICAL without allocating vals
+! summary: Read a rank-2 array of logical without allocating vals
 !
-! Read an array of rank-2 of LOGICAL into vals without allocating
-! memory for vals. The extent of the data written in vals is returned in
-! nrow, ncol; the data is stored in vals(1:nrow, 1:ncol).
+! Read a rank-2 array of logical from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in nrow, ncol; the data
+! is stored in vals(1:nrow, 1:ncol), and the rest of vals is not changed. The
+! data is read in a local character array and converted to logical values.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -3308,14 +6498,14 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read_b2]], [[obj_read__d2]]
+! See also: [[obj_read__b1]], [[obj_read_b2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__b2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(INOUT) :: vals(:, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: nrow
@@ -3329,15 +6519,29 @@ END INTERFACE
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read Boolean from hdf5 file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a rank-3 array of logical
+!
+! Read a rank-3 array of logical. This routine is not implemented yet: in
+! DEBUG mode it raises an error, otherwise it does nothing. Use obj_read__b3
+! instead.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   dsetname : CHARACTER(*) - dataset name with full path
+!   vals : LOGICAL(LGT), ALLOCATABLE - data read from the dataset
+!
+! See also: [[obj_read_b1]], [[obj_write_b3]], [[obj_read__b3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_b3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! dataset name with full path
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
+    !! a rank-3 array of logical read from the dataset
   END SUBROUTINE obj_read_b3
 END INTERFACE
 
@@ -3347,32 +6551,32 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Read an array of rank-3 of LOGICAL without allocating vals
+! summary: Read a rank-3 array of logical without allocating vals
 !
-! Read an array of rank-3 of LOGICAL into vals without allocating
-! memory for vals. The extent of the data written in vals is returned in
-! dim1, dim2, dim3; the data is stored in vals(1:dim1, 1:dim2, 1:dim3).
+! Read a rank-3 array of logical from the dataset dsetname into vals without
+! allocating vals. The extent of the data is returned in dim1, dim2, dim3; the
+! data is stored in vals(1:dim1, ..., 1:dim3), and the rest of vals is not
+! changed. The data is read in a local character array and converted to
+! logical values.
 !
-! The extents are set to zero at the start. vals should be large enough
-! to hold the dataset along every dimension; in DEBUG mode an error is
-! raised otherwise.
+! The extents are set to zero at the start. vals must be large enough to hold
+! the dataset along every dimension; in DEBUG mode an error is raised
+! otherwise. In release builds this is not checked.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : LOGICAL(LGT) - array to fill, SIZE(vals, i) >= extent i
-!   dim1 : INTEGER(I4B) - extent of data along dimension 1
-!   dim2 : INTEGER(I4B) - extent of data along dimension 2
-!   dim3 : INTEGER(I4B) - extent of data along dimension 3
+!   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read_b3]], [[obj_read__d3]]
+! See also: [[obj_read__b1]], [[obj_read_b3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read__b3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
-    !! Dataset name with full path
+    !! dataset name with full path
     LOGICAL(LGT), INTENT(INOUT) :: vals(:, :, :)
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: dim1
@@ -3388,16 +6592,89 @@ END INTERFACE
 !                                                            WriteAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:  Write attributes to a dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Write a String attribute
+!
+! Write a String attribute attr_name to the object obj_name, which can be a
+! group or a dataset. The object must exist. An existing attribute is
+! overwritten when overwriting is allowed (see SetOverwriteStat).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : TYPE(String) - value of the attribute
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "WriteAttribute_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! TYPE(String) :: strval, found
+! INTEGER(I4B) :: ival
+! REAL(DFP) :: rval
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! strval = "meter"
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/length", vals=2.0_DFP)
+!
+! CALL obj%WriteAttribute(obj_name="/length", attr_name="unit", &
+!                         attr_val=strval)
+! CALL obj%WriteAttribute(obj_name="/length", attr_name="note", &
+!                         attr_val="measured")
+! CALL obj%WriteAttribute(obj_name="/length", attr_name="count", &
+!                         attr_val=3_I4B)
+! CALL obj%WriteAttribute(obj_name="/length", attr_name="scale", &
+!                         attr_val=0.5_DFP)
+!
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="unit", &
+!                        attr_val=found)
+! CALL OK(found%chars() .EQ. "meter", "String attribute")
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="note", &
+!                        attr_val=found)
+! CALL OK(found%chars() .EQ. "measured", "character attribute")
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="count", &
+!                        attr_val=ival)
+! CALL OK(ival .EQ. 3, "integer attribute")
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="scale", &
+!                        attr_val=rval)
+! CALL OK(ABS(rval - 0.5_DFP) .LT. tol, "real attribute")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_read_attribute_st0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_attribute_st0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     TYPE(String) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_write_attribute_st0
 END INTERFACE
 
@@ -3405,16 +6682,33 @@ END INTERFACE
 !                                                            WriteAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Write attributes to a dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Write a character attribute
+!
+! Write a character attribute attr_name to the object obj_name, which can be a
+! group or a dataset. The object must exist. An existing attribute is
+! overwritten when overwriting is allowed (see SetOverwriteStat). Trailing
+! blanks are removed, and the value is stored as a string attribute.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : CHARACTER(*) - value of the attribute
+!
+! See also: [[obj_write_attribute_st0]], [[obj_read_attribute_c0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_attribute_c0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     CHARACTER(LEN=*) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_write_attribute_c0
 END INTERFACE
 
@@ -3422,16 +6716,32 @@ END INTERFACE
 !                                                            WriteAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Write attributes to a dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Write an integer attribute
+!
+! Write an integer attribute attr_name to the object obj_name, which can be a
+! group or a dataset. The object must exist. An existing attribute is
+! overwritten when overwriting is allowed (see SetOverwriteStat).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(I4B) - value of the attribute
+!
+! See also: [[obj_write_attribute_st0]], [[obj_read_attribute_i0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_attribute_i0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     INTEGER(I4B), INTENT(IN) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_write_attribute_i0
 END INTERFACE
 
@@ -3439,16 +6749,32 @@ END INTERFACE
 !                                                            WriteAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Write attributes to a dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Write a real attribute
+!
+! Write a real attribute attr_name to the object obj_name, which can be a
+! group or a dataset. The object must exist. An existing attribute is
+! overwritten when overwriting is allowed (see SetOverwriteStat).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(DFP) - value of the attribute
+!
+! See also: [[obj_write_attribute_st0]], [[obj_read_attribute_d0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_write_attribute_d0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     REAL(DFP), INTENT(IN) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_write_attribute_d0
 END INTERFACE
 
@@ -3456,16 +6782,86 @@ END INTERFACE
 !                                                             ReadAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read attribute from a known dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a String attribute
+!
+! Read a String attribute attr_name of the object obj_name, which can be a
+! group or a dataset. The object and the attribute must exist.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : TYPE(String) - value of the attribute
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "ReadAttribute_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! TYPE(HDF5File_) :: obj
+! TYPE(String) :: strval
+! CHARACTER(LEN=5) :: cval
+! INTEGER(I4B) :: ival
+! REAL(DFP) :: rval
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! strval = "meter"
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/length", vals=2.0_DFP)
+! CALL obj%WriteAttribute("/length", "unit", strval)
+! CALL obj%WriteAttribute("/length", "count", 3_I4B)
+! CALL obj%WriteAttribute("/length", "scale", 0.5_DFP)
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="unit", &
+!                        attr_val=strval)
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="unit", &
+!                        attr_val=cval)
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="count", &
+!                        attr_val=ival)
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="scale", &
+!                        attr_val=rval)
+! CALL obj%DEALLOCATE()
+!
+! CALL OK(strval%chars() .EQ. "meter", "read in String")
+! CALL OK(cval .EQ. "meter", "read in character")
+! CALL OK(ival .EQ. 3, "integer attribute")
+! CALL OK(ABS(rval - 0.5_DFP) .LT. tol, "real attribute")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_write_attribute_st0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_attribute_st0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     TYPE(String), INTENT(INOUT) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_read_attribute_st0
 END INTERFACE
 
@@ -3473,15 +6869,32 @@ END INTERFACE
 !                                                             ReadAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read attribute from a known dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a string attribute
+!
+! Read a string attribute attr_name of the object obj_name, which can be a
+! group or a dataset. The object and the attribute must exist. The value is
+! read as a String and assigned to attr_val, so it is truncated or padded with
+! blanks to LEN(attr_val).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : CHARACTER(*) - value of the attribute
+!
+! See also: [[obj_read_attribute_st0]], [[obj_write_attribute_c0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_attribute_c0(obj, obj_name, attr_name, attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     CHARACTER(LEN=*), INTENT(INOUT) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_read_attribute_c0
 END INTERFACE
 
@@ -3489,15 +6902,30 @@ END INTERFACE
 !                                                             ReadAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read attribute from a known dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read an integer attribute
+!
+! Read an integer attribute attr_name of the object obj_name, which can be a
+! group or a dataset. The object and the attribute must exist.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(I4B) - value of the attribute
+!
+! See also: [[obj_read_attribute_st0]], [[obj_write_attribute_i0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_attribute_i0(obj, obj_name, attr_name, attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     INTEGER(I4B), INTENT(INOUT) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_read_attribute_i0
 END INTERFACE
 
@@ -3505,15 +6933,30 @@ END INTERFACE
 !                                                             ReadAttribute
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         Read attribute from a known dataset
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Read a real attribute
+!
+! Read a real attribute attr_name of the object obj_name, which can be a group
+! or a dataset. The object and the attribute must exist.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(DFP) - value of the attribute
+!
+! See also: [[obj_read_attribute_st0]], [[obj_write_attribute_d0]]
 
 INTERFACE
   MODULE SUBROUTINE obj_read_attribute_d0(obj, obj_name, attr_name, attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
     REAL(DFP), INTENT(INOUT) :: attr_val
+    !! value of the attribute
   END SUBROUTINE obj_read_attribute_d0
 END INTERFACE
 
@@ -3521,15 +6964,23 @@ END INTERFACE
 !                                                                OpenObject
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 June 2021
-! summary:         sets up all attribute operations by checking links and opening object
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Open a group or dataset for attribute operations
+!
+! In DEBUG mode an error is raised if obj_name does not exist or can not be
+! opened.
+!
+! See also: [[close_object]]
 
 INTERFACE
   MODULE SUBROUTINE open_object(obj, obj_name, obj_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name
+    !! path of the group or dataset
     INTEGER(HID_T), INTENT(OUT) :: obj_id
+    !! id of the opened object
   END SUBROUTINE open_object
 END INTERFACE
 
@@ -3537,15 +6988,22 @@ END INTERFACE
 !                                                                CloseObject
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:         9 Jun 2021
-! summary:         Closes all group, dataset, datatype objects
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-09
+! summary: Close an object opened by open_object
+!
+! In DEBUG mode an error is raised if the object can not be closed.
+!
+! See also: [[open_object]]
 
 INTERFACE
   MODULE SUBROUTINE close_object(obj, obj_id)
     CHARACTER(LEN=*), PARAMETER :: myName = 'close_object_HDF5FileType'
+    !! name of the routine used in messages
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     INTEGER(HID_T), INTENT(IN) :: obj_id
+    !! id of the object
   END SUBROUTINE close_object
 END INTERFACE
 
@@ -3553,13 +7011,27 @@ END INTERFACE
 !                                                            CreateAttribute
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Create an attribute or open it for overwriting
+!
+! If the attribute exists and overwriting is allowed, it is opened; otherwise
+! it is created. In DEBUG mode an error is raised on failure.
+!
+! See also: [[open_attribute]], [[close_attribute]]
+
 INTERFACE
   MODULE SUBROUTINE createAttribute(obj, obj_id, attr_name, atype_id, &
     dspace_id, attr_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of the attribute
     INTEGER(HID_T), INTENT(IN) :: atype_id, dspace_id, obj_id
+    !! data type of the attribute, dataspace of the
+    !! attribute, and id of the object
     INTEGER(HID_T), INTENT(OUT) :: attr_id
+    !! id of the attribute
   END SUBROUTINE createAttribute
 END INTERFACE
 
@@ -3567,12 +7039,25 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Open an existing attribute
+!
+! In DEBUG mode an error is raised if the attribute does not exist or can not
+! be opened.
+!
+! See also: [[createAttribute]], [[close_attribute]]
+
 INTERFACE
   MODULE SUBROUTINE open_attribute(obj, obj_id, attr_name, attr_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of the attribute
     INTEGER(HID_T), INTENT(IN) :: obj_id
+    !! id of the object
     INTEGER(HID_T), INTENT(OUT) :: attr_id
+    !! id of the attribute
   END SUBROUTINE open_attribute
 END INTERFACE
 
@@ -3580,10 +7065,20 @@ END INTERFACE
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Close an attribute
+!
+! In DEBUG mode an error is raised if the attribute can not be closed.
+!
+! See also: [[open_attribute]]
+
 INTERFACE
   MODULE SUBROUTINE close_attribute(obj, attr_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
     INTEGER(HID_T), INTENT(IN) :: attr_id
+    !! id of the attribute
   END SUBROUTINE close_attribute
 END INTERFACE
 
