@@ -35,53 +35,53 @@ CONTAINS
 #define mem_type H5T_NATIVE_CHARACTER
 #define mem_type_bool
 
-MODULE PROCEDURE hdf5_write_b0
+MODULE PROCEDURE obj_write_b0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_b0()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_b0()"
 #endif
 #define rank 0
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_b0
+END PROCEDURE obj_write_b0
 
 !----------------------------------------------------------------------------
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_b1
+MODULE PROCEDURE obj_write_b1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_b1()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_b1()"
 #endif
 #define rank 1
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_b1
+END PROCEDURE obj_write_b1
 
 !----------------------------------------------------------------------------
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_b2
+MODULE PROCEDURE obj_write_b2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_b2()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_b2()"
 #endif
 #define rank 2
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_b2
+END PROCEDURE obj_write_b2
 
 !----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_b3
+MODULE PROCEDURE obj_write_b3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_b3()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_b3()"
 #endif
 #define rank 3
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_b3
+END PROCEDURE obj_write_b3
 
 !----------------------------------------------------------------------------
 !                                                              Include error

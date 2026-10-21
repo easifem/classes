@@ -149,9 +149,9 @@ END SUBROUTINE HDF5Quiet
 !                                                                 Open
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_open
+MODULE PROCEDURE obj_open
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_open()'
+CHARACTER(*), PARAMETER :: myName = 'obj_open()'
 #endif
 INTEGER :: acc
 INTEGER(HID_T) :: plist_id
@@ -212,15 +212,15 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_open
+END PROCEDURE obj_open
 
 !----------------------------------------------------------------------------
 !                                                                 Close
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_close
+MODULE PROCEDURE obj_close
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_close()'
+CHARACTER(*), PARAMETER :: myName = 'obj_close()'
 #endif
 LOGICAL(LGT) :: lastStopOnError
 INTEGER(I4B) :: ierr
@@ -250,15 +250,15 @@ CALL e%SetStopOnError(lastStopOnError)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_close
+END PROCEDURE obj_close
 
 !----------------------------------------------------------------------------
 !                                                                 Delete
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_delete
+MODULE PROCEDURE obj_delete
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_delete()'
+CHARACTER(*), PARAMETER :: myName = 'obj_delete()'
 #endif
 CHARACTER(EXCEPTION_MAX_MESG_LENGTH) :: emesg
 TYPE(String) :: fileName
@@ -305,15 +305,15 @@ CALL obj%SetOpenStat(math%no)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_delete
+END PROCEDURE obj_delete
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_initiate
+MODULE PROCEDURE obj_initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_initiate()'
+CHARACTER(*), PARAMETER :: myName = 'obj_initiate()'
 #endif
 TYPE(String) :: fpath, fname, fext, mode_in, file_
 INTEGER(I4B) :: unitno, ierr
@@ -440,15 +440,15 @@ nhdf5fileinuse = nhdf5fileinuse + 1
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_initiate
+END PROCEDURE obj_initiate
 
 !----------------------------------------------------------------------------
 !                                                                 Clear
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_clear
+MODULE PROCEDURE obj_clear
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_clear()"
+CHARACTER(*), PARAMETER :: myName = "obj_clear()"
 #endif
 LOGICAL(LGT) :: bool
 
@@ -492,47 +492,47 @@ CALL AbstractFileDeallocate(obj)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_clear
+END PROCEDURE obj_clear
 
 !----------------------------------------------------------------------------
 !                                                          setOverWriteStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_setOverWriteStat
+MODULE PROCEDURE obj_setOverWriteStat
 obj%overwriteStat = bool
-END PROCEDURE hdf5_setOverWriteStat
+END PROCEDURE obj_setOverWriteStat
 
 !----------------------------------------------------------------------------
 !                                                                 getUnitNo
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_getUnitNo
+MODULE PROCEDURE obj_getUnitNo
 ans = obj%unitno
-END PROCEDURE hdf5_getUnitNo
+END PROCEDURE obj_getUnitNo
 
 !----------------------------------------------------------------------------
 !                                                                 isNew
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_isNew
+MODULE PROCEDURE obj_isNew
 ans = obj%newstat
-END PROCEDURE hdf5_isNew
+END PROCEDURE obj_isNew
 
 !----------------------------------------------------------------------------
 !                                                                 setNewStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_setNewStat
+MODULE PROCEDURE obj_setNewStat
 obj%newstat = bool
-END PROCEDURE hdf5_setNewStat
+END PROCEDURE obj_setNewStat
 
 !----------------------------------------------------------------------------
 !                                                                 ls
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_ls
+MODULE PROCEDURE obj_ls
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_ls()'
+CHARACTER(*), PARAMETER :: myName = 'obj_ls()'
 #endif
 CHARACTER(1024) :: tmpchar
 TYPE(String) :: path2
@@ -609,15 +609,15 @@ CALL AssertError1(ierr .EQ. 0, myName, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_ls
+END PROCEDURE obj_ls
 
 !----------------------------------------------------------------------------
 !                                                                       mkdir
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_mkdir
+MODULE PROCEDURE obj_mkdir
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myname = 'hdf5_mkdir()'
+CHARACTER(*), PARAMETER :: myname = 'obj_mkdir()'
 #endif
 TYPE(String) :: path3
 INTEGER(HID_T) :: group_id
@@ -685,15 +685,15 @@ CALL AssertError1(ierr .EQ. 0, myName, "failed to close hdf group.")
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_mkdir
+END PROCEDURE obj_mkdir
 
 !----------------------------------------------------------------------------
 !                                                                 mkalldir
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_mkalldir
+MODULE PROCEDURE obj_mkalldir
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_mkalldir()'
+CHARACTER(*), PARAMETER :: myName = 'obj_mkalldir()'
 #endif
 INTEGER(I4B) :: i, nslash, ierr
 INTEGER(I4B), ALLOCATABLE :: slashloc(:)
@@ -764,15 +764,15 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_mkalldir
+END PROCEDURE obj_mkalldir
 
 !----------------------------------------------------------------------------
 !                                                                       ngrp
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_ngrp
+MODULE PROCEDURE obj_ngrp
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_ngrp()'
+CHARACTER(*), PARAMETER :: myName = 'obj_ngrp()'
 #endif
 INTEGER(HID_T) :: grp_id
 INTEGER :: store_type, nlinks, max_corder, ierr
@@ -818,15 +818,15 @@ ans = nlinks
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_ngrp
+END PROCEDURE obj_ngrp
 
 !----------------------------------------------------------------------------
 !                                                                 isGroup
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_isgroup
+MODULE PROCEDURE obj_isgroup
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_isgroup()'
+CHARACTER(*), PARAMETER :: myName = 'obj_isgroup()'
 #endif
 INTEGER(HID_T) :: obj_id
 INTEGER(I4B) :: TYPE, ierr
@@ -866,15 +866,15 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_isgroup
+END PROCEDURE obj_isgroup
 
 !----------------------------------------------------------------------------
 !                                                                 PathExists
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_pathExists
+MODULE PROCEDURE obj_pathExists
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_pathExists()"
+CHARACTER(*), PARAMETER :: myName = "obj_pathExists()"
 #endif
 INTEGER :: iseg, ierr
 TYPE(String) :: strpath, path2
@@ -902,15 +902,15 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_pathExists
+END PROCEDURE obj_pathExists
 
 !----------------------------------------------------------------------------
 !                                                             createHardLink
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_createHardLink
+MODULE PROCEDURE obj_createHardLink
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'hdf5_createHardLink()'
+CHARACTER(*), PARAMETER :: myName = 'obj_createHardLink()'
 #endif
 INTEGER(HID_T) :: src_obj_id
 INTEGER(I4B) :: ierr
@@ -947,15 +947,15 @@ ierr = H5OCLOSE(src_obj_id)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_createHardLink
+END PROCEDURE obj_createHardLink
 
 !----------------------------------------------------------------------------
 !                                                              getChunkSize
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_getChunkSize
+MODULE PROCEDURE obj_getChunkSize
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_getChunkSize()"
+CHARACTER(*), PARAMETER :: myName = "obj_getChunkSize()"
 #endif
 INTEGER(I4B) :: ndims, layout, ierr
 INTEGER(HID_T) :: dset_id, dspace_id, dcpl
@@ -1001,15 +1001,15 @@ END IF
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_getChunkSize
+END PROCEDURE obj_getChunkSize
 
 !----------------------------------------------------------------------------
 !                                                               isCompressed
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_isCompressed
+MODULE PROCEDURE obj_isCompressed
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_isCompressed()"
+CHARACTER(*), PARAMETER :: myName = "obj_isCompressed()"
 #endif
 INTEGER(SIZE_T), PARAMETER :: namelen = 180
 CHARACTER(namelen) :: filter_name
@@ -1075,7 +1075,7 @@ END DO
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_isCompressed
+END PROCEDURE obj_isCompressed
 
 !----------------------------------------------------------------------------
 !                                                                 preWrite

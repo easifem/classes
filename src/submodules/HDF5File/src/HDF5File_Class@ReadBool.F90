@@ -29,9 +29,9 @@ CONTAINS
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b0
+MODULE PROCEDURE obj_read_b0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_b0()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_b0()"
 #endif
 CHARACTER(1) :: valsc
 CHARACTER(LEN(dsetname) + 1) :: path
@@ -64,15 +64,15 @@ CALL postRead(obj, path, dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_b0
+END PROCEDURE obj_read_b0
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b1
+MODULE PROCEDURE obj_read_b1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_b1()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_b1()"
 #endif
 CHARACTER, ALLOCATABLE :: valsc(:)
 CHARACTER(LEN(dsetname) + 1) :: path
@@ -115,15 +115,15 @@ CALL postRead(obj, path, dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_b1
+END PROCEDURE obj_read_b1
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b2
+MODULE PROCEDURE obj_read_b2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_b2()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_b2()"
 #endif
 CHARACTER(1), ALLOCATABLE :: valsc(:, :)
 CHARACTER(LEN(dsetname) + 1) :: path
@@ -169,15 +169,15 @@ CALL postRead(obj, path, dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_b2
+END PROCEDURE obj_read_b2
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b3
+MODULE PROCEDURE obj_read_b3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_b3()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_b3()"
 #endif
 
 #ifdef DEBUG_VER
@@ -194,7 +194,7 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_b3
+END PROCEDURE obj_read_b3
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

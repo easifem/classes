@@ -34,105 +34,105 @@ CONTAINS
 #endif
 #define mem_type H5T_NATIVE_DOUBLE
 
-MODULE PROCEDURE hdf5_write_d0
+MODULE PROCEDURE obj_write_d0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d0()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d0()"
 #endif
 #define rank 0
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d0
+END PROCEDURE obj_write_d0
 
 !----------------------------------------------------------------------------
 !                                                                  Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_d1
+MODULE PROCEDURE obj_write_d1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d1()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d1()"
 #endif
 #define rank 1
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d1
+END PROCEDURE obj_write_d1
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_d2
+MODULE PROCEDURE obj_write_d2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d2()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d2()"
 #endif
 #define rank 2
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d2
+END PROCEDURE obj_write_d2
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_d3
+MODULE PROCEDURE obj_write_d3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d3()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d3()"
 #endif
 #define rank 3
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d3
+END PROCEDURE obj_write_d3
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_d4
+MODULE PROCEDURE obj_write_d4
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d4()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d4()"
 #endif
 #define rank 4
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d4
+END PROCEDURE obj_write_d4
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_d5
+MODULE PROCEDURE obj_write_d5
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d5()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d5()"
 #endif
 #define rank 5
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d5
+END PROCEDURE obj_write_d5
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_d6
+MODULE PROCEDURE obj_write_d6
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d6()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d6()"
 #endif
 #define rank 6
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d6
+END PROCEDURE obj_write_d6
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_d7
+MODULE PROCEDURE obj_write_d7
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_d7()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_d7()"
 #endif
 #define rank 7
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE hdf5_write_d7
+END PROCEDURE obj_write_d7
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

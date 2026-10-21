@@ -30,9 +30,9 @@ CONTAINS
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s0
+MODULE PROCEDURE obj_read_s0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s0()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s0()"
 #endif
 TYPE(String) :: path
 INTEGER(HSIZE_T), DIMENSION(1) :: dims
@@ -58,15 +58,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, ierr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s0
+END PROCEDURE obj_read_s0
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s1
+MODULE PROCEDURE obj_read_s1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s1()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s1()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 1
 TYPE(String) :: path
@@ -94,15 +94,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s1
+END PROCEDURE obj_read_s1
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s2
+MODULE PROCEDURE obj_read_s2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s2()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s2()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 2
 TYPE(String) :: path
@@ -129,15 +129,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s2
+END PROCEDURE obj_read_s2
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s3
+MODULE PROCEDURE obj_read_s3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s3()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s3()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 3
 TYPE(String) :: path
@@ -164,15 +164,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s3
+END PROCEDURE obj_read_s3
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s4
+MODULE PROCEDURE obj_read_s4
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s4()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s4()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 4
 TYPE(String) :: path
@@ -199,15 +199,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s4
+END PROCEDURE obj_read_s4
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s5
+MODULE PROCEDURE obj_read_s5
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s5()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s5()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 5
 TYPE(String) :: path
@@ -233,15 +233,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s5
+END PROCEDURE obj_read_s5
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s6
+MODULE PROCEDURE obj_read_s6
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s6()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s6()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 6
 TYPE(String) :: path
@@ -268,15 +268,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s6
+END PROCEDURE obj_read_s6
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_s7
+MODULE PROCEDURE obj_read_s7
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_s7()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_s7()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 7
 TYPE(String) :: path
@@ -303,7 +303,7 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_s7
+END PROCEDURE obj_read_s7
 
 !----------------------------------------------------------------------------
 !                                                              Include error

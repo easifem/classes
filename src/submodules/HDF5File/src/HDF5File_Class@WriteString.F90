@@ -31,9 +31,9 @@ CONTAINS
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_st0
+MODULE PROCEDURE obj_write_st0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_st0()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_st0()"
 #endif
 CHARACTER(:), ALLOCATABLE :: valss
 TYPE(String) :: path
@@ -80,15 +80,15 @@ CALL H5TCLOSE_F(mem, ierr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_st0
+END PROCEDURE obj_write_st0
 
 !----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_st1
+MODULE PROCEDURE obj_write_st1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_st1()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_st1()"
 #endif
 CHARACTER(LEN=length_max) :: valss(SIZE(vals))
 TYPE(String) :: path
@@ -139,15 +139,15 @@ CALL H5TCLOSE_F(mem, ierr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_st1
+END PROCEDURE obj_write_st1
 
 !----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_st1_helper
+MODULE PROCEDURE obj_write_st1_helper
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_st1_helper()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_st1_helper()"
 #endif
 INTEGER(I4B) :: length_max, i, local_gdims(1)
 
@@ -162,21 +162,21 @@ DO i = 1, SIZE(vals)
 END DO
 local_gdims(1:) = SHAPE(vals)
 IF (PRESENT(gdims_in)) local_gdims(1) = gdims_in(1)
-CALL hdf5_write_st1(obj, dsetname, vals, length_max, local_gdims)
+CALL obj_write_st1(obj, dsetname, vals, length_max, local_gdims)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_st1_helper
+END PROCEDURE obj_write_st1_helper
 
 !----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_st2_helper
+MODULE PROCEDURE obj_write_st2_helper
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_st2_helper()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_st2_helper()"
 #endif
 INTEGER(I4B) :: length_max, i, j, local_gdims(1)
 
@@ -193,24 +193,24 @@ DO j = 1, SIZE(vals, 1)
 END DO
 
 IF (PRESENT(gdims_in)) THEN
-  CALL hdf5_write_st2(obj, dsetname, vals, length_max, gdims_in)
+  CALL obj_write_st2(obj, dsetname, vals, length_max, gdims_in)
 ELSE
-  CALL hdf5_write_st2(obj, dsetname, vals, length_max)
+  CALL obj_write_st2(obj, dsetname, vals, length_max)
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_st2_helper
+END PROCEDURE obj_write_st2_helper
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_st2
+MODULE PROCEDURE obj_write_st2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_st2()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_st2()"
 #endif
 CHARACTER(LEN=length_max) :: valss(SIZE(vals, 1), SIZE(vals, 2))
 TYPE(String) :: path
@@ -263,15 +263,15 @@ CALL H5TCLOSE_F(mem, ierr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_st2
+END PROCEDURE obj_write_st2
 
 !----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_st3_helper
+MODULE PROCEDURE obj_write_st3_helper
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_st0()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_st0()"
 #endif
 INTEGER(I4B) :: length_max, i, j, k
 
@@ -290,9 +290,9 @@ DO k = 1, SIZE(vals, 3)
 END DO
 
 IF (PRESENT(gdims_in)) THEN
-  CALL hdf5_write_st3(obj, dsetname, vals, length_max, gdims_in)
+  CALL obj_write_st3(obj, dsetname, vals, length_max, gdims_in)
 ELSE
-  CALL hdf5_write_st3(obj, dsetname, vals, length_max)
+  CALL obj_write_st3(obj, dsetname, vals, length_max)
 END IF
 
 #ifdef DEBUG_VER
@@ -300,15 +300,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 
-END PROCEDURE hdf5_write_st3_helper
+END PROCEDURE obj_write_st3_helper
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_st3
+MODULE PROCEDURE obj_write_st3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_st3()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_st3()"
 #endif
 CHARACTER(LEN=length_max) :: valss(SIZE(vals, 1), SIZE(vals, 2), &
                                    SIZE(vals, 3))
@@ -366,15 +366,15 @@ CALL H5TCLOSE_F(mem, ierr)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_st3
+END PROCEDURE obj_write_st3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_c1
+MODULE PROCEDURE obj_write_c1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_write_c1()"
+CHARACTER(*), PARAMETER :: myName = "obj_write_c1()"
 #endif
 TYPE(String) :: path
 INTEGER(HSIZE_T), DIMENSION(1) :: ldims, offset, gdims, cnt
@@ -413,7 +413,7 @@ CALL postWrite(obj, error, dset_id, dspace_id, gspace_id, plist_id)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_c1
+END PROCEDURE obj_write_c1
 
 !----------------------------------------------------------------------------
 !                                                              Include error

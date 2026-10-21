@@ -211,9 +211,9 @@ END PROCEDURE close_attribute
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_attribute_st0
+MODULE PROCEDURE obj_write_attribute_st0
 #ifdef DEBUG_VER
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_write_attribute_st0()'
+CHARACTER(LEN=*), PARAMETER :: myName = 'obj_write_attribute_st0()'
 #endif
 INTEGER(I4B) :: num_dims, error
 INTEGER(HID_T) :: atype_id, attr_id, dspace_id, obj_id
@@ -249,15 +249,15 @@ CALL close_object(obj, obj_id)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_attribute_st0
+END PROCEDURE obj_write_attribute_st0
 
 !----------------------------------------------------------------------------
 !                                                            WriteAttribute
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_attribute_c0
+MODULE PROCEDURE obj_write_attribute_c0
 #ifdef DEBUG_VER
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_write_attribute_c0()'
+CHARACTER(LEN=*), PARAMETER :: myName = 'obj_write_attribute_c0()'
 #endif
 TYPE(String) :: str_val
 
@@ -273,15 +273,15 @@ CALL obj%writeAttribute(obj_name, attr_name, str_val)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_attribute_c0
+END PROCEDURE obj_write_attribute_c0
 
 !----------------------------------------------------------------------------
 !                                                            WriteAttribute
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_attribute_i0
+MODULE PROCEDURE obj_write_attribute_i0
 #ifdef DEBUG_VER
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_write_attribute_i0()'
+CHARACTER(LEN=*), PARAMETER :: myName = 'obj_write_attribute_i0()'
 #endif
 INTEGER(I4B) :: num_dims, error
 INTEGER(HID_T) :: attr_id, dspace_id, obj_id
@@ -310,15 +310,15 @@ CALL close_object(obj, obj_id)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_attribute_i0
+END PROCEDURE obj_write_attribute_i0
 
 !----------------------------------------------------------------------------
 !                                                            WriteAttribute
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_attribute_d0
+MODULE PROCEDURE obj_write_attribute_d0
 #ifdef DEBUG_VER
-CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_write_attribute_d0()'
+CHARACTER(LEN=*), PARAMETER :: myName = 'obj_write_attribute_d0()'
 #endif
 INTEGER(I4B) :: num_dims, error
 INTEGER(HID_T) :: attr_id, dspace_id, obj_id
@@ -347,7 +347,7 @@ CALL close_object(obj, obj_id)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_write_attribute_d0
+END PROCEDURE obj_write_attribute_d0
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

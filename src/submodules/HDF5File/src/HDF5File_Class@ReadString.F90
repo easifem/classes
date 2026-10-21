@@ -34,9 +34,9 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st0_helper
+MODULE PROCEDURE obj_read_st0_helper
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st0_helper()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st0_helper()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 0
 TYPE(String) :: path
@@ -63,9 +63,9 @@ CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
 CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
 
 IF ((ndims .EQ. rank + 1) .AND. (max_size .EQ. 1)) THEN
-  CALL hdf5_read_ca0(obj, dsetname, vals)
+  CALL obj_read_ca0(obj, dsetname, vals)
 ELSE
-  CALL hdf5_read_st0(obj, dsetname, INT(max_size, I4B), vals)
+  CALL obj_read_st0(obj, dsetname, INT(max_size, I4B), vals)
 END IF
 
 CALL H5SCLOSE_F(dspace_id, error)
@@ -75,15 +75,15 @@ CALL H5DCLOSE_F(dset_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st0_helper
+END PROCEDURE obj_read_st0_helper
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st0
+MODULE PROCEDURE obj_read_st0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st0()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st0()"
 #endif
 CHARACTER(LEN=length_max), ALLOCATABLE :: valsc(:)
 TYPE(String) :: path
@@ -123,15 +123,15 @@ IF (ALLOCATED(valsc)) DEALLOCATE (valsc)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st0
+END PROCEDURE obj_read_st0
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_ca0
+MODULE PROCEDURE obj_read_ca0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st0_helper()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st0_helper()"
 #endif
 INTEGER(I4B), PARAMETER :: rank = 1
 CHARACTER(LEN=1), ALLOCATABLE :: valsc(:)
@@ -168,7 +168,7 @@ IF (ALLOCATED(valsc)) DEALLOCATE (valsc)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_ca0
+END PROCEDURE obj_read_ca0
 
 !----------------------------------------------------------------------------
 !
@@ -203,9 +203,9 @@ END SUBROUTINE convert_char_array_to_str
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st1_helper
+MODULE PROCEDURE obj_read_st1_helper
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st1_helper()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st1_helper()"
 #endif
 TYPE(String) :: path
 INTEGER(I4B), PARAMETER :: rank = 1
@@ -229,9 +229,9 @@ CALL H5TGET_SIZE_F(mem, max_size, error)
 CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
 CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
 IF ((ndims .EQ. rank + 1) .AND. (max_size .EQ. 1)) THEN
-  CALL hdf5_read_ca1(obj, dsetname, vals)
+  CALL obj_read_ca1(obj, dsetname, vals)
 ELSE
-  CALL hdf5_read_st1(obj, dsetname, INT(max_size, I4B), vals)
+  CALL obj_read_st1(obj, dsetname, INT(max_size, I4B), vals)
 END IF
 CALL H5SCLOSE_F(dspace_id, error)
 CALL H5DCLOSE_F(dset_id, error)
@@ -240,15 +240,15 @@ CALL H5DCLOSE_F(dset_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st1_helper
+END PROCEDURE obj_read_st1_helper
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st1
+MODULE PROCEDURE obj_read_st1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st1()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st1()"
 #endif
 CHARACTER(LEN=length_max), ALLOCATABLE :: valsc(:)
 INTEGER(I4B) :: i, error
@@ -295,15 +295,15 @@ IF (ALLOCATED(valsc)) DEALLOCATE (valsc)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st1
+END PROCEDURE obj_read_st1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_ca1
+MODULE PROCEDURE obj_read_ca1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_ca1()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_ca1()"
 #endif
 CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :)
 INTEGER(I4B) :: i, j, error
@@ -350,15 +350,15 @@ IF (ALLOCATED(valsc)) DEALLOCATE (valsc)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_ca1
+END PROCEDURE obj_read_ca1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st2_helper
+MODULE PROCEDURE obj_read_st2_helper
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st2_helper()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st2_helper()"
 #endif
 TYPE(String) :: path
 INTEGER(I4B), PARAMETER :: rank = 2
@@ -382,9 +382,9 @@ CALL H5TGET_SIZE_F(mem, max_size, error)
 CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
 CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
 IF ((ndims == rank + 1) .AND. (max_size == 1)) THEN
-  CALL hdf5_read_ca2(obj, dsetname, vals)
+  CALL obj_read_ca2(obj, dsetname, vals)
 ELSE
-  CALL hdf5_read_st2(obj, dsetname, INT(max_size, I4B), vals)
+  CALL obj_read_st2(obj, dsetname, INT(max_size, I4B), vals)
 END IF
 CALL H5SCLOSE_F(dspace_id, error)
 CALL H5DCLOSE_F(dset_id, error)
@@ -393,15 +393,15 @@ CALL H5DCLOSE_F(dset_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st2_helper
+END PROCEDURE obj_read_st2_helper
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st2
+MODULE PROCEDURE obj_read_st2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st2()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st2()"
 #endif
 CHARACTER(LEN=length_max), ALLOCATABLE :: valsc(:, :)
 INTEGER(I4B) :: i, j, error
@@ -450,15 +450,15 @@ IF (ALLOCATED(valsc)) DEALLOCATE (valsc)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st2
+END PROCEDURE obj_read_st2
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_ca2
+MODULE PROCEDURE obj_read_ca2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_ca2()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_ca2()"
 #endif
 CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :, :)
 INTEGER(I4B) :: i, j, k, error
@@ -507,15 +507,15 @@ IF (ALLOCATED(valsc)) DEALLOCATE (valsc)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_ca2
+END PROCEDURE obj_read_ca2
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st3_helper
+MODULE PROCEDURE obj_read_st3_helper
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st3_helper()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st3_helper()"
 #endif
 TYPE(String) :: path
 INTEGER(I4B), PARAMETER :: rank = 3
@@ -539,9 +539,9 @@ CALL H5TGET_SIZE_F(mem, max_size, error)
 CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
 CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
 IF ((ndims == rank + 1) .AND. (max_size == 1)) THEN
-  CALL hdf5_read_ca3(obj, dsetname, vals)
+  CALL obj_read_ca3(obj, dsetname, vals)
 ELSE
-  CALL hdf5_read_st3(obj, dsetname, INT(max_size, I4B), vals)
+  CALL obj_read_st3(obj, dsetname, INT(max_size, I4B), vals)
 END IF
 CALL H5SCLOSE_F(dspace_id, error)
 CALL H5DCLOSE_F(dset_id, error)
@@ -550,15 +550,15 @@ CALL H5DCLOSE_F(dset_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st3_helper
+END PROCEDURE obj_read_st3_helper
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_st3
+MODULE PROCEDURE obj_read_st3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_st3()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_st3()"
 #endif
 CHARACTER(LEN=length_max), ALLOCATABLE :: valsc(:, :, :)
 INTEGER(I4B) :: i, j, k, error
@@ -610,15 +610,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_st3
+END PROCEDURE obj_read_st3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_ca3
+MODULE PROCEDURE obj_read_ca3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_ca3()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_ca3()"
 #endif
 CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :, :, :)
 INTEGER(I4B) :: i, j, k, m, error
@@ -668,15 +668,15 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_ca3
+END PROCEDURE obj_read_ca3
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_c1
+MODULE PROCEDURE obj_read_c1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "hdf5_read_c1()"
+CHARACTER(*), PARAMETER :: myName = "obj_read_c1()"
 #endif
 CHARACTER, ALLOCATABLE :: valsc(:)
 TYPE(String) :: path
@@ -712,7 +712,7 @@ CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE hdf5_read_c1
+END PROCEDURE obj_read_c1
 
 !----------------------------------------------------------------------------
 !                                                             Include error
