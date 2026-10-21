@@ -16,17 +16,14 @@
 !
 
 MODULE CPUTime_Class
-USE GlobalData, ONLY: DFP, I4B
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 !$ USE OMP_LIB
 IMPLICIT NONE
 PRIVATE
 
 PUBLIC :: CPUTime_
 PUBLIC :: CPUTimePointer_
-CHARACTER(*), PARAMETER :: modName = "CPUTime_Class"
-CHARACTER(*), PARAMETER :: myprefix = "CPUTime"
 
 !----------------------------------------------------------------------------
 !                                                                 CPUTime_
@@ -50,6 +47,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   PROCEDURE, PUBLIC, PASS(obj) :: GetStringForKernelLog => &
     obj_GetStringForKernelLog
+  PROCEDURE, PUBLIC, PASS(obj) :: GetHeaderForKernelLog => &
+    obj_GetHeaderForKernelLog
 END TYPE CPUTime_
 
 !----------------------------------------------------------------------------
@@ -76,9 +75,8 @@ END TYPE CPUTimePointer_
 ! summary:  Initiate the time
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(obj, param)
+  MODULE SUBROUTINE obj_Initiate(obj)
     CLASS(CPUTime_), INTENT(INOUT) :: obj
-    TYPE(ParameterList_), INTENT(IN) :: param
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -150,6 +148,21 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: moduleName
     CHARACTER(:), ALLOCATABLE :: ans
   END FUNCTION obj_GetStringForKernelLog
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetHeaderForKernelLog
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-21
+! summary: Get the header for kernel log file.
+!
+INTERFACE
+  MODULE FUNCTION obj_GetHeaderForKernelLog(obj) RESULT(ans)
+    CLASS(CPUTime_), INTENT(IN) :: obj
+    CHARACTER(:), ALLOCATABLE :: ans
+  END FUNCTION obj_GetHeaderForKernelLog
 END INTERFACE
 
 END MODULE CPUTime_Class

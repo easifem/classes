@@ -19,6 +19,11 @@ SUBMODULE(CPUTime_Class) Methods
 USE Display_Method, ONLY: ToString
 USE Display_Method, ONLY: Display
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "CPUTime_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -27,7 +32,7 @@ CONTAINS
 
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 #ifdef DEBUG_VER
@@ -95,7 +100,8 @@ END PROCEDURE obj_Display
 
 MODULE PROCEDURE obj_GetStringForKernelLog
 ! internal variables
-REAL(DFP) :: t, wt
+REAL(DFP) :: t
+!$ REAL(DFP) :: wt
 t = obj%GetTime()
 !$ wt = obj%GetWTime()
 ans = ToString(currentTimeStep)//"," &
@@ -105,5 +111,19 @@ ans = ToString(currentTimeStep)//"," &
       //ToString(t)
 !$ ans = ans//","//tostring(wt)
 END PROCEDURE obj_GetStringForKernelLog
+
+!----------------------------------------------------------------------------
+!                                                     GetHeaderForKernelLog
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetHeaderForKernelLog
+ans = "currentTimeStep, currentTime, module, method, time, wallTime"
+END PROCEDURE obj_GetHeaderForKernelLog
+
+!----------------------------------------------------------------------------
+!                                                            Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE Methods
