@@ -222,9 +222,9 @@ INTERFACE
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyFull
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyStructure
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: usePointer
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -256,73 +256,73 @@ INTERFACE
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
     !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
     !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
     !! storage format of the scalar field
     !! Not required.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
     !! local size of field on each processor
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
     !! space components
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
     !! if true we will try to access spaceCompo
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
     !! Time components
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
     !! if true we will try to access TimeCompo
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
     !! Not required
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
     !! Names of the physical variables
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
     !! if true then physicalVarNames is scalar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
     !! total number of nodes in each physical variable
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
     !! if true we will try to access tNodes
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
     !! is tNodes scalar
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
     !! total size of node field
     !! not required
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
 END INTERFACE
@@ -411,7 +411,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -429,14 +429,14 @@ END INTERFACE VectorFieldDisplay
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+    timefedofs, geofedof, geofedofs)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -486,12 +486,12 @@ INTERFACE
     obj, vtk, filename, opentag, content, closetag)
     CLASS(VectorField_), INTENT(IN) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: opentag
+    CHARACTER(*), INTENT(IN), OPTIONAL :: filename
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: opentag
     !! Default is true
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: closetag
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: closetag
     !! Default is true
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: content
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: content
     !! Default is true
   END SUBROUTINE obj_ExportHigherOrderNodeCoordToVTK
 END INTERFACE
@@ -530,9 +530,9 @@ INTERFACE
     !! if true then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! vector value, size of value should be obj%spaceCompo
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set1
 END INTERFACE
@@ -564,9 +564,9 @@ INTERFACE
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! vector value, size of value should be obj%spaceCompo
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set2
 END INTERFACE
@@ -603,9 +603,9 @@ INTERFACE
     !! value (all values are set to value)
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     !! space component
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set3
 END INTERFACE
@@ -648,9 +648,9 @@ INTERFACE
     !! if storageFMT is NODES_FMT then:
     !! size(value, 2) should be obj%spaceCompo
     !! size(value, 1) should be tNodes
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set4
 END INTERFACE
@@ -686,9 +686,9 @@ INTERFACE
     !! size of value should be tNodes
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     !! space component
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set5
 END INTERFACE
@@ -730,9 +730,9 @@ INTERFACE
     !! abstract node field
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     !! space component
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set6
 END INTERFACE
@@ -772,9 +772,9 @@ INTERFACE
     !! if true then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! vector value, this value will be assigned to all global nodes
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set7
 END INTERFACE
@@ -818,9 +818,9 @@ INTERFACE
     !! if storageFMT is DOF_FMT then
     !!   size(value, 2) should be obj%spaceCompo
     !!   size(value, 1) should be size(globalNode)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
     INTEGER(I4B), INTENT(IN) :: storageFMT
     !! storage format can be NODES_FMT or DOF_FMT
@@ -862,9 +862,9 @@ INTERFACE
     !! if true then globalNode is local node number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     !! space component
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set9
 END INTERFACE
@@ -894,9 +894,9 @@ INTERFACE
     !! if true then globalNode is local node number
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     !! space component
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set10
 END INTERFACE
@@ -919,9 +919,9 @@ INTERFACE
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if tree then globalNode is local node number
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set11
 END INTERFACE
@@ -938,8 +938,8 @@ INTERFACE
   MODULE SUBROUTINE obj_Set12(obj, VALUE, scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
   END SUBROUTINE obj_Set12
 END INTERFACE
 
@@ -973,16 +973,16 @@ INTERFACE
     obj, func, times, ivar, idof, spaceCompo, timeCompo)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
-      !! User function
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    !! User function
+    REAL(DFP), INTENT(IN), OPTIONAL :: times(:)
     !! If present then its size should be 1
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
     !! ivar (not used)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: idof
     !! idof (not used)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo
     !! space component, used when func is a scalar function
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo
     !! time component, not used
   END SUBROUTINE obj_SetByFunction
 END INTERFACE
@@ -1040,9 +1040,9 @@ INTERFACE
     !! Size of data written in value
     !! if globalNode is present then tsize = obj%spaceCompo
     !! if spaceCompo is present then tsize = tNodes
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNode
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: globalNode
     !! This should be a local node
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo
     !! space component
   END SUBROUTINE obj_Get1
 END INTERFACE
@@ -1066,7 +1066,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: storageFMT
     !! NODES_FMT:: nrow is obj%spaceCompo or 3, ncol is tNodes
     !! DOF_FMT:: nrow is tNodes, ncol is obj%spaceCompo or 3
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: force3D
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -1098,7 +1098,7 @@ INTERFACE
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true then globalNode is local node number
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: force3D
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: force3D
     !! if true then minimum 3 components are returned in value
   END SUBROUTINE obj_Get3
 END INTERFACE
@@ -1244,7 +1244,7 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! is true then globalNode is local node number
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE
 
@@ -1280,7 +1280,7 @@ INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -1296,7 +1296,7 @@ INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
@@ -1311,7 +1311,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
     CLASS(VectorField_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
@@ -1329,7 +1329,7 @@ INTERFACE
     !! Vector field
     REAL(DFP), INTENT(IN) :: scale
     !! scale for neumann boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
 
@@ -1350,7 +1350,7 @@ INTERFACE
     !! extension to the entire domain
     REAL(DFP), INTENT(IN) :: scale
     !! Scale for neumann boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
     !! times
   END SUBROUTINE obj_ApplySurfaceNeumannBC
 END INTERFACE
@@ -1373,7 +1373,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     !! scale for body source
     !! obj = obj + scale * bodySource integral
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
     !! time, which will be passed to the body source function
   END SUBROUTINE obj_ApplyBodySource1
 END INTERFACE

@@ -24,21 +24,30 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateNodeToElements
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
+#endif
 
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
+  IF (ASSOCIATED(obj%meshVolume)) THEN
+    CALL obj%meshVolume%InitiateNodeToElements()
+  END IF
 
-CALL obj%meshVolume%InitiateNodeToElements()
-CALL obj%meshSurface%InitiateNodeToElements()
-CALL obj%meshCurve%InitiateNodeToElements()
-CALL obj%meshPoint%InitiateNodeToElements()
+  IF (ASSOCIATED(obj%meshSurface)) THEN
+    CALL obj%meshSurface%InitiateNodeToElements()
+  END IF
+
+  IF (ASSOCIATED(obj%meshCurve)) THEN
+    CALL obj%meshCurve%InitiateNodeToElements()
+  END IF
+
+  IF (ASSOCIATED(obj%meshPoint)) THEN
+    CALL obj%meshPoint%InitiateNodeToElements()
+  END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+
 END PROCEDURE obj_InitiateNodeToElements
 
 !----------------------------------------------------------------------------
@@ -47,21 +56,34 @@ END PROCEDURE obj_InitiateNodeToElements
 
 MODULE PROCEDURE obj_InitiateNodeToNodes
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodeToNodes()"
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-CALL obj%meshVolume%InitiateNodeToNodes()
-CALL obj%meshSurface%InitiateNodeToNodes()
-CALL obj%meshCurve%InitiateNodeToNodes()
-CALL obj%meshPoint%InitiateNodeToNodes()
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodeToNodes()"
+#endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+  IF (ASSOCIATED(obj%meshVolume)) THEN
+    CALL obj%meshVolume%InitiateNodeToNodes()
+  END IF
+
+  IF (ASSOCIATED(obj%meshSurface)) THEN
+    CALL obj%meshSurface%InitiateNodeToNodes()
+  END IF
+
+  IF (ASSOCIATED(obj%meshCurve)) THEN
+    CALL obj%meshCurve%InitiateNodeToNodes()
+  END IF
+
+  IF (ASSOCIATED(obj%meshPoint)) THEN
+    CALL obj%meshPoint%InitiateNodeToNodes()
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
 END PROCEDURE obj_InitiateNodeToNodes
 
 !----------------------------------------------------------------------------
@@ -70,47 +92,35 @@ END PROCEDURE obj_InitiateNodeToNodes
 
 MODULE PROCEDURE obj_InitiateElementToElements
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-CALL obj%meshVolume%InitiateElementToElements()
-CALL obj%meshSurface%InitiateElementToElements()
-CALL obj%meshCurve%InitiateElementToElements()
-CALL obj%meshPoint%InitiateElementToElements()
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
+#endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
 
+  IF (ASSOCIATED(obj%meshVolume)) THEN
+    CALL obj%meshVolume%InitiateElementToElements()
+  END IF
+
+  IF (ASSOCIATED(obj%meshSurface)) THEN
+    CALL obj%meshSurface%InitiateElementToElements()
+  END IF
+
+  IF (ASSOCIATED(obj%meshCurve)) THEN
+    CALL obj%meshCurve%InitiateElementToElements()
+  END IF
+
+  IF (ASSOCIATED(obj%meshPoint)) THEN
+    CALL obj%meshPoint%InitiateElementToElements()
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
 END PROCEDURE obj_InitiateElementToElements
-
-!----------------------------------------------------------------------------
-!                                                  InitiateBoundaryData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_InitiateBoundaryData
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData()"
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-CALL obj%meshVolume%InitiateBoundaryData()
-CALL obj%meshSurface%InitiateBoundaryData()
-CALL obj%meshCurve%InitiateBoundaryData()
-CALL obj%meshPoint%InitiateBoundaryData()
-CALL obj%SetFacetElementType()
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
-END PROCEDURE obj_InitiateBoundaryData
 
 !----------------------------------------------------------------------------
 !                                                     InitiateFacetElements
@@ -118,20 +128,24 @@ END PROCEDURE obj_InitiateBoundaryData
 
 MODULE PROCEDURE obj_InitiateFacetElements
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetElements()"
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetElements()"
 
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif DEBUG_VER
 
-CALL obj%meshVolume%InitiateFacetElements()
-CALL obj%meshSurface%InitiateFacetElements()
-CALL obj%meshCurve%InitiateFacetElements()
-CALL obj%meshPoint%InitiateFacetElements()
+  IF (ASSOCIATED(obj%meshVolume)) &
+    CALL obj%meshVolume%InitiateFacetElements()
+  IF (ASSOCIATED(obj%meshSurface)) &
+    CALL obj%meshSurface%InitiateFacetElements()
+  IF (ASSOCIATED(obj%meshCurve)) &
+    CALL obj%meshCurve%InitiateFacetElements()
+  IF (ASSOCIATED(obj%meshPoint)) &
+    CALL obj%meshPoint%InitiateFacetElements()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_InitiateFacetElements
 
@@ -141,22 +155,34 @@ END PROCEDURE obj_InitiateFacetElements
 
 MODULE PROCEDURE obj_InitiateExtraNodeToNodes
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodeToNodes()"
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
-#endif DEBUG_VER
-
-CALL obj%meshVolume%InitiateExtraNodeToNodes()
-CALL obj%meshSurface%InitiateExtraNodeToNodes()
-CALL obj%meshCurve%InitiateExtraNodeToNodes()
-CALL obj%meshPoint%InitiateExtraNodeToNodes()
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodeToNodes()"
+#endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
-#endif DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
 
+  IF (ASSOCIATED(obj%meshVolume)) THEN
+    CALL obj%meshVolume%InitiateExtraNodeToNodes()
+  END IF
+
+  IF (ASSOCIATED(obj%meshSurface)) THEN
+    CALL obj%meshSurface%InitiateExtraNodeToNodes()
+  END IF
+
+  IF (ASSOCIATED(obj%meshCurve)) THEN
+    CALL obj%meshCurve%InitiateExtraNodeToNodes()
+  END IF
+
+  IF (ASSOCIATED(obj%meshPoint)) THEN
+    CALL obj%meshPoint%InitiateExtraNodeToNodes()
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
 END PROCEDURE obj_InitiateExtraNodeToNodes
 
 END SUBMODULE MeshDataMethods

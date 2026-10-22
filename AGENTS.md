@@ -12,30 +12,37 @@ This guide provides essential information for AI coding agents and developers wo
 
 ## Build Commands
 
-### Configure and Build
+Use the `easifem` command line tool to build, install, and clean the
+library. Building and installing need explicit permission from the
+user. Cleaning needs explicit permission every time.
+
+### Build
 
 ```bash
-# Development build (Debug)
-python3 build.py
-
-# Manual CMake configuration
-cmake -S ./ -B $HOME/temp/easifem/classes/build \
-  -G "Ninja" \
-  -D CMAKE_BUILD_TYPE=Debug \
-  -D BUILD_SHARED_LIBS:BOOL=ON \
-  -D USE_GMSH_SDK:BOOL=ON \
-  -D CMAKE_INSTALL_PREFIX:PATH=${EASIFEM_CLASSES}
-
-# Build
-cmake --build $HOME/temp/easifem/classes/build
+easifem dev classes
 ```
 
 ### Install
 
 ```bash
-python3 install.py
-# OR
-cmake --build $HOME/temp/easifem/classes/build --target install
+easifem install classes --no-download
+```
+
+### Clean
+
+Do not clean the library without explicit permission from the user.
+
+```bash
+easifem clean classes
+```
+
+### Run an example
+
+Run a test program from its examples folder (only with permission,
+see "Examples and tests"):
+
+```bash
+easifem run Initiate_test_1.F90
 ```
 
 ### Documentation Generation

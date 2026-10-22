@@ -51,9 +51,6 @@ PUBLIC :: VectorFieldLisPointer_
 
 TYPE, EXTENDS(VectorField_) :: VectorFieldLis_
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Get the size of the vector field
@@ -62,7 +59,6 @@ CONTAINS
   FINAL :: obj_Final
   !! Finalizer
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of vector field
@@ -71,7 +67,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the vector field
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! Get pointer of the vector field
@@ -138,7 +133,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -152,14 +147,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+    timefedofs, geofedof, geofedofs)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

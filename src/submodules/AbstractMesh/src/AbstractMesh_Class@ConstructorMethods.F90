@@ -17,12 +17,12 @@
 
 SUBMODULE(AbstractMesh_Class) ConstructorMethods
 USE Display_Method, ONLY: Display, &
-                          EqualLine, ToString
+  EqualLine, ToString
 USE GlobalData, ONLY: stdout
 USE ElemData_Class, ONLY: ElemData_Pointer, &
-                          ElemData_Copy
+  ElemData_Copy
 USE NodeData_Class, ONLY: NodeData_Pointer, &
-                          NodeData_Copy
+  NodeData_Copy
 
 USE Kdtree2_Module, ONLY: Kdtree2_Destroy
 
@@ -36,23 +36,23 @@ CONTAINS
 
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-CALL obj%IMPORT(hdf5=hdf5, group=group, dim=dim, entities=entities)
+  CALL obj%DEALLOCATE()
+  CALL obj%IMPORT(hdf5=hdf5, group=group, DIM=DIM, entities=entities)
 
-obj%readFromFile = .TRUE.
-obj%isInitiated = .TRUE.
+  obj%readFromFile = .TRUE.
+  obj%isInitiated = .TRUE.
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -61,55 +61,54 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-obj%readFromFile = .FALSE.
-obj%isInitiated = .FALSE.
-obj%isNodeToElementsInitiated = .FALSE.
-obj%isNodeToNodesInitiated = .FALSE.
-obj%isExtraNodeToNodesInitiated = .FALSE.
-obj%isElementToElementsInitiated = .FALSE.
-obj%isBoundaryDataInitiated = .FALSE.
-obj%isFacetDataInitiated = .FALSE.
-obj%isEdgeConnectivityInitiated = .FALSE.
-obj%isFaceConnectivityInitiated = .FALSE.
-obj%uid = 0
-obj%tElements_topology_wise = 0
-obj%tElemTopologies = 0
-obj%elemTopologies = 0
-obj%nsd = 0
-obj%xidim = 0
-obj%maxNNE = 0
-obj%maxNptrs = 0
-obj%minNptrs = 0
-obj%maxElemNum = 0
-obj%minElemNum = 0
-obj%tNodes = 0
-obj%tFaces = 0
-obj%tEdges = 0
-obj%tElements = 0
-obj%minX = 0.0_DFP
-obj%maxX = 0.0_DFP
-obj%minY = 0.0_DFP
-obj%maxY = 0.0_DFP
-obj%minZ = 0.0_DFP
-obj%maxZ = 0.0_DFP
-obj%X = 0.0_DFP
-obj%Y = 0.0_DFP
-obj%Z = 0.0_DFP
-IF (ALLOCATED(obj%boundingEntity)) DEALLOCATE (obj%boundingEntity)
-IF (ALLOCATED(obj%local_elemNumber)) DEALLOCATE (obj%local_elemNumber)
-IF (ALLOCATED(obj%local_Nptrs)) DEALLOCATE (obj%local_Nptrs)
-IF (ALLOCATED(obj%quality)) DEALLOCATE (obj%quality)
-IF (ALLOCATED(obj%facetElementType)) DEALLOCATE (obj%facetElementType)
+  obj%readFromFile = .FALSE.
+  obj%isInitiated = .FALSE.
+  obj%isNodeToElementsInitiated = .FALSE.
+  obj%isNodeToNodesInitiated = .FALSE.
+  obj%isExtraNodeToNodesInitiated = .FALSE.
+  obj%isElementToElementsInitiated = .FALSE.
+  obj%isBoundaryDataInitiated = .FALSE.
+  obj%isFacetDataInitiated = .FALSE.
+  obj%isEdgeConnectivityInitiated = .FALSE.
+  obj%isFaceConnectivityInitiated = .FALSE.
+  obj%uid = 0
+  obj%tElements_topology_wise = 0
+  obj%tElemTopologies = 0
+  obj%elemTopologies = 0
+  obj%nsd = 0
+  obj%xidim = 0
+  obj%maxNNE = 0
+  obj%maxNptrs = 0
+  obj%minNptrs = 0
+  obj%maxElemNum = 0
+  obj%minElemNum = 0
+  obj%tNodes = 0
+  obj%tFaces = 0
+  obj%tEdges = 0
+  obj%tElements = 0
+  obj%minX = 0.0_DFP
+  obj%maxX = 0.0_DFP
+  obj%minY = 0.0_DFP
+  obj%maxY = 0.0_DFP
+  obj%minZ = 0.0_DFP
+  obj%maxZ = 0.0_DFP
+  obj%X = 0.0_DFP
+  obj%Y = 0.0_DFP
+  obj%Z = 0.0_DFP
+  IF (ALLOCATED(obj%boundingEntity)) DEALLOCATE(obj%boundingEntity)
+  IF (ALLOCATED(obj%local_elemNumber)) DEALLOCATE(obj%local_elemNumber)
+  IF (ALLOCATED(obj%local_Nptrs)) DEALLOCATE(obj%local_Nptrs)
+  IF (ALLOCATED(obj%quality)) DEALLOCATE(obj%quality)
 
-IF (ALLOCATED(obj%nodeData)) DEALLOCATE (obj%nodeData)
-IF (ALLOCATED(obj%elementData)) DEALLOCATE (obj%elementData)
+  IF (ALLOCATED(obj%nodeData)) DEALLOCATE(obj%nodeData)
+  IF (ALLOCATED(obj%elementData)) DEALLOCATE(obj%elementData)
 
-IF (ALLOCATED(obj%facetData)) DEALLOCATE (obj%facetData)
+  IF (ALLOCATED(obj%facetData)) DEALLOCATE(obj%facetData)
 
-CALL obj%elementDataList%DEALLOCATE()
-CALL obj%elementDataBinaryTree%DEALLOCATE()
-CALL obj%nodeDataList%DEALLOCATE()
-CALL obj%nodeDataBinaryTree%DEALLOCATE()
+  CALL obj%elementDataList%DEALLOCATE()
+  CALL obj%elementDataBinaryTree%DEALLOCATE()
+  CALL obj%nodeDataList%DEALLOCATE()
+  CALL obj%nodeDataBinaryTree%DEALLOCATE()
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -117,14 +116,14 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isEmpty
-ans = .FALSE.
-IF (obj%tElements .LE. 0_I4B) THEN
-  ans = .TRUE.
-END IF
+  ans = .FALSE.
+  IF (obj%tElements .LE. 0_I4B) THEN
+    ans = .TRUE.
+  END IF
 
-IF (obj%tNodes .LE. 0_I4B) THEN
-  ans = .TRUE.
-END IF
+  IF (obj%tNodes .LE. 0_I4B) THEN
+    ans = .TRUE.
+  END IF
 END PROCEDURE obj_isEmpty
 
 !----------------------------------------------------------------------------
@@ -132,65 +131,65 @@ END PROCEDURE obj_isEmpty
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateDynamicDataStructure
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateDynamicDataStructure()"
-INTEGER(I4B) :: ii
-TYPE(CPUTime_) :: TypeCPUTime
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateDynamicDataStructure()"
+  INTEGER(I4B) :: ii
+  TYPE(CPUTime_) :: TypeCPUTime
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-IF (.NOT. obj%isInitiated) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
-  RETURN
-END IF
+  IF (.NOT. obj%isInitiated) THEN
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+      '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
+    RETURN
+  END IF
 
-IF (obj%tElements .EQ. 0) RETURN
+  IF (obj%tElements .EQ. 0) RETURN
 
-CALL obj%elementDataList%Initiate()
-CALL obj%elementDataBinaryTree%Initiate()
-CALL obj%nodeDataList%Initiate()
-CALL obj%nodeDataBinaryTree%Initiate()
+  CALL obj%elementDataList%Initiate()
+  CALL obj%elementDataBinaryTree%Initiate()
+  CALL obj%nodeDataList%Initiate()
+  CALL obj%nodeDataBinaryTree%Initiate()
 
-IF (obj%showTime) THEN
-  CALL Display("Showing Time States of InitiateDynamicDataStructure", &
-               unitno=stdout)
-  CALL EqualLine(unitno=stdout)
-  CALL TypeCPUTime%SetStartTime()
-END IF
+  IF (obj%showTime) THEN
+    CALL Display("Showing Time States of InitiateDynamicDataStructure", &
+      unitno=stdout)
+    CALL EqualLine(unitno=stdout)
+    CALL TypeCPUTime%SetStartTime()
+  END IF
 
-DO ii = 1, obj%tElements
-  CALL obj%elementDataList%Add(obj%elementData(ii)%ptr)
-  CALL obj%elementDataBinaryTree%Insert(obj%elementData(ii)%ptr)
-END DO
+  DO ii = 1, obj%tElements
+    CALL obj%elementDataList%Add(obj%elementData(ii)%ptr)
+    CALL obj%elementDataBinaryTree%Insert(obj%elementData(ii)%ptr)
+  END DO
 
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName// &
-               " : time for making elementDataList: "// &
-               ToString(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName // " : " // myName // &
+      " : time for making elementDataList: " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+  IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
-DO ii = 1, obj%tNodes
-  CALL obj%nodeDataList%Add(obj%nodeData(ii)%ptr)
-  CALL obj%nodeDataBinaryTree%Insert(obj%nodeData(ii)%ptr)
-END DO
+  DO ii = 1, obj%tNodes
+    CALL obj%nodeDataList%Add(obj%nodeData(ii)%ptr)
+    CALL obj%nodeDataBinaryTree%Insert(obj%nodeData(ii)%ptr)
+  END DO
 
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName// &
-               " : time for making nodeDataList: "// &
-               ToString(TypeCPUTime%GetTime()), unitno=stdout)
-  CALL EqualLine(unitno=stdout)
-END IF
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName // " : " // myName // &
+      " : time for making nodeDataList: " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL EqualLine(unitno=stdout)
+  END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateDynamicDataStructure
@@ -200,27 +199,27 @@ END PROCEDURE obj_InitiateDynamicDataStructure
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractMeshPointerDeallocate
-CLASS(AbstractMesh_), POINTER :: meshptr
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok
+  CLASS(AbstractMesh_), POINTER :: meshptr
+  INTEGER(I4B) :: ii, tsize
+  LOGICAL(LGT) :: isok
 
-meshptr => NULL()
-IF (ALLOCATED(obj)) THEN
-  tsize = SIZE(obj)
+  meshptr => NULL()
+  IF (ALLOCATED(obj)) THEN
+    tsize = SIZE(obj)
 
-  DO ii = 1, tsize
+    DO ii = 1, tsize
 
-    meshptr => obj(ii)%ptr
-    isok = ASSOCIATED(meshptr)
-    IF (isok) THEN
-      CALL meshptr%DEALLOCATE()
-      meshptr => NULL()
-    END IF
+      meshptr => obj(ii)%ptr
+      isok = ASSOCIATED(meshptr)
+      IF (isok) THEN
+        CALL meshptr%DEALLOCATE()
+        meshptr => NULL()
+      END IF
 
-  END DO
+    END DO
 
-  DEALLOCATE (obj)
-END IF
+    DEALLOCATE(obj)
+  END IF
 END PROCEDURE AbstractMeshPointerDeallocate
 
 !----------------------------------------------------------------------------
@@ -228,12 +227,12 @@ END PROCEDURE AbstractMeshPointerDeallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DeallocateKdtree
-IF (ASSOCIATED(obj%kdtree)) THEN
-  CALL Kdtree2_Destroy(obj%kdtree)
-  obj%kdtree => NULL()
-END IF
+  IF (ASSOCIATED(obj%kdtree)) THEN
+    CALL Kdtree2_Destroy(obj%kdtree)
+    obj%kdtree => NULL()
+  END IF
 
-IF (ALLOCATED(obj%kdresult)) DEALLOCATE (obj%kdresult)
+  IF (ALLOCATED(obj%kdresult)) DEALLOCATE(obj%kdresult)
 END PROCEDURE obj_DeallocateKdtree
 
 END SUBMODULE ConstructorMethods

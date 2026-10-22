@@ -38,7 +38,7 @@ USE ElemData_Class, ONLY: ElemData_Set
 USE ElemData_Class, ONLY: ElemData_Deallocate
 USE GlobalData, ONLY: stdout, INT8
 USE StringUtility, ONLY: PathJoin
-USE StringUtility, ONLY: PathBase
+USE StringUtility, ONLY: PathDir
 USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
 
 IMPLICIT NONE
@@ -50,67 +50,67 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-LOGICAL(LGT) :: cases(3), isArg(3)
-INTEGER(I4B), ALLOCATABLE :: entities0(:)
-CHARACTER(:), ALLOCATABLE :: group0
-INTEGER(I4B) :: tEntities
+  CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+  LOGICAL(LGT) :: cases(3), isArg(3)
+  INTEGER(I4B), ALLOCATABLE :: entities0(:)
+  CHARACTER(:), ALLOCATABLE :: group0
+  INTEGER(I4B) :: tEntities
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-group0 = Input(option=group, default="")
+  group0 = Input(option=group, DEFAULT="")
 
-isArg = [PRESENT(group), PRESENT(dim), PRESENT(entities)]
+  isArg = [PRESENT(group), PRESENT(DIM), PRESENT(entities)]
 
-cases(1) = (.NOT. isArg(2)) .AND. (.NOT. isArg(3))
-cases(2) = ALL(isArg(2:3))
-cases(3) = isArg(2) .AND. (.NOT. isArg(3))
+  cases(1) = (.NOT. isArg(2)) .AND. (.NOT. isArg(3))
+  cases(2) = ALL(isArg(2:3))
+  cases(3) = isArg(2) .AND. (.NOT. isArg(3))
 
-IF (cases(1)) THEN
-  ! group present
-  ! dim absent
-  ! entities absent
-  CALL MeshImportFromGroup(obj, hdf5, group0)
+  IF (cases(1)) THEN
+    ! group present
+    ! dim absent
+    ! entities absent
+    CALL MeshImportFromGroup(obj, hdf5, group0)
 
-ELSEIF (cases(2)) THEN
-  ! group present
-  ! dim present
-  ! entities present
-  CALL MeshImportFromDim(obj, hdf5, group0, dim, entities, SIZE(entities))
+  ELSE IF (cases(2)) THEN
+    ! group present
+    ! dim present
+    ! entities present
+    CALL MeshImportFromDim(obj, hdf5, group0, DIM, entities, SIZE(entities))
 
-ELSEIF (cases(3)) THEN
+  ELSE IF (cases(3)) THEN
 
-  CALL HDF5GetEntities(hdf5=hdf5, group=group0, dim=dim, &
-                       tEntities=tEntities)
+    CALL HDF5GetEntities(hdf5=hdf5, group=group0, DIM=DIM, &
+      tEntities=tEntities)
 
-  IF (tEntities .GT. 0_I4B) THEN
-    entities0 = Arange(1_I4B, tEntities)
-    CALL MeshImportFromDim(obj, hdf5, group0, dim, entities0, tEntities)
+    IF (tEntities .GT. 0_I4B) THEN
+      entities0 = Arange(1_I4B, tEntities)
+      CALL MeshImportFromDim(obj, hdf5, group0, DIM, entities0, tEntities)
+
+    ELSE
+      CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+        'tEntities is zero')
+    END IF
 
   ELSE
-    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                            'tEntities is zero')
+
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+      '[INTERNAL ERROR] :: No case found')
+
+    RETURN
   END IF
 
-ELSE
+  CALL obj%InitiateElementToElements()
 
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found')
-
-  RETURN
-END IF
-
-CALL obj%InitiateElementToElements()
-
-IF (ALLOCATED(entities0)) DEALLOCATE (entities0)
-group0 = ""
+  IF (ALLOCATED(entities0)) DEALLOCATE(entities0)
+  group0 = ""
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END PROCEDURE obj_Import
@@ -129,7 +129,9 @@ FUNCTION LocateNodeCoord(hdf5, group, isok) RESULT(dsetname)
 
   IF (dsetname == "") dsetname = "/"
 
+  ! group itself can be the nodeCoord dataset, but not a group
   isok = hdf5%pathExists(dsetname)
+  IF (isok) isok = .NOT. hdf5%IsGroup(dsetname)
 
   IF (.NOT. isok) THEN
     dsetname = PathJoin(group, "nodeCoord")
@@ -137,7 +139,8 @@ FUNCTION LocateNodeCoord(hdf5, group, isok) RESULT(dsetname)
   END IF
 
   IF (.NOT. isok) THEN
-    dsetname = PathBase(group)//"/nodeCoord"
+    ! nodeCoord in the parent group of group
+    dsetname = PathJoin(PathDir(group), "nodeCoord")
     isok = hdf5%pathExists(dsetname)
   END IF
 
@@ -148,48 +151,48 @@ END FUNCTION LocateNodeCoord
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeCoord1
-CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord1()"
-CHARACTER(:), ALLOCATABLE :: dsetname
-INTEGER(I4B) :: ii, jj
-REAL(DFP), ALLOCATABLE :: xij(:, :)
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord1()"
+  CHARACTER(:), ALLOCATABLE :: dsetname
+  INTEGER(I4B) :: ii, jj
+  REAL(DFP), ALLOCATABLE :: xij(:, :)
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: HDF5 file is not opened')
-END IF
+  IF (.NOT. hdf5%isOpen()) THEN
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR] :: HDF5 file is not opened')
+  END IF
 
-IF (.NOT. hdf5%isRead()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                '[INTERNAL ERROR] :: HDF5 file does not have read permission')
-END IF
+  IF (.NOT. hdf5%isRead()) THEN
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR] :: HDF5 file does not have read permission')
+  END IF
 
-dsetname = LocateNodeCoord(hdf5, group, isok)
+  dsetname = LocateNodeCoord(hdf5, group, isok)
 
-IF (.NOT. isok) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: cannot locate nodeCoord in the path')
-  RETURN
-END IF
+  IF (.NOT. isok) THEN
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR] :: cannot locate nodeCoord in the path')
+    RETURN
+  END IF
 
 ! build nodeCoord
-CALL hdf5%READ(dsetname, xij)
-CALL Reallocate(nodeCoord, 3_I4B, obj%GetTotalNodes())
-jj = SIZE(xij, 1)
-DO ii = 1, SIZE(nodeCoord, 2)
-  nodeCoord(1:jj, ii) = xij(1:jj, obj%GetGlobalNodeNumber(ii))
-END DO
+  CALL hdf5%READ(dsetname, xij)
+  CALL Reallocate(nodeCoord, 3_I4B, obj%GetTotalNodes())
+  jj = SIZE(xij, 1)
+  DO ii = 1, SIZE(nodeCoord, 2)
+    nodeCoord(1:jj, ii) = xij(1:jj, obj%GetGlobalNodeNumber(ii))
+  END DO
 
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
+  IF (ALLOCATED(xij)) DEALLOCATE(xij)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END PROCEDURE obj_GetNodeCoord1
@@ -199,9 +202,9 @@ END PROCEDURE obj_GetNodeCoord1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
-CHARACTER(*), PARAMETER :: myName = "obj_Export()"
-CALL e%RaiseError(modName//"::"//myName//" - "// &
-                  "[WIP]: This routine has not been implemented yet.")
+  CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+  CALL e%RaiseError(modName // "::" // myName // " - " // &
+    "[WIP]: This routine has not been implemented yet.")
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------
@@ -217,54 +220,54 @@ SUBROUTINE MeshImportScalar(obj, hdf5, group)
   CHARACTER(:), ALLOCATABLE :: dsetname
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   dsetname = TRIM(group)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%uid, group=dsetname, &
-                      fieldname="uid", check=.TRUE.)
+    fieldname="uid", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%nsd, group=dsetname, &
-                      fieldname="nsd", check=.TRUE.)
+    fieldname="nsd", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%xidim, group=dsetname, &
-                      fieldname="xidim", check=.TRUE.)
+    fieldname="xidim", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%tElements, group=dsetname, &
-                      fieldname="tElements", check=.TRUE.)
+    fieldname="tElements", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minX, group=dsetname, &
-                      fieldname="minX", check=.TRUE.)
+    fieldname="minX", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minY, group=dsetname, &
-                      fieldname="minY", check=.TRUE.)
+    fieldname="minY", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%minZ, group=dsetname, &
-                      fieldname="minZ", check=.TRUE.)
+    fieldname="minZ", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxX, group=dsetname, &
-                      fieldname="maxX", check=.TRUE.)
+    fieldname="maxX", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxY, group=dsetname, &
-                      fieldname="maxY", check=.TRUE.)
+    fieldname="maxY", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%maxZ, group=dsetname, &
-                      fieldname="maxZ", check=.TRUE.)
+    fieldname="maxZ", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%x, group=dsetname, &
-                      fieldname="x", check=.TRUE.)
+    fieldname="x", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%y, group=dsetname, &
-                      fieldname="y", check=.TRUE.)
+    fieldname="y", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=obj%z, group=dsetname, &
-                      fieldname="z", check=.TRUE.)
+    fieldname="z", check=.TRUE.)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportScalar
@@ -274,13 +277,13 @@ END SUBROUTINE MeshImportScalar
 !----------------------------------------------------------------------------
 
 SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
-                            internalNptrs)
+  internalNptrs)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
   CLASS(HDF5File_), INTENT(INOUT) :: hdf5
   CHARACTER(*), INTENT(IN) :: group
   INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:, :)
   INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: elemNumber(:)
-  INTEGER(I4B), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: internalNptrs(:)
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT), OPTIONAL :: internalNptrs(:)
 
   ! Internal variables
   CHARACTER(*), PARAMETER :: myName = "MeshImportVector()"
@@ -288,14 +291,14 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   dsetname = TRIM(group)
 
   CALL HDF5ReadVector(hdf5=hdf5, VALUE=obj%boundingEntity, group=dsetname, &
-                      fieldname="boundingEntity", check=.FALSE.)
+    fieldname="boundingEntity", check=.FALSE.)
 
   ! If boundingEntity is not initiated then we initiate it with size=0
   ! Bounding entity will not be initiated for point type
@@ -304,7 +307,7 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   END IF
 
   CALL HDF5ReadVector(hdf5=hdf5, VALUE=elemNumber, group=dsetname, &
-                      fieldname="elemNumber", check=.TRUE.)
+    fieldname="elemNumber", check=.TRUE.)
 
   isok = .FALSE.
   IF (ALLOCATED(elemNumber)) THEN
@@ -312,14 +315,14 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   END IF
 
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: either elemNumber not ALLOCATED '// &
-                      'or size of elemNumber is zero')
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+      '[INTERNAL ERROR] :: either elemNumber not ALLOCATED ' // &
+      'or size of elemNumber is zero')
     RETURN
   END IF
 
   CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname, &
-                      fieldname="connectivity", check=.TRUE.)
+    fieldname="connectivity", check=.TRUE.)
 
   isok = ALLOCATED(connectivity)
   IF (isok) THEN
@@ -328,9 +331,9 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
 
   IF (.NOT. isok) THEN
     CALL Display(dsetname, "dsetname: ", unitno=stdout)
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
       '[INTERNAL ERROR] :: either connectivity not allocated,&
-      & or its size is zero')
+    & or its size is zero')
     RETURN
   END IF
 
@@ -338,7 +341,7 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
 
   IF (PRESENT(internalNptrs)) THEN
     CALL HDF5ReadVector(hdf5=hdf5, VALUE=internalNptrs, group=dsetname, &
-                        fieldname="intNodeNumber", check=.TRUE.)
+      fieldname="intNodeNumber", check=.TRUE.)
   END IF
 
   obj%maxElemNum = MAXVAL(elemNumber)
@@ -349,8 +352,8 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
   dsetname = ""
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportVector
@@ -368,46 +371,46 @@ SUBROUTINE MeshImportCheckError(hdf5, group)
   LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   dsetname = TRIM(group)
 
   isok = hdf5%isOpen()
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INTERNAL ERROR]:: HDF5 file is not opened')
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR]:: HDF5 file is not opened')
     RETURN
   END IF
 
   isok = hdf5%isRead()
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                 '[INTERNAL ERROR]:: HDF5 file does not have read permission')
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR]:: HDF5 file does not have read permission')
     RETURN
   END IF
 
   isok = hdf5%isGroup(dsetname)
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      '[INTERNAL ERROR]:: '//dsetname// &
-        ' is not a group; it should be a group which contains the meshEntity')
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR]:: ' // dsetname // &
+      ' is not a group; it should be a group which contains the meshEntity')
     RETURN
   END IF
 
   isok = hdf5%pathExists(dsetname)
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                     '[INTERNAL ERROR]:: '//dsetname//' path does not exists')
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR]:: ' // dsetname // ' path does not exists')
     RETURN
   END IF
 
   dsetname = ""
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportCheckError
@@ -429,42 +432,42 @@ SUBROUTINE MeshImportElementData(obj, hdf5, group, connectivity, elemNumber)
   CHARACTER(*), PARAMETER :: myName = "MeshImportElementData()"
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   dsetname = TRIM(group)
 
-  ALLOCATE (obj%elementData(obj%tElements))
+  ALLOCATE(obj%elementData(obj%tElements))
 
   CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType, group=dsetname, &
-                      fieldname="elemType", check=.TRUE.)
+    fieldname="elemType", check=.TRUE.)
 
   CALL HDF5ReadScalar(hdf5=hdf5, VALUE=meshID, group=dsetname, &
-                      fieldname="uid", check=.TRUE.)
+    fieldname="uid", check=.TRUE.)
 
   !$OMP PARALLEL DO PRIVATE(ii)
   DO ii = 1, obj%tElements
     obj%local_elemNumber(elemNumber(ii)) = ii
 
-    ALLOCATE (obj%elementData(ii)%ptr)
+    ALLOCATE(obj%elementData(ii)%ptr)
     CALL ElemData_Deallocate(obj%elementData(ii)%ptr)
 
     CALL ElemData_Set(obj=obj%elementData(ii)%ptr, &
-                      globalElemNum=elemNumber(ii), &
-                      localElemNum=ii, &
-                      globalNodes=connectivity(:, ii), &
-                      name=elemType, &
-                      isActive=.TRUE., &
-                      meshID=meshID)
+      globalElemNum=elemNumber(ii), &
+      localElemNum=ii, &
+      globalNodes=connectivity(:, ii), &
+      NAME=elemType, &
+      isActive=.TRUE., &
+      meshID=meshID)
   END DO
   !$OMP END PARALLEL DO
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportElementData
@@ -474,7 +477,7 @@ END SUBROUTINE MeshImportElementData
 !----------------------------------------------------------------------------
 
 SUBROUTINE MeshImportElementDataFromDim(obj, elemType, meshID, &
-                                  connectivity, elemNumber, istart, iend, nne)
+  connectivity, elemNumber, istart, iend, nne)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN) :: elemType
   INTEGER(I4B), INTENT(IN) :: meshID
@@ -489,31 +492,31 @@ SUBROUTINE MeshImportElementDataFromDim(obj, elemType, meshID, &
   CHARACTER(*), PARAMETER :: myName = "MeshImportElementDataFromDim()"
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   !$OMP PARALLEL DO PRIVATE(ii)
   DO ii = istart, iend
     obj%local_elemNumber(elemNumber(ii)) = ii
 
-    ALLOCATE (obj%elementData(ii)%ptr)
+    ALLOCATE(obj%elementData(ii)%ptr)
     CALL ElemData_Deallocate(obj%elementData(ii)%ptr)
 
     CALL ElemData_Set(obj=obj%elementData(ii)%ptr, &
-                      globalElemNum=elemNumber(ii), &
-                      localElemNum=ii, &
-                      globalNodes=connectivity(1:nne, ii), &
-                      name=elemType, &
-                      isActive=.TRUE., &
-                      meshID=meshID)
+      globalElemNum=elemNumber(ii), &
+      localElemNum=ii, &
+      globalNodes=connectivity(1:nne, ii), &
+      NAME=elemType, &
+      isActive=.TRUE., &
+      meshID=meshID)
 
   END DO
   !$OMP END PARALLEL DO
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportElementDataFromDim
@@ -533,8 +536,8 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
   CHARACTER(*), PARAMETER :: myName = "MeshImportNodeData()"
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   aint = SIZE(connectivity, 1)
@@ -547,7 +550,7 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
   END DO
 
   obj%tNodes = COUNT(obj%local_nptrs .NE. 0)
-  ALLOCATE (obj%nodeData(obj%tNodes))
+  ALLOCATE(obj%nodeData(obj%tNodes))
   CALL Reallocate(mask, obj%maxNptrs)
   mask = .FALSE.
   mask(internalNptrs) = .TRUE.
@@ -564,21 +567,21 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
       aint = BOUNDARY_NODE
     END IF
 
-    ALLOCATE (obj%nodeData(dummy)%ptr)
+    ALLOCATE(obj%nodeData(dummy)%ptr)
 
     CALL NodeData_Set(obj=obj%nodeData(dummy)%ptr, &
-                      globalNodeNum=obj%local_nptrs(ii), &
-                      localNodeNum=dummy, &
-                      nodeType=aint)
+      globalNodeNum=obj%local_nptrs(ii), &
+      localNodeNum=dummy, &
+      nodeType=aint)
 
     obj%local_nptrs(ii) = dummy
   END DO
 
-  IF (ALLOCATED(mask)) DEALLOCATE (mask)
+  IF (ALLOCATED(mask)) DEALLOCATE(mask)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportNodeData
@@ -597,8 +600,8 @@ SUBROUTINE MeshImportNodeDataFromDim(obj, connectivity)
   LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   aint = SIZE(connectivity, 1)
@@ -614,7 +617,7 @@ SUBROUTINE MeshImportNodeDataFromDim(obj, connectivity)
   END DO
 
   obj%tNodes = COUNT(obj%local_nptrs .NE. 0)
-  ALLOCATE (obj%nodeData(obj%tNodes))
+  ALLOCATE(obj%nodeData(obj%tNodes))
 
   dummy = 0
   DO ii = 1, obj%maxNptrs
@@ -625,26 +628,26 @@ SUBROUTINE MeshImportNodeDataFromDim(obj, connectivity)
 #ifdef DEBUG_VER
     problem = ASSOCIATED(obj%nodeData(dummy)%ptr)
     IF (problem) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: obj%nodeData('//tostring(dummy)// &
-                        ')%ptr is already associated')
+      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+        '[INTERNAL ERROR] :: obj%nodeData(' // tostring(dummy) // &
+        ')%ptr is already associated')
       RETURN
     END IF
 #endif
 
-    ALLOCATE (obj%nodeData(dummy)%ptr)
+    ALLOCATE(obj%nodeData(dummy)%ptr)
 
     CALL NodeData_Set(obj=obj%nodeData(dummy)%ptr, &
-                      globalNodeNum=obj%local_nptrs(ii), &
-                      localNodeNum=dummy, &
-                      nodeType=INTERNAL_NODE)
+      globalNodeNum=obj%local_nptrs(ii), &
+      localNodeNum=dummy, &
+      nodeType=INTERNAL_NODE)
 
     obj%local_nptrs(ii) = dummy
   END DO
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportNodeDataFromDim
@@ -661,7 +664,7 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "MeshImportFromGroup()"
   INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:), &
-                               internalNptrs(:)
+    internalNptrs(:)
   TYPE(CPUTime_) :: TypeCPUTime
   CHARACTER(:), ALLOCATABLE :: dsetname
   LOGICAL(LGT) :: isok
@@ -670,8 +673,8 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
   INTEGER(I4B) :: ii, jj, kk, tsize
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   CALL obj%DEALLOCATE()
@@ -688,20 +691,20 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-                 " : time in importing scalar data [MeshImportScalar] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing scalar data [MeshImportScalar] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
   CALL MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
-                        internalNptrs)
+    internalNptrs)
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-                 " : time in importing vector data [MeshImportVector] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing vector data [MeshImportVector] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -709,9 +712,9 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-            " : time in importing element data [MeshImportElementData] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing element data [MeshImportElementData] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -719,22 +722,22 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-                 " : time in importing node data [MeshImportNodeData] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing node data [MeshImportNodeData] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
   dsetname = LocateNodeCoord(hdf5, group, isok)
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: cannot locate nodeCoord in the path')
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR] :: cannot locate nodeCoord in the path')
     RETURN
   END IF
 
   ! INFO: HDf5ReadMatrix is defined in HDF5File_Method
   CALL HDF5ReadMatrix(hdf5=hdf5, check=.TRUE., group=dsetname, &
-                      VALUE=xij, fieldname="")
+    VALUE=xij, fieldname="")
   jj = SIZE(xij, 1)
   tsize = obj%GetTotalNodes()
   x = 0.0_DFP
@@ -744,14 +747,14 @@ SUBROUTINE MeshImportFromGroup(obj, hdf5, group)
     CALL NodeData_SetNodeCoord(obj%nodeData(kk)%ptr, x)
   END DO
 
-  IF (ALLOCATED(xij)) DEALLOCATE (xij)
-  IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-  IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-  IF (ALLOCATED(internalNptrs)) DEALLOCATE (internalNptrs)
+  IF (ALLOCATED(xij)) DEALLOCATE(xij)
+  IF (ALLOCATED(elemNumber)) DEALLOCATE(elemNumber)
+  IF (ALLOCATED(connectivity)) DEALLOCATE(connectivity)
+  IF (ALLOCATED(internalNptrs)) DEALLOCATE(internalNptrs)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportFromGroup
@@ -771,11 +774,11 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "MeshImportFromDim()"
   INTEGER(I4B), ALLOCATABLE :: connectivity(:, :), elemNumber(:), &
-                          temp_int_2d(:, :), temp_int_1d(:), boundingEntity(:)
+    temp_int_2d(:, :), temp_int_1d(:), boundingEntity(:)
   INTEGER(I4B) :: ii, jj, kk, tElements(tEntities), tsize, &
-                  nsd(tEntities), uid(tEntities), elemType(tEntities), &
-                  nne(tEntities), aint, bint, maxBoundingEntities, &
-                  xidim(tEntities)
+    nsd(tEntities), uid(tEntities), elemType(tEntities), &
+    nne(tEntities), aint, bint, maxBoundingEntities, &
+    xidim(tEntities)
   ! TYPE(CPUTime_) :: TypeCPUTime
   CHARACTER(:), ALLOCATABLE :: dsetname, prefix
   REAL(DFP), DIMENSION(3, tEntities) :: xyz, min_xyz, max_xyz
@@ -785,8 +788,8 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 
 #endif
 
@@ -800,22 +803,22 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   SELECT CASE (dim)
   CASE (0_I4B)
-    prefix = group//"/pointEntities_"
+    prefix = group // "/pointEntities_"
     maxBoundingEntities = 0_I4B
   CASE (1_I4B)
-    prefix = group//"/curveEntities_"
+    prefix = group // "/curveEntities_"
   CASE (2_I4B)
-    prefix = group//"/surfaceEntities_"
+    prefix = group // "/surfaceEntities_"
   CASE (3_I4B)
-    prefix = group//"/volumeEntities_"
+    prefix = group // "/volumeEntities_"
   END SELECT
 
   DO ii = 1, tEntities
-    dsetname = prefix//ToString(entities(ii))
+    dsetname = prefix // ToString(entities(ii))
     CALL MeshImportCheckError(hdf5, dsetname)
     CALL MeshImportScalar(obj, hdf5, dsetname)
     CALL HDF5ReadScalar(hdf5=hdf5, VALUE=elemType(ii), group=dsetname, &
-                        fieldname="elemType", check=.TRUE.)
+      fieldname="elemType", check=.TRUE.)
 
     nne(ii) = GetTotalNodes(elemType(ii))
 
@@ -835,30 +838,30 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
     aint = GetElementIndex(elemType(ii))
     obj%tElements_topology_wise(aint) = obj%tElements_topology_wise(aint) &
-                                        + tElements(ii)
+      + tElements(ii)
 
   END DO
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-                 " : time in importing scalar data [MeshImportScalar] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing scalar data [MeshImportScalar] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
 #ifdef DEBUG_VER
   CALL Assert(nn=nsd, &
-             msg="[INTERNAL ERROR] :: nsd of all entities is not the same.", &
-              file=__FILE__, &
-              line=__LINE__, &
-              routine=myName)
+    msg="[INTERNAL ERROR] :: nsd of all entities is not the same.", &
+    FILE=__FILE__, &
+    line=__LINE__, &
+    routine=myName)
 
   CALL Assert(nn=xidim, &
-           msg="[INTERNAL ERROR] :: xidim of all entities is not the same.", &
-              file=__FILE__, &
-              line=__LINE__, &
-              routine=myName)
+    msg="[INTERNAL ERROR] :: xidim of all entities is not the same.", &
+    FILE=__FILE__, &
+    line=__LINE__, &
+    routine=myName)
 #endif
 
   DO ii = 1, SIZE(obj%tElements_topology_wise)
@@ -875,8 +878,8 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   isok = obj%maxNNE .NE. 0 .AND. obj%tElements .NE. 0
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[INTERNAL ERROR] :: maxNNE or tElements are zero')
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+      '[INTERNAL ERROR] :: maxNNE or tElements are zero')
     RETURN
   END IF
 
@@ -885,7 +888,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   IF (dim .GT. 0) THEN
     CALL HDF5GetEntities(hdf5=hdf5, group=group, dim=dim - 1, &
-                         tEntities=maxBoundingEntities)
+      tEntities=maxBoundingEntities)
   ELSE
     maxBoundingEntities = 0
   END IF
@@ -895,7 +898,7 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
   aint = 0
   bint = 0
   DO ii = 1, tEntities
-    dsetname = prefix//ToString(entities(ii))
+    dsetname = prefix // ToString(entities(ii))
     CALL MeshImportVector(obj, hdf5, dsetname, temp_int_2d, temp_int_1d)
     aint = bint + 1
     bint = bint + tElements(ii)
@@ -931,13 +934,13 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-                 " : time in importing vector data [MeshImportVector] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing vector data [MeshImportVector] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
-  ALLOCATE (obj%elementData(obj%tElements))
+  ALLOCATE(obj%elementData(obj%tElements))
 
   CALL Reallocate(obj%local_elemNumber, obj%maxElemNum)
 
@@ -946,19 +949,19 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     aint = bint + 1
     bint = bint + tElements(ii)
     CALL MeshImportElementDataFromDim(obj=obj, elemType=elemType(ii), &
-                                      meshID=entities(ii), &
-                                      connectivity=connectivity, &
-                                      elemNumber=elemNumber, &
-                                      istart=aint, &
-                                      iend=bint, &
-                                      nne=nne(ii))
+      meshID=entities(ii), &
+      connectivity=connectivity, &
+      elemNumber=elemNumber, &
+      istart=aint, &
+      iend=bint, &
+      nne=nne(ii))
   END DO
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-            " : time in importing element data [MeshImportElementData] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing element data [MeshImportElementData] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
@@ -966,22 +969,22 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
 
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName//" : "//myName// &
-                 " : time in importing node data [MeshImportNodeData] : "// &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+    CALL Display(modName // " : " // myName // &
+      " : time in importing node data [MeshImportNodeData] : " // &
+      ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
 
   dsetname = LocateNodeCoord(hdf5, group, isok)
   IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    '[INTERNAL ERROR] :: cannot locate nodeCoord in the path')
+    CALL e%RaiseError(modName // '::' // myName // " - " // &
+      '[INTERNAL ERROR] :: cannot locate nodeCoord in the path')
     RETURN
   END IF
 
   ! INFO: HDf5ReadMatrix is defined in HDF5File_Method
   CALL HDF5ReadMatrix(hdf5=hdf5, check=.TRUE., group=dsetname, &
-                      VALUE=xij, fieldname="")
+    VALUE=xij, fieldname="")
   jj = SIZE(xij, 1)
   tsize = obj%GetTotalNodes()
   x = 0.0_DFP
@@ -992,17 +995,17 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     CALL NodeData_SetNodeCoord(obj%nodeData(kk)%ptr, x)
   END DO
 
-  IF (ALLOCATED(xij)) DEALLOCATE (xij)
+  IF (ALLOCATED(xij)) DEALLOCATE(xij)
 
-  IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-  IF (ALLOCATED(elemNumber)) DEALLOCATE (elemNumber)
-  IF (ALLOCATED(temp_int_2d)) DEALLOCATE (temp_int_2d)
-  IF (ALLOCATED(temp_int_1d)) DEALLOCATE (temp_int_1d)
-  IF (ALLOCATED(boundingEntity)) DEALLOCATE (boundingEntity)
+  IF (ALLOCATED(connectivity)) DEALLOCATE(connectivity)
+  IF (ALLOCATED(elemNumber)) DEALLOCATE(elemNumber)
+  IF (ALLOCATED(temp_int_2d)) DEALLOCATE(temp_int_2d)
+  IF (ALLOCATED(temp_int_1d)) DEALLOCATE(temp_int_1d)
+  IF (ALLOCATED(boundingEntity)) DEALLOCATE(boundingEntity)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END SUBROUTINE MeshImportFromDim
