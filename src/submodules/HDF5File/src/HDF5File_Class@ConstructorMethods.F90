@@ -163,9 +163,9 @@ END SUBROUTINE HDF5Quiet
 !                                                                 Open
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_open
+MODULE PROCEDURE obj_Open
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_open()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_Open()'
 #endif
   INTEGER :: acc
   INTEGER(HID_T) :: plist_id
@@ -226,15 +226,15 @@ MODULE PROCEDURE obj_open
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_open
+END PROCEDURE obj_Open
 
 !----------------------------------------------------------------------------
 !                                                                 Close
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_close
+MODULE PROCEDURE obj_Close
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_close()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_Close()'
 #endif
   LOGICAL(LGT) :: lastStopOnError
   INTEGER(I4B) :: ierr
@@ -269,15 +269,15 @@ MODULE PROCEDURE obj_close
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_close
+END PROCEDURE obj_Close
 
 !----------------------------------------------------------------------------
 !                                                                 Delete
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_delete
+MODULE PROCEDURE obj_Delete
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_delete()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_Delete()'
 #endif
   CHARACTER(EXCEPTION_MAX_MESG_LENGTH) :: emesg
   TYPE(String) :: fileName
@@ -324,15 +324,15 @@ MODULE PROCEDURE obj_delete
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_delete
+END PROCEDURE obj_Delete
 
 !----------------------------------------------------------------------------
 !                                                                   Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_initiate
+MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_initiate()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_Initiate()'
 #endif
   TYPE(String) :: fpath, fname, fext, mode_in, file_
   INTEGER(I4B) :: unitno, ierr
@@ -421,14 +421,14 @@ MODULE PROCEDURE obj_initiate
       'mode OVERWRITE but does not exist.')
 #endif
     CALL obj%setWriteStat(.TRUE.)
-    CALL obj%setOverwriteStat(.TRUE.)
+    CALL obj%SetOverwriteStat(.TRUE.)
     CALL obj%setReadStat(.TRUE.)
 
   CASE ('NEW')
     CALL obj%setWriteStat(.TRUE.)
     CALL obj%setReadStat(.TRUE.)
-    CALL obj%setNewStat(.TRUE.)
-    CALL obj%setOverwriteStat(.TRUE.)
+    CALL obj%SetNewStat(.TRUE.)
+    CALL obj%SetOverwriteStat(.TRUE.)
 
   CASE DEFAULT
 #ifdef DEBUG_VER
@@ -459,7 +459,7 @@ MODULE PROCEDURE obj_initiate
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_initiate
+END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
@@ -517,9 +517,9 @@ END PROCEDURE obj_Deallocate
 !                                                          setOverWriteStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_setOverWriteStat
+MODULE PROCEDURE obj_SetOverwriteStat
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_setOverWriteStat()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetOverwriteStat()"
 #endif
 
 #ifdef DEBUG_VER
@@ -533,31 +533,31 @@ MODULE PROCEDURE obj_setOverWriteStat
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_setOverWriteStat
+END PROCEDURE obj_SetOverwriteStat
 
 !----------------------------------------------------------------------------
 !                                                                 getUnitNo
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_getUnitNo
+MODULE PROCEDURE obj_GetUnitNo
   ans = obj%unitno
-END PROCEDURE obj_getUnitNo
+END PROCEDURE obj_GetUnitNo
 
 !----------------------------------------------------------------------------
 !                                                                 isNew
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isNew
+MODULE PROCEDURE obj_IsNew
   ans = obj%newstat
-END PROCEDURE obj_isNew
+END PROCEDURE obj_IsNew
 
 !----------------------------------------------------------------------------
 !                                                                 setNewStat
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_setNewStat
+MODULE PROCEDURE obj_SetNewStat
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_setNewStat()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetNewStat()"
 #endif
 
 #ifdef DEBUG_VER
@@ -571,15 +571,15 @@ MODULE PROCEDURE obj_setNewStat
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_setNewStat
+END PROCEDURE obj_SetNewStat
 
 !----------------------------------------------------------------------------
 !                                                                 ls
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ls
+MODULE PROCEDURE obj_Ls
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_ls()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_Ls()'
 #endif
   CHARACTER(1024) :: tmpchar
   TYPE(String) :: path2
@@ -656,15 +656,15 @@ MODULE PROCEDURE obj_ls
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_ls
+END PROCEDURE obj_Ls
 
 !----------------------------------------------------------------------------
 !                                                                       mkdir
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_mkdir
+MODULE PROCEDURE obj_Mkdir
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myname = 'obj_mkdir()'
+  CHARACTER(*), PARAMETER :: myname = 'obj_Mkdir()'
 #endif
   TYPE(String) :: path3
   INTEGER(HID_T) :: group_id
@@ -732,15 +732,15 @@ MODULE PROCEDURE obj_mkdir
   CALL e%RaiseInformation(modName // '::' // myname // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_mkdir
+END PROCEDURE obj_Mkdir
 
 !----------------------------------------------------------------------------
 !                                                                 mkalldir
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_mkalldir
+MODULE PROCEDURE obj_Mkalldir
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_mkalldir()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_Mkalldir()'
 #endif
   INTEGER(I4B) :: i, nslash, ierr
   INTEGER(I4B), ALLOCATABLE :: slashloc(:)
@@ -772,7 +772,7 @@ MODULE PROCEDURE obj_mkalldir
 
   DO i = 1, nslash - 1
     tmppath = path2%slice(1, slashloc(i + 1) - 1)
-    IF (.NOT. obj%pathExists(TRIM(tmppath%chars()))) THEN
+    IF (.NOT. obj%PathExists(TRIM(tmppath%chars()))) THEN
       CALL H5GCREATE_F(obj%file_id, TRIM(tmppath%chars()), group_id, ierr)
 
 #ifdef DEBUG_VER
@@ -790,7 +790,7 @@ MODULE PROCEDURE obj_mkalldir
 
   DEALLOCATE(slashloc)
 ! Create the group
-  IF (.NOT. obj%pathExists(path2%chars())) THEN
+  IF (.NOT. obj%PathExists(path2%chars())) THEN
     CALL H5GCREATE_F(obj%file_id, TRIM(path2%chars()), group_id, ierr)
 
 #ifdef DEBUG_VER
@@ -811,15 +811,15 @@ MODULE PROCEDURE obj_mkalldir
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_mkalldir
+END PROCEDURE obj_Mkalldir
 
 !----------------------------------------------------------------------------
 !                                                                       ngrp
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ngrp
+MODULE PROCEDURE obj_Ngrp
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_ngrp()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_Ngrp()'
 #endif
   INTEGER(HID_T) :: grp_id
   INTEGER :: store_type, nlinks, max_corder, ierr
@@ -865,15 +865,15 @@ MODULE PROCEDURE obj_ngrp
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_ngrp
+END PROCEDURE obj_Ngrp
 
 !----------------------------------------------------------------------------
 !                                                                 isGroup
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isgroup
+MODULE PROCEDURE obj_IsGroup
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_isgroup()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_IsGroup()'
 #endif
   INTEGER(HID_T) :: obj_id
   INTEGER(I4B) :: TYPE, ierr
@@ -887,7 +887,7 @@ MODULE PROCEDURE obj_isgroup
   ans = .FALSE.
 
   IF (obj%isinit .AND. obj%IsOpen()) THEN
-    ans = obj%pathExists(path)
+    ans = obj%PathExists(path)
 
     IF (ans) THEN
       !Need to get the object ID from the path...
@@ -913,15 +913,15 @@ MODULE PROCEDURE obj_isgroup
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_isgroup
+END PROCEDURE obj_IsGroup
 
 !----------------------------------------------------------------------------
 !                                                                 PathExists
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_pathExists
+MODULE PROCEDURE obj_PathExists
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_pathExists()"
+  CHARACTER(*), PARAMETER :: myName = "obj_PathExists()"
 #endif
   INTEGER :: iseg, ierr
   TYPE(String) :: strpath, path2
@@ -949,15 +949,15 @@ MODULE PROCEDURE obj_pathExists
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_pathExists
+END PROCEDURE obj_PathExists
 
 !----------------------------------------------------------------------------
 !                                                             createHardLink
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_createHardLink
+MODULE PROCEDURE obj_CreateHardLink
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'obj_createHardLink()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_CreateHardLink()'
   LOGICAL(LGT) :: isok
 #endif
   INTEGER(HID_T) :: src_obj_id
@@ -977,12 +977,12 @@ MODULE PROCEDURE obj_createHardLink
 #endif
 
 #ifdef DEBUG_VER
-  isok = obj%pathExists(source_path)
+  isok = obj%PathExists(source_path)
   CALL AssertError1(isok, myName, 'Target of new link must exist in file!')
 #endif
 
 #ifdef DEBUG_VER
-  isok = .NOT. obj%pathExists(link_path)
+  isok = .NOT. obj%PathExists(link_path)
   CALL AssertError1(isok, myName, 'Location of new link already exists!')
 #endif
 
@@ -1000,15 +1000,15 @@ MODULE PROCEDURE obj_createHardLink
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_createHardLink
+END PROCEDURE obj_CreateHardLink
 
 !----------------------------------------------------------------------------
 !                                                              getChunkSize
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_getChunkSize
+MODULE PROCEDURE obj_GetChunkSize
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_getChunkSize()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetChunkSize()"
 #endif
   INTEGER(I4B) :: ndims, layout, ierr
   INTEGER(HID_T) :: dset_id, dspace_id, dcpl
@@ -1029,7 +1029,7 @@ MODULE PROCEDURE obj_getChunkSize
     "file object is not open.")
 #endif
 
-  IF (obj%pathExists(path)) THEN
+  IF (obj%PathExists(path)) THEN
     !Get the data set ID, associated data space, and rank
     CALL H5DOPEN_F(obj%file_id, TRIM(path), dset_id, ierr)
     CALL H5DGET_SPACE_F(dset_id, dspace_id, ierr)
@@ -1054,15 +1054,15 @@ MODULE PROCEDURE obj_getChunkSize
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_getChunkSize
+END PROCEDURE obj_GetChunkSize
 
 !----------------------------------------------------------------------------
 !                                                               isCompressed
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isCompressed
+MODULE PROCEDURE obj_IsCompressed
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_isCompressed()"
+  CHARACTER(*), PARAMETER :: myName = "obj_IsCompressed()"
   LOGICAL(LGT) :: isok
 #endif
   INTEGER(SIZE_T), PARAMETER :: namelen = 180
@@ -1101,7 +1101,7 @@ MODULE PROCEDURE obj_isCompressed
   ! The following code is executed when path is present
 
 #ifdef DEBUG_VER
-  isok = obj%pathExists(path)
+  isok = obj%PathExists(path)
   CALL AssertError1(isok, myName, 'path=' // path // ' does not exist!')
 #endif
 
@@ -1130,7 +1130,7 @@ MODULE PROCEDURE obj_isCompressed
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_isCompressed
+END PROCEDURE obj_IsCompressed
 
 !----------------------------------------------------------------------------
 !                                                                 preWrite
@@ -1241,8 +1241,8 @@ MODULE PROCEDURE preWrite
   lastslash = INDEX(path, '/', .TRUE.)
   IF (lastslash > 1) THEN
     path2 = path(1:lastslash - 1)
-    IF (.NOT. obj%pathExists(path2%chars())) THEN
-      CALL obj%mkdir(path2%chars())
+    IF (.NOT. obj%PathExists(path2%chars())) THEN
+      CALL obj%Mkdir(path2%chars())
     END IF
   END IF
 
@@ -1525,12 +1525,12 @@ MODULE PROCEDURE preRead
 END PROCEDURE preRead
 
 !----------------------------------------------------------------------------
-!                                                              getDataShape
+!                                                              GetDataShape
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getDataShape
+MODULE PROCEDURE obj_GetDataShape
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'getDataShape()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_GetDataShape()'
 #endif
   INTEGER(I4B) :: error, ndims
   INTEGER(HID_T) :: dset_id
@@ -1597,15 +1597,15 @@ MODULE PROCEDURE getDataShape
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE getDataShape
+END PROCEDURE obj_GetDataShape
 
 !----------------------------------------------------------------------------
-!                                                                getDataType
+!                                                                GetDataType
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE getDataType
+MODULE PROCEDURE obj_GetDataType
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = 'getDataType()'
+  CHARACTER(*), PARAMETER :: myName = 'obj_GetDataType()'
 #endif
   INTEGER(I4B) :: error, class_type
   INTEGER(HID_T) :: dset_id, dtype
@@ -1685,7 +1685,7 @@ MODULE PROCEDURE getDataType
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE getDataType
+END PROCEDURE obj_GetDataType
 
 !----------------------------------------------------------------------------
 !                                                             postRead

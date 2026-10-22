@@ -34,105 +34,105 @@ CONTAINS
 #endif
 #define mem_type H5T_NATIVE_INTEGER
 
-MODULE PROCEDURE obj_write_n0
+MODULE PROCEDURE obj_Write_n0
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n0()"
 #endif
 #define rank 0
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n0
+END PROCEDURE obj_Write_n0
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_n1
+MODULE PROCEDURE obj_Write_n1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n1()"
 #endif
 #define rank 1
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n1
+END PROCEDURE obj_Write_n1
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_n2
+MODULE PROCEDURE obj_Write_n2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n2()"
 #endif
 #define rank 2
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n2
+END PROCEDURE obj_Write_n2
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_n3
+MODULE PROCEDURE obj_Write_n3
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n3()"
 #endif
 #define rank 3
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n3
+END PROCEDURE obj_Write_n3
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_n4
+MODULE PROCEDURE obj_Write_n4
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n4()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n4()"
 #endif
 #define rank 4
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n4
+END PROCEDURE obj_Write_n4
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_n5
+MODULE PROCEDURE obj_Write_n5
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n5()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n5()"
 #endif
 #define rank 5
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n5
+END PROCEDURE obj_Write_n5
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_n6
+MODULE PROCEDURE obj_Write_n6
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n6()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n6()"
 #endif
 #define rank 6
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n6
+END PROCEDURE obj_Write_n6
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_n7
+MODULE PROCEDURE obj_Write_n7
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_write_n7()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_n7()"
 #endif
 #define rank 7
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_n7
+END PROCEDURE obj_Write_n7
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

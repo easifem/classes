@@ -31,9 +31,9 @@ CONTAINS
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d0
+MODULE PROCEDURE obj_Read_d0
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d0()"
 #endif
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
@@ -60,15 +60,15 @@ MODULE PROCEDURE obj_read_d0
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d0
+END PROCEDURE obj_Read_d0
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d1
+MODULE PROCEDURE obj_Read_d1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d1"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d1"
 #endif
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
@@ -96,15 +96,15 @@ MODULE PROCEDURE obj_read_d1
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d1
+END PROCEDURE obj_Read_d1
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__d1
+MODULE PROCEDURE obj_Read__d1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__d1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__d1()"
 #endif
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
@@ -143,15 +143,15 @@ MODULE PROCEDURE obj_read__d1
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__d1
+END PROCEDURE obj_Read__d1
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d2
+MODULE PROCEDURE obj_Read_d2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d2()"
 #endif
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(2) :: dims
@@ -178,15 +178,15 @@ MODULE PROCEDURE obj_read_d2
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d2
+END PROCEDURE obj_Read_d2
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__d2
+MODULE PROCEDURE obj_Read__d2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__d2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__d2()"
 #endif
   TYPE(String) :: path
   INTEGER(I4B), PARAMETER :: rank = 2
@@ -225,15 +225,15 @@ MODULE PROCEDURE obj_read__d2
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__d2
+END PROCEDURE obj_Read__d2
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d3
+MODULE PROCEDURE obj_Read_d3
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d3()"
 #endif
   INTEGER(I4B), PARAMETER :: rank = 3
   TYPE(String) :: path
@@ -260,15 +260,15 @@ MODULE PROCEDURE obj_read_d3
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d3
+END PROCEDURE obj_Read_d3
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__d3
+MODULE PROCEDURE obj_Read__d3
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__d3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__d3()"
 #endif
   TYPE(String) :: path
   INTEGER(I4B), PARAMETER :: rank = 3
@@ -311,15 +311,15 @@ MODULE PROCEDURE obj_read__d3
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__d3
+END PROCEDURE obj_Read__d3
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d4
+MODULE PROCEDURE obj_Read_d4
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d4()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d4()"
 #endif
   INTEGER(I4B), PARAMETER :: rank = 4
   TYPE(String) :: path
@@ -346,15 +346,15 @@ MODULE PROCEDURE obj_read_d4
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d4
+END PROCEDURE obj_Read_d4
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__d4
+MODULE PROCEDURE obj_Read__d4
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__d4()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__d4()"
 #endif
   TYPE(String) :: path
   INTEGER(I4B), PARAMETER :: rank = 4
@@ -402,15 +402,15 @@ MODULE PROCEDURE obj_read__d4
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__d4
+END PROCEDURE obj_Read__d4
 
 !----------------------------------------------------------------------------
 !                                                                       Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d5
+MODULE PROCEDURE obj_Read_d5
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d5()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d5()"
 #endif
   INTEGER(I4B), PARAMETER :: rank = 5
   INTEGER(HSIZE_T), DIMENSION(rank) :: dims
@@ -437,15 +437,15 @@ MODULE PROCEDURE obj_read_d5
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d5
+END PROCEDURE obj_Read_d5
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__d5
+MODULE PROCEDURE obj_Read__d5
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__d5()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__d5()"
 #endif
   TYPE(String) :: path
   INTEGER(I4B), PARAMETER :: rank = 5
@@ -497,15 +497,15 @@ MODULE PROCEDURE obj_read__d5
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__d5
+END PROCEDURE obj_Read__d5
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d6
+MODULE PROCEDURE obj_Read_d6
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d6()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d6()"
 #endif
   INTEGER(I4B), PARAMETER :: rank = 6
   TYPE(String) :: path
@@ -532,15 +532,15 @@ MODULE PROCEDURE obj_read_d6
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d6
+END PROCEDURE obj_Read_d6
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__d6
+MODULE PROCEDURE obj_Read__d6
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__d6()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__d6()"
 #endif
   TYPE(String) :: path
   INTEGER(I4B), PARAMETER :: rank = 6
@@ -596,15 +596,15 @@ MODULE PROCEDURE obj_read__d6
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__d6
+END PROCEDURE obj_Read__d6
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_d7
+MODULE PROCEDURE obj_Read_d7
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_d7()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_d7()"
 #endif
   INTEGER(I4B), PARAMETER :: rank = 7
   INTEGER(HSIZE_T), DIMENSION(rank) :: dims
@@ -631,15 +631,15 @@ MODULE PROCEDURE obj_read_d7
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_d7
+END PROCEDURE obj_Read_d7
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__d7
+MODULE PROCEDURE obj_Read__d7
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__d7()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__d7()"
 #endif
   TYPE(String) :: path
   INTEGER(I4B), PARAMETER :: rank = 7
@@ -699,7 +699,7 @@ MODULE PROCEDURE obj_read__d7
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__d7
+END PROCEDURE obj_Read__d7
 
 !----------------------------------------------------------------------------
 !

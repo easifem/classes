@@ -82,8 +82,8 @@ LOGICAL(LGT), SAVE :: libh5Open = math%no
 ! - overwriteStat: true if datasets can be overwritten
 ! - file_id: file id given by the HDF5 library
 !
-! See also: [[obj_initiate]], [[obj_open]], [[obj_write_d1]], [[obj_read_d1]],
-!   [[obj_read__d1]]
+! See also: [[obj_Initiate]], [[obj_Open]], [[obj_Write_d1]], [[obj_Read_d1]],
+!   [[obj_Read__d1]]
 
 TYPE, EXTENDS(AbstractFile_) :: HDF5File_
   LOGICAL(LGT) :: isInit = math%no
@@ -107,152 +107,152 @@ TYPE, EXTENDS(AbstractFile_) :: HDF5File_
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Returns true if the object is initiated
-  PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => obj_open
+  PROCEDURE, PUBLIC, PASS(Obj) :: OPEN => obj_Open
   !! Open the file
-  PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => obj_close
+  PROCEDURE, PUBLIC, PASS(Obj) :: CLOSE => obj_Close
   !! Close the file
-  PROCEDURE, PUBLIC, PASS(Obj) :: delete => obj_delete
+  PROCEDURE, PUBLIC, PASS(Obj) :: Delete => obj_Delete
   !! Delete the file from disk
-  PROCEDURE, PUBLIC, PASS(Obj) :: initiate => obj_initiate
+  PROCEDURE, PUBLIC, PASS(Obj) :: Initiate => obj_Initiate
   !! Initiate the file object
   PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the file object
-  PROCEDURE, PUBLIC, PASS(Obj) :: setOverwriteStat => &
-    obj_setOverwriteStat
+  PROCEDURE, PUBLIC, PASS(Obj) :: SetOverwriteStat => &
+    obj_SetOverwriteStat
   !! Set whether datasets can be overwritten
-  PROCEDURE, PUBLIC, PASS(Obj) :: getUnitNo => obj_getUnitNo
+  PROCEDURE, PUBLIC, PASS(Obj) :: GetUnitNo => obj_GetUnitNo
   !! Get the unit number
-  PROCEDURE, PUBLIC, PASS(Obj) :: isNew => obj_isNew
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsNew => obj_IsNew
   !! Returns true if the file is new
-  PROCEDURE, PUBLIC, PASS(Obj) :: setNewStat => obj_setNewStat
+  PROCEDURE, PUBLIC, PASS(Obj) :: SetNewStat => obj_SetNewStat
   !! Set whether the file is new
-  PROCEDURE, PUBLIC, PASS(Obj) :: ls => obj_ls
+  PROCEDURE, PUBLIC, PASS(Obj) :: Ls => obj_Ls
   !! List the contents of a group
-  PROCEDURE, PUBLIC, PASS(Obj) :: mkdir => obj_mkdir
+  PROCEDURE, PUBLIC, PASS(Obj) :: Mkdir => obj_Mkdir
   !! Create a group
-  PROCEDURE, PUBLIC, PASS(Obj) :: mkalldir => obj_mkalldir
+  PROCEDURE, PUBLIC, PASS(Obj) :: Mkalldir => obj_Mkalldir
   !! Create a group and its parents
-  PROCEDURE, PUBLIC, PASS(Obj) :: ngrp => obj_ngrp
+  PROCEDURE, PUBLIC, PASS(Obj) :: Ngrp => obj_Ngrp
   !! Number of objects in a group
-  PROCEDURE, PUBLIC, PASS(Obj) :: isGroup => obj_isGroup
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsGroup => obj_IsGroup
   !! Returns true if a path is a group
-  PROCEDURE, PUBLIC, PASS(Obj) :: pathExists => obj_pathExists
+  PROCEDURE, PUBLIC, PASS(Obj) :: PathExists => obj_PathExists
   !! Returns true if a path exists
-  PROCEDURE, PUBLIC, PASS(Obj) :: createHardLink => obj_createHardLink
+  PROCEDURE, PUBLIC, PASS(Obj) :: CreateHardLink => obj_CreateHardLink
   !! Create a hard link
-  PROCEDURE, PUBLIC, PASS(Obj) :: getChunkSize => obj_getChunkSize
+  PROCEDURE, PUBLIC, PASS(Obj) :: GetChunkSize => obj_GetChunkSize
   !! Get the chunk size of a dataset
-  PROCEDURE, PUBLIC, PASS(Obj) :: isCompressed => obj_isCompressed
+  PROCEDURE, PUBLIC, PASS(Obj) :: IsCompressed => obj_IsCompressed
   !! Returns true if compression is used
   PROCEDURE, PRIVATE, PASS(Obj) :: &
-    obj_write_d0, obj_write_d1, obj_write_d2, &
-    obj_write_d3, obj_write_d4, obj_write_d5, &
-    obj_write_d6, obj_write_d7, &
-    obj_write_s0, obj_write_s1, obj_write_s2, &
-    obj_write_s3, obj_write_s4, obj_write_s5, &
-    obj_write_s6, obj_write_s7, &
-    obj_write_b0, obj_write_b1, obj_write_b2, &
-    obj_write_b3, &
-    obj_write_n0, obj_write_n1, obj_write_n2, &
-    obj_write_n3, obj_write_n4, obj_write_n5, &
-    obj_write_n6, obj_write_n7, &
-    obj_write_st0, obj_write_st1, obj_write_st1_helper, &
-    obj_write_st2, obj_write_st2_helper, &
-    obj_write_c1
+    obj_Write_d0, obj_Write_d1, obj_Write_d2, &
+    obj_Write_d3, obj_Write_d4, obj_Write_d5, &
+    obj_Write_d6, obj_Write_d7, &
+    obj_Write_s0, obj_Write_s1, obj_Write_s2, &
+    obj_Write_s3, obj_Write_s4, obj_Write_s5, &
+    obj_Write_s6, obj_Write_s7, &
+    obj_Write_b0, obj_Write_b1, obj_Write_b2, &
+    obj_Write_b3, &
+    obj_Write_n0, obj_Write_n1, obj_Write_n2, &
+    obj_Write_n3, obj_Write_n4, obj_Write_n5, &
+    obj_Write_n6, obj_Write_n7, &
+    obj_Write_st0, obj_Write_st1, obj_Write_st1_helper, &
+    obj_Write_st2, obj_Write_st2_helper, &
+    obj_Write_c1
   !! Specific procedures of WRITE
   GENERIC, PUBLIC :: WRITE => &
-    obj_write_d0, obj_write_d1, obj_write_d2, &
-    obj_write_d3, obj_write_d4, obj_write_d5, &
-    obj_write_d6, obj_write_d7, &
-    obj_write_s0, obj_write_s1, obj_write_s2, &
-    obj_write_s3, obj_write_s4, obj_write_s5, &
-    obj_write_s6, obj_write_s7, &
-    obj_write_b0, obj_write_b1, obj_write_b2, &
-    obj_write_b3, &
-    obj_write_n0, obj_write_n1, obj_write_n2, &
-    obj_write_n3, obj_write_n4, obj_write_n5, &
-    obj_write_n6, obj_write_n7, &
-    obj_write_st0, obj_write_st1, obj_write_st1_helper, &
-    obj_write_st2, obj_write_st2_helper, &
-    obj_write_c1
+    obj_Write_d0, obj_Write_d1, obj_Write_d2, &
+    obj_Write_d3, obj_Write_d4, obj_Write_d5, &
+    obj_Write_d6, obj_Write_d7, &
+    obj_Write_s0, obj_Write_s1, obj_Write_s2, &
+    obj_Write_s3, obj_Write_s4, obj_Write_s5, &
+    obj_Write_s6, obj_Write_s7, &
+    obj_Write_b0, obj_Write_b1, obj_Write_b2, &
+    obj_Write_b3, &
+    obj_Write_n0, obj_Write_n1, obj_Write_n2, &
+    obj_Write_n3, obj_Write_n4, obj_Write_n5, &
+    obj_Write_n6, obj_Write_n7, &
+    obj_Write_st0, obj_Write_st1, obj_Write_st1_helper, &
+    obj_Write_st2, obj_Write_st2_helper, &
+    obj_Write_c1
   !! Write data to a dataset
   PROCEDURE, PRIVATE, PASS(Obj) :: &
-    obj_read_d0, obj_read_d1, obj_read_d2, &
-    obj_read_d3, obj_read_d4, obj_read_d5, &
-    obj_read_d6, obj_read_d7, &
-    obj_read_s0, obj_read_s1, obj_read_s2, &
-    obj_read_s3, obj_read_s4, obj_read_s5, &
-    obj_read_s6, obj_read_s7, &
-    obj_read_n0, obj_read_n1, obj_read_n2, &
-    obj_read_n3, obj_read_n4, obj_read_n5, &
-    obj_read_n6, obj_read_n7, &
-    obj_read_st0, obj_read_st0_helper, &
-    obj_read_st1, obj_read_st1_helper, &
-    obj_read_st2, obj_read_st2_helper, &
-    obj_read_c1, obj_read_b0, obj_read_b1, &
-    obj_read_b2, obj_read_b3
+    obj_Read_d0, obj_Read_d1, obj_Read_d2, &
+    obj_Read_d3, obj_Read_d4, obj_Read_d5, &
+    obj_Read_d6, obj_Read_d7, &
+    obj_Read_s0, obj_Read_s1, obj_Read_s2, &
+    obj_Read_s3, obj_Read_s4, obj_Read_s5, &
+    obj_Read_s6, obj_Read_s7, &
+    obj_Read_n0, obj_Read_n1, obj_Read_n2, &
+    obj_Read_n3, obj_Read_n4, obj_Read_n5, &
+    obj_Read_n6, obj_Read_n7, &
+    obj_Read_st0, obj_Read_st0_helper, &
+    obj_Read_st1, obj_Read_st1_helper, &
+    obj_Read_st2, obj_Read_st2_helper, &
+    obj_Read_c1, obj_Read_b0, obj_Read_b1, &
+    obj_Read_b2, obj_Read_b3
   !! Specific procedures of READ
   GENERIC, PUBLIC :: READ => &
-    obj_read_d0, obj_read_d1, obj_read_d2, &
-    obj_read_d3, obj_read_d4, obj_read_d5, &
-    obj_read_d6, obj_read_d7, &
-    obj_read_s0, obj_read_s1, obj_read_s2, &
-    obj_read_s3, obj_read_s4, obj_read_s5, &
-    obj_read_s6, obj_read_s7, &
-    obj_read_n0, obj_read_n1, obj_read_n2, &
-    obj_read_n3, obj_read_n4, obj_read_n5, &
-    obj_read_n6, obj_read_n7, &
-    obj_read_st0, obj_read_st0_helper, &
-    obj_read_st1, obj_read_st1_helper, &
-    obj_read_st2, obj_read_st2_helper, &
-    obj_read_c1, obj_read_b0, obj_read_b1, &
-    obj_read_b2, obj_read_b3
+    obj_Read_d0, obj_Read_d1, obj_Read_d2, &
+    obj_Read_d3, obj_Read_d4, obj_Read_d5, &
+    obj_Read_d6, obj_Read_d7, &
+    obj_Read_s0, obj_Read_s1, obj_Read_s2, &
+    obj_Read_s3, obj_Read_s4, obj_Read_s5, &
+    obj_Read_s6, obj_Read_s7, &
+    obj_Read_n0, obj_Read_n1, obj_Read_n2, &
+    obj_Read_n3, obj_Read_n4, obj_Read_n5, &
+    obj_Read_n6, obj_Read_n7, &
+    obj_Read_st0, obj_Read_st0_helper, &
+    obj_Read_st1, obj_Read_st1_helper, &
+    obj_Read_st2, obj_Read_st2_helper, &
+    obj_Read_c1, obj_Read_b0, obj_Read_b1, &
+    obj_Read_b2, obj_Read_b3
   !! Read data from a dataset
   PROCEDURE, PRIVATE, PASS(Obj) :: &
-    obj_read__d1, obj_read__d2, obj_read__d3, &
-    obj_read__d4, obj_read__d5, obj_read__d6, &
-    obj_read__d7, &
-    obj_read__s1, obj_read__s2, obj_read__s3, &
-    obj_read__s4, obj_read__s5, obj_read__s6, &
-    obj_read__s7, &
-    obj_read__n1, obj_read__n2, obj_read__n3, &
-    obj_read__n4, obj_read__n5, obj_read__n6, &
-    obj_read__n7, &
-    obj_read__b1, obj_read__b2, obj_read__b3, &
-    obj_read__st1, obj_read__st2, obj_read__st3
+    obj_Read__d1, obj_Read__d2, obj_Read__d3, &
+    obj_Read__d4, obj_Read__d5, obj_Read__d6, &
+    obj_Read__d7, &
+    obj_Read__s1, obj_Read__s2, obj_Read__s3, &
+    obj_Read__s4, obj_Read__s5, obj_Read__s6, &
+    obj_Read__s7, &
+    obj_Read__n1, obj_Read__n2, obj_Read__n3, &
+    obj_Read__n4, obj_Read__n5, obj_Read__n6, &
+    obj_Read__n7, &
+    obj_Read__b1, obj_Read__b2, obj_Read__b3, &
+    obj_Read__st1, obj_Read__st2, obj_Read__st3
   !! Specific procedures of READ_
   GENERIC, PUBLIC :: READ_ => &
-    obj_read__d1, obj_read__d2, obj_read__d3, &
-    obj_read__d4, obj_read__d5, obj_read__d6, &
-    obj_read__d7, &
-    obj_read__s1, obj_read__s2, obj_read__s3, &
-    obj_read__s4, obj_read__s5, obj_read__s6, &
-    obj_read__s7, &
-    obj_read__n1, obj_read__n2, obj_read__n3, &
-    obj_read__n4, obj_read__n5, obj_read__n6, &
-    obj_read__n7, &
-    obj_read__b1, obj_read__b2, obj_read__b3, &
-    obj_read__st1, obj_read__st2, obj_read__st3
+    obj_Read__d1, obj_Read__d2, obj_Read__d3, &
+    obj_Read__d4, obj_Read__d5, obj_Read__d6, &
+    obj_Read__d7, &
+    obj_Read__s1, obj_Read__s2, obj_Read__s3, &
+    obj_Read__s4, obj_Read__s5, obj_Read__s6, &
+    obj_Read__s7, &
+    obj_Read__n1, obj_Read__n2, obj_Read__n3, &
+    obj_Read__n4, obj_Read__n5, obj_Read__n6, &
+    obj_Read__n7, &
+    obj_Read__b1, obj_Read__b2, obj_Read__b3, &
+    obj_Read__st1, obj_Read__st2, obj_Read__st3
   !! Read data without allocating the array
   PROCEDURE, PRIVATE, PASS(Obj) :: &
-    obj_write_attribute_st0, obj_write_attribute_c0, &
-    obj_write_attribute_i0, obj_write_attribute_d0
+    obj_WriteAttribute_st0, obj_WriteAttribute_c0, &
+    obj_WriteAttribute_i0, obj_WriteAttribute_d0
   !! Specific procedures of WriteAttribute
   GENERIC, PUBLIC :: WriteAttribute => &
-    obj_write_attribute_st0, obj_write_attribute_c0, &
-    obj_write_attribute_i0, obj_write_attribute_d0
+    obj_WriteAttribute_st0, obj_WriteAttribute_c0, &
+    obj_WriteAttribute_i0, obj_WriteAttribute_d0
   !! Write an attribute
   PROCEDURE, PRIVATE, PASS(Obj) :: &
-    obj_read_attribute_st0, obj_read_attribute_c0, &
-    obj_read_attribute_i0, obj_read_attribute_d0
+    obj_ReadAttribute_st0, obj_ReadAttribute_c0, &
+    obj_ReadAttribute_i0, obj_ReadAttribute_d0
   !! Specific procedures of ReadAttribute
   GENERIC, PUBLIC :: ReadAttribute => &
-    obj_read_attribute_st0, obj_read_attribute_c0, &
-    obj_read_attribute_i0, obj_read_attribute_d0
+    obj_ReadAttribute_st0, obj_ReadAttribute_c0, &
+    obj_ReadAttribute_i0, obj_ReadAttribute_d0
   !! Read an attribute
-  PROCEDURE, PUBLIC, PASS(Obj) :: getDataShape
+  PROCEDURE, PUBLIC, PASS(Obj) :: GetDataShape => obj_GetDataShape
   !! Get the shape of a dataset
-  PROCEDURE, PUBLIC, PASS(Obj) :: getDataType
+  PROCEDURE, PUBLIC, PASS(Obj) :: GetDataType => obj_GetDataType
   !! Get the data type of a dataset
 END TYPE HDF5File_
 
@@ -313,7 +313,7 @@ END TYPE HDF5FilePointer_
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_initiate]], [[obj_Deallocate]]
+! See also: [[obj_Initiate]], [[obj_Deallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
@@ -377,13 +377,13 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_initiate]], [[obj_close]]
+! See also: [[obj_Initiate]], [[obj_Close]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_open(obj)
+  MODULE SUBROUTINE obj_Open(obj)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
-  END SUBROUTINE obj_open
+  END SUBROUTINE obj_Open
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -431,13 +431,13 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_open]], [[obj_Deallocate]]
+! See also: [[obj_Open]], [[obj_Deallocate]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_close(obj)
+  MODULE SUBROUTINE obj_Close(obj)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
-  END SUBROUTINE obj_close
+  END SUBROUTINE obj_Close
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -492,13 +492,13 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_Deallocate]], [[obj_getUnitNo]]
+! See also: [[obj_Deallocate]], [[obj_GetUnitNo]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_delete(obj)
+  MODULE SUBROUTINE obj_Delete(obj)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
-  END SUBROUTINE obj_delete
+  END SUBROUTINE obj_Delete
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -624,11 +624,11 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_open]], [[obj_Deallocate]], [[obj_setOverwriteStat]],
-!   [[obj_isCompressed]]
+! See also: [[obj_Open]], [[obj_Deallocate]], [[obj_SetOverwriteStat]],
+!   [[obj_IsCompressed]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_initiate(Obj, filename, mode, zlibOpt)
+  MODULE SUBROUTINE obj_Initiate(Obj, filename, mode, zlibOpt)
     CLASS(HDF5File_), INTENT(INOUT) :: Obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: filename
@@ -640,7 +640,7 @@ INTERFACE
     !! 'NEW' creates the file and truncates an existing one
     INTEGER(I4B), INTENT(IN), OPTIONAL :: zlibOpt
     !! gzip compression level [0-9]; no compression if absent
-  END SUBROUTINE obj_initiate
+  END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -701,7 +701,7 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_close]], [[obj_delete]]
+! See also: [[obj_Close]], [[obj_Delete]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj, Delete)
@@ -771,15 +771,15 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_initiate]]
+! See also: [[obj_Initiate]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_setOverwriteStat(obj, bool)
+  MODULE SUBROUTINE obj_SetOverwriteStat(obj, bool)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     LOGICAL(LGT), INTENT(IN) :: bool
     !! true to allow overwriting datasets and attributes
-  END SUBROUTINE obj_setOverwriteStat
+  END SUBROUTINE obj_SetOverwriteStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -827,15 +827,15 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_delete]]
+! See also: [[obj_Delete]]
 
 INTERFACE
-  MODULE PURE FUNCTION obj_getUnitNo(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_GetUnitNo(obj) RESULT(ans)
     CLASS(HDF5File_), INTENT(IN) :: obj
     !! HDF5 file object
     INTEGER(I4B) :: ans
     !! unit number, -1 if not initiated
-  END FUNCTION obj_getUnitNo
+  END FUNCTION obj_GetUnitNo
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -881,15 +881,15 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_setNewStat]]
+! See also: [[obj_SetNewStat]]
 
 INTERFACE
-  MODULE PURE FUNCTION obj_isNew(obj) RESULT(ans)
+  MODULE PURE FUNCTION obj_IsNew(obj) RESULT(ans)
     CLASS(HDF5File_), INTENT(IN) :: obj
     !! HDF5 file object
     LOGICAL(LGT) :: ans
     !! true if the file is new
-  END FUNCTION obj_isNew
+  END FUNCTION obj_IsNew
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -938,15 +938,15 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_isNew]], [[obj_open]]
+! See also: [[obj_IsNew]], [[obj_Open]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_setNewStat(obj, bool)
+  MODULE SUBROUTINE obj_SetNewStat(obj, bool)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     LOGICAL(LGT), INTENT(IN) :: bool
     !! true if the file is new
-  END SUBROUTINE obj_setNewStat
+  END SUBROUTINE obj_SetNewStat
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1016,17 +1016,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_ngrp]], [[obj_isGroup]]
+! See also: [[obj_Ngrp]], [[obj_IsGroup]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_ls(obj, path, objs)
+  MODULE SUBROUTINE obj_Ls(obj, path, objs)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path of the group
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: objs(:)
     !! names of the objects in the group
-  END SUBROUTINE obj_ls
+  END SUBROUTINE obj_Ls
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1082,15 +1082,15 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_mkalldir]], [[obj_isGroup]]
+! See also: [[obj_Mkalldir]], [[obj_IsGroup]]
 
 INTERFACE
-  MODULE RECURSIVE SUBROUTINE obj_mkdir(obj, path)
+  MODULE RECURSIVE SUBROUTINE obj_Mkdir(obj, path)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path of the group to create
-  END SUBROUTINE obj_mkdir
+  END SUBROUTINE obj_Mkdir
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1146,15 +1146,15 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_mkdir]]
+! See also: [[obj_Mkdir]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_mkalldir(obj, path)
+  MODULE SUBROUTINE obj_Mkalldir(obj, path)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path of the group to create
-  END SUBROUTINE obj_mkalldir
+  END SUBROUTINE obj_Mkalldir
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1212,17 +1212,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_ls]]
+! See also: [[obj_Ls]]
 
 INTERFACE
-  MODULE FUNCTION obj_ngrp(obj, path) RESULT(Ans)
+  MODULE FUNCTION obj_Ngrp(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path of the group
     INTEGER(I4B) :: Ans
     !! number of objects in the group
-  END FUNCTION obj_ngrp
+  END FUNCTION obj_Ngrp
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1276,17 +1276,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_pathExists]]
+! See also: [[obj_PathExists]]
 
 INTERFACE
-  MODULE FUNCTION obj_isGroup(obj, path) RESULT(Ans)
+  MODULE FUNCTION obj_IsGroup(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path in the file
     LOGICAL(LGT) :: Ans
     !! true if path is a group
-  END FUNCTION obj_isGroup
+  END FUNCTION obj_IsGroup
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1341,17 +1341,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_isGroup]]
+! See also: [[obj_IsGroup]]
 
 INTERFACE
-  MODULE FUNCTION obj_pathExists(obj, path) RESULT(Ans)
+  MODULE FUNCTION obj_PathExists(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(IN) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path in the file
     LOGICAL(LGT) :: Ans
     !! true if path exists
-  END FUNCTION obj_pathExists
+  END FUNCTION obj_PathExists
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1405,17 +1405,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_pathExists]]
+! See also: [[obj_PathExists]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_createHardLink(obj, source_path, link_path)
+  MODULE SUBROUTINE obj_CreateHardLink(obj, source_path, link_path)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: source_path
     !! path of the existing object
     CHARACTER(LEN=*), INTENT(IN) :: link_path
     !! path of the new link
-  END SUBROUTINE obj_createHardLink
+  END SUBROUTINE obj_CreateHardLink
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1483,17 +1483,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_isCompressed]]
+! See also: [[obj_IsCompressed]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_getChunkSize(obj, path, cdims)
+  MODULE SUBROUTINE obj_GetChunkSize(obj, path, cdims)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path of the dataset
     INTEGER(HSIZE_T), ALLOCATABLE, INTENT(OUT) :: cdims(:)
     !! chunk dimensions; unallocated if the dataset is not chunked
-  END SUBROUTINE obj_getChunkSize
+  END SUBROUTINE obj_GetChunkSize
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1550,17 +1550,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_initiate]], [[obj_getChunkSize]]
+! See also: [[obj_Initiate]], [[obj_GetChunkSize]]
 
 INTERFACE
-  MODULE FUNCTION obj_isCompressed(obj, path) RESULT(Ans)
+  MODULE FUNCTION obj_IsCompressed(obj, path) RESULT(Ans)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: path
     !! path of a dataset in the file, which must exist
     LOGICAL(LGT) :: Ans
     !! true if compression is used
-  END FUNCTION obj_isCompressed
+  END FUNCTION obj_IsCompressed
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1700,10 +1700,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_d1]], [[obj_read_d0]]
+! See also: [[obj_Write_d1]], [[obj_Read_d0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d0(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d0(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -1717,7 +1717,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d0
+  END SUBROUTINE obj_Write_d0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1795,10 +1795,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_d1]]
+! See also: [[obj_Read_d1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d1(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d1(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -1812,7 +1812,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d1
+  END SUBROUTINE obj_Write_d1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1838,10 +1838,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_d1]], [[obj_read_d2]]
+! See also: [[obj_Write_d1]], [[obj_Read_d2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d2(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d2(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -1855,7 +1855,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d2
+  END SUBROUTINE obj_Write_d2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1881,10 +1881,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_d1]], [[obj_read_d3]]
+! See also: [[obj_Write_d1]], [[obj_Read_d3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d3(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d3(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -1898,7 +1898,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d3
+  END SUBROUTINE obj_Write_d3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1924,10 +1924,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_d1]], [[obj_read_d4]]
+! See also: [[obj_Write_d1]], [[obj_Read_d4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d4(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d4(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -1941,7 +1941,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(4)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d4
+  END SUBROUTINE obj_Write_d4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1967,10 +1967,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_d1]], [[obj_read_d5]]
+! See also: [[obj_Write_d1]], [[obj_Read_d5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d5(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d5(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -1984,7 +1984,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(5)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d5
+  END SUBROUTINE obj_Write_d5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2010,10 +2010,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_d1]], [[obj_read_d6]]
+! See also: [[obj_Write_d1]], [[obj_Read_d6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d6(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d6(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2027,7 +2027,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(6)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d6
+  END SUBROUTINE obj_Write_d6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2053,10 +2053,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_d1]], [[obj_read_d7]]
+! See also: [[obj_Write_d1]], [[obj_Read_d7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_d7(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_d7(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2070,7 +2070,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(7)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_d7
+  END SUBROUTINE obj_Write_d7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2096,10 +2096,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_s1]], [[obj_read_s0]]
+! See also: [[obj_Write_s1]], [[obj_Read_s0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s0(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s0(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2113,7 +2113,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s0
+  END SUBROUTINE obj_Write_s0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2187,10 +2187,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_s1]]
+! See also: [[obj_Read_s1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s1(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s1(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2204,7 +2204,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s1
+  END SUBROUTINE obj_Write_s1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2230,10 +2230,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_s1]], [[obj_read_s2]]
+! See also: [[obj_Write_s1]], [[obj_Read_s2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s2(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s2(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2247,7 +2247,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s2
+  END SUBROUTINE obj_Write_s2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2273,10 +2273,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_s1]], [[obj_read_s3]]
+! See also: [[obj_Write_s1]], [[obj_Read_s3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s3(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s3(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2290,7 +2290,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s3
+  END SUBROUTINE obj_Write_s3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2316,10 +2316,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_s1]], [[obj_read_s4]]
+! See also: [[obj_Write_s1]], [[obj_Read_s4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s4(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s4(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2333,7 +2333,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(4)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s4
+  END SUBROUTINE obj_Write_s4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2359,10 +2359,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_s1]], [[obj_read_s5]]
+! See also: [[obj_Write_s1]], [[obj_Read_s5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s5(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s5(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2376,7 +2376,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(5)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s5
+  END SUBROUTINE obj_Write_s5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2402,10 +2402,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_s1]], [[obj_read_s6]]
+! See also: [[obj_Write_s1]], [[obj_Read_s6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s6(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s6(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2419,7 +2419,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(6)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s6
+  END SUBROUTINE obj_Write_s6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2445,10 +2445,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_s1]], [[obj_read_s7]]
+! See also: [[obj_Write_s1]], [[obj_Read_s7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_s7(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_s7(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2462,7 +2462,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(7)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_s7
+  END SUBROUTINE obj_Write_s7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2489,10 +2489,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_b1]], [[obj_read_b0]]
+! See also: [[obj_Write_b1]], [[obj_Read_b0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_b0(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_b0(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2506,7 +2506,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_b0
+  END SUBROUTINE obj_Write_b0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2580,10 +2580,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_b1]]
+! See also: [[obj_Read_b1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_b1(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_b1(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2597,7 +2597,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_b1
+  END SUBROUTINE obj_Write_b1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2624,10 +2624,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_b1]], [[obj_read_b2]]
+! See also: [[obj_Write_b1]], [[obj_Read_b2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_b2(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_b2(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2641,7 +2641,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_b2
+  END SUBROUTINE obj_Write_b2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2668,10 +2668,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_b1]], [[obj_read_b3]]
+! See also: [[obj_Write_b1]], [[obj_Read_b3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_b3(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_b3(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2685,7 +2685,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_b3
+  END SUBROUTINE obj_Write_b3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2711,10 +2711,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_n1]], [[obj_read_n0]]
+! See also: [[obj_Write_n1]], [[obj_Read_n0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n0(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n0(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2728,7 +2728,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n0
+  END SUBROUTINE obj_Write_n0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2801,10 +2801,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_n1]]
+! See also: [[obj_Read_n1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n1(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n1(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2818,7 +2818,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n1
+  END SUBROUTINE obj_Write_n1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2844,10 +2844,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_n1]], [[obj_read_n2]]
+! See also: [[obj_Write_n1]], [[obj_Read_n2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n2(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n2(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2861,7 +2861,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n2
+  END SUBROUTINE obj_Write_n2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2887,10 +2887,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_n1]], [[obj_read_n3]]
+! See also: [[obj_Write_n1]], [[obj_Read_n3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n3(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n3(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2904,7 +2904,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n3
+  END SUBROUTINE obj_Write_n3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2930,10 +2930,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_n1]], [[obj_read_n4]]
+! See also: [[obj_Write_n1]], [[obj_Read_n4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n4(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n4(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2947,7 +2947,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(4)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n4
+  END SUBROUTINE obj_Write_n4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2973,10 +2973,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_n1]], [[obj_read_n5]]
+! See also: [[obj_Write_n1]], [[obj_Read_n5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n5(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n5(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -2990,7 +2990,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(5)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n5
+  END SUBROUTINE obj_Write_n5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3016,10 +3016,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_n1]], [[obj_read_n6]]
+! See also: [[obj_Write_n1]], [[obj_Read_n6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n6(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n6(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3033,7 +3033,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(6)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n6
+  END SUBROUTINE obj_Write_n6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3059,10 +3059,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_n1]], [[obj_read_n7]]
+! See also: [[obj_Write_n1]], [[obj_Read_n7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_n7(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_n7(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3076,7 +3076,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(7)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_n7
+  END SUBROUTINE obj_Write_n7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3103,10 +3103,10 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_st1_helper]], [[obj_read_st0_helper]]
+! See also: [[obj_Write_st1_helper]], [[obj_Read_st0_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_st0(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_st0(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3120,7 +3120,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_st0
+  END SUBROUTINE obj_Write_st0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3135,7 +3135,7 @@ END INTERFACE
 ! dsetname are created. An existing dataset is overwritten when overwriting is
 ! allowed (see SetOverwriteStat); the new data must have the same type and
 ! must not be larger than the old data. length_max is the length of the
-! longest string in vals; the data is written by obj_write_st1. cnt_in and
+! longest string in vals; the data is written by obj_Write_st1. cnt_in and
 ! offset_in are not passed on.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
@@ -3205,10 +3205,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_write_st1]], [[obj_read_st1_helper]]
+! See also: [[obj_Write_st1]], [[obj_Read_st1_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_st1_helper(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_st1_helper(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3222,7 +3222,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_st1_helper
+  END SUBROUTINE obj_Write_st1_helper
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3250,11 +3250,11 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_st1_helper]], [[obj_write_st1_helper]],
-!   [[obj_read_st1_helper]]
+! See also: [[obj_Write_st1_helper]], [[obj_Write_st1_helper]],
+!   [[obj_Read_st1_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_st1(obj, dsetname, vals, length_max, &
+  MODULE SUBROUTINE obj_Write_st1(obj, dsetname, vals, length_max, &
     gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3270,7 +3270,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(1)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_st1
+  END SUBROUTINE obj_Write_st1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3285,7 +3285,7 @@ END INTERFACE
 ! dsetname are created. An existing dataset is overwritten when overwriting is
 ! allowed (see SetOverwriteStat); the new data must have the same type and
 ! must not be larger than the old data. length_max is the length of the
-! longest string in vals; the data is written by obj_write_st2.
+! longest string in vals; the data is written by obj_Write_st2.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3297,11 +3297,11 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_st1_helper]], [[obj_write_st2]],
-!   [[obj_read_st2_helper]]
+! See also: [[obj_Write_st1_helper]], [[obj_Write_st2]],
+!   [[obj_Read_st2_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_st2_helper(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_st2_helper(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3315,7 +3315,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_st2_helper
+  END SUBROUTINE obj_Write_st2_helper
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3343,11 +3343,11 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_st1_helper]], [[obj_write_st2_helper]],
-!   [[obj_read_st2_helper]]
+! See also: [[obj_Write_st1_helper]], [[obj_Write_st2_helper]],
+!   [[obj_Read_st2_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_st2(obj, dsetname, vals, length_max, &
+  MODULE SUBROUTINE obj_Write_st2(obj, dsetname, vals, length_max, &
     gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3363,7 +3363,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(2)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_st2
+  END SUBROUTINE obj_Write_st2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3378,7 +3378,7 @@ END INTERFACE
 ! dsetname are created. An existing dataset is overwritten when overwriting is
 ! allowed (see SetOverwriteStat); the new data must have the same type and
 ! must not be larger than the old data. length_max is the length of the
-! longest string in vals; the data is written by obj_write_st3. This routine
+! longest string in vals; the data is written by obj_Write_st3. This routine
 ! is not bound to the WRITE generic.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
@@ -3391,11 +3391,11 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_st1_helper]], [[obj_write_st3]],
-!   [[obj_read_st3_helper]]
+! See also: [[obj_Write_st1_helper]], [[obj_Write_st3]],
+!   [[obj_Read_st3_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_st3_helper(obj, dsetname, vals, gdims_in, &
+  MODULE SUBROUTINE obj_Write_st3_helper(obj, dsetname, vals, gdims_in, &
     cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3409,7 +3409,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_st3_helper
+  END SUBROUTINE obj_Write_st3_helper
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3437,11 +3437,11 @@ END INTERFACE
 !   gdims_in, cnt_in, offset_in : INTEGER(I4B), optional - shape, count and
 !       offset of the data
 !
-! See also: [[obj_write_st1_helper]], [[obj_write_st3_helper]],
-!   [[obj_read_st3_helper]]
+! See also: [[obj_Write_st1_helper]], [[obj_Write_st3_helper]],
+!   [[obj_Read_st3_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_st3(obj, dsetname, vals, length_max, &
+  MODULE SUBROUTINE obj_Write_st3(obj, dsetname, vals, length_max, &
     gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3457,7 +3457,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), INTENT(IN), OPTIONAL :: offset_in(3)
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_st3
+  END SUBROUTINE obj_Write_st3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3523,10 +3523,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_c1]], [[obj_read_st0_helper]]
+! See also: [[obj_Read_c1]], [[obj_Read_st0_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_c1(obj, dsetname, vals, gdims_in, cnt_in, &
+  MODULE SUBROUTINE obj_Write_c1(obj, dsetname, vals, gdims_in, cnt_in, &
     offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -3540,7 +3540,7 @@ INTERFACE
     !! number of entries to write; not used at present
     INTEGER(I4B), DIMENSION(1), INTENT(IN), OPTIONAL :: offset_in
     !! offset of vals in the dataset; not used at present
-  END SUBROUTINE obj_write_c1
+  END SUBROUTINE obj_Write_c1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3581,7 +3581,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               getDataShape
+!                                                               GetDataShape
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -3639,21 +3639,21 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[getDataType]]
+! See also: [[obj_GetDataType]]
 
 INTERFACE
-  MODULE FUNCTION getDataShape(obj, dsetname) RESULT(dataShape)
+  MODULE FUNCTION obj_GetDataShape(obj, dsetname) RESULT(dataShape)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE :: dataShape(:)
     !! shape of the dataset; size zero for a scalar
-  END FUNCTION getDataShape
+  END FUNCTION obj_GetDataShape
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                               getDataType
+!                                                               GetDataType
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -3709,17 +3709,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[getDataShape]]
+! See also: [[obj_GetDataShape]]
 
 INTERFACE
-  MODULE FUNCTION getDataType(obj, dsetname) RESULT(dataType)
+  MODULE FUNCTION obj_GetDataType(obj, dsetname) RESULT(dataType)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     CHARACTER(LEN=3) :: dataType
     !! 'Rea', 'Int', 'STR' or 'N/A'
-  END FUNCTION getDataType
+  END FUNCTION obj_GetDataType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3769,17 +3769,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64) - data read from the dataset
 !
-! See also: [[obj_read_d1]], [[obj_write_d0]]
+! See also: [[obj_Read_d1]], [[obj_Write_d0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d0(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), INTENT(INOUT) :: vals
     !! a scalar of Real64 read from the dataset
-  END SUBROUTINE obj_read_d0
+  END SUBROUTINE obj_Read_d0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3847,17 +3847,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_write_d1]], [[obj_read__d1]]
+! See also: [[obj_Write_d1]], [[obj_Read__d1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d1(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! a rank-1 array of Real64 read from the dataset
-  END SUBROUTINE obj_read_d1
+  END SUBROUTINE obj_Read_d1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3943,10 +3943,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_d1]]
+! See also: [[obj_Read_d1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__d1(obj, dsetname, vals, tsize)
+  MODULE SUBROUTINE obj_Read__d1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3955,7 +3955,7 @@ INTERFACE
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! size of data written in vals
-  END SUBROUTINE obj_read__d1
+  END SUBROUTINE obj_Read__d1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3977,17 +3977,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_d1]], [[obj_write_d2]], [[obj_read__d2]]
+! See also: [[obj_Read_d1]], [[obj_Write_d2]], [[obj_Read__d2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d2(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
     !! a rank-2 array of Real64 read from the dataset
-  END SUBROUTINE obj_read_d2
+  END SUBROUTINE obj_Read_d2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4013,10 +4013,10 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read__d1]], [[obj_read_d2]]
+! See also: [[obj_Read__d1]], [[obj_Read_d2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__d2(obj, dsetname, vals, nrow, ncol)
+  MODULE SUBROUTINE obj_Read__d2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4027,7 +4027,7 @@ INTERFACE
     !! number of rows written in vals
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of columns written in vals
-  END SUBROUTINE obj_read__d2
+  END SUBROUTINE obj_Read__d2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4049,17 +4049,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_d1]], [[obj_write_d3]], [[obj_read__d3]]
+! See also: [[obj_Read_d1]], [[obj_Write_d3]], [[obj_Read__d3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d3(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
     !! a rank-3 array of Real64 read from the dataset
-  END SUBROUTINE obj_read_d3
+  END SUBROUTINE obj_Read_d3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4085,10 +4085,10 @@ END INTERFACE
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__d1]], [[obj_read_d3]]
+! See also: [[obj_Read__d1]], [[obj_Read_d3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__d3(obj, dsetname, vals, dim1, dim2, dim3)
+  MODULE SUBROUTINE obj_Read__d3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4101,7 +4101,7 @@ INTERFACE
     !! extent of data written in vals along dimension 2
     INTEGER(I4B), INTENT(OUT) :: dim3
     !! extent of data written in vals along dimension 3
-  END SUBROUTINE obj_read__d3
+  END SUBROUTINE obj_Read__d3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4123,17 +4123,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_d1]], [[obj_write_d4]], [[obj_read__d4]]
+! See also: [[obj_Read_d1]], [[obj_Write_d4]], [[obj_Read__d4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d4(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
     !! a rank-4 array of Real64 read from the dataset
-  END SUBROUTINE obj_read_d4
+  END SUBROUTINE obj_Read_d4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4159,10 +4159,10 @@ END INTERFACE
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim4 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__d1]], [[obj_read_d4]]
+! See also: [[obj_Read__d1]], [[obj_Read_d4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__d4(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__d4(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -4178,7 +4178,7 @@ INTERFACE
     !! extent of data written in vals along dimension 3
     INTEGER(I4B), INTENT(OUT) :: dim4
     !! extent of data written in vals along dimension 4
-  END SUBROUTINE obj_read__d4
+  END SUBROUTINE obj_Read__d4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4200,17 +4200,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_d1]], [[obj_write_d5]], [[obj_read__d5]]
+! See also: [[obj_Read_d1]], [[obj_Write_d5]], [[obj_Read__d5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d5(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
     !! a rank-5 array of Real64 read from the dataset
-  END SUBROUTINE obj_read_d5
+  END SUBROUTINE obj_Read_d5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4236,10 +4236,10 @@ END INTERFACE
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim5 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__d1]], [[obj_read_d5]]
+! See also: [[obj_Read__d1]], [[obj_Read_d5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__d5(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__d5(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -4257,7 +4257,7 @@ INTERFACE
     !! extent of data written in vals along dimension 4
     INTEGER(I4B), INTENT(OUT) :: dim5
     !! extent of data written in vals along dimension 5
-  END SUBROUTINE obj_read__d5
+  END SUBROUTINE obj_Read__d5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4279,17 +4279,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_d1]], [[obj_write_d6]], [[obj_read__d6]]
+! See also: [[obj_Read_d1]], [[obj_Write_d6]], [[obj_Read__d6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d6(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
     !! a rank-6 array of Real64 read from the dataset
-  END SUBROUTINE obj_read_d6
+  END SUBROUTINE obj_Read_d6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4315,10 +4315,10 @@ END INTERFACE
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim6 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__d1]], [[obj_read_d6]]
+! See also: [[obj_Read__d1]], [[obj_Read_d6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__d6(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__d6(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5, dim6)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -4338,7 +4338,7 @@ INTERFACE
     !! extent of data written in vals along dimension 5
     INTEGER(I4B), INTENT(OUT) :: dim6
     !! extent of data written in vals along dimension 6
-  END SUBROUTINE obj_read__d6
+  END SUBROUTINE obj_Read__d6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4360,17 +4360,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL64), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_d1]], [[obj_write_d7]], [[obj_read__d7]]
+! See also: [[obj_Read_d1]], [[obj_Write_d7]], [[obj_Read__d7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_d7(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_d7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
     !! a rank-7 array of Real64 read from the dataset
-  END SUBROUTINE obj_read_d7
+  END SUBROUTINE obj_Read_d7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4396,10 +4396,10 @@ END INTERFACE
 !   vals : REAL(REAL64) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim7 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__d1]], [[obj_read_d7]]
+! See also: [[obj_Read__d1]], [[obj_Read_d7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__d7(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__d7(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5, dim6, dim7)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -4421,7 +4421,7 @@ INTERFACE
     !! extent of data written in vals along dimension 6
     INTEGER(I4B), INTENT(OUT) :: dim7
     !! extent of data written in vals along dimension 7
-  END SUBROUTINE obj_read__d7
+  END SUBROUTINE obj_Read__d7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4442,17 +4442,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32) - data read from the dataset
 !
-! See also: [[obj_read_s1]], [[obj_write_s0]]
+! See also: [[obj_Read_s1]], [[obj_Write_s0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s0(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), INTENT(INOUT) :: vals
     !! a scalar of Real32 read from the dataset
-  END SUBROUTINE obj_read_s0
+  END SUBROUTINE obj_Read_s0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4474,17 +4474,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_write_s1]], [[obj_write_s1]], [[obj_read__s1]]
+! See also: [[obj_Write_s1]], [[obj_Write_s1]], [[obj_Read__s1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s1(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! a rank-1 array of Real32 read from the dataset
-  END SUBROUTINE obj_read_s1
+  END SUBROUTINE obj_Read_s1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4556,10 +4556,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_s1]]
+! See also: [[obj_Read_s1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__s1(obj, dsetname, vals, tsize)
+  MODULE SUBROUTINE obj_Read__s1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4568,7 +4568,7 @@ INTERFACE
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! size of data written in vals
-  END SUBROUTINE obj_read__s1
+  END SUBROUTINE obj_Read__s1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4590,17 +4590,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_s1]], [[obj_write_s2]], [[obj_read__s2]]
+! See also: [[obj_Read_s1]], [[obj_Write_s2]], [[obj_Read__s2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s2(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
     !! a rank-2 array of Real32 read from the dataset
-  END SUBROUTINE obj_read_s2
+  END SUBROUTINE obj_Read_s2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4626,10 +4626,10 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read__s1]], [[obj_read_s2]]
+! See also: [[obj_Read__s1]], [[obj_Read_s2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__s2(obj, dsetname, vals, nrow, ncol)
+  MODULE SUBROUTINE obj_Read__s2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4640,7 +4640,7 @@ INTERFACE
     !! number of rows written in vals
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of columns written in vals
-  END SUBROUTINE obj_read__s2
+  END SUBROUTINE obj_Read__s2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4662,17 +4662,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_s1]], [[obj_write_s3]], [[obj_read__s3]]
+! See also: [[obj_Read_s1]], [[obj_Write_s3]], [[obj_Read__s3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s3(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
     !! a rank-3 array of Real32 read from the dataset
-  END SUBROUTINE obj_read_s3
+  END SUBROUTINE obj_Read_s3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4698,10 +4698,10 @@ END INTERFACE
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_s3]]
+! See also: [[obj_Read__s1]], [[obj_Read_s3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__s3(obj, dsetname, vals, dim1, dim2, dim3)
+  MODULE SUBROUTINE obj_Read__s3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4714,7 +4714,7 @@ INTERFACE
     !! extent of data written in vals along dimension 2
     INTEGER(I4B), INTENT(OUT) :: dim3
     !! extent of data written in vals along dimension 3
-  END SUBROUTINE obj_read__s3
+  END SUBROUTINE obj_Read__s3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4736,17 +4736,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_s1]], [[obj_write_s4]], [[obj_read__s4]]
+! See also: [[obj_Read_s1]], [[obj_Write_s4]], [[obj_Read__s4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s4(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
     !! a rank-4 array of Real32 read from the dataset
-  END SUBROUTINE obj_read_s4
+  END SUBROUTINE obj_Read_s4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4772,10 +4772,10 @@ END INTERFACE
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim4 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_s4]]
+! See also: [[obj_Read__s1]], [[obj_Read_s4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__s4(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__s4(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -4791,7 +4791,7 @@ INTERFACE
     !! extent of data written in vals along dimension 3
     INTEGER(I4B), INTENT(OUT) :: dim4
     !! extent of data written in vals along dimension 4
-  END SUBROUTINE obj_read__s4
+  END SUBROUTINE obj_Read__s4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4813,17 +4813,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_s1]], [[obj_write_s5]], [[obj_read__s5]]
+! See also: [[obj_Read_s1]], [[obj_Write_s5]], [[obj_Read__s5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s5(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
     !! a rank-5 array of Real32 read from the dataset
-  END SUBROUTINE obj_read_s5
+  END SUBROUTINE obj_Read_s5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4849,10 +4849,10 @@ END INTERFACE
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim5 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_s5]]
+! See also: [[obj_Read__s1]], [[obj_Read_s5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__s5(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__s5(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -4870,7 +4870,7 @@ INTERFACE
     !! extent of data written in vals along dimension 4
     INTEGER(I4B), INTENT(OUT) :: dim5
     !! extent of data written in vals along dimension 5
-  END SUBROUTINE obj_read__s5
+  END SUBROUTINE obj_Read__s5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4892,17 +4892,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_s1]], [[obj_write_s6]], [[obj_read__s6]]
+! See also: [[obj_Read_s1]], [[obj_Write_s6]], [[obj_Read__s6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s6(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
     !! a rank-6 array of Real32 read from the dataset
-  END SUBROUTINE obj_read_s6
+  END SUBROUTINE obj_Read_s6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4928,10 +4928,10 @@ END INTERFACE
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim6 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_s6]]
+! See also: [[obj_Read__s1]], [[obj_Read_s6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__s6(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__s6(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5, dim6)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -4951,7 +4951,7 @@ INTERFACE
     !! extent of data written in vals along dimension 5
     INTEGER(I4B), INTENT(OUT) :: dim6
     !! extent of data written in vals along dimension 6
-  END SUBROUTINE obj_read__s6
+  END SUBROUTINE obj_Read__s6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4973,17 +4973,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : REAL(REAL32), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_s1]], [[obj_write_s7]], [[obj_read__s7]]
+! See also: [[obj_Read_s1]], [[obj_Write_s7]], [[obj_Read__s7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_s7(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_s7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
     !! a rank-7 array of Real32 read from the dataset
-  END SUBROUTINE obj_read_s7
+  END SUBROUTINE obj_Read_s7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5009,10 +5009,10 @@ END INTERFACE
 !   vals : REAL(REAL32) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim7 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_s7]]
+! See also: [[obj_Read__s1]], [[obj_Read_s7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__s7(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__s7(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5, dim6, dim7)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -5034,7 +5034,7 @@ INTERFACE
     !! extent of data written in vals along dimension 6
     INTEGER(I4B), INTENT(OUT) :: dim7
     !! extent of data written in vals along dimension 7
-  END SUBROUTINE obj_read__s7
+  END SUBROUTINE obj_Read__s7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5055,17 +5055,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B) - data read from the dataset
 !
-! See also: [[obj_read_n1]], [[obj_write_n0]]
+! See also: [[obj_Read_n1]], [[obj_Write_n0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n0(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), INTENT(INOUT) :: vals
     !! a scalar of Int32 read from the dataset
-  END SUBROUTINE obj_read_n0
+  END SUBROUTINE obj_Read_n0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5087,17 +5087,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_write_n1]], [[obj_write_n1]], [[obj_read__n1]]
+! See also: [[obj_Write_n1]], [[obj_Write_n1]], [[obj_Read__n1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n1(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! a rank-1 array of Int32 read from the dataset
-  END SUBROUTINE obj_read_n1
+  END SUBROUTINE obj_Read_n1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5122,10 +5122,10 @@ END INTERFACE
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
 !   tsize : INTEGER(I4B) - size of data written in vals
 !
-! See also: [[obj_read__s1]], [[obj_read_n1]]
+! See also: [[obj_Read__s1]], [[obj_Read_n1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__n1(obj, dsetname, vals, tsize)
+  MODULE SUBROUTINE obj_Read__n1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5134,7 +5134,7 @@ INTERFACE
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! size of data written in vals
-  END SUBROUTINE obj_read__n1
+  END SUBROUTINE obj_Read__n1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5156,17 +5156,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_n1]], [[obj_write_n2]], [[obj_read__n2]]
+! See also: [[obj_Read_n1]], [[obj_Write_n2]], [[obj_Read__n2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n2(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
     !! a rank-2 array of Int32 read from the dataset
-  END SUBROUTINE obj_read_n2
+  END SUBROUTINE obj_Read_n2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5192,10 +5192,10 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read__s1]], [[obj_read_n2]]
+! See also: [[obj_Read__s1]], [[obj_Read_n2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__n2(obj, dsetname, vals, nrow, ncol)
+  MODULE SUBROUTINE obj_Read__n2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5206,7 +5206,7 @@ INTERFACE
     !! number of rows written in vals
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of columns written in vals
-  END SUBROUTINE obj_read__n2
+  END SUBROUTINE obj_Read__n2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5228,17 +5228,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_n1]], [[obj_write_n3]], [[obj_read__n3]]
+! See also: [[obj_Read_n1]], [[obj_Write_n3]], [[obj_Read__n3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n3(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
     !! a rank-3 array of Int32 read from the dataset
-  END SUBROUTINE obj_read_n3
+  END SUBROUTINE obj_Read_n3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5264,10 +5264,10 @@ END INTERFACE
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_n3]]
+! See also: [[obj_Read__s1]], [[obj_Read_n3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__n3(obj, dsetname, vals, dim1, dim2, dim3)
+  MODULE SUBROUTINE obj_Read__n3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5280,7 +5280,7 @@ INTERFACE
     !! extent of data written in vals along dimension 2
     INTEGER(I4B), INTENT(OUT) :: dim3
     !! extent of data written in vals along dimension 3
-  END SUBROUTINE obj_read__n3
+  END SUBROUTINE obj_Read__n3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5302,17 +5302,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_n1]], [[obj_write_n4]], [[obj_read__n4]]
+! See also: [[obj_Read_n1]], [[obj_Write_n4]], [[obj_Read__n4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n4(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n4(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :)
     !! a rank-4 array of Int32 read from the dataset
-  END SUBROUTINE obj_read_n4
+  END SUBROUTINE obj_Read_n4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5338,10 +5338,10 @@ END INTERFACE
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim4 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_n4]]
+! See also: [[obj_Read__s1]], [[obj_Read_n4]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__n4(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__n4(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -5357,7 +5357,7 @@ INTERFACE
     !! extent of data written in vals along dimension 3
     INTEGER(I4B), INTENT(OUT) :: dim4
     !! extent of data written in vals along dimension 4
-  END SUBROUTINE obj_read__n4
+  END SUBROUTINE obj_Read__n4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5379,17 +5379,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_n1]], [[obj_write_n5]], [[obj_read__n5]]
+! See also: [[obj_Read_n1]], [[obj_Write_n5]], [[obj_Read__n5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n5(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n5(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :)
     !! a rank-5 array of Int32 read from the dataset
-  END SUBROUTINE obj_read_n5
+  END SUBROUTINE obj_Read_n5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5415,10 +5415,10 @@ END INTERFACE
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim5 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_n5]]
+! See also: [[obj_Read__s1]], [[obj_Read_n5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__n5(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__n5(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -5436,7 +5436,7 @@ INTERFACE
     !! extent of data written in vals along dimension 4
     INTEGER(I4B), INTENT(OUT) :: dim5
     !! extent of data written in vals along dimension 5
-  END SUBROUTINE obj_read__n5
+  END SUBROUTINE obj_Read__n5
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5458,17 +5458,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_n1]], [[obj_write_n6]], [[obj_read__n6]]
+! See also: [[obj_Read_n1]], [[obj_Write_n6]], [[obj_Read__n6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n6(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n6(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :)
     !! a rank-6 array of Int32 read from the dataset
-  END SUBROUTINE obj_read_n6
+  END SUBROUTINE obj_Read_n6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5494,10 +5494,10 @@ END INTERFACE
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim6 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_n6]]
+! See also: [[obj_Read__s1]], [[obj_Read_n6]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__n6(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__n6(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5, dim6)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -5517,7 +5517,7 @@ INTERFACE
     !! extent of data written in vals along dimension 5
     INTEGER(I4B), INTENT(OUT) :: dim6
     !! extent of data written in vals along dimension 6
-  END SUBROUTINE obj_read__n6
+  END SUBROUTINE obj_Read__n6
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5539,17 +5539,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : INTEGER(I4B), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_n1]], [[obj_write_n7]], [[obj_read__n7]]
+! See also: [[obj_Read_n1]], [[obj_Write_n7]], [[obj_Read__n7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_n7(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_n7(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :, :, :, :, :)
     !! a rank-7 array of Int32 read from the dataset
-  END SUBROUTINE obj_read_n7
+  END SUBROUTINE obj_Read_n7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5575,10 +5575,10 @@ END INTERFACE
 !   vals : INTEGER(I4B) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim7 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__s1]], [[obj_read_n7]]
+! See also: [[obj_Read__s1]], [[obj_Read_n7]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__n7(obj, dsetname, vals, dim1, dim2, dim3, &
+  MODULE SUBROUTINE obj_Read__n7(obj, dsetname, vals, dim1, dim2, dim3, &
     dim4, dim5, dim6, dim7)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -5600,7 +5600,7 @@ INTERFACE
     !! extent of data written in vals along dimension 6
     INTEGER(I4B), INTENT(OUT) :: dim7
     !! extent of data written in vals along dimension 7
-  END SUBROUTINE obj_read__n7
+  END SUBROUTINE obj_Read__n7
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5615,26 +5615,26 @@ END INTERFACE
 ! two ways, and this routine finds out which one is used:
 !
 ! - as fixed-length strings, written by Write with String data; then
-!   obj_read_st0 is called with the length of the stored strings.
+!   obj_Read_st0 is called with the length of the stored strings.
 ! - as an array of single characters, written by Write with a character
-!   variable; then obj_read_ca0 is called.
+!   variable; then obj_Read_ca0 is called.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String) - data read from the dataset
 !
-! See also: [[obj_read_st2_helper]], [[obj_write_st0]]
+! See also: [[obj_Read_st2_helper]], [[obj_Write_st0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st0_helper(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_st0_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), INTENT(INOUT) :: vals
     !! a scalar of String read from the dataset
-  END SUBROUTINE obj_read_st0_helper
+  END SUBROUTINE obj_Read_st0_helper
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5657,10 +5657,10 @@ END INTERFACE
 !   length_max : INTEGER(I4B) - length of the stored strings
 !   vals : TYPE(String) - data read from the dataset
 !
-! See also: [[obj_read_st0_helper]]
+! See also: [[obj_Read_st0_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st0(obj, dsetname, length_max, vals)
+  MODULE SUBROUTINE obj_Read_st0(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5669,7 +5669,7 @@ INTERFACE
     !! length of the stored strings
     TYPE(String), INTENT(INOUT) :: vals
     !! a scalar of String read from the dataset
-  END SUBROUTINE obj_read_st0
+  END SUBROUTINE obj_Read_st0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5681,7 +5681,7 @@ END INTERFACE
 ! summary: Read a scalar of String stored as single characters
 !
 ! Read a rank-1 array of single characters into one String. This routine is
-! used by obj_read_st0_helper and is not bound to the READ generic.
+! used by obj_Read_st0_helper and is not bound to the READ generic.
 !
 ! In DEBUG mode an error is raised if the file is not open with read access,
 ! the dataset can not be opened, or its rank is not the rank of vals plus one.
@@ -5691,17 +5691,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String) - data read from the dataset
 !
-! See also: [[obj_read_st0_helper]]
+! See also: [[obj_Read_st0_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_ca0(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_ca0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), INTENT(INOUT) :: vals
     !! a scalar of String read from the dataset
-  END SUBROUTINE obj_read_ca0
+  END SUBROUTINE obj_Read_ca0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5716,9 +5716,9 @@ END INTERFACE
 ! stored in two ways, and this routine finds out which one is used:
 !
 ! - as fixed-length strings, written by Write with String data; then
-!   obj_read_st1 is called with the length of the stored strings.
+!   obj_Read_st1 is called with the length of the stored strings.
 ! - as an array of single characters, written by Write with a character
-!   variable; then obj_read_ca1 is called.
+!   variable; then obj_Read_ca1 is called.
 !
 ! vals is allocated to the shape of the dataset; it is reallocated if any
 ! dimension differs.
@@ -5728,18 +5728,18 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st2_helper]], [[obj_write_st1_helper]],
-!   [[obj_read__st1]]
+! See also: [[obj_Read_st2_helper]], [[obj_Write_st1_helper]],
+!   [[obj_Read__st1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st1_helper(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_st1_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! a rank-1 array of String read from the dataset
-  END SUBROUTINE obj_read_st1_helper
+  END SUBROUTINE obj_Read_st1_helper
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5763,10 +5763,10 @@ END INTERFACE
 !   length_max : INTEGER(I4B) - length of the stored strings
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st1_helper]]
+! See also: [[obj_Read_st1_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st1(obj, dsetname, length_max, vals)
+  MODULE SUBROUTINE obj_Read_st1(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5775,7 +5775,7 @@ INTERFACE
     !! length of the stored strings
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! a rank-1 array of String read from the dataset
-  END SUBROUTINE obj_read_st1
+  END SUBROUTINE obj_Read_st1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5788,7 +5788,7 @@ END INTERFACE
 !
 ! Read a rank-2 array of single characters into a rank-1 array of String; the
 ! first dimension holds the characters of each string. This routine is used by
-! obj_read_st1_helper and is not bound to the READ generic.
+! obj_Read_st1_helper and is not bound to the READ generic.
 !
 ! In DEBUG mode an error is raised if the file is not open with read access,
 ! the dataset can not be opened, or its rank is not the rank of vals plus one.
@@ -5798,17 +5798,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st1_helper]]
+! See also: [[obj_Read_st1_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_ca1(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_ca1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! a rank-1 array of String read from the dataset
-  END SUBROUTINE obj_read_ca1
+  END SUBROUTINE obj_Read_ca1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5822,7 +5822,7 @@ END INTERFACE
 ! Read a rank-1 array of String from the dataset dsetname into vals without
 ! allocating vals. The extent of the data is returned in tsize; the data is
 ! stored in vals(1:tsize), and the rest of vals is not changed. The data is
-! read with obj_read_st1_helper in a local array and copied to vals.
+! read with obj_Read_st1_helper in a local array and copied to vals.
 !
 ! The extents are set to zero at the start. vals must be large enough to hold
 ! the dataset along every dimension; in DEBUG mode an error is raised
@@ -5890,10 +5890,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_st1_helper]]
+! See also: [[obj_Read_st1_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__st1(obj, dsetname, vals, tsize)
+  MODULE SUBROUTINE obj_Read__st1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5902,7 +5902,7 @@ INTERFACE
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! size of data written in vals
-  END SUBROUTINE obj_read__st1
+  END SUBROUTINE obj_Read__st1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -5917,9 +5917,9 @@ END INTERFACE
 ! stored in two ways, and this routine finds out which one is used:
 !
 ! - as fixed-length strings, written by Write with String data; then
-!   obj_read_st2 is called with the length of the stored strings.
+!   obj_Read_st2 is called with the length of the stored strings.
 ! - as an array of single characters, written by Write with a character
-!   variable; then obj_read_ca2 is called.
+!   variable; then obj_Read_ca2 is called.
 !
 ! vals is allocated to the shape of the dataset; it is reallocated if any
 ! dimension differs.
@@ -5979,17 +5979,17 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_write_st2_helper]], [[obj_read__st2]]
+! See also: [[obj_Write_st2_helper]], [[obj_Read__st2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st2_helper(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_st2_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
     !! a rank-2 array of String read from the dataset
-  END SUBROUTINE obj_read_st2_helper
+  END SUBROUTINE obj_Read_st2_helper
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6013,10 +6013,10 @@ END INTERFACE
 !   length_max : INTEGER(I4B) - length of the stored strings
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st2_helper]]
+! See also: [[obj_Read_st2_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st2(obj, dsetname, length_max, vals)
+  MODULE SUBROUTINE obj_Read_st2(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6025,7 +6025,7 @@ INTERFACE
     !! length of the stored strings
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
     !! a rank-2 array of String read from the dataset
-  END SUBROUTINE obj_read_st2
+  END SUBROUTINE obj_Read_st2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6038,7 +6038,7 @@ END INTERFACE
 !
 ! Read a rank-3 array of single characters into a rank-2 array of String; the
 ! first dimension holds the characters of each string. This routine is used by
-! obj_read_st2_helper and is not bound to the READ generic.
+! obj_Read_st2_helper and is not bound to the READ generic.
 !
 ! In DEBUG mode an error is raised if the file is not open with read access,
 ! the dataset can not be opened, or its rank is not the rank of vals plus one.
@@ -6048,17 +6048,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st2_helper]]
+! See also: [[obj_Read_st2_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_ca2(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_ca2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
     !! a rank-2 array of String read from the dataset
-  END SUBROUTINE obj_read_ca2
+  END SUBROUTINE obj_Read_ca2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6072,7 +6072,7 @@ END INTERFACE
 ! Read a rank-2 array of String from the dataset dsetname into vals without
 ! allocating vals. The extent of the data is returned in nrow, ncol; the data
 ! is stored in vals(1:nrow, 1:ncol), and the rest of vals is not changed. The
-! data is read with obj_read_st2_helper in a local array and copied to vals.
+! data is read with obj_Read_st2_helper in a local array and copied to vals.
 !
 ! The extents are set to zero at the start. vals must be large enough to hold
 ! the dataset along every dimension; in DEBUG mode an error is raised
@@ -6085,10 +6085,10 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read__st1]], [[obj_read_st2_helper]]
+! See also: [[obj_Read__st1]], [[obj_Read_st2_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__st2(obj, dsetname, vals, nrow, ncol)
+  MODULE SUBROUTINE obj_Read__st2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6099,7 +6099,7 @@ INTERFACE
     !! number of rows written in vals
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of columns written in vals
-  END SUBROUTINE obj_read__st2
+  END SUBROUTINE obj_Read__st2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6114,9 +6114,9 @@ END INTERFACE
 ! stored in two ways, and this routine finds out which one is used:
 !
 ! - as fixed-length strings, written by Write with String data; then
-!   obj_read_st3 is called with the length of the stored strings.
+!   obj_Read_st3 is called with the length of the stored strings.
 ! - as an array of single characters, written by Write with a character
-!   variable; then obj_read_ca3 is called.
+!   variable; then obj_Read_ca3 is called.
 !
 ! vals is allocated to the shape of the dataset; it is reallocated if any
 ! dimension differs. This routine is not bound to the READ generic.
@@ -6126,18 +6126,18 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st2_helper]], [[obj_write_st3_helper]],
-!   [[obj_read__st3]]
+! See also: [[obj_Read_st2_helper]], [[obj_Write_st3_helper]],
+!   [[obj_Read__st3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st3_helper(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_st3_helper(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
     !! a rank-3 array of String read from the dataset
-  END SUBROUTINE obj_read_st3_helper
+  END SUBROUTINE obj_Read_st3_helper
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6162,10 +6162,10 @@ END INTERFACE
 !   length_max : INTEGER(I4B) - length of the stored strings
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st3_helper]]
+! See also: [[obj_Read_st3_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_st3(obj, dsetname, length_max, vals)
+  MODULE SUBROUTINE obj_Read_st3(obj, dsetname, length_max, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6174,7 +6174,7 @@ INTERFACE
     !! length of the stored strings
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
     !! a rank-3 array of String read from the dataset
-  END SUBROUTINE obj_read_st3
+  END SUBROUTINE obj_Read_st3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6187,7 +6187,7 @@ END INTERFACE
 !
 ! Read a rank-4 array of single characters into a rank-3 array of String; the
 ! first dimension holds the characters of each string. This routine is used by
-! obj_read_st3_helper and is not bound to the READ generic.
+! obj_Read_st3_helper and is not bound to the READ generic.
 !
 ! In DEBUG mode an error is raised if the file is not open with read access,
 ! the dataset can not be opened, or its rank is not the rank of vals plus one.
@@ -6197,17 +6197,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : TYPE(String), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_st3_helper]]
+! See also: [[obj_Read_st3_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_ca3(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_ca3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
     !! a rank-3 array of String read from the dataset
-  END SUBROUTINE obj_read_ca3
+  END SUBROUTINE obj_Read_ca3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6221,7 +6221,7 @@ END INTERFACE
 ! Read a rank-3 array of String from the dataset dsetname into vals without
 ! allocating vals. The extent of the data is returned in dim1, dim2, dim3; the
 ! data is stored in vals(1:dim1, ..., 1:dim3), and the rest of vals is not
-! changed. The data is read with obj_read_st3_helper in a local array and
+! changed. The data is read with obj_Read_st3_helper in a local array and
 ! copied to vals.
 !
 ! The extents are set to zero at the start. vals must be large enough to hold
@@ -6234,10 +6234,10 @@ END INTERFACE
 !   vals : TYPE(String) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__st1]], [[obj_read_st3_helper]]
+! See also: [[obj_Read__st1]], [[obj_Read_st3_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__st3(obj, dsetname, vals, dim1, dim2, dim3)
+  MODULE SUBROUTINE obj_Read__st3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6250,7 +6250,7 @@ INTERFACE
     !! extent of data written in vals along dimension 2
     INTEGER(I4B), INTENT(OUT) :: dim3
     !! extent of data written in vals along dimension 3
-  END SUBROUTINE obj_read__st3
+  END SUBROUTINE obj_Read__st3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6273,17 +6273,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : CHARACTER(*) - data read from the dataset
 !
-! See also: [[obj_write_c1]], [[obj_read_st0_helper]]
+! See also: [[obj_Write_c1]], [[obj_Read_st0_helper]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_c1(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_c1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     CHARACTER(LEN=*), INTENT(INOUT) :: vals
     !! character variable read from the dataset
-  END SUBROUTINE obj_read_c1
+  END SUBROUTINE obj_Read_c1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6305,17 +6305,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : LOGICAL(LGT) - data read from the dataset
 !
-! See also: [[obj_read_b1]], [[obj_write_b0]]
+! See also: [[obj_Read_b1]], [[obj_Write_b0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_b0(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_b0(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     LOGICAL(LGT), INTENT(INOUT) :: vals
     !! a scalar of logical read from the dataset
-  END SUBROUTINE obj_read_b0
+  END SUBROUTINE obj_Read_b0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6338,17 +6338,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : LOGICAL(LGT), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_write_b1]], [[obj_write_b1]], [[obj_read__b1]]
+! See also: [[obj_Write_b1]], [[obj_Write_b1]], [[obj_Read__b1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_b1(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_b1(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! a rank-1 array of logical read from the dataset
-  END SUBROUTINE obj_read_b1
+  END SUBROUTINE obj_Read_b1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6426,10 +6426,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_b1]]
+! See also: [[obj_Read_b1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__b1(obj, dsetname, vals, tsize)
+  MODULE SUBROUTINE obj_Read__b1(obj, dsetname, vals, tsize)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6438,7 +6438,7 @@ INTERFACE
     !! vals will be filled with entries read from the dataset
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! size of data written in vals
-  END SUBROUTINE obj_read__b1
+  END SUBROUTINE obj_Read__b1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6461,17 +6461,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : LOGICAL(LGT), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_b1]], [[obj_write_b2]], [[obj_read__b2]]
+! See also: [[obj_Read_b1]], [[obj_Write_b2]], [[obj_Read__b2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_b2(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_b2(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
     !! a rank-2 array of logical read from the dataset
-  END SUBROUTINE obj_read_b2
+  END SUBROUTINE obj_Read_b2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6498,10 +6498,10 @@ END INTERFACE
 !   nrow : INTEGER(I4B) - number of rows written in vals
 !   ncol : INTEGER(I4B) - number of columns written in vals
 !
-! See also: [[obj_read__b1]], [[obj_read_b2]]
+! See also: [[obj_Read__b1]], [[obj_Read_b2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__b2(obj, dsetname, vals, nrow, ncol)
+  MODULE SUBROUTINE obj_Read__b2(obj, dsetname, vals, nrow, ncol)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6512,7 +6512,7 @@ INTERFACE
     !! number of rows written in vals
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of columns written in vals
-  END SUBROUTINE obj_read__b2
+  END SUBROUTINE obj_Read__b2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6524,7 +6524,7 @@ END INTERFACE
 ! summary: Read a rank-3 array of logical
 !
 ! Read a rank-3 array of logical. This routine is not implemented yet: in
-! DEBUG mode it raises an error, otherwise it does nothing. Use obj_read__b3
+! DEBUG mode it raises an error, otherwise it does nothing. Use obj_Read__b3
 ! instead.
 !
 ! Arguments:
@@ -6532,17 +6532,17 @@ END INTERFACE
 !   dsetname : CHARACTER(*) - dataset name with full path
 !   vals : LOGICAL(LGT), ALLOCATABLE - data read from the dataset
 !
-! See also: [[obj_read_b1]], [[obj_write_b3]], [[obj_read__b3]]
+! See also: [[obj_Read_b1]], [[obj_Write_b3]], [[obj_Read__b3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_b3(obj, dsetname, vals)
+  MODULE SUBROUTINE obj_Read_b3(obj, dsetname, vals)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: vals(:, :, :)
     !! a rank-3 array of logical read from the dataset
-  END SUBROUTINE obj_read_b3
+  END SUBROUTINE obj_Read_b3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6569,10 +6569,10 @@ END INTERFACE
 !   vals : LOGICAL(LGT) - array to fill, SIZE(vals, i) >= extent i
 !   dim1, ..., dim3 : INTEGER(I4B) - extent of data along each dimension
 !
-! See also: [[obj_read__b1]], [[obj_read_b3]]
+! See also: [[obj_Read__b1]], [[obj_Read_b3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read__b3(obj, dsetname, vals, dim1, dim2, dim3)
+  MODULE SUBROUTINE obj_Read__b3(obj, dsetname, vals, dim1, dim2, dim3)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6585,7 +6585,7 @@ INTERFACE
     !! extent of data written in vals along dimension 2
     INTEGER(I4B), INTENT(OUT) :: dim3
     !! extent of data written in vals along dimension 3
-  END SUBROUTINE obj_read__b3
+  END SUBROUTINE obj_Read__b3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6663,10 +6663,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_read_attribute_st0]]
+! See also: [[obj_ReadAttribute_st0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_attribute_st0(obj, obj_name, attr_name, &
+  MODULE SUBROUTINE obj_WriteAttribute_st0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -6675,7 +6675,7 @@ INTERFACE
     !! name of the attribute
     TYPE(String) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_write_attribute_st0
+  END SUBROUTINE obj_WriteAttribute_st0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6697,10 +6697,10 @@ END INTERFACE
 !   attr_name : CHARACTER(*) - name of the attribute
 !   attr_val : CHARACTER(*) - value of the attribute
 !
-! See also: [[obj_write_attribute_st0]], [[obj_read_attribute_c0]]
+! See also: [[obj_WriteAttribute_st0]], [[obj_ReadAttribute_c0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_attribute_c0(obj, obj_name, attr_name, &
+  MODULE SUBROUTINE obj_WriteAttribute_c0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -6709,7 +6709,7 @@ INTERFACE
     !! name of the attribute
     CHARACTER(LEN=*) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_write_attribute_c0
+  END SUBROUTINE obj_WriteAttribute_c0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6730,10 +6730,10 @@ END INTERFACE
 !   attr_name : CHARACTER(*) - name of the attribute
 !   attr_val : INTEGER(I4B) - value of the attribute
 !
-! See also: [[obj_write_attribute_st0]], [[obj_read_attribute_i0]]
+! See also: [[obj_WriteAttribute_st0]], [[obj_ReadAttribute_i0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_attribute_i0(obj, obj_name, attr_name, &
+  MODULE SUBROUTINE obj_WriteAttribute_i0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -6742,7 +6742,7 @@ INTERFACE
     !! name of the attribute
     INTEGER(I4B), INTENT(IN) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_write_attribute_i0
+  END SUBROUTINE obj_WriteAttribute_i0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6763,10 +6763,10 @@ END INTERFACE
 !   attr_name : CHARACTER(*) - name of the attribute
 !   attr_val : REAL(DFP) - value of the attribute
 !
-! See also: [[obj_write_attribute_st0]], [[obj_read_attribute_d0]]
+! See also: [[obj_WriteAttribute_st0]], [[obj_ReadAttribute_d0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_write_attribute_d0(obj, obj_name, attr_name, &
+  MODULE SUBROUTINE obj_WriteAttribute_d0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -6775,7 +6775,7 @@ INTERFACE
     !! name of the attribute
     REAL(DFP), INTENT(IN) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_write_attribute_d0
+  END SUBROUTINE obj_WriteAttribute_d0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6850,10 +6850,10 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_write_attribute_st0]]
+! See also: [[obj_WriteAttribute_st0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_attribute_st0(obj, obj_name, attr_name, &
+  MODULE SUBROUTINE obj_ReadAttribute_st0(obj, obj_name, attr_name, &
     attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
@@ -6862,7 +6862,7 @@ INTERFACE
     !! name of the attribute
     TYPE(String), INTENT(INOUT) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_read_attribute_st0
+  END SUBROUTINE obj_ReadAttribute_st0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6884,10 +6884,10 @@ END INTERFACE
 !   attr_name : CHARACTER(*) - name of the attribute
 !   attr_val : CHARACTER(*) - value of the attribute
 !
-! See also: [[obj_read_attribute_st0]], [[obj_write_attribute_c0]]
+! See also: [[obj_ReadAttribute_st0]], [[obj_WriteAttribute_c0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_attribute_c0(obj, obj_name, attr_name, attr_val)
+  MODULE SUBROUTINE obj_ReadAttribute_c0(obj, obj_name, attr_name, attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
@@ -6895,7 +6895,7 @@ INTERFACE
     !! name of the attribute
     CHARACTER(LEN=*), INTENT(INOUT) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_read_attribute_c0
+  END SUBROUTINE obj_ReadAttribute_c0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6915,10 +6915,10 @@ END INTERFACE
 !   attr_name : CHARACTER(*) - name of the attribute
 !   attr_val : INTEGER(I4B) - value of the attribute
 !
-! See also: [[obj_read_attribute_st0]], [[obj_write_attribute_i0]]
+! See also: [[obj_ReadAttribute_st0]], [[obj_WriteAttribute_i0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_attribute_i0(obj, obj_name, attr_name, attr_val)
+  MODULE SUBROUTINE obj_ReadAttribute_i0(obj, obj_name, attr_name, attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
@@ -6926,7 +6926,7 @@ INTERFACE
     !! name of the attribute
     INTEGER(I4B), INTENT(INOUT) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_read_attribute_i0
+  END SUBROUTINE obj_ReadAttribute_i0
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6946,10 +6946,10 @@ END INTERFACE
 !   attr_name : CHARACTER(*) - name of the attribute
 !   attr_val : REAL(DFP) - value of the attribute
 !
-! See also: [[obj_read_attribute_st0]], [[obj_write_attribute_d0]]
+! See also: [[obj_ReadAttribute_st0]], [[obj_WriteAttribute_d0]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_read_attribute_d0(obj, obj_name, attr_name, attr_val)
+  MODULE SUBROUTINE obj_ReadAttribute_d0(obj, obj_name, attr_name, attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
@@ -6957,7 +6957,7 @@ INTERFACE
     !! name of the attribute
     REAL(DFP), INTENT(INOUT) :: attr_val
     !! value of the attribute
-  END SUBROUTINE obj_read_attribute_d0
+  END SUBROUTINE obj_ReadAttribute_d0
 END INTERFACE
 
 !----------------------------------------------------------------------------

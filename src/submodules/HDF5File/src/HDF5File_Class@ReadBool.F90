@@ -29,9 +29,9 @@ CONTAINS
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_b0
+MODULE PROCEDURE obj_Read_b0
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_b0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b0()"
 #endif
   CHARACTER(1) :: valsc
   CHARACTER(LEN(dsetname) + 1) :: path
@@ -64,15 +64,15 @@ MODULE PROCEDURE obj_read_b0
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_b0
+END PROCEDURE obj_Read_b0
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_b1
+MODULE PROCEDURE obj_Read_b1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_b1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b1()"
 #endif
   CHARACTER, ALLOCATABLE :: valsc(:)
   CHARACTER(LEN(dsetname) + 1) :: path
@@ -115,15 +115,15 @@ MODULE PROCEDURE obj_read_b1
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_b1
+END PROCEDURE obj_Read_b1
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__b1
+MODULE PROCEDURE obj_Read__b1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__b1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__b1()"
 #endif
   CHARACTER(1), ALLOCATABLE :: valsc(:)
   CHARACTER(LEN(dsetname) + 1) :: path
@@ -164,15 +164,15 @@ MODULE PROCEDURE obj_read__b1
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__b1
+END PROCEDURE obj_Read__b1
 
 !----------------------------------------------------------------------------
 !                                                                      Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_b2
+MODULE PROCEDURE obj_Read_b2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_b2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b2()"
 #endif
   CHARACTER(1), ALLOCATABLE :: valsc(:, :)
   CHARACTER(LEN(dsetname) + 1) :: path
@@ -218,15 +218,15 @@ MODULE PROCEDURE obj_read_b2
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_b2
+END PROCEDURE obj_Read_b2
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__b2
+MODULE PROCEDURE obj_Read__b2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__b2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__b2()"
 #endif
   CHARACTER(1), ALLOCATABLE :: valsc(:, :)
   CHARACTER(LEN(dsetname) + 1) :: path
@@ -273,15 +273,15 @@ MODULE PROCEDURE obj_read__b2
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__b2
+END PROCEDURE obj_Read__b2
 
 !----------------------------------------------------------------------------
 !                                                                 Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_b3
+MODULE PROCEDURE obj_Read_b3
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_b3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b3()"
 #endif
 
 #ifdef DEBUG_VER
@@ -298,15 +298,15 @@ MODULE PROCEDURE obj_read_b3
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read_b3
+END PROCEDURE obj_Read_b3
 
 !----------------------------------------------------------------------------
 !                                                                      Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read__b3
+MODULE PROCEDURE obj_Read__b3
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read__b3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__b3()"
 #endif
   CHARACTER(1), ALLOCATABLE :: valsc(:, :, :)
   CHARACTER(LEN(dsetname) + 1) :: path
@@ -359,7 +359,7 @@ MODULE PROCEDURE obj_read__b3
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_read__b3
+END PROCEDURE obj_Read__b3
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

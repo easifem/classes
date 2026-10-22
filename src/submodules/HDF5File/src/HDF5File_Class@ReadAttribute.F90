@@ -17,7 +17,7 @@
 
 SUBMODULE(HDF5File_Class) ReadAttribute
 USE HDF5, ONLY: SIZE_T, H5AGET_TYPE_F, H5AREAD_F, H5T_NATIVE_INTEGER, &
-                H5T_NATIVE_DOUBLE, H5AREAD_F, H5AGET_STORAGE_SIZE_F
+  H5T_NATIVE_DOUBLE, H5AREAD_F, H5AGET_STORAGE_SIZE_F
 
 USE ISO_C_BINDING, ONLY: C_CHAR
 IMPLICIT NONE
@@ -32,13 +32,13 @@ CONTAINS
 !                                                              ReadAttribute
 !----------------------------------------------------------------------------
 
-SUBROUTINE obj_read_attribute_st0_helper(attr_id, length_max, attr_val)
+SUBROUTINE obj_ReadAttribute_st0_helper(attr_id, length_max, attr_val)
   TYPE(String), INTENT(INOUT) :: attr_val
   INTEGER(SIZE_T), INTENT(IN) :: length_max
   INTEGER(HID_T), INTENT(IN) :: attr_id
   ! Define internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_read_attribute_st0_helper()"
+  CHARACTER(*), PARAMETER :: myName = "obj_ReadAttribute_st0_helper()"
 #endif
   INTEGER(HID_T) :: atype_id
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
@@ -46,8 +46,8 @@ SUBROUTINE obj_read_attribute_st0_helper(attr_id, length_max, attr_val)
   INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
   dims(1) = 1
@@ -56,139 +56,139 @@ SUBROUTINE obj_read_attribute_st0_helper(attr_id, length_max, attr_val)
   attr_val = buf
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
-END SUBROUTINE obj_read_attribute_st0_helper
+END SUBROUTINE obj_ReadAttribute_st0_helper
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_attribute_st0
+MODULE PROCEDURE obj_ReadAttribute_st0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_attribute_st0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_ReadAttribute_st0()"
 #endif
-INTEGER(HID_T) :: attr_id, obj_id
-INTEGER(SIZE_T) :: max_size
-INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, obj_id
+  INTEGER(SIZE_T) :: max_size
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 !Prepare the File and object for the attribute
-CALL open_object(obj, obj_name, obj_id)
-CALL open_attribute(obj, obj_id, attr_name, attr_id)
-CALL H5AGET_STORAGE_SIZE_F(attr_id, max_size, error)
-CALL obj_read_attribute_st0_helper(attr_id, max_size, attr_val)
-CALL close_attribute(obj, attr_id)
-CALL close_object(obj, obj_id)
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+  CALL H5AGET_STORAGE_SIZE_F(attr_id, max_size, error)
+  CALL obj_ReadAttribute_st0_helper(attr_id, max_size, attr_val)
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
-END PROCEDURE obj_read_attribute_st0
+END PROCEDURE obj_ReadAttribute_st0
 
 !----------------------------------------------------------------------------
 !                                                             ReadAttribute
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_attribute_c0
+MODULE PROCEDURE obj_ReadAttribute_c0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_read_attribute_c0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_ReadAttribute_c0()"
 #endif
-TYPE(String) :: str_val
+  TYPE(String) :: str_val
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-CALL obj%ReadAttribute(obj_name, attr_name, str_val)
-attr_val = str_val%Chars()
+  CALL obj%ReadAttribute(obj_name, attr_name, str_val)
+  attr_val = str_val%Chars()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
-END PROCEDURE obj_read_attribute_c0
+END PROCEDURE obj_ReadAttribute_c0
 
 !----------------------------------------------------------------------------
 !                                                             ReadAttribute
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_attribute_i0
+MODULE PROCEDURE obj_ReadAttribute_i0
 #ifdef DEBUG_VER
-CHARACTER(LEN=*), PARAMETER :: myName = 'obj_read_attribute_i0()'
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_i0()'
 #endif
-INTEGER(HID_T) :: attr_id, obj_id
-INTEGER(HSIZE_T), DIMENSION(1) :: dims
-INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, obj_id
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-dims(1) = 1
+  dims(1) = 1
 !Prepare the File and object for the attribute
-CALL open_object(obj, obj_name, obj_id)
-CALL open_attribute(obj, obj_id, attr_name, attr_id)
-CALL H5AREAD_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+  CALL H5AREAD_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
 
 #ifdef DEBUG_VER
-CALL AssertError1(error .EQ. 0, myName, &
-                  'Failed to read attribute.')
+  CALL AssertError1(error .EQ. 0, myName, &
+    'Failed to read attribute.')
 #endif
 
-CALL close_attribute(obj, attr_id)
-CALL close_object(obj, obj_id)
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
-END PROCEDURE obj_read_attribute_i0
+END PROCEDURE obj_ReadAttribute_i0
 
 !----------------------------------------------------------------------------
 !                                                             ReadAttribute
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_read_attribute_d0
+MODULE PROCEDURE obj_ReadAttribute_d0
 #ifdef DEBUG_VER
-CHARACTER(LEN=*), PARAMETER :: myName = 'obj_read_attribute_d0()'
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_d0()'
 #endif
-INTEGER(HID_T) :: attr_id, obj_id
-INTEGER(HSIZE_T), DIMENSION(1) :: dims
-INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, obj_id
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-dims(1) = 1
+  dims(1) = 1
 !Prepare the File and object for the attribute
-CALL open_object(obj, obj_name, obj_id)
-CALL open_attribute(obj, obj_id, attr_name, attr_id)
-CALL H5AREAD_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+  CALL H5AREAD_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
 
 #ifdef DEBUG_VER
-CALL AssertError1(error .EQ. 0, myName, &
-                  'Failed to read attribute.')
+  CALL AssertError1(error .EQ. 0, myName, &
+    'Failed to read attribute.')
 #endif
 
-CALL close_attribute(obj, attr_id)
-CALL close_object(obj, obj_id)
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
-END PROCEDURE obj_read_attribute_d0
+END PROCEDURE obj_ReadAttribute_d0
 
 !----------------------------------------------------------------------------
 !                                                              Include error

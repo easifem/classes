@@ -33,105 +33,105 @@ CONTAINS
 #endif
 #define mem_type H5T_NATIVE_REAL
 
-MODULE PROCEDURE obj_write_s0
+MODULE PROCEDURE obj_Write_s0
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s0()"
 #endif
 #define rank 0
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s0
+END PROCEDURE obj_Write_s0
 
 !----------------------------------------------------------------------------
 !                                                                  Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_s1
+MODULE PROCEDURE obj_Write_s1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s1()"
 #endif
 #define rank 1
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s1
+END PROCEDURE obj_Write_s1
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_s2
+MODULE PROCEDURE obj_Write_s2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s2()"
 #endif
 #define rank 2
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s2
+END PROCEDURE obj_Write_s2
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_s3
+MODULE PROCEDURE obj_Write_s3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s3()"
 #endif
 #define rank 3
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s3
+END PROCEDURE obj_Write_s3
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_s4
+MODULE PROCEDURE obj_Write_s4
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s4()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s4()"
 #endif
 #define rank 4
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s4
+END PROCEDURE obj_Write_s4
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_s5
+MODULE PROCEDURE obj_Write_s5
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s5()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s5()"
 #endif
 #define rank 5
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s5
+END PROCEDURE obj_Write_s5
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_s6
+MODULE PROCEDURE obj_Write_s6
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s6()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s6()"
 #endif
 #define rank 6
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s6
+END PROCEDURE obj_Write_s6
 
 !----------------------------------------------------------------------------
 !                                                                 Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_write_s7
+MODULE PROCEDURE obj_Write_s7
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_write_s7()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_s7()"
 #endif
 #define rank 7
 #include "./include/write.F90"
 #undef rank
-END PROCEDURE obj_write_s7
+END PROCEDURE obj_Write_s7
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
