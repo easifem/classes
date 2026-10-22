@@ -267,7 +267,7 @@ MODULE PROCEDURE obj_WriteAttribute_c0
 #endif
 
   str_val = TRIM(attr_val)
-  CALL obj%writeAttribute(obj_name, attr_name, str_val)
+  CALL obj%WriteAttribute(obj_name, attr_name, str_val)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

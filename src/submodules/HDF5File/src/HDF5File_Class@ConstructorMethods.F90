@@ -252,7 +252,7 @@ MODULE PROCEDURE obj_Close
 #endif
 
 !Check open status.
-  IF (obj%Isopen()) THEN
+  IF (obj%IsOpen()) THEN
     CALL H5FCLOSE_F(obj%file_id, ierr)
     obj%file_id = 0
 
@@ -297,10 +297,10 @@ MODULE PROCEDURE obj_Delete
   END IF
 
 !So, HDF5 is special in that the unitno assigned isn't used in the
-!fopen() operation.  So, regardless of the %isOpen() status, it needs
+!fopen() operation.  So, regardless of the %IsOpen() status, it needs
 !to be opened.
-  fileName = obj%getFilePath() // "/" // obj%getFileName() // &
-    obj%getFileExt()
+  fileName = obj%GetFilePath() // "/" // obj%GetFileName() // &
+    obj%GetFileExt()
 
   OPEN(UNIT=obj%unitno, FILE=fileName%chars(), IOSTAT=ierr)
 
@@ -398,8 +398,8 @@ MODULE PROCEDURE obj_Initiate
       ' - HDF5 file ' // filename // ' is being opened with ' // &
       'mode READ but does not exist.')
 #endif
-    CALL obj%setWriteStat(.FALSE.)
-    CALL obj%setReadStat(.TRUE.)
+    CALL obj%SetWriteStat(.FALSE.)
+    CALL obj%SetReadStat(.TRUE.)
 
   CASE ('WRITE')
     INQUIRE(FILE=filename, EXIST=exists)
@@ -409,8 +409,8 @@ MODULE PROCEDURE obj_Initiate
       ' - HDF5 file ' // filename // ' is being opened with ' // &
       'mode WRITE but does not exist.')
 #endif
-    CALL obj%setWriteStat(.TRUE.)
-    CALL obj%setReadStat(.FALSE.)
+    CALL obj%SetWriteStat(.TRUE.)
+    CALL obj%SetReadStat(.FALSE.)
 
   CASE ('OVERWRITE', 'READWRITE')
     INQUIRE(FILE=filename, EXIST=exists)
@@ -420,13 +420,13 @@ MODULE PROCEDURE obj_Initiate
       ' - HDF5 file ' // filename // ' is being opened with ' // &
       'mode OVERWRITE but does not exist.')
 #endif
-    CALL obj%setWriteStat(.TRUE.)
+    CALL obj%SetWriteStat(.TRUE.)
     CALL obj%SetOverwriteStat(.TRUE.)
-    CALL obj%setReadStat(.TRUE.)
+    CALL obj%SetReadStat(.TRUE.)
 
   CASE ('NEW')
-    CALL obj%setWriteStat(.TRUE.)
-    CALL obj%setReadStat(.TRUE.)
+    CALL obj%SetWriteStat(.TRUE.)
+    CALL obj%SetReadStat(.TRUE.)
     CALL obj%SetNewStat(.TRUE.)
     CALL obj%SetOverwriteStat(.TRUE.)
 
@@ -599,7 +599,7 @@ MODULE PROCEDURE obj_Ls
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
-    'HDF5file ' // obj%getFileName() // &
+    'HDF5file ' // obj%GetFileName() // &
     ' is not opened!')
 #endif
 
@@ -933,7 +933,7 @@ MODULE PROCEDURE obj_PathExists
 #endif
 
   ans = .FALSE.
-  IF (obj%isinit .AND. obj%isOpen()) THEN
+  IF (obj%isinit .AND. obj%IsOpen()) THEN
     strpath = TRIM(path)
     CALL strpath%split(segments, '/')
     ans = .TRUE.
