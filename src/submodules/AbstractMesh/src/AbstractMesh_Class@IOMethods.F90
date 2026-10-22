@@ -120,6 +120,11 @@ MODULE PROCEDURE obj_Display
 
   CALL Display(obj%maxNNE, "maxNNE: ", unitno=unitno)
 
+  CALL Display(obj%isMaxElemOrderSet, "isMaxElemOrderSet: ", &
+    unitno=unitno)
+
+  CALL Display(obj%maxElemOrder, "maxElemOrder: ", unitno=unitno)
+
   CALL Display(obj%nsd, "nsd: ", unitno=unitno)
 
   CALL Display(obj%xidim, "xidim: ", unitno=unitno)
@@ -331,16 +336,6 @@ MODULE PROCEDURE obj_DisplayBoundaryFacetData
 
   END DO
 END PROCEDURE obj_DisplayBoundaryFacetData
-
-!----------------------------------------------------------------------------
-!                                                      DisplayFacetElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_DisplayFacetElements
-  CHARACTER(*), PARAMETER :: myName = "obj_DisplayFacetElements()"
-  CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-    '[DEPRECATED] :: This routine is under development')
-END PROCEDURE obj_DisplayFacetElements
 
 !----------------------------------------------------------------------------
 !                                                           DisplayMeshInfo

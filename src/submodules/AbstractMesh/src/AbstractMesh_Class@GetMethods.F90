@@ -2243,10 +2243,21 @@ END PROCEDURE obj_GetBoundaryElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetOrder1
-  CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
+  INTEGER(I4B) :: iel
+  LOGICAL(LGT), PARAMETER :: yes = .TRUE.
+
+  IF (obj%isMaxElemOrderSet) THEN
+    ans = obj%maxElemOrder
+    RETURN
+  END IF
+
   ans = 0
-  CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-    '[WIP ERROR] :: This routine is not available')
+  DO iel = 1, obj%GetTotalElements()
+    ans = MAX(ans, obj%GetOrder(globalElement=iel, islocal=yes))
+  END DO
+
+  obj%maxElemOrder = ans
+  obj%isMaxElemOrderSet = .TRUE.
 END PROCEDURE obj_GetOrder1
 
 !----------------------------------------------------------------------------

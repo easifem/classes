@@ -137,6 +137,11 @@ TYPE, ABSTRACT :: AbstractMesh_
   !! this info is computed in a postprocessing step
   INTEGER(I4B) :: maxNNE = 0
   !! maximum number of nodes in element
+  INTEGER(I4B) :: maxElemOrder = 0
+  !! largest order of the elements in the mesh
+  !! It is computed and stored by GetOrder()
+  LOGICAL(LGT) :: isMaxElemOrderSet = .FALSE.
+  !! True if maxElemOrder has been computed
   INTEGER(I4B) :: nsd = 0
   !! number of spatial dimension of the mesh
   INTEGER(I4B) :: xidim = 0
@@ -669,7 +674,7 @@ CONTAINS
   !! Get the number of nodes of a facet
 
   PROCEDURE, PASS(obj) :: GetOrder1 => obj_GetOrder1
-  !! Get the order of the mesh
+  !! Get the largest order of the elements in the mesh
   PROCEDURE, PASS(obj) :: GetOrder2 => obj_GetOrder2
   !! Get the order of an element
   GENERIC, PUBLIC :: GetOrder => GetOrder1, GetOrder2
@@ -857,10 +862,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayBoundaryFacetData => &
     obj_DisplayBoundaryFacetData
   !! Display the boundary facet data
-
-  PROCEDURE, PUBLIC, PASS(obj) :: DisplayFacetElements => &
-    obj_DisplayFacetElements
-  !! Display the facet elements
 
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => &
     obj_DisplayMeshInfo
@@ -1434,7 +1435,9 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Export the mesh to a HDF5 file
 !
-! This routine is not implemented yet; it raises an error.
+! TODO: This routine needs to be implemented. At present it only raises
+! an error. When implemented, it should write the mesh to the group of
+! the HDF5 file in the format that [[obj_Import]] reads.
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
@@ -1976,35 +1979,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
     !! unit number of the output; default is stdout
   END SUBROUTINE obj_DisplayBoundaryFacetData
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              DisplayFacetElements@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-01-27
-! summary: Display the facet elements
-!
-! This routine is deprecated; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
-!
-! See also: [[obj_Display]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_DisplayFacetElements(obj, msg, unitno)
-    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
-    !! mesh object
-    CHARACTER(*), INTENT(IN) :: msg
-    !! message printed first
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
-    !! unit number of the output; default is stdout
-  END SUBROUTINE obj_DisplayFacetElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -6438,25 +6412,64 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
+! update:
+!   - 2026-10-23: Implemented; the result is stored in the mesh
 ! summary: Get the order of the mesh
 !
-! This routine is not implemented yet; it raises an error. Use
-! GetOrder(globalElement) or GetOrder_.
+! Returns the largest order of the elements in the mesh.
+!
+! The first call computes the order from the elements (see
+! [[obj_GetOrder2]]), stores it in obj%maxElemOrder and sets
+! obj%isMaxElemOrderSet to true. The later calls return the stored value.
+! Deallocate resets both components. A mesh with no elements has order 0.
 !
 ! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Returns:
-!   ans : INTEGER(I4B) - zero
+!   ans : INTEGER(I4B) - largest order of the elements
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEMesh_Class, ONLY: FEMesh_
+!   USE GlobalData, ONLY: I4B
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = &
+!     "./meshdata/very_small_quad4_mesh.h5"
+!   TYPE(FEMesh_) :: obj
+!   TYPE(HDF5File_) :: meshfile
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+!   CALL meshfile%Initiate(filename=filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL obj%Initiate(hdf5=meshfile, dim=2)
+!
+!   CALL OK(obj%GetOrder() .EQ. 1_I4B, "GetOrder (computed)")
+!   CALL OK(obj%GetOrder() .EQ. 1_I4B, "GetOrder (stored)")
+!
+!   CALL obj%DEALLOCATE()
+!   CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
 !
 ! See also: [[obj_GetOrder2]], [[obj_GetOrder_]]
 
 INTERFACE
   MODULE FUNCTION obj_GetOrder1(obj) RESULT(ans)
-    CLASS(AbstractMesh_), INTENT(IN) :: obj
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
     !! mesh object
     INTEGER(I4B) :: ans
-    !! zero
+    !! largest order of the elements
   END FUNCTION obj_GetOrder1
 END INTERFACE
 
@@ -8676,7 +8689,8 @@ END INTERFACE
 ! Make the facet data: one facet element for every internal facet and every
 ! boundary facet. The boundary data is initiated if needed. All boundary
 ! facets are DOMAIN_BOUNDARY_ELEMENT; a domain can change this when it knows
-! the neighbouring meshes.
+! the neighbouring meshes. Point and curve meshes (xidim <= 1) have no facet
+! elements; nothing is done for them.
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
@@ -9443,7 +9457,9 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Set the quality of the mesh
 !
-! This routine is not implemented yet; it does nothing.
+! TODO: This routine needs to be implemented. At present it raises an
+! error in debug builds (DEBUG_VER) and does nothing otherwise; the output
+! arguments are not set.
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object

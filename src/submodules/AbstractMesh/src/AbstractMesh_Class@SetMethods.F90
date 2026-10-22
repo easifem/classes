@@ -436,9 +436,24 @@ END PROCEDURE obj_SetFacetElementType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetQuality
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_SetQuality()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   CALL e%RaiseError(modName // '::' // myName // ' - ' // &
     '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
 END PROCEDURE obj_SetQuality
 
 !----------------------------------------------------------------------------

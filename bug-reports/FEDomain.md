@@ -35,15 +35,14 @@ the listed test passes. **Open** means not changed.
   called it. Call `InitiateBoundaryData` of a mesh (from GetMeshPointer)
   instead.
 
-### 3. InitiateFacetElements fails for 2D and 3D domains
+### 3. InitiateFacetElements fails for 2D and 3D domains (fixed)
 
 - Where: `obj_InitiateFacetElements` in `FEDomain_Class@MeshDataMethods.F90`
-- Symptom: "[ERROR] :: Facet elements not found in the mesh" (stops).
-- Cause: `InitiateFacetElements` of the curve mesh raises an error
-  because 1D meshes have no faces (see `AbstractMesh.md`, bug 11).
-- Proposal: call it only for meshes with `xidim >= 2`, or fix the mesh
-  routine.
-- No test.
+- Cause: `InitiateFacetElements` of the curve mesh raised an error
+  because 1D meshes have no faces.
+- Fix: the mesh method now returns early for `xidim <= 1` (see
+  `AbstractMesh.md`, bug 11).
+- Test: `InitiateFacetElements_test_1`
 
 ### 4. GetMeshPointer ignores entityNum and globalElement
 

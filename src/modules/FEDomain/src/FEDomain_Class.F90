@@ -1535,11 +1535,51 @@ END INTERFACE
 ! summary: Initiate the facet elements of the meshes
 !
 ! Call InitiateFacetElements of every mesh of the domain (volume, surface,
-! curve, point). This fails at present for 2D and 3D domains, because the
-! curve mesh has no faces (InitiateFacetElements of the mesh raises an error).
+! curve, point). Point and curve meshes have no facet elements.
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(inout) - domain object
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractMesh_Class, ONLY: AbstractMesh_
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: I4B
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = &
+!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!   TYPE(HDF5File_) :: meshfile
+!   TYPE(FEDomain_) :: obj
+!   CLASS(AbstractMesh_), POINTER :: mesh
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+!   CALL meshfile%Initiate(filename=filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL obj%Initiate(hdf5=meshfile, group="")
+!
+!   CALL obj%InitiateFacetElements()
+!   mesh => obj%GetMeshPointer(dim=2_I4B)
+!   CALL OK(mesh%IsFacetData(), "surface mesh")
+!   CALL OK(mesh%GetTotalFacetElements() .EQ. 12_I4B, &
+!           "facet elements of the surface mesh")
+!   mesh => obj%GetMeshPointer(dim=1_I4B)
+!   CALL OK(.NOT. mesh%IsFacetData(), "no facet data in the curve mesh")
+!   mesh => NULL()
+!
+!   CALL obj%DEALLOCATE()
+!   CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
 !
 ! See also: [[AbstractDomain_:InitiateFacetElements]]
 

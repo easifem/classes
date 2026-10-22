@@ -15,12 +15,20 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-#define FTL_TEMPLATE_TYPE MeshPointer_
+#define FTL_TEMPLATE_TYPE AbstractMeshPointer_
 #define FTL_TEMPLATE_TYPE_IS_DERIVED
 #define FTL_TEMPLATE_TYPE_NAME Mesh
 #define FTL_INSTANTIATE_TEMPLATE
-! #define FTL_TEMPLATE_TYPE_MODULE Mesh_Class
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-23
+! update:
+!   - 2026-10-23: Stores AbstractMeshPointer_ (Mesh_Class was removed)
+! summary: Vector of mesh pointers
+!
+! MeshPointerVector_ is a dynamic array of AbstractMeshPointer_. It is
+! made from the FTL template ftlPointerVector.inc.
 
 MODULE MeshPointerVector_Class
-USE Mesh_Class
+USE AbstractMesh_Class, ONLY: AbstractMeshPointer_
 #include "../../ftlMacros/ftlPointerVector.inc"

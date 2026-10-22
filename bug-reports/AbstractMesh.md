@@ -114,27 +114,36 @@ the listed test passes. **Open** means not changed.
   `InitiateBoundaryData`) were removed earlier.
 - Test: `SetFacetElementType_test_1`
 
-## Open
-
 ### 11. InitiateFacetElements fails for curve meshes
 
 - Where: `obj_InitiateFacetElements` in `AbstractMesh_Class@FacetDataMethods.F90`
-- Symptom: "[ERROR] :: Facet elements not found in the mesh" (stops the
+- Symptom: "[ERROR] :: Facet elements not found in the mesh" (stopped the
   program) for a mesh with `xidim = 1`.
-- Cause: it uses `obj%tFaces`, which is zero for 1D meshes; point meshes
-  return early.
-- Proposal: decide whether 1D meshes have point facets. If not, return
-  early for `xidim <= 1` as for `xidim = 0`.
-- Impact: `FEDomain_%InitiateFacetElements` fails for 2D and 3D domains.
+- Cause: it uses `obj%tFaces`, which is zero for 1D meshes; only point
+  meshes returned early.
+- Fix: return early for `xidim <= 1`; point and curve meshes have no
+  facet elements. This also makes `FEDomain_%InitiateFacetElements` work
+  for 2D and 3D domains.
+- Test: `InitiateFacetElements_test_4` (FEMesh),
+  `InitiateFacetElements_test_1` (FEDomain)
+
+## Open
 
 ### 12. Routines which are not implemented
 
-| Routine | Behaviour |
-|---|---|
-| `obj_Export` | raises "[WIP]: This routine has not been implemented yet" and stops |
-| `obj_GetOrder1` (`GetOrder()` without element) | raises "[WIP ERROR]" and stops |
-| `obj_DisplayFacetElements` | raises "[DEPRECATED]" and stops |
-| `obj_SetQuality` | empty body |
+| Routine | Behaviour | Decision |
+|---|---|---|
+| `obj_Export` | raises "[WIP]: This routine has not been implemented yet" and stops | kept; docblock says it needs to be implemented |
+| `obj_SetQuality` | debug build: raises "[WIP ERROR] :: This routine is under development"; release build: does nothing | kept; docblock says it needs to be implemented |
+
+`obj_DisplayFacetElements` (raised "[DEPRECATED]") was removed: binding,
+interface and implementation. Nothing called it.
+
+`obj_GetOrder1` (`GetOrder()` without element) is implemented. It returns
+the largest element order, stored in the new components `maxElemOrder` and
+`isMaxElemOrderSet` (reset by Deallocate, shown by Display); `obj` is now
+INTENT(INOUT). Tests: `GetOrder_test_2` (Quadrangle4, order 1, computed and
+stored), `GetOrder_test_3` (Triangle6, order 2, again after Deallocate).
 
 ### 13. SetTotalMedium adds media instead of setting the number
 

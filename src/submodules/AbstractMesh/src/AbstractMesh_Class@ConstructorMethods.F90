@@ -78,6 +78,8 @@ MODULE PROCEDURE obj_Deallocate
   obj%nsd = 0
   obj%xidim = 0
   obj%maxNNE = 0
+  obj%maxElemOrder = 0
+  obj%isMaxElemOrderSet = .FALSE.
   obj%maxNptrs = 0
   obj%minNptrs = 0
   obj%maxElemNum = 0
