@@ -187,6 +187,8 @@ CONTAINS
   !! X = scale * X
   PROCEDURE, PUBLIC, PASS(obj) :: COPY => obj_Copy
   !! Y = X
+  PROCEDURE, PUBLIC, PASS(obj) :: Swap => obj_Swap
+  !! Swap the values of obj and obj2
   PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
   !! Returns the L2 norm
   PROCEDURE, PUBLIC, PASS(obj) :: Norm1 => obj_Norm1
@@ -1021,6 +1023,37 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
   END SUBROUTINE obj_Copy
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          Swap@BlasMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Swap the values of two node fields, obj <=> obj2
+!
+! Exchange the nodal values stored in realVec of obj and obj2 by
+! calling the BLAS1 SWAP routine of RealVector_. Only the values are
+! exchanged; the other components (name, fedof, dof data, ...) of
+! obj and obj2 are not changed.
+!
+! Both fields must be initiated and have the same size. In debug mode
+! an error is raised when obj%Size() and obj2%Size() differ.
+!
+! Arguments:
+!   obj : CLASS(AbstractNodeField_) - first node field
+!   obj2 : CLASS(AbstractNodeField_) - second node field
+!
+! See also: [[obj_Copy]], [[obj_AXPY1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_Swap(obj, obj2)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! first node field, on return it contains the values of obj2
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj2
+    !! second node field, on return it contains the values of obj
+  END SUBROUTINE obj_Swap
 END INTERFACE
 
 !----------------------------------------------------------------------------

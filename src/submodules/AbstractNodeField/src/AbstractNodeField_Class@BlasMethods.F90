@@ -24,6 +24,7 @@ USE RealVector_Method, ONLY: DOT_PRODUCT
 USE RealVector_Method, ONLY: PMUL
 USE RealVector_Method, ONLY: Reciprocal
 USE RealVector_Method, ONLY: SCAL
+USE RealVector_Method, ONLY: Swap
 USE BaseType, ONLY: TypeConvergenceOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
@@ -148,6 +149,33 @@ MODULE PROCEDURE obj_COPY
     '[END] ')
 #endif
 END PROCEDURE obj_COPY
+
+!----------------------------------------------------------------------------
+!                                                                       Swap
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Swap
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Swap()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError2(obj%Size(), obj2%Size(), myName, &
+    'obj%Size() and obj2%Size() are not same')
+#endif
+
+  CALL Swap(x=obj%realvec, y=obj2%realvec)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_Swap
 
 !----------------------------------------------------------------------------
 !                                                                      NORM2
