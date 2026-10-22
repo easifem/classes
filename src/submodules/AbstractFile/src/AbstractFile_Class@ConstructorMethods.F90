@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(AbstractFile_Class) ConstructorMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
@@ -25,16 +24,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFileDeallocate
-obj%path = ''
-obj%fileName = ''
-obj%ext = ''
-obj%pathlen = 0
-obj%fnamelen = 0
-obj%extlen = 0
-obj%openstat = .FALSE.
-obj%EOFstat = .FALSE.
-obj%readstat = .FALSE.
-obj%writestat = .FALSE.
+  obj%path = ''
+  obj%fileName = ''
+  obj%ext = ''
+  obj%pathlen = 0
+  obj%fnamelen = 0
+  obj%extlen = 0
+  obj%openstat = .FALSE.
+  obj%EOFstat = .FALSE.
+  obj%readstat = .FALSE.
+  obj%writestat = .FALSE.
 END PROCEDURE AbstractFileDeallocate
 
 END SUBMODULE ConstructorMethods
