@@ -115,7 +115,7 @@ CONTAINS
   !! Delete the file from disk
   PROCEDURE, PUBLIC, PASS(Obj) :: initiate => obj_initiate
   !! Initiate the file object
-  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => obj_clear
+  PROCEDURE, PUBLIC, PASS(Obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the file object
   PROCEDURE, PUBLIC, PASS(Obj) :: setOverwriteStat => &
     obj_setOverwriteStat
@@ -313,7 +313,7 @@ END TYPE HDF5FilePointer_
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_initiate]], [[obj_clear]]
+! See also: [[obj_initiate]], [[obj_Deallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
@@ -431,7 +431,7 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_open]], [[obj_clear]]
+! See also: [[obj_open]], [[obj_Deallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_close(obj)
@@ -492,7 +492,7 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_clear]], [[obj_getUnitNo]]
+! See also: [[obj_Deallocate]], [[obj_getUnitNo]]
 
 INTERFACE
   MODULE SUBROUTINE obj_delete(obj)
@@ -624,7 +624,7 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_open]], [[obj_clear]], [[obj_setOverwriteStat]],
+! See also: [[obj_open]], [[obj_Deallocate]], [[obj_setOverwriteStat]],
 !   [[obj_isCompressed]]
 
 INTERFACE
@@ -704,12 +704,12 @@ END INTERFACE
 ! See also: [[obj_close]], [[obj_delete]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_clear(obj, Delete)
+  MODULE SUBROUTINE obj_Deallocate(obj, Delete)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: Delete
     !! if true, the file is deleted from disk; default is false
-  END SUBROUTINE obj_clear
+  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -463,12 +463,12 @@ MODULE PROCEDURE obj_initiate
 END PROCEDURE obj_initiate
 
 !----------------------------------------------------------------------------
-!                                                                 Clear
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_clear
+MODULE PROCEDURE obj_Deallocate
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_clear()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
   LOGICAL(LGT) :: bool
 
@@ -512,7 +512,7 @@ MODULE PROCEDURE obj_clear
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
 #endif
-END PROCEDURE obj_clear
+END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                          setOverWriteStat
