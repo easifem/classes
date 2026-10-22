@@ -50,9 +50,6 @@ PUBLIC :: ScalarFieldLisPointer_
 
 TYPE, EXTENDS(ScalarField_) :: ScalarFieldLis_
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate an instance by copying
@@ -63,19 +60,17 @@ CONTAINS
   FINAL :: obj_Final
   !! Finalizer
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the object
 
-  !IO:
   ! @HDF5Methods
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the object
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the object
 
-  ! SET:
+  ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
@@ -91,7 +86,6 @@ CONTAINS
   PROCEDURE, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale*obj2
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! This method is not avaiable in ScalarFieldList
@@ -106,7 +100,6 @@ CONTAINS
   PROCEDURE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
   !! get many values from trides
 
-  ! GET:
   ! @BlasMethods
   PROCEDURE, PASS(obj) :: AXPY1 => obj_AXPY1
   PROCEDURE, PASS(obj) :: AXPY2 => obj_AXPY2
@@ -165,9 +158,9 @@ INTERFACE
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyFull
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyStructure
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: usePointer
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -191,73 +184,73 @@ INTERFACE
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
     !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
     !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
     !! storage format of the scalar field
     !! Not required.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
     !! local size of field on each processor
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
     !! space components
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
     !! if true we will try to access spaceCompo
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
     !! Time components
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
     !! if true we will try to access TimeCompo
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
     !! Not required
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
     !! Names of the physical variables
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
     !! if true then physicalVarNames is scalar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
     !! total number of nodes in each physical variable
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
     !! if true we will try to access tNodes
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
     !! is tNodes scalar
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
     !! total size of node field
     !! not required
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
 END INTERFACE
@@ -294,7 +287,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -324,14 +317,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+    timefedofs, geofedof, geofedofs)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -348,8 +341,8 @@ INTERFACE
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
   END SUBROUTINE obj_SetSingle
 END INTERFACE
 
@@ -366,9 +359,9 @@ INTERFACE
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! value to be set or add
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetAll
 END INTERFACE
@@ -389,9 +382,9 @@ INTERFACE
     !! index, size(indx) = size(value) = tsize
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values which will be use din obj=value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple1
 END INTERFACE
@@ -412,9 +405,9 @@ INTERFACE
     !! index, size(indx) = size(value) = tsize
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! obj = value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple2
 END INTERFACE
@@ -438,9 +431,9 @@ INTERFACE
     !! returned vlaue
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of values
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple3
 END INTERFACE
@@ -461,9 +454,9 @@ INTERFACE
     !! index, size(indx) = size(value) = tsize
     REAL(DFP), INTENT(IN) :: VALUE
     !! obj = value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple4
 END INTERFACE

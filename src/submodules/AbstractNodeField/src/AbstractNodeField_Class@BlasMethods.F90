@@ -20,7 +20,7 @@ USE RealVector_Method, ONLY: Copy
 USE RealVector_Method, ONLY: Norm1
 USE RealVector_Method, ONLY: Norm2
 USE RealVector_Method, ONLY: Normi
-USE RealVector_Method, ONLY: Dot_Product
+USE RealVector_Method, ONLY: DOT_PRODUCT
 USE RealVector_Method, ONLY: PMUL
 USE RealVector_Method, ONLY: Reciprocal
 USE RealVector_Method, ONLY: SCAL
@@ -42,19 +42,19 @@ CONTAINS
 
 MODULE PROCEDURE obj_AXPY1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_AXPY1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_AXPY1()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
-CALL AXPY(X=x%realvec, Y=obj%realvec, A=scale)
+  CALL AXPY(X=x%realvec, Y=obj%realvec, A=scale)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_AXPY1
 
@@ -64,20 +64,20 @@ END PROCEDURE obj_AXPY1
 
 MODULE PROCEDURE obj_AXPY2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_AXPY2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_AXPY2()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
-CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
-CALL AXPY(X=x2%realvec, Y=obj%realvec, A=a2)
+  CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
+  CALL AXPY(X=x2%realvec, Y=obj%realvec, A=a2)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_AXPY2
 
@@ -87,21 +87,21 @@ END PROCEDURE obj_AXPY2
 
 MODULE PROCEDURE obj_AXPY3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_AXPY3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_AXPY3()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
-CALL AXPY(x=x1%realvec, y=obj%realvec, a=a1)
-CALL AXPY(x=x2%realvec, y=obj%realvec, a=a2)
-CALL AXPY(x=x3%realvec, y=obj%realvec, a=a3)
+  CALL AXPY(x=x1%realvec, y=obj%realvec, a=a1)
+  CALL AXPY(x=x2%realvec, y=obj%realvec, a=a2)
+  CALL AXPY(x=x3%realvec, y=obj%realvec, a=a3)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_AXPY3
 
@@ -111,19 +111,19 @@ END PROCEDURE obj_AXPY3
 
 MODULE PROCEDURE obj_SCAL
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SCAL()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SCAL()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
-CALL SCAL(x=obj%realvec, a=scale)
+  CALL SCAL(x=obj%realvec, a=scale)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_SCAL
 
@@ -133,19 +133,19 @@ END PROCEDURE obj_SCAL
 
 MODULE PROCEDURE obj_COPY
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_COPY()"
+  CHARACTER(*), PARAMETER :: myName = "obj_COPY()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
-CALL COPY(y=obj%realvec, x=obj2%realvec)
+  CALL COPY(y=obj%realvec, x=obj2%realvec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_COPY
 
@@ -155,20 +155,20 @@ END PROCEDURE obj_COPY
 
 MODULE PROCEDURE obj_Norm2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Norm2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Norm2()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-ans = 0.0_DFP
-ans = NORM2(obj=obj%realvec)
+  ans = 0.0_DFP
+  ans = NORM2(obj=obj%realvec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Norm2
 
@@ -178,20 +178,20 @@ END PROCEDURE obj_Norm2
 
 MODULE PROCEDURE obj_Norm1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Norm1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Norm1()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-ans = 0.0
-ans = NORM1(obj=obj%realvec)
+  ans = 0.0
+  ans = NORM1(obj=obj%realvec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 
 END PROCEDURE obj_Norm1
@@ -202,20 +202,20 @@ END PROCEDURE obj_Norm1
 
 MODULE PROCEDURE obj_Normi
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Normi()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Normi()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-ans = 0.0_DFP
-ans = NORMi(obj=obj%realvec)
+  ans = 0.0_DFP
+  ans = NORMi(obj=obj%realvec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Normi
 
@@ -225,31 +225,31 @@ END PROCEDURE obj_Normi
 
 MODULE PROCEDURE obj_Norm
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Norm()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Norm()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-SELECT CASE (normType)
-CASE (TypeConvergenceOpt%normL1)
-  ans = obj%Norm1()
-CASE (TypeConvergenceOpt%normL2)
-  ans = obj%NORM2()
-CASE (TypeConvergenceOpt%normInfinity)
-  ans = obj%Normi()
-CASE DEFAULT
+  SELECT CASE (normType)
+  CASE (TypeConvergenceOpt%normL1)
+    ans = obj%Norm1()
+  CASE (TypeConvergenceOpt%normL2)
+    ans = obj%NORM2()
+  CASE (TypeConvergenceOpt%normInfinity)
+    ans = obj%Normi()
+  CASE DEFAULT
 #ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, &
-                    "No case found for normType="//ToString(normType))
+    CALL AssertError1(math%no, myName, &
+      "No case found for normType=" // ToString(normType))
 #endif
-END SELECT
+  END SELECT
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Norm
 
@@ -259,20 +259,20 @@ END PROCEDURE obj_Norm
 
 MODULE PROCEDURE obj_DOT_PRODUCT
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_DOT_PRODUCT()"
+  CHARACTER(*), PARAMETER :: myName = "obj_DOT_PRODUCT()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-ans = 0.0_DFP
-ans = DOT_PRODUCT(obj1=obj%realvec, obj2=obj2%realvec)
+  ans = 0.0_DFP
+  ans = DOT_PRODUCT(obj1=obj%realvec, obj2=obj2%realvec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_DOT_PRODUCT
 
@@ -282,19 +282,19 @@ END PROCEDURE obj_DOT_PRODUCT
 
 MODULE PROCEDURE obj_PMUL
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_PMUL()"
+  CHARACTER(*), PARAMETER :: myName = "obj_PMUL()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-CALL PMUL(obj=obj%realvec, obj1=obj1%realvec, obj2=obj2%realvec)
+  CALL PMUL(obj=obj%realvec, obj1=obj1%realvec, obj2=obj2%realvec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_PMUL
 
@@ -304,19 +304,19 @@ END PROCEDURE obj_PMUL
 
 MODULE PROCEDURE obj_Reciprocal
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Reciprocal()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Reciprocal()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
-CALL Reciprocal(obj1=obj%realvec, obj2=obj%realvec)
+  CALL Reciprocal(obj1=obj%realvec, obj2=obj%realvec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Reciprocal
 

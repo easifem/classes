@@ -249,9 +249,9 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyFull
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyStructure
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: usePointer
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -283,59 +283,59 @@ INTERFACE
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
     !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
     !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
     !! storage format
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
     !! local size of field on each processor
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
     !! space components
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
     !! if true we will try to access spaceCompo
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
     !! Time components
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
     !! if true we will try to access TimeCompo
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
     !! Names of the physical variables
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
     !! if true then we physicalVarNames is scalar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
     !! total number of nodes in each physical variable
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
     !! if true we will try to access tNodes
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
     !! is tNodes scalar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
     !! total size of node field
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
 END INTERFACE
@@ -367,46 +367,46 @@ INTERFACE
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
     !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
     !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
     !! local size of field on each processor
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
     !! space components
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
     !! if true we will try to access spaceCompo
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
     !! Time components
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
     !! if true we will try to access TimeCompo
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
     !! Names of the physical variables
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedof(:)
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedof(:)
     !! Vector of TimeFEDOFPointers
     !! All timefedofs should be initiated
   END SUBROUTINE obj_Initiate3
@@ -446,7 +446,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -574,19 +574,19 @@ INTERFACE
     obj, dof_tPhysicalVars, dof_storageFMT, dof_spaceCompo, dof_timeCompo, &
     dof_tNodes, dof_names_char, tSize)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tPhysicalVars
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dof_tPhysicalVars
     !! total number of physical variables
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_storageFMT
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dof_storageFMT
     !! Storage pattern, FMT_DOF or FMT_NODES
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_spaceCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dof_spaceCompo(:)
     !! Space components of each physical variable
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_timeCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dof_timeCompo(:)
     !! Time components of each physical variable
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dof_tNodes(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dof_tNodes(:)
     !! Total number of nodes in each physical variable
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: dof_names_char(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: dof_names_char(:)
     !! single character name of each physical varible
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
     !! Total size of the field
   END SUBROUTINE obj_SetParam
 END INTERFACE
@@ -624,8 +624,8 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
   END SUBROUTINE obj_SetSingle
 END INTERFACE
 
@@ -646,9 +646,9 @@ INTERFACE
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! value to be set or add
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetAll
 END INTERFACE
@@ -669,9 +669,9 @@ INTERFACE
     !! index, size(indx) = size(value) = tsize
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values which will be use din obj=value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple1
 END INTERFACE
@@ -692,9 +692,9 @@ INTERFACE
     !! index, size(indx) = size(value) = tsize
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! obj = value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple2
 END INTERFACE
@@ -718,9 +718,9 @@ INTERFACE
     !! returned vlaue
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of values
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple3
 END INTERFACE
@@ -741,9 +741,9 @@ INTERFACE
     !! index, size(indx) = size(value) = tsize
     REAL(DFP), INTENT(IN) :: VALUE
     !! obj = value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_SetMultiple4
 END INTERFACE
@@ -850,7 +850,7 @@ INTERFACE
     !! if true then globalNode is local node number
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! value to be returned
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
     !! physical variable nubmer
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE
@@ -901,8 +901,8 @@ INTERFACE
   MODULE FUNCTION obj_GetSpaceCompo(obj, tPhysicalVars) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-      !! Total number of physical variables
-      !! This can be obtained from GetTotalPhysicalVars method
+    !! Total number of physical variables
+    !! This can be obtained from GetTotalPhysicalVars method
     INTEGER(I4B) :: ans(tPhysicalVars)
   END FUNCTION obj_GetSpaceCompo
 END INTERFACE
@@ -1141,14 +1141,14 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+    timefedofs, geofedof, geofedofs)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
