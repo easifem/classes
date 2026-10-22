@@ -17,13 +17,6 @@
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/FEMesh_Class@ConstructorMethods.F90
-          ${src_path}/FEMesh_Class@IOMethods.F90
-          ${src_path}/FEMesh_Class@GetMethods.F90
-          ${src_path}/FEMesh_Class@SetMethods.F90
-          ${src_path}/FEMesh_Class@NodeDataMethods.F90
-          ${src_path}/FEMesh_Class@ElementDataMethods.F90
-          ${src_path}/FEMesh_Class@BoundaryDataMethods.F90
-          ${src_path}/FEMesh_Class@FacetDataMethods.F90
-          )
+    ${PROJECT_NAME}
+    PRIVATE ${src_path}/FEMesh_Class@ConstructorMethods.F90
+)

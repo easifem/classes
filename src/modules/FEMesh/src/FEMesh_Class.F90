@@ -14,9 +14,11 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
-! summary: `Mesh_Class` module contains data type for handling the mesh.
+! summary: Finite element mesh class
+!
+! This module defines FEMesh_, the finite element mesh, and FEMeshPointer_.
 
 MODULE FEMesh_Class
 USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stderr
@@ -40,31 +42,37 @@ PUBLIC :: FEMesh_Pointer
 PUBLIC :: DEALLOCATE
 PUBLIC :: FEMeshPointerDeallocate
 
-CHARACTER(*), PARAMETER :: modName = "FEMesh_Class"
-
 !----------------------------------------------------------------------------
 !                                                              FEMesh_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
-! summary: This datatype contains the meta data of a mesh
+! summary: Finite element mesh
 !
-!{!pages/docs-api/FEMesh/FEMesh_.md!}
+! FEMesh_ is the finite element mesh. It extends AbstractMesh_ and has no
+! extra components; all methods are those of AbstractMesh_. The examples of
+! AbstractMesh_ use FEMesh_.
+!
+! See also: [[obj_Constructor_1]]
 
 TYPE, EXTENDS(AbstractMesh_) :: FEMesh_
 CONTAINS
-  PRIVATE
   FINAL :: obj_Final
+  !! Finalizer, calls Deallocate
 END TYPE FEMesh_
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
-! summary: Userdefine datatype which contains the pointer to a mesh
+! summary: Pointer to a FEMesh_
+!
+! ptr points to a FEMesh_.
+!
+! See also: [[FEMeshPointerDeallocate]]
 
 TYPE :: FEMeshPointer_
   TYPE(FEMesh_), POINTER :: ptr => NULL()
@@ -74,13 +82,61 @@ END TYPE FEMeshPointer_
 !                                     FEMesh_Pointer@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
-! summary: This function returns a pointer to an instance of obj_ object
+! summary: Get a pointer to a new FEMesh_
+!
+! Allocate a new empty FEMesh_ and return a pointer to it. Initiate it with
+! Initiate.
+!
+! Returns:
+!   ans : CLASS(FEMesh_), pointer - pointer to the new mesh
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractMesh_Class, ONLY: AbstractMeshPointer_
+!   USE AbstractMesh_Class, ONLY: AbstractMeshPointerDeallocate
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEMesh_Class, ONLY: FEMesh_
+!   USE FEMesh_Class, ONLY: FEMesh_Pointer
+!   USE FEMesh_Class, ONLY: FEMeshPointer_
+!   USE FEMesh_Class, ONLY: FEMeshPointerDeallocate
+!   USE Test_Method, ONLY: OK
+!
+!   IMPLICIT NONE
+!
+!   CLASS(FEMesh_), POINTER :: ptr
+!   TYPE(FEMeshPointer_), ALLOCATABLE :: fptrs(:)
+!   TYPE(AbstractMeshPointer_), ALLOCATABLE :: aptrs(:)
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+!   ptr => FEMesh_Pointer()
+!   CALL OK(ASSOCIATED(ptr), "FEMesh_Pointer")
+!   CALL OK(ptr%IsEmpty(), "new mesh is empty")
+!
+!   ALLOCATE (fptrs(2))
+!   fptrs(1)%ptr => FEMesh_Pointer()
+!   CALL FEMeshPointerDeallocate(fptrs)
+!   CALL OK(.NOT. ALLOCATED(fptrs), "FEMeshPointerDeallocate")
+!
+!   ALLOCATE (aptrs(1))
+!   aptrs(1)%ptr => ptr
+!   CALL AbstractMeshPointerDeallocate(aptrs)
+!   CALL OK(.NOT. ALLOCATED(aptrs), "AbstractMeshPointerDeallocate")
+! END PROGRAM main
+!```
+!
+! See also: [[FEMeshPointerDeallocate]]
 
 INTERFACE FEMesh_Pointer
   MODULE FUNCTION obj_Constructor_1() RESULT(ans)
     CLASS(FEMesh_), POINTER :: ans
+    !! pointer to the new mesh
   END FUNCTION obj_Constructor_1
 END INTERFACE FEMesh_Pointer
 
@@ -89,12 +145,20 @@ END INTERFACE FEMesh_Pointer
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-03-17
-! summary:  finalizer
+! date: 2024-03-17
+! summary: Finalizer of FEMesh_
+!
+! Call Deallocate.
+!
+! Arguments:
+!   obj : TYPE(FEMesh_), intent(inout) - mesh object
+!
+! See also: [[AbstractMesh_:Deallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(FEMesh_), INTENT(INOUT) :: obj
+    !! mesh object
   END SUBROUTINE obj_Final
 END INTERFACE
 
@@ -102,13 +166,23 @@ END INTERFACE
 !                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
-! summary: Free up the memory stored in [[obj_]]
+! summary: Deallocate an array of FEMesh_ pointers
+!
+! Call Deallocate on every associated mesh of obj, then deallocate obj. The
+! mesh objects themselves are not freed.
+!
+! Arguments:
+!   obj(:) : TYPE(FEMeshPointer_), allocatable, intent(inout) - array of mesh
+!     pointers
+!
+! See also: [[obj_Constructor_1]]
 
 INTERFACE DEALLOCATE
   MODULE SUBROUTINE FEMeshPointerDeallocate(obj)
     TYPE(FEMeshPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! array of mesh pointers
   END SUBROUTINE FEMeshPointerDeallocate
 END INTERFACE DEALLOCATE
 
