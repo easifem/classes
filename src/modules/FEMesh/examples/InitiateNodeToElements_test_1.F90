@@ -1,39 +1,48 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-03
-! summary:  Testing of InitiateNodeToElements
+! date: 2026-10-22
+! summary: Initiate node to elements data
 !
+! InitiateNodeToElements stores the global element numbers around
+! every node. GetMaxNodeToElements returns the largest number of
+! elements around a node.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-  USE FEMesh_Class
-  USE HDF5File_Class
-  USE GlobalData
-  use ExceptionHandler_Class, only: e
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
   IMPLICIT NONE
 
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(FEMesh_) :: obj
   TYPE(HDF5File_) :: meshfile
-  CHARACTER(*), PARAMETER :: filename="./meshdata/small_tri3_mesh.h5"
 
-  CALL e%SetQuietMode(.TRUE.)
-  CALL meshfile%Initiate(FileName=filename, MODE="READ")
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-  !Open the mesh file
-  CALL meshfile%Open()
-  CALL obj%SetShowTime(.true.)
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-  !Initiate an instance of `Mesh_`
-  CALL obj%Initiate(hdf5=meshfile, dim=2)
-
-  ! Initiate dynamic data structure
+  CALL OK(.NOT. obj%IsNodeToElements(), "not initiated by Initiate")
   CALL obj%InitiateNodeToElements()
+  CALL OK(obj%IsNodeToElements(), "IsNodeToElements")
+  CALL OK(obj%GetMaxNodeToElements() .EQ. 4_I4B, &
+    "GetMaxNodeToElements")
 
-  !Display the content of mesh.
-  CALL obj%DisplayMeshInfo(filename)
-
-  ! Display the mesh data
-  CALL obj%DisplayNodeData("Node data of " // filename)
-
-  CALL obj%Deallocate()
-  CALL meshfile%Deallocate()
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

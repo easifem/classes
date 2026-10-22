@@ -1,98 +1,52 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-01
-! summary:  Display method is tested  in this example.
+! date: 2026-10-22
+! summary: Display a mesh
 !
-! Display method of FEMesh.
+! Display prints the content of the mesh. The other Display methods
+! print the mesh statistics, node data, element data, and facet
+! data. They do not change the mesh.
 !
-! The result of this example is given below.
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
 !
-! Results:
-!
-!```txt
-! Mesh object initiated: TRUE
-! showTime: FALSE
-! readFromFile: TRUE
-! isNodeToElementsInitiated: FALSE
-! isNodeToNodesInitiated: FALSE
-! isExtraNodeToNodesInitiated: FALSE
-! isElementToElementsInitiated: TRUE
-! isEdgeConnectivityInitiated: FALSE
-! isFaceConnectivityInitiated: TRUE
-! isBoundaryDataInitiated: FALSE
-! isFacetDataInitiated: FALSE
-! uid: 1
-! Total elements (topology wise)
-! ==============================
-! point: 0
-! line: 0
-! triangle: 14
-! quadrangle: 0
-! tetrahedron: 0
-! hexahedron: 0
-! prism: 0
-! pyramid: 0
-!
-! Total topologies: 1
-! Topologies(1): Triangle3
-! maxNNE: 6
-! nsd: 2
-! xidim: 2
-! maxNptrs: 37
-! minNptrs: 1
-! maxElemNum: 26
-! minElemNum: 13
-! tNodes: 37
-! tEdges: 0
-! tFaces: 25
-! tElements: 14
-! minX: 0.00000
-! maxX: 2.00000
-! minY: 0.00000
-! maxY: 2.00000
-! minZ: 0.00000
-! maxZ: 0.00000
-! X: 0.00000
-! Y: 0.00000
-! Z: 0.00000
-! boundingEntity ALLOCATED: TRUE
-! boundingEntity:
-! ----------------
-!        1
-!        2
-!        3
-!        4
-! local_elemNumber ALLOCATED: TRUE
-! local_nptrs ALLOCATED: TRUE
-! quality ALLOCATED: FALSE
-! facetElementType ALLOCATED: FALSE
-! nodeData ALLOCATED: TRUE
-! nodeData Size: 37
-! elementData ALLOCATED: TRUE
-! elementData Size: 14
-! facetData ALLOCATED: FALSE
-! kdtree Associated: FALSE
-! kdresult Allocated: FALSE
-!```
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE FEMesh_Class, only: FEMesh_
-USE HDF5File_Class, only: HDF5File_
-USE GlobalData, ONLY: I4B
-USE Test_Method, ONLY: OK
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-CHARACTER(LEN=*), PARAMETER :: filename = "./meshdata/small_tri6_mesh.h5"
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
 
-INTEGER(I4B), PARAMETER :: nsd = 2
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
-CALL meshfile%OPEN()
-CALL obj%Initiate(hdf5=meshfile, dim=nsd)
-CALL obj%Display("FEMesh")
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  CALL obj%Display("mesh:")
+  CALL obj%DisplayMeshInfo("mesh info:")
+  CALL obj%DisplayNodeData("node data:")
+  CALL obj%DisplayElementData("element 13:", globalElement=13_I4B)
+  CALL obj%InitiateFacetElements()
+  CALL obj%DisplayFacetData("facet data:")
+  CALL obj%DisplayInternalFacetData("internal facet data:")
+  CALL obj%DisplayBoundaryFacetData("boundary facet data:")
+  CALL OK(obj%GetTotalElements() .EQ. 4_I4B, "mesh is not changed")
+
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

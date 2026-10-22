@@ -1,47 +1,64 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-05
-! summary:  Test for SetSparsity method of FEMesh class
+! date: 2026-10-22
+! summary: Set the sparsity pattern of a matrix
 !
+! SetSparsity adds an entry (i, j) to the matrix for every node j
+! connected to node i (and j = i). A corner node has 4 entries, an
+! edge node 6, and the center node 9: in total 4*4 + 4*6 + 9 = 49.
+! After SetSparsity of the mesh, call SetSparsity(mat) of the
+! matrix to finish the pattern.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE GlobalData
-USE FEMesh_Class
-USE HDF5File_Class
-USE BaseType, ONLY: DOF_, CSRMatrix_
-USE DOF_Method
-USE CSRMatrix_Method
+  USE BaseType, ONLY: CSRMatrix_
+  USE BaseType, ONLY: DOF_
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE CSRMatrix_Method, ONLY: CSRMatrixInitiate => Initiate
+  USE CSRMatrix_Method, ONLY: CSRMatrixSetSparsity => SetSparsity
+  USE CSRMatrix_Method, ONLY: GetNNZ
+  USE DOF_Method, ONLY: DOFInitiate => Initiate
+  USE DOF_Method, ONLY: DOFSize => SIZE
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE GlobalData, ONLY: NODES_FMT
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-TYPE(DOF_) :: dofobj
-TYPE(CSRMatrix_) :: mat
-INTEGER(I4B) :: tNodes(1)
+  IMPLICIT NONE
 
-INTEGER(I4B), PARAMETER :: spaceCompo(1) = [1], &
-                           timeCompo(1) = [1], &
-                           storageFMT = NODES_FMT
-CHARACTER(1), PARAMETER :: names(1) = ["K"]
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+  TYPE(DOF_) :: dofobj
+  TYPE(CSRMatrix_) :: mat
 
-CHARACTER(LEN=*), PARAMETER :: filename = &
-                               "./meshdata/small_tri3_mesh.h5"
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-CALL meshfile%OPEN()
+  CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalNodes()], &
+    names=["K"], spacecompo=[1_I4B], &
+    timecompo=[1_I4B], storagefmt=NODES_FMT)
+  CALL CSRMatrixInitiate(obj=mat, ncol=DOFSize(dofobj), &
+    nrow=DOFSize(dofobj), idof=dofobj, &
+    jdof=dofobj)
+  CALL obj%SetSparsity(mat=mat)
+  CALL CSRMatrixSetSparsity(mat)
+  CALL OK(GetNNZ(mat) .EQ. 49_I4B, "number of nonzeros")
 
-CALL obj%Initiate(hdf5=meshfile, dim=2)
-
-tNodes = obj%GetTotalNodes()
-CALL Initiate(obj=dofobj, tNodes=tNodes, &
-              spaceCompo=spaceCompo, timeCompo=timeCompo, &
-              names=names, storageFMT=storageFMT)
-
-CALL Initiate(mat, ncol=SIZE(dofobj), nrow=SIZE(dofobj), &
-              idof=dofobj, jdof=dofobj)
-
-CALL obj%SetSparsity(mat=mat)
-
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

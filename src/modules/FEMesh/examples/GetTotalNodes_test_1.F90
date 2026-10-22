@@ -1,57 +1,52 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-05
-! summary:  Test for `GetTotalNodes` method of `FEMesh_` class.
+! date: 2026-10-22
+! summary: Get the total number of nodes in a mesh
 !
+! GetTotalNodes returns the number of nodes in the whole mesh, in the
+! elements of a given mesh id (entity number), or in a list of
+! elements. Shared nodes are counted once.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE FEMesh_Class, ONLY: FEMesh_
-USE HDF5File_Class, ONLY: HDF5File_
-USE GlobalData, ONLY: I4B, LGT, Quadrangle
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: Display
-USE Test_Method
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-CHARACTER(LEN=*), PARAMETER :: filename = "./meshdata/very_small_quad4_mesh.h5"
-INTEGER(I4B), PARAMETER :: nsd = 2
-INTEGER(I4B) :: found(8), want(8)
-LOGICAL(LGT) :: isok
-CHARACTER(*), PARAMETER :: testname = "GetTotalNodes"
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
 
-! Initiate and open the mesh file which is in `HDF5File_` format.
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-! Open the mesh file
-CALL meshfile%OPEN()
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-! Initiate an instance of `Mesh_`
-CALL obj%Initiate(hdf5=meshfile, dim=nsd)
-CALL obj%DisplayMeshInfo("Mesh Info")
+  CALL OK(obj%GetTotalNodes() .EQ. 9_I4B, "whole mesh")
+  CALL OK(obj%GetTotalNodes(meshid=1_I4B) .EQ. 9_I4B, "meshid=1")
 
-CALL meshfile%DEALLOCATE()
+  ! nodes in elements 13 [1,5,9,7] and 14 [7,9,6,3]
+  CALL OK(obj%GetTotalNodes(globalElement=[13_I4B, 14_I4B]) &
+    .EQ. 6_I4B, "global elements 13 and 14")
+  CALL OK(obj%GetTotalNodes(globalElement=[1_I4B, 2_I4B], &
+    islocal=.TRUE.) .EQ. 6_I4B, &
+    "local elements 1 and 2")
 
-found(1) = obj%GetTotalNodes()
-found(2) = obj%GetTotalNodes(meshid=1)
-
-want(1) = 9
-want(2) = 9
-
-isok = found(1) .EQ. want(1)
-CALL ok(isok, testname)
-
-isok = found(2) .EQ. want(2)
-CALL ok(isok, testname)
-
-CALL obj%DEALLOCATE()
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main
-
-! Mesh Info
-! ==============================
-! total nodes: 9
-! total elements: 4
-! tEdges: 0
-! tFaces: 12
-! ==============================

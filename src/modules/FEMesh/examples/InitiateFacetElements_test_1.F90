@@ -1,32 +1,52 @@
 !> author: Vikas Sharma, Ph. D.
-! date:  2025-06-03
-! summary:  Test for InitiateFacetElements method of FEMesh class
+! date: 2026-10-22
+! summary: Initiate the facet elements
 !
+! InitiateFacetElements makes a facet element for every facet of
+! the mesh: internal facets (shared by two elements) and boundary
+! facets. It initiates the boundary data when needed.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE FEMesh_Class
-USE HDF5File_Class
-USE GlobalData
-USE Display_Method
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
 
-CHARACTER(LEN=*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
-CHARACTER(*), PARAMETER :: testname = "InitiateFacetElements_test_1"
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-CALL meshfile%OPEN()
+  CALL obj%InitiateFacetElements()
+  CALL OK(obj%IsFacetData(), "IsFacetData")
+  CALL OK(obj%IsBoundaryData(), "IsBoundaryData")
+  CALL OK(obj%GetTotalFacetElements() .EQ. 12_I4B, &
+    "GetTotalFacetElements")
+  CALL OK(obj%GetTotalInternalFacetElements() .EQ. 4_I4B, &
+    "GetTotalInternalFacetElements")
+  CALL OK(obj%GetTotalBoundaryFacetElements() .EQ. 8_I4B, &
+    "GetTotalBoundaryFacetElements")
 
-CALL obj%Initiate(hdf5=meshfile, dim=2)
-
-CALL obj%InitiateFacetElements()
-
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
-
-CALL Display("Finish test: "//testname)
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

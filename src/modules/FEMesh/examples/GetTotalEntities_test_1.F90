@@ -1,73 +1,49 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-05
-! summary:  Test the `GetTotalEntities` method of `FEMesh_` class.
+! date: 2026-10-22
+! summary: Get the total number of entities
+!
+! GetTotalEntities returns the number of nodes, edges, faces and
+! cells of the mesh, or of one element. In a surface mesh the faces
+! are the edges.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE FEMesh_Class, ONLY: FEMesh_
-USE HDF5File_Class, ONLY: HDF5File_
-USE GlobalData, ONLY: I4B, LGT
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: Display
-USE Test_Method
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-CHARACTER(LEN=*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
-INTEGER(I4B), PARAMETER :: nsd = 2
-INTEGER(I4B) :: ans(4)
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+  INTEGER(I4B) :: ent(4)
 
-! Initiate and open the mesh file which is in `HDF5File_` format.
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
-! Open the mesh file
-CALL meshfile%OPEN()
-! Initiate an instance of `Mesh_`
-CALL obj%Initiate(hdf5=meshfile, dim=nsd)
-CALL meshfile%DEALLOCATE()
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-ans = obj%GetTotalEntities()
-CALL Display("Total entities in mesh:")
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-isok = ans(1) .EQ. obj%GetTotalNodes()
-CALL OK(isok, "Total nodes: ")
+  CALL obj%InitiateEdgeConnectivity()
+  ent = obj%GetTotalEntities()
+  CALL OK(ALL(ent .EQ. [9, 12, 12, 4]), "mesh")
+  ent = obj%GetTotalEntities(globalElement=13_I4B)
+  CALL OK(ALL(ent .EQ. [4, 4, 4, 1]), "element 13")
 
-isok = ans(2) .EQ. obj%GetTotalEdges()
-CALL OK(isok, "Total edges: ")
-
-isok = ans(3) .EQ. obj%GetTotalFaces()
-CALL OK(isok, "Total faces: ")
-
-isok = ans(4) .EQ. obj%GetTotalCells()
-CALL OK(isok, "Total cells: ")
-
-! CALL Display(ans(1), "Total nodes:")
-! CALL Display(ans(2), "Total edges:")
-! CALL Display(ans(3), "Total faces:")
-! CALL Display(ans(4), "Total cells:")
-
-ans = obj%GetTotalEntities(globalElement=1, islocal=.TRUE.)
-CALL Display("Total entities in local element 1:")
-
-isok = ans(1) .EQ. 3
-CALL OK(isok, "Total nodes: ")
-
-isok = ans(2) .EQ. 0
-CALL OK(isok, "Total edges: ")
-
-isok = ans(3) .EQ. 3
-CALL OK(isok, "Total faces: ")
-
-isok = ans(4) .EQ. 1
-CALL OK(isok, "Total cells: ")
-
-! CALL Display(ans(1), "Total nodes:")
-! CALL Display(ans(2), "Total edges:")
-! CALL Display(ans(3), "Total faces:")
-! CALL Display(ans(4), "Total cells:")
-
-! Display the content of mesh.
-CALL obj%DEALLOCATE()
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main
-

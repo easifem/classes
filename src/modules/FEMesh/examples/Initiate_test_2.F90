@@ -1,32 +1,52 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-05-30
-! summary:  Read a 2D quadrangle mesh with two regions from an HDF5 file
+! date: 2026-10-22
+! summary: Initiate a curve mesh (dim=1)
 !
-! Read a two dimensional mesh of quadrangle elements.
+! With dim=1 the mesh contains the Line2 elements of all curve
+! entities, that is the boundary of the unit square (elements 5 to
+! 12). The curves form a closed loop, so every node belongs to two
+! elements and no node is a boundary node of the curve mesh.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE FEMesh_Class, only: FEMesh_
-USE HDF5File_Class, only: HDF5File_
-USE GlobalData, ONLY: I4B
-USE Test_Method, ONLY: OK
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-CHARACTER(LEN=*), PARAMETER :: filename = &
-                       "./meshdata/very_small_quad4_mesh_two_region.h5"
-INTEGER(I4B), PARAMETER :: nsd = 2
-INTEGER(I4B), PARAMETER :: entities(2) = [1, 2]
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+  INTEGER(I4B), ALLOCATABLE :: elems(:)
 
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-CALL meshfile%OPEN()
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=1)
 
-CALL obj%Initiate(hdf5=meshfile, dim=nsd, entities=entities)
+  CALL OK(obj%GetXidimension() .EQ. 1_I4B, "GetXidimension")
+  CALL OK(obj%GetNSD() .EQ. 2_I4B, "GetNSD")
+  CALL OK(obj%GetTotalElements() .EQ. 8_I4B, "GetTotalElements")
+  CALL OK(obj%GetTotalNodes() .EQ. 8_I4B, "GetTotalNodes")
+  elems = obj%GetElemNum()
+  CALL OK(ALL(elems .EQ. [5, 6, 7, 8, 9, 10, 11, 12]), "GetElemNum")
+  CALL OK(obj%GetTotalBoundaryNodes() .EQ. 0_I4B, "closed loop")
 
-CALL OK(.TRUE., "Initiate")
-
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

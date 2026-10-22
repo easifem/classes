@@ -1,24 +1,50 @@
 !> author: Vikas Sharma, Ph. D.
-! summary: IsElementPresent_test_1
+! date: 2026-10-22
+! summary: Check if an element is in the mesh
+!
+! IsElementPresent checks a global (or local) element number.
+! Elements 5 to 12 are line elements, they are not in the surface
+! mesh.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE easifemBase
-USE easifemClasses
-IMPLICIT NONE
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-INTEGER(I4B), ALLOCATABLE :: nptrs(:)
-INTEGER(I4B) :: iel, ii
-CHARACTER(*), PARAMETER :: filename="../../Mesh/examples/meshdata/small_mesh.h5"
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
-CALL meshfile%OPEN()
-CALL obj%Initiate(hdf5=meshfile, dim=2)
-CALL OK(obj%isElementPresent(15), "isElementPresent: ")
-CALL OK(obj%isElementPresent(24), "isElementPresent: ")
-CALL OK(obj%isElementPresent(5, islocal=.TRUE.), "isElementPresent: ")
-CALL OK(obj%isElementPresent(6, islocal=.TRUE.), "isElementPresent: ")
-CALL OK(.NOT. obj%isElementPresent(50), "isElementPresent: ")
-CALL OK(.NOT. obj%isElementPresent(5), "isElementPresent: ")
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
+
+  IMPLICIT NONE
+
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
+
+  CALL OK(obj%IsElementPresent(13_I4B), "element 13")
+  CALL OK(.NOT. obj%IsElementPresent(5_I4B), "element 5")
+  CALL OK(.NOT. obj%IsElementPresent(17_I4B), "element 17")
+  CALL OK(obj%IsElementPresent(4_I4B, islocal=.TRUE.), "local 4")
+  CALL OK(.NOT. obj%IsElementPresent(5_I4B, islocal=.TRUE.), &
+    "local 5")
+  CALL OK(obj%IsElementActive(14_I4B), "IsElementActive")
+
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

@@ -1,66 +1,62 @@
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-22
+! summary: Get the node nearest to a point
+!
+! GetNearestNode returns the global node number and the coordinates
+! of the node nearest to the query point qv. The kdtree of the mesh
+! is initiated on the first call. With nn, the nn nearest nodes are
+! returned (in no fixed order).
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
+
 PROGRAM main
-USE FEMesh_Class
-USE HDF5File_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE Display_Method
-USE ExceptionHandler_Class, ONLY: e
-USE ApproxUtility
-USE Test_Method
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: DFP
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-CHARACTER(*), PARAMETER :: filename = &
-                  "../../Mesh/examples/meshdata/small_tri3_mesh_two_region.h5"
-INTEGER(I4B), PARAMETER :: nsd = 2
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+  REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
+  REAL(DFP) :: x(3), xn(3, 2)
+  INTEGER(I4B) :: node, nodes(2)
 
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-INTEGER(I4B) :: globalNode
-REAL(DFP) :: qv(3), x(3)
-LOGICAL(LGT) :: isok
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-CALL e%SetQuietMode(.TRUE.)
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-CALL meshfile%Initiate(filename, "READ")
-CALL meshfile%OPEN()
-CALL obj%Initiate(hdf5=meshfile, dim=nsd)
+  ! nearest node to (0.9, 0.9) is the corner node 4 at (1, 1)
+  CALL obj%GetNearestNode(qv=[0.9_DFP, 0.9_DFP], x=x, globalNode=node)
+  CALL OK(node .EQ. 4_I4B, "nearest node to (0.9, 0.9)")
+  CALL OK(ALL(ABS(x(1:2) - [1.0_DFP, 1.0_DFP]) .LT. tol), "coordinates")
 
-qv = [1.0, 0.0, 0.0]
-CALL obj%GetNearestNode(qv=qv, x=x, globalNode=globalNode)
+  ! nearest node to (0.45, 0.55) is the center node 9
+  CALL obj%GetNearestNode(qv=[0.45_DFP, 0.55_DFP], x=x, globalNode=node)
+  CALL OK(node .EQ. 9_I4B, "nearest node to (0.45, 0.55)")
 
-isok = globalNode == 2
-CALL ok(isok, "GetNearestNode1: ")
-IF (.NOT. isok) THEN
-  CALL Display(msg="found: ", val=globalNode)
-  CALL Display(msg="want: ", val=2)
-END IF
+  ! two nearest nodes to (0.1, 0.0): node 1 and node 5
+  CALL obj%GetNearestNode(qv=[0.1_DFP, 0.0_DFP], x=xn, &
+    globalNode=nodes, nn=2_I4B)
+  CALL OK(ANY(nodes .EQ. 1_I4B) .AND. ANY(nodes .EQ. 5_I4B), &
+    "two nearest nodes")
 
-isok = ALL(x.approxeq.qv)
-CALL ok(isok, "GetNearestNode1: ")
-IF (.NOT. isok) THEN
-  CALL Display(msg="found: ", val=x)
-  CALL Display(msg="want: ", val=qv)
-END IF
-
-qv = [1.5, 0.3, 0.0]
-CALL obj%GetNearestNode(qv=qv, x=x, globalNode=globalNode)
-
-isok = globalNode == 40
-CALL ok(isok, "GetNearestNode1: ")
-IF (.NOT. isok) THEN
-  CALL Display(msg="found: ", val=globalNode)
-  CALL Display(msg="want: ", val=2)
-END IF
-
-qv = [1.5, 0.25, 0.0]
-isok = ALL(x.approxeq.qv)
-CALL ok(isok, "GetNearestNode1: ")
-IF (.NOT. isok) THEN
-  CALL Display(msg="found: ", val=x)
-  CALL Display(msg="want: ", val=qv)
-END IF
-
-CALL meshfile%DEALLOCATE()
-CALL obj%DEALLOCATE()
-
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

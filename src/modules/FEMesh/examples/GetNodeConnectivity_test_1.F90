@@ -1,25 +1,46 @@
 !> author: Vikas Sharma, Ph. D.
-! summary: This example shows how to initiate an instance of `Mesh_` by
-!          reading data from mesh file, which is in `HDF5File_` format.
+! date: 2026-10-22
+! summary: Get the connectivity of all elements
+!
+! GetNodeConnectivity writes the vertex connectivity of element i
+! in column i of VALUE.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE easifemBase
-USE easifemClasses
-IMPLICIT NONE
-TYPE(Mesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-CHARACTER(LEN=*), PARAMETER :: filename = "./mesh.h5"
-INTEGER(I4B), ALLOCATABLE :: edge_connectivity(:, :)
-! Initiate and open the mesh file which is in `HDF5File_` format.
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
-! Open the mesh file
-CALL meshfile%OPEN()
-! Initiate an instance of `Mesh_`
-CALL obj%Initiate(hdf5=meshfile, group="/surfaceEntities_1")
-CALL Reallocate(edge_connectivity, obj%GetMaxNNE(), obj%GetTotalElements())
-CALL obj%GetNodeConnectivity(edge_connectivity)
-CALL Display(edge_connectivity, "edge_connectivity")
-! Display the content of mesh.
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
+
+  IMPLICIT NONE
+
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+  INTEGER(I4B) :: con(4, 4)
+
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
+
+  CALL obj%GetNodeConnectivity(VALUE=con)
+  CALL OK(ALL(con(:, 1) .EQ. [1, 5, 9, 7]), "element 13")
+  CALL OK(ALL(con(:, 4) .EQ. [9, 8, 4, 6]), "element 16")
+
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

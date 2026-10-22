@@ -1,31 +1,46 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-01
-! summary:         Testing InitiateDynamicDataStructure
+! date: 2026-10-22
+! summary: Initiate the dynamic data structure of a mesh
 !
+! InitiateDynamicDataStructure puts the element and node data in
+! linked lists and binary trees. The mesh must be initiated first.
+! The static data of the mesh is not changed.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE FEMesh_Class
-USE HDF5File_Class
-USE ExceptionHandler_Class, ONLY: e, EXCEPTION_INFORMATION
-USE GlobalData
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
+  IMPLICIT NONE
 
-CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
 
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
-!Open the mesh file
-CALL meshfile%OPEN()
-CALL obj%SetShowTime(.TRUE.)
-!Initiate an instance of `FEMesh_`
-CALL obj%Initiate(hdf5=meshfile, dim=2)
-! Initiate dynamic data structure
-CALL obj%InitiateDynamicDataStructure()
-!Display the content of mesh.
-CALL obj%DisplayMeshInfo(filename)
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
+
+  CALL obj%InitiateDynamicDataStructure()
+  CALL OK(obj%GetTotalElements() .EQ. 4_I4B, "GetTotalElements")
+  CALL OK(obj%GetTotalNodes() .EQ. 9_I4B, "GetTotalNodes")
+
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

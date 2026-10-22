@@ -1,42 +1,52 @@
 !> author: Vikas Sharma, Ph. D.
-! summary: GetElementToElements_test_2
+! date: 2026-10-22
+! summary: Get the neighbours of an element without allocation
+!
+! GetElementToElements_ with ans(:) returns the neighbour element
+! numbers. With ans(:, :) it returns the full information (see
+! GetElementToElements).
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE easifemBase
-USE easifemClasses
-IMPLICIT NONE
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-  CHARACTER(*), PARAMETER :: filename="../../Mesh/examples/meshdata/small_mesh.h5"
-CALL meshfile%Initiate(filename, "READ")
-CALL meshfile%OPEN()
-CALL obj%Initiate(hdf5=meshfile, group="/surfaceEntities_1")
-! Now we get the full information about the element
-! connected to the given global element numbers.
-CALL obj%InitiateElementToElements()
-BLOCK
-  INTEGER(I4B), ALLOCATABLE :: nptrs(:, :)
-  nptrs = obj%GetElementToElements(globalElement=26, onlyElements=.TRUE.)
-  CALL OK(ALL(nptrs(:, 1) .EQ. [19, 16, 23]), "GetElementToElements: ")
-END BLOCK
-BLOCK
-  INTEGER(I4B), ALLOCATABLE :: e2e(:, :), nptrs(:), nptrs2(:), nptrs1(:)
-  INTEGER(I4B), PARAMETER :: globalElement = 26
-  INTEGER(I4B) :: ii
-  nptrs = obj%GetConnectivity(globalElement)
-  e2e = obj%GetElementToElements(globalElement=globalElement, &
-    & onlyElements=.FALSE.)
-  CALL OK(ALL(SHAPE(e2e) .EQ. [3, 3]), "GetElementToElements: ")
-  CALL OK(ALL(nptrs .EQ. [7, 9, 11]), "GetConnectivity: ")
-  DO ii = 1, SIZE(e2e, 2)
-    nptrs1 = obj%GetFacetConnectivity(globalElement, e2e(ii, 2))
-    nptrs2 = obj%GetFacetConnectivity(e2e(ii, 1), e2e(ii, 3))
-    ! CALL Display(nptrs1, "nptrs1: ")
-    ! CALL Display(nptrs2, "nptrs2: ")
-    CALL OK(ALL(nptrs1 .EQ. nptrs2), "GetElementToElements: ")
-  END DO
-  ! CALL Display(e2e, "e2e: ")
-END BLOCK
-CALL meshfile%CLOSE()
-CALL meshfile%DEALLOCATE()
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
+
+  IMPLICIT NONE
+
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+  INTEGER(I4B) :: elems(10), e2e(10, 3), tsize, nrow, ncol
+
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
+
+  CALL obj%GetElementToElements_(ans=elems, tsize=tsize, &
+    globalElement=16_I4B)
+  CALL OK(ALL(elems(1:tsize) .EQ. [15, 14]), "neighbours of 16")
+
+  CALL obj%GetElementToElements_(ans=e2e, nrow=nrow, ncol=ncol, &
+    globalElement=4_I4B, islocal=.TRUE.)
+  CALL OK(nrow .EQ. 2_I4B .AND. ncol .EQ. 3_I4B, "nrow and ncol")
+  CALL OK(ALL(e2e(1, 1:3) .EQ. [15, 1, 3]), "first neighbour")
+
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

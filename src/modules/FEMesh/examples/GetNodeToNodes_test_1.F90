@@ -1,70 +1,59 @@
 !> author: Vikas Sharma, Ph. D.
-! summary: This example shows how to get the node to node connectivity data in
-!          the mesh.
+! date: 2026-10-22
+! summary: Get the nodes connected to a node
+!
+! GetNodeToNodes returns the global node numbers connected to a node
+! through the elements around it. With includeSelf the node itself
+! is the first entry. For a list of nodes the result is sorted and
+! has no duplicates. Call InitiateNodeToNodes first.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE easifemBase
-USE easifemClasses
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE SortUtility, ONLY: Sort
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-TYPE(FEMesh_) :: obj
-TYPE(HDF5File_) :: meshfile
-  CHARACTER(*), PARAMETER :: filename="../../Mesh/examples/meshdata/small_mesh.h5"
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
+  INTEGER(I4B), ALLOCATABLE :: nodes(:)
 
-CALL e%SetQuietMode(.TRUE.)
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-!Open the mesh file
-CALL meshfile%OPEN()
-CALL obj%SetShowTime(.TRUE.)
-!Initiate an instance of `Mesh_`
-CALL obj%Initiate(hdf5=meshfile, group="/surfaceEntities_1")
-! Initiate node to nodes
-CALL obj%InitiateNodeToNodes()
-!Display the content of mesh.
-CALL obj%DisplayMeshInfo(filename)
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-BLOCK
-  INTEGER(I4B), ALLOCATABLE :: ans(:), exact_ans(:)
-  ans = obj%GetNodeToNodes(globalNode=10, includeSelf=.TRUE.)
-  ans = SORT(ans)
-  exact_ans = [1, 5, 8, 9, 10, 11, 12]
-  CALL OK(ALL(ans .EQ. exact_ans), "GetNodeToNodes: ")
-END BLOCK
+  CALL obj%InitiateNodeToNodes()
 
-BLOCK
-  INTEGER(I4B), ALLOCATABLE :: ans(:), exact_ans(:)
-  ans = obj%GetNodeToNodes(globalNode=10, includeSelf=.FALSE.)
-  ans = SORT(ans)
-  exact_ans = [1, 5, 8, 9, 11, 12]
-  CALL OK(ALL(ans .EQ. exact_ans), "GetNodeToNodes: ")
-END BLOCK
+  nodes = obj%GetNodeToNodes(globalNode=1_I4B, includeSelf=.FALSE.)
+  CALL OK(SIZE(nodes) .EQ. 3_I4B, "node 1: size")
+  CALL OK(ALL([5, 7, 9] .EQ. Sort(nodes)), "node 1")
 
-BLOCK
-  INTEGER(I4B), ALLOCATABLE :: ans(:), exact_ans(:)
-  ans = obj%GetNodeToNodes(globalNode=5, includeSelf=.TRUE.)
-  ans = SORT(ans)
-  exact_ans = [1, 2, 5, 10, 12]
-  CALL OK(ALL(ans .EQ. exact_ans), "GetNodeToNodes: ")
-END BLOCK
+  nodes = obj%GetNodeToNodes(globalNode=1_I4B, includeSelf=.TRUE.)
+  CALL OK(nodes(1) .EQ. 1_I4B, "includeSelf: first entry")
+  CALL OK(SIZE(nodes) .EQ. 4_I4B, "includeSelf: size")
 
-BLOCK
-  INTEGER(I4B), ALLOCATABLE :: ans(:), exact_ans(:)
-  ans = obj%GetNodeToNodes(globalNode=5, includeSelf=.FALSE.)
-  ans = SORT(ans)
-  exact_ans = [1, 2, 10, 12]
-  CALL OK(ALL(ans .EQ. exact_ans), "GetNodeToNodes: ")
-END BLOCK
+  nodes = obj%GetNodeToNodes(globalNode=[1_I4B, 2_I4B], &
+    includeSelf=.FALSE.)
+  CALL OK(ALL(nodes .EQ. [5, 7, 8, 9]), "nodes 1 and 2")
 
-BLOCK
-  INTEGER(I4B), ALLOCATABLE :: ans(:), exact_ans(:)
-  ans = obj%GetNodeToNodes(globalNode=5, includeSelf=.FALSE., islocal=.TRUE.)
-  ans = SORT(ans)
-  exact_ans = [1, 2, 10, 12]
-  CALL OK(ALL(ans .EQ. exact_ans), "GetNodeToNodes: ")
-END BLOCK
-
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main

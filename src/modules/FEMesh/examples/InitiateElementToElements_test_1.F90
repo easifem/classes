@@ -1,43 +1,47 @@
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-03
-! summary:  This program tests the InitiateElementToElements method of the FEMesh class.
+! date: 2026-10-22
+! summary: Initiate element to elements data
 !
+! Initiate already calls InitiateElementToElements. A second call
+! does nothing. The element to elements data also marks the
+! boundary elements and the boundary nodes.
+!
+! The mesh very_small_quad4_mesh.h5 is the unit square with four
+! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
+!
+!   3 ---- 6 ---- 4
+!   |  14  |  16  |
+!   7 ---- 9 ---- 8
+!   |  13  |  15  |
+!   1 ---- 5 ---- 2
 
 PROGRAM main
-USE FEMesh_Class
-USE HDF5File_Class
-USE GlobalData
-USE ExceptionHandler_Class, ONLY: e
+  USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+  USE FEMesh_Class, ONLY: FEMesh_
+  USE GlobalData, ONLY: I4B
+  USE HDF5File_Class, ONLY: HDF5File_
+  USE Test_Method, ONLY: OK
 
-IMPLICIT NONE
+  IMPLICIT NONE
 
-TYPE(FEMesh_) :: obj
+  CHARACTER(*), PARAMETER :: filename = &
+    "./meshdata/very_small_quad4_mesh.h5"
+  TYPE(FEMesh_) :: obj
+  TYPE(HDF5File_) :: meshfile
 
-TYPE(HDF5File_) :: meshfile
-CHARACTER(*), PARAMETER :: filename="./meshdata/small_tri3_mesh.h5"
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-CALL meshfile%Initiate(FileName=filename, MODE="READ")
-!Open the mesh file
+  CALL meshfile%Initiate(filename=filename, mode="READ")
+  CALL meshfile%OPEN()
+  CALL obj%Initiate(hdf5=meshfile, DIM=2)
 
-CALL meshfile%OPEN()
+  CALL OK(obj%IsElementToElements(), "IsElementToElements")
+  CALL obj%InitiateElementToElements()
+  CALL OK(obj%GetMaxElementToElements() .EQ. 2_I4B, &
+    "GetMaxElementToElements")
 
-CALL obj%SetShowTime(.TRUE.)
-
-!Initiate an instance of `Mesh_`
-CALL obj%Initiate(hdf5=meshfile, dim=2)
-
-!Initiate an edge connectivity
-CALL obj%InitiateEdgeConnectivity()
-
-! Initiate Element to Element data
-CALL obj%InitiateElementToElements()
-
-!Display the content of mesh.
-CALL obj%DisplayElementData("ElementData:")
-
-! Display the mesh information
-CALL obj%DisplayMeshInfo(filename)
-
-CALL obj%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
+  CALL obj%DEALLOCATE()
+  CALL meshfile%DEALLOCATE()
 END PROGRAM main
