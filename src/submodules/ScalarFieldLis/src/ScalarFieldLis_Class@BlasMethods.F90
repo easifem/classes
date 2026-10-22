@@ -210,6 +210,44 @@ MODULE PROCEDURE obj_COPY
 END PROCEDURE obj_COPY
 
 !----------------------------------------------------------------------------
+!                                                                      Swap
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Swap
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Swap()"
+#endif
+  INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+
+  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+
+  CALL AssertError2(obj%Size(), obj2%Size(), myName, &
+    'obj%Size() and obj2%Size() are not same')
+#endif
+
+  CALL lis_vector_swap(obj%lis_ptr, obj2%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
+#endif
+END PROCEDURE obj_Swap
+
+!----------------------------------------------------------------------------
 !                                                                    NORM2
 !----------------------------------------------------------------------------
 
