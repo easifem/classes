@@ -29,35 +29,35 @@ CONTAINS
 
 MODULE PROCEDURE obj_AXPY1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_AXPY1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_AXPY1()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
 #ifdef DEBUG_VER
-CALL lis_vector_is_null(x%lis_ptr, ierr)
-CALL CHKERR(ierr)
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL lis_vector_is_null(x%lis_ptr, ierr)
+  CALL CHKERR(ierr)
 #endif
 
 ! alpha, x, y, ierr
-CALL lis_vector_axpy(scale, x%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(scale, x%lis_ptr, obj%lis_ptr, ierr)
 
 #ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL CHKERR(ierr)
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_AXPY1
 
@@ -67,35 +67,35 @@ END PROCEDURE obj_AXPY1
 
 MODULE PROCEDURE obj_AXPY2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_AXPY2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_AXPY2()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
 #ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_vector_is_null(x1%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_vector_is_null(x2%lis_ptr, ierr)
-CALL CHKERR(ierr)
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x1%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
 #endif
 
 ! alpha, x, y, ierr
-CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
-CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
 
 #ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL CHKERR(ierr)
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_AXPY2
 
@@ -105,39 +105,39 @@ END PROCEDURE obj_AXPY2
 
 MODULE PROCEDURE obj_AXPY3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_AXPY3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_AXPY3()"
 #endif
 
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
 #ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_vector_is_null(x1%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_vector_is_null(x2%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_vector_is_null(x3%lis_ptr, ierr)
-CALL CHKERR(ierr)
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x1%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(x3%lis_ptr, ierr)
+  CALL CHKERR(ierr)
 #endif
 
 ! alpha, x, y, ierr
-CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
-CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
-CALL lis_vector_axpy(a3, x3%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
+  CALL lis_vector_axpy(a3, x3%lis_ptr, obj%lis_ptr, ierr)
 
 #ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL CHKERR(ierr)
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_AXPY3
 
@@ -147,30 +147,30 @@ END PROCEDURE obj_AXPY3
 
 MODULE PROCEDURE obj_SCAL
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SCAL()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SCAL()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
 #ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
 #endif
 
 ! alpha, x, ierr
-CALL lis_vector_scale(scale, obj%lis_ptr, ierr)
+  CALL lis_vector_scale(scale, obj%lis_ptr, ierr)
 
 #ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL CHKERR(ierr)
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END]')
 #endif
 END PROCEDURE obj_SCAL
 
@@ -180,32 +180,32 @@ END PROCEDURE obj_SCAL
 
 MODULE PROCEDURE obj_COPY
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_COPY()"
+  CHARACTER(*), PARAMETER :: myName = "obj_COPY()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_is_null(obj2%lis_ptr, ierr)
-CALL CHKERR(ierr)
-#endif
-
-CALL lis_vector_copy(obj2%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START]')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+
+  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  CALL lis_vector_copy(obj2%lis_ptr, obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_COPY
 
@@ -215,30 +215,30 @@ END PROCEDURE obj_COPY
 
 MODULE PROCEDURE obj_Norm2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Norm2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Norm2()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-#endif
-
-ans = 0.0_DFP
-CALL lis_vector_nrm2(obj%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  ans = 0.0_DFP
+  CALL lis_vector_nrm2(obj%lis_ptr, ans, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Norm2
 
@@ -248,30 +248,30 @@ END PROCEDURE obj_Norm2
 
 MODULE PROCEDURE obj_Norm1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Norm1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Norm1()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-#endif
-
-ans = 0.0
-CALL lis_vector_nrm1(obj%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  ans = 0.0
+  CALL lis_vector_nrm1(obj%lis_ptr, ans, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Norm1
 
@@ -281,30 +281,30 @@ END PROCEDURE obj_Norm1
 
 MODULE PROCEDURE obj_Normi
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Normi()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Normi()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-#endif
-
-ans = 0.0_DFP
-CALL lis_vector_nrmi(obj%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  ans = 0.0_DFP
+  CALL lis_vector_nrmi(obj%lis_ptr, ans, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Normi
 
@@ -314,33 +314,33 @@ END PROCEDURE obj_Normi
 
 MODULE PROCEDURE obj_DOT_PRODUCT
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_DOT_PRODUCT()"
+  CHARACTER(*), PARAMETER :: myName = "obj_DOT_PRODUCT()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-
-CALL lis_vector_is_null(obj2%lis_ptr, ierr)
-CALL CHKERR(ierr)
-#endif
-
-ans = 0.0_DFP
-CALL lis_vector_dot(obj%lis_ptr, obj2%lis_ptr, ans, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+
+  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  ans = 0.0_DFP
+  CALL lis_vector_dot(obj%lis_ptr, obj2%lis_ptr, ans, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_DOT_PRODUCT
 
@@ -350,33 +350,33 @@ END PROCEDURE obj_DOT_PRODUCT
 
 MODULE PROCEDURE obj_PMUL
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_PMUL()"
+  CHARACTER(*), PARAMETER :: myName = "obj_PMUL()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_vector_is_null(obj1%lis_ptr, ierr)
-CALL CHKERR(ierr)
-CALL lis_vector_is_null(obj2%lis_ptr, ierr)
-CALL CHKERR(ierr)
-#endif
-
-CALL lis_vector_pmul(obj1%lis_ptr, obj2%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(obj1%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+  CALL lis_vector_is_null(obj2%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  CALL lis_vector_pmul(obj1%lis_ptr, obj2%lis_ptr, obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_PMUL
 
@@ -386,29 +386,29 @@ END PROCEDURE obj_PMUL
 
 MODULE PROCEDURE obj_Reciprocal
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Reciprocal()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Reciprocal()"
 #endif
-INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL lis_vector_is_null(obj%lis_ptr, ierr)
-CALL CHKERR(ierr)
-#endif
-
-CALL lis_vector_reciprocal(obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-CALL CHKERR(ierr)
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL lis_vector_is_null(obj%lis_ptr, ierr)
+  CALL CHKERR(ierr)
+#endif
+
+  CALL lis_vector_reciprocal(obj%lis_ptr, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+    '[END] ')
 #endif
 END PROCEDURE obj_Reciprocal
 
