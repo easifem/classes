@@ -20,7 +20,6 @@ USE GlobalData, ONLY: CHAR_LF, CHAR_SLASH
 USE System_Method, ONLY: RWX_U, System_Mkdir
 USE ExceptionHandler_Class, ONLY: EXCEPTION_MAX_MESG_LENGTH
 USE AbstractFile_Class, ONLY: AbstractFileDeallocate
-USE BaseType, ONLY: math => TypeMathOpt
 USE HDF5, ONLY: SIZE_T, H5P_FILE_ACCESS_F, H5P_DATASET_CREATE_F, &
   H5P_DATASET_XFER_F, H5PCLOSE_F, H5F_CLOSE_SEMI_F, &
   H5F_ACC_RDONLY_F, H5F_ACC_RDWR_F, H5F_ACC_TRUNC_F, &
@@ -39,7 +38,7 @@ USE HDF5, ONLY: SIZE_T, H5P_FILE_ACCESS_F, H5P_DATASET_CREATE_F, &
   H5PSET_DEFLATE_F, H5PSET_FCLOSE_DEGREE_F, &
   H5SCLOSE_F, H5SCREATE_F, H5SCREATE_SIMPLE_F, &
   H5SGET_SIMPLE_EXTENT_DIMS_F, H5SGET_SIMPLE_EXTENT_NDIMS_F, &
-  H5TGET_CLASS_F, H5TGET_PRECISION_F, H5TGET_SIZE_F
+  H5TGET_CLASS_F, H5TGET_PRECISION_F, H5TGET_SIZE_F, H5TCLOSE_F
 
 IMPLICIT NONE
 
@@ -1103,7 +1102,7 @@ MODULE PROCEDURE obj_isCompressed
 
 #ifdef DEBUG_VER
   isok = obj%pathExists(path)
-  CALL AssertError1(isok, myName, 'path=' // path // 'does not exists!')
+  CALL AssertError1(isok, myName, 'path=' // path // ' does not exist!')
 #endif
 
   nelmts = 1
@@ -1120,10 +1119,12 @@ MODULE PROCEDURE obj_isCompressed
       namelen, filter_name, filter_id, ierr)
     ans = ANY(filter_id .EQ. [H5Z_FILTER_DEFLATE_F, &
       H5Z_FILTER_SZIP_F, &
-      H5Z_FILTER_NBIT_F, &
       H5Z_FILTER_NBIT_F])
     IF (ans) EXIT mainloop
   END DO mainloop
+
+  CALL H5PCLOSE_F(dcpl, ierr)
+  CALL H5DCLOSE_F(dset_id, ierr)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1227,8 +1228,9 @@ MODULE PROCEDURE preWrite
       !Logic is equivalent to "compress anything > 1MB"
       IF (.NOT. ALL(gdims == cdims)) THEN
         CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ERROR)
-        !Do not presently support user defined compression levels, just level 5
-        !5 seems like a good trade-off of speed vs. compression ratio.
+        !Do not presently support user defined compression levels,
+        !just level 5 seems like a good trade-off of speed vs.
+        !compression ratio.
         CALL H5PSET_DEFLATE_F(plist_id, obj%zlibOpt, ERROR)
       END IF
 
@@ -1253,7 +1255,8 @@ MODULE PROCEDURE preWrite
 #endif
 
   IF (obj%overwriteStat .AND. dset_exists) THEN
-    ! Open group for overwrite if it already exists and the file has overwrite status
+    ! Open group for overwrite if it already exists and
+    ! the file has overwrite status
     CALL H5DOPEN_F(file_id, path, dset_id, ERROR)
 
 #ifdef DEBUG_VER
@@ -1587,6 +1590,9 @@ MODULE PROCEDURE getDataShape
   ALLOCATE(dataShape(SIZE(dims)))
   dataShape = INT(dims, KIND=I4B)
 
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL H5DCLOSE_F(dset_id, error)
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
     '[END] ')
@@ -1671,6 +1677,9 @@ MODULE PROCEDURE getDataType
       'Unsupported data type ')
 #endif
   END IF
+
+  CALL H5TCLOSE_F(dtype, error)
+  CALL H5DCLOSE_F(dset_id, error)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
