@@ -49,14 +49,14 @@ IMPLICIT NONE
 PRIVATE
 
 CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) = &
-                           ["Scalar", "Vector", "Matrix"]
+  ["Scalar", "Vector", "Matrix"]
 
 CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) = &
-                           ["Constant         ", &
-                            "Space            ", &
-                            "Time             ", &
-                            "SpaceTime        ", &
-                            "SolutionDependent"]
+  ["Constant         ", &
+  "Space            ", &
+  "Time             ", &
+  "SpaceTime        ", &
+  "SolutionDependent"]
 
 PUBLIC :: UserFunction_
 PUBLIC :: UserFunctionGetReturnType
@@ -118,7 +118,7 @@ TYPE :: UserFunction_
   REAL(DFP) :: vectorValue(funcopt%vectorFuncNumReturns) = math%zero
   !! Vector constant value
   REAL(DFP) :: matrixValue(funcopt%matrixFuncNumReturns, &
-                           funcopt%matrixFuncNumReturns) = math%zero
+    funcopt%matrixFuncNumReturns) = math%zero
   !! Matrix constant value
   TYPE(EquationParser_) :: scalarEqParser
   !! Equation parser for scalar function
@@ -128,8 +128,8 @@ TYPE :: UserFunction_
   !! Equation parser for vector function
 
   TYPE(EquationParserPointer_) :: matrixEqParser( &
-                                  funcopt%matrixFuncNumReturns, &
-                                  funcopt%matrixFuncNumReturns)
+    funcopt%matrixFuncNumReturns, &
+    funcopt%matrixFuncNumReturns)
   !! equation parser for matrix function
 
   PROCEDURE(InterfaceScalarSubroutine), POINTER, NOPASS :: &
@@ -143,9 +143,6 @@ TYPE :: UserFunction_
   !! matrix function pointer
 
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate data
@@ -153,7 +150,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the user function from the arguments
 
-  ! SET:
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetScalarFunctionPointer => &
     obj_SetScalarFunctionPointer
@@ -187,7 +183,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetName => obj_SetName
   !! Set name of the function
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetArgType => obj_GetArgType
   PROCEDURE, PUBLIC, PASS(obj) :: GetReturnType => obj_GetReturnType
@@ -203,7 +198,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNumArgs => obj_GetNumArgs
   !! Get the number of Args
 
-  ! GET:
   ! @GetScalarValueMethods
   PROCEDURE, PASS(obj) :: GetScalarValue1_ => obj_GetScalarValue_1
   PROCEDURE, PASS(obj) :: GetScalarValue2_ => obj_GetScalarValue_2
@@ -211,7 +205,6 @@ CONTAINS
   GENERIC, PUBLIC :: Get => GetScalarValue1_
   GENERIC, PUBLIC :: Get_ => GetScalarValue1_
 
-  ! GET:
   ! @GetVectorValueMethods
   PROCEDURE, PASS(obj) :: GetVectorValue => obj_GetVectorValue
   GENERIC, PUBLIC :: Get => GetVectorValue
@@ -220,7 +213,6 @@ CONTAINS
   GENERIC, PUBLIC :: GetVectorValue_ => GetVectorValue1_, GetVectorValue2_
   GENERIC, PUBLIC :: Get_ => GetVectorValue1_
 
-  ! GET:
   ! @GetMatrixValueMethods
   PROCEDURE, PASS(obj) :: GetMatrixValue => obj_GetMatrixValue
   GENERIC, PUBLIC :: Get => GetMatrixValue
@@ -229,26 +221,22 @@ CONTAINS
   GENERIC, PUBLIC :: GetMatrixValue_ => GetMatrixValue1_, GetMatrixValue2_
   GENERIC, PUBLIC :: Get_ => GetMatrixValue1_
 
-  ! GET:
   ! @GetFEVariableMethods
   PROCEDURE, PASS(obj) :: GetFEVariable => obj_GetFEVariable
   PROCEDURE, PASS(obj) :: GetFEVariable_ => obj_GetFEVariable_
   GENERIC, PUBLIC :: Get => GetFEVariable
   GENERIC, PUBLIC :: Get_ => GetFEVariable_
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content
 
-  ! IO:
   ! @HDFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import from HDF5File
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export to HDF5File
 
-  ! IO:
   ! @TomlMethods
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import from toml
@@ -264,7 +252,7 @@ END TYPE UserFunction_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: --
+! date: 2026-10-22
 ! summary: data type for keeping the pointer to UserFunction_
 !
 !# UserFunctionPointer_
@@ -290,7 +278,7 @@ END TYPE UserFunctionPointer_
 ! return type in string format. This integer number is used internally.
 
 INTERFACE
-  MODULE PURE FUNCTION UserFunctionGetReturnType(name) RESULT(Ans)
+  MODULE PURE FUNCTION UserFunctionGetReturnType(name) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION UserFunctionGetReturnType
@@ -310,7 +298,7 @@ END INTERFACE
 ! This integer number is used internally for argType.
 
 INTERFACE
-  MODULE PURE FUNCTION UserFunctionGetArgType(name) RESULT(Ans)
+  MODULE PURE FUNCTION UserFunctionGetArgType(name) RESULT(ans)
     CHARACTER(*), INTENT(IN) :: name
     INTEGER(I4B) :: ans
   END FUNCTION UserFunctionGetArgType
@@ -491,11 +479,11 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: argType
     !! Argument type
     !! Constant, Space, Time, SpaceTime
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numArgs
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numArgs
     !! number of argument
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numReturns
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numReturns
     !! number of returns
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: returnShape(2)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: returnShape(2)
     !! Shape of return type
     !! Only used when returnType is Matrix
   END SUBROUTINE obj_Initiate
@@ -524,7 +512,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetScalarValue_1(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val
-    REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
   END SUBROUTINE obj_GetScalarValue_1
 END INTERFACE
 
@@ -582,7 +570,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetVectorValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
   END SUBROUTINE obj_GetVectorValue
 END INTERFACE
 
@@ -612,7 +600,7 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of return values
     !! data written in val
-    REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
   END SUBROUTINE obj_GetVectorValue_1
 END INTERFACE
 
@@ -662,7 +650,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMatrixValue(obj, val, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
   END SUBROUTINE obj_GetMatrixValue
 END INTERFACE
 
@@ -681,7 +669,7 @@ INTERFACE
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
   END SUBROUTINE obj_GetMatrixValue_1
 END INTERFACE
 
@@ -721,8 +709,8 @@ INTERFACE
   MODULE SUBROUTINE obj_GetFEVariable(obj, fevar, xij, times)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
-    REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: xij(:, :)
+    REAL(DFP), INTENT(IN), OPTIONAL :: times(:)
   END SUBROUTINE obj_GetFEVariable
 END INTERFACE
 
@@ -743,8 +731,8 @@ INTERFACE
   MODULE SUBROUTINE obj_GetFEVariable_(obj, fevar, xij, times)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(INOUT) :: fevar
-    REAL(DFP), OPTIONAL, INTENT(IN) :: xij(:, :)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), INTENT(IN), OPTIONAL :: xij(:, :)
+    REAL(DFP), INTENT(IN), OPTIONAL :: times(:)
   END SUBROUTINE obj_GetFEVariable_
 END INTERFACE
 
@@ -900,7 +888,7 @@ INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(UserFunction_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE UserFunctionDisplay
 
@@ -916,7 +904,7 @@ INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(UserFunction_), INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
   END SUBROUTINE obj_Display_Vector
 END INTERFACE UserFunctionDisplay
 
@@ -932,7 +920,7 @@ INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(UserFunctionPointer_), INTENT(INOUT) :: obj(:)
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
   END SUBROUTINE obj_Display_Ptr_Vector
 END INTERFACE UserFunctionDisplay
 
@@ -1118,9 +1106,9 @@ INTERFACE
     obj, tomlName, afile, filename, printToml)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    TYPE(TxtFile_), INTENT(INOUT), OPTIONAL :: afile
+    CHARACTER(*), INTENT(IN), OPTIONAL :: filename
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: printToml
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
