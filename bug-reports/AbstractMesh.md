@@ -192,12 +192,12 @@ stored), `GetOrder_test_3` (Triangle6, order 2, again after Deallocate).
 ### 16. Minor
 
 - `GetNearestNode` with `nn` returns nodes in no fixed order: the kdtree
-  is created with `sort=.FALSE.` (documented, not a bug).
-- `GetFacetConnectivity`, `GetFacetConnectivity_` and
-  `GetTotalFacetConnectivity` declare `islocal` as `LOGICAL(I4B)`;
-  the rest of the class uses `LOGICAL(LGT)`.
+  is created with `sort=.FALSE.` (documented, not a bug; left as is).
+- Fixed: `GetFacetConnectivity`, `GetFacetConnectivity_` and
+  `GetTotalFacetConnectivity` declared `islocal` as `LOGICAL(I4B)`; now
+  `LOGICAL(LGT)` like the rest of the class.
 - `GetMasterCellNumber`, `GetSlaveCellNumber`, `GetCellNumber`,
   `GetLocalFacetID` and `AbstractMeshGetFacetConnectivity` ignore
   `elementType`.
 - The edge orientation is zero-sized until `InitiateEdgeConnectivity` is
-  called; no error is raised.
+  called; no error is raised (left as is).

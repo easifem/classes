@@ -7208,7 +7208,7 @@ END INTERFACE
 !   globalElement : INTEGER(I4B), intent(in) - global element number, or local
 !     element number if islocal is true
 !   iface : INTEGER(I4B), intent(in) - local facet number in the element
-!   islocal : LOGICAL(I4B), optional, intent(in) - if true, the given element
+!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
 ! Returns:
@@ -7268,7 +7268,7 @@ INTERFACE
     !! global element number, or local element number if islocal is true
     INTEGER(I4B), INTENT(IN) :: iface
     !! local facet number in the element
-    LOGICAL(I4B), INTENT(IN), OPTIONAL :: islocal
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
     INTEGER(I4B), ALLOCATABLE :: ans(:)
@@ -7294,7 +7294,7 @@ END INTERFACE
 !   ans(:) : INTEGER(I4B), intent(inout) - global node numbers of the facet,
 !     size must be at least tsize
 !   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   islocal : LOGICAL(I4B), optional, intent(in) - if true, the given element
+!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
 ! See also: [[obj_GetFacetConnectivity]]
@@ -7308,7 +7308,7 @@ INTERFACE
     !! global element number, or local element number if islocal is true
     INTEGER(I4B), INTENT(IN) :: iface
     !! local facet number in the element
-    LOGICAL(I4B), INTENT(IN), OPTIONAL :: islocal
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -7333,7 +7333,7 @@ END INTERFACE
 !   globalElement : INTEGER(I4B), intent(in) - global element number, or local
 !     element number if islocal is true
 !   iface : INTEGER(I4B), intent(in) - local facet number in the element
-!   islocal : LOGICAL(I4B), optional, intent(in) - if true, the given element
+!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
 ! Returns:
@@ -7350,7 +7350,7 @@ INTERFACE
     !! global element number, or local element number if islocal is true
     INTEGER(I4B), INTENT(IN) :: iface
     !! local facet number in the element
-    LOGICAL(I4B), INTENT(IN), OPTIONAL :: islocal
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
     INTEGER(I4B) :: ans
