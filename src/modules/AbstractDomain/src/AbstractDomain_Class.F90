@@ -3977,6 +3977,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-10-12
+! update:
+!   - 2026-10-24: Works for one domain (the node to node map was empty)
 ! summary: Set the sparsity pattern for several domains
 !
 ! Each domain is a physical variable: the block (ivar, jvar) of mat gets the
@@ -3988,6 +3990,59 @@ END INTERFACE
 !   domains(:) : CLASS(AbstractDomainPointer_), intent(inout) - domains, one
 !     per physical variable
 !   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractDomain_Class, ONLY: AbstractDomainPointer_
+!   USE AbstractDomain_Class, ONLY: AbstractDomainSetSparsity
+!   USE BaseType, ONLY: CSRMatrix_
+!   USE BaseType, ONLY: DOF_
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE CSRMatrix_Method, ONLY: CSRMatrixInitiate => Initiate
+!   USE CSRMatrix_Method, ONLY: GetNNZ
+!   USE DOF_Method, ONLY: DOFInitiate => Initiate
+!   USE DOF_Method, ONLY: DOFSize => Size
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: I4B
+!   USE GlobalData, ONLY: NODES_FMT
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = &
+!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!   TYPE(HDF5File_) :: meshfile
+!   TYPE(FEDomain_), TARGET :: obj
+!   TYPE(DOF_) :: dofobj
+!   TYPE(CSRMatrix_) :: mat
+!   TYPE(AbstractDomainPointer_) :: domains(1)
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+!   CALL meshfile%Initiate(filename=filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL obj%Initiate(hdf5=meshfile, group="")
+!
+!   CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalNodes()], &
+!                    names=["K"], spacecompo=[1_I4B], &
+!                    timecompo=[1_I4B], storagefmt=NODES_FMT)
+!   CALL CSRMatrixInitiate(obj=mat, ncol=DOFSize(dofobj), &
+!                          nrow=DOFSize(dofobj), idof=dofobj, &
+!                          jdof=dofobj)
+!   domains(1)%ptr => obj
+!   CALL AbstractDomainSetSparsity(domains=domains, mat=mat)
+!   CALL OK(GetNNZ(mat) .EQ. 49_I4B, "number of nonzeros")
+!   domains(1)%ptr => NULL()
+!
+!   CALL obj%DEALLOCATE()
+!   CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
 !
 ! See also: [[obj_SetSparsity1]]
 

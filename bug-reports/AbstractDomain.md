@@ -48,7 +48,6 @@ the listed test passes. **Open** means not changed.
   and `InitiateCellToCellData1`, where it was not used or was wrong for
   meshes with more than one entity.
 
-
 ### 5. GetDimEntityNum always returns entity 1 for FEDomain_
 
 - Where: `obj_GetDimEntityNum` in `AbstractDomain_Class@GetMethods.F90`
@@ -57,6 +56,26 @@ the listed test passes. **Open** means not changed.
 - Fix: it returns `[dim, Elemdata_meshID(element)]`.
 - Test: `GetDimEntityNum_test_1` (element 2 is on point 2, not 1),
   `GetDimEntityNum_test_2` (two regions: element 20 gives `[2, 2]`)
+
+### 6. AbstractDomainSetSparsity gives no entries for one domain
+
+- Where: `obj_SetSparsity2` (`part1_obj_Set_sparsity2`) in
+  `AbstractDomain_Class@SetMethods.F90`, through
+  `FEDomainConnectivity_%InitiateNodeToNodeData`.
+- Symptom: with one domain (quad mesh, one scalar DOF) `GetNNZ(mat)` was 0;
+  `SetSparsity1` gives 49.
+- Cause 1: `InitiateNodeToNodeData1/2` (FEDomainConnectivity NodeMethods)
+  compared all 3 components of the local arrays `x1(3)` and `x2(3)`, but
+  `GetNodeCoord` and `GetNearestNode` set only the first nsd. For 2D the
+  third components were not initialised, so no node matched and
+  `nodeToNode` stayed zero; the mesh `SetSparsity3` then skipped every row.
+- Cause 2: `nodeToNode` was indexed by the local node number of domain1
+  (mesh1), but documented and used by the mesh `SetSparsity3` with the
+  global node number.
+- Fix: compare only the first nsd components (arrays set to zero first);
+  index `nodeToNode` by the global node number (size: largest node number)
+  in both routines, and in the `InitiateCellToCellData1/2` consumers.
+- Test: `SetSparsity_test_2` (49 nonzeros with one domain)
 
 ## Open
 
@@ -87,15 +106,6 @@ was not implemented (it returned 0 and raised an error only in debug
 builds), FEDomain_ did not override it, and nothing in the library called
 it. The old packages (MovingMesh, StokesFlow, DBE) call
 `dom%GetOrder(dim=...)`; they need the mesh `GetOrder()` instead.
-
-### 6. AbstractDomainSetSparsity gives no entries for one domain
-
-- Where: `obj_SetSparsity2` (`part1_obj_Set_sparsity2`) in
-  `AbstractDomain_Class@SetMethods.F90`
-- Symptom: with one domain (quad mesh, one scalar DOF) `GetNNZ(mat)` is 0
-  after the call; `SetSparsity1` gives 49 for the same matrix.
-- Status: not investigated; it uses `FEDomainConnectivity_` and
-  `SetSparsity3` of the mesh. No test was written.
 
 ### 7. Minor
 

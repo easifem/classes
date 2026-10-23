@@ -44,16 +44,16 @@ INTEGER(I4B), PARAMETER :: oversetType = 4
 
 TYPE :: FacetConnectivity_
   INTEGER(I4B) :: facetID = 0
-    !! global element number of facet element in facet mesh
+  !! global element number of facet element in facet mesh
   INTEGER(I4B) :: GlobalCellData(4, 2) = 0
-    !! 1,1 --> Global element number of master cell
-    !! 2,1 --> master cell's local facet number connected to facet-elem
-    !! 3,1 --> master mesh dimension
-    !! 4,1 --> master mesh entity number
-    !! 1,2 --> Global element number of slave cell
-    !! 2,2 --> slave cell's local facet number connected to facet-elem
-    !! 3,2 --> slave mesh dimension
-    !! 4,2 --> slave mesh entity number
+  !! 1,1 --> Global element number of master cell
+  !! 2,1 --> master cell's local facet number connected to facet-elem
+  !! 3,1 --> master mesh dimension
+  !! 4,1 --> master mesh entity number
+  !! 1,2 --> Global element number of slave cell
+  !! 2,2 --> slave cell's local facet number connected to facet-elem
+  !! 3,2 --> slave mesh dimension
+  !! 4,2 --> slave mesh entity number
 END TYPE FacetConnectivity_
 
 !----------------------------------------------------------------------------
@@ -80,43 +80,43 @@ END TYPE ElementConnectivity_
 TYPE :: FEDomainConnectivity_
   PRIVATE
   LOGICAL(LGT), PUBLIC :: isInitiated = .FALSE.
-    !! True if an instance of [[FEDomainConnectivity_]] is Initiated
+  !! True if an instance of [[FEDomainConnectivity_]] is Initiated
   LOGICAL(LGT), PUBLIC :: isFacetToCell = .FALSE.
-    !! True if FacetToCell data is allocated and Initiated
+  !! True if FacetToCell data is allocated and Initiated
   LOGICAL(LGT), PUBLIC :: isNodeToNode = .FALSE.
-    !! True if nodeToNode data is Initiate
+  !! True if nodeToNode data is Initiate
   LOGICAL(LGT), PUBLIC :: isCellToCell = .FALSE.
-    !! True if elemToElem data is Initiated
+  !! True if elemToElem data is Initiated
   INTEGER(I4B), ALLOCATABLE :: nodeToNode(:)
-    !! Node to node connectivity
-    !! Size of NodeToNode is equal to the largest node number in
-    !! domain-1 or mesh-1 (depending upon how the data is Initiated)
-    !! NodeToNode(i) => global node number in domain-2, corresponding to
-    !! global node number `i` in domain-1
+  !! Node to node connectivity
+  !! Size of NodeToNode is equal to the largest node number in
+  !! domain-1 or mesh-1 (depending upon how the data is Initiated)
+  !! NodeToNode(i) => global node number in domain-2, corresponding to
+  !! global node number `i` in domain-1
   INTEGER(I4B), ALLOCATABLE :: cellToCell(:)
-    !! Cell to cell connectivity
-    !! CellToCell(ielem) => global elem number in domain-2,
-    !! corresponding to
-    !! global elem number `ielem` in domain-1
+  !! Cell to cell connectivity
+  !! CellToCell(ielem) => global elem number in domain-2,
+  !! corresponding to
+  !! global elem number `ielem` in domain-1
   INTEGER(I4B), ALLOCATABLE :: cellToCellExtraData(:, :)
-    !! Currently, cellToCellExtraData has two rows
-    !! the first row is dim
-    !! the second row is entityNum
-    !! the column represents the element number
-    !! example: iel1 in domain1
-    !! cellToCell(iel) gives iel2 in domain2
-    !! cellToCellExtraData(1, iel1) gives
-    !! dimension of mesh which contains iel2
-    !! cellToCellExtraData(2, iel1) gives
-    !! entityNum of mesh which contains iel2
-    !! In this way,
-    !! domain2%getFEMeshPointer(dim, entityNum)
-    !! can give us the pointer to the mesh
-    !! which contains the iel2
+  !! Currently, cellToCellExtraData has two rows
+  !! the first row is dim
+  !! the second row is entityNum
+  !! the column represents the element number
+  !! example: iel1 in domain1
+  !! cellToCell(iel) gives iel2 in domain2
+  !! cellToCellExtraData(1, iel1) gives
+  !! dimension of mesh which contains iel2
+  !! cellToCellExtraData(2, iel1) gives
+  !! entityNum of mesh which contains iel2
+  !! In this way,
+  !! domain2%getFEMeshPointer(dim, entityNum)
+  !! can give us the pointer to the mesh
+  !! which contains the iel2
   TYPE(FacetConnectivity_), ALLOCATABLE :: facetToCell(:)
-    !! Facet connectivity, Facet to cell data
+  !! Facet connectivity, Facet to cell data
   TYPE(ElementConnectivity_), ALLOCATABLE :: elemToElem(:)
-    !! ElemToElem connectivity  data
+  !! ElemToElem connectivity  data
 
 CONTAINS
   PRIVATE
@@ -374,7 +374,7 @@ INTERFACE
   MODULE SUBROUTINE obj_DisplayFacetToCellData(obj, msg, unitno)
     CLASS(FEDomainConnectivity_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
   END SUBROUTINE obj_DisplayFacetToCellData
 END INTERFACE
 
@@ -461,7 +461,7 @@ END INTERFACE
 !
 
 INTERFACE
-  MODULE FUNCTION obj_GetNodeToNodePointer(obj) RESULT(Ans)
+  MODULE FUNCTION obj_GetNodeToNodePointer(obj) RESULT(ans)
     CLASS(FEDomainConnectivity_), TARGET, INTENT(IN) :: obj
     INTEGER(I4B), POINTER :: ans(:)
   END FUNCTION obj_GetNodeToNodePointer
@@ -606,7 +606,7 @@ END INTERFACE
 ! This function returns the pointer to [[FEDomainConnectivity_:CellToCell]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetCellToCellPointer(obj) RESULT(Ans)
+  MODULE FUNCTION obj_GetCellToCellPointer(obj) RESULT(ans)
     CLASS(FEDomainConnectivity_), TARGET, INTENT(IN) :: obj
     INTEGER(I4B), POINTER :: ans(:)
   END FUNCTION obj_GetCellToCellPointer
@@ -626,7 +626,7 @@ END INTERFACE
 ! This function returns the pointer to [[FEDomainConnectivity_:CellToCell]]
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetDimEntityNum(obj, globalElement) RESULT(Ans)
+  MODULE PURE FUNCTION obj_GetDimEntityNum(obj, globalElement) RESULT(ans)
     CLASS(FEDomainConnectivity_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: globalElement
     INTEGER(I4B) :: ans(2)
@@ -649,7 +649,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateFacetToCellData1(obj, facetFEMesh, &
-                                         cellFEMesh, dim, entityNum, isMaster)
+                                                 cellFEMesh, dim, entityNum, &
+                                                 isMaster)
     CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
     !! FEDomain connectivity data
     CLASS(AbstractMesh_), INTENT(INOUT) :: facetFEMesh
@@ -683,7 +684,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateFacetToCellData2(obj, facetFEMesh, &
-                                                masterFEDomain, slaveFEDomain)
+                                                 masterFEDomain, &
+                                                 slaveFEDomain)
     CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
     !! FEMesh connectivity data
     CLASS(AbstractMesh_), INTENT(INOUT) :: facetFEMesh
@@ -736,7 +738,8 @@ END INTERFACE
 ! - In this case facetFEMesh can be an internal boundary of cellFEMesh
 
 INTERFACE
-MODULE SUBROUTINE obj_InitiateFacetToCellData4(obj, facetFEMesh, cellFEDomain)
+  MODULE SUBROUTINE obj_InitiateFacetToCellData4(obj, facetFEMesh, &
+                                                 cellFEDomain)
     CLASS(FEDomainConnectivity_), INTENT(INOUT) :: obj
     !! FEDomain connectivity data
     CLASS(AbstractMesh_), INTENT(INOUT) :: facetFEMesh
