@@ -27,8 +27,11 @@ USE ReallocateUtility, ONLY: Reallocate
 USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
 USE ReferenceLine_Method, ONLY: MaxOrder_Line
 USE SortUtility, ONLY: Sort
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class@EdgeDataMethods.F90"
+#endif
 
 CONTAINS
 
@@ -38,87 +41,87 @@ CONTAINS
 
 MODULE PROCEDURE obj_InitiateEdgeConnectivity
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateEdgeConnectivity()"
 #endif
 
-INTEGER(I4B) :: tElements, iel, elemType, tEdges, &
-                localEdges(MaxOrder_Line + 1, TypeRefelemOpt%maxEdges), &
-                edge(2), sorted_edge(2), &
-                tNodes, tsize1, tsize2, iedge
-LOGICAL(LGT) :: isok
-TYPE(EdgeDataBinaryTree_) :: edgeTree
-TYPE(EdgeData_) :: edgeValue
-TYPE(EdgeData_), POINTER :: edgePtr
+  INTEGER(I4B) :: tElements, iel, elemType, tEdges, &
+    localEdges(MaxOrder_Line + 1, TypeRefelemOpt%maxEdges), &
+    edge(2), sorted_edge(2), &
+    tNodes, tsize1, tsize2, iedge
+  LOGICAL(LGT) :: isok
+  TYPE(EdgeDataBinaryTree_) :: edgeTree
+  TYPE(EdgeData_) :: edgeValue
+  TYPE(EdgeData_), POINTER :: edgePtr
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-isok = obj%isEdgeConnectivityInitiated
-IF (isok) RETURN
+  isok = obj%isEdgeConnectivityInitiated
+  IF (isok) RETURN
 
 #ifdef DEBUG_VER
-isok = ALLOCATED(obj%elementData)
-CALL AssertError1(isok, myName, &
-                  'AbstractMesh_::obj%elementData not allocated')
+  isok = ALLOCATED(obj%elementData)
+  CALL AssertError1(isok, myName, &
+                    'AbstractMesh_::obj%elementData not allocated')
 #endif
 
-tElements = obj%GetTotalElements()
+  tElements = obj%GetTotalElements()
 
-CALL edgeTree%Initiate()
+  CALL edgeTree%Initiate()
 
-obj%isEdgeConnectivityInitiated = math%yes
+  obj%isEdgeConnectivityInitiated = math%yes
 
-DO iel = 1, tElements
-  isok = .NOT. obj%elementData(iel)%ptr%isActive
-  IF (isok) CYCLE
+  DO iel = 1, tElements
+    isok = .NOT. obj%elementData(iel)%ptr%isActive
+    IF (isok) CYCLE
 
-  elemType = obj%elementData(iel)%ptr%name
-  CALL RefElemGetGeoParam(elemType=elemType, tEdges=tEdges, tNodes=tNodes, &
-                          edgeCon=localEdges, edgeOpt=math%one_i)
+    elemType = obj%elementData(iel)%ptr%name
+    CALL RefElemGetGeoParam(elemType=elemType, tEdges=tEdges, tNodes=tNodes, &
+                            edgeCon=localEdges, edgeOpt=math%one_i)
 
-  CALL Reallocate(obj%elementData(iel)%ptr%globalEdges, tEdges)
-  CALL Reallocate(obj%elementData(iel)%ptr%edgeOrient, tEdges)
+    CALL Reallocate(obj%elementData(iel)%ptr%globalEdges, tEdges)
+    CALL Reallocate(obj%elementData(iel)%ptr%edgeOrient, tEdges)
 
-  DO iedge = 1, tEdges
+    DO iedge = 1, tEdges
 
-    edge = obj%elementData(iel)%ptr%globalNodes(localEdges(1:2, iedge))
-    sorted_edge = SORT(edge)
+      edge = obj%elementData(iel)%ptr%globalNodes(localEdges(1:2, iedge))
+      sorted_edge = SORT(edge)
 
-    edgePtr => EdgeData_Pointer(sorted_edge)
+      edgePtr => EdgeData_Pointer(sorted_edge)
 
-    tsize1 = edgeTree%SIZE()
-    CALL edgeTree%Insert(edgePtr)
-    tsize2 = edgeTree%SIZE()
+      tsize1 = edgeTree%SIZE()
+      CALL edgeTree%Insert(edgePtr)
+      tsize2 = edgeTree%SIZE()
 
-    obj%tEdges = tsize2
+      obj%tEdges = tsize2
 
-    IF (edge(1) .GT. edge(2)) THEN
-      obj%elementData(iel)%ptr%edgeOrient(iedge) = -1_INT8
-    ELSE
-      obj%elementData(iel)%ptr%edgeOrient(iedge) = 1_INT8
-    END IF
+      IF (edge(1) .GT. edge(2)) THEN
+        obj%elementData(iel)%ptr%edgeOrient(iedge) = -1_INT8
+      ELSE
+        obj%elementData(iel)%ptr%edgeOrient(iedge) = 1_INT8
+      END IF
 
-    IF (tsize1 .NE. tsize2) THEN
-      obj%elementData(iel)%ptr%globalEdges(iedge) = tsize2
-      edgePtr%id = tsize2
-    ELSE
-      CALL EdgeDataInitiate(edgeValue, sorted_edge)
-      edgePtr => edgeTree%GetValuePointer(edgeValue)
-      obj%elementData(iel)%ptr%globalEdges(iedge) = edgePtr%id
-    END IF
+      IF (tsize1 .NE. tsize2) THEN
+        obj%elementData(iel)%ptr%globalEdges(iedge) = tsize2
+        edgePtr%id = tsize2
+      ELSE
+        CALL EdgeDataInitiate(edgeValue, sorted_edge)
+        edgePtr => edgeTree%GetValuePointer(edgeValue)
+        obj%elementData(iel)%ptr%globalEdges(iedge) = edgePtr%id
+      END IF
+
+    END DO
 
   END DO
 
-END DO
-
-CALL edgeTree%DEALLOCATE()
-NULLIFY (edgePtr)
+  CALL edgeTree%DEALLOCATE()
+  NULLIFY(edgePtr)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateEdgeConnectivity

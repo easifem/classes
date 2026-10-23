@@ -26,8 +26,11 @@ USE GlobalData, ONLY: INT8
 USE SortUtility, ONLY: Sort
 USE FaceData_Class
 USE FaceDataBinaryTree_Class
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class@FaceDataMethods.F90"
+#endif
 
 CONTAINS
 
@@ -36,29 +39,29 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFaceConnectivity
-CHARACTER(*), PARAMETER :: myName = "obj_IntiiateFaceConnectivity()"
+  CHARACTER(*), PARAMETER :: myName = "obj_IntiiateFaceConnectivity()"
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-SELECT CASE (obj%xidim)
-CASE (2_I4B)
-  CALL InitiateFaceConnectivity2D(obj)
+  SELECT CASE (obj%xidim)
+  CASE (2_I4B)
+    CALL InitiateFaceConnectivity2D(obj)
 
-CASE (3_I4B)
-  CALL InitiateFaceConnectivity3D(obj)
+  CASE (3_I4B)
+    CALL InitiateFaceConnectivity3D(obj)
 
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::obj_InitiateFaceConnectivity - '// &
-                    '[INTERNAL ERROR] :: Invalid dimension')
-  RETURN
+  CASE DEFAULT
+    CALL e%RaiseError(modName // '::obj_InitiateFaceConnectivity - ' // &
+                      '[INTERNAL ERROR] :: Invalid dimension')
+    RETURN
 
-END SELECT
+  END SELECT
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateFaceConnectivity
@@ -73,7 +76,8 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity2D()"
   INTEGER(I4B) :: tElements, iel, elemType, tFaces, face0(2), &
-   sorted_face(2), tsize1, tsize2, iface, localFaces(2_I4B, REFELEM_MAX_FACES)
+    sorted_face(2), tsize1, tsize2, iface, &
+    localFaces(2_I4B, REFELEM_MAX_FACES)
 
   LOGICAL(LGT) :: problem
   TYPE(FaceDataBinaryTree_) :: faceTree
@@ -81,7 +85,7 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
   TYPE(FaceData_), POINTER :: facePtr
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
@@ -90,8 +94,9 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
   problem = .NOT. ALLOCATED(obj%elementData)
   IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-           '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                      '[INTERNAL ERROR] :: ' // &
+                      'AbstractMesh_::obj%elementData not allocated')
     RETURN
   END IF
 
@@ -151,8 +156,8 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
   facePtr => NULL()
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END SUBROUTINE InitiateFaceConnectivity2D
@@ -167,18 +172,18 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity3D()"
   INTEGER(I4B) :: tElements, iel, elemType, tFaces, &
-             localFaces(4_I4B, REFELEM_MAX_FACES), face0(4), sorted_face(4), &
-                  tNodes, tsize1, tsize2, iface, &
-             faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES), &
-                  aint, faceOrient(3_I4B)
+    localFaces(4_I4B, REFELEM_MAX_FACES), face0(4), sorted_face(4), &
+    tNodes, tsize1, tsize2, iface, &
+    faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES), &
+    aint, faceOrient(3_I4B)
   LOGICAL(LGT) :: problem, abool
   TYPE(FaceDataBinaryTree_) :: faceTree
   TYPE(FaceData_) :: faceValue
   TYPE(FaceData_), POINTER :: facePtr
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
   problem = obj%isFaceConnectivityInitiated
@@ -186,8 +191,9 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
 
   problem = .NOT. ALLOCATED(obj%elementData)
   IF (problem) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-      & '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData not allocated')
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                      '[INTERNAL ERROR] :: ' // &
+                      'AbstractMesh_::obj%elementData not allocated')
     RETURN
   END IF
 
@@ -204,10 +210,10 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
 
     elemType = obj%elementData(iel)%ptr%name
 
-    CALL RefElemGetGeoParam(elemType=elemType, &
-      & tFaces=tFaces, tNodes=tNodes, faceCon=localFaces, &
-      & faceOpt=1_I4B, faceElemType=faceElemType, &
-      & tFaceNodes=tFaceNodes, order=1_I4B)
+    CALL RefElemGetGeoParam(elemType=elemType, tFaces=tFaces, tNodes=tNodes, &
+                            faceCon=localFaces, faceOpt=1_I4B, &
+                            faceElemType=faceElemType, &
+                            tFaceNodes=tFaceNodes, order=1_I4B)
 
     CALL Reallocate(obj%elementData(iel)%ptr%globalFaces, tFaces)
     CALL Reallocate(obj%elementData(iel)%ptr%faceOrient, 3_I4B, tFaces)
@@ -221,11 +227,13 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
 
       abool = IsQuadrangle(faceElemType(iface))
       IF (abool) THEN
-        CALL FaceShapeMetaData_Quadrangle(face=face0(1:aint),  &
-          & sorted_face=sorted_face(1:aint), faceOrient=faceOrient)
+        CALL FaceShapeMetaData_Quadrangle(face=face0(1:aint), &
+                                          sorted_face=sorted_face(1:aint), &
+                                          faceOrient=faceOrient)
       ELSE
-        CALL FaceShapeMetaData_Triangle(face=face0(1:aint),  &
-          & sorted_face=sorted_face(1:aint), faceOrient=faceOrient)
+        CALL FaceShapeMetaData_Triangle(face=face0(1:aint), &
+                                        sorted_face=sorted_face(1:aint), &
+                                        faceOrient=faceOrient)
       END IF
 
       facePtr => FaceData_Pointer(sorted_face)
@@ -235,7 +243,7 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
       tsize2 = faceTree%SIZE()
 
       obj%elementData(iel)%ptr%faceOrient(:, iface) = &
-        INT(faceOrient, kind=INT8)
+        INT(faceOrient, KIND=INT8)
       obj%tFaces = tsize2
 
       IF (tsize1 .NE. tsize2) THEN
@@ -255,10 +263,16 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
   facePtr => NULL()
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-    & '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END SUBROUTINE InitiateFaceConnectivity3D
+
+!----------------------------------------------------------------------------
+!                                                             Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE FaceDataMethods

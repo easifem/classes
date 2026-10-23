@@ -16,21 +16,24 @@
 
 SUBMODULE(AbstractMesh_Class) SetMethods
 USE GlobalData, ONLY: INT8
-USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE, &
-  OPERATOR(.Xmin.), &
-  OPERATOR(.Ymin.), &
-  OPERATOR(.Zmin.), &
-  OPERATOR(.Xmax.), &
-  OPERATOR(.Ymax.), &
-  OPERATOR(.Zmax.)
+USE BoundingBox_Method, ONLY: DeallocateBox => DEALLOCATE
+USE BoundingBox_Method, ONLY: OPERATOR(.Xmin.)
+USE BoundingBox_Method, ONLY: OPERATOR(.Ymin.)
+USE BoundingBox_Method, ONLY: OPERATOR(.Zmin.)
+USE BoundingBox_Method, ONLY: OPERATOR(.Xmax.)
+USE BoundingBox_Method, ONLY: OPERATOR(.Ymax.)
+USE BoundingBox_Method, ONLY: OPERATOR(.Zmax.)
 USE ReallocateUtility, ONLY: Reallocate
 USE CSRMatrix_Method, ONLY: SetSparsity
 USE FacetData_Class, ONLY: FacetData_SetParam
-USE ElemData_Class, ONLY: ElemData_SetTotalMedium, &
-  ElemData_Set
+USE ElemData_Class, ONLY: ElemData_SetTotalMedium
+USE ElemData_Class, ONLY: ElemData_Set
 USE BaseType, ONLY: TypeMeshOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class@SetMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -78,14 +81,15 @@ MODULE PROCEDURE obj_SetSparsity1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
 
   IF (.NOT. obj%isInitiated) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+                      "[INTERNAL ERROR] :: Mesh data is not initiated, " // &
+                      "first initiate")
     RETURN
   END IF
 
@@ -93,7 +97,7 @@ MODULE PROCEDURE obj_SetSparsity1
   problem = tsize .EQ. 0_I4B
   IF (problem) THEN
     CALL e%RaiseWarning(modName // '::' // myName // ' - ' // &
-      '[INTERNAL ERROR] :: Empty mesh found, returning')
+                        '[INTERNAL ERROR] :: Empty mesh found, returning')
     RETURN
   END IF
 
@@ -117,7 +121,7 @@ MODULE PROCEDURE obj_SetSparsity1
     IF (k .EQ. 0) CYCLE
 
     CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
-      ans=n2n, tsize=tsize, islocal=.TRUE.)
+                             ans=n2n, tsize=tsize, islocal=.TRUE.)
 
     DO ii = 1, tsize
       n2n(ii) = localNodeNumber(n2n(ii))
@@ -129,7 +133,7 @@ MODULE PROCEDURE obj_SetSparsity1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetSparsity1
 
@@ -145,14 +149,15 @@ MODULE PROCEDURE obj_SetSparsity2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START]')
+                          '[START]')
 #endif
 
 #ifdef DEBUG_VER
 
   IF (.NOT. obj%isInitiated) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+                      "[INTERNAL ERROR] :: Mesh data is not initiated, " // &
+                      "first initiate")
     RETURN
   END IF
 
@@ -160,7 +165,7 @@ MODULE PROCEDURE obj_SetSparsity2
   problem = tsize .EQ. 0_I4B
   IF (problem) THEN
     CALL e%RaiseWarning(modName // '::' // myName // ' - ' // &
-      '[INTERNAL ERROR] :: Empty mesh found, returning')
+                        '[INTERNAL ERROR] :: Empty mesh found, returning')
     RETURN
   END IF
 
@@ -176,7 +181,7 @@ MODULE PROCEDURE obj_SetSparsity2
     j = obj%GetglobalNodeNumber(localNode=i)
 
     CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
-      ans=n2n, tsize=tsize, islocal=.TRUE.)
+                             ans=n2n, tsize=tsize, islocal=.TRUE.)
 
     CALL SetSparsity(obj=mat, row=j, col=n2n(1:tsize))
 
@@ -184,7 +189,7 @@ MODULE PROCEDURE obj_SetSparsity2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetSparsity2
 
@@ -201,26 +206,29 @@ MODULE PROCEDURE obj_SetSparsity3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   IF (.NOT. obj%isInitiated) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+                      "[INTERNAL ERROR] :: Mesh data is not initiated, " // &
+                      "first initiate")
     RETURN
   END IF
 
   IF (.NOT. colMesh%isInitiated) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+                      "[INTERNAL ERROR] :: colMesh data is not " // &
+                      "initiated, first initiate")
     RETURN
   END IF
 
   problem = SIZE(nodeToNode) .NE. obj%maxNptrs
   IF (problem) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. obj%maxNptrs")
+                      "[INTERNAL ERROR] :: SIZE(nodeToNode) .NE. " // &
+                      "obj%maxNptrs")
     RETURN
   END IF
 #endif
@@ -231,7 +239,7 @@ MODULE PROCEDURE obj_SetSparsity3
   DO ii = 1, obj%tNodes
 
     CALL obj%GetNodeToNodes_(globalNode=ii, includeSelf=.TRUE., &
-      ans=n2n, tsize=tsize, islocal=.TRUE.)
+                             ans=n2n, tsize=tsize, islocal=.TRUE.)
     !! n2n(1) will contains the global node for ii
 
     ll = 0
@@ -249,13 +257,13 @@ MODULE PROCEDURE obj_SetSparsity3
     IF (ll .EQ. 0) CYCLE
 
     CALL SetSparsity(obj=mat, row=n2n(1), col=temp(1:ll), ivar=ivar, &
-      jvar=jvar)
+                     jvar=jvar)
 
   END DO
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_SetSparsity3
@@ -273,27 +281,29 @@ MODULE PROCEDURE obj_SetSparsity4
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   IF (.NOT. obj%isInitiated) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: Mesh data is not initiated, first initiate")
+                      "[INTERNAL ERROR] :: Mesh data is not initiated, " // &
+                      "first initiate")
     RETURN
   END IF
 
   IF (.NOT. colMesh%isInitiated) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: colMesh data is not initiated, first initiate")
+                      "[INTERNAL ERROR] :: colMesh data is not " // &
+                      "initiated, first initiate")
     RETURN
   END IF
 
   isok = SIZE(nodeToNode) .GE. obj%GetMaxNodeNumber()
   IF (.NOT. isok) THEN
     CALL e%RaiseError(modName // "::" // myName // " - " // &
-      "[INTERNAL ERROR] :: SIZE( nodeToNode ) .LT. obj%maxNptrs " // &
-      "[easifemClasses ISSUE#63]")
+                      "[INTERNAL ERROR] :: SIZE( nodeToNode ) .LT. " // &
+                      "obj%maxNptrs " // "[easifemClasses ISSUE#63]")
     RETURN
   END IF
 #endif
@@ -304,7 +314,7 @@ MODULE PROCEDURE obj_SetSparsity4
   DO ii = 1, obj%tNodes
 
     CALL obj%GetNodeToNodes_(globalNode=ii, includeSelf=.TRUE., &
-      ans=n2n, tsize=tsize, islocal=.TRUE.)
+                             ans=n2n, tsize=tsize, islocal=.TRUE.)
     !! n2n(1) will contains the global node for ii
     row = rowGlobalToLocalNodeNum(n2n(1))
 
@@ -331,7 +341,7 @@ MODULE PROCEDURE obj_SetSparsity4
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_SetSparsity4
@@ -380,7 +390,7 @@ MODULE PROCEDURE obj_SetMaterial1
     isok = obj%elementData(ii)%ptr%meshID .EQ. entityNum
     IF (isok) THEN
       CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
-        medium=medium)
+                        medium=medium)
     END IF
 
   END DO
@@ -401,7 +411,7 @@ MODULE PROCEDURE obj_SetMaterial2
     isok = obj%elementData(ii)%ptr%isActive
     IF (.NOT. isok) CYCLE
     CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
-      medium=medium)
+                      medium=medium)
   END DO
 END PROCEDURE obj_SetMaterial2
 
@@ -413,10 +423,10 @@ MODULE PROCEDURE obj_SetMaterial3
   INTEGER(I4B) :: iel
 
   iel = obj%GetLocalElemNumber(globalElement=globalElement, &
-    islocal=islocal)
+                               islocal=islocal)
 
   CALL ElemData_Set(obj%elementData(iel)%ptr, material=material, &
-    medium=medium)
+                    medium=medium)
 
 END PROCEDURE obj_SetMaterial3
 
@@ -427,7 +437,7 @@ END PROCEDURE obj_SetMaterial3
 MODULE PROCEDURE obj_SetFacetElementType
   INTEGER(I4B) :: localElem
   localElem = obj%GetLocalElemNumber(globalElement=globalElement, &
-    islocal=islocal)
+                                     islocal=islocal)
   obj%elementData(localElem)%ptr%elementType = facetElementType
 END PROCEDURE obj_SetFacetElementType
 
@@ -442,17 +452,17 @@ MODULE PROCEDURE obj_SetQuality
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-    '[WIP ERROR] :: This routine is under development')
+                    '[WIP ERROR] :: This routine is under development')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetQuality
 
@@ -595,11 +605,13 @@ END PROCEDURE obj_SetParam
 
 MODULE PROCEDURE obj_SetFacetParam
   CALL FacetData_SetParam(obj=obj%facetData(facetElement), &
-    elementType=elementType)
+                          elementType=elementType)
 END PROCEDURE obj_SetFacetParam
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include Errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

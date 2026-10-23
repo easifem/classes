@@ -20,17 +20,18 @@ USE Display_Method, ONLY: Display, tostring
 USE IntegerUtility, ONLY: RemoveDuplicates, OPERATOR(.ISIN.)
 USE GlobalData, ONLY: stdout
 USE AppendUtility, ONLY: Append, Expand
-USE NodeData_Class, ONLY: NodeData_ExpandGlobalElements, &
-                          NodeData_GetTotalGlobalElements, &
-                          NodeData_GetPointerToGlobalElements, &
-                          NodeData_ExpandGlobalNodes, &
-                          NodeData_SetExtraGlobalNodes
-
+USE NodeData_Class, ONLY: NodeData_ExpandGlobalElements
+USE NodeData_Class, ONLY:NodeData_GetTotalGlobalElements
+USE NodeData_Class, ONLY:NodeData_GetPointerToGlobalElements
+USE NodeData_Class, ONLY:NodeData_ExpandGlobalNodes
+USE NodeData_Class, ONLY: NodeData_Set
 USE Kdtree2_Module, ONLY: Kdtree2_create
-
 USE ReallocateUtility, ONLY: Reallocate
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class@NodeMethods.F90"
+#endif
 
 CONTAINS
 
@@ -39,57 +40,60 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateNodeToElements
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
-INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum, &
-                globalNodeNum, nodewise_size(obj%tNodes)
-TYPE(CPUTime_) :: TypeCPUTime
-INTEGER(I4B), PARAMETER :: chunk_size = 32
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
+  INTEGER(I4B) :: ii, jj, globalElemNum, nn, localNodeNum, &
+    globalNodeNum, nodewise_size(obj%tNodes)
+  TYPE(CPUTime_) :: TypeCPUTime
+  INTEGER(I4B), PARAMETER :: chunk_size = 32
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-IF (obj%isNodeToElementsInitiated) RETURN
-obj%isNodeToElementsInitiated = .TRUE.
+  IF (obj%isNodeToElementsInitiated) RETURN
+  obj%isNodeToElementsInitiated = .TRUE.
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+  IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
-nodewise_size = 0
+  nodewise_size = 0
 
-DO ii = 1, obj%tElements
-  globalElemNum = obj%elementData(ii)%ptr%globalElemNum
+  DO ii = 1, obj%tElements
+    globalElemNum = obj%elementData(ii)%ptr%globalElemNum
 
-  nn = SIZE(obj%elementData(ii)%ptr%globalNodes)
+    nn = SIZE(obj%elementData(ii)%ptr%globalNodes)
 
-  DO jj = 1, nn
+    DO jj = 1, nn
 
-    globalNodeNum = obj%elementData(ii)%ptr%globalNodes(jj)
-    localNodeNum = obj%local_nptrs(globalNodeNum)
+      globalNodeNum = obj%elementData(ii)%ptr%globalNodes(jj)
+      localNodeNum = obj%local_nptrs(globalNodeNum)
 
-    CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(localNodeNum)%ptr, &
-      n=nodewise_size(localNodeNum), chunk_size=chunk_size, val=globalElemNum)
+      CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(localNodeNum)%ptr, &
+                                         n=nodewise_size(localNodeNum), &
+                                         chunk_size=chunk_size, &
+                                         val=globalElemNum)
+
+    END DO
 
   END DO
 
-END DO
-
 ! Now we have to fix the size of `nodeData%globalElements`
-DO ii = 1, obj%tNodes
-  CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(ii)%ptr, &
-                  n=nodewise_size(ii), chunk_size=chunk_size, finished=.TRUE.)
-END DO
+  DO ii = 1, obj%tNodes
+    CALL NodeData_ExpandGlobalElements(obj=obj%nodeData(ii)%ptr, &
+                                       n=nodewise_size(ii), &
+                                       chunk_size=chunk_size, finished=.TRUE.)
+  END DO
 
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName// &
-               " : time : "// &
-               tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName // " : " // myName // &
+                 " : time : " // &
+                 tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateNodeToElements
@@ -99,74 +103,75 @@ END PROCEDURE obj_InitiateNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateNodetoNodes
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
-INTEGER(I4B) :: inode, nodewise_size, telem, iel, global_elem_num,  &
-  & local_elem_num, tnode, ii, global_node_num, local_node_num
-INTEGER(I4B), PARAMETER :: chunk_size = 64
-LOGICAL(LGT) :: found(obj%tNodes), skip
-TYPE(CPUTime_) :: TypeCPUTime
-INTEGER(I4B), POINTER :: globalElements(:)
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodetoNodes()"
+  INTEGER(I4B) :: inode, nodewise_size, telem, iel, global_elem_num, &
+    local_elem_num, tnode, ii, global_node_num, local_node_num
+  INTEGER(I4B), PARAMETER :: chunk_size = 64
+  LOGICAL(LGT) :: found(obj%tNodes), skip
+  TYPE(CPUTime_) :: TypeCPUTime
+  INTEGER(I4B), POINTER :: globalElements(:)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-IF (obj%isNodeToNodesInitiated) RETURN
+  IF (obj%isNodeToNodesInitiated) RETURN
 
-IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
+  IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+  IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
-obj%isNodeToNodesInitiated = .TRUE.
+  obj%isNodeToNodesInitiated = .TRUE.
 
-DO inode = 1, obj%tNodes
-  nodewise_size = 0
-  found = .FALSE.
-  telem = NodeData_GetTotalGlobalElements(obj%nodeData(inode)%ptr)
-  globalElements => NodeData_GetPointerToGlobalElements( &
-                    obj%nodeData(inode)%ptr)
+  DO inode = 1, obj%tNodes
+    nodewise_size = 0
+    found = .FALSE.
+    telem = NodeData_GetTotalGlobalElements(obj%nodeData(inode)%ptr)
+    globalElements => &
+      NodeData_GetPointerToGlobalElements(obj%nodeData(inode)%ptr)
 
-  DO iel = 1, telem
-    global_elem_num = globalElements(iel)
-    local_elem_num = obj%GetLocalElemNumber(global_elem_num)
+    DO iel = 1, telem
+      global_elem_num = globalElements(iel)
+      local_elem_num = obj%GetLocalElemNumber(global_elem_num)
 
-    tnode = SIZE(obj%elementData(local_elem_num)%ptr%globalNodes)
-    DO ii = 1, tnode
+      tnode = SIZE(obj%elementData(local_elem_num)%ptr%globalNodes)
+      DO ii = 1, tnode
 
-      global_node_num = obj%elementData(local_elem_num)%ptr%globalNodes(ii)
-      local_node_num = obj%GetLocalNodeNumber(global_node_num)
+        global_node_num = obj%elementData(local_elem_num)%ptr%globalNodes(ii)
+        local_node_num = obj%GetLocalNodeNumber(global_node_num)
 
-      skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
-      IF (.NOT. skip) THEN
-        CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
-                                     n=nodewise_size, chunk_size=chunk_size, &
-                                        val=global_node_num)
-        found(local_node_num) = .TRUE.
-      END IF
+        skip = found(local_node_num) .OR. (inode .EQ. local_node_num)
+        IF (.NOT. skip) THEN
+          CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
+                                          n=nodewise_size, &
+                                          chunk_size=chunk_size, &
+                                          val=global_node_num)
+          found(local_node_num) = .TRUE.
+        END IF
+
+      END DO
 
     END DO
 
+    CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
+                                    n=nodewise_size, chunk_size=chunk_size, &
+                                    finished=.TRUE.)
+
   END DO
 
-  CALL NodeData_ExpandGlobalNodes(obj=obj%nodeData(inode)%ptr, &
-                                  n=nodewise_size, chunk_size=chunk_size, &
-                                  finished=.TRUE.)
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName // " : " // myName // &
+                 " : time : " // &
+                 tostring(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
 
-END DO
-
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName// &
-               " : time : "// &
-               tostring(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
-
-globalElements => NULL()
+  globalElements => NULL()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateNodetoNodes
@@ -177,75 +182,89 @@ END PROCEDURE obj_InitiateNodetoNodes
 
 MODULE PROCEDURE obj_InitiateExtraNodetoNodes
 ! Define internal  variables
-INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
-INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
-                             indx(:), extraGlobalNodes(:)
-LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes()"
-LOGICAL(LGT) :: problem
+  INTEGER(I4B) :: iel, iel2, iLocalNode, iGlobalNode
+  INTEGER(I4B), ALLOCATABLE :: n2n(:), e2e(:, :), n2e(:), &
+    indx(:), extraGlobalNodes(:)
+  LOGICAL(LGT), ALLOCATABLE :: mask_elem(:), mask_nptrs(:)
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateExtraNodetoNodes()"
+  LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 ! problem = obj%elemType .EQ. 0 .OR. obj%elemType .EQ. Point1
 ! IF (problem) RETURN
 
-problem = obj%isExtraNodeToNodesInitiated
-IF (problem) RETURN
+  problem = obj%isExtraNodeToNodesInitiated
+  IF (problem) THEN
 
-IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
 
-IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
+    RETURN
+  END IF
 
-IF (.NOT. obj%isElementToElementsInitiated) CALL obj%InitiateElementToElements()
+  IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
+  IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
+  IF (.NOT. obj%isElementToElementsInitiated) CALL &
+    obj%InitiateElementToElements()
 
-DO iLocalNode = 1, obj%tNodes
+  nodeLoop: DO iLocalNode = 1, obj%tNodes
 
-  iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
-  n2n = obj%GetNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
-  n2e = obj%GetNodeToElements(globalNode=iGlobalNode)
+    iGlobalNode = obj%GetGlobalNodeNumber(iLocalNode)
+    n2n = obj%GetNodeToNodes(globalNode=iGlobalNode, IncludeSelf=.FALSE.)
+    n2e = obj%GetNodeToElements(globalNode=iGlobalNode)
 
-  DO iel = 1, SIZE(n2e)
+    ! extra nodes of all the elements around the node
     CALL Reallocate(extraGlobalNodes, 0_I4B)
 
-    e2e = obj%GetElementToElements(globalElement=n2e(iel), &
-                                   onlyElements=.TRUE.)
+    n2eLoop: DO iel = 1, SIZE(n2e)
+      e2e = obj%GetElementToElements(globalElement=n2e(iel), &
+                                     onlyElements=.TRUE.)
 
-    mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
+      mask_elem = .NOT. (e2e(:, 1) .ISIN.n2e)
 
-    DO iel2 = 1, SIZE(mask_elem)
+      maskLoop: DO iel2 = 1, SIZE(mask_elem)
 
-      IF (mask_elem(iel2)) THEN
+        IF (mask_elem(iel2)) THEN
 
-        indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
-        mask_nptrs = .NOT. (indx.ISIN.n2n)
+          indx = obj%GetConnectivity(globalElement=e2e(iel2, 1))
+          mask_nptrs = .NOT. (indx.ISIN.n2n)
 
-        CALL APPEND(extraGlobalNodes, indx, mask_nptrs)
+          CALL APPEND(extraGlobalNodes, indx, mask_nptrs)
 
-      END IF
+        END IF
 
-    END DO
+      END DO maskLoop
+
+    END DO n2eLoop
 
     CALL RemoveDuplicates(extraGlobalNodes)
 
-    CALL NodeData_SetExtraGlobalNodes(obj%nodeData(iLocalNode)%ptr, &
-                                      extraGlobalNodes)
+    ! NodeData_Set allocates extraGlobalNodes of the node data
+    CALL NodeData_Set(obj=obj%nodeData(iLocalNode)%ptr, &
+                      extraGlobalNodes=extraGlobalNodes)
 
-  END DO
+  END DO nodeLoop
 
-END DO
+  obj%isExtraNodeToNodesInitiated = .TRUE.
 
-obj%isExtraNodeToNodesInitiated = .TRUE.
+  IF (ALLOCATED(n2n)) DEALLOCATE(n2n)
+  IF (ALLOCATED(n2e)) DEALLOCATE(n2e)
+  IF (ALLOCATED(e2e)) DEALLOCATE(e2e)
+  IF (ALLOCATED(indx)) DEALLOCATE(indx)
+  IF (ALLOCATED(mask_elem)) DEALLOCATE(mask_elem)
+  IF (ALLOCATED(mask_nptrs)) DEALLOCATE(mask_nptrs)
+  IF (ALLOCATED(extraGlobalNodes)) DEALLOCATE(extraGlobalNodes)
 
-IF (ALLOCATED(n2n)) DEALLOCATE (n2n)
-IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
-IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
-IF (ALLOCATED(indx)) DEALLOCATE (indx)
-IF (ALLOCATED(mask_elem)) DEALLOCATE (mask_elem)
-IF (ALLOCATED(mask_nptrs)) DEALLOCATE (mask_nptrs)
-IF (ALLOCATED(extraGlobalNodes)) DEALLOCATE (extraGlobalNodes)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 
 END PROCEDURE obj_InitiateExtraNodetoNodes
 
@@ -255,53 +274,55 @@ END PROCEDURE obj_InitiateExtraNodetoNodes
 
 MODULE PROCEDURE obj_InitiateKdtree
 #ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
+  LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: nsd, nrow, ncol
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
-TYPE(CPUTime_) :: TypeCPUTime
-REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
+  INTEGER(I4B) :: nsd, nrow, ncol
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
+  TYPE(CPUTime_) :: TypeCPUTime
+  REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
 
-IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
+  IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL obj%DeallocateKdtree()
+  CALL obj%DeallocateKdtree()
 
-nsd = obj%GetNSD()
+  nsd = obj%GetNSD()
 
-ncol = obj%GetTotalNodes()
-ALLOCATE (nodeCoord(3, ncol))
-CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=nrow, ncol=ncol)
+  ncol = obj%GetTotalNodes()
+  ALLOCATE(nodeCoord(3, ncol))
+  CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=nrow, ncol=ncol)
 
 ! FUNCTION Kdtree2_create(input_data, dim, sort, rearrange) RESULT(mr)
-obj%kdtree => Kdtree2_Create(input_data=nodeCoord(1:nsd, :), &
-                             dim=nsd, sort=.FALSE., rearrange=.TRUE.)
+  obj%kdtree => Kdtree2_Create(input_data=nodeCoord(1:nsd, :), &
+                               DIM=nsd, sort=.FALSE., rearrange=.TRUE.)
 
-ALLOCATE (obj%kdresult(ncol))
+  ALLOCATE(obj%kdresult(ncol))
 
-DEALLOCATE (nodeCoord)
+  DEALLOCATE(nodeCoord)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
-IF (obj%showTime) THEN
-  CALL TypeCPUTime%SetEndTime()
-  CALL Display(modName//" : "//myName// &
-               " : time : "// &
-               ToString(TypeCPUTime%GetTime()), unitno=stdout)
-END IF
+  IF (obj%showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName // " : " // myName // &
+                 " : time : " // &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
 
 END PROCEDURE obj_InitiateKdtree
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE NodeDataMethods

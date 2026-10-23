@@ -408,21 +408,26 @@ END SUBROUTINE Elemdata_Deallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-04-12
+! update:
+!   - 2026-10-23: Set the number of media to n (it was increased by n)
 ! summary:  Set total number of materials
 !
-! this subroutine allocates materials in obj
+! The size of obj%material becomes n. The material ids of the first
+! MIN(n, old size) media are kept; the new media get material id 0.
 
 PURE SUBROUTINE Elemdata_SetTotalMedium(obj, n)
   TYPE(Elemdata_), INTENT(INOUT) :: obj
+  !! element data
   INTEGER(I4B), INTENT(IN) :: n
+  !! total number of media
 
   ! internal variables
   INTEGER(INT8), ALLOCATABLE :: temp_material(:)
   INTEGER(I4B) :: n0
 
   IF (ALLOCATED(obj%material)) THEN
-    n0 = SIZE(obj%material)
-    CALL Reallocate(temp_material, n0 + n)
+    n0 = MIN(SIZE(obj%material), n)
+    CALL Reallocate(temp_material, n)
     temp_material(1:n0) = obj%material(1:n0)
     CALL MOVE_ALLOC(from=temp_material, to=obj%material)
 

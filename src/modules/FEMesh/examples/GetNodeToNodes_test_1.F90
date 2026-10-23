@@ -5,7 +5,7 @@
 ! GetNodeToNodes returns the global node numbers connected to a node
 ! through the elements around it. With includeSelf the node itself
 ! is the first entry. For a list of nodes the result is sorted and
-! has no duplicates. Call InitiateNodeToNodes first.
+! has no duplicates.
 !
 ! The mesh very_small_quad4_mesh.h5 is the unit square with four
 ! Quadrangle4 elements (global numbers 13 to 16) and nine nodes:
@@ -51,7 +51,7 @@ PROGRAM main
   CALL OK(SIZE(nodes) .EQ. 4_I4B, "includeSelf: size")
 
   nodes = obj%GetNodeToNodes(globalNode=[1_I4B, 2_I4B], &
-    includeSelf=.FALSE.)
+                             includeSelf=.FALSE.)
   CALL OK(ALL(nodes .EQ. [5, 7, 8, 9]), "nodes 1 and 2")
 
   CALL obj%DEALLOCATE()

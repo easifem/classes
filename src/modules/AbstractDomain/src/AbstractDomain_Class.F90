@@ -394,7 +394,7 @@ CONTAINS
   !! Set the sparsity pattern of a matrix
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMedium => obj_SetTotalMedium
-  !! Add space for media in the elements of a mesh
+  !! Set the number of media in the elements of a mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
   !! Set the material of a medium in an entity
@@ -765,8 +765,8 @@ END INTERFACE
 ! See also: [[obj_ImportFromToml1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2( &
-    obj, tomlName, afile, filename, printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -964,7 +964,7 @@ END INTERFACE
 
 ABSTRACT INTERFACE
   FUNCTION obj_GetMeshPointer(obj, dim, entityNum, &
-    globalElement, islocal) RESULT(ans)
+                              globalElement, islocal) RESULT(ans)
     IMPORT :: AbstractDomain_, I4B, LGT, AbstractMesh_
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -1082,7 +1082,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, entityNum, &
-    islocal) RESULT(ans)
+                                       islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1171,7 +1171,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, entityNum, &
-    islocal) RESULT(ans)
+                                      islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1376,7 +1376,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeToElements1_(obj, ans, tsize, &
-    globalNode, islocal)
+                                            globalNode, islocal)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -1415,7 +1415,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeToElements2_(obj, ans, tsize, &
-    globalNode, islocal)
+                                            globalNode, islocal)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -2380,7 +2380,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, nrow, ncol, &
-    globalNode, islocal)
+                                      globalNode, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
@@ -2421,7 +2421,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, tsize, globalNode, &
-    islocal)
+                                      islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:)
@@ -3030,7 +3030,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalMaterial(obj, dim, globalElement, &
-    islocal, entityNum) RESULT(ans)
+                                       islocal, entityNum) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
@@ -3295,9 +3295,11 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isInitiated, engine, majorVersion, &
-    minorVersion, version, nsd, maxNptrs, minNptrs, tNodes, &
-    isNodeNumberSparse, maxElemNum, minElemNum, isElemNumberSparse, &
-    tEntitiesForNodes, tEntitiesForElements, tElements, tEntities, nodeCoord)
+                                 minorVersion, version, nsd, maxNptrs, &
+                                 minNptrs, tNodes, isNodeNumberSparse, &
+                                 maxElemNum, minElemNum, isElemNumberSparse, &
+                                 tEntitiesForNodes, tEntitiesForElements, &
+                                 tElements, tEntities, nodeCoord)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     LOGICAL(LGT), INTENT(OUT), OPTIONAL :: isInitiated
@@ -3411,7 +3413,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, &
-    localEdgeNumber, islocal) RESULT(ans)
+                                          localEdgeNumber, &
+                                          islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3453,7 +3456,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, &
-    localFaceNumber, islocal) RESULT(ans)
+                                          localFaceNumber, &
+                                          islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3499,7 +3503,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
-    opt, dim, entityNum, islocal)
+                                          opt, dim, entityNum, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3561,9 +3565,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
-    nodeCon, tCellCon, tFaceCon, &
-    tEdgeCon, tnodeCon, globalElement, &
-    dim, entityNum, islocal)
+                                          nodeCon, tCellCon, tFaceCon, &
+                                          tEdgeCon, tnodeCon, globalElement, &
+                                          dim, entityNum, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
@@ -3669,7 +3673,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes1(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           entityNum, islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: globalElement
@@ -3715,7 +3719,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes2(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           entityNum, islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
@@ -3811,9 +3815,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetOrientation(obj, cellOrient, faceOrient, &
-    edgeOrient, tCellOrient, tFaceOrient, &
-    tEdgeOrient, globalElement, dim, &
-    entityNum, islocal)
+                                       edgeOrient, tCellOrient, tFaceOrient, &
+                                       tEdgeOrient, globalElement, dim, &
+                                       entityNum, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
@@ -3871,7 +3875,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetElemTopologyIndx(obj, globalElement, dim, &
-    entityNum, islocal) &
+                                          entityNum, islocal) &
     RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -3919,7 +3923,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_isElementActive(obj, globalElement, dim, entityNum, &
-    islocal) RESULT(ans)
+                                      islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -4103,15 +4107,15 @@ END INTERFACE AbstractDomainSetSparsity
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
-! summary: Add space for media in the elements of a mesh
+! summary: Set the number of media in the elements of a mesh
 !
-! Call SetTotalMedium of the mesh of dimension dim; n media are added to every
-! element.
+! Call SetTotalMedium of the mesh of dimension dim; the number of media of
+! every element is set to n.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(inout) - domain object
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   n : INTEGER(I4B), intent(in) - number of media to add
+!   n : INTEGER(I4B), intent(in) - number of media
 !   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
 !     by FEDomain_
 !
@@ -4170,7 +4174,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
     INTEGER(I4B), INTENT(IN) :: n
-    !! number of media to add
+    !! number of media
     INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
     !! entity number; not used by FEDomain_
   END SUBROUTINE obj_SetTotalMedium
@@ -4199,7 +4203,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterial(obj, dim, entityNum, &
-    medium, material)
+                                    medium, material)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
@@ -4278,7 +4282,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetNodeCoord(obj, nodeCoord, scale, &
-    addContribution)
+                                     addContribution)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
@@ -4311,7 +4315,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-    min_measures, dim, entityNum)
+                                   min_measures, dim, entityNum)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: measures(:)

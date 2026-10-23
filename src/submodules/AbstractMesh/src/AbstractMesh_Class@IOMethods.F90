@@ -17,31 +17,26 @@
 
 SUBMODULE(AbstractMesh_Class) IOMethods
 USE GlobalData, ONLY: stdout
-
-USE Display_Method, ONLY: Display, &
-  ToString, &
-  EqualLine, &
-  BlankLines
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: BlankLines
 USE ReallocateUtility, ONLY: Reallocate
-
 USE ArangeUtility, ONLY: Arange
-
 USE InputUtility, ONLY: Input
-
 USE ReferenceElement_Method, ONLY: ElementName
-
-USE ElemData_Class, ONLY: INTERNAL_ELEMENT, &
-  BOUNDARY_ELEMENT, &
-  DOMAIN_BOUNDARY_ELEMENT, &
-  ElemData_Display
-
-USE FacetData_Class, ONLY: FacetData_Display, &
-  FacetData_Display_Filter
-
-USE NodeData_Class, ONLY: nodeData_Display
-
+USE ElemData_Class, ONLY: INTERNAL_ELEMENT
+USE ElemData_Class, ONLY: BOUNDARY_ELEMENT
+USE ElemData_Class, ONLY: DOMAIN_BOUNDARY_ELEMENT
+USE ElemData_Class, ONLY: ElemData_Display
+USE FacetData_Class, ONLY: FacetData_Display
+USE FacetData_Class, ONLY: FacetData_Display_Filter
+USE NodeData_Class, ONLY: NodeData_Display
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class@IOMethods.F90"
+#endif
 
 CONTAINS
 
@@ -56,7 +51,7 @@ MODULE PROCEDURE obj_Display
   CALL Display(msg, unitno=unitno)
 
   CALL Display(obj%isInitiated, "Mesh object initiated: ", &
-    unitno=unitno)
+               unitno=unitno)
 
   IF (.NOT. obj%isInitiated) RETURN
 
@@ -65,63 +60,63 @@ MODULE PROCEDURE obj_Display
   CALL Display(obj%readFromFile, "readFromFile: ", unitno=unitno)
 
   CALL Display(obj%isNodeToElementsInitiated, "isNodeToElementsInitiated: ", &
-    unitno=unitno)
+               unitno=unitno)
 
   CALL Display(obj%isNodeToNodesInitiated, "isNodeToNodesInitiated: ", &
-    unitno=unitno)
+               unitno=unitno)
 
   CALL Display(obj%isExtraNodeToNodesInitiated, &
-    "isExtraNodeToNodesInitiated: ", unitno=unitno)
+               "isExtraNodeToNodesInitiated: ", unitno=unitno)
 
   CALL Display(obj%isElementToElementsInitiated, &
-    "isElementToElementsInitiated: ", unitno=unitno)
+               "isElementToElementsInitiated: ", unitno=unitno)
 
   CALL Display(obj%isEdgeConnectivityInitiated, &
-    "isEdgeConnectivityInitiated: ", unitno=unitno)
+               "isEdgeConnectivityInitiated: ", unitno=unitno)
 
   CALL Display(obj%isFaceConnectivityInitiated, &
-    "isFaceConnectivityInitiated: ", unitno=unitno)
+               "isFaceConnectivityInitiated: ", unitno=unitno)
 
   CALL Display(obj%isBoundaryDataInitiated, &
-    "isBoundaryDataInitiated: ", unitno=unitno)
+               "isBoundaryDataInitiated: ", unitno=unitno)
 
   CALL Display(obj%isFacetDataInitiated, "isFacetDataInitiated: ", &
-    unitno=unitno)
+               unitno=unitno)
 
   CALL Display(obj%uid, "uid: ", unitno=unitno)
 
   CALL Display("Total elements (topology wise)", unitno=unitno)
   CALL EqualLine(unitno=unitno)
   CALL Display(obj%tElements_topology_wise(1), "point: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL Display(obj%tElements_topology_wise(2), "line: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL Display(obj%tElements_topology_wise(3), "triangle: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL Display(obj%tElements_topology_wise(4), "quadrangle: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL Display(obj%tElements_topology_wise(5), "tetrahedron: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL Display(obj%tElements_topology_wise(6), "hexahedron: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL Display(obj%tElements_topology_wise(7), "prism: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL Display(obj%tElements_topology_wise(8), "pyramid: ", &
-    unitno=unitno)
+               unitno=unitno)
   CALL BlankLines(unitno=unitno)
 
   CALL Display(obj%tElemTopologies, "Total topologies: ", &
-    unitno=unitno)
+               unitno=unitno)
 
   DO ii = 1, obj%tElemTopologies
     CALL Display("Topologies(" // ToString(ii) // "): " // &
-      ElementName(obj%elemTopologies(ii)), unitno=unitno)
+                 ElementName(obj%elemTopologies(ii)), unitno=unitno)
   END DO
 
   CALL Display(obj%maxNNE, "maxNNE: ", unitno=unitno)
 
   CALL Display(obj%isMaxElemOrderSet, "isMaxElemOrderSet: ", &
-    unitno=unitno)
+               unitno=unitno)
 
   CALL Display(obj%maxElemOrder, "maxElemOrder: ", unitno=unitno)
 
@@ -217,7 +212,8 @@ MODULE PROCEDURE obj_DisplayElementData
   IF (PRESENT(globalElement)) THEN
     ii = obj%GetLocalElemNumber(globalElement=globalElement, isLocal=isLocal)
     CALL elemData_Display(obj=obj%elementData(ii)%ptr, &
-      msg="elementData(" // ToString(ii) // "): ", unitno=unitno)
+                          msg="elementData(" // ToString(ii) // "): ", &
+                          unitno=unitno)
     RETURN
   END IF
 
@@ -225,7 +221,8 @@ MODULE PROCEDURE obj_DisplayElementData
 
   DO ii = 1, telements
     CALL elemData_Display(obj=obj%elementData(ii)%ptr, &
-      msg="elementData(" // ToString(ii) // "): ", unitno=unitno)
+                          msg="elementData(" // ToString(ii) // "): ", &
+                          unitno=unitno)
     CALL BlankLines(nol=1, unitno=unitno)
   END DO
 
@@ -244,7 +241,8 @@ MODULE PROCEDURE obj_DisplayNodeData
   DO ii = 1, tNodes
 
     CALL nodeData_Display(obj%nodeData(ii)%ptr, &
-      msg="nodeData(" // ToString(ii) // "): ", unitno=unitno)
+                          msg="nodeData(" // ToString(ii) // "): ", &
+                          unitno=unitno)
 
     CALL BlankLines(nol=1, unitno=unitno)
 
@@ -273,7 +271,8 @@ MODULE PROCEDURE obj_DisplayFacetData
   DO ii = 1, n
 
     CALL FacetData_Display(obj=obj%facetData(ii), &
-      msg="facetData(" // ToString(ii) // "): ", unitno=unitno)
+                           msg="facetData(" // ToString(ii) // "): ", &
+                           unitno=unitno)
 
     CALL BlankLines(nol=1, unitno=unitno)
 
@@ -300,7 +299,8 @@ MODULE PROCEDURE obj_DisplayInternalFacetData
   DO ii = 1, n
 
     CALL FacetData_Display_Filter(obj=obj%facetData(ii), filter=filter, &
-      msg="internalFacetData(" // ToString(ii) // "): ", unitno=unitno)
+                                  msg="internalFacetData(" // &
+                                  ToString(ii) // "): ", unitno=unitno)
     CALL BlankLines(nol=1, unitno=unitno)
 
   END DO
@@ -325,12 +325,14 @@ MODULE PROCEDURE obj_DisplayBoundaryFacetData
   DO ii = 1, n
 
     CALL FacetData_Display_Filter(obj=obj%facetData(ii), &
-      filter=BOUNDARY_ELEMENT, &
-      msg="boundaryFacetData(" // ToString(ii) // "): ", unitno=unitno)
+                                  filter=BOUNDARY_ELEMENT, &
+                                  msg="boundaryFacetData(" // &
+                                  ToString(ii) // "): ", unitno=unitno)
 
     CALL FacetData_Display_Filter(obj=obj%facetData(ii), &
-      filter=DOMAIN_BOUNDARY_ELEMENT, &
-      msg="domainBoundaryFacetData(" // ToString(ii) // "): ", unitno=unitno)
+                                  filter=DOMAIN_BOUNDARY_ELEMENT, &
+                                  msg="domainBoundaryFacetData(" // &
+                                  ToString(ii) // "): ", unitno=unitno)
 
     CALL BlankLines(nol=1, unitno=unitno)
 
@@ -350,5 +352,11 @@ MODULE PROCEDURE obj_DisplayMeshInfo
   CALL Display(obj%GetTotalFaces(), "tFaces: ", unitno=unitno)
   CALL EqualLine(unitno=unitno)
 END PROCEDURE obj_DisplayMeshInfo
+
+!----------------------------------------------------------------------------
+!                                                            Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

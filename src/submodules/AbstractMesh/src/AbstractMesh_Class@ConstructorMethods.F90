@@ -16,17 +16,21 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ConstructorMethods
-USE Display_Method, ONLY: Display, &
-  EqualLine, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: ToString
 USE GlobalData, ONLY: stdout
-USE ElemData_Class, ONLY: ElemData_Pointer, &
-  ElemData_Copy
-USE NodeData_Class, ONLY: NodeData_Pointer, &
-  NodeData_Copy
-
+USE ElemData_Class, ONLY: ElemData_Pointer
+USE ElemData_Class, ONLY: ElemData_Copy
+USE NodeData_Class, ONLY: NodeData_Pointer
+USE NodeData_Class, ONLY: NodeData_Copy
 USE Kdtree2_Module, ONLY: Kdtree2_Destroy
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMesh_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
@@ -41,7 +45,7 @@ MODULE PROCEDURE obj_Initiate
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   CALL obj%DEALLOCATE()
@@ -52,7 +56,7 @@ MODULE PROCEDURE obj_Initiate
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -139,12 +143,12 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (.NOT. obj%isInitiated) THEN
     CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-      '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
+                      '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
     RETURN
   END IF
 
@@ -157,7 +161,7 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
 
   IF (obj%showTime) THEN
     CALL Display("Showing Time States of InitiateDynamicDataStructure", &
-      unitno=stdout)
+                 unitno=stdout)
     CALL EqualLine(unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
@@ -170,8 +174,8 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName // " : " // myName // &
-      " : time for making elementDataList: " // &
-      ToString(TypeCPUTime%GetTime()), unitno=stdout)
+                 " : time for making elementDataList: " // &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 
   IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -184,14 +188,14 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName // " : " // myName // &
-      " : time for making nodeDataList: " // &
-      ToString(TypeCPUTime%GetTime()), unitno=stdout)
+                 " : time for making nodeDataList: " // &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL EqualLine(unitno=stdout)
   END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateDynamicDataStructure
@@ -236,5 +240,11 @@ MODULE PROCEDURE obj_DeallocateKdtree
 
   IF (ALLOCATED(obj%kdresult)) DEALLOCATE(obj%kdresult)
 END PROCEDURE obj_DeallocateKdtree
+
+!----------------------------------------------------------------------------
+!                                                             Include errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -127,6 +127,39 @@ the listed test passes. **Open** means not changed.
 - Test: `InitiateFacetElements_test_4` (FEMesh),
   `InitiateFacetElements_test_1` (FEDomain)
 
+### 13. SetTotalMedium adds media instead of setting the number
+
+- Where: `Elemdata_SetTotalMedium` (ElemData_Class.F90), used by
+  `obj_SetTotalMedium1`, `obj_SetTotalMedium2` (SetMethods).
+- Cause: the material array was extended by `n`, so `SetTotalMedium(n=2)`
+  then `SetTotalMedium(n=3, globalElement=14)` gave 5 media.
+- Fix: the size of the material array becomes `n`. The material ids of the
+  first `MIN(n, old size)` media are kept; new media get id 0. Docblocks of
+  the mesh and domain routines updated.
+- Test: `SetTotalMedium_test_1`
+
+### 14. GetNodeToNodes does not initiate its data
+
+- Where: `obj_GetNodeToNodes1/2`, `obj_GetNodeToNodes1_/2_` (GetMethods)
+- Symptom: empty result if `InitiateNodeToNodes` was not called.
+- Fix: the four routines call `InitiateNodeToNodes` when the data is not
+  initiated, like `GetNodeToElements`; `obj` is now INTENT(INOUT). All
+  library callers (`SetSparsity`, `InitiateExtraNodeToNodes`) already have
+  `obj` INTENT(INOUT).
+- Also fixed: `obj_GetNodeToNodes2` sized its work array without the extra
+  nodes, while `GetNodeToNodes_` writes them, so it wrote past the array
+  after `InitiateExtraNodeToNodes`. The extra nodes are now counted.
+- Test: `GetNodeToNodes_test_3` (no InitiateNodeToNodes),
+  `GetNodeToNodes_test_4` (list of nodes with extra nodes)
+- Found by `GetNodeToNodes_test_4`, fixed in `obj_InitiateExtraNodetoNodes`
+  (NodeDataMethods):
+  - no extra nodes were stored: `NodeData_SetExtraGlobalNodes` copies into
+    the existing `extraGlobalNodes`, which was never allocated (size 0).
+    Now `NodeData_Set(extraGlobalNodes=...)` is used, which allocates.
+  - the extra nodes were reset and stored for every element around the
+    node, so only those of the last element were kept. They are now
+    collected over all elements and stored once.
+
 ## Open
 
 ### 12. Routines which are not implemented
@@ -144,24 +177,6 @@ the largest element order, stored in the new components `maxElemOrder` and
 `isMaxElemOrderSet` (reset by Deallocate, shown by Display); `obj` is now
 INTENT(INOUT). Tests: `GetOrder_test_2` (Quadrangle4, order 1, computed and
 stored), `GetOrder_test_3` (Triangle6, order 2, again after Deallocate).
-
-### 13. SetTotalMedium adds media instead of setting the number
-
-- Where: `obj_SetTotalMedium1`, `obj_SetTotalMedium2` (SetMethods) via
-  `Elemdata_SetTotalMedium`.
-- Symptom: `SetTotalMedium(n=2)` then `SetTotalMedium(n=3,
-  globalElement=14)` gives `GetTotalMaterial(14) = 5`.
-- Cause: `Elemdata_SetTotalMedium` extends the existing array by `n`.
-- Question: is this intended? The argument comment says "Total number of
-  medium assigned to a given element". The docblocks describe the
-  present behaviour.
-
-### 14. GetNodeToNodes does not initiate its data
-
-- Where: `obj_GetNodeToNodes1/2`, `obj_GetNodeToNodes1_/2_`
-- Symptom: empty result if `InitiateNodeToNodes` was not called.
-- Note: `GetNodeToElements` initiates its data on demand. Either make
-  `GetNodeToNodes` do the same, or keep the documented requirement.
 
 ### 15. AbstractMeshPointerDeallocate does not free the meshes
 

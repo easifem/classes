@@ -19,6 +19,11 @@ SUBMODULE(AbstractMesh_Class) FacetDataMethods
 USE ReallocateUtility, ONLY: Reallocate
 USE AbstractMeshUtility, ONLY: GetFacetDataFromElemData
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class@FacetDataMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,7 +38,7 @@ MODULE PROCEDURE obj_InitiateFacetElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ! point and curve meshes have no facet elements
@@ -41,7 +46,7 @@ MODULE PROCEDURE obj_InitiateFacetElements
   IF (problem) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
 
     RETURN
@@ -51,7 +56,7 @@ MODULE PROCEDURE obj_InitiateFacetElements
   IF (problem) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
 
     RETURN
@@ -68,7 +73,7 @@ MODULE PROCEDURE obj_InitiateFacetElements
   problem = tface .EQ. 0
   IF (problem) THEN
     CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-      '[ERROR] :: Facet elements not found in the mesh')
+                      '[ERROR] :: Facet elements not found in the mesh')
     RETURN
   END IF
 
@@ -84,20 +89,23 @@ MODULE PROCEDURE obj_InitiateFacetElements
     problem = .NOT. obj%isElementActive(globalElement=iel, islocal=.TRUE.)
     IF (problem) CYCLE elemloop
     CALL GetFacetDataFromElemData(elementData=obj%elementData(iel)%ptr, &
-      facetData=obj%facetData, masks=masks, nsd=obj%nsd)
+                                  facetData=obj%facetData, masks=masks, &
+                                  nsd=obj%nsd)
   END DO elemloop
 
   IF (ALLOCATED(masks)) DEALLOCATE(masks)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateFacetElements
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE FacetDataMethods

@@ -20,9 +20,13 @@ USE ReallocateUtility, ONLY: Reallocate
 USE InputUtility, ONLY: Input
 USE ReferenceElement_Method, ONLY: GetVTKelementType_
 USE GlobalData, ONLY: INT8
-USE VTKFile_Class, ONLY: VTK_BINARY_APPENDED, VTK_UNSTRUCTUREDGRID
-
+USE VTKFile_Class, ONLY: VTK_BINARY_APPENDED
+USE VTKFile_Class, ONLY: VTK_UNSTRUCTUREDGRID
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Class@VTKMethods.F90"
+#endif
 
 CONTAINS
 
@@ -32,130 +36,131 @@ CONTAINS
 
 MODULE PROCEDURE obj_ExportToVTK
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
+  CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
 #endif
 
-LOGICAL(LGT) :: opentag_, closetag_, content_, isok, isNodeCoord
-INTEGER(INT8), ALLOCATABLE :: types(:)
-INTEGER(I4B) :: ncells, npoints, ii, jj, nne, maxnne, elemtype, tsize
-INTEGER(I4B), ALLOCATABLE :: vtkindx(:), connectivity(:), &
-                             offsets(:), cellcon(:)
-REAL(DFP), ALLOCATABLE :: xij(:, :)
+  LOGICAL(LGT) :: opentag_, closetag_, content_, isok, isNodeCoord
+  INTEGER(INT8), ALLOCATABLE :: types(:)
+  INTEGER(I4B) :: ncells, npoints, ii, jj, nne, maxnne, elemtype, tsize
+  INTEGER(I4B), ALLOCATABLE :: vtkindx(:), connectivity(:), &
+    offsets(:), cellcon(:)
+  REAL(DFP), ALLOCATABLE :: xij(:, :)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 ! main
-IF (.NOT. vtk%isInitiated) THEN
+  IF (.NOT. vtk%isInitiated) THEN
 
 #ifdef DEBUG_VER
-  isok = PRESENT(filename)
-  CALL AssertError1(isok, myname, &
-                    "VTKFile_ is not initiated, and filename is not present.")
+    isok = PRESENT(filename)
+    CALL AssertError1(isok, myName, &
+                      "VTKFile_ is not initiated, and filename is not " // &
+                      "present.")
 #endif
 
-  CALL vtk%InitiateVTKFile( &
-    filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
-    DataStructureType=VTK_UNSTRUCTUREDGRID)
-END IF
+    CALL vtk%InitiateVTKFile(filename=filename, mode="NEW", &
+                             DataFormat=VTK_BINARY_APPENDED, &
+                             DataStructureType=VTK_UNSTRUCTUREDGRID)
+  END IF
 
-ncells = obj%GetTotalElements()
-npoints = obj%GetTotalNodes()
+  ncells = obj%GetTotalElements()
+  npoints = obj%GetTotalNodes()
 
-opentag_ = Input(default=.TRUE., option=OpenTag)
-closetag_ = Input(default=.TRUE., option=CloseTag)
-content_ = Input(default=.TRUE., option=Content)
+  opentag_ = Input(DEFAULT=.TRUE., option=OpenTag)
+  closetag_ = Input(DEFAULT=.TRUE., option=CloseTag)
+  content_ = Input(DEFAULT=.TRUE., option=Content)
 
 ! Write piece information if OpenTag is true
-IF (opentag_) CALL vtk%WritePiece(nPoints=npoints, nCells=ncells)
+  IF (opentag_) CALL vtk%WritePiece(npoints=npoints, ncells=ncells)
 
 !  Write Points information
-isNodeCoord = PRESENT(nodeCoord)
-IF (isNodeCoord) THEN
+  isNodeCoord = PRESENT(nodeCoord)
+  IF (isNodeCoord) THEN
 
 #ifdef DEBUG_VER
-  isok = (SIZE(nodecoord, 1) .EQ. 3) .AND. (SIZE(nodecoord, 2) .EQ. npoints)
-  CALL AssertError1(isok, myname, &
-                    "Shape of nodeCoord should be [3, nPoints]")
+    isok = (SIZE(nodecoord, 1) .EQ. 3) .AND. (SIZE(nodecoord, 2) .EQ. npoints)
+    CALL AssertError1(isok, myName, &
+                      "Shape of nodeCoord should be [3, nPoints]")
 #endif
 
-  CALL vtk%WritePoints(x=nodeCoord)
+    CALL vtk%WritePoints(x=nodeCoord)
 
-ELSE
+  ELSE
 
-  CALL Reallocate(xij, 3, npoints)
-  CALL obj%GetNodeCoord(nodecoord=xij, nrow=ii, ncol=jj)
-  CALL vtk%WritePoints(x=xij)
+    CALL Reallocate(xij, 3, npoints)
+    CALL obj%GetNodeCoord(nodecoord=xij, nrow=ii, ncol=jj)
+    CALL vtk%WritePoints(x=xij)
 
-END IF
+  END IF
 
 ! Write Cells
-IF (Content_) THEN
+  IF (content_) THEN
 
-  maxnne = obj%GetMaxNNE()
-
-#ifdef DEBUG_VER
-  isok = maxnne .GT. 0
-  CALL AssertError1(isok, myname, &
-                    "maxnne should be greater than zero")
-#endif
-
-  ALLOCATE (types(ncells), offsets(0:ncells), connectivity(maxnne * ncells), &
-            cellcon(maxnne), vtkindx(maxnne))
-
-  offsets(0) = 0
-
-  cell_loop: DO ii = 1, ncells
-    isok = obj%isElementActive(globalElement=ii, islocal=.TRUE.)
-    IF (.NOT. isok) CYCLE cell_loop
-
-    elemtype = obj%GetElemType(globalElement=ii, islocal=.TRUE.)
-
-    CALL GetVTKelementType_(elemType=elemtype, vtk_type=types(ii), &
-                            nptrs=vtkindx, tsize=nne)
-
-    offsets(ii) = offsets(ii - 1) + nne
-
-    CALL obj%GetConnectivity_(globalElement=ii, islocal=.TRUE., &
-                              ans=cellcon, tsize=tsize)
+    maxnne = obj%GetMaxNNE()
 
 #ifdef DEBUG_VER
-    isok = tsize .EQ. nne
-    CALL AssertError1(isok, myname, &
-                      "tsize should be equal to nne")
+    isok = maxnne .GT. 0
+    CALL AssertError1(isok, myName, &
+                      "maxnne should be greater than zero")
 #endif
 
-    CALL obj%GetLocalNodeNumber_(globalNode=cellcon(1:tsize), &
-                                 ans=cellcon(1:tsize), islocal=.FALSE.)
+    ALLOCATE(types(ncells), offsets(0:ncells), &
+             connectivity(maxnne * ncells), cellcon(maxnne), vtkindx(maxnne))
 
-    DO jj = 1, nne
-      connectivity(offsets(ii) - nne + jj) = cellcon(vtkindx(jj)) - 1
-    END DO
+    offsets(0) = 0
 
-  END DO cell_loop
+    cell_loop: DO ii = 1, ncells
+      isok = obj%isElementActive(globalElement=ii, islocal=.TRUE.)
+      IF (.NOT. isok) CYCLE cell_loop
 
-  tsize = offsets(ncells)
+      elemtype = obj%GetElemType(globalElement=ii, islocal=.TRUE.)
 
-  CALL vtk%WriteCells(connectivity=connectivity(1:tsize), &
-                      offsets=offsets(1:ncells), &
-                      types=types(1:ncells))
+      CALL GetVTKelementType_(elemtype=elemtype, vtk_type=types(ii), &
+                              nptrs=vtkindx, tsize=nne)
 
-END IF
+      offsets(ii) = offsets(ii - 1) + nne
 
-IF (CloseTag_) THEN
-  CALL vtk%WritePiece()
-  CALL vtk%CLOSE()
-END IF
+      CALL obj%GetConnectivity_(globalElement=ii, islocal=.TRUE., &
+                                ans=cellcon, tsize=tsize)
+
+#ifdef DEBUG_VER
+      isok = tsize .EQ. nne
+      CALL AssertError1(isok, myName, &
+                        "tsize should be equal to nne")
+#endif
+
+      CALL obj%GetLocalNodeNumber_(globalNode=cellcon(1:tsize), &
+                                   ans=cellcon(1:tsize), islocal=.FALSE.)
+
+      DO jj = 1, nne
+        connectivity(offsets(ii) - nne + jj) = cellcon(vtkindx(jj)) - 1
+      END DO
+
+    END DO cell_loop
+
+    tsize = offsets(ncells)
+
+    CALL vtk%WriteCells(connectivity=connectivity(1:tsize), &
+                        offsets=offsets(1:ncells), &
+                        types=types(1:ncells))
+
+  END IF
+
+  IF (closetag_) THEN
+    CALL vtk%WritePiece()
+    CALL vtk%CLOSE()
+  END IF
 
 ! clean up
-IF (ALLOCATED(types)) DEALLOCATE (types)
-IF (ALLOCATED(vtkindx)) DEALLOCATE (vtkindx)
-IF (ALLOCATED(connectivity)) DEALLOCATE (connectivity)
-IF (ALLOCATED(offsets)) DEALLOCATE (offsets)
-IF (ALLOCATED(cellcon)) DEALLOCATE (cellcon)
-IF (ALLOCATED(xij)) DEALLOCATE (xij)
+  IF (ALLOCATED(types)) DEALLOCATE(types)
+  IF (ALLOCATED(vtkindx)) DEALLOCATE(vtkindx)
+  IF (ALLOCATED(connectivity)) DEALLOCATE(connectivity)
+  IF (ALLOCATED(offsets)) DEALLOCATE(offsets)
+  IF (ALLOCATED(cellcon)) DEALLOCATE(cellcon)
+  IF (ALLOCATED(xij)) DEALLOCATE(xij)
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
@@ -164,27 +169,27 @@ END PROCEDURE obj_ExportToVTK
 
 MODULE PROCEDURE obj_WriteData_vtk
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
+  CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
 #endif
 
-TYPE(VTKFile_) :: vtk
+  TYPE(VTKFile_) :: vtk
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL vtk%InitiateVTKFile( &
-  filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
-  DataStructureType=VTK_UNSTRUCTUREDGRID)
+  CALL vtk%InitiateVTKFile(filename=filename, mode="NEW", &
+                           DataFormat=VTK_BINARY_APPENDED, &
+                           DataStructureType=VTK_UNSTRUCTUREDGRID)
 
-CALL obj%ExportToVTK(vtk=vtk)
+  CALL obj%ExportToVTK(vtk=vtk)
 
-CALL vtk%DEALLOCATE()
+  CALL vtk%DEALLOCATE()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteData_vtk
 
@@ -194,39 +199,39 @@ END PROCEDURE obj_WriteData_vtk
 
 MODULE PROCEDURE obj_WriteData_vtk_r1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk_r1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk_r1()"
 #endif
 
-TYPE(VTKFile_) :: vtk
-TYPE(String) :: location, action
+  TYPE(VTKFile_) :: vtk
+  TYPE(String) :: location, action
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL vtk%InitiateVTKFile( &
-  filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
-  DataStructureType=VTK_UNSTRUCTUREDGRID)
+  CALL vtk%InitiateVTKFile(filename=filename, mode="NEW", &
+                           DataFormat=VTK_BINARY_APPENDED, &
+                           DataStructureType=VTK_UNSTRUCTUREDGRID)
 
-CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
-                     content=.TRUE., closetag=.FALSE.)
-location = String('node')
-action = String('open')
-CALL vtk%WriteDataArray(location=location, action=action)
+  CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
+                       content=.TRUE., closetag=.FALSE.)
+  location = String('node')
+  action = String('open')
+  CALL vtk%WriteDataArray(location=location, action=action)
 
-CALL vtk%WriteDataArray(name=dataName, x=DATA, &
-                        numberOfComponents=1)
+  CALL vtk%WriteDataArray(NAME=dataName, x=DATA, &
+                          numberOfComponents=1)
 
-action = String('close')
-CALL vtk%WriteDataArray(location=location, action=action)
+  action = String('close')
+  CALL vtk%WriteDataArray(location=location, action=action)
 
-CALL vtk%WritePiece()
-CALL vtk%CLOSE()
+  CALL vtk%WritePiece()
+  CALL vtk%CLOSE()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteData_vtk_r1
 
@@ -236,58 +241,58 @@ END PROCEDURE obj_WriteData_vtk_r1
 
 MODULE PROCEDURE obj_WriteData_vtk_r2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk_r2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk_r2()"
 #endif
 
-TYPE(VTKFile_) :: vtk
-TYPE(String) :: location, action
-INTEGER(I4B) :: tdata, ii
-LOGICAL(LGT) :: isSingleData0
+  TYPE(VTKFile_) :: vtk
+  TYPE(String) :: location, action
+  INTEGER(I4B) :: tdata, ii
+  LOGICAL(LGT) :: isSingleData0
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-isSingleData0 = Input(default=.FALSE., option=isSingleData)
+  isSingleData0 = Input(DEFAULT=.FALSE., option=isSingleData)
 
-CALL vtk%InitiateVTKFile( &
-  filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
-  DataStructureType=VTK_UNSTRUCTUREDGRID)
+  CALL vtk%InitiateVTKFile(filename=filename, mode="NEW", &
+                           DataFormat=VTK_BINARY_APPENDED, &
+                           DataStructureType=VTK_UNSTRUCTUREDGRID)
 
-CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
-                     content=.TRUE., closetag=.FALSE.)
-location = String('node')
-action = String('open')
-CALL vtk%WriteDataArray(location=location, action=action)
+  CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
+                       content=.TRUE., closetag=.FALSE.)
+  location = String('node')
+  action = String('open')
+  CALL vtk%WriteDataArray(location=location, action=action)
 
-tdata = SIZE(DATA, 1)
+  tdata = SIZE(DATA, 1)
 
-IF (isSingleData0) THEN
+  IF (isSingleData0) THEN
 
-  CALL vtk%WriteDataArray(name=dataNames(1), &
-                          x=DATA(:, :), &
-                          numberOfComponents=tdata)
+    CALL vtk%WriteDataArray(NAME=dataNames(1), &
+                            x=DATA(:, :), &
+                            numberOfComponents=tdata)
 
-ELSE
+  ELSE
 
-  DO ii = 1, tdata
-    CALL vtk%WriteDataArray(name=dataNames(ii), &
-                            x=DATA(ii, :), &
-                            numberOfComponents=1)
-  END DO
+    DO ii = 1, tdata
+      CALL vtk%WriteDataArray(NAME=dataNames(ii), &
+                              x=DATA(ii, :), &
+                              numberOfComponents=1)
+    END DO
 
-END IF
+  END IF
 
-action = String('close')
-CALL vtk%WriteDataArray(location=location, action=action)
+  action = String('close')
+  CALL vtk%WriteDataArray(location=location, action=action)
 
-CALL vtk%WritePiece()
-CALL vtk%CLOSE()
+  CALL vtk%WritePiece()
+  CALL vtk%CLOSE()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteData_vtk_r2
 
@@ -297,51 +302,51 @@ END PROCEDURE obj_WriteData_vtk_r2
 
 MODULE PROCEDURE obj_WriteData_vtk_r3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk_r3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk_r3()"
 #endif
 
-TYPE(VTKFile_) :: vtk
-TYPE(String) :: location, action
-INTEGER(I4B) :: tdata, ii, tcompo
+  TYPE(VTKFile_) :: vtk
+  TYPE(String) :: location, action
+  INTEGER(I4B) :: tdata, ii, tcompo
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-tdata = SIZE(DATA, 1)
-tcompo = SIZE(DATA, 2)
+  tdata = SIZE(DATA, 1)
+  tcompo = SIZE(DATA, 2)
 
-CALL vtk%InitiateVTKFile( &
-  filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
-  DataStructureType=VTK_UNSTRUCTUREDGRID)
+  CALL vtk%InitiateVTKFile(filename=filename, mode="NEW", &
+                           DataFormat=VTK_BINARY_APPENDED, &
+                           DataStructureType=VTK_UNSTRUCTUREDGRID)
 
-CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
-                     content=.TRUE., closetag=.FALSE.)
-location = String('node')
-action = String('open')
-CALL vtk%WriteDataArray(location=location, action=action)
+  CALL obj%ExportToVTK(vtk=vtk, opentag=.TRUE., &
+                       content=.TRUE., closetag=.FALSE.)
+  location = String('node')
+  action = String('open')
+  CALL vtk%WriteDataArray(location=location, action=action)
 
-DO ii = 1, tdata
-  CALL vtk%WriteDataArray(name=dataNames(ii), &
-                          x=DATA(ii, :, :), &
-                          numberOfComponents=tcompo)
-END DO
+  DO ii = 1, tdata
+    CALL vtk%WriteDataArray(NAME=dataNames(ii), &
+                            x=DATA(ii, :, :), &
+                            numberOfComponents=tcompo)
+  END DO
 
-action = String('close')
-CALL vtk%WriteDataArray(location=location, action=action)
+  action = String('close')
+  CALL vtk%WriteDataArray(location=location, action=action)
 
-CALL vtk%WritePiece()
-CALL vtk%CLOSE()
+  CALL vtk%WritePiece()
+  CALL vtk%CLOSE()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteData_vtk_r3
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

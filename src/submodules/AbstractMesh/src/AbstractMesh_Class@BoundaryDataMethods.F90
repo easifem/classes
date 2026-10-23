@@ -17,6 +17,12 @@
 
 SUBMODULE(AbstractMesh_Class) BoundaryDataMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMesh_Class@BoundaryDataMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -24,26 +30,28 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateBoundaryData
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData()"
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateBoundaryData()"
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-IF (obj%isBoundaryDataInitiated) RETURN
+  IF (obj%isBoundaryDataInitiated) RETURN
 
-CALL obj%InitiateElementToElements()
+  CALL obj%InitiateElementToElements()
 
-obj%isBoundaryDataInitiated = .TRUE.
+  obj%isBoundaryDataInitiated = .TRUE.
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateBoundaryData
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE BoundaryDataMethods

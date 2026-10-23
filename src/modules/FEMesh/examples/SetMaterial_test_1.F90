@@ -2,7 +2,7 @@
 ! date: 2026-10-22
 ! summary: Set the materials of the elements
 !
-! SetTotalMedium allocates space for n media in the elements.
+! SetTotalMedium sets the number of media in the elements to n.
 ! SetMaterial sets the material id of a medium in all elements, in
 ! the elements of an entity, or in one element. GetMaterial returns
 ! the material id of a medium of an element.
@@ -47,14 +47,14 @@ PROGRAM main
   CALL obj%SetMaterial(entityNum=1_I4B, medium=2_I4B, material=3_I4B)
   ! element 16 only
   CALL obj%SetMaterial(medium=2_I4B, material=5_I4B, &
-    globalElement=16_I4B, islocal=.FALSE.)
+                       globalElement=16_I4B, islocal=.FALSE.)
 
   CALL OK(obj%GetMaterial(medium=1_I4B, globalElement=13_I4B) &
-    .EQ. 7_I4B, "medium 1")
+          .EQ. 7_I4B, "medium 1")
   CALL OK(obj%GetMaterial(medium=2_I4B, globalElement=13_I4B) &
-    .EQ. 3_I4B, "medium 2 of element 13")
+          .EQ. 3_I4B, "medium 2 of element 13")
   CALL OK(obj%GetMaterial(medium=2_I4B, globalElement=16_I4B) &
-    .EQ. 5_I4B, "medium 2 of element 16")
+          .EQ. 5_I4B, "medium 2 of element 16")
 
   CALL obj%DEALLOCATE()
   CALL meshfile%DEALLOCATE()
