@@ -17,15 +17,37 @@
 
 SUBMODULE(DomainConnectivity_Class) FacetMethods
 USE BaseMethod
+USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: Elemdata_meshID
 IMPLICIT NONE
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                               cell_entity
+!----------------------------------------------------------------------------
+
+! Entity number (mesh id) of a cell element. One mesh of a domain holds all
+! entities of its dimension, so the entity is read from the element.
+
+FUNCTION cell_entity(cellMesh, globalElement) RESULT(ans)
+  CLASS(AbstractMesh_), INTENT(IN) :: cellMesh
+  !! mesh which contains the cell
+  INTEGER(I4B), INTENT(IN) :: globalElement
+  !! global element number of the cell
+  INTEGER(I4B) :: ans
+  !! mesh id (entity number) of the cell
+
+  TYPE(ElemData_) :: elemdata
+
+  CALL cellMesh%GetElemData(elemdata=elemdata, globalElement=globalElement)
+  ans = Elemdata_meshID(elemdata)
+END FUNCTION cell_entity
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
-                                isMaster)
+SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, isMaster)
   CLASS(DomainConnectivity_), INTENT(INOUT) :: obj
   !! Domain connectivity data
   CLASS(AbstractMesh_), INTENT(INOUT) :: facetMesh
@@ -33,7 +55,7 @@ SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
   CLASS(AbstractMesh_), INTENT(INOUT) :: cellMesh
   !! Master mesh
   INTEGER(I4B), INTENT(IN) :: dim
-  INTEGER(I4B), INTENT(IN) :: entityNum
+  !! dimension of the cells; the entity of a cell is its mesh id
   LOGICAL(LGT), INTENT(IN) :: isMaster
   !! if true then cell Mesh is master cell
   !! if false then cell mesh is slave cell
@@ -101,11 +123,13 @@ SUBROUTINE facet_to_cell_helper(obj, facetMesh, cellMesh, dim, entityNum, &
         IF (isMaster) THEN
           obj%facetToCell(ii)%GlobalCellData(1, 1) = cellGlobalNum
           obj%facetToCell(ii)%GlobalCellData(2, 1) = localFacetID
-          obj%facetToCell(ii)%GlobalCellData(3:4, 1) = [dim, entityNum]
+          obj%facetToCell(ii)%GlobalCellData(3:4, 1) = &
+            [dim, cell_entity(cellMesh, cellGlobalNum)]
         ELSE
           obj%facetToCell(ii)%GlobalCellData(1, 2) = cellGlobalNum
           obj%facetToCell(ii)%GlobalCellData(2, 2) = localFacetID
-          obj%facetToCell(ii)%GlobalCellData(3:4, 2) = [dim, entityNum]
+          obj%facetToCell(ii)%GlobalCellData(3:4, 2) = &
+            [dim, cell_entity(cellMesh, cellGlobalNum)]
         END IF
 
         EXIT
@@ -156,8 +180,7 @@ MODULE PROCEDURE dc_InitiateFacetToCellData1
   obj%isFacetToCell = .TRUE.
   CALL display("Calling facet_to_cell_helper()", unitno=stdout)
 
-  CALL facet_to_cell_helper(obj, facetMesh, cellMesh, DIM, entityNum, &
-                            isMaster)
+  CALL facet_to_cell_helper(obj, facetMesh, cellMesh, DIM, isMaster)
 
   CALL e%raiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] InitiateFacetToCellData()')
@@ -170,7 +193,7 @@ END PROCEDURE dc_InitiateFacetToCellData1
 
 MODULE PROCEDURE dc_InitiateFacetToCellData2
   CHARACTER(*), PARAMETER :: myName = "dc_InitiateFacetToCellData2"
-  INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, nsd
+  INTEGER(I4B) :: dim_facet, tface, nsd
   CLASS(AbstractMesh_), POINTER :: meshptr
   LOGICAL(LGT) :: isVar
 
@@ -200,48 +223,34 @@ MODULE PROCEDURE dc_InitiateFacetToCellData2
   obj%isFacetToCell = .TRUE.
 
 ! Handling masterCell
+! One mesh of dimension dim_facet + 1 holds all entities of that dimension
 
-  tCellMesh = masterDomain%getTotalMesh(DIM=dim_facet + 1)
+  meshptr => masterDomain%getMeshPointer(DIM=dim_facet + 1)
 
-  DO icellMesh = 1, tCellMesh
+  CALL meshptr%GetParam(isNodeToElementsInitiated=isVar)
 
-    meshptr => masterDomain%getMeshPointer(DIM=dim_facet + 1)
+  IF (.NOT. isVar) THEN
+    CALL e%raiseInformation(modName // '::' // myName // ' - ' // &
+    & "In cellMesh node to elements data is not initiated, &
+    & calling cellMesh%InitiateNodeToElements()")
+    CALL meshptr%InitiateNodeToElements()
+  END IF
 
-    CALL meshptr%GetParam(isNodeToElementsInitiated=isVar)
-
-    IF (.NOT. isVar) THEN
-      CALL e%raiseInformation(modName // '::' // myName // ' - ' // &
-      & "In cellMesh node to elements data is not initiated, &
-      & calling cellMesh%InitiateNodeToElements()")
-      CALL meshptr%InitiateNodeToElements()
-    END IF
-
-    CALL facet_to_cell_helper(obj=obj, &
-                              facetMesh=facetMesh, &
-                              cellMesh=meshptr, &
-                              DIM=dim_facet + 1, &
-                              entityNum=icellMesh, &
-                              isMaster=.TRUE.)
-
-  END DO
+  CALL facet_to_cell_helper(obj=obj, &
+                            facetMesh=facetMesh, &
+                            cellMesh=meshptr, &
+                            DIM=dim_facet + 1, &
+                            isMaster=.TRUE.)
 
 ! Handling slaveCell
 
-  tCellMesh = slaveDomain%getTotalMesh(DIM=dim_facet + 1)
+  meshptr => slaveDomain%getMeshPointer(DIM=dim_facet + 1)
 
-  DO icellMesh = 1, tCellMesh
-
-    meshptr => slaveDomain%getMeshPointer(DIM=dim_facet + 1)
-
-    CALL facet_to_cell_helper( &
-                               obj=obj, &
-                               facetMesh=facetMesh, &
-                               cellMesh=meshptr, &
-                               DIM=dim_facet + 1, &
-                               entityNum=icellMesh, &
-                               isMaster=.FALSE.)
-
-  END DO
+  CALL facet_to_cell_helper(obj=obj, &
+                            facetMesh=facetMesh, &
+                            cellMesh=meshptr, &
+                            DIM=dim_facet + 1, &
+                            isMaster=.FALSE.)
 
   NULLIFY(meshptr)
 
@@ -350,7 +359,8 @@ MODULE PROCEDURE dc_InitiateFacetToCellData3
         ELSE
           obj%facetToCell(ii)%GlobalCellData(1, colID) = cellGlobalNum
           obj%facetToCell(ii)%GlobalCellData(2, colID) = localFacetID
-          obj%facetToCell(ii)%GlobalCellData(3:4, colID) = [DIM, entityNum]
+          obj%facetToCell(ii)%GlobalCellData(3:4, colID) = &
+            [DIM, cell_entity(cellMesh, cellGlobalNum)]
         END IF
       END IF
 
@@ -378,7 +388,7 @@ END PROCEDURE dc_InitiateFacetToCellData3
 
 MODULE PROCEDURE dc_InitiateFacetToCellData4
   CHARACTER(*), PARAMETER :: myName = "dc_InitiateFacetToCellData4"
-  INTEGER(I4B) :: dim_facet, icellMesh, tCellMesh, tface, ii, iface, icell, &
+  INTEGER(I4B) :: dim_facet, tface, ii, iface, icell, &
     nsd, tfacet, cellGlobalNum, localFacetID, jj
   CLASS(AbstractMesh_), POINTER :: cellMesh
   INTEGER(I4B), ALLOCATABLE :: colID(:), nptrs(:), pt2elem(:), &
@@ -414,9 +424,9 @@ MODULE PROCEDURE dc_InitiateFacetToCellData4
 !
 ! Handling masterCell
 !
-  tCellMesh = cellDomain%getTotalMesh(DIM=dim_facet + 1)
-
-  DO icellMesh = 1, tCellMesh
+! One mesh of dimension dim_facet + 1 holds all entities of that dimension;
+! the entity of a cell is its mesh id.
+  cellblock: BLOCK
 
     cellMesh => cellDomain%getMeshPointer(DIM=dim_facet + 1)
 
@@ -428,7 +438,7 @@ MODULE PROCEDURE dc_InitiateFacetToCellData4
                         'Mesh_::cellMesh is not associated!')
     END IF
 
-    IF (cellMesh%getTotalElements() .EQ. 0) CYCLE
+    IF (cellMesh%getTotalElements() .EQ. 0) EXIT cellblock
 
     tfacet = cellMesh%GetTotalFacetElements()
     IF (tfacet .EQ. 0) THEN
@@ -508,7 +518,7 @@ MODULE PROCEDURE dc_InitiateFacetToCellData4
             obj%facetToCell(ii)%GlobalCellData(2, colID(ii)) = &
               localFacetID
             obj%facetToCell(ii)%GlobalCellData(3:4, colID(ii)) = &
-              [dim_facet + 1, icellMesh]
+              [dim_facet + 1, cell_entity(cellMesh, cellGlobalNum)]
           END IF
         END IF
 
@@ -523,7 +533,7 @@ MODULE PROCEDURE dc_InitiateFacetToCellData4
 
     END DO
 
-  END DO
+  END BLOCK cellblock
 
   NULLIFY(cellMesh)
   IF (ALLOCATED(colID)) DEALLOCATE(colID)

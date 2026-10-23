@@ -37,6 +37,17 @@ the listed test passes. **Open** means not changed.
   `GetTotalElements`, `SetMaterial`, `GetTotalVertexNodes`. For the nodes
   of one entity use `GetMeshPointer(dim)` and the mesh method
   `GetNptrs(meshid=entityNum)`.
+- DomainConnectivity_ (follow-up): `InitiateFacetToCellData2/4` looped
+  over the entities and called `GetMeshPointer` for each, which gave the
+  same mesh every time. Data2 stored the last loop index as the entity of
+  every facet; Data4 counted the cells of a facet again on every pass and
+  raised "more than 2 cell element" for two or more entities. Both now do
+  one pass, and `facet_to_cell_helper`, Data3 and Data4 store the mesh id
+  of the cell element as its entity. `entityNum` (or `entityNum1/2`) is
+  removed from `InitiateFacetToCellData1/3`, `InitiateNodeToNodeData1`
+  and `InitiateCellToCellData1`, where it was not used or was wrong for
+  meshes with more than one entity.
+
 
 ### 5. GetDimEntityNum always returns entity 1 for FEDomain_
 
