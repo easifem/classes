@@ -21,7 +21,7 @@
 
 SUBMODULE(FEDomain_Class) ConstructorMethods
 USE AbstractDomain_Class, ONLY: AbstractDomainInitiate, &
-                                AbstractDomainDeallocate
+  AbstractDomainDeallocate
 IMPLICIT NONE
 CONTAINS
 
@@ -31,29 +31,33 @@ CONTAINS
 
 MODULE PROCEDURE obj_Deallocate
 
-CALL AbstractDomainDeallocate(obj=obj)
+  CALL AbstractDomainDeallocate(obj=obj)
 
-obj%mesh => NULL()
+! obj%mesh points to one of the meshes below
+  obj%mesh => NULL()
 
-IF (ASSOCIATED(obj%meshVolume)) THEN
-  CALL obj%meshVolume%DEALLOCATE()
-  obj%meshVolume => NULL()
-END IF
+! The meshes are created by FEMesh_Pointer() in Import; the domain owns
+! them, so they are freed here.
 
-IF (ASSOCIATED(obj%meshSurface)) THEN
-  CALL obj%meshSurface%DEALLOCATE()
-  obj%meshSurface => NULL()
-END IF
+  IF (ASSOCIATED(obj%meshVolume)) THEN
+    CALL obj%meshVolume%DEALLOCATE()
+    DEALLOCATE(obj%meshVolume)
+  END IF
 
-IF (ASSOCIATED(obj%meshCurve)) THEN
-  CALL obj%meshCurve%DEALLOCATE()
-  obj%meshCurve => NULL()
-END IF
+  IF (ASSOCIATED(obj%meshSurface)) THEN
+    CALL obj%meshSurface%DEALLOCATE()
+    DEALLOCATE(obj%meshSurface)
+  END IF
 
-IF (ASSOCIATED(obj%meshPoint)) THEN
-  CALL obj%meshPoint%DEALLOCATE()
-  obj%meshPoint => NULL()
-END IF
+  IF (ASSOCIATED(obj%meshCurve)) THEN
+    CALL obj%meshCurve%DEALLOCATE()
+    DEALLOCATE(obj%meshCurve)
+  END IF
+
+  IF (ASSOCIATED(obj%meshPoint)) THEN
+    CALL obj%meshPoint%DEALLOCATE()
+    DEALLOCATE(obj%meshPoint)
+  END IF
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -61,7 +65,7 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
-CALL obj%DEALLOCATE()
+  CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
@@ -69,8 +73,8 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (FEDomain_ :: ans)
-CALL ans%Initiate(hdf5=hdf5, group=group)
+  ALLOCATE(FEDomain_ :: ans)
+  CALL ans%Initiate(hdf5=hdf5, group=group)
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------

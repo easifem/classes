@@ -160,6 +160,17 @@ the listed test passes. **Open** means not changed.
     node, so only those of the last element were kept. They are now
     collected over all elements and stored once.
 
+### 15. AbstractMeshPointerDeallocate does not free the meshes
+
+- Where: `AbstractMeshPointerDeallocate` (AbstractMesh ConstructorMethods),
+  `FEMeshPointerDeallocate` (FEMesh ConstructorMethods)
+- Cause: they called `Deallocate` on each mesh and deallocated the array,
+  but never `DEALLOCATE (obj(ii)%ptr)`, so the mesh objects leaked.
+- Fix: each associated mesh is freed after `Deallocate`. The array must own
+  its meshes (created by ALLOCATE or FEMesh_Pointer, no aliases, no
+  pointers to TARGET variables); this is documented in the docblocks.
+- Test: `FEMesh_Pointer_test_1`
+
 ## Open
 
 ### 12. Routines which are not implemented
@@ -177,13 +188,6 @@ the largest element order, stored in the new components `maxElemOrder` and
 `isMaxElemOrderSet` (reset by Deallocate, shown by Display); `obj` is now
 INTENT(INOUT). Tests: `GetOrder_test_2` (Quadrangle4, order 1, computed and
 stored), `GetOrder_test_3` (Triangle6, order 2, again after Deallocate).
-
-### 15. AbstractMeshPointerDeallocate does not free the meshes
-
-- Where: `AbstractMeshPointerDeallocate` (ConstructorMethods)
-- Symptom: memory leak.
-- Cause: it calls `Deallocate` on each mesh and deallocates the array,
-  but never `DEALLOCATE (obj(ii)%ptr)`.
 
 ### 16. Minor
 

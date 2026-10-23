@@ -181,11 +181,14 @@ END TYPE FEDomainPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-28
+! update:
+!   - 2026-10-23: The mesh objects are freed (they leaked before)
 ! summary: Deallocate the data of the domain
 !
 ! Deallocate the data of AbstractDomain_, call Deallocate on every mesh of the
-! domain and nullify the mesh pointers. The mesh objects themselves are not
-! freed.
+! domain and free the mesh objects. The domain owns its meshes (they are
+! created in Import), so pointers to them obtained from GetMeshPointer are
+! dangling after this call.
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(inout) - domain object
@@ -544,7 +547,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
-    globalElement, islocal) RESULT(ans)
+                                      globalElement, islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
@@ -828,7 +831,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, &
-    localEdgeNumber, islocal) RESULT(ans)
+                                          localEdgeNumber, &
+                                          islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -870,7 +874,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, &
-    localFaceNumber, islocal) RESULT(ans)
+                                          localFaceNumber, &
+                                          islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1110,7 +1115,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
-    opt, dim, entityNum, islocal)
+                                          opt, dim, entityNum, islocal)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1171,9 +1176,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
-    nodeCon, tCellCon, tFaceCon, &
-    tEdgeCon, tnodeCon, globalElement, &
-    dim, entityNum, islocal)
+                                          nodeCon, tCellCon, tFaceCon, &
+                                          tEdgeCon, tnodeCon, globalElement, &
+                                          dim, entityNum, islocal)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
@@ -1277,7 +1282,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes1(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           entityNum, islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: globalElement
@@ -1322,7 +1327,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes2(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           entityNum, islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement(:)

@@ -219,6 +219,8 @@ MODULE PROCEDURE AbstractMeshPointerDeallocate
       isok = ASSOCIATED(meshptr)
       IF (isok) THEN
         CALL meshptr%DEALLOCATE()
+        ! free the mesh object; obj(ii)%ptr must own it
+        DEALLOCATE(obj(ii)%ptr)
         meshptr => NULL()
       END IF
 

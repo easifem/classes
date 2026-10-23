@@ -126,6 +126,7 @@ END TYPE FEMeshPointer_
 !
 !   ALLOCATE (aptrs(1))
 !   aptrs(1)%ptr => ptr
+!   ! frees the mesh of ptr; ptr must not be used after this
 !   CALL AbstractMeshPointerDeallocate(aptrs)
 !   CALL OK(.NOT. ALLOCATED(aptrs), "AbstractMeshPointerDeallocate")
 ! END PROGRAM main
@@ -168,10 +169,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
+! update:
+!   - 2026-10-23: The mesh objects are freed (they leaked before)
 ! summary: Deallocate an array of FEMesh_ pointers
 !
-! Call Deallocate on every associated mesh of obj, then deallocate obj. The
-! mesh objects themselves are not freed.
+! Call Deallocate on every associated mesh of obj, free the mesh object
+! (DEALLOCATE(obj(ii)%ptr)), then deallocate obj.
+!
+! obj must own its meshes: every associated obj(ii)%ptr must have been
+! created by ALLOCATE (for example by FEMesh_Pointer), must not point to a
+! TARGET variable, and no two entries may point to the same mesh. Other
+! pointers to these meshes are dangling after the call.
 !
 ! Arguments:
 !   obj(:) : TYPE(FEMeshPointer_), allocatable, intent(inout) - array of mesh

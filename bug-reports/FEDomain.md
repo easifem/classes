@@ -56,13 +56,16 @@ the listed test passes. **Open** means not changed.
 - If `dim` is larger than nsd the returned pointer is not associated;
   callers which use it without a check crash.
 
-### 5. Deallocate does not free the meshes
+### 5. Deallocate does not free the meshes (fixed)
 
 - Where: `obj_Deallocate` in `FEDomain_Class@ConstructorMethods.F90`
-- Symptom: memory leak.
 - Cause: the meshes are allocated with `FEMesh_Pointer()` in `Import`;
-  `Deallocate` calls `Deallocate` on each mesh and nullifies the pointer,
-  but never `DEALLOCATE (obj%meshVolume)` etc.
+  `Deallocate` called `Deallocate` on each mesh and nullified the pointer,
+  but never freed the mesh objects.
+- Fix: the four meshes are freed with `DEALLOCATE (obj%meshVolume)` etc.
+  The domain owns them; pointers from `GetMeshPointer` (for example in
+  FEDOF_) are dangling after the domain is deallocated.
+- Test: `Deallocate_test_1`
 
 ### 6. GetOrder is not available
 
