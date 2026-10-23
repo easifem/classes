@@ -29,7 +29,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   CLASS(AbstractMesh_), POINTER :: mesh
@@ -44,7 +44,7 @@ PROGRAM main
   mesh => obj%GetMeshPointer(DIM=2_I4B)
   CALL OK(mesh%IsFacetData(), "surface mesh")
   CALL OK(mesh%GetTotalFacetElements() .EQ. 12_I4B, &
-    "facet elements of the surface mesh")
+          "facet elements of the surface mesh")
   mesh => obj%GetMeshPointer(DIM=1_I4B)
   CALL OK(.NOT. mesh%IsFacetData(), "no facet data in the curve mesh")
   mesh => NULL()

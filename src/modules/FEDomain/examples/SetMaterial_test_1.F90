@@ -28,7 +28,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh_two_region.h5"
+    "./meshdata/very_small_quad4_mesh_two_region.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   CLASS(AbstractMesh_), POINTER :: mesh

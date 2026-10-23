@@ -28,7 +28,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
 
@@ -41,11 +41,11 @@ PROGRAM main
   CALL OK(obj%GetTotalElements() .EQ. 4_I4B, "nsd mesh")
   CALL OK(obj%GetTotalElements(DIM=1_I4B) .EQ. 8_I4B, "curve mesh")
   CALL OK(obj%GetTotalElements(DIM=2_I4B, entityNum=1_I4B) .EQ. &
-    4_I4B, "entity 1")
+          4_I4B, "entity 1")
   CALL OK((.tElements.obj) .EQ. 4_I4B, ".tElements. obj")
   CALL OK((obj.tElements.1_I4B) .EQ. 8_I4B, "obj .tElements. dim")
   CALL OK((obj.tElements.[2_I4B, 1_I4B]) .EQ. 4_I4B, &
-    "obj .tElements. [dim, entityNum]")
+         "obj .tElements. [dim, entityNum]")
 
   CALL obj%DEALLOCATE()
   CALL meshfile%DEALLOCATE()

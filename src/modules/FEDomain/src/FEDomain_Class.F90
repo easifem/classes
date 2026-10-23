@@ -208,7 +208,7 @@ END TYPE FEDomainPointer_
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -293,7 +293,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(FEDomain_), POINTER :: ptr
@@ -357,7 +357,7 @@ END INTERFACE FEDomain_Pointer
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -418,7 +418,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -517,7 +517,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -591,7 +591,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -790,7 +790,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -918,7 +918,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   TYPE(ElemData_) :: elemdata
@@ -1076,7 +1076,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B), ALLOCATABLE :: con(:)
@@ -1240,7 +1240,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B) :: ent(4)
@@ -1363,7 +1363,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -1425,7 +1425,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -1487,7 +1487,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -1549,7 +1549,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -1613,7 +1613,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh

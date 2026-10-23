@@ -19,7 +19,7 @@
 # The output of each test is kept in $logdir/<test>.log.
 # The exit status is 0 if no test fails, crashes, or does not compile.
 #
-# The tests read the meshes in ../../FEMesh/examples/meshdata/.
+# The tests read the meshes in ./meshdata/ (copies of the FEMesh meshes).
 
 set -l script (status filename)
 set -l script_dir (dirname $script)
@@ -47,7 +47,7 @@ if not command -q easifem
     exit 2
 end
 
-set -l meshdata ../../FEMesh/examples/meshdata
+set -l meshdata ./meshdata
 for m in very_small_quad4_mesh.h5 very_small_quad4_mesh_two_region.h5
     if not test -f $meshdata/$m
         echo "$meshdata/$m not found; generate the mesh files first" >&2

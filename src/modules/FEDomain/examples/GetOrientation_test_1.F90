@@ -29,7 +29,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   CLASS(AbstractMesh_), POINTER :: mesh
@@ -45,9 +45,9 @@ PROGRAM main
   mesh => obj%GetMeshPointer()
   CALL mesh%InitiateEdgeConnectivity()
   CALL obj%GetOrientation(cellOrient=cell, faceOrient=face, &
-    edgeOrient=edge, tCellOrient=tcell, &
-    tFaceOrient=tface, tEdgeOrient=tedge, &
-    globalElement=16_I4B)
+                          edgeOrient=edge, tCellOrient=tcell, &
+                          tFaceOrient=tface, tEdgeOrient=tedge, &
+                          globalElement=16_I4B)
   CALL OK(tedge .EQ. 4_I4B, "number of edges")
   CALL OK(ALL(edge(1:tedge) .EQ. -1), "edge orientation")
   mesh => NULL()

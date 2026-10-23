@@ -28,7 +28,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   REAL(DFP) :: x(3), xn(3, 1)
@@ -45,7 +45,7 @@ PROGRAM main
   CALL obj%DeallocateKdtree()
   CALL obj%InitiateKdtree()
   CALL obj%GetNearestNode(qv=[0.9_DFP, 0.1_DFP], x=xn, &
-    globalNode=nodes, nn=1_I4B)
+                          globalNode=nodes, nn=1_I4B)
   CALL OK(nodes(1) .EQ. 2_I4B, "nearest node to (0.9, 0.1)")
 
   CALL obj%DEALLOCATE()

@@ -1,3 +1,3 @@
 [domain]
-filename = "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+filename = "./meshdata/very_small_quad4_mesh.h5"
 totalMedium = 2

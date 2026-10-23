@@ -29,7 +29,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   TYPE(ElemData_) :: elemdata
@@ -45,7 +45,7 @@ PROGRAM main
   CALL OK(Elemdata_localElemNum(elemdata) .EQ. 3_I4B, "GetElemData")
   ptr => obj%GetElemDataPointer(globalElement=16_I4B)
   CALL OK(Elemdata_globalElemNum(ptr) .EQ. 16_I4B, &
-    "GetElemDataPointer")
+          "GetElemDataPointer")
   ptr => NULL()
 
   CALL obj%DEALLOCATE()
