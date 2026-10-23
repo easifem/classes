@@ -44,17 +44,14 @@ the listed test passes. **Open** means not changed.
   `AbstractMesh.md`, bug 11).
 - Test: `InitiateFacetElements_test_1`
 
-### 4. GetMeshPointer ignores entityNum and globalElement
+### 4. GetMeshPointer ignores entityNum and globalElement (fixed)
 
 - Where: `obj_GetMeshPointer1` in `FEDomain_Class@GetMethods.F90`
-- Note: the mesh of a dimension holds all entities of that dimension, so
-  `entityNum`, `globalElement` and `isLocal` are not used. Methods which
-  pass `entityNum` to it (`SetTotalMedium`, `GetTotalMaterial`,
-  `GetBoundingBox`, `GetDimEntityNum`, ...) work on the whole mesh.
-  `GetTotalElements(dim, entityNum)` and `SetMaterial` are correct,
-  because they use the mesh id of the elements.
-- If `dim` is larger than nsd the returned pointer is not associated;
-  callers which use it without a check crash.
+- The mesh of a dimension holds all entities of that dimension, so
+  `entityNum`, `globalElement` and `isLocal` were not used. They are
+  removed: `GetMeshPointer(dim)` (see `AbstractDomain.md`, bug 4).
+- If `dim` is larger than nsd the returned pointer is not associated
+  (documented); callers must check it.
 
 ### 5. Deallocate does not free the meshes (fixed)
 

@@ -20,6 +20,33 @@ the listed test passes. **Open** means not changed.
 - Fix: deallocate `nptrs` first if allocated.
 - Test: `GetNptrsInBox_test_1`
 
+### 4. entityNum is not used
+
+- Where: `GetNptrs`, `GetNptrs_`, `GetInternalNptrs` and 15 other methods
+  took `entityNum` and only passed it to `GetMeshPointer`, which ignored
+  it; the whole mesh of dimension `dim` was used for any `entityNum`.
+- Fix: `entityNum` is removed from these methods (`GetMeshPointer`,
+  `IsElementPresent`, `GetConnectivity`, `GetConnectivity_`, `GetNNE`,
+  `GetTotalNodes`, `GetNodeCoord`, `GetNptrs`, `GetNptrs_`,
+  `GetInternalNptrs`, `GetBoundingBox`, `GetTotalMaterial`,
+  `GetTotalVertexNodes(globalElement(:))`, `GetOrientation`,
+  `GetElemTopologyIndx`, `IsElementActive`, `SetTotalMedium`,
+  `SetQuality`) and the operator `.tNodes. [dim, entityNum]` is removed.
+  `GetMeshPointer` also loses the unused `globalElement` and `islocal`.
+  `entityNum` is kept where it selects elements by mesh id:
+  `GetTotalElements`, `SetMaterial`, `GetTotalVertexNodes`. For the nodes
+  of one entity use `GetMeshPointer(dim)` and the mesh method
+  `GetNptrs(meshid=entityNum)`.
+
+### 5. GetDimEntityNum always returns entity 1 for FEDomain_
+
+- Where: `obj_GetDimEntityNum` in `AbstractDomain_Class@GetMethods.F90`
+- Cause: it looped over entity numbers and took the first one whose mesh
+  contained the element; the mesh of a dimension holds all entities.
+- Fix: it returns `[dim, Elemdata_meshID(element)]`.
+- Test: `GetDimEntityNum_test_1` (element 2 is on point 2, not 1),
+  `GetDimEntityNum_test_2` (two regions: element 20 gives `[2, 2]`)
+
 ## Open
 
 ### 2. SetFacetElementType crashes (removed)
@@ -49,25 +76,6 @@ was not implemented (it returned 0 and raised an error only in debug
 builds), FEDomain_ did not override it, and nothing in the library called
 it. The old packages (MovingMesh, StokesFlow, DBE) call
 `dom%GetOrder(dim=...)`; they need the mesh `GetOrder()` instead.
-
-### 4. entityNum is not used
-
-- Where: `obj_GetNptrs`, `obj_GetNptrs_`, `obj_GetInternalNptrs` (they
-  call `GetMeshPointer(dim=dim)` only).
-- Symptom: the nodes of the whole mesh of dimension `dim` are returned
-  for any `entityNum`.
-
-### 5. GetDimEntityNum always returns entity 1 for FEDomain_
-
-- Where: `obj_GetDimEntityNum` in `AbstractDomain_Class@GetMethods.F90`
-- Symptom: element 20 of `very_small_quad4_mesh_two_region.h5` is in
-  surface entity 2, but the result is `[2, 1]`.
-- Cause: it loops over `entityNum` and calls
-  `GetMeshPointer(dim, entityNum)`, but `FEDomain_%GetMeshPointer` ignores
-  `entityNum` (one mesh per dimension holds all entities), so entity 1
-  always matches.
-- Proposal: in FEDomain_, find the mesh of dimension dim and return the
-  mesh id of the element (`Elemdata_Meshid`).
 
 ### 6. AbstractDomainSetSparsity gives no entries for one domain
 

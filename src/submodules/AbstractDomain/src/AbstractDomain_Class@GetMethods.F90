@@ -30,6 +30,7 @@ USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
 USE Display_Method, ONLY: Display, ToString
 USE IntegerUtility, ONLY: RemoveDuplicates
 USE BaseType, ONLY: math => TypeMathOpt
+USE ElemData_Class, ONLY: Elemdata_meshID
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -112,7 +113,7 @@ MODULE PROCEDURE obj_IsElementPresent
                           '[START] ')
 #endif
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
   ans = meshptr%IsElementPresent(globalElement=globalElement, islocal=islocal)
   meshptr => NULL()
 
@@ -137,8 +138,7 @@ MODULE PROCEDURE obj_GetConnectivity
                           '[START] ')
 #endif
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum, &
-                                globalElement=globalElement, islocal=islocal)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
   ans = meshptr%GetConnectivity(globalElement=globalElement, islocal=islocal)
   meshptr => NULL()
 
@@ -163,8 +163,7 @@ MODULE PROCEDURE obj_GetNNE
                           '[START] ')
 #endif
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum, &
-                                globalElement=globalElement, islocal=islocal)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
   ans = meshptr%GetNNE(globalElement=globalElement, islocal=islocal)
 
 #ifdef DEBUG_VER
@@ -293,13 +292,13 @@ MODULE PROCEDURE obj_GetTotalNodes
 #endif
 
   ans = 0
-  case1 = (.NOT. PRESENT(DIM)) .AND. (.NOT. PRESENT(entityNum))
+  case1 = .NOT. PRESENT(DIM)
   IF (case1) THEN
     ans = obj%tNodes
     RETURN
   END IF
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
 
   problem = .NOT. ASSOCIATED(meshptr)
   IF (problem) RETURN
@@ -358,28 +357,6 @@ MODULE PROCEDURE obj_tNodes2
 END PROCEDURE obj_tNodes2
 
 !----------------------------------------------------------------------------
-!                                                           GetMaxNodeNumber
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_tNodes3
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_tNodes3()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  ans = obj%GetTotalNodes(DIM=opt(1), entityNum=opt(2))
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE obj_tNodes3
-
-!----------------------------------------------------------------------------
 !                                                           GetTotalElements
 !----------------------------------------------------------------------------
 
@@ -396,7 +373,7 @@ MODULE PROCEDURE obj_GetTotalElements
                           '[START] ')
 #endif
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
   isok = PRESENT(entityNum)
 
   IF (isok) THEN
@@ -597,8 +574,10 @@ MODULE PROCEDURE obj_GetDimEntityNum
   CHARACTER(*), PARAMETER :: myName = "obj_GetDimEntityNum()"
 #endif
 
-  INTEGER(I4B) :: dim, entityNum, tsize
+  INTEGER(I4B) :: dim
   CLASS(AbstractMesh_), POINTER :: meshptr
+  TYPE(ElemData_), POINTER :: elemptr
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -606,24 +585,28 @@ MODULE PROCEDURE obj_GetDimEntityNum
 #endif
 
   ans = 0
+  elemptr => NULL()
+
+  ! one mesh per dimension holds all entities of that dimension; the
+  ! entity of an element is its mesh id
   dimloop: DO dim = 0, obj%nsd
 
-    tsize = obj%GetTotalEntities(dim=dim)
-    DO entityNum = 1, tsize
+    meshptr => obj%GetMeshPointer(dim=dim)
+    IF (.NOT. ASSOCIATED(meshptr)) CYCLE dimloop
 
-      meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
+    isok = meshptr%IsElementPresent(globalElement=globalElement, &
+                                    islocal=islocal)
+    IF (.NOT. isok) CYCLE dimloop
 
-      IF (meshptr%IsElementPresent(globalElement=globalElement, &
-                                   islocal=islocal)) THEN
-        ans = [dim, entityNum]
-        EXIT dimloop
-      END IF
-
-    END DO
+    elemptr => meshptr%GetElemDataPointer(globalElement=globalElement, &
+                                          islocal=islocal)
+    ans = [dim, Elemdata_meshID(elemptr)]
+    EXIT dimloop
 
   END DO dimloop
 
   meshptr => NULL()
+  elemptr => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -655,7 +638,7 @@ MODULE PROCEDURE obj_GetNodeCoord1
                     "obj%nodeCoord is not allocated.")
 #endif
 
-  isok = (.NOT. PRESENT(DIM)) .AND. (.NOT. PRESENT(entityNum))
+  isok = .NOT. PRESENT(DIM)
   IF (isok) THEN
 
     tsize = SIZE(obj%nodeCoord, 2)
@@ -674,7 +657,7 @@ MODULE PROCEDURE obj_GetNodeCoord1
     RETURN
   END IF
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
   tsize = meshptr%GetTotalNodes()
   CALL Reallocate(nodeCoord, 3_I4B, tsize)
   nsd = SIZE(obj%nodeCoord, 1)
@@ -1057,7 +1040,7 @@ MODULE PROCEDURE obj_GetBoundingBox
                           '[START] ')
 #endif
 
-  acase = (.NOT. PRESENT(entityNum)) .AND. (.NOT. PRESENT(DIM))
+  acase = .NOT. PRESENT(DIM)
 
   IF (acase) THEN
     CALL case1
@@ -1087,7 +1070,7 @@ CONTAINS
     CLASS(AbstractMesh_), POINTER :: meshptr
     LOGICAL(LGT) :: isok
 
-    meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+    meshptr => obj%GetMeshPointer(DIM=DIM)
 
 #ifdef DEBUG_VER
     isok = ASSOCIATED(meshptr)
@@ -1167,7 +1150,7 @@ MODULE PROCEDURE obj_GetTotalMaterial
 #endif
 
   ans = 0
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(meshptr)
@@ -1626,7 +1609,7 @@ MODULE PROCEDURE obj_GetOrientation
                           '[START] ')
 #endif
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
   CALL meshptr%GetOrientation(cellOrient=cellOrient, &
                               faceOrient=faceOrient, &
                               edgeOrient=edgeOrient, &
@@ -1659,7 +1642,7 @@ MODULE PROCEDURE obj_GetElemTopologyIndx
                           '[START] ')
 #endif
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
 
   ans = meshptr%GetElemTopologyIndx(globalElement=globalElement, &
                                     islocal=islocal)
@@ -1688,7 +1671,7 @@ MODULE PROCEDURE obj_IsElementActive
                           '[START] ')
 #endif
 
-  meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
+  meshptr => obj%GetMeshPointer(DIM=DIM)
   ans = meshptr%IsElementActive(globalElement=globalElement, &
                                 islocal=islocal)
   meshptr => NULL()

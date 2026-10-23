@@ -207,10 +207,8 @@ CONTAINS
   !! Number of nodes of a mesh
   PROCEDURE, PASS(obj) :: obj_tNodes2
   !! Number of nodes of the domain
-  PROCEDURE, PASS(obj) :: obj_tNodes3
-  !! Number of nodes of a mesh (dim, entityNum)
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
-    obj_tNodes1, obj_tNodes2, obj_tNodes3
+    obj_tNodes1, obj_tNodes2
   !! Get the number of nodes
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_GetTotalElements
@@ -897,22 +895,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
+! update:
+!   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
+!     arguments
 ! summary: Get a pointer to a mesh of the domain
 !
 ! Return the mesh of dimension dim, or the mesh of dimension nsd if dim is
 ! absent. In FEDomain_ the mesh of a dimension contains all entities of that
-! dimension; entityNum, globalElement and islocal are not used. The pointer is
-! not associated if the domain has no mesh of dimension dim.
+! dimension; the entity of an element is its mesh id. The pointer is not
+! associated if the domain has no mesh of dimension dim.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
-!     by FEDomain_
-!   globalElement : INTEGER(I4B), optional, intent(in) - global element
-!     number; not used by FEDomain_
-!   islocal : LOGICAL(LGT), optional, intent(in) - not used by FEDomain_
 !
 ! Returns:
 !   ans : CLASS(AbstractMesh_), pointer - pointer to the mesh
@@ -960,20 +956,13 @@ END INTERFACE
 !```
 
 ABSTRACT INTERFACE
-  FUNCTION obj_GetMeshPointer(obj, dim, entityNum, &
-                              globalElement, islocal) RESULT(ans)
+  FUNCTION obj_GetMeshPointer(obj, dim) RESULT(ans)
     IMPORT :: AbstractDomain_, I4B, LGT, AbstractMesh_
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used by FEDomain_
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: globalElement
-    !! global element number; not used by FEDomain_
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    !! not used by FEDomain_
     CLASS(AbstractMesh_), POINTER :: ans
     !! pointer to the mesh
   END FUNCTION obj_GetMeshPointer
@@ -1056,6 +1045,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-11-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Returns true if an element is present
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -1067,8 +1058,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1078,7 +1067,7 @@ END INTERFACE
 ! See also: [[obj_IsNodePresent]], [[obj_isElementActive]]
 
 INTERFACE
-  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, entityNum, &
+  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, &
                                        islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -1087,8 +1076,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1103,6 +1090,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the vertex connectivity of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -1114,8 +1103,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1167,7 +1154,7 @@ END INTERFACE
 ! See also: [[obj_GetNNE]], [[obj_GetConnectivity1_]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, entityNum, &
+  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, &
                                       islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -1176,8 +1163,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1192,6 +1177,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of nodes in an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -1203,8 +1190,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1214,7 +1199,7 @@ END INTERFACE
 ! See also: [[obj_GetConnectivity]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetNNE(obj, globalElement, dim, entityNum, islocal) &
+  MODULE FUNCTION obj_GetNNE(obj, globalElement, dim, islocal) &
     RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -1223,8 +1208,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1433,17 +1416,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-28
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the total number of nodes
 !
-! Without dim and entityNum, return the number of nodes of the domain. Else
+! Without dim, return the number of nodes of the domain. Else
 ! return the number of nodes of the mesh of dimension dim. The operator
 ! .tNodes. calls this method.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes
@@ -1484,16 +1467,14 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_tNodes1]], [[obj_tNodes2]], [[obj_tNodes3]]
+! See also: [[obj_tNodes1]], [[obj_tNodes2]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalNodes(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalNodes(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     INTEGER(I4B) :: ans
     !! number of nodes
   END FUNCTION obj_GetTotalNodes
@@ -1554,36 +1535,6 @@ INTERFACE
     INTEGER(I4B) :: ans
     !! number of nodes
   END FUNCTION obj_tNodes2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         tNodes@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2021-06-28
-! summary: Get the number of nodes of a mesh (operator)
-!
-! obj .tNodes. [dim, entityNum] calls GetTotalNodes(dim, entityNum).
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   opt(2) : INTEGER(I4B), intent(in) - opt(1) is dim, opt(2) is entityNum
-!
-! Returns:
-!   ans : INTEGER(I4B) - number of nodes
-!
-! See also: [[obj_GetTotalNodes]]
-
-INTERFACE
-  MODULE FUNCTION obj_tNodes3(obj, opt) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: opt(2)
-    !! opt(1) is dim, opt(2) is entityNum
-    INTEGER(I4B) :: ans
-    !! number of nodes
-  END FUNCTION obj_tNodes3
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2192,12 +2143,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-11-12
+! update:
+!   - 2026-10-23: entityNum is the mesh id of the element
 ! summary: Get the dimension and entity of an element
 !
-! Return [dim, entityNum] of the first mesh which contains the element,
-! searching dim = 0 to nsd and entityNum = 1 to the number of entities. In
-! FEDomain_ the mesh of a dimension contains all its entities, so the returned
-! entityNum is 1. Zero is returned if the element is not found.
+! Return [dim, entityNum] of the element: dim is the dimension of the mesh
+! which contains the element (dim = 0 to nsd is searched), and entityNum is
+! the mesh id (entity number) of the element. Zero is returned if the element
+! is not found.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2236,7 +2189,7 @@ END INTERFACE
 !
 !   CALL OK(ALL(obj%GetDimEntityNum(15_I4B) .EQ. [2, 1]), "element 15")
 !   CALL OK(ALL(obj%GetDimEntityNum(6_I4B) .EQ. [1, 1]), "element 6")
-!   CALL OK(ALL(obj%GetDimEntityNum(2_I4B) .EQ. [0, 1]), "element 2")
+!   CALL OK(ALL(obj%GetDimEntityNum(2_I4B) .EQ. [0, 2]), "element 2")
 !
 !   CALL obj%DEALLOCATE()
 !   CALL meshfile%DEALLOCATE()
@@ -2264,6 +2217,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get node coordinates
 !
 ! GetNodeCoord is a generic method:
@@ -2282,8 +2237,6 @@ END INTERFACE
 !     in xiJ format, it is reallocated
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh; if
 !     absent, all nodes of the domain
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !
 ! Examples
 !
@@ -2340,15 +2293,13 @@ END INTERFACE
 !   [[obj_GetNodeCoordPointer]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord1(obj, nodeCoord, dim, entityNum)
+  MODULE SUBROUTINE obj_GetNodeCoord1(obj, nodeCoord, dim)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
     !! node coordinates in xiJ format, it is reallocated
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh; if absent, all nodes of the domain
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
   END SUBROUTINE obj_GetNodeCoord1
 END INTERFACE
 
@@ -2579,17 +2530,18 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-09-02
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the global node numbers of a mesh
 !
 ! Return the global node numbers of the mesh of dimension dim. GetNptrs_ works
 ! without allocation, and GetInternalNptrs returns the internal nodes of the
-! mesh. entityNum is not used.
+! mesh. For the nodes of one entity, use GetMeshPointer(dim) and the mesh
+! method GetNptrs(meshid=entityNum).
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   entityNum(:) : INTEGER(I4B), optional, intent(in) - entity numbers; not
-!     used
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers
@@ -2638,13 +2590,11 @@ END INTERFACE
 ! See also: [[obj_GetNptrs_]], [[obj_GetInternalNptrs]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetNptrs(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetNptrs(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum(:)
-    !! entity numbers; not used
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! global node numbers
   END FUNCTION obj_GetNptrs
@@ -2656,6 +2606,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the global node numbers of a mesh
 !
 ! See GetNptrs.
@@ -2665,15 +2617,13 @@ END INTERFACE
 !   nptrs(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
 !     at least the number of nodes of the mesh
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   entityNum(:) : INTEGER(I4B), optional, intent(in) - entity numbers; not
-!     used
 !   tsize : INTEGER(I4B), optional, intent(out) - number of entries written in
 !     nptrs
 !
 ! See also: [[obj_GetNptrs]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim, entityNum, tsize)
+  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim, tsize)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
@@ -2681,8 +2631,6 @@ INTERFACE
     !! mesh
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum(:)
-    !! entity numbers; not used
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: tsize
     !! number of entries written in nptrs
   END SUBROUTINE obj_GetNptrs_
@@ -2694,6 +2642,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-09-02
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the internal nodes of a mesh
 !
 ! See GetNptrs.
@@ -2701,8 +2651,6 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   entityNum(:) : INTEGER(I4B), optional, intent(in) - entity numbers; not
-!     used
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global numbers of the internal nodes
@@ -2710,13 +2658,11 @@ END INTERFACE
 ! See also: [[obj_GetNptrs]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetInternalNptrs(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum(:)
-    !! entity numbers; not used
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! global numbers of the internal nodes
   END FUNCTION obj_GetInternalNptrs
@@ -2845,17 +2791,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the bounding box
 !
-! Without dim and entityNum, return the box of all nodes of the domain. Else
+! Without dim, return the box of all nodes of the domain. Else
 ! return the box of the nodes of the mesh of dimension dim.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !
 ! Returns:
 !   ans : TYPE(BoundingBox_) - bounding box
@@ -2903,14 +2849,12 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE FUNCTION obj_GetBoundingBox(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetBoundingBox(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     TYPE(BoundingBox_) :: ans
     !! bounding box
   END FUNCTION obj_GetBoundingBox
@@ -2977,6 +2921,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of media of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -2989,8 +2935,6 @@ END INTERFACE
 !     element number if islocal is true
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
-!     by FEDomain_
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of media of the element
@@ -2999,7 +2943,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalMaterial(obj, dim, globalElement, &
-                                       islocal, entityNum) RESULT(ans)
+                                       islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
@@ -3009,8 +2953,6 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used by FEDomain_
     INTEGER(I4B) :: ans
     !! number of media of the element
   END FUNCTION obj_GetTotalMaterial
@@ -3447,6 +3389,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the connectivity of an element
 !
 ! This method is implemented by the child class (see FEDomain_).
@@ -3463,8 +3407,6 @@ END INTERFACE
 !     (default), E edges, F faces, C cell, A all
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3472,7 +3414,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
-                                          opt, dim, entityNum, islocal)
+                                          opt, dim, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3486,8 +3428,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3500,6 +3440,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get all connectivities of an element
 !
 ! This method is implemented by the child class (see FEDomain_).
@@ -3525,8 +3467,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3536,7 +3476,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
                                           nodeCon, tCellCon, tFaceCon, &
                                           tEdgeCon, tnodeCon, globalElement, &
-                                          dim, entityNum, islocal)
+                                          dim, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
@@ -3560,8 +3500,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3666,6 +3604,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-05
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of vertex nodes of a list of elements
 !
 ! This method is implemented by the child class (see FEDomain_).
@@ -3676,8 +3616,6 @@ END INTERFACE
 !     (local if islocal is true)
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3688,7 +3626,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes2(obj, globalElement, dim, &
-                                           entityNum, islocal) RESULT(ans)
+                                           islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
@@ -3696,8 +3634,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3712,6 +3648,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the orientation flags of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -3733,8 +3671,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3786,7 +3722,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetOrientation(obj, cellOrient, faceOrient, &
                                        edgeOrient, tCellOrient, tFaceOrient, &
                                        tEdgeOrient, globalElement, dim, &
-                                       entityNum, islocal)
+                                       islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
@@ -3806,8 +3742,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3820,6 +3754,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-23
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the topology index of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -3832,8 +3768,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3844,7 +3778,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetElemTopologyIndx(obj, globalElement, dim, &
-                                          entityNum, islocal) &
+                                          islocal) &
     RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -3853,8 +3787,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3869,6 +3801,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Returns true if an element is active
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -3880,8 +3814,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3891,7 +3823,7 @@ END INTERFACE
 ! See also: [[obj_IsElementPresent]]
 
 INTERFACE
-  MODULE FUNCTION obj_isElementActive(obj, globalElement, dim, entityNum, &
+  MODULE FUNCTION obj_isElementActive(obj, globalElement, dim, &
                                       islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -3900,8 +3832,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -4076,6 +4006,8 @@ END INTERFACE AbstractDomainSetSparsity
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Set the number of media in the elements of a mesh
 !
 ! Call SetTotalMedium of the mesh of dimension dim; the number of media of
@@ -4085,8 +4017,6 @@ END INTERFACE AbstractDomainSetSparsity
 !   obj : CLASS(AbstractDomain_), intent(inout) - domain object
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
 !   n : INTEGER(I4B), intent(in) - number of media
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
-!     by FEDomain_
 !
 ! Examples
 !
@@ -4137,15 +4067,13 @@ END INTERFACE AbstractDomainSetSparsity
 ! See also: [[obj_SetMaterial]], [[obj_GetTotalMaterial]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMedium(obj, dim, n, entityNum)
+  MODULE SUBROUTINE obj_SetTotalMedium(obj, dim, n)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
     INTEGER(I4B), INTENT(IN) :: n
     !! number of media
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used by FEDomain_
   END SUBROUTINE obj_SetTotalMedium
 END INTERFACE
 
@@ -4269,6 +4197,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Set the quality of the meshes
 !
 ! This routine is not implemented; it raises an error.
@@ -4280,11 +4210,10 @@ END INTERFACE
 !   min_measures(:) : REAL(DFP), intent(out) - minimum value of each measure
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-                                   min_measures, dim, entityNum)
+                                   min_measures, dim)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: measures(:)
@@ -4296,8 +4225,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number
   END SUBROUTINE obj_SetQuality
 END INTERFACE
 
