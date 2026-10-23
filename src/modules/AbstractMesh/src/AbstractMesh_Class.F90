@@ -6662,18 +6662,18 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
+! update:
+!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the master cell of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
-! (InitiateFacetElements). elementType is not used.
+! (InitiateFacetElements).
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   elementType : INTEGER(I4B), intent(in) - facet element type; it is not
-!     used
 !
 ! Returns:
 !   ans : INTEGER(I4B) - global element number of the master cell
@@ -6681,14 +6681,12 @@ END INTERFACE
 ! See also: [[obj_GetCellNumber]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetMasterCellNumber(obj, facetElement, elementType) &
+  MODULE FUNCTION obj_GetMasterCellNumber(obj, facetElement) &
     RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh object
     INTEGER(I4B), INTENT(IN) :: facetElement
     !! facet element number
-    INTEGER(I4B), INTENT(IN) :: elementType
-    !! facet element type; it is not used
     INTEGER(I4B) :: ans
     !! global element number of the master cell
   END FUNCTION obj_GetMasterCellNumber
@@ -6700,18 +6698,18 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
+! update:
+!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the slave cell of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
-! (InitiateFacetElements). elementType is not used.
+! (InitiateFacetElements).
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   elementType : INTEGER(I4B), intent(in) - facet element type; it is not
-!     used
 !
 ! Returns:
 !   ans : INTEGER(I4B) - global element number of the slave cell, zero if none
@@ -6719,14 +6717,12 @@ END INTERFACE
 ! See also: [[obj_GetCellNumber]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetSlaveCellNumber(obj, facetElement, elementType) &
+  MODULE FUNCTION obj_GetSlaveCellNumber(obj, facetElement) &
     RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh object
     INTEGER(I4B), INTENT(IN) :: facetElement
     !! facet element number
-    INTEGER(I4B), INTENT(IN) :: elementType
-    !! facet element type; it is not used
     INTEGER(I4B) :: ans
     !! global element number of the slave cell, zero if none
   END FUNCTION obj_GetSlaveCellNumber
@@ -6738,18 +6734,18 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
+! update:
+!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the master and slave cells of a facet
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
-! (InitiateFacetElements). elementType is not used.
+! (InitiateFacetElements).
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   elementType : INTEGER(I4B), intent(in) - facet element type; it is not
-!     used
 !
 ! Returns:
 !   ans(2) : INTEGER(I4B) - ans(1) master cell, ans(2) slave cell (zero if
@@ -6789,24 +6785,24 @@ END INTERFACE
 !
 !   CALL obj%GetFacetParam(facetElement=2_I4B, elementType=etype)
 !   CALL OK(etype .EQ. INTERNAL_ELEMENT, "GetFacetParam")
-!   CALL OK(ALL(obj%GetCellNumber(2_I4B, etype) .EQ. [13, 15]), &
+!   CALL OK(ALL(obj%GetCellNumber(2_I4B) .EQ. [13, 15]), &
 !     "GetCellNumber")
-!   CALL OK(obj%GetMasterCellNumber(2_I4B, etype) .EQ. 13_I4B, &
+!   CALL OK(obj%GetMasterCellNumber(2_I4B) .EQ. 13_I4B, &
 !     "GetMasterCellNumber")
-!   CALL OK(obj%GetSlaveCellNumber(2_I4B, etype) .EQ. 15_I4B, &
+!   CALL OK(obj%GetSlaveCellNumber(2_I4B) .EQ. 15_I4B, &
 !     "GetSlaveCellNumber")
-!   CALL OK(obj%GetLocalFacetID(2_I4B, etype, .TRUE.) .EQ. 2_I4B, &
+!   CALL OK(obj%GetLocalFacetID(2_I4B, .TRUE.) .EQ. 2_I4B, &
 !     "GetLocalFacetID master")
-!   CALL OK(obj%GetLocalFacetID(2_I4B, etype, .FALSE.) .EQ. 4_I4B, &
+!   CALL OK(obj%GetLocalFacetID(2_I4B, .FALSE.) .EQ. 4_I4B, &
 !     "GetLocalFacetID slave")
-!   con = AbstractMeshGetFacetConnectivity(obj, 2_I4B, etype, .TRUE.)
+!   con = AbstractMeshGetFacetConnectivity(obj, 2_I4B, .TRUE.)
 !   CALL OK(ALL(con .EQ. [5, 9]), "AbstractMeshGetFacetConnectivity")
 !   CALL OK(.NOT. obj%IsDomainFacetElement(2_I4B), "internal facet")
 !
 !   CALL obj%GetFacetParam(facetElement=1_I4B, elementType=etype)
 !   CALL OK(etype .EQ. DOMAIN_BOUNDARY_ELEMENT, "boundary facet")
 !   CALL OK(obj%IsDomainFacetElement(1_I4B), "IsDomainFacetElement")
-!   CALL OK(ALL(obj%GetCellNumber(1_I4B, etype) .EQ. [13, 0]), &
+!   CALL OK(ALL(obj%GetCellNumber(1_I4B) .EQ. [13, 0]), &
 !     "no slave cell")
 !
 !   CALL obj%DEALLOCATE()
@@ -6819,14 +6815,12 @@ END INTERFACE
 !   [[obj_GetFacetParam]], [[obj_isDomainFacetElement]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetCellNumber(obj, facetElement, elementType) &
+  MODULE FUNCTION obj_GetCellNumber(obj, facetElement) &
     RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh object
     INTEGER(I4B), INTENT(IN) :: facetElement
     !! facet element number
-    INTEGER(I4B), INTENT(IN) :: elementType
-    !! facet element type; it is not used
     INTEGER(I4B) :: ans(2)
     !! ans(1) master cell, ans(2) slave cell (zero if none)
   END FUNCTION obj_GetCellNumber
@@ -6838,18 +6832,18 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
+! update:
+!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the local facet ID of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
-! (InitiateFacetElements). elementType is not used.
+! (InitiateFacetElements).
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   elementType : INTEGER(I4B), intent(in) - facet element type; it is not
-!     used
 !   isMaster : LOGICAL(LGT), intent(in) - if true, the master cell is used,
 !     else the slave cell
 !
@@ -6859,14 +6853,12 @@ END INTERFACE
 ! See also: [[obj_GetCellNumber]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetLocalFacetID(obj, facetElement, elementType, &
+  MODULE FUNCTION obj_GetLocalFacetID(obj, facetElement, &
                                       isMaster) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh object
     INTEGER(I4B), INTENT(IN) :: facetElement
     !! facet element number
-    INTEGER(I4B), INTENT(IN) :: elementType
-    !! facet element type; it is not used
     LOGICAL(LGT), INTENT(IN) :: isMaster
     !! if true, the master cell is used, else the slave cell
     INTEGER(I4B) :: ans
@@ -7151,12 +7143,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
+! update:
+!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the connectivity of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
-! (InitiateFacetElements). elementType is not used.
+! (InitiateFacetElements).
 !
 ! Return the global node numbers of the facet in the master (or slave) cell.
 ! The array has size zero if the cell does not exist.
@@ -7164,8 +7158,6 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   elementType : INTEGER(I4B), intent(in) - facet element type; it is not
-!     used
 !   isMaster : LOGICAL(LGT), intent(in) - if true, the master cell is used,
 !     else the slave cell
 !
@@ -7176,14 +7168,11 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION AbstractMeshGetFacetConnectivity(obj, facetElement, &
-                                                   elementType, &
                                                    isMaster) RESULT(ans)
     CLASS(AbstractMesh_), INTENT(IN) :: obj
     !! mesh object
     INTEGER(I4B), INTENT(IN) :: facetElement
     !! facet element number
-    INTEGER(I4B), INTENT(IN) :: elementType
-    !! facet element type; it is not used
     LOGICAL(LGT), INTENT(IN) :: isMaster
     !! if true, the master cell is used, else the slave cell
     INTEGER(I4B), ALLOCATABLE :: ans(:)

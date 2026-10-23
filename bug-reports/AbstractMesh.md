@@ -196,8 +196,11 @@ stored), `GetOrder_test_3` (Triangle6, order 2, again after Deallocate).
 - Fixed: `GetFacetConnectivity`, `GetFacetConnectivity_` and
   `GetTotalFacetConnectivity` declared `islocal` as `LOGICAL(I4B)`; now
   `LOGICAL(LGT)` like the rest of the class.
-- `GetMasterCellNumber`, `GetSlaveCellNumber`, `GetCellNumber`,
-  `GetLocalFacetID` and `AbstractMeshGetFacetConnectivity` ignore
-  `elementType`.
+- Fixed: `GetMasterCellNumber`, `GetSlaveCellNumber`, `GetCellNumber`,
+  `GetLocalFacetID` and `AbstractMeshGetFacetConnectivity` took an
+  `elementType` argument and ignored it (it selected the internal or
+  boundary facet array of the old mesh; now there is one `facetData(:)`
+  and each facet stores its type). The argument is removed. Test:
+  `GetCellNumber_test_1`.
 - The edge orientation is zero-sized until `InitiateEdgeConnectivity` is
   called; no error is raised (left as is).

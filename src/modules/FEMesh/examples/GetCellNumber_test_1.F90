@@ -47,25 +47,25 @@ PROGRAM main
 
   CALL obj%GetFacetParam(facetElement=2_I4B, elementType=etype)
   CALL OK(etype .EQ. INTERNAL_ELEMENT, "GetFacetParam")
-  CALL OK(ALL(obj%GetCellNumber(2_I4B, etype) .EQ. [13, 15]), &
-    "GetCellNumber")
-  CALL OK(obj%GetMasterCellNumber(2_I4B, etype) .EQ. 13_I4B, &
-    "GetMasterCellNumber")
-  CALL OK(obj%GetSlaveCellNumber(2_I4B, etype) .EQ. 15_I4B, &
-    "GetSlaveCellNumber")
-  CALL OK(obj%GetLocalFacetID(2_I4B, etype, .TRUE.) .EQ. 2_I4B, &
-    "GetLocalFacetID master")
-  CALL OK(obj%GetLocalFacetID(2_I4B, etype, .FALSE.) .EQ. 4_I4B, &
-    "GetLocalFacetID slave")
-  con = AbstractMeshGetFacetConnectivity(obj, 2_I4B, etype, .TRUE.)
+  CALL OK(ALL(obj%GetCellNumber(2_I4B) .EQ. [13, 15]), &
+          "GetCellNumber")
+  CALL OK(obj%GetMasterCellNumber(2_I4B) .EQ. 13_I4B, &
+          "GetMasterCellNumber")
+  CALL OK(obj%GetSlaveCellNumber(2_I4B) .EQ. 15_I4B, &
+          "GetSlaveCellNumber")
+  CALL OK(obj%GetLocalFacetID(2_I4B, .TRUE.) .EQ. 2_I4B, &
+          "GetLocalFacetID master")
+  CALL OK(obj%GetLocalFacetID(2_I4B, .FALSE.) .EQ. 4_I4B, &
+          "GetLocalFacetID slave")
+  con = AbstractMeshGetFacetConnectivity(obj, 2_I4B, .TRUE.)
   CALL OK(ALL(con .EQ. [5, 9]), "AbstractMeshGetFacetConnectivity")
   CALL OK(.NOT. obj%IsDomainFacetElement(2_I4B), "internal facet")
 
   CALL obj%GetFacetParam(facetElement=1_I4B, elementType=etype)
   CALL OK(etype .EQ. DOMAIN_BOUNDARY_ELEMENT, "boundary facet")
   CALL OK(obj%IsDomainFacetElement(1_I4B), "IsDomainFacetElement")
-  CALL OK(ALL(obj%GetCellNumber(1_I4B, etype) .EQ. [13, 0]), &
-    "no slave cell")
+  CALL OK(ALL(obj%GetCellNumber(1_I4B) .EQ. [13, 0]), &
+          "no slave cell")
 
   CALL obj%DEALLOCATE()
   CALL meshfile%DEALLOCATE()
