@@ -67,7 +67,9 @@ the listed test passes. **Open** means not changed.
   FEDOF_) are dangling after the domain is deallocated.
 - Test: `Deallocate_test_1`
 
-### 6. GetOrder is not available
+### 6. GetOrder is not available (removed)
 
-- `AbstractDomain_%GetOrder` raises an error and FEDomain_ does not
-  override it (see `AbstractDomain.md`, bug 3).
+- `AbstractDomain_%GetOrder` raised an error and FEDomain_ did not
+  override it. It was removed from AbstractDomain_ (see
+  `AbstractDomain.md`, bug 3). Use `GetMeshPointer(dim)` and the mesh
+  method `GetOrder()`.

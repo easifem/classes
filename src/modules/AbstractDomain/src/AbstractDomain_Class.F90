@@ -311,9 +311,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Get the number of spatial dimensions
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
-  !! Get the order of the meshes of a dimension
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
     obj_GetTotalMeshFacetData
   !! Get the size of mesh facet data
@@ -2942,34 +2939,6 @@ INTERFACE
     INTEGER(I4B) :: ans
     !! number of spatial dimensions
   END FUNCTION obj_GetNSD
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        GetOrder@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2021-09-21
-! summary: Get the order of the meshes of a dimension
-!
-! This routine is not implemented; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
-! Returns:
-!   ans(:) : INTEGER(I4B), allocatable - order of the meshes
-
-INTERFACE
-  MODULE FUNCTION obj_GetOrder(obj, dim) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    !! order of the meshes
-  END FUNCTION obj_GetOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

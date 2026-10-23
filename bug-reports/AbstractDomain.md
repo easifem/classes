@@ -36,7 +36,6 @@ the listed test passes. **Open** means not changed.
 
 | Routine | Behaviour |
 |---|---|
-| `obj_GetOrder` | raises "should be implemented by child classes"; FEDomain_ does not override it |
 | `obj_GetElemType` | raises "under development" |
 | `obj_GetUniqueElemType` | calls `GetElemType`, so it fails too |
 | `obj_GetTotalMeshFacetData` | raises "deprecated" |
@@ -44,6 +43,12 @@ the listed test passes. **Open** means not changed.
 | `obj_SetDomainFacetElement` | empty body |
 | `obj_SetMeshmap` | empty body |
 | `obj_SetMeshFacetElement` | empty body |
+
+`obj_GetOrder` was removed (binding, interface and implementation). It
+was not implemented (it returned 0 and raised an error only in debug
+builds), FEDomain_ did not override it, and nothing in the library called
+it. The old packages (MovingMesh, StokesFlow, DBE) call
+`dom%GetOrder(dim=...)`; they need the mesh `GetOrder()` instead.
 
 ### 4. entityNum is not used
 

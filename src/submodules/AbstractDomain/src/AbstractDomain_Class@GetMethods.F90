@@ -50,14 +50,14 @@ MODULE PROCEDURE obj_IsInitiated
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%isInit
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_IsInitiated
 
@@ -74,7 +74,7 @@ MODULE PROCEDURE obj_IsNodePresent
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   islocal0 = Input(DEFAULT=math%no, option=islocal)
@@ -93,7 +93,7 @@ MODULE PROCEDURE obj_IsNodePresent
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_IsNodePresent
 
@@ -109,7 +109,7 @@ MODULE PROCEDURE obj_IsElementPresent
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
@@ -118,7 +118,7 @@ MODULE PROCEDURE obj_IsElementPresent
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_IsElementPresent
 
@@ -134,17 +134,17 @@ MODULE PROCEDURE obj_GetConnectivity
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum, &
-    globalElement=globalElement, islocal=islocal)
+                                globalElement=globalElement, islocal=islocal)
   ans = meshptr%GetConnectivity(globalElement=globalElement, islocal=islocal)
   meshptr => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetConnectivity
 
@@ -160,16 +160,16 @@ MODULE PROCEDURE obj_GetNNE
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum, &
-    globalElement=globalElement, islocal=islocal)
+                                globalElement=globalElement, islocal=islocal)
   ans = meshptr%GetNNE(globalElement=globalElement, islocal=islocal)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNNE
 
@@ -185,7 +185,7 @@ MODULE PROCEDURE obj_GetNodeToElements1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer()
@@ -194,7 +194,7 @@ MODULE PROCEDURE obj_GetNodeToElements1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeToElements1
 
@@ -210,7 +210,7 @@ MODULE PROCEDURE obj_GetNodeToElements2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer()
@@ -219,7 +219,7 @@ MODULE PROCEDURE obj_GetNodeToElements2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeToElements2
 
@@ -235,17 +235,17 @@ MODULE PROCEDURE obj_GetNodeToElements1_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer()
   CALL meshptr%GetNodeToElements_(globalNode=globalNode, &
-    islocal=islocal, ans=ans, tsize=tsize)
+                                  islocal=islocal, ans=ans, tsize=tsize)
   meshptr => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeToElements1_
 
@@ -261,17 +261,17 @@ MODULE PROCEDURE obj_GetNodeToElements2_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer()
   CALL meshptr%GetNodeToElements_(globalNode=globalNode, &
-    islocal=islocal, ans=ans, tsize=tsize)
+                                  islocal=islocal, ans=ans, tsize=tsize)
   meshptr => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeToElements2_
 
@@ -289,7 +289,7 @@ MODULE PROCEDURE obj_GetTotalNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = 0
@@ -309,7 +309,7 @@ MODULE PROCEDURE obj_GetTotalNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalNodes
 
@@ -324,14 +324,14 @@ MODULE PROCEDURE obj_tNodes1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%GetTotalNodes(DIM=DIM)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_tNodes1
 
@@ -346,14 +346,14 @@ MODULE PROCEDURE obj_tNodes2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%GetTotalNodes()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_tNodes2
 
@@ -368,14 +368,14 @@ MODULE PROCEDURE obj_tNodes3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%GetTotalNodes(DIM=opt(1), entityNum=opt(2))
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_tNodes3
 
@@ -393,7 +393,7 @@ MODULE PROCEDURE obj_GetTotalElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
@@ -409,7 +409,7 @@ MODULE PROCEDURE obj_GetTotalElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalElements
 
@@ -424,14 +424,14 @@ MODULE PROCEDURE obj_tElements1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%GetTotalElements()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_tElements1
 
@@ -446,14 +446,14 @@ MODULE PROCEDURE obj_tElements2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%GetTotalElements(DIM=DIM)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_tElements2
 
@@ -468,14 +468,14 @@ MODULE PROCEDURE obj_tElements3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%GetTotalElements(DIM=opt(1), entityNum=opt(2))
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_tElements3
 
@@ -490,14 +490,14 @@ MODULE PROCEDURE obj_GetLocalNodeNumber1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = globalNode
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetLocalNodeNumber1
 
@@ -512,14 +512,14 @@ MODULE PROCEDURE obj_GetLocalNodeNumber2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = globalNode
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetLocalNodeNumber2
 
@@ -552,14 +552,14 @@ MODULE PROCEDURE obj_GetTotalEntities
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%tEntities(DIM)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalEntities
 
@@ -574,17 +574,17 @@ MODULE PROCEDURE obj_GetTotalEntitiesList
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this method should be implemented by child class.")
+                    "this method should be implemented by child class.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalEntitiesList
 
@@ -602,7 +602,7 @@ MODULE PROCEDURE obj_GetDimEntityNum
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = 0
@@ -614,7 +614,7 @@ MODULE PROCEDURE obj_GetDimEntityNum
       meshptr => obj%GetMeshPointer(dim=dim, entityNum=entityNum)
 
       IF (meshptr%IsElementPresent(globalElement=globalElement, &
-        islocal=islocal)) THEN
+                                   islocal=islocal)) THEN
         ans = [dim, entityNum]
         EXIT dimloop
       END IF
@@ -627,7 +627,7 @@ MODULE PROCEDURE obj_GetDimEntityNum
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetDimEntityNum
 
@@ -646,13 +646,13 @@ MODULE PROCEDURE obj_GetNodeCoord1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%nodeCoord)
   CALL AssertError1(isok, myName, &
-    "obj%nodeCoord is not allocated.")
+                    "obj%nodeCoord is not allocated.")
 #endif
 
   isok = (.NOT. PRESENT(DIM)) .AND. (.NOT. PRESENT(entityNum))
@@ -668,7 +668,7 @@ MODULE PROCEDURE obj_GetNodeCoord1
 
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
 
     RETURN
@@ -688,7 +688,7 @@ MODULE PROCEDURE obj_GetNodeCoord1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeCoord1
 
@@ -704,7 +704,7 @@ MODULE PROCEDURE obj_GetNodeCoord2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ncol = SIZE(globalNode)
@@ -712,13 +712,13 @@ MODULE PROCEDURE obj_GetNodeCoord2
 
   DO ii = 1, ncol
     localnode = obj%GetLocalNodeNumber(globalNode=globalNode(ii), &
-      islocal=islocal)
+                                       islocal=islocal)
     nodeCoord(1:nrow, ii) = obj%nodeCoord(1:nrow, localnode)
   END DO
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeCoord2
 
@@ -734,7 +734,7 @@ MODULE PROCEDURE obj_GetNodeCoord3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   tsize = obj%nsd
@@ -743,7 +743,7 @@ MODULE PROCEDURE obj_GetNodeCoord3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeCoord3
 
@@ -758,14 +758,14 @@ MODULE PROCEDURE obj_GetNodeCoordPointer
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans => obj%nodeCoord
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNodeCoordPointer
 
@@ -782,7 +782,7 @@ MODULE PROCEDURE obj_GetNearestNode1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
@@ -790,14 +790,14 @@ MODULE PROCEDURE obj_GetNearestNode1
 
 #ifdef DEBUG_VER
     CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
-      'obj%kdtree is not initiated, initiating it.')
+                      'obj%kdtree is not initiated, initiating it.')
 #endif
 
     CALL obj%InitiateKdtree()
   END IF
 
   CALL Kdtree2_n_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), nn=1, &
-    results=obj%kdresult)
+                         results=obj%kdresult)
 
   globalNode = obj%kdresult(1)%idx
   x(1:obj%nsd) = obj%nodeCoord(1:obj%nsd, globalNode)
@@ -805,7 +805,7 @@ MODULE PROCEDURE obj_GetNearestNode1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNearestNode1
 
@@ -823,7 +823,7 @@ MODULE PROCEDURE obj_GetNearestNode2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
@@ -831,14 +831,14 @@ MODULE PROCEDURE obj_GetNearestNode2
 
 #ifdef DEBUG_VER
     CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
-      'obj%kdtree is not initiated, initiating it.')
+                      'obj%kdtree is not initiated, initiating it.')
 #endif
 
     CALL obj%InitiateKdtree()
   END IF
 
   CALL Kdtree2_n_nearest(tp=obj%kdtree, qv=qv(1:obj%nsd), nn=nn, &
-    results=obj%kdresult)
+                         results=obj%kdresult)
 
   DO ii = 1, nn
     globalNode(ii) = obj%kdresult(ii)%idx
@@ -848,7 +848,7 @@ MODULE PROCEDURE obj_GetNearestNode2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNearestNode2
 
@@ -864,7 +864,7 @@ MODULE PROCEDURE obj_GetNptrs
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM)
@@ -873,7 +873,7 @@ MODULE PROCEDURE obj_GetNptrs
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNptrs
 
@@ -890,7 +890,7 @@ MODULE PROCEDURE obj_GetNptrs_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM)
@@ -900,7 +900,7 @@ MODULE PROCEDURE obj_GetNptrs_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNptrs_
 
@@ -916,7 +916,7 @@ MODULE PROCEDURE obj_GetInternalNptrs
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM)
@@ -925,7 +925,7 @@ MODULE PROCEDURE obj_GetInternalNptrs
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetInternalNptrs
 
@@ -942,13 +942,13 @@ MODULE PROCEDURE obj_GetNptrsInBox
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   tnodes = obj%GetTotalNodes()
   ALLOCATE(nptrs0(tnodes))
   CALL obj%GetNptrsInBox_(box=box, nptrs=nptrs0, tnodes=tnodes, &
-    isStrict=isStrict)
+                          isStrict=isStrict)
 
   IF (ALLOCATED(nptrs)) DEALLOCATE(nptrs)
   ALLOCATE(nptrs(tnodes))
@@ -959,7 +959,7 @@ MODULE PROCEDURE obj_GetNptrsInBox
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNptrsInBox
 
@@ -979,7 +979,7 @@ MODULE PROCEDURE obj_GetNptrsInBox_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   isok = (.NOT. ASSOCIATED(obj%kdtree)) .OR. (.NOT. ALLOCATED(obj%kdresult))
@@ -987,7 +987,7 @@ MODULE PROCEDURE obj_GetNptrsInBox_
 
 #ifdef DEBUG_VER
     CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
-      'obj%kdtree not initiated, initiating it...')
+                      'obj%kdtree not initiated, initiating it...')
 #endif
 
     CALL obj%InitiateKdtree()
@@ -998,13 +998,13 @@ MODULE PROCEDURE obj_GetNptrsInBox_
   nsd = obj%nsd
 
   CALL Kdtree2_r_nearest(tp=obj%kdtree, qv=qv(1:nsd), r2=r2, &
-    nfound=tnodes, nalloc=SIZE(obj%kdresult), &
-    results=obj%kdresult)
+                         nfound=tnodes, nalloc=SIZE(obj%kdresult), &
+                         results=obj%kdresult)
 
 #ifdef DEBUG_VER
   ii = SIZE(nptrs)
   CALL AssertError3(tnodes, ii, myName, &
-    "size of nptrs is not enough, a=tnodes, b=size(nptrs)")
+                    "size of nptrs is not enough, a=tnodes, b=size(nptrs)")
 #endif
 
   isok = Input(DEFAULT=math%yes, option=isStrict)
@@ -1016,7 +1016,7 @@ MODULE PROCEDURE obj_GetNptrsInBox_
 
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
 
     RETURN
@@ -1038,7 +1038,7 @@ MODULE PROCEDURE obj_GetNptrsInBox_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNptrsInBox_
 
@@ -1054,7 +1054,7 @@ MODULE PROCEDURE obj_GetBoundingBox
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   acase = (.NOT. PRESENT(entityNum)) .AND. (.NOT. PRESENT(DIM))
@@ -1067,7 +1067,7 @@ MODULE PROCEDURE obj_GetBoundingBox
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 CONTAINS
@@ -1092,7 +1092,7 @@ CONTAINS
 #ifdef DEBUG_VER
     isok = ASSOCIATED(meshptr)
     CALL AssertError1(isok, myName, &
-      "meshptr is not initiated.")
+                      "meshptr is not initiated.")
 #endif
 
     ans = meshptr%GetBoundingBox(nodes=obj%nodeCoord)
@@ -1112,43 +1112,16 @@ MODULE PROCEDURE obj_GetNSD
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%nsd
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetNSD
-
-!----------------------------------------------------------------------------
-!                                                             GetOrder
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetOrder
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetOrder()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
-#endif
-
-  ans = 0
-
-#ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, &
-    "This routine should ne implemented by child classes.")
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
-#endif
-END PROCEDURE obj_GetOrder
 
 !----------------------------------------------------------------------------
 !                                                     GetTotalMeshFacetData
@@ -1161,19 +1134,19 @@ MODULE PROCEDURE obj_GetTotalMeshFacetData
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = 0
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "This method is deprecated, working on alternative.")
+                    "This method is deprecated, working on alternative.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalMeshFacetData
 
@@ -1190,7 +1163,7 @@ MODULE PROCEDURE obj_GetTotalMaterial
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = 0
@@ -1199,7 +1172,7 @@ MODULE PROCEDURE obj_GetTotalMaterial
 #ifdef DEBUG_VER
   isok = ASSOCIATED(meshptr)
   CALL AssertError1(isok, myName, &
-    "meshptr is not initiated...")
+                    "meshptr is not initiated...")
 #endif
 
   ans = meshptr%GetTotalMaterial(globalElement=globalElement, islocal=islocal)
@@ -1207,7 +1180,7 @@ MODULE PROCEDURE obj_GetTotalMaterial
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalMaterial
 
@@ -1222,17 +1195,17 @@ MODULE PROCEDURE obj_GetElemType
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this method is under developmenet.")
+                    "this method is under developmenet.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetElemType
 
@@ -1247,7 +1220,7 @@ MODULE PROCEDURE obj_GetUniqueElemType
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%GetElemType(DIM=DIM)
@@ -1255,7 +1228,7 @@ MODULE PROCEDURE obj_GetUniqueElemType
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetUniqueElemType
 
@@ -1270,7 +1243,7 @@ MODULE PROCEDURE obj_GetParam
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (PRESENT(isInitiated)) isInitiated = obj%isInit
@@ -1295,7 +1268,7 @@ MODULE PROCEDURE obj_GetParam
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetParam
 
@@ -1310,14 +1283,14 @@ MODULE PROCEDURE obj_GetMinElemNumber
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%minElemNum
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetMinElemNumber
 
@@ -1332,14 +1305,14 @@ MODULE PROCEDURE obj_GetMaxElemNumber
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%maxElemNum
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetMaxElemNumber
 
@@ -1354,14 +1327,14 @@ MODULE PROCEDURE obj_GetMinNodeNumber
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%minNptrs
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetMinNodeNumber
 
@@ -1376,14 +1349,14 @@ MODULE PROCEDURE obj_GetMaxNodeNumber
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%maxNptrs
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetMaxNodeNumber
 
@@ -1398,17 +1371,17 @@ MODULE PROCEDURE obj_GetGlobalEdgeNumber
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemented by child classes.")
+                    "this routine should be implemented by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalEdgeNumber
 
@@ -1423,17 +1396,17 @@ MODULE PROCEDURE obj_GetGlobalFaceNumber
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetGlobalFaceNumber
 
@@ -1448,17 +1421,17 @@ MODULE PROCEDURE obj_GetLocalElemNumber1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetLocalElemNumber1
 
@@ -1473,17 +1446,17 @@ MODULE PROCEDURE obj_GetLocalElemNumber2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetLocalElemNumber2
 
@@ -1498,17 +1471,17 @@ MODULE PROCEDURE obj_GetElemData
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetElemData
 
@@ -1523,17 +1496,17 @@ MODULE PROCEDURE obj_GetElemDataPointer
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetElemDataPointer
 
@@ -1548,17 +1521,17 @@ MODULE PROCEDURE obj_GetConnectivity1_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetConnectivity1_
 
@@ -1573,17 +1546,17 @@ MODULE PROCEDURE obj_Getconnectivity2_
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Getconnectivity2_
 
@@ -1598,17 +1571,17 @@ MODULE PROCEDURE obj_GetTotalVertexNodes1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalVertexNodes1
 
@@ -1623,17 +1596,17 @@ MODULE PROCEDURE obj_GetTotalVertexNodes2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "this routine should be implemeneted by child classes.")
+                    "this routine should be implemeneted by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalVertexNodes2
 
@@ -1650,23 +1623,23 @@ MODULE PROCEDURE obj_GetOrientation
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
   CALL meshptr%GetOrientation(cellOrient=cellOrient, &
-    faceOrient=faceOrient, &
-    edgeOrient=edgeOrient, &
-    tCellOrient=tCellOrient, &
-    tFaceOrient=tFaceOrient, &
-    tEdgeOrient=tEdgeOrient, &
-    globalElement=globalElement, &
-    islocal=islocal)
+                              faceOrient=faceOrient, &
+                              edgeOrient=edgeOrient, &
+                              tCellOrient=tCellOrient, &
+                              tFaceOrient=tFaceOrient, &
+                              tEdgeOrient=tEdgeOrient, &
+                              globalElement=globalElement, &
+                              islocal=islocal)
   meshptr => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetOrientation
 
@@ -1683,19 +1656,19 @@ MODULE PROCEDURE obj_GetElemTopologyIndx
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
 
   ans = meshptr%GetElemTopologyIndx(globalElement=globalElement, &
-    islocal=islocal)
+                                    islocal=islocal)
 
   meshptr => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetElemTopologyIndx
 
@@ -1712,17 +1685,17 @@ MODULE PROCEDURE obj_IsElementActive
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   meshptr => obj%GetMeshPointer(DIM=DIM, entityNum=entityNum)
   ans = meshptr%IsElementActive(globalElement=globalElement, &
-    islocal=islocal)
+                                islocal=islocal)
   meshptr => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_IsElementActive
 
