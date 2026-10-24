@@ -19,7 +19,6 @@ SUBMODULE(UserFunction_Class) GetVectorValueMethods
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
-USE ISO_C_BINDING, ONLY: C_PTR
 USE ReallocateUtility, ONLY: Reallocate
 USE LuaInterface, ONLY: lual_newstate
 USE LuaInterface, ONLY: lual_openlibs
@@ -38,7 +37,7 @@ IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-                           "UserFunction_Class@GetVectorValueMethods.F90"
+  "UserFunction_Class@GetVectorValueMethods.F90"
 #endif
 
 CONTAINS
@@ -49,22 +48,22 @@ CONTAINS
 
 MODULE PROCEDURE obj_GetVectorValue
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myname = "obj_GetVectorValue()"
+  CHARACTER(*), PARAMETER :: myname = "obj_GetVectorValue()"
 #endif
 
-INTEGER(I4B) :: tsize
+  INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myname//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myname // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL Reallocate(val, obj%numReturns)
-CALL obj%Get_(tsize=tsize, val=val, args=args)
+  CALL Reallocate(val, obj%numReturns)
+  CALL obj%Get_(tsize=tsize, val=val, args=args)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myname//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myname // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetVectorValue
 
@@ -74,70 +73,71 @@ END PROCEDURE obj_GetVectorValue
 
 MODULE PROCEDURE obj_GetVectorValue_1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_1()"
 #endif
-INTEGER(I4B) :: ii
+  INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-tsize = obj%numReturns
+  tsize = obj%numReturns
 
 #ifdef DEBUG_VER
-CALL CheckError(obj=obj, val=val, args=args)
+  CALL CheckError(obj=obj, val=val, args=args)
 #endif
 
-SELECT CASE (obj%engineID)
+  SELECT CASE (obj%engineID)
 
-CASE (funcopt%constEngine)
-  val(1:tsize) = obj%vectorValue(1:tsize)
+  CASE (funcopt%constEngine)
+    val(1:tsize) = obj%vectorValue(1:tsize)
 
-CASE (funcopt%externalEngine)
+  CASE (funcopt%externalEngine)
 
 #ifdef DEBUG_VER
-  CALL CheckError_ExternalEngine(obj=obj)
+    CALL CheckError_ExternalEngine(obj=obj)
 #endif
 
-  CALL obj%vectorFunction(args=args, nargs=obj%numArgs, ans=val, tsize=tsize)
+    CALL obj%vectorFunction(args=args, nargs=obj%numArgs, ans=val, &
+                            tsize=tsize)
 
-CASE (funcopt%specialFuncEngine)
+  CASE (funcopt%specialFuncEngine)
 
 #ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
+    CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
 #endif
 
-CASE (funcopt%luaEngine)
-  CALL GetValue_LuaEngine(obj=obj, val=val, args=args)
+  CASE (funcopt%luaEngine)
+    CALL GetValue_LuaEngine(obj=obj, val=val, args=args)
 
-CASE (funcopt%equationParserEngine)
+  CASE (funcopt%equationParserEngine)
 
 #ifdef DEBUG_VER
-  CALL CheckError_EquationParserEngine(obj=obj)
+    CALL CheckError_EquationParserEngine(obj=obj)
 #endif
 
-  DO ii = 1, obj%numReturns
-    val(ii) = obj%vectorEqParser(ii)%ptr%Evaluate(val=args(1:obj%numArgs))
-  END DO
+    DO ii = 1, obj%numReturns
+      val(ii) = obj%vectorEqParser(ii)%ptr%Evaluate(val=args(1:obj%numArgs))
+    END DO
 
-CASE (funcopt%symengineEngine)
+  CASE (funcopt%symengineEngine)
 
 #ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
+    CALL AssertError1(math%no, myName, "specialFuncEngine Not supported yet.")
 #endif
 
-CASE DEFAULT
+  CASE DEFAULT
 
 #ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, "No case found for engineID.")
+    CALL AssertError1(math%no, myName, "No case found for engineID.")
 #endif
 
-END SELECT
+  END SELECT
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetVectorValue_1
 
@@ -147,24 +147,24 @@ END PROCEDURE obj_GetVectorValue_1
 
 MODULE PROCEDURE obj_GetVectorValue_2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetVectorValue_2()"
 #endif
 
-INTEGER(I4B) :: ii
+  INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-ncol = SIZE(args, 2)
-DO ii = 1, ncol
-  CALL obj%GetVectorValue_(val=val(:, ii), tsize=nrow, args=args(:, ii))
-END DO
+  ncol = SIZE(args, 2)
+  DO ii = 1, ncol
+    CALL obj%GetVectorValue_(val=val(:, ii), tsize=nrow, args=args(:, ii))
+  END DO
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetVectorValue_2
 
@@ -177,7 +177,7 @@ SUBROUTINE CheckError(obj, val, args)
   !! User function
   REAL(DFP), INTENT(INOUT) :: val(:)
   !! Returned value
-  REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
   !! Arguments
 
   ! Internal variables
@@ -188,7 +188,7 @@ SUBROUTINE CheckError(obj, val, args)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
@@ -224,7 +224,7 @@ SUBROUTINE CheckError(obj, val, args)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
 END SUBROUTINE CheckError
@@ -244,7 +244,7 @@ SUBROUTINE CheckError_ExternalEngine(obj)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
@@ -252,13 +252,13 @@ SUBROUTINE CheckError_ExternalEngine(obj)
   IF (obj%isExternalFunc) THEN
     isok = ASSOCIATED(obj%vectorFunction)
     CALL AssertError1(isok, myName, &
-         'UserFunction_::obj%isExternalSet is true but &
-         &obj%vectorFunction is not ASSOCIATED.')
+                      'UserFunction_::obj%isExternalSet is true but &
+    &obj%vectorFunction is not ASSOCIATED.')
   END IF
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
 END SUBROUTINE CheckError_ExternalEngine
@@ -279,7 +279,7 @@ SUBROUTINE CheckError_EquationParserEngine(obj)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
@@ -287,12 +287,13 @@ SUBROUTINE CheckError_EquationParserEngine(obj)
   DO ii = 1, obj%numReturns
     isok = ASSOCIATED(obj%vectorEqParser(ii)%ptr)
     CALL AssertError1(isok, myName, &
-                      "vectorEqParser("//ToString(ii)//") is not ASSOCIATED.")
+                      "vectorEqParser(" // ToString(ii) // &
+                      ") is not ASSOCIATED.")
   END DO
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
 END SUBROUTINE CheckError_EquationParserEngine
@@ -307,8 +308,8 @@ SUBROUTINE GetValue_LuaEngine(obj, val, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   !! User function
   REAL(DFP), INTENT(INOUT) :: val(:)
-   !! returned value
-  REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+  !! returned value
+  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
   !! List of the arguments
 
   ! Define internal variables
@@ -320,7 +321,7 @@ SUBROUTINE GetValue_LuaEngine(obj, val, args)
   TYPE(C_PTR) :: l
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
@@ -334,18 +335,18 @@ SUBROUTINE GetValue_LuaEngine(obj, val, args)
     CALL lua_close(l)
 
 #ifdef DEBUG_VER
-    CALL AssertError1( &
-      isok, myName, &
-      'UserFunction_::obj%isLuaScript is TRUE'// &
-      CHAR_LF//'In the lua script'//TRIM(obj%luaScript)// &
-      CHAR_LF//'lua function named '//TRIM(obj%luaFunctionName)// &
-      CHAR_LF//' is not a function.')
+    CALL AssertError1(isok, myName, &
+                      'UserFunction_::obj%isLuaScript is TRUE' // CHAR_LF // &
+                      'In the lua script' // TRIM(obj%luaScript) // &
+                      CHAR_LF // 'lua function named ' // &
+                      TRIM(obj%luaFunctionName) // CHAR_LF // &
+                      ' is not a function.')
 #endif
 
   END IF
 
   DO iarg = 1, obj%numArgs
-    CALL lua_pushnumber(l, REAL(args(iarg), kind=lua_number))
+    CALL lua_pushnumber(l, REAL(args(iarg), KIND=lua_number))
   END DO
 
   rc = lua_pcall(l, obj%numArgs, obj%numReturns, math%zero_i)
@@ -355,14 +356,14 @@ SUBROUTINE GetValue_LuaEngine(obj, val, args)
 #endif
 
   DO iarg = 1, obj%numReturns
-    val(iarg) = REAL(lua_tonumber(l, iarg), kind=DFP)
+    val(iarg) = REAL(lua_tonumber(l, iarg), KIND=DFP)
   END DO
 
   CALL lua_pop(l, obj%numReturns)
   CALL lua_close(l)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
 END SUBROUTINE GetValue_LuaEngine
@@ -376,8 +377,8 @@ END SUBROUTINE GetValue_LuaEngine
 SUBROUTINE GetValue_LuaEngine(obj, val, args)
   CLASS(UserFunction_), INTENT(INOUT) :: obj
   REAL(DFP), INTENT(INOUT) :: val(:)
-    !! returned value
-  REAL(DFP), OPTIONAL, INTENT(IN) :: args(:)
+  !! returned value
+  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
 END SUBROUTINE GetValue_LuaEngine
 #endif
 

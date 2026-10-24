@@ -49,6 +49,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE tomlf, ONLY: toml_table
 USE EquationParser_Class, ONLY: EquationParser_
 USE EquationParser_Class, ONLY: EquationParserPointer_
+USE ISO_C_BINDING, ONLY: C_PTR
 IMPLICIT NONE
 
 PRIVATE
@@ -141,15 +142,14 @@ TYPE :: UserFunction_
   !! Matrix constant value
   TYPE(EquationParser_) :: scalarEqParser
   !! Equation parser for scalar function
-
   TYPE(EquationParserPointer_) :: &
     vectorEqParser(funcopt%vectorFuncNumReturns)
   !! Equation parser for vector function
-
   TYPE(EquationParserPointer_) :: &
     matrixEqParser(funcopt%matrixFuncNumReturns, funcopt%matrixFuncNumReturns)
   !! equation parser for matrix function
-
+  TYPE(C_PTR) :: luaState
+  !! lua state, it is used when engineID is lua
   PROCEDURE(InterfaceScalarSubroutine), POINTER, NOPASS :: &
     scalarFunction => NULL()
   !! Scalar function pointer

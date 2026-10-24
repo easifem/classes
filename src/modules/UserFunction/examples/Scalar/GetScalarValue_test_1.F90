@@ -1,6 +1,6 @@
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-01-16
-! summary: Scalar function, Lua script, GetScalarValue_2
+! summary: Scalar function, Lua script, GetScalarValue_1
 !
 ! [test5]
 ! name = "func"
@@ -28,22 +28,18 @@ PROGRAM main
   CHARACTER(*), PARAMETER :: tomlName = "test5"
 
   TYPE(UserFunction_) :: obj
-  INTEGER(I4B) :: tsize
-  REAL(DFP), ALLOCATABLE :: args(:, :), found(:), want(:)
+  REAL(DFP) :: args(3), found, want
 
   CALL e%setQuietMode(math%yes)
   CALL e%setQuietMode(EXCEPTION_ERROR, math%no)
 
   CALL obj%ImportFromToml(tomlName=tomlName, filename=filename)
 
-  CALL Reallocate(args, 3, 2)
   CALL RANDOM_NUMBER(args)
 
-  CALL Reallocate(want, 2)
-  want = math%two * (args(1, :) + args(2, :))
+  want = math%two * (args(1) + args(2))
 
-  CALL Reallocate(found, 2)
-  CALL obj%GetScalarValue_(val=found, tsize=tsize, args=args)
+  CALL obj%GetScalarValue_(val=found, args=args)
 
-  CALL OK(ALL(want .approxeq. found), testname)
+  CALL OK(want .approxeq. found, testname)
 END PROGRAM main

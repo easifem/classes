@@ -17,7 +17,6 @@
 
 #ifdef USE_LUA
 SUBMODULE(UserFunction_Class) LuaScalarMethods
-USE ISO_C_BINDING, ONLY: C_PTR
 USE LuaInterface, ONLY: lual_newstate
 USE LuaInterface, ONLY: lual_openlibs
 USE LuaInterface, ONLY: lual_dofile
@@ -89,7 +88,6 @@ MODULE PROCEDURE GetScalarValue_Lua1
   CHARACTER(*), PARAMETER :: myName = "GetScalarValue_Lua1()"
 #endif
   LOGICAL(LGT) :: isok
-  TYPE(C_PTR) :: l
   INTEGER(I4B) :: iarg, rc
 
 #ifdef DEBUG_VER
@@ -97,11 +95,11 @@ MODULE PROCEDURE GetScalarValue_Lua1
                           '[START] ')
 #endif
 
-  l = lual_newstate()
-  CALL lual_openlibs(l)
-  rc = lual_dofile(l, TRIM(obj%luaScript))
-  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
-  isok = lua_isfunction(l, -1) == 1
+  obj%luaState = lual_newstate()
+  CALL lual_openlibs(obj%luaState)
+  rc = lual_dofile(obj%luaState, TRIM(obj%luaScript))
+  rc = lua_getglobal(obj%luaState, TRIM(obj%luaFunctionName))
+  isok = lua_isfunction(obj%luaState, -1) == 1
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &
@@ -112,19 +110,19 @@ MODULE PROCEDURE GetScalarValue_Lua1
 #endif
 
   DO iarg = 1, obj%numArgs
-    CALL lua_pushnumber(l, REAL(args(iarg), KIND=lua_number))
+    CALL lua_pushnumber(obj%luaState, REAL(args(iarg), KIND=lua_number))
   END DO
 
-  rc = lua_pcall(l, obj%numArgs, obj%numReturns, 0)
+  rc = lua_pcall(obj%luaState, obj%numArgs, obj%numReturns, 0)
 
 #ifdef DEBUG_VER
   CALL AssertError2(rc, lua_ok, myName, &
                     'a=lua_pcall(l, nargs, ...), b=lua_ok')
 #endif
 
-  val = REAL(lua_tonumber(l, -1), KIND=DFP)
-  CALL lua_pop(l, 1)
-  CALL lua_close(l)
+  val = REAL(lua_tonumber(obj%luaState, -1), KIND=DFP)
+  CALL lua_pop(obj%luaState, 1)
+  CALL lua_close(obj%luaState)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -143,7 +141,6 @@ MODULE PROCEDURE GetScalarValue_Lua2
 
   INTEGER(I4B) :: ii
   LOGICAL(LGT) :: isok
-  TYPE(C_PTR) :: l
   INTEGER(I4B) :: iarg, rc
 
 #ifdef DEBUG_VER
@@ -151,13 +148,13 @@ MODULE PROCEDURE GetScalarValue_Lua2
                           '[START] ')
 #endif
 
-  l = lual_newstate()
-  CALL lual_openlibs(l)
-  rc = lual_dofile(l, TRIM(obj%luaScript))
-  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
+  obj%luaState = lual_newstate()
+  CALL lual_openlibs(obj%luaState)
+  rc = lual_dofile(obj%luaState, TRIM(obj%luaScript))
+  rc = lua_getglobal(obj%luaState, TRIM(obj%luaFunctionName))
 
 #ifdef DEBUG_VER
-  isok = lua_isfunction(l, -1) == 1
+  isok = lua_isfunction(obj%luaState, -1) == 1
   CALL AssertError1(isok, myName, &
                     'UserFunction_::obj%isLuaScript is TRUE In the lua ' // &
                     'script' // TRIM(obj%luaScript) // &
@@ -171,25 +168,25 @@ MODULE PROCEDURE GetScalarValue_Lua2
     CALL CheckError_Scalar_Lua(obj=obj, args=args(:, ii))
 #endif
 
-    CALL lua_pushvalue(l, -1)
+    CALL lua_pushvalue(obj%luaState, -1)
 
     DO iarg = 1, obj%numArgs
-      CALL lua_pushnumber(l, REAL(args(iarg, ii), KIND=lua_number))
+      CALL lua_pushnumber(obj%luaState, REAL(args(iarg, ii), KIND=lua_number))
     END DO
 
-    rc = lua_pcall(l, obj%numArgs, obj%numReturns, 0)
+    rc = lua_pcall(obj%luaState, obj%numArgs, obj%numReturns, 0)
 
 #ifdef DEBUG_VER
     CALL AssertError2(rc, lua_ok, myName, &
                       'a=lua_pcall(l, nargs, ...), b=lua_ok')
 #endif
 
-    val(ii) = REAL(lua_tonumber(l, -1), KIND=DFP)
-    CALL lua_pop(l, 1)
+    val(ii) = REAL(lua_tonumber(obj%luaState, -1), KIND=DFP)
+    CALL lua_pop(obj%luaState, 1)
 
   END DO
 
-  CALL lua_close(l)
+  CALL lua_close(obj%luaState)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -224,9 +221,9 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE CheckError_Lua
+MODULE PROCEDURE CheckError_Scalar_Lua
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "CheckError_Lua()"
+  CHARACTER(*), PARAMETER :: myName = "CheckError_Scalar_Lua()"
 #endif
 
 #ifdef DEBUG_VER
@@ -246,7 +243,7 @@ MODULE PROCEDURE CheckError_Lua
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE CheckError_Lua
+END PROCEDURE CheckError_Scalar_Lua
 
 !----------------------------------------------------------------------------
 !
@@ -275,6 +272,34 @@ MODULE PROCEDURE GetScalarValue_Lua1
                           '[END] ')
 #endif
 END PROCEDURE GetScalarValue_Lua1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetScalarValue_Lua2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetScalarValue_Lua2()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          'You are seeing this method because ' // &
+                          'easifemBase is build with' // &
+                          ' USE_LUA flag set to FALSE. This method is ' // &
+                          'not implemented in this case.')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE GetScalarValue_Lua2
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
