@@ -64,6 +64,10 @@ PROGRAM main
   buf = 0.0_DFP
   CALL obj%GetParam(nodeCoord=buf)
   CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), "GetParam")
+  CALL obj%GetNodeCoord(nodeCoord=buf, nrow=nrow, ncol=ncol, &
+                        DIM=1_I4B)
+  CALL OK(nrow .EQ. 2_I4B .AND. ncol .EQ. 8_I4B, &
+          "nodes of the curve mesh without allocation")
   ptr => obj%GetNodeCoordPointer()
   CALL OK(SIZE(ptr, 2) .EQ. 9_I4B, "GetNodeCoordPointer")
   ptr => NULL()

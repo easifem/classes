@@ -27,7 +27,7 @@ IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-                           "AbstractDomain_Class@ConstructorMethods.F90"
+  "AbstractDomain_Class@ConstructorMethods.F90"
 #endif
 
 CONTAINS
@@ -38,21 +38,21 @@ CONTAINS
 
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
+  CALL obj%DEALLOCATE()
 
-CALL obj%IMPORT(hdf5=hdf5, group=group)
+  CALL obj%IMPORT(hdf5=hdf5, group=group)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -62,38 +62,37 @@ END PROCEDURE obj_Initiate
 
 MODULE PROCEDURE obj_Deallocate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 ! obj%showTime = .FALSE.
-obj%isInit = math%no
-obj%engine = ''
-obj%majorVersion = 0
-obj%minorVersion = 0
-obj%version = math%zero
-obj%nsd = 0
-obj%maxNptrs = 0
-obj%minNptrs = 0
-obj%tNodes = 0
-obj%isNodeNumberSparse = math%no
-obj%maxElemNum = 0
-obj%minElemNum = 0
-obj%isElemNumberSparse = math%no
-obj%tEntitiesForNodes = 0
-obj%tEntitiesForElements = 0
-obj%tElements(0:3) = 0
-obj%tEntities(0:3) = 0
-IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE (obj%nodeCoord)
-CALL obj%DeallocateKdtree()
+  obj%isInit = math%no
+  obj%engine = ''
+  obj%majorVersion = 0
+  obj%minorVersion = 0
+  obj%version = math%zero
+  obj%nsd = 0
+  obj%maxNptrs = 0
+  obj%minNptrs = 0
+  obj%tNodes = 0
+  obj%isNodeNumberSparse = math%no
+  obj%maxElemNum = 0
+  obj%minElemNum = 0
+  obj%isElemNumberSparse = math%no
+  obj%tEntitiesForNodes = 0
+  obj%tEntitiesForElements = 0
+  obj%tEntities(0:3) = 0
+  IF (ALLOCATED(obj%nodeCoord)) DEALLOCATE(obj%nodeCoord)
+  CALL obj%DeallocateKdtree()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_Deallocate
 
@@ -103,24 +102,24 @@ END PROCEDURE obj_Deallocate
 
 MODULE PROCEDURE obj_DeallocateKdtree
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_DeallocateKdtree()"
+  CHARACTER(*), PARAMETER :: myName = "obj_DeallocateKdtree()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-IF (ASSOCIATED(obj%kdtree)) THEN
-  CALL Kdtree2_Destroy(obj%kdtree)
-  obj%kdtree => NULL()
-END IF
+  IF (ASSOCIATED(obj%kdtree)) THEN
+    CALL Kdtree2_Destroy(obj%kdtree)
+    obj%kdtree => NULL()
+  END IF
 
-IF (ALLOCATED(obj%kdresult)) DEALLOCATE (obj%kdresult)
+  IF (ALLOCATED(obj%kdresult)) DEALLOCATE(obj%kdresult)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_DeallocateKdtree
 

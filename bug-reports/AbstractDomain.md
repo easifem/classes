@@ -100,8 +100,6 @@ the listed test passes. **Open** means not changed.
 - Resolution: removed (binding, interface, implementation), together with
   `InitiateBoundaryData`, its only caller.
 
-## Open
-
 ### 7. Minor
 
 - Fixed: `GetNodeCoord(dim=...)` returned three rows, but `GetNodeCoord()`
@@ -116,5 +114,12 @@ the listed test passes. **Open** means not changed.
   `GetNodeCoord_test_1`.
 - Fixed: component `isNodeNumberSparse` was declared `LOGICAL(I4B)`; it is
   now `LOGICAL(LGT)` like the other flags.
-- `SetTotalElements` changes `tElements(indx)` only; `GetTotalElements`
-  reads the meshes, so the two can disagree.
+- Fixed: `SetTotalElements` changed the stored `tElements(indx)` only, while
+  `GetTotalElements` reads the meshes, so the two could disagree. The
+  component `tElements` and `SetTotalElements` are removed;
+  `GetParam(tElements=...)` and `Display` compute the counts from the meshes.
+  Test: `GetParam_test_1`.
+
+## Open
+
+None.

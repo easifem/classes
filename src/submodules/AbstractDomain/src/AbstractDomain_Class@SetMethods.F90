@@ -424,36 +424,6 @@ MODULE PROCEDURE obj_SetNodeCoord
 END PROCEDURE obj_SetNodeCoord
 
 !----------------------------------------------------------------------------
-!                                                           SetTotalElements
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetTotalElements
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_SetTotalElements()"
-  INTEGER(I4B) :: aint
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  aint = SIZE(obj%tElements)
-  CALL AssertError3(indx, aint, myName, &
-                    "indx is out of bound, a=indx, b=size(obj%tElements)")
-#endif
-
-  obj%tElements(indx) = VALUE
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-
-END PROCEDURE obj_SetTotalElements
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

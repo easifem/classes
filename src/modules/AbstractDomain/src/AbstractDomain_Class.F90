@@ -63,8 +63,9 @@ PUBLIC :: AbstractDomainDisplayDomainInfo
 ! volumes).
 !
 ! - nodeCoord(:, :) has nsd rows and one column per node.
-! - tElements(0:3) and tEntities(0:3) are the number of elements and entities
-!   of each dimension.
+! - tEntities(0:3) is the number of entities of each dimension. The number of
+!   elements is not stored; it is read from the meshes (GetTotalElements,
+!   GetParam(tElements=...)).
 ! - Most methods take dim (default nsd) to select a mesh, and work on that
 !   mesh.
 ! - kdtree is a kdtree of the node coordinates, used by GetNearestNode and
@@ -106,12 +107,6 @@ TYPE, ABSTRACT :: AbstractDomain_
   !! Total number of entities required for reading nodes
   INTEGER(I4B) :: tEntitiesForElements = 0
   !! Total number of entities required for reading elements
-  INTEGER(I4B) :: tElements(0:3) = [0, 0, 0, 0]
-  !! Total number of elements inside the domain
-  !! tElements( 0 ) = total number of point elements
-  !! tElements( 1 ) = total number of line elements
-  !! tElements( 2 ) =  total number of surface elements
-  !! tElements( 3 ) = total number of volume/cell elements
   INTEGER(I4B) :: tEntities(0:3) = [0, 0, 0, 0]
   !! Total number of entities inside the domain
   !! tEntities( 0 ) = total number of point mesh entities, mesh of Points
@@ -344,8 +339,6 @@ CONTAINS
   !! Set the material of a medium in an entity
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates of the domain
-  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalElements => obj_SetTotalElements
-  !! Set the number of elements of a dimension
 
   ! @MeshDataMethods
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateKdtree => obj_InitiateKdtree
@@ -2223,6 +2216,10 @@ END INTERFACE
 !   buf = 0.0_DFP
 !   CALL obj%GetParam(nodeCoord=buf)
 !   CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), "GetParam")
+!   CALL obj%GetNodeCoord(nodeCoord=buf, nrow=nrow, ncol=ncol, &
+!                         dim=1_I4B)
+!   CALL OK(nrow .EQ. 2_I4B .AND. ncol .EQ. 8_I4B, &
+!           "nodes of the curve mesh without allocation")
 !   ptr => obj%GetNodeCoordPointer()
 !   CALL OK(SIZE(ptr, 2) .EQ. 9_I4B, "GetNodeCoordPointer")
 !   ptr => NULL()
@@ -3030,9 +3027,12 @@ END INTERFACE
 ! date: 2024-04-08
 ! summary: Get the parameters of the domain
 !
-! Each present argument returns the component of the same name. tElements(0:3)
-! and tEntities(0:3) are the number of elements and entities of each
-! dimension.
+! Each present argument returns the component of the same name. tEntities(0:3)
+! is the number of entities of each dimension. tElements(0:3) is the number
+! of elements of each dimension; it is computed from the meshes
+! (GetTotalElements of the mesh of dimension 0 to nsd; zero for the other
+! dimensions). nodeCoord gets the coordinates of all nodes (see
+! GetNodeCoord(nodeCoord, nrow, ncol)).
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3063,7 +3063,7 @@ END INTERFACE
 !   tEntities(0:3) : INTEGER(I4B), optional, intent(inout) - number of
 !     entities of each dimension
 !   nodeCoord(:,:) : REAL(DFP), optional, intent(inout) - node coordinates,
-!     SHAPE must be that of the domain
+!     at least nsd rows and as many columns as nodes
 !
 ! Examples
 !
@@ -3097,16 +3097,12 @@ END INTERFACE
 !   CALL OK(ALL(tElements .EQ. [4, 8, 4, 0]), "tElements")
 !   CALL OK(ALL(tEntities .EQ. [4, 4, 1, 0]), "tEntities")
 !
-!   CALL obj%SetTotalElements(indx=0_I4B, VALUE=5_I4B)
-!   CALL obj%GetParam(tElements=tElements)
-!   CALL OK(tElements(0) .EQ. 5_I4B, "SetTotalElements")
-!
 !   CALL obj%DEALLOCATE()
 !   CALL meshfile%DEALLOCATE()
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_SetTotalElements]]
+! See also: [[obj_GetTotalElements]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isInitiated, engine, majorVersion, &
@@ -4148,35 +4144,6 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! if true, add scale * nodeCoord; default is false
   END SUBROUTINE obj_SetNodeCoord
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetTotalElements@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-11
-! summary: Set the number of elements of a dimension
-!
-! Set tElements(indx) = VALUE. It does not change the meshes.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   indx : INTEGER(I4B), intent(in) - dimension: 0 points, 1 curves, 2
-!     surfaces, 3 volumes
-!   VALUE : INTEGER(I4B), intent(in) - number of elements
-!
-! See also: [[obj_GetParam]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetTotalElements(obj, indx, VALUE)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: indx
-    !! dimension: 0 points, 1 curves, 2 surfaces, 3 volumes
-    INTEGER(I4B), INTENT(IN) :: VALUE
-    !! number of elements
-  END SUBROUTINE obj_SetTotalElements
 END INTERFACE
 
 !----------------------------------------------------------------------------

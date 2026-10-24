@@ -1216,6 +1216,7 @@ MODULE PROCEDURE obj_GetParam
 #endif
 
   INTEGER(I4B) :: ii, jj
+  CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1238,7 +1239,15 @@ MODULE PROCEDURE obj_GetParam
   IF (PRESENT(tEntitiesForElements)) tEntitiesForElements = &
     obj%tEntitiesForElements
   IF (PRESENT(tEntitiesForNodes)) tEntitiesForNodes = obj%tEntitiesForNodes
-  IF (PRESENT(tElements)) tElements = obj%tElements
+  ! number of elements of each dimension, from the meshes
+  IF (PRESENT(tElements)) THEN
+    tElements = 0
+    DO ii = 0, MIN(obj%nsd, 3_I4B)
+      meshptr => obj%GetMeshPointer(DIM=ii)
+      IF (ASSOCIATED(meshptr)) tElements(ii) = meshptr%GetTotalElements()
+    END DO
+    meshptr => NULL()
+  END IF
   IF (PRESENT(tEntities)) tEntities = obj%tEntities
   IF (PRESENT(nodeCoord)) THEN
     CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=ii, ncol=jj)

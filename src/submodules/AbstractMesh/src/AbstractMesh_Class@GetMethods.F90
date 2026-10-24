@@ -207,19 +207,29 @@ END PROCEDURE obj_Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElements2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElements2()"
+#endif
   INTEGER(I4B) :: ii, found
   LOGICAL(LGT) :: isok
 
-  ans = 0
-  DO ii = 1, obj%tElements
-    isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
+  ans = 0
+  elemloop: DO ii = 1, obj%tElements
+    isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
+    IF (.NOT. isok) CYCLE elemloop
     found = Elemdata_MeshID(obj=obj%elementData(ii)%ptr)
     IF (found .EQ. meshid) ans = ans + 1
+  END DO elemloop
 
-  END DO
-
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalElements2
 
 !----------------------------------------------------------------------------
@@ -227,18 +237,30 @@ END PROCEDURE obj_GetTotalElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElements3
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElements3()"
+#endif
   INTEGER(I4B) :: ii, found
   LOGICAL(LGT) :: isok
 
-  ans = 0
-  DO ii = 1, obj%tElements
-    isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
+  ans = 0
+  elemloop: DO ii = 1, obj%tElements
+    isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
+    IF (.NOT. isok) CYCLE elemloop
     found = Elemdata_MeshID(obj=obj%elementData(ii)%ptr)
     isok = ANY(found .EQ. meshid)
     IF (isok) ans = ans + 1
-  END DO
+  END DO elemloop
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalElements3
 
 !----------------------------------------------------------------------------

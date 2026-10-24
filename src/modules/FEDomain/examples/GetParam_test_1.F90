@@ -45,10 +45,6 @@ PROGRAM main
   CALL OK(ALL(tElements .EQ. [4, 8, 4, 0]), "tElements")
   CALL OK(ALL(tEntities .EQ. [4, 4, 1, 0]), "tEntities")
 
-  CALL obj%SetTotalElements(indx=0_I4B, VALUE=5_I4B)
-  CALL obj%GetParam(tElements=tElements)
-  CALL OK(tElements(0) .EQ. 5_I4B, "SetTotalElements")
-
   CALL obj%DEALLOCATE()
   CALL meshfile%DEALLOCATE()
 END PROGRAM main
