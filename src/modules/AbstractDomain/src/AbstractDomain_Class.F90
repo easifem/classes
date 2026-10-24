@@ -309,19 +309,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Get the number of spatial dimensions
 
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
-    obj_GetTotalMeshFacetData
-  !! Get the size of mesh facet data
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
   !! Get the number of media of an element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
-  !! Get the element types of a mesh
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType => &
-    obj_GetUniqueElemType
-  !! Get the unique element types of a mesh
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
   !! Get the maximum node number
@@ -397,9 +386,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates of the domain
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
-  !! Set the quality of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalElements => obj_SetTotalElements
   !! Set the number of elements of a dimension
 
@@ -428,17 +414,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
     obj_InitiateExtraNodeToNodes
   !! Initiate the extra node to nodes data of the meshes
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetDomainFacetElement => &
-    obj_SetDomainFacetElement
-  !! Set the domain boundary facet elements
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => obj_SetMeshmap
-  !! Set the mesh map
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
-    obj_SetMeshFacetElement
-  !! Set the mesh facet elements
 
 END TYPE AbstractDomain_
 
@@ -2886,36 +2861,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetTotalMeshFacetData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-05-24
-! summary: Get the size of mesh facet data
-!
-! This method is deprecated; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   imeshFacetData : INTEGER(I4B), optional, intent(in) - index of the mesh
-!     facet data
-!
-! Returns:
-!   ans : INTEGER(I4B) - zero
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalMeshFacetData(obj, imeshFacetData) &
-    RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: imeshFacetData
-    !! index of the mesh facet data
-    INTEGER(I4B) :: ans
-    !! zero
-  END FUNCTION obj_GetTotalMeshFacetData
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               GetTotalMaterial@GetMethods
 !----------------------------------------------------------------------------
 
@@ -2956,66 +2901,6 @@ INTERFACE
     INTEGER(I4B) :: ans
     !! number of media of the element
   END FUNCTION obj_GetTotalMaterial
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 GetElemType@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-23
-! summary: Get the element types of a mesh
-!
-! This routine is not implemented; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
-! Returns:
-!   ans(:) : INTEGER(I4B), allocatable - element types
-!
-! See also: [[obj_GetUniqueElemType]]
-
-INTERFACE
-  MODULE FUNCTION obj_GetElemType(obj, dim) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    !! element types
-  END FUNCTION obj_GetElemType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetUniqueElemType@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-23
-! summary: Get the unique element types of a mesh
-!
-! This routine calls GetElemType, which is not implemented.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
-! Returns:
-!   ans(:) : INTEGER(I4B), allocatable - element types without duplicates
-!
-! See also: [[obj_GetElemType]]
-
-INTERFACE
-  MODULE FUNCTION obj_GetUniqueElemType(obj, dim) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    !! element types without duplicates
-  END FUNCTION obj_GetUniqueElemType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4247,43 +4132,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   SetQuality@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-10-22
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
-! summary: Set the quality of the meshes
-!
-! This routine is not implemented; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   measures(:) : INTEGER(I4B), intent(in) - quality measures
-!   max_measures(:) : REAL(DFP), intent(out) - maximum value of each measure
-!   min_measures(:) : REAL(DFP), intent(out) - minimum value of each measure
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-                                   min_measures, dim)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: measures(:)
-    !! quality measures
-    REAL(DFP), INTENT(OUT) :: max_measures(:)
-    !! maximum value of each measure
-    REAL(DFP), INTENT(OUT) :: min_measures(:)
-    !! minimum value of each measure
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
-    !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
-    !! default is nsd
-  END SUBROUTINE obj_SetQuality
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               SetTotalElements@SetMethods
 !----------------------------------------------------------------------------
 
@@ -4484,66 +4332,6 @@ INTERFACE
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
   END SUBROUTINE obj_InitiateExtraNodeToNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                              SetAbstractDomainFacetElement@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-04-14
-! summary: Set the domain boundary facet elements
-!
-! This routine is not implemented; it does nothing.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetDomainFacetElement(obj)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-  END SUBROUTINE obj_SetDomainFacetElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 SetMeshmap@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-05-20
-! summary: Set the mesh map
-!
-! This routine is not implemented; it does nothing.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshmap(obj)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-  END SUBROUTINE obj_SetMeshmap
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        SetMeshFacetElement@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-05-20
-! summary: Set the mesh facet elements
-!
-! This routine is not implemented; it does nothing.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshFacetElement(obj)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-  END SUBROUTINE obj_SetMeshFacetElement
 END INTERFACE
 
 !----------------------------------------------------------------------------

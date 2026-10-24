@@ -23,8 +23,6 @@ the listed test passes. **Open** means not changed.
 - Test: `InitiateNodeToElements_test_1`, `InitiateNodeToNodes_test_1`,
   `InitiateElementToElements_test_1`, `InitiateExtraNodeToNodes_test_1`
 
-## Open
-
 ### 2. InitiateBoundaryData crashes (removed)
 
 - Where: `obj_InitiateBoundaryData` (FEDomain_ and AbstractDomain_)
@@ -70,3 +68,8 @@ the listed test passes. **Open** means not changed.
   override it. It was removed from AbstractDomain_ (see
   `AbstractDomain.md`, bug 3). Use `GetMeshPointer(dim)` and the mesh
   method `GetOrder()`.
+
+## Open
+
+
+None.

@@ -77,7 +77,18 @@ the listed test passes. **Open** means not changed.
   in both routines, and in the `InitiateCellToCellData1/2` consumers.
 - Test: `SetSparsity_test_2` (49 nonzeros with one domain)
 
-## Open
+### 3. Routines which are not implemented
+
+- Removed (binding, interface and implementation): `GetElemType` and
+  `GetUniqueElemType` (raised "under development"),
+  `GetTotalMeshFacetData` (raised "deprecated"), `SetQuality` (raised
+  "[WIP ERROR]"), `SetDomainFacetElement`, `SetMeshmap` and
+  `SetMeshFacetElement` (empty bodies). Nothing in the library called
+  them; FEDomain_ did not override them.
+- `GetOrder` was removed earlier for the same reason.
+- StokesFlow calls `GetTotalMeshFacetData` and `SetMeshFacetElement`; it
+  needs a replacement when it is ported (it does not build against the
+  current library anyway).
 
 ### 2. SetFacetElementType crashes (removed)
 
@@ -89,23 +100,7 @@ the listed test passes. **Open** means not changed.
 - Resolution: removed (binding, interface, implementation), together with
   `InitiateBoundaryData`, its only caller.
 
-### 3. Routines which are not implemented
-
-| Routine | Behaviour |
-|---|---|
-| `obj_GetElemType` | raises "under development" |
-| `obj_GetUniqueElemType` | calls `GetElemType`, so it fails too |
-| `obj_GetTotalMeshFacetData` | raises "deprecated" |
-| `obj_SetQuality` | raises "[WIP ERROR]" |
-| `obj_SetDomainFacetElement` | empty body |
-| `obj_SetMeshmap` | empty body |
-| `obj_SetMeshFacetElement` | empty body |
-
-`obj_GetOrder` was removed (binding, interface and implementation). It
-was not implemented (it returned 0 and raised an error only in debug
-builds), FEDomain_ did not override it, and nothing in the library called
-it. The old packages (MovingMesh, StokesFlow, DBE) call
-`dom%GetOrder(dim=...)`; they need the mesh `GetOrder()` instead.
+## Open
 
 ### 7. Minor
 

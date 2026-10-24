@@ -28,7 +28,6 @@ USE BoundingBox_Method, ONLY: BoundingBox_Initiate => Initiate
 USE F95_BLAS, ONLY: Copy
 USE Kdtree2_Module, ONLY: Kdtree2_r_nearest, Kdtree2_n_nearest
 USE Display_Method, ONLY: Display, ToString
-USE IntegerUtility, ONLY: RemoveDuplicates
 USE BaseType, ONLY: math => TypeMathOpt
 USE ElemData_Class, ONLY: Elemdata_meshID
 IMPLICIT NONE
@@ -1107,33 +1106,6 @@ MODULE PROCEDURE obj_GetNSD
 END PROCEDURE obj_GetNSD
 
 !----------------------------------------------------------------------------
-!                                                     GetTotalMeshFacetData
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTotalMeshFacetData
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMeshFacetData()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  ans = 0
-
-#ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, &
-                    "This method is deprecated, working on alternative.")
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE obj_GetTotalMeshFacetData
-
-!----------------------------------------------------------------------------
 !                                                           GetTotalMaterial
 !----------------------------------------------------------------------------
 
@@ -1166,54 +1138,6 @@ MODULE PROCEDURE obj_GetTotalMaterial
                           '[END] ')
 #endif
 END PROCEDURE obj_GetTotalMaterial
-
-!----------------------------------------------------------------------------
-!                                                               GetElemType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetElemType
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, &
-                    "this method is under developmenet.")
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE obj_GetElemType
-
-!----------------------------------------------------------------------------
-!                                                         GetUniqueElemType
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetUniqueElemType
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetUniqueElemType()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  ans = obj%GetElemType(DIM=DIM)
-  CALL RemoveDuplicates(ans)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE obj_GetUniqueElemType
 
 !----------------------------------------------------------------------------
 !                                                                  GetParam

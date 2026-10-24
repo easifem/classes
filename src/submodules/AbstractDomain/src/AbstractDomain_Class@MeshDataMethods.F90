@@ -53,7 +53,7 @@ MODULE PROCEDURE obj_InitiateKdtree
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   CALL obj%DeallocateKdtree()
@@ -61,27 +61,27 @@ MODULE PROCEDURE obj_InitiateKdtree
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%nodeCoord)
   CALL AssertError1(isok, myName, &
-    "obj%nodeCoord not allocated")
+                    "obj%nodeCoord not allocated")
 #endif
 
   nsd = obj%nsd
   obj%kdtree => Kdtree2_Create(input_data=obj%nodeCoord(1:nsd, :), &
-    DIM=nsd, sort=math%no, &
-    rearrange=math%yes)
+                               DIM=nsd, sort=math%no, &
+                               rearrange=math%yes)
 
   ALLOCATE(obj%kdresult(obj%tNodes))
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 #ifdef DEBUG_VER
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName // " : " // myName // &
-      " : time : " // &
-      ToString(TypeCPUTime%GetTime()), unitno=stdout)
+                 " : time : " // &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 #endif
 END PROCEDURE obj_InitiateKdtree
@@ -97,17 +97,17 @@ MODULE PROCEDURE obj_InitiateNodeToElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "This routine should be implemented by child classes.")
+                    "This routine should be implemented by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateNodeToElements
 
@@ -122,17 +122,17 @@ MODULE PROCEDURE obj_InitiateNodeToNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "This routine should be implemented by child classes.")
+                    "This routine should be implemented by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateNodeToNodes
 
@@ -147,17 +147,17 @@ MODULE PROCEDURE obj_InitiateElementToElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "This routine should be implemented by child classes.")
+                    "This routine should be implemented by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateElementToElements
 
@@ -172,17 +172,17 @@ MODULE PROCEDURE obj_InitiateFacetElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "This routine should be implemented by child classes.")
+                    "This routine should be implemented by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateFacetElements
 
@@ -197,45 +197,19 @@ MODULE PROCEDURE obj_InitiateExtraNodeToNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, &
-    "This routine should be implemented by child classes.")
+                    "This routine should be implemented by child classes.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateExtraNodeToNodes
-
-!----------------------------------------------------------------------------
-!                                                      SetDomainFacetElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetDomainFacetElement
-! this routine does nothing at this level
-! because we do not have difference between boundary element and
-! domain boundary element
-END PROCEDURE obj_SetDomainFacetElement
-
-!----------------------------------------------------------------------------
-!                                                                 SetMeshMap
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetMeshmap
-! this routine does nothing at abstract level
-END PROCEDURE obj_SetMeshmap
-
-!----------------------------------------------------------------------------
-!                                                       SetMeshFacetElement
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetMeshFacetElement
-! this routine does nothing at abstract level
-END PROCEDURE obj_SetMeshFacetElement
 
 !----------------------------------------------------------------------------
 !
