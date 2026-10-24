@@ -350,6 +350,86 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE hdf5_write_attribute_d0
 
 !----------------------------------------------------------------------------
+!                                                            WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE hdf5_write_attribute_i1
+#ifdef DEBUG_VER
+CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_write_attribute_i1()'
+#endif
+INTEGER(I4B) :: num_dims, error
+INTEGER(HID_T) :: attr_id, dspace_id, obj_id
+INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+num_dims = 1
+dims(1) = SIZE(attr_val)
+CALL open_object(obj, obj_name, obj_id)
+CALL H5SCREATE_SIMPLE_F(num_dims, dims, dspace_id, error)
+CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_INTEGER, &
+                     dspace_id, attr_id)
+CALL H5AWRITE_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+CALL AssertError1(error .EQ. 0, myName, &
+                  'Failed to write attribute '//attr_name)
+#endif
+
+CALL H5SCLOSE_F(dspace_id, error)
+CALL close_attribute(obj, attr_id)
+CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE hdf5_write_attribute_i1
+
+!----------------------------------------------------------------------------
+!                                                            WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE hdf5_write_attribute_d1
+#ifdef DEBUG_VER
+CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_write_attribute_d1()'
+#endif
+INTEGER(I4B) :: num_dims, error
+INTEGER(HID_T) :: attr_id, dspace_id, obj_id
+INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+num_dims = 1
+dims(1) = SIZE(attr_val)
+CALL open_object(obj, obj_name, obj_id)
+CALL H5SCREATE_SIMPLE_F(num_dims, dims, dspace_id, error)
+CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_DOUBLE, &
+                     dspace_id, attr_id)
+CALL H5AWRITE_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+CALL AssertError1(error .EQ. 0, myName, &
+                  'Failed to write attribute '//attr_name)
+#endif
+
+CALL H5SCLOSE_F(dspace_id, error)
+CALL close_attribute(obj, attr_id)
+CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE hdf5_write_attribute_d1
+
+!----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
 

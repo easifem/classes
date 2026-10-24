@@ -510,3 +510,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
 
 # IterationData
 include(${CMAKE_CURRENT_LIST_DIR}/IterationData/CMakeLists.txt)
+
+# ----------------------------------------------------------------------------
+# VTKHDF
+# ----------------------------------------------------------------------------
+
+# VTKMeshUtility
+include(${CMAKE_CURRENT_LIST_DIR}/VTKMeshUtility/CMakeLists.txt)
+
+# VTKHDFFile
+include(${CMAKE_CURRENT_LIST_DIR}/VTKHDFFile/CMakeLists.txt)

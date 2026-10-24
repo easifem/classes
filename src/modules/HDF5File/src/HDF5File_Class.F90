@@ -17,6 +17,7 @@
 
 MODULE HDF5File_Class
 USE GlobalData, ONLY: LGT, DFP, I4B, REAL32, REAL64, INT32
+USE GlobalData, ONLY: INT8
 USE String_Class, ONLY: String
 USE BaseType, ONLY: math => TypeMathOpt
 USE HDF5, ONLY: HID_T, HSIZE_T, HSSIZE_T
@@ -164,16 +165,36 @@ CONTAINS
     hdf5_read_b2, hdf5_read_b3
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     hdf5_write_attribute_st0, hdf5_write_attribute_c0, &
-    hdf5_write_attribute_i0, hdf5_write_attribute_d0
+    hdf5_write_attribute_i0, hdf5_write_attribute_d0, &
+    hdf5_write_attribute_i1, hdf5_write_attribute_d1
   GENERIC, PUBLIC :: WriteAttribute => &
     hdf5_write_attribute_st0, hdf5_write_attribute_c0, &
-    hdf5_write_attribute_i0, hdf5_write_attribute_d0
+    hdf5_write_attribute_i0, hdf5_write_attribute_d0, &
+    hdf5_write_attribute_i1, hdf5_write_attribute_d1
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     hdf5_read_attribute_st0, hdf5_read_attribute_c0, &
-    hdf5_read_attribute_i0, hdf5_read_attribute_d0
+    hdf5_read_attribute_i0, hdf5_read_attribute_d0, &
+    hdf5_read_attribute_i1, hdf5_read_attribute_d1
   GENERIC, PUBLIC :: ReadAttribute => &
     hdf5_read_attribute_st0, hdf5_read_attribute_c0, &
-    hdf5_read_attribute_i0, hdf5_read_attribute_d0
+    hdf5_read_attribute_i0, hdf5_read_attribute_d0, &
+    hdf5_read_attribute_i1, hdf5_read_attribute_d1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    hdf5_append_d1, hdf5_append_d2, hdf5_append_n1, &
+    hdf5_append_n2, hdf5_append_u1
+  GENERIC, PUBLIC :: Append => &
+    hdf5_append_d1, hdf5_append_d2, hdf5_append_n1, &
+    hdf5_append_n2, hdf5_append_u1
+  !! Append values to an extendable dataset along the last dimension
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    hdf5_readslab_d1, hdf5_readslab_d2, hdf5_readslab_n1, &
+    hdf5_readslab_n2, hdf5_readslab_u1
+  GENERIC, PUBLIC :: ReadSlab => &
+    hdf5_readslab_d1, hdf5_readslab_d2, hdf5_readslab_n1, &
+    hdf5_readslab_n2, hdf5_readslab_u1
+  !! Read a slab of a dataset along the last dimension
+  PROCEDURE, PUBLIC, PASS(obj) :: GetExtent => hdf5_GetExtent
+  !! Size of the last dimension of a dataset
   PROCEDURE, PUBLIC, PASS(Obj) :: getDataShape
   PROCEDURE, PUBLIC, PASS(Obj) :: getDataType
 END TYPE HDF5File_
@@ -2342,6 +2363,565 @@ INTERFACE
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     INTEGER(HID_T), INTENT(IN) :: attr_id
   END SUBROUTINE close_attribute
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          WriteAttribute@WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a rank-1 integer attribute to a group or dataset
+!
+! The attribute is stored as a one dimensional integer array of size
+! SIZE(attr_val). The object (group or dataset) given by obj_name
+! should exist. If the attribute exists and the overwrite status is
+! true, then it is overwritten (the size should not change).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with write access
+!   obj_name : CHARACTER(*) - path of group or dataset
+!   attr_name : CHARACTER(*) - name of attribute
+!   attr_val : INTEGER(I4B) - values, SIZE(attr_val)
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(HDF5File_) :: h5
+! INTEGER(I4B), ALLOCATABLE :: version(:)
+! CALL h5%Initiate(filename="test_attr.h5", mode="NEW")
+! CALL h5%OPEN()
+! CALL h5%mkdir("/VTKHDF")
+! CALL h5%WriteAttribute("/VTKHDF", "Version", [2_I4B, 2_I4B])
+! CALL h5%ReadAttribute("/VTKHDF", "Version", version)
+! CALL OK(ALL(version .EQ. [2, 2]), "WriteAttribute rank-1")
+! CALL h5%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[hdf5_read_attribute_i1]], [[hdf5_write_attribute_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_write_attribute_i1(obj, obj_name, attr_name, &
+                                            attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name
+    !! path of group or dataset
+    CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of attribute
+    INTEGER(I4B), INTENT(IN) :: attr_val(:)
+    !! values of attribute
+  END SUBROUTINE hdf5_write_attribute_i1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          WriteAttribute@WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a rank-1 real attribute to a group or dataset
+!
+! Same as [[hdf5_write_attribute_i1]] for REAL(DFP) values.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with write access
+!   obj_name : CHARACTER(*) - path of group or dataset
+!   attr_name : CHARACTER(*) - name of attribute
+!   attr_val : REAL(DFP) - values, SIZE(attr_val)
+!
+! See also: [[hdf5_write_attribute_i1]], [[hdf5_read_attribute_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_write_attribute_d1(obj, obj_name, attr_name, &
+                                            attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name
+    !! path of group or dataset
+    CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of attribute
+    REAL(DFP), INTENT(IN) :: attr_val(:)
+    !! values of attribute
+  END SUBROUTINE hdf5_write_attribute_d1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          ReadAttribute@ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read a rank-1 integer attribute
+!
+! attr_val is reallocated to the size of the attribute.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   obj_name : CHARACTER(*) - path of group or dataset
+!   attr_name : CHARACTER(*) - name of attribute
+!   attr_val : INTEGER(I4B) - values (allocatable)
+!
+! See also: [[hdf5_write_attribute_i1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_read_attribute_i1(obj, obj_name, attr_name, &
+                                           attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name
+    !! path of group or dataset
+    CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of attribute
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of attribute
+  END SUBROUTINE hdf5_read_attribute_i1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          ReadAttribute@ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read a rank-1 real attribute
+!
+! attr_val is reallocated to the size of the attribute.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   obj_name : CHARACTER(*) - path of group or dataset
+!   attr_name : CHARACTER(*) - name of attribute
+!   attr_val : REAL(DFP) - values (allocatable)
+!
+! See also: [[hdf5_write_attribute_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_read_attribute_d1(obj, obj_name, attr_name, &
+                                           attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name
+    !! path of group or dataset
+    CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of attribute
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of attribute
+  END SUBROUTINE hdf5_read_attribute_d1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Append@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Append a rank-1 real array to an extendable dataset
+!
+! If the dataset does not exist, then an extendable (chunked) dataset
+! is created. The size of the last (Fortran) dimension is unlimited,
+! and the other dimensions are fixed by the first call.
+! The dataset is extended by the size of the last dimension of vals,
+! and vals is written at the end of the dataset.
+! If the file is created with zlibOpt, then the dataset is compressed.
+!
+! The parent groups are created if they do not exist.
+! It is not possible to append to a dataset created by Write, because
+! such a dataset is not extendable.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with write access
+!   dsetname : CHARACTER(*) - path of dataset
+!   vals : REAL(DFP) - values to append, SIZE(vals)
+!   offset : INTEGER(I4B) - (optional) the starting index (zero based)
+!     of vals in the dataset, i.e., size of the dataset before append
+!
+! Formula:
+!
+! Let \(n_0\) be the size of the last dimension before append, and
+! \(n\) the size of the last dimension of vals, then
+!
+! $$ \text{dset}(:, n_0+1:n_0+n) = \text{vals}(:, 1:n),
+!    \quad \text{offset} = n_0 $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B, DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(HDF5File_) :: h5
+! REAL(DFP), ALLOCATABLE :: vals(:), xij(:, :)
+! INTEGER(I4B) :: offset
+! CALL h5%Initiate(filename="test_append.h5", mode="NEW")
+! CALL h5%OPEN()
+! CALL h5%Append("/steps/values", [0.0_DFP], offset)
+! CALL OK(offset .EQ. 0, "Append: offset of first call")
+! CALL h5%Append("/steps/values", [0.1_DFP, 0.2_DFP], offset)
+! CALL OK(offset .EQ. 1, "Append: offset of second call")
+! CALL OK(h5%GetExtent("/steps/values") .EQ. 3, "Append: extent")
+! CALL h5%ReadSlab("/steps/values", 1, 2, vals)
+! CALL OK(ALL(ABS(vals - [0.1_DFP, 0.2_DFP]) .LT. 1.0E-12_DFP), &
+!         "ReadSlab rank-1")
+! ! rank-2: points (3, nPoints), appended along nPoints
+! CALL h5%Append("/points", RESHAPE([0.0_DFP, 0.0_DFP, 0.0_DFP, &
+!                1.0_DFP, 0.0_DFP, 0.0_DFP], [3, 2]))
+! CALL h5%Append("/points", RESHAPE([0.0_DFP, 1.0_DFP, 0.0_DFP], &
+!                [3, 1]), offset)
+! CALL OK(offset .EQ. 2, "Append rank-2: offset")
+! CALL h5%ReadSlab("/points", 2, 1, xij)
+! CALL OK(ABS(xij(2, 1) - 1.0_DFP) .LT. 1.0E-12_DFP, "ReadSlab rank-2")
+! CALL h5%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[hdf5_readslab_d1]], [[hdf5_GetExtent]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_append_d1(obj, dsetname, vals, offset)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    REAL(DFP), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:)
+    !! values to append
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: offset
+    !! zero based starting index of vals in the dataset
+  END SUBROUTINE hdf5_append_d1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Append@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Append a rank-2 real array to an extendable dataset
+!
+! vals(:, 1:n) is appended along the second (last) dimension. The size
+! of the first dimension should be the same in all calls.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with write access
+!   dsetname : CHARACTER(*) - path of dataset
+!   vals : REAL(DFP) - values to append, SIZE(vals, 1) x SIZE(vals, 2)
+!   offset : INTEGER(I4B) - (optional) zero based starting column
+!
+! See also: [[hdf5_append_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_append_d2(obj, dsetname, vals, offset)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    REAL(DFP), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:, :)
+    !! values to append
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: offset
+    !! zero based starting column of vals in the dataset
+  END SUBROUTINE hdf5_append_d2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Append@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Append a rank-1 integer array to an extendable dataset
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with write access
+!   dsetname : CHARACTER(*) - path of dataset
+!   vals : INTEGER(I4B) - values to append, SIZE(vals)
+!   offset : INTEGER(I4B) - (optional) zero based starting index
+!
+! See also: [[hdf5_append_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_append_n1(obj, dsetname, vals, offset)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:)
+    !! values to append
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: offset
+    !! zero based starting index of vals in the dataset
+  END SUBROUTINE hdf5_append_n1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Append@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Append a rank-2 integer array to an extendable dataset
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with write access
+!   dsetname : CHARACTER(*) - path of dataset
+!   vals : INTEGER(I4B) - values to append, SIZE(vals, 1) x SIZE(vals, 2)
+!   offset : INTEGER(I4B) - (optional) zero based starting column
+!
+! See also: [[hdf5_append_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_append_n2(obj, dsetname, vals, offset)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:, :)
+    !! values to append
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: offset
+    !! zero based starting column of vals in the dataset
+  END SUBROUTINE hdf5_append_n2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                         Append@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Append a rank-1 INT8 array as unsigned 8-bit integers
+!
+! The values are stored as unsigned 8-bit integers (H5T_STD_U8LE),
+! which is the data type of cell types in VTK. Only values in
+! [0, 127] are converted exactly.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with write access
+!   dsetname : CHARACTER(*) - path of dataset
+!   vals : INTEGER(INT8) - values to append, SIZE(vals)
+!   offset : INTEGER(I4B) - (optional) zero based starting index
+!
+! See also: [[hdf5_append_d1]], [[hdf5_readslab_u1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_append_u1(obj, dsetname, vals, offset)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(INT8), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:)
+    !! values to append
+    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: offset
+    !! zero based starting index of vals in the dataset
+  END SUBROUTINE hdf5_append_u1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       ReadSlab@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read a slab of a rank-1 real dataset
+!
+! icount entries are read starting from the zero based index istart.
+! vals is reallocated to SIZE icount. The dataset can be extendable
+! or not.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting index
+!   icount : INTEGER(I4B) - number of entries to read
+!   vals : REAL(DFP) - values (allocatable), SIZE(vals) = icount
+!
+! Formula:
+!
+! $$ \text{vals}(:, 1:n) = \text{dset}(:, s+1:s+n),
+!    \quad s = \text{istart}, n = \text{icount} $$
+!
+! See also: [[hdf5_append_d1]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_readslab_d1(obj, dsetname, istart, icount, vals)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting index
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of entries
+    REAL(DFP), ALLOCATABLE, TARGET, INTENT(INOUT) :: vals(:)
+    !! values read
+  END SUBROUTINE hdf5_readslab_d1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       ReadSlab@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read a slab of a rank-2 real dataset along the last dimension
+!
+! Columns istart+1 to istart+icount are read. The size of the first
+! dimension is taken from the dataset.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting column
+!   icount : INTEGER(I4B) - number of columns to read
+!   vals : REAL(DFP) - values (allocatable), SIZE(vals, 2) = icount
+!
+! See also: [[hdf5_readslab_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_readslab_d2(obj, dsetname, istart, icount, vals)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting column
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of columns
+    REAL(DFP), ALLOCATABLE, TARGET, INTENT(INOUT) :: vals(:, :)
+    !! values read
+  END SUBROUTINE hdf5_readslab_d2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       ReadSlab@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read a slab of a rank-1 integer dataset
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting index
+!   icount : INTEGER(I4B) - number of entries to read
+!   vals : INTEGER(I4B) - values (allocatable), SIZE(vals) = icount
+!
+! See also: [[hdf5_readslab_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_readslab_n1(obj, dsetname, istart, icount, vals)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting index
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of entries
+    INTEGER(I4B), ALLOCATABLE, TARGET, INTENT(INOUT) :: vals(:)
+    !! values read
+  END SUBROUTINE hdf5_readslab_n1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       ReadSlab@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read a slab of a rank-2 integer dataset along the last dimension
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting column
+!   icount : INTEGER(I4B) - number of columns to read
+!   vals : INTEGER(I4B) - values (allocatable), SIZE(vals, 2) = icount
+!
+! See also: [[hdf5_readslab_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_readslab_n2(obj, dsetname, istart, icount, vals)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting column
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of columns
+    INTEGER(I4B), ALLOCATABLE, TARGET, INTENT(INOUT) :: vals(:, :)
+    !! values read
+  END SUBROUTINE hdf5_readslab_n2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                       ReadSlab@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read a slab of a rank-1 8-bit integer dataset
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting index
+!   icount : INTEGER(I4B) - number of entries to read
+!   vals : INTEGER(INT8) - values (allocatable), SIZE(vals) = icount
+!
+! See also: [[hdf5_append_u1]]
+
+INTERFACE
+  MODULE SUBROUTINE hdf5_readslab_u1(obj, dsetname, istart, icount, vals)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting index
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of entries
+    INTEGER(INT8), ALLOCATABLE, TARGET, INTENT(INOUT) :: vals(:)
+    !! values read
+  END SUBROUTINE hdf5_readslab_u1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetExtent@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Size of the last (Fortran) dimension of a dataset
+!
+! Returns zero if the dataset does not exist. This is the number of
+! entries of an extendable dataset written by Append.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file
+!   dsetname : CHARACTER(*) - path of dataset
+!
+! Returns:
+!   ans : INTEGER(I4B) - size of the last dimension
+!
+! See also: [[hdf5_append_d1]] (contains an example)
+
+INTERFACE
+  MODULE FUNCTION hdf5_GetExtent(obj, dsetname) RESULT(ans)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B) :: ans
+    !! size of the last dimension
+  END FUNCTION hdf5_GetExtent
 END INTERFACE
 
 END MODULE HDF5File_Class

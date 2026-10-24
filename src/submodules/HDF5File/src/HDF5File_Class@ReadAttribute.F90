@@ -18,6 +18,10 @@
 SUBMODULE(HDF5File_Class) ReadAttribute
 USE HDF5, ONLY: SIZE_T, H5AGET_TYPE_F, H5AREAD_F, H5T_NATIVE_INTEGER, &
                 H5T_NATIVE_DOUBLE, H5AREAD_F, H5AGET_STORAGE_SIZE_F
+USE HDF5, ONLY: H5AGET_SPACE_F
+USE HDF5, ONLY: H5SGET_SIMPLE_EXTENT_NPOINTS_F
+USE HDF5, ONLY: H5SCLOSE_F
+USE ReallocateUtility, ONLY: Reallocate
 
 USE ISO_C_BINDING, ONLY: C_CHAR
 IMPLICIT NONE
@@ -189,6 +193,102 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE hdf5_read_attribute_d0
+
+!----------------------------------------------------------------------------
+!                                                             ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE hdf5_read_attribute_i1
+#ifdef DEBUG_VER
+CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_read_attribute_i1()'
+#endif
+INTEGER(HID_T) :: attr_id, obj_id
+INTEGER(HSIZE_T), DIMENSION(1) :: dims
+INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL open_object(obj, obj_name, obj_id)
+CALL open_attribute(obj, obj_id, attr_name, attr_id)
+dims(1) = GetAttributeSize(attr_id)
+CALL Reallocate(attr_val, INT(dims(1), I4B))
+CALL H5AREAD_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+CALL AssertError1(error .EQ. 0, myName, &
+                  'Failed to read attribute.')
+#endif
+
+CALL close_attribute(obj, attr_id)
+CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE hdf5_read_attribute_i1
+
+!----------------------------------------------------------------------------
+!                                                             ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE hdf5_read_attribute_d1
+#ifdef DEBUG_VER
+CHARACTER(LEN=*), PARAMETER :: myName = 'hdf5_read_attribute_d1()'
+#endif
+INTEGER(HID_T) :: attr_id, obj_id
+INTEGER(HSIZE_T), DIMENSION(1) :: dims
+INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL open_object(obj, obj_name, obj_id)
+CALL open_attribute(obj, obj_id, attr_name, attr_id)
+dims(1) = GetAttributeSize(attr_id)
+CALL Reallocate(attr_val, INT(dims(1), I4B))
+CALL H5AREAD_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+CALL AssertError1(error .EQ. 0, myName, &
+                  'Failed to read attribute.')
+#endif
+
+CALL close_attribute(obj, attr_id)
+CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE hdf5_read_attribute_d1
+
+!----------------------------------------------------------------------------
+!                                                           GetAttributeSize
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Total number of entries in an attribute
+
+FUNCTION GetAttributeSize(attr_id) RESULT(ans)
+  INTEGER(HID_T), INTENT(IN) :: attr_id
+  INTEGER(HSIZE_T) :: ans
+
+  INTEGER(HID_T) :: space_id
+  INTEGER(HSSIZE_T) :: npoints
+  INTEGER(I4B) :: error
+
+  CALL H5AGET_SPACE_F(attr_id, space_id, error)
+  CALL H5SGET_SIMPLE_EXTENT_NPOINTS_F(space_id, npoints, error)
+  CALL H5SCLOSE_F(space_id, error)
+  ans = INT(npoints, HSIZE_T)
+END FUNCTION GetAttributeSize
 
 !----------------------------------------------------------------------------
 !                                                              Include error
