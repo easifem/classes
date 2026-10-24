@@ -1,0 +1,14 @@
+[test1]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[test1.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+# order = 2
+

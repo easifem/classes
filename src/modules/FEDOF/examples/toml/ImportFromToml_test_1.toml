@@ -1,0 +1,39 @@
+[test1]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = 1
+
+[test2]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = 2
+
+[test3]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = 3
+
+[test4]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = 4
+
+[test5]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = [1]
+
+[test6]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = [2]
+
+[test7]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = [3]
+
+[test8]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = [4]
