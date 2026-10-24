@@ -17,6 +17,9 @@
 
 SUBMODULE(UserFunction_Class) ConstructorMethods
 USE StringUtility, ONLY: UpperCase
+#ifdef USE_LUA
+USE LuaInterface, ONLY: lua_close
+#endif
 USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: Display
@@ -25,7 +28,7 @@ IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-                           "UserFunction_Class@ConstructorMethods.F90"
+  "UserFunction_Class@ConstructorMethods.F90"
 #endif
 
 CONTAINS
@@ -35,19 +38,19 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserFunctionGetReturnType
-CHARACTER(1) :: name0
-name0 = UpperCase(name(1:1))
+  CHARACTER(1) :: name0
+  name0 = UpperCase(NAME(1:1))
 
-SELECT CASE (name0)
-CASE ("S")
-  ans = varopt%Scalar
-CASE ("V")
-  ans = varopt%Vector
-CASE ("M")
-  ans = varopt%Matrix
-CASE DEFAULT
-  ans = -1
-END SELECT
+  SELECT CASE (name0)
+  CASE ("S")
+    ans = varopt%Scalar
+  CASE ("V")
+    ans = varopt%Vector
+  CASE ("M")
+    ans = varopt%Matrix
+  CASE DEFAULT
+    ans = -1
+  END SELECT
 END PROCEDURE UserFunctionGetReturnType
 
 !----------------------------------------------------------------------------
@@ -55,28 +58,28 @@ END PROCEDURE UserFunctionGetReturnType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE UserFunctionGetArgType
-CHARACTER(2) :: name0
-INTEGER(I4B) :: n
+  CHARACTER(2) :: name0
+  INTEGER(I4B) :: n
 
-name0 = UpperCase(name(1:2))
+  name0 = UpperCase(NAME(1:2))
 
-SELECT CASE (name0)
-CASE ("CO")
-  ans = varopt%Constant
-CASE ("TI")
-  ans = varopt%Time
-CASE ("OT", "SO")
-  ans = varopt%SolutionDependent
-CASE ("SP")
-  n = LEN_TRIM(name)
-  IF (n > 5) THEN
-    ans = varopt%SpaceTime
-  ELSE
-    ans = varopt%Space
-  END IF
-CASE DEFAULT
-  ans = -1
-END SELECT
+  SELECT CASE (name0)
+  CASE ("CO")
+    ans = varopt%Constant
+  CASE ("TI")
+    ans = varopt%Time
+  CASE ("OT", "SO")
+    ans = varopt%SolutionDependent
+  CASE ("SP")
+    n = LEN_TRIM(NAME)
+    IF (n > 5) THEN
+      ans = varopt%SpaceTime
+    ELSE
+      ans = varopt%Space
+    END IF
+  CASE DEFAULT
+    ans = -1
+  END SELECT
 END PROCEDURE UserFunctionGetArgType
 
 !----------------------------------------------------------------------------
@@ -128,53 +131,61 @@ END FUNCTION GetDefaultNumReturns
 
 MODULE PROCEDURE obj_Deallocate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
 
-INTEGER(I4B) :: ii, jj
-LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: ii, jj
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-obj%isInit = math%no
-obj%isExternalFunc = math%no
-obj%isLuaScript = math%no
-obj%luaScript = ""
-obj%luaFunctionName = ""
-obj%returnType = math%zero_i
-obj%returnShape = math%zero_i
-obj%argType = math%zero_i
-obj%numArgs = math%zero_i
-obj%numReturns = math%zero_i
-obj%scalarValue = math%zero
-obj%name = ""
-obj%vectorValue = math%zero
-obj%matrixValue = math%zero
-obj%scalarFunction => NULL()
-obj%vectorFunction => NULL()
-obj%matrixFunction => NULL()
-CALL obj%scalarEqParser%DEALLOCATE()
+#ifdef USE_LUA
+  IF (obj%isLuaStateOpen) CALL lua_close(obj%luaState)
+#endif
+  obj%luaState = C_NULL_PTR
+  obj%isLuaStateOpen = math%no
 
-DO ii = 1, funcopt%vectorFuncNumReturns
-  isok = ASSOCIATED(obj%vectorEqParser(ii)%ptr)
-  IF (isok) &
-    CALL obj%vectorEqParser(ii)%ptr%DEALLOCATE()
-END DO
+  obj%isInit = math%no
+  obj%isExternalFunc = math%no
+  obj%isLuaScript = math%no
+  obj%luaScript = ""
+  obj%luaFunctionName = ""
+  obj%returnType = math%zero_i
+  obj%returnShape = math%zero_i
+  obj%argType = math%zero_i
+  obj%numArgs = math%zero_i
+  obj%numReturns = math%zero_i
+  obj%scalarValue = math%zero
+  obj%name = ""
+  obj%vectorValue = math%zero
+  obj%matrixValue = math%zero
+  obj%scalarFunction => NULL()
+  obj%vectorFunction => NULL()
+  obj%matrixFunction => NULL()
+  CALL obj%scalarEqParser%DEALLOCATE()
 
-DO jj = 1, funcopt%matrixFuncNumReturns
-  DO ii = 1, funcopt%matrixFuncNumReturns
-    isok = ASSOCIATED(obj%matrixEqParser(ii, jj)%ptr)
-    IF (isok) &
-      CALL obj%matrixEqParser(ii, jj)%ptr%DEALLOCATE()
+  DO ii = 1, funcopt%vectorFuncNumReturns
+    isok = ASSOCIATED(obj%vectorEqParser(ii)%ptr)
+    IF (isok) THEN
+      CALL obj%vectorEqParser(ii)%ptr%DEALLOCATE()
+    END IF
   END DO
-END DO
+
+  DO jj = 1, funcopt%matrixFuncNumReturns
+    DO ii = 1, funcopt%matrixFuncNumReturns
+      isok = ASSOCIATED(obj%matrixEqParser(ii, jj)%ptr)
+      IF (isok) THEN
+        CALL obj%matrixEqParser(ii, jj)%ptr%DEALLOCATE()
+      END IF
+    END DO
+  END DO
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_Deallocate
 
@@ -183,7 +194,7 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
-CALL obj%DEALLOCATE()
+  CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
@@ -192,70 +203,70 @@ END PROCEDURE obj_Final
 
 MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
-INTEGER(I4B) :: tsize
+  CHARACTER(*), PARAMETER :: myName = "obj_Initiate()"
+  INTEGER(I4B) :: tsize
 #endif
 
-LOGICAL(LGT) :: isok
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
-obj%isInit = math%yes
+  CALL obj%DEALLOCATE()
+  obj%isInit = math%yes
 
-obj%name = name
-obj%returnType = returnType
-obj%argType = argType
+  obj%name = NAME
+  obj%returnType = returnType
+  obj%argType = argType
 
 ! Handle optional arguments numArgs
-isok = PRESENT(numArgs)
-IF (isok) THEN
-  obj%numArgs = numArgs
-ELSE
-  obj%numArgs = GetDefaultNumArgs(argType)
-END IF
+  isok = PRESENT(numArgs)
+  IF (isok) THEN
+    obj%numArgs = numArgs
+  ELSE
+    obj%numArgs = GetDefaultNumArgs(argType)
+  END IF
 
 ! Handle optional arguments numReturns
 ! obj%numReturns = numReturns
-isok = PRESENT(numReturns)
-IF (isok) THEN
-  obj%numReturns = numReturns
-ELSE
-  obj%numReturns = GetDefaultNumReturns(returnType)
-END IF
+  isok = PRESENT(numReturns)
+  IF (isok) THEN
+    obj%numReturns = numReturns
+  ELSE
+    obj%numReturns = GetDefaultNumReturns(returnType)
+  END IF
 
 ! obj%returnShape = returnShape
 #ifdef DEBUG_VER
-isok = obj%returnType == varopt%matrix
-IF (isok) THEN
+  isok = obj%returnType == varopt%matrix
+  IF (isok) THEN
+    isok = PRESENT(returnShape)
+    CALL AssertError1(isok, myName, &
+                      'When returnType is Matrix, &
+    &then returnShape should be present.')
+
+    tsize = returnShape(1) * returnShape(2)
+    CALL AssertError2(tsize, obj%numReturns, myName, &
+                      'a=returnShaoe(1)*returnShape(2), b=obj%numReturns')
+  END IF
+#endif
+
+#ifdef DEBUG_VER
+  isok = obj%returnType == varopt%scalar
+  IF (isok) THEN
+    CALL AssertError2(obj%numReturns, math%one_i, myName, &
+                      'a=obj%numReturns, b=1')
+  END IF
+#endif
+
   isok = PRESENT(returnShape)
-  CALL AssertError1(isok, myName, &
-             'When returnType is Matrix, &
-            &then returnShape should be present.')
-
-  tsize = returnShape(1) * returnShape(2)
-  CALL AssertError2(tsize, obj%numReturns, myName, &
-                    'a=returnShaoe(1)*returnShape(2), b=obj%numReturns')
-END IF
-#endif
+  IF (isok) obj%returnShape = returnShape
 
 #ifdef DEBUG_VER
-isok = obj%returnType == varopt%scalar
-IF (isok) THEN
-  CALL AssertError2(obj%numReturns, math%one_i, myName, &
-                    'a=obj%numReturns, b=1')
-END IF
-#endif
-
-isok = PRESENT(returnShape)
-IF (isok) obj%returnShape = returnShape
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -265,7 +276,7 @@ END PROCEDURE obj_Initiate
 
 MODULE PROCEDURE obj_Deallocate_Vector
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Vector()"
 #endif
 #include "../../include/deallocate_vector.F90"
 END PROCEDURE obj_Deallocate_Vector
@@ -276,7 +287,7 @@ END PROCEDURE obj_Deallocate_Vector
 
 MODULE PROCEDURE obj_Deallocate_Ptr_Vector
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate_Ptr_Vector()"
 #endif
 #include "../../include/deallocate_vector_ptr.F90"
 END PROCEDURE obj_Deallocate_Ptr_Vector

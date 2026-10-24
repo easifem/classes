@@ -40,6 +40,47 @@ CHARACTER(*), PARAMETER :: modName = "UserFunction_Class@LuaScalarMethods.F90"
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                           OpenSaveLuaState
+!----------------------------------------------------------------------------
+
+SUBROUTINE OpenSaveLuaState(obj)
+  CLASS(UserFunction_), INTENT(INOUT) :: obj
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "OpenSaveLuaState()"
+  LOGICAL(LGT) :: isok
+#endif
+  INTEGER(I4B) :: rc
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (.NOT. obj%isLuaStateOpen) THEN
+    obj%luaState = lual_newstate()
+    CALL lual_openlibs(obj%luaState)
+    rc = lual_dofile(obj%luaState, TRIM(obj%luaScript))
+    rc = lua_getglobal(obj%luaState, TRIM(obj%luaFunctionName))
+
+#ifdef DEBUG_VER
+    isok = lua_isfunction(obj%luaState, -1) == 1
+    CALL AssertError1(isok, myName, &
+                      'UserFunction_::obj%isLuaScript is TRUE In the lua ' &
+                      // 'script' // TRIM(obj%luaScript) // &
+                      'lua function named ' // TRIM(obj%luaFunctionName) // &
+                      ' is not a function.')
+#endif
+    obj%isLuaStateOpen = math%yes
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END SUBROUTINE OpenSaveLuaState
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
@@ -87,7 +128,6 @@ MODULE PROCEDURE GetScalarValue_Lua1
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "GetScalarValue_Lua1()"
 #endif
-  LOGICAL(LGT) :: isok
   INTEGER(I4B) :: iarg, rc
 
 #ifdef DEBUG_VER
@@ -95,25 +135,15 @@ MODULE PROCEDURE GetScalarValue_Lua1
                           '[START] ')
 #endif
 
-  obj%luaState = lual_newstate()
-  CALL lual_openlibs(obj%luaState)
-  rc = lual_dofile(obj%luaState, TRIM(obj%luaScript))
-  rc = lua_getglobal(obj%luaState, TRIM(obj%luaFunctionName))
-  isok = lua_isfunction(obj%luaState, -1) == 1
+  CALL OpenSaveLuaState(obj=obj)
 
-#ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, &
-                    'UserFunction_::obj%isLuaScript is TRUE In the lua ' // &
-                    'script' // TRIM(obj%luaScript) // &
-                    'lua function named ' // TRIM(obj%luaFunctionName) // &
-                    ' is not a function.')
-#endif
+  CALL lua_pushvalue(obj%luaState, -1)
 
   DO iarg = 1, obj%numArgs
     CALL lua_pushnumber(obj%luaState, REAL(args(iarg), KIND=lua_number))
   END DO
 
-  rc = lua_pcall(obj%luaState, obj%numArgs, obj%numReturns, 0)
+  rc = lua_pcall(obj%luaState, obj%numArgs, 1, 0)
 
 #ifdef DEBUG_VER
   CALL AssertError2(rc, lua_ok, myName, &
@@ -122,7 +152,6 @@ MODULE PROCEDURE GetScalarValue_Lua1
 
   val = REAL(lua_tonumber(obj%luaState, -1), KIND=DFP)
   CALL lua_pop(obj%luaState, 1)
-  CALL lua_close(obj%luaState)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -148,25 +177,15 @@ MODULE PROCEDURE GetScalarValue_Lua2
                           '[START] ')
 #endif
 
-  obj%luaState = lual_newstate()
-  CALL lual_openlibs(obj%luaState)
-  rc = lual_dofile(obj%luaState, TRIM(obj%luaScript))
-  rc = lua_getglobal(obj%luaState, TRIM(obj%luaFunctionName))
+  CALL OpenSaveLuaState(obj=obj)
 
 #ifdef DEBUG_VER
-  isok = lua_isfunction(obj%luaState, -1) == 1
-  CALL AssertError1(isok, myName, &
-                    'UserFunction_::obj%isLuaScript is TRUE In the lua ' // &
-                    'script' // TRIM(obj%luaScript) // &
-                    'lua function named ' // TRIM(obj%luaFunctionName) // &
-                    ' is not a function.')
+  IF (tsize .GE. 1) THEN
+    CALL CheckError_Scalar_Lua(obj=obj, args=args(:, 1))
+  END IF
 #endif
 
   DO ii = 1, tsize
-
-#ifdef DEBUG_VER
-    CALL CheckError_Scalar_Lua(obj=obj, args=args(:, ii))
-#endif
 
     CALL lua_pushvalue(obj%luaState, -1)
 
@@ -174,7 +193,7 @@ MODULE PROCEDURE GetScalarValue_Lua2
       CALL lua_pushnumber(obj%luaState, REAL(args(iarg, ii), KIND=lua_number))
     END DO
 
-    rc = lua_pcall(obj%luaState, obj%numArgs, obj%numReturns, 0)
+    rc = lua_pcall(obj%luaState, obj%numArgs, 1, 0)
 
 #ifdef DEBUG_VER
     CALL AssertError2(rc, lua_ok, myName, &
@@ -186,7 +205,7 @@ MODULE PROCEDURE GetScalarValue_Lua2
 
   END DO
 
-  CALL lua_close(obj%luaState)
+  ! Keep the original function on the stack for the next batch.
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

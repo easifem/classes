@@ -50,6 +50,7 @@ USE tomlf, ONLY: toml_table
 USE EquationParser_Class, ONLY: EquationParser_
 USE EquationParser_Class, ONLY: EquationParserPointer_
 USE ISO_C_BINDING, ONLY: C_PTR
+USE ISO_C_BINDING, ONLY: C_NULL_PTR
 IMPLICIT NONE
 
 PRIVATE
@@ -114,6 +115,10 @@ TYPE :: UserFunction_
   !! True after selecting an external Fortran callback
   LOGICAL(LGT) :: isLuaScript = math%no
   !! True if lua script is used
+  LOGICAL(LGT) :: isLuaStateOpen = math%no
+  !! True if luaState open, when we get value from lua function,
+  !! that time we set it to true, lazy initialization,
+  !! when we close the luaState, we set it to false
   LOGICAL(LGT) :: isEquationParser = math%no
   !! Equation-parser status flag; setters select the backend via engineID
   CHARACTER(funcopt%maxlen) :: luaScript = ""
@@ -148,8 +153,8 @@ TYPE :: UserFunction_
   TYPE(EquationParserPointer_) :: &
     matrixEqParser(funcopt%matrixFuncNumReturns, funcopt%matrixFuncNumReturns)
   !! equation parser for matrix function
-  TYPE(C_PTR) :: luaState
-  !! lua state, it is used when engineID is lua
+  TYPE(C_PTR) :: luaState = C_NULL_PTR
+  !! Persistent batch Lua state; its stack retains the scalar function.
   PROCEDURE(InterfaceScalarSubroutine), POINTER, NOPASS :: &
     scalarFunction => NULL()
   !! Scalar function pointer

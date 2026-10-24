@@ -24,7 +24,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = "./toml/scalarfuncs.toml"
-  CHARACTER(*), PARAMETER :: testname = "Test name: GetScalarValue_test_1.F90"
+  CHARACTER(*), PARAMETER :: testname = "Test name: GetScalarValue_test_2.F90"
   CHARACTER(*), PARAMETER :: tomlName = "test5"
 
   TYPE(UserFunction_) :: obj
@@ -46,4 +46,5 @@ PROGRAM main
   CALL obj%GetScalarValue_(val=found, tsize=tsize, args=args)
 
   CALL OK(ALL(want .approxeq. found), testname)
+
 END PROGRAM main
