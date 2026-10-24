@@ -6,9 +6,9 @@
 ! name = "func"
 ! returnType = "Scalar"
 ! argType = "Space"
-! numArgs = 3
-! luaScript = "./_ScalarFunction_test_2.lua"
-! luaFunction = "Func1"
+! numArgs = 1
+! luaScript = "./scalarfuncs.lua"
+! luaFunctionName = "Func1"
 
 PROGRAM main
   USE GlobalData, ONLY: DFP, I4B, LGT

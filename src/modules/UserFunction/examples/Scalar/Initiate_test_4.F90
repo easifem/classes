@@ -1,6 +1,6 @@
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-01-16
-! summary:  we test scalar user function here
+! summary: Scalar function, Lua script
 
 PROGRAM main
   USE GlobalData, ONLY: DFP, I4B, LGT
@@ -28,7 +28,8 @@ PROGRAM main
                     numArgs=numArgs, &
                     numReturns=numReturns)
 
-  CALL obj%SetLuaScript(luaScript=luaScript, luaFunctionName=luaFunctionName)
+  CALL obj%SetLuaScript(luaScript=luaScript, &
+                        luaFunctionName=luaFunctionName)
 
   CALL obj%Get_(val=got, args=args)
   want = val

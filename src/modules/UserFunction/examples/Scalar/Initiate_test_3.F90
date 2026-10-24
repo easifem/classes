@@ -11,7 +11,6 @@ PROGRAM main
   USE ApproxUtility, ONLY: OPERATOR(.APPROXEQ.)
   USE Test_Method, ONLY: OK, ISNEAR
   USE BaseType, ONLY: InterfaceScalarSubroutine
-
   IMPLICIT NONE
 
   TYPE(UserFunction_) :: obj
@@ -22,32 +21,22 @@ PROGRAM main
   PROCEDURE(InterfaceScalarSubroutine), POINTER :: func
 
   CALL e%setQuietMode(math%yes)
-
   CALL obj%Initiate(NAME="func", &
                     returnType=varopt%scalar, &
                     argType=varopt%space, &
                     numArgs=1, &
                     numReturns=1)
-
   func => scalarFunc1
   CALL obj%SetScalarFunctionPointer(func=func)
-
   CALL obj%Get_(val=got, args=args)
   want = val
-
   CALL OK(got.APPROXEQ.want, testname)
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
   SUBROUTINE scalarFunc1(args, nargs, ans)
     REAL(DFP), INTENT(IN) :: args(:)
     INTEGER(I4B), INTENT(IN) :: nargs
     REAL(DFP), INTENT(INOUT) :: ans
     ans = args(1) * 2.0_DFP
   END SUBROUTINE scalarFunc1
-
 END PROGRAM main

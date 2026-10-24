@@ -37,26 +37,20 @@ PROGRAM main
   CALL obj%SetScalarEquationParser(var=var, funcStr=funcStr)
   CALL Reallocate(xij, 2, 3)
 
-  CALL RANDOM_NUMBER(xij)
+  ! CALL RANDOM_NUMBER(xij)
   CALL Display(xij, "xij: ")
-
   CALL obj%Get(fevar=fevar, xij=xij)
-
   CALL FEVariableDisplay(fevar, "fevar: ")
-END PROGRAM main
 
-!             xij:
-! ----------------------------
-! 0.762437  0.299043  0.929529
-! 0.858250  0.254879  0.560174
+END PROGRAM main
 ! fevar:
-! RANK :: 0 (Scalar)
-! VarType: Space
+! rank: 0 (Scalar)
+! varType: Space
 !  VALUE:
 ! --------
-! 0.762437
-! 0.299043
-! 0.929529
+! 0.024670
+! 0.698362
+! 0.753987
 ! s:
 ! ---
 !  3
@@ -66,7 +60,7 @@ END PROGRAM main
 !  0
 !  0
 ! tshape: 1
-! defineOn: 1
+! defineOn: nodal
 ! len: 3
 ! capacity: 3
 ! isInit: TRUE

@@ -29,12 +29,8 @@ END PROGRAM main
 ! Initiate method for ScalarFunction
 ! isInit: TRUE
 ! name: func
-! isExternalFunc: FALSE
-! isLuaScript: FALSE
-! returnType:Scalar
-! argType:Space
 ! number of arguments: 1
 ! number of returns: 1
-! scalarFunction ASSOCIATED: FALSE
-! vectorFunction ASSOCIATED: FALSE
-! matrixFunction ASSOCIATED: FALSE
+! returnType:Scalar
+! argType:Space
+! engineID: NOT FOUND

@@ -17,7 +17,7 @@ name = "func"
 returnType = "Scalar"
 argType = "Space"
 numArgs = 1
-luaScript = "./scalarfuncs.lua"
+luaScript = "./toml/scalarfuncs.lua"
 luaFunctionName = "Func1"
 
 [test4]
@@ -28,3 +28,11 @@ numArgs = 1
 equationParser = true
 vars = ["x"]
 expression = "2.0*x"
+
+[test5]
+name = "func"
+returnType = "Scalar"
+argType = "Space"
+numArgs = 2
+luaScript = "./toml/scalarfuncs.lua"
+luaFunctionName = "Func2"

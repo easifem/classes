@@ -8,6 +8,8 @@ PROGRAM main
   USE UserFunction_Class, ONLY: UserFunction_
   USE BaseType, ONLY: varopt => TypeFEVariableOpt
   USE BaseType, ONLY: FEVariable_
+  USE BaseType, ONLY: TypeFEVariableScalar
+  USE BaseType, ONLY: TypeFEVariableSpace
   USE BaseType, ONLY: math => TypeMathOpt
   USE ExceptionHandler_Class, ONLY: e
   USE ApproxUtility, ONLY: OPERATOR(.APPROXEQ.)
@@ -15,6 +17,7 @@ PROGRAM main
   USE Display_Method, ONLY: Display
   USE ReallocateUtility, ONLY: Reallocate
   USE FEVariable_Method, ONLY: FEVariableDisplay => Display
+  USE FEVariable_Method, ONLY: NodalVariable
 
   IMPLICIT NONE
 
@@ -26,7 +29,7 @@ PROGRAM main
   REAL(DFP), ALLOCATABLE :: xij(:, :)
   TYPE(FEVariable_) :: fevar
 
-  CALL e%setQuietMode(math%yes)
+  CALL e%SetQuietMode(math%yes)
 
   CALL obj%Initiate(NAME="func", &
                     returnType=varopt%scalar, &
@@ -38,8 +41,10 @@ PROGRAM main
   CALL Reallocate(xij, 2, 3)
 
   CALL RANDOM_NUMBER(xij)
-  CALL Display(xij, "xij: ")
-
+  ! CALL Display(xij, "xij: ")
+  ! Here we are calling Get_, make sure fevar is initiated.
+  fevar = NodalVariable(tsize=10, RANK=TypeFEVariableScalar, &
+                        varType=TypeFEVariableSpace)
   CALL obj%Get_(fevar=fevar, xij=xij)
   CALL FEVariableDisplay(fevar, "fevar: ")
 END PROGRAM main
