@@ -330,12 +330,11 @@ SUBROUTINE MeshImportVector(obj, hdf5, group, connectivity, elemNumber, &
     isok = SIZE(elemNumber) .NE. 0
   END IF
 
-  IF (.NOT. isok) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[INTERNAL ERROR] :: either elemNumber not ALLOCATED ' // &
-                      'or size of elemNumber is zero')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(isok, myName, &
+                    "either elemNumber not allocated or size of " // &
+                    "elemNumber is zero")
+#endif
 
   CALL HDF5ReadMatrix(hdf5=hdf5, VALUE=connectivity, group=dsetname, &
                       fieldname="connectivity", check=.TRUE.)
@@ -575,8 +574,8 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
   mask(internalNptrs) = .TRUE.
 
   dummy = 0
-  DO ii = 1, obj%maxNptrs
-    IF (obj%local_nptrs(ii) .EQ. 0) CYCLE
+  loop1: DO ii = 1, obj%maxNptrs
+    IF (obj%local_nptrs(ii) .EQ. 0) CYCLE loop1
 
     dummy = dummy + 1
 
@@ -594,7 +593,7 @@ SUBROUTINE MeshImportNodeData(obj, connectivity, internalNptrs)
                       nodeType=aint)
 
     obj%local_nptrs(ii) = dummy
-  END DO
+  END DO loop1
 
   IF (ALLOCATED(mask)) DEALLOCATE(mask)
 
@@ -639,8 +638,8 @@ SUBROUTINE MeshImportNodeDataFromDim(obj, connectivity)
   ALLOCATE(obj%nodeData(obj%tNodes))
 
   dummy = 0
-  DO ii = 1, obj%maxNptrs
-    IF (obj%local_nptrs(ii) .EQ. 0) CYCLE
+  loop1: DO ii = 1, obj%maxNptrs
+    IF (obj%local_nptrs(ii) .EQ. 0) CYCLE loop1
 
     dummy = dummy + 1
 
@@ -662,7 +661,7 @@ SUBROUTINE MeshImportNodeDataFromDim(obj, connectivity)
                       nodeType=INTERNAL_NODE)
 
     obj%local_nptrs(ii) = dummy
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -832,6 +831,10 @@ SUBROUTINE MeshImportFromDim(obj, hdf5, group, dim, entities, tEntities)
     prefix = group // "/surfaceEntities_"
   CASE (3_I4B)
     prefix = group // "/volumeEntities_"
+  CASE DEFAULT
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, "No case found for dim")
+#endif
   END SELECT
 
   DO ii = 1, tEntities

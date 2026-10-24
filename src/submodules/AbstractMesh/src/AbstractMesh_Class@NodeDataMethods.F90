@@ -288,19 +288,19 @@ END PROCEDURE obj_InitiateExtraNodetoNodes
 
 MODULE PROCEDURE obj_InitiateKdtree
 #ifdef DEBUG_VER
-  LOGICAL(LGT) :: isok
-#endif
-
-  INTEGER(I4B) :: nsd, nrow, ncol
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateKdtree()"
+#endif
+  INTEGER(I4B) :: nsd, nrow, ncol
   TYPE(CPUTime_) :: TypeCPUTime
   REAL(DFP), ALLOCATABLE :: nodeCoord(:, :)
-
-  IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
 #endif
 
   CALL obj%DeallocateKdtree()
@@ -311,7 +311,7 @@ MODULE PROCEDURE obj_InitiateKdtree
   ALLOCATE(nodeCoord(3, ncol))
   CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=nrow, ncol=ncol)
 
-! FUNCTION Kdtree2_create(input_data, dim, sort, rearrange) RESULT(mr)
+  ! FUNCTION Kdtree2_create(input_data, dim, sort, rearrange) RESULT(mr)
   obj%kdtree => Kdtree2_Create(input_data=nodeCoord(1:nsd, :), &
                                DIM=nsd, sort=.FALSE., rearrange=.TRUE.)
 
@@ -320,16 +320,18 @@ MODULE PROCEDURE obj_InitiateKdtree
   DEALLOCATE(nodeCoord)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName // " : " // myName // &
                  " : time : " // &
                  ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 
 END PROCEDURE obj_InitiateKdtree
 

@@ -276,7 +276,6 @@ MODULE PROCEDURE obj_DisplayNodeData
 #endif
 
   INTEGER(I4B) :: ii, tNodes
-  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -366,7 +365,11 @@ MODULE PROCEDURE obj_DisplayInternalFacetData
   CALL Display(msg, unitno=unitno)
 
   abool = ALLOCATED(obj%facetData)
-  IF (abool) THEN; n = SIZE(obj%facetData); ELSE; n = 0; END IF
+  IF (abool) THEN
+    n = SIZE(obj%facetData)
+  ELSE
+    n = 0
+  END IF
 
   CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 
@@ -405,7 +408,11 @@ MODULE PROCEDURE obj_DisplayBoundaryFacetData
   CALL Display(msg, unitno=unitno)
 
   abool = ALLOCATED(obj%facetData)
-  IF (abool) THEN; n = SIZE(obj%facetData); ELSE; n = 0; END IF
+  IF (abool) THEN
+    n = SIZE(obj%facetData)
+  ELSE
+    n = 0
+  END IF
 
   CALL Display(abool, "facetData ALLOCATED: ", unitno=unitno)
 

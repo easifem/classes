@@ -108,7 +108,7 @@ END PROCEDURE obj_InitiateElementToElements
 SUBROUTINE MarkInternalNodes(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
-  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll
+  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll, iface
   LOGICAL(LGT) :: isok
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
 
@@ -122,16 +122,18 @@ SUBROUTINE MarkInternalNodes(obj)
 
   tElements = obj%GetTotalElements()
 
-  DO ii = 1, tElements
+  loop1: DO ii = 1, tElements
 
     isok = obj%isBoundaryElement(ii, isLocal=.TRUE.)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     tsize = SIZE(obj%elementData(ii)%ptr%boundaryData)
     DO jj = 1, tsize
-      nptrs = obj%GetFacetConnectivity(globalElement=ii, &
-                                       iface=obj%elementData(ii)%ptr%boundaryData(jj), &
-                                       isLocal=.TRUE.)
+
+      iface = obj%elementData(ii)%ptr%boundaryData(jj)
+      nptrs = &
+        obj%GetFacetConnectivity(globalElement=ii, &
+                                 iface=iface, isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
         ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
         ! obj%nodeData(ll)%ptr%nodeType = TypeNode%domainBoundary
@@ -140,7 +142,7 @@ SUBROUTINE MarkInternalNodes(obj)
       END DO
     END DO
 
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

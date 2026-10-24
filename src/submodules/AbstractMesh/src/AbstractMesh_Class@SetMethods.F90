@@ -162,11 +162,11 @@ MODULE PROCEDURE obj_SetSparsity1
 ! make n2n a variable, each thread has its own copy of n2n
 ! each thread will call setSparsity with its own copy of n2n
 
-  DO i = 1, tNodes
+  loop1: DO i = 1, tNodes
     j = obj%GetglobalNodeNumber(localNode=i)
     k = localNodeNumber(j)
 
-    IF (k .EQ. 0) CYCLE
+    IF (k .EQ. 0) CYCLE loop1
 
     CALL obj%GetNodeToNodes_(globalNode=i, includeSelf=.TRUE., &
                              ans=n2n, tsize=tsize, islocal=.TRUE.)
@@ -177,7 +177,7 @@ MODULE PROCEDURE obj_SetSparsity1
 
     CALL SetSparsity(obj=mat, row=k, col=n2n(1:tsize))
 
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -289,7 +289,7 @@ MODULE PROCEDURE obj_SetSparsity3
 ! check
   IF (.NOT. obj%isNodeToNodesInitiated) CALL obj%InitiateNodeToNodes()
 
-  DO ii = 1, obj%tNodes
+  loop1: DO ii = 1, obj%tNodes
 
     CALL obj%GetNodeToNodes_(globalNode=ii, includeSelf=.TRUE., &
                              ans=n2n, tsize=tsize, islocal=.TRUE.)
@@ -307,12 +307,12 @@ MODULE PROCEDURE obj_SetSparsity3
 
     END DO
 
-    IF (ll .EQ. 0) CYCLE
+    IF (ll .EQ. 0) CYCLE loop1
 
     CALL SetSparsity(obj=mat, row=n2n(1), col=temp(1:ll), ivar=ivar, &
                      jvar=jvar)
 
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -364,7 +364,7 @@ MODULE PROCEDURE obj_SetSparsity4
   isok = obj%isNodeToNodesInitiated
   IF (.NOT. isok) CALL obj%InitiateNodeToNodes()
 
-  DO ii = 1, obj%tNodes
+  loop1: DO ii = 1, obj%tNodes
 
     CALL obj%GetNodeToNodes_(globalNode=ii, includeSelf=.TRUE., &
                              ans=n2n, tsize=tsize, islocal=.TRUE.)
@@ -387,10 +387,10 @@ MODULE PROCEDURE obj_SetSparsity4
       temp(jj) = colGlobalToLocalNodeNum(temp(jj))
     END DO
 
-    IF (ll .EQ. 0) CYCLE
+    IF (ll .EQ. 0) CYCLE loop1
     CALL SetSparsity(obj=Mat, row=row, col=temp(1:ll), ivar=ivar, jvar=jvar)
 
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -441,11 +441,11 @@ MODULE PROCEDURE obj_SetTotalMedium2
                           '[START] ')
 #endif
 
-  DO ii = 1, obj%tElements
+  loop1: DO ii = 1, obj%tElements
     isok = obj%elementData(ii)%ptr%isActive
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
     CALL ElemData_SetTotalMedium(obj%elementData(ii)%ptr, n=n)
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -472,9 +472,9 @@ MODULE PROCEDURE obj_SetMaterial1
                           '[START] ')
 #endif
 
-  DO ii = 1, obj%tElements
+  loop1: DO ii = 1, obj%tElements
     isok = obj%elementData(ii)%ptr%isActive
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     ! if obj%elementData(ii)%ptr%meshID is equal to entityNum then
     ! set %material(medium) = material
@@ -484,7 +484,7 @@ MODULE PROCEDURE obj_SetMaterial1
                         medium=medium)
     END IF
 
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -511,12 +511,12 @@ MODULE PROCEDURE obj_SetMaterial2
                           '[START] ')
 #endif
 
-  DO ii = 1, obj%tElements
+  loop1: DO ii = 1, obj%tElements
     isok = obj%elementData(ii)%ptr%isActive
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
     CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
                       medium=medium)
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -700,8 +700,9 @@ MODULE PROCEDURE obj_SetParam
   IF (PRESENT(isExtraNodeToNodesInitiated)) obj%isExtraNodeToNodesInitiated &
     = isExtraNodeToNodesInitiated
 
-  IF (PRESENT(isElementToElementsInitiated)) &
+  IF (PRESENT(isElementToElementsInitiated)) THEN
     obj%isElementToElementsInitiated = isElementToElementsInitiated
+  END IF
 
   IF (PRESENT(isBoundaryDataInitiated)) obj%isBoundaryDataInitiated = &
     isBoundaryDataInitiated
@@ -711,8 +712,9 @@ MODULE PROCEDURE obj_SetParam
 
   IF (PRESENT(uid)) obj%uid = uid
 
-  IF (PRESENT(tElements_topology_wise)) &
+  IF (PRESENT(tElements_topology_wise)) THEN
     obj%tElements_topology_wise = tElements_topology_wise
+  END IF
 
   IF (PRESENT(tElemTopologies)) obj%tElemTopologies = tElemTopologies
 
