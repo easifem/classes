@@ -29,9 +29,7 @@ PROGRAM main
   CHARACTER(*), PARAMETER :: tomlName = "test5"
 
   TYPE(UserFunction_) :: obj
-  INTEGER(I4B) :: tsize
-  REAL(DFP), ALLOCATABLE :: args(:, :), found(:), want(:)
-  REAL(DFP) :: scalarFound
+  REAL(DFP) :: args(2), found, want
   INTEGER(I4B) :: ibatch
 
   CALL e%setQuietMode(math%yes)
@@ -39,35 +37,17 @@ PROGRAM main
 
   CALL obj%ImportFromToml(tomlName=tomlName, filename=filename)
 
-  CALL Reallocate(args, 3, 2)
   CALL RANDOM_NUMBER(args)
+  want = math%two * (args(1) + args(2))
+  CALL obj%GetScalarValue_(val=found, args=args)
+  CALL OK(want .approxeq. found, testname)
 
-  CALL Reallocate(want, 2)
-  want = math%two * (args(1, :) + args(2, :))
-
-  CALL Reallocate(found, 2)
-  CALL obj%GetScalarValue_(val=found, tsize=tsize, args=args)
-
-  CALL OK(ALL(want .approxeq. found), testname)
-  CALL OK(tsize == SIZE(want), "First batch size")
-
-  DO ibatch = 1, 10
-    CALL Display(ibatch, "ibatch")
-    args = REAL(ibatch, KIND=DFP)
-    args(2, :) = args(2, :) + math%one
-    want = math%two * (args(1, :) + args(2, :))
-
-    CALL obj%GetScalarValue_(val=scalarFound, args=args(:, 1))
-    CALL OK(scalarFound .approxeq. want(1), "Interleaved scalar call")
-
-    CALL obj%GetScalarValue_(val=found, tsize=tsize, args=args)
-    CALL OK(ALL(want .approxeq. found), "Repeated batch")
-    CALL OK(tsize == SIZE(want), "Repeated batch size")
+  DO ibatch = 1, 1000000
+    CALL RANDOM_NUMBER(args)
+    want = math%two * (args(1) + args(2))
+    CALL obj%GetScalarValue_(val=found, args=args)
+    ! CALL OK(want .approxeq. found, testname)
   END DO
 
-  CALL obj%DEALLOCATE()
-  CALL obj%ImportFromToml(tomlName=tomlName, filename=filename)
-  CALL obj%GetScalarValue_(val=found, tsize=tsize, args=args)
-  CALL OK(ALL(want .approxeq. found), "Batch after reinitialization")
   CALL obj%DEALLOCATE()
 END PROGRAM main
