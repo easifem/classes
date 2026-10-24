@@ -51,7 +51,14 @@ MODULE PROCEDURE obj_InitiateNodeToElements
                           '[START] ')
 #endif
 
-  IF (obj%isNodeToElementsInitiated) RETURN
+  IF (obj%isNodeToElementsInitiated) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
   obj%isNodeToElementsInitiated = .TRUE.
 
   IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -116,7 +123,14 @@ MODULE PROCEDURE obj_InitiateNodetoNodes
                           '[START] ')
 #endif
 
-  IF (obj%isNodeToNodesInitiated) RETURN
+  IF (obj%isNodeToNodesInitiated) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 

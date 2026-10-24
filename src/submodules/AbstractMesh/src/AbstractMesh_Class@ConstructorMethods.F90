@@ -65,6 +65,15 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   obj%readFromFile = .FALSE.
   obj%isInitiated = .FALSE.
   obj%isNodeToElementsInitiated = .FALSE.
@@ -115,6 +124,11 @@ MODULE PROCEDURE obj_Deallocate
   CALL obj%elementDataBinaryTree%DEALLOCATE()
   CALL obj%nodeDataList%DEALLOCATE()
   CALL obj%nodeDataBinaryTree%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -122,6 +136,15 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isEmpty
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isEmpty()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = .FALSE.
   IF (obj%tElements .LE. 0_I4B) THEN
     ans = .TRUE.
@@ -130,6 +153,11 @@ MODULE PROCEDURE obj_isEmpty
   IF (obj%tNodes .LE. 0_I4B) THEN
     ans = .TRUE.
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isEmpty
 
 !----------------------------------------------------------------------------
@@ -205,9 +233,18 @@ END PROCEDURE obj_InitiateDynamicDataStructure
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractMeshPointerDeallocate
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "AbstractMeshPointerDeallocate()"
+#endif
+
   CLASS(AbstractMesh_), POINTER :: meshptr
   INTEGER(I4B) :: ii, tsize
   LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   meshptr => NULL()
   IF (ALLOCATED(obj)) THEN
@@ -228,6 +265,11 @@ MODULE PROCEDURE AbstractMeshPointerDeallocate
 
     DEALLOCATE(obj)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE AbstractMeshPointerDeallocate
 
 !----------------------------------------------------------------------------
@@ -235,12 +277,26 @@ END PROCEDURE AbstractMeshPointerDeallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DeallocateKdtree
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DeallocateKdtree()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (ASSOCIATED(obj%kdtree)) THEN
     CALL Kdtree2_Destroy(obj%kdtree)
     obj%kdtree => NULL()
   END IF
 
   IF (ALLOCATED(obj%kdresult)) DEALLOCATE(obj%kdresult)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DeallocateKdtree
 
 !----------------------------------------------------------------------------

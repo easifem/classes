@@ -36,7 +36,14 @@ MODULE PROCEDURE obj_InitiateBoundaryData
                           '[START] ')
 #endif
 
-  IF (obj%isBoundaryDataInitiated) RETURN
+  IF (obj%isBoundaryDataInitiated) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   CALL obj%InitiateElementToElements()
 

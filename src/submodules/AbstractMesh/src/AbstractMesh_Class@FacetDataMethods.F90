@@ -1,4 +1,4 @@
-! ThIs program is a part of EASIFEM library
+! This program is a part of EASIFEM library
 ! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
 !
 ! ThIs program is free software: you can redistribute it and/or modify

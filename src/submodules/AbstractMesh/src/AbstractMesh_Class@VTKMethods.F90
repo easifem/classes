@@ -161,6 +161,11 @@ MODULE PROCEDURE obj_ExportToVTK
   IF (ALLOCATED(offsets)) DEALLOCATE(offsets)
   IF (ALLOCATED(cellcon)) DEALLOCATE(cellcon)
   IF (ALLOCATED(xij)) DEALLOCATE(xij)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------

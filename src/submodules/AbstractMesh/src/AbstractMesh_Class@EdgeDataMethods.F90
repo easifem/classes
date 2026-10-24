@@ -59,7 +59,14 @@ MODULE PROCEDURE obj_InitiateEdgeConnectivity
 #endif
 
   isok = obj%isEdgeConnectivityInitiated
-  IF (isok) RETURN
+  IF (isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%elementData)

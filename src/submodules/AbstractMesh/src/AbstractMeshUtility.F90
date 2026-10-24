@@ -23,7 +23,12 @@ USE CPUTime_Class, ONLY: CPUTime_
 USE BaseType, ONLY: TypeRefelemOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
-USE ElemData_Class
+USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: ElemDataPointer_
+USE ElemData_Class, ONLY: TypeElem
+USE ElemData_Class, ONLY: DOMAIN_BOUNDARY_ELEMENT
+USE ElemData_Class, ONLY: INTERNAL_ELEMENT
+USE ElemData_Class, ONLY: ElemData_GetGlobalFaces
 USE FacetData_Class
 USE ReferenceElement_Method
 

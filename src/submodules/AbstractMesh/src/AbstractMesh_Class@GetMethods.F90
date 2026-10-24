@@ -108,7 +108,21 @@ END PROCEDURE obj_GetTotalTopology
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemTopology1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemTopology1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%elemTopologies
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemTopology1
 
 !----------------------------------------------------------------------------
@@ -116,9 +130,24 @@ END PROCEDURE obj_GetElemTopology1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemTopology2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemTopology2()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
   ans = Elemdata_topoName(obj%elementData(iel)%ptr)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemTopology2
 
 !----------------------------------------------------------------------------
@@ -151,9 +180,24 @@ END PROCEDURE obj_GetElemTopologyIndx
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemType
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemType()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
   ans = Elemdata_name(obj%elementData(iel)%ptr)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemType
 
 !----------------------------------------------------------------------------
@@ -161,9 +205,24 @@ END PROCEDURE obj_GetElemType
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemData()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   elemdata = obj%elementData(iel)%ptr
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemData
 
 !----------------------------------------------------------------------------
@@ -171,9 +230,24 @@ END PROCEDURE obj_GetElemData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemDataPointer
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemDataPointer()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   ans => obj%elementData(iel)%ptr
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemDataPointer
 
 !----------------------------------------------------------------------------
@@ -181,9 +255,24 @@ END PROCEDURE obj_GetElemDataPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNNE
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNNE()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   ans = SIZE(obj%elementData(iel)%ptr%globalNodes)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNNE
 
 !----------------------------------------------------------------------------
@@ -191,7 +280,21 @@ END PROCEDURE obj_GetNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxNNE
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNNE()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%maxNNE
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMaxNNE
 
 !----------------------------------------------------------------------------
@@ -199,7 +302,21 @@ END PROCEDURE obj_GetMaxNNE
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Size
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Size()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%tElements
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
@@ -268,8 +385,17 @@ END PROCEDURE obj_GetTotalElements3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemNum1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum1()"
+#endif
+
   INTEGER(I4B) :: tsize
   LOGICAL(LGT) :: islocal0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   tsize = obj%GetTotalElements()
   ALLOCATE(ans(tsize))
@@ -277,6 +403,11 @@ MODULE PROCEDURE obj_GetElemNum1
   IF (PRESENT(islocal)) islocal0 = islocal
 
   CALL obj%GetElemNum_(ans=ans, tsize=tsize, islocal=islocal0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemNum1
 
 !----------------------------------------------------------------------------
@@ -284,8 +415,17 @@ END PROCEDURE obj_GetElemNum1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemNum2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum2()"
+#endif
+
   INTEGER(I4B) :: tsize
   LOGICAL(LGT) :: islocal0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   tsize = obj%GetTotalElements(meshid=meshid)
   ALLOCATE(ans(tsize))
@@ -293,6 +433,11 @@ MODULE PROCEDURE obj_GetElemNum2
   IF (PRESENT(islocal)) islocal0 = islocal
 
   CALL obj%GetElemNum_(meshid=meshid, ans=ans, tsize=tsize, islocal=islocal0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemNum2
 
 !----------------------------------------------------------------------------
@@ -300,22 +445,33 @@ END PROCEDURE obj_GetElemNum2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemNum1_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum1_()"
+#endif
+
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   tsize = obj%GetTotalElements()
   IF (islocal) THEN
-
     DO ii = 1, tsize
       ans(ii) = Elemdata_localElemNum(obj%elementData(ii)%ptr)
     END DO
 
-    RETURN
+  ELSE
+    DO ii = 1, tsize
+      ans(ii) = Elemdata_globalElemNum(obj%elementData(ii)%ptr)
+    END DO
   END IF
 
-  DO ii = 1, tsize
-    ans(ii) = Elemdata_globalElemNum(obj%elementData(ii)%ptr)
-  END DO
-
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemNum1_
 
 !----------------------------------------------------------------------------
@@ -323,43 +479,51 @@ END PROCEDURE obj_GetElemNum1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemNum2_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum2_()"
+#endif
+
   INTEGER(I4B) :: ii, found, fake_tsize
   LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   fake_tsize = obj%GetTotalElements()
   tsize = 0
 
   IF (islocal) THEN
 
-    DO ii = 1, fake_tsize
-
+    loop1: DO ii = 1, fake_tsize
       isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-      IF (.NOT. isok) CYCLE
-
+      IF (.NOT. isok) CYCLE loop1
       found = Elemdata_Meshid(obj=obj%elementData(ii)%ptr)
       IF (found .EQ. meshid) THEN
         tsize = tsize + 1
         ans(tsize) = Elemdata_localElemNum(obj%elementData(ii)%ptr)
       END IF
+    END DO loop1
 
-    END DO
+  ELSE
 
-    RETURN
+    loop2: DO ii = 1, fake_tsize
+      isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
+      IF (.NOT. isok) CYCLE loop2
+      found = Elemdata_Meshid(obj=obj%elementData(ii)%ptr)
+      IF (found .EQ. meshid) THEN
+        tsize = tsize + 1
+        ans(tsize) = Elemdata_globalElemNum(obj%elementData(ii)%ptr)
+      END IF
+    END DO loop2
+
   END IF
 
-  DO ii = 1, fake_tsize
-
-    isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
-
-    found = Elemdata_Meshid(obj=obj%elementData(ii)%ptr)
-    IF (found .EQ. meshid) THEN
-      tsize = tsize + 1
-      ans(tsize) = Elemdata_globalElemNum(obj%elementData(ii)%ptr)
-    END IF
-
-  END DO
-
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemNum2_
 
 !----------------------------------------------------------------------------
@@ -367,7 +531,16 @@ END PROCEDURE obj_GetElemNum2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElemNum3_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum3_()"
+#endif
+
   INTEGER(I4B) :: tmeshid, mysize, ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   tsize = 0
   tmeshid = SIZE(meshid)
@@ -377,6 +550,11 @@ MODULE PROCEDURE obj_GetElemNum3_
                          ans=ans(tsize + 1:), tsize=mysize)
     tsize = tsize + mysize
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElemNum3_
 
 !----------------------------------------------------------------------------
@@ -384,11 +562,25 @@ END PROCEDURE obj_GetElemNum3_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundingEntity
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetBoundingEntity()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (ALLOCATED(obj%boundingEntity)) THEN
     ans = obj%boundingEntity
   ELSE
     ALLOCATE(ans(0))
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetBoundingEntity
 
 !----------------------------------------------------------------------------
@@ -396,8 +588,23 @@ END PROCEDURE obj_GetBoundingEntity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs1()"
+#endif
+
   INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL obj%GetNptrs_(ans=ans, tsize=tsize)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNptrs1
 
 !----------------------------------------------------------------------------
@@ -405,10 +612,25 @@ END PROCEDURE obj_GetNptrs1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs2()"
+#endif
+
   INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   tsize = obj%GetTotalNodes(meshid=meshid)
   ALLOCATE(ans(tsize))
   CALL obj%GetNptrs_(ans=ans, tsize=tsize, meshid=meshid)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNptrs2
 
 !----------------------------------------------------------------------------
@@ -416,11 +638,26 @@ END PROCEDURE obj_GetNptrs2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs1_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs1_()"
+#endif
+
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   tsize = SIZE(obj%nodeData)
   DO CONCURRENT(ii=1:tsize)
     ans(ii) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNptrs1_
 
 !----------------------------------------------------------------------------
@@ -428,10 +665,19 @@ END PROCEDURE obj_GetNptrs1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs2_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs2_()"
+#endif
+
   INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize, found_meshid
   LOGICAL(LGT) :: isok
   LOGICAL(LGT), ALLOCATABLE :: foundNodes(:)
   INTEGER(I4B), POINTER :: intptr(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   fake_tsize = obj%GetTotalElements()
   tsize = 0
@@ -440,35 +686,39 @@ MODULE PROCEDURE obj_GetNptrs2_
   ALLOCATE(foundNodes(ii))
   foundNodes = math%no
 
-  DO ii = 1, fake_tsize
+  loop1: DO ii = 1, fake_tsize
     isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     found_meshid = Elemdata_meshid(obj%elementData(ii)%ptr)
 
     isok = found_meshid .EQ. meshid
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
     jj = Elemdata_GetTotalGlobalNodes(obj%elementData(ii)%ptr)
 
-    DO kk = 1, jj
+    loop2: DO kk = 1, jj
       ll = intptr(kk)
 
       isok = foundNodes(ll)
-      IF (isok) CYCLE
+      IF (isok) CYCLE loop2
 
       foundNodes(ll) = math%yes
       tsize = tsize + 1
       ans(tsize) = ll
 
-    END DO
+    END DO loop2
 
-  END DO
+  END DO loop1
 
   DEALLOCATE(foundNodes)
   intptr => NULL()
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNptrs2_
 
 !----------------------------------------------------------------------------
@@ -476,43 +726,53 @@ END PROCEDURE obj_GetNptrs2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrs3_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNptrs3_()"
+#endif
+
   INTEGER(I4B) :: ii, jj, kk, ll, ierr, telem, iel
   TYPE(HashTable_) :: tbl
   INTEGER(I4B), POINTER :: intptr(:)
   LOGICAL(LGT) :: isok
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   tsize = 0
   telem = SIZE(globalElement)
 
-  DO ii = 1, telem
+  loop1: DO ii = 1, telem
     iel = obj%GetLocalElemNumber(globalElement=globalElement(ii), &
                                  islocal=islocal)
 
     isok = obj%IsElementActive(globalElement=iel, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
     jj = Elemdata_GetTotalGlobalNodes(obj%elementData(iel)%ptr)
 
-    DO kk = 1, jj
+    loop2: DO kk = 1, jj
       ll = intptr(kk)
-
       !! check if the key is present
       CALL tbl%check_key(key=Hashkey(ll), STAT=ierr)
       isok = ierr .EQ. 0_I4B
-      IF (isok) CYCLE
-
+      IF (isok) CYCLE loop2
       !! if not present then set the key
       CALL tbl%Set(key=Hashkey(ll), VALUE=math%yes)
       tsize = tsize + 1
       ans(tsize) = ll
+    END DO loop2
 
-    END DO
-
-  END DO
+  END DO loop1
 
   intptr => NULL()
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNptrs3_
 
 !----------------------------------------------------------------------------
@@ -520,8 +780,17 @@ END PROCEDURE obj_GetNptrs3_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNptrsInBox
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNptrsInBox()"
+#endif
+
   INTEGER(I4B) :: tnodes, ii
   INTEGER(I4B), ALLOCATABLE :: nptrs0(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   tnodes = obj%GetTotalNodes()
   ALLOCATE(nptrs0(tnodes))
@@ -534,6 +803,11 @@ MODULE PROCEDURE obj_GetNptrsInBox
     nptrs(ii) = nptrs0(ii)
   END DO
   DEALLOCATE(nptrs0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNptrsInBox
 
 !----------------------------------------------------------------------------
@@ -572,24 +846,23 @@ MODULE PROCEDURE obj_GetNptrsInBox_
     DO ii = 1, tnodes
       nptrs(ii) = obj%GetGlobalNodeNumber(obj%kdresult(ii)%idx)
     END DO
-    RETURN
+
+  ELSE
+
+    jj = 0
+    qv = 0.0_DFP
+    DO ii = 1, tnodes
+      kk = obj%kdresult(ii)%idx
+      CALL NodeData_GetNodeCoord(obj=obj%nodeData(kk)%ptr, ans=qv, &
+                                 tsize=tsize)
+      abool = BoundingBoxIsInside(box, qv(1:nsd))
+      IF (abool) THEN
+        jj = jj + 1
+        nptrs(jj) = obj%GetGlobalNodeNumber(kk)
+      END IF
+    END DO
+    tnodes = jj
   END IF
-
-  jj = 0
-  qv = 0.0_DFP
-  DO ii = 1, tnodes
-
-    kk = obj%kdresult(ii)%idx
-    CALL NodeData_GetNodeCoord(obj=obj%nodeData(kk)%ptr, ans=qv, tsize=tsize)
-    abool = BoundingBoxIsInside(box, qv(1:nsd))
-    IF (abool) THEN
-      jj = jj + 1
-      nptrs(jj) = obj%GetGlobalNodeNumber(kk)
-    END IF
-
-  END DO
-
-  tnodes = jj
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -652,7 +925,16 @@ END PROCEDURE obj_GetElemNumberInBox_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetInternalNptrs
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs()"
+#endif
   INTEGER(I4B) :: ii, dummy, nodeType
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   dummy = obj%GetTotalInternalNodes()
   ALLOCATE(ans(dummy))
   dummy = 0
@@ -663,6 +945,11 @@ MODULE PROCEDURE obj_GetInternalNptrs
       ans(dummy) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
     END IF
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetInternalNptrs
 
 !----------------------------------------------------------------------------
@@ -674,8 +961,12 @@ MODULE PROCEDURE obj_GetInternalNptrs_
   CHARACTER(*), PARAMETER :: myName = "obj_GetInternalNptrs_()"
   LOGICAL(LGT) :: problem
 #endif
-
   INTEGER(I4B) :: ii, dummy, nodeType
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   dummy = obj%GetTotalInternalNodes()
 
@@ -697,6 +988,11 @@ MODULE PROCEDURE obj_GetInternalNptrs_
       nptrs(dummy) = NodeData_GetGlobalNodeNum(obj%nodeData(ii)%ptr)
     END IF
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetInternalNptrs_
 
 !----------------------------------------------------------------------------
@@ -704,7 +1000,16 @@ END PROCEDURE obj_GetInternalNptrs_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryNptrs
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetBoundaryNptrs()"
+#endif
+
   INTEGER(I4B) :: ii, dummy, nodeType
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   dummy = obj%GetTotalBoundaryNodes()
   CALL Reallocate(ans, dummy)
@@ -720,6 +1025,11 @@ MODULE PROCEDURE obj_GetBoundaryNptrs
 
     END IF
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetBoundaryNptrs
 
 !----------------------------------------------------------------------------
@@ -727,10 +1037,25 @@ END PROCEDURE obj_GetBoundaryNptrs
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryNode
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isBoundaryNode()"
+#endif
+
   INTEGER(I4B) :: localnode, nodeType
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   localnode = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
   nodeType = NodeData_GetNodeType(obj%nodeData(localnode)%ptr)
   ans = nodeType .NE. INTERNAL_NODE
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isBoundaryNode
 
 !----------------------------------------------------------------------------
@@ -738,23 +1063,33 @@ END PROCEDURE obj_isBoundaryNode
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isNodePresent1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isNodePresent1()"
+#endif
+
   LOGICAL(LGT) :: abool, islocal0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   islocal0 = Input(DEFAULT=math%no, option=islocal)
 
   IF (islocal0) THEN
     ans = (globalNode .GT. 0_I4B) .AND. (globalNode .LE. obj%tNodes)
-
   ELSE
-
     abool = globalNode .GT. obj%maxNptrs .OR. globalNode .LT. obj%minNptrs
     ans = .NOT. abool
     IF (ans) THEN
       ans = obj%local_nptrs(globalNode) .GT. 0
     END IF
-
   END IF
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isNodePresent1
 
 !----------------------------------------------------------------------------
@@ -762,10 +1097,25 @@ END PROCEDURE obj_isNodePresent1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isNodePresent2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isNodePresent2()"
+#endif
+
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   DO ii = 1, SIZE(globalNode)
     ans(ii) = obj%isNodePresent(globalNode(ii), islocal=islocal)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isNodePresent2
 
 !----------------------------------------------------------------------------
@@ -773,8 +1123,17 @@ END PROCEDURE obj_isNodePresent2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeMask
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNodeMask()"
+#endif
+
   INTEGER(I4B) :: ii, jj, kk, tsize
   LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   isok = .NOT. PRESENT(local_nptrs)
   mask = math%no
@@ -788,6 +1147,11 @@ MODULE PROCEDURE obj_GetNodeMask
       mask(jj) = math%yes
     END DO
 
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
 
   END IF
@@ -800,6 +1164,10 @@ MODULE PROCEDURE obj_GetNodeMask
     mask(kk) = math%yes
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNodeMask
 
 !----------------------------------------------------------------------------
@@ -807,8 +1175,17 @@ END PROCEDURE obj_GetNodeMask
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isAnyNodePresent
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isAnyNodePresent()"
+#endif
+
   LOGICAL(LGT) :: cond(SIZE(globalNode))
   INTEGER(I4B) :: ii, n
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   n = SIZE(globalNode)
 
@@ -817,6 +1194,11 @@ MODULE PROCEDURE obj_isAnyNodePresent
   END DO
 
   ans = ANY(cond)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isAnyNodePresent
 
 !----------------------------------------------------------------------------
@@ -824,8 +1206,17 @@ END PROCEDURE obj_isAnyNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isAllNodePresent
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isAllNodePresent()"
+#endif
+
   LOGICAL(LGT) :: cond(SIZE(globalNode))
   INTEGER(I4B) :: ii, n
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   n = SIZE(globalNode)
 
@@ -834,6 +1225,11 @@ MODULE PROCEDURE obj_isAllNodePresent
   END DO
 
   ans = ALL(cond)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isAllNodePresent
 
 !----------------------------------------------------------------------------
@@ -841,12 +1237,26 @@ END PROCEDURE obj_isAllNodePresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isElementPresent
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isElementPresent()"
+#endif
+
   LOGICAL(LGT) :: islocal0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   islocal0 = Input(DEFAULT=math%no, option=islocal)
 
   IF (islocal0) THEN
     ans = (globalElement .GT. 0_I4B) .AND. (globalElement .LE. obj%tElements)
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -855,6 +1265,10 @@ MODULE PROCEDURE obj_isElementPresent
 
   IF (ans) ans = obj%local_elemNumber(globalElement) .NE. 0
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isElementPresent
 
 !----------------------------------------------------------------------------
@@ -862,9 +1276,24 @@ END PROCEDURE obj_isElementPresent
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryElement
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isBoundaryElement()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   ans = Elemdata_IsBoundaryElement(obj%elementData(iel)%ptr)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -872,9 +1301,24 @@ END PROCEDURE obj_isBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainBoundaryElement
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isDomainBoundaryElement()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   ans = obj%elementData(iel)%ptr%elementType .EQ. DOMAIN_BOUNDARY_ELEMENT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isDomainBoundaryElement
 
 !----------------------------------------------------------------------------
@@ -882,8 +1326,22 @@ END PROCEDURE obj_isDomainBoundaryElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isDomainFacetElement
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isDomainFacetElement()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = FacetData_Iselement(obj=obj%facetData(facetElement), &
                             filter=DOMAIN_BOUNDARY_ELEMENT)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isDomainFacetElement
 
 !----------------------------------------------------------------------------
@@ -891,7 +1349,17 @@ END PROCEDURE obj_isDomainFacetElement
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalNodes
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInternalNodes()"
+#endif
+
   INTEGER(I4B) :: ii, nodeType
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   DO ii = 1, obj%tNodes
     nodeType = NodeData_GetNodeType(obj%nodeData(ii)%ptr)
@@ -899,6 +1367,11 @@ MODULE PROCEDURE obj_GetTotalInternalNodes
       ans = ans + 1
     END IF
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalInternalNodes
 
 !----------------------------------------------------------------------------
@@ -906,7 +1379,21 @@ END PROCEDURE obj_GetTotalInternalNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalNodes1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalNodes1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%tNodes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalNodes1
 
 !----------------------------------------------------------------------------
@@ -935,30 +1422,27 @@ MODULE PROCEDURE obj_GetTotalNodes2
   ALLOCATE(foundNodes(ii))
   foundNodes = math%no
 
-  DO ii = 1, fake_tsize
+  loop1: DO ii = 1, fake_tsize
     isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     found_meshid = Elemdata_meshid(obj%elementData(ii)%ptr)
 
     isok = found_meshid .EQ. meshid
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
     jj = Elemdata_GetTotalGlobalNodes(obj%elementData(ii)%ptr)
 
-    DO kk = 1, jj
+    loop2: DO kk = 1, jj
       ll = intptr(kk)
-
       isok = foundNodes(ll)
-      IF (isok) CYCLE
-
+      IF (isok) CYCLE loop2
       foundNodes(ll) = math%yes
       ans = ans + 1
+    END DO loop2
 
-    END DO
-
-  END DO
+  END DO loop1
 
   DEALLOCATE(foundNodes)
   intptr => NULL()
@@ -992,30 +1476,25 @@ MODULE PROCEDURE obj_GetTotalNodes3
   ans = 0
   tsize = SIZE(globalElement)
 
-  DO ii = 1, tsize
+  loop1: DO ii = 1, tsize
     iel = obj%GetLocalElemNumber(globalElement(ii), islocal=islocal)
-
     isok = obj%IsElementActive(globalElement=iel, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
     jj = Elemdata_GetTotalGlobalNodes(obj%elementData(iel)%ptr)
 
-    DO kk = 1, jj
+    loop2: DO kk = 1, jj
       ll = intptr(kk)
-
       !! check if the key is present
       CALL tbl%check_key(key=Hashkey(ll), STAT=ierr)
       isok = ierr .EQ. 0_I4B
-      IF (isok) CYCLE
-
+      IF (isok) CYCLE loop2
       !! if not present then set the key
       CALL tbl%Set(key=Hashkey(ll), VALUE=math%yes)
       ans = ans + 1
-
-    END DO
-
-  END DO
+    END DO loop2
+  END DO loop1
 
   intptr => NULL()
 
@@ -1052,25 +1531,21 @@ MODULE PROCEDURE obj_GetTotalVertexNodes1
   ALLOCATE(foundNodes(ii))
   foundNodes = math%no
 
-  DO ii = 1, fake_tsize
+  loop1: DO ii = 1, fake_tsize
     isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
     jj = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(ii)%ptr)
 
-    DO kk = 1, jj
+    loop2: DO kk = 1, jj
       ll = intptr(kk)
-
       isok = foundNodes(ll)
-      IF (isok) CYCLE
-
+      IF (isok) CYCLE loop2
       foundNodes(ll) = math%yes
       ans = ans + 1
-
-    END DO
-
-  END DO
+    END DO loop2
+  END DO loop1
 
   DEALLOCATE(foundNodes)
   intptr => NULL()
@@ -1108,30 +1583,26 @@ MODULE PROCEDURE obj_GetTotalVertexNodes2
   ALLOCATE(foundNodes(ii))
   foundNodes = math%no
 
-  DO ii = 1, fake_tsize
+  loop1: DO ii = 1, fake_tsize
     isok = obj%IsElementActive(globalElement=ii, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     found_meshid = Elemdata_meshid(obj%elementData(ii)%ptr)
 
     isok = found_meshid .EQ. meshid
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(ii)%ptr)
     jj = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(ii)%ptr)
 
-    DO kk = 1, jj
+    loop2: DO kk = 1, jj
       ll = intptr(kk)
-
       isok = foundNodes(ll)
-      IF (isok) CYCLE
-
+      IF (isok) CYCLE loop2
       foundNodes(ll) = math%yes
       ans = ans + 1
-
-    END DO
-
-  END DO
+    END DO loop2
+  END DO loop1
 
   DEALLOCATE(foundNodes)
   intptr => NULL()
@@ -1165,30 +1636,27 @@ MODULE PROCEDURE obj_GetTotalVertexNodes3
   ans = 0
   tsize = SIZE(globalElement)
 
-  DO ii = 1, tsize
+  loop1: DO ii = 1, tsize
     iel = obj%GetLocalElemNumber(globalElement(ii), islocal=islocal)
 
     isok = obj%IsElementActive(globalElement=iel, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     intptr => Elemdata_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
     jj = Elemdata_GetTotalGlobalVertexNodes(obj%elementData(iel)%ptr)
 
-    DO kk = 1, jj
+    loop2: DO kk = 1, jj
       ll = intptr(kk)
-
       !! check if the key is present
       CALL tbl%check_key(key=Hashkey(ll), STAT=ierr)
       isok = ierr .EQ. 0_I4B
-      IF (isok) CYCLE
-
+      IF (isok) CYCLE loop2
       !! if not present then set the key
       CALL tbl%Set(key=Hashkey(ll), VALUE=math%yes)
       ans = ans + 1
+    END DO loop2
 
-    END DO
-
-  END DO
+  END DO loop1
 
   intptr => NULL()
 
@@ -1246,9 +1714,24 @@ END PROCEDURE obj_GetTotalEdges
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryNodes
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryNodes()"
+#endif
+
   INTEGER(I4B) :: tIntNodes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   tIntNodes = obj%GetTotalInternalNodes()
   ans = obj%tNodes - tIntNodes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalBoundaryNodes
 
 !----------------------------------------------------------------------------
@@ -1256,7 +1739,17 @@ END PROCEDURE obj_GetTotalBoundaryNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryElements()"
+#endif
+
   INTEGER(I4B) :: ii, tcells
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   tcells = obj%GetTotalElements()
   DO ii = 1, tcells
@@ -1264,6 +1757,11 @@ MODULE PROCEDURE obj_GetTotalBoundaryElements
       ans = ans + 1
     END IF
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalBoundaryElements
 
 !----------------------------------------------------------------------------
@@ -1412,7 +1910,6 @@ MODULE PROCEDURE obj_GetConnectivity1_
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-
 END PROCEDURE obj_GetConnectivity1_
 
 !----------------------------------------------------------------------------
@@ -1457,7 +1954,6 @@ MODULE PROCEDURE obj_GetConnectivity2_
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-
 END PROCEDURE obj_GetConnectivity2_
 
 !----------------------------------------------------------------------------
@@ -1471,6 +1967,11 @@ MODULE PROCEDURE obj_GetOrientation
 #endif
 
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
 #ifdef DEBUG_VER
   problem = .NOT. obj%isElementPresent(globalElement=globalElement, &
@@ -1488,12 +1989,17 @@ MODULE PROCEDURE obj_GetOrientation
   iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
   CALL Elemdata_GetOrientation(obj=obj%elementData(iel)%ptr, &
-                               cellOrient=cellOrient, faceOrient=faceOrient, &
+                               cellOrient=cellOrient, &
+                               faceOrient=faceOrient, &
                                edgeOrient=edgeOrient, &
                                tCellOrient=tCellOrient, &
                                tFaceOrient=tFaceOrient, &
                                tEdgeOrient=tEdgeOrient)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetOrientation
 
 !----------------------------------------------------------------------------
@@ -1509,6 +2015,11 @@ MODULE PROCEDURE obj_GetCellOrientation
   INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   isok = obj%isElementPresent(globalElement=globalElement, &
                               islocal=islocal)
 
@@ -1522,6 +2033,10 @@ MODULE PROCEDURE obj_GetCellOrientation
   CALL Elemdata_GetCellOrient(obj=obj%elementData(iel)%ptr, &
                               ans=ans, tsize=tsize)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetCellOrientation
 
 !----------------------------------------------------------------------------
@@ -1537,6 +2052,11 @@ MODULE PROCEDURE obj_GetFaceOrientation
   INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   isok = obj%isElementPresent(globalElement=globalElement, &
                               islocal=islocal)
 
@@ -1550,6 +2070,10 @@ MODULE PROCEDURE obj_GetFaceOrientation
   CALL Elemdata_GetFaceOrient(obj=obj%elementData(iel)%ptr, &
                               ans=ans, nrow=nrow, ncol=ncol)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetFaceOrientation
 
 !----------------------------------------------------------------------------
@@ -1565,6 +2089,11 @@ MODULE PROCEDURE obj_GetEdgeOrientation
   INTEGER(I4B) :: iel
 
 #ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   isok = obj%isElementPresent(globalElement=globalElement, &
                               islocal=islocal)
 
@@ -1578,6 +2107,10 @@ MODULE PROCEDURE obj_GetEdgeOrientation
   CALL Elemdata_GetEdgeOrient(obj=obj%elementData(iel)%ptr, &
                               ans=ans, tsize=tsize)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetEdgeOrientation
 
 !----------------------------------------------------------------------------
@@ -1591,6 +2124,11 @@ MODULE PROCEDURE obj_GetNodeConnectivity
 #endif
 
   INTEGER(I4B) :: iel, telem, ii, nn
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   telem = obj%GetTotalElements()
 
@@ -1609,6 +2147,10 @@ MODULE PROCEDURE obj_GetNodeConnectivity
     END DO
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNodeConnectivity
 
 !----------------------------------------------------------------------------
@@ -1616,8 +2158,22 @@ END PROCEDURE obj_GetNodeConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL obj%GetLocalNodeNumber_(globalNode=globalNode, ans=ans, &
                                islocal=islocal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetLocalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -1625,8 +2181,17 @@ END PROCEDURE obj_GetLocalNodeNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber1_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber1_()"
+#endif
+
   INTEGER(I4B) :: ii, tsize
   LOGICAL(LGT) :: islocal0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   islocal0 = Input(option=islocal, DEFAULT=math%no)
   tsize = SIZE(globalNode)
@@ -1635,6 +2200,11 @@ MODULE PROCEDURE obj_GetLocalNodeNumber1_
     DO CONCURRENT(ii=1:tsize)
       ans(ii) = globalNode(ii)
     END DO
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -1642,6 +2212,10 @@ MODULE PROCEDURE obj_GetLocalNodeNumber1_
     ans(ii) = obj%local_nptrs(globalNode(ii))
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetLocalNodeNumber1_
 
 !----------------------------------------------------------------------------
@@ -1649,17 +2223,35 @@ END PROCEDURE obj_GetLocalNodeNumber1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalNodeNumber2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetLocalNodeNumber2()"
+#endif
+
   LOGICAL(LGT) :: islocal0
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   islocal0 = Input(option=islocal, DEFAULT=math%no)
 
   IF (islocal0) THEN
     ans = globalNode
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
   ans = obj%local_nptrs(globalNode)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetLocalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -1667,10 +2259,25 @@ END PROCEDURE obj_GetLocalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetglobalNodeNumber1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetglobalNodeNumber1()"
+#endif
+
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   DO ii = 1, SIZE(localNode)
     ans(ii) = obj%GetglobalNodeNumber(localNode(ii))
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetglobalNodeNumber1
 
 !----------------------------------------------------------------------------
@@ -1681,7 +2288,14 @@ MODULE PROCEDURE obj_GetglobalNodeNumber2
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_GetglobalNodeNumber2()"
   LOGICAL(LGT) :: problem
+#endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   problem = (localNode .EQ. 0) .OR. (localNode .GT. obj%tNodes)
 
   IF (problem) THEN
@@ -1692,6 +2306,11 @@ MODULE PROCEDURE obj_GetglobalNodeNumber2
 
 ! ans = obj%nodeData(localNode)%ptr%globalNodeNum
   ans = NodeData_GetGlobalNodeNum(obj%nodeData(localNode)%ptr)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetglobalNodeNumber2
 
 !----------------------------------------------------------------------------
@@ -1699,10 +2318,24 @@ END PROCEDURE obj_GetglobalNodeNumber2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetglobalElemNumber1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetglobalElemNumber1()"
+#endif
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   DO ii = 1, SIZE(localElement)
     ans(ii) = obj%GetglobalElemNumber(localElement(ii))
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetglobalElemNumber1
 
 !----------------------------------------------------------------------------
@@ -1710,10 +2343,18 @@ END PROCEDURE obj_GetglobalElemNumber1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetglobalElemNumber2
+
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_GetglobalNodeNumber2()"
   LOGICAL(LGT) :: problem
+#endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
   problem = (localElement .EQ. 0) .OR. (localElement .GT. obj%tElements)
   IF (problem) THEN
     CALL e%RaiseError(modName // '::' // myName // ' - ' // &
@@ -1722,6 +2363,11 @@ MODULE PROCEDURE obj_GetglobalElemNumber2
 #endif
 
   ans = obj%elementData(localElement)%ptr%globalElemNum
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetglobalElemNumber2
 
 !----------------------------------------------------------------------------
@@ -1783,7 +2429,6 @@ MODULE PROCEDURE obj_GetLocalElemNumber2
   END IF
 
 #ifdef DEBUG_VER
-
   problem = (globalElement .LT. obj%minElemNum) &
     .OR. (globalElement .GT. obj%maxElemNum)
 
@@ -1794,7 +2439,6 @@ MODULE PROCEDURE obj_GetLocalElemNumber2
                       ToString(globalElement) // ' not present.')
     RETURN
   END IF
-
 #endif
 
   ans = obj%local_elemNumber(globalElement)
@@ -1834,7 +2478,7 @@ MODULE PROCEDURE obj_GetNodeToElements1
   IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
   ii = obj%GetLocalNodeNumber(globalNode, islocal=islocal)
-! ans = obj%nodeData(ii)%ptr%globalElements
+  ! ans = obj%nodeData(ii)%ptr%globalElements
 
   tsize = NodeData_GetTotalGlobalElements(obj%nodeData(ii)%ptr)
   ALLOCATE(ans(tsize))
@@ -1898,12 +2542,28 @@ END PROCEDURE obj_GetNodeToElements2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements1_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements1_()"
+#endif
+
   INTEGER(I4B) :: ii
   LOGICAL(LGT) :: problem
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   tsize = 0
   problem = .NOT. obj%isNodePresent(globalNode, islocal=islocal)
-  IF (problem) RETURN
+  IF (problem) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -1911,6 +2571,11 @@ MODULE PROCEDURE obj_GetNodeToElements1_
 
   CALL NodeData_GetGlobalElements(obj=obj%nodeData(ii)%ptr, &
                                   ans=ans, tsize=tsize)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNodeToElements1_
 
 !----------------------------------------------------------------------------
@@ -1918,7 +2583,16 @@ END PROCEDURE obj_GetNodeToElements1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToElements2_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToElements2_()"
+#endif
+
   INTEGER(I4B) :: ii, n, lnode, a, b
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
 
@@ -1937,9 +2611,21 @@ MODULE PROCEDURE obj_GetNodeToElements2_
 
   tsize = a - 1
 
-  IF (tsize .LE. 1) RETURN
+  IF (tsize .LE. 1) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   CALL RemoveDuplicates_(obj=ans(1:tsize), tsize=tsize, isSorted=math%no)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNodeToElements2_
 
 !----------------------------------------------------------------------------
@@ -2172,8 +2858,17 @@ END PROCEDURE obj_GetNodeToNodes2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElementToElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElementToElements()"
+#endif
+
   LOGICAL(LGT) :: onlyElem
   INTEGER(I4B) :: nrow, temp(TypeRefelemOpt%maxFaces, 3), ii, ncol, jj
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   onlyElem = Input(DEFAULT=math%no, option=onlyElements)
 
@@ -2183,6 +2878,11 @@ MODULE PROCEDURE obj_GetElementToElements
                                    tsize=nrow)
     ALLOCATE(ans(nrow, 1))
     DO ii = 1, nrow; ans(ii, 1) = temp(ii, 1); END DO
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
 
   END IF
@@ -2193,6 +2893,11 @@ MODULE PROCEDURE obj_GetElementToElements
   ALLOCATE(ans(nrow, ncol))
 
   DO jj = 1, ncol; DO ii = 1, nrow; ans(ii, jj) = temp(ii, jj); END DO; END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElementToElements
 
 !----------------------------------------------------------------------------
@@ -2200,10 +2905,25 @@ END PROCEDURE obj_GetElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElementToElements1_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElementToElements1_()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   CALL Elemdata_GetElementToElements(obj=obj%elementData(iel)%ptr, ans=ans, &
                                      tsize=tsize)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElementToElements1_
 
 !----------------------------------------------------------------------------
@@ -2211,10 +2931,25 @@ END PROCEDURE obj_GetElementToElements1_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetElementToElements2_
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetElementToElements2_()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   CALL Elemdata_GetElementToElements(obj=obj%elementData(iel)%ptr, ans=ans, &
                                      nrow=nrow, ncol=ncol)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetElementToElements2_
 
 !----------------------------------------------------------------------------
@@ -2222,13 +2957,28 @@ END PROCEDURE obj_GetElementToElements2_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBoundaryElementData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetBoundaryElementData()"
+#endif
+
   INTEGER(I4B) :: iel, tsize, ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   tsize = SIZE(obj%elementData(iel)%ptr%boundaryData)
   CALL Reallocate(ans, tsize)
   DO ii = 1, tsize
     ans(ii) = obj%elementData(iel)%ptr%boundaryData(ii)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetBoundaryElementData
 
 !----------------------------------------------------------------------------
@@ -2236,11 +2986,25 @@ END PROCEDURE obj_GetBoundaryElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetOrder1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetOrder1()"
+#endif
+
   INTEGER(I4B) :: iel
   LOGICAL(LGT), PARAMETER :: yes = math%yes
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (obj%isMaxElemOrderSet) THEN
     ans = obj%maxElemOrder
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -2251,6 +3015,11 @@ MODULE PROCEDURE obj_GetOrder1
 
   obj%maxElemOrder = ans
   obj%isMaxElemOrderSet = math%yes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetOrder1
 
 !----------------------------------------------------------------------------
@@ -2258,9 +3027,24 @@ END PROCEDURE obj_GetOrder1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetOrder2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetOrder2()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
   ans = Elemdata_Order(obj=obj%elementData(iel)%ptr)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetOrder2
 
 !----------------------------------------------------------------------------
@@ -2297,7 +3081,21 @@ END PROCEDURE obj_GetOrder_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNSD
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNSD()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%NSD
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNSD
 
 !----------------------------------------------------------------------------
@@ -2305,7 +3103,21 @@ END PROCEDURE obj_GetNSD
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetXidimension
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetXidimension()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%xidim
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetXidimension
 
 !----------------------------------------------------------------------------
@@ -2313,9 +3125,24 @@ END PROCEDURE obj_GetXidimension
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaterial1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMaterial1()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   ans = obj%elementData(iel)%ptr%material(medium)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMaterial1
 
 !----------------------------------------------------------------------------
@@ -2323,12 +3150,27 @@ END PROCEDURE obj_GetMaterial1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalMaterial1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalMaterial1()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   ans = 0 ! default value
   IF (ALLOCATED(obj%elementData(iel)%ptr%material)) THEN
     ans = SIZE(obj%elementData(iel)%ptr%material)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalMaterial1
 
 !----------------------------------------------------------------------------
@@ -2336,8 +3178,22 @@ END PROCEDURE obj_GetTotalMaterial1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalFacetElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFacetElements()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   IF (ALLOCATED(obj%facetData)) ans = SIZE(obj%facetData)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalFacetElements
 
 !----------------------------------------------------------------------------
@@ -2345,12 +3201,28 @@ END PROCEDURE obj_GetTotalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalInternalFacetElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInternalFacetElements()"
+#endif
+
   LOGICAL(LGT) :: isok
   INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   isok = ALLOCATED(obj%facetData)
-  IF (.NOT. isok) RETURN
+  IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   tsize = SIZE(obj%facetData)
   DO ii = 1, tsize
@@ -2358,6 +3230,10 @@ MODULE PROCEDURE obj_GetTotalInternalFacetElements
     IF (isok) ans = ans + 1
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalInternalFacetElements
 
 !----------------------------------------------------------------------------
@@ -2365,12 +3241,28 @@ END PROCEDURE obj_GetTotalInternalFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryFacetElements()"
+#endif
+
   LOGICAL(LGT) :: isok
   INTEGER(I4B) :: ii, tsize
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   isok = ALLOCATED(obj%facetData)
-  IF (.NOT. isok) RETURN
+  IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
   tsize = SIZE(obj%facetData)
 
   DO ii = 1, tsize
@@ -2383,6 +3275,11 @@ MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
                                filter=DOMAIN_BOUNDARY_ELEMENT)
     IF (isok) ans = ans + 1
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalBoundaryFacetElements
 
 !----------------------------------------------------------------------------
@@ -2390,8 +3287,22 @@ END PROCEDURE obj_GetTotalBoundaryFacetElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMasterCellNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMasterCellNumber()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
                           masterCellNumber=ans)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMasterCellNumber
 
 !----------------------------------------------------------------------------
@@ -2399,8 +3310,22 @@ END PROCEDURE obj_GetMasterCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSlaveCellNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetSlaveCellNumber()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
                           slaveCellNumber=ans)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetSlaveCellNumber
 
 !----------------------------------------------------------------------------
@@ -2408,8 +3333,22 @@ END PROCEDURE obj_GetSlaveCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetCellNumber()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
                           masterCellNumber=ans(1), slaveCellNumber=ans(2))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetCellNumber
 
 !----------------------------------------------------------------------------
@@ -2417,7 +3356,17 @@ END PROCEDURE obj_GetCellNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_FindFace
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_FindFace()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
   IF (onlyBoundaryElement) THEN
@@ -2427,6 +3376,11 @@ MODULE PROCEDURE obj_FindFace
   CALL Elemdata_FindFace(obj=obj%elementData(iel)%ptr, faceCon=faceCon, &
                          isFace=isFace, localFaceNumber=localFaceNumber, &
                          onlyBoundaryElement=onlyBoundaryElement)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_FindFace
 
 !----------------------------------------------------------------------------
@@ -2434,7 +3388,17 @@ END PROCEDURE obj_FindFace
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_FindEdge
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_FindEdge()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
 
   IF (onlyBoundaryElement) THEN
@@ -2444,6 +3408,11 @@ MODULE PROCEDURE obj_FindEdge
   CALL Elemdata_FindEdge(obj=obj%elementData(iel)%ptr, edgeCon=edgeCon, &
                          isEdge=isEdge, localEdgeNumber=localEdgeNumber, &
                          onlyBoundaryElement=onlyBoundaryElement)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_FindEdge
 
 !----------------------------------------------------------------------------
@@ -2451,6 +3420,15 @@ END PROCEDURE obj_FindEdge
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetLocalFacetID
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetLocalFacetID()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (isMaster) THEN
     CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
                             masterLocalFacetID=ans)
@@ -2458,6 +3436,11 @@ MODULE PROCEDURE obj_GetLocalFacetID
     CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
                             slaveLocalFacetID=ans)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetLocalFacetID
 
 !----------------------------------------------------------------------------
@@ -2465,10 +3448,25 @@ END PROCEDURE obj_GetLocalFacetID
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalFaceNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalFaceNumber()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
   ans = Elemdata_GetGlobalFaceNumber(obj=obj%elementData(iel)%ptr, &
                                      localFaceNumber=localFaceNumber)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetGlobalFaceNumber
 
 !----------------------------------------------------------------------------
@@ -2476,10 +3474,25 @@ END PROCEDURE obj_GetGlobalFaceNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalEdgeNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalEdgeNumber()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
   ans = Elemdata_GetGlobalEdgeNumber(obj=obj%elementData(iel)%ptr, &
                                      localEdgeNumber=localEdgeNumber)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetGlobalEdgeNumber
 
 !----------------------------------------------------------------------------
@@ -2531,12 +3544,27 @@ END PROCEDURE AbstractMeshGetFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetConnectivity
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFacetConnectivity()"
+#endif
+
   INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   tsize = obj%GetTotalFacetConnectivity(globalElement=globalElement, &
                                         iface=iface, islocal=islocal)
   CALL Reallocate(ans, tsize)
   CALL obj%GetFacetConnectivity_(globalElement=globalElement, iface=iface, &
                                  islocal=islocal, ans=ans, tsize=tsize)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetFacetConnectivity
 
 !----------------------------------------------------------------------------
@@ -2656,6 +3684,15 @@ END PROCEDURE obj_GetTotalFacetConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetParam
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (PRESENT(isInitiated)) isInitiated = obj%isInitiated
 
   IF (PRESENT(isNodeToElementsInitiated)) isNodeToElementsInitiated = &
@@ -2710,6 +3747,11 @@ MODULE PROCEDURE obj_GetParam
   IF (PRESENT(maxY)) maxY = obj%maxY
 
   IF (PRESENT(maxZ)) maxZ = obj%maxZ
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetParam
 
 !----------------------------------------------------------------------------
@@ -2717,7 +3759,21 @@ END PROCEDURE obj_GetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMinElemNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMinElemNumber()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%minElemNum
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMinElemNumber
 
 !----------------------------------------------------------------------------
@@ -2725,7 +3781,21 @@ END PROCEDURE obj_GetMinElemNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxElemNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMaxElemNumber()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%maxElemNum
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMaxElemNumber
 
 !----------------------------------------------------------------------------
@@ -2733,7 +3803,21 @@ END PROCEDURE obj_GetMaxElemNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMinNodeNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMinNodeNumber()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%minNptrs
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMinNodeNumber
 
 !----------------------------------------------------------------------------
@@ -2741,7 +3825,21 @@ END PROCEDURE obj_GetMinNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxNodeNumber
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNodeNumber()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%maxNptrs
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMaxNodeNumber
 
 !----------------------------------------------------------------------------
@@ -2749,7 +3847,21 @@ END PROCEDURE obj_GetMaxNodeNumber
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isInit
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isInit()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isInit
 
 !----------------------------------------------------------------------------
@@ -2757,7 +3869,21 @@ END PROCEDURE obj_isInit
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isNodeToElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isNodeToElements()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isNodeToElementsInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isNodeToElements
 
 !----------------------------------------------------------------------------
@@ -2765,7 +3891,21 @@ END PROCEDURE obj_isNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isNodeToNodes
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isNodeToNodes()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isNodeToNodesInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isNodeToNodes
 
 !----------------------------------------------------------------------------
@@ -2773,7 +3913,21 @@ END PROCEDURE obj_isNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isExtraNodeToNodes
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isExtraNodeToNodes()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isExtraNodeToNodesInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isExtraNodeToNodes
 
 !----------------------------------------------------------------------------
@@ -2781,7 +3935,21 @@ END PROCEDURE obj_isExtraNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isElementToElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isElementToElements()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isElementToElementsInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isElementToElements
 
 !----------------------------------------------------------------------------
@@ -2789,7 +3957,21 @@ END PROCEDURE obj_isElementToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isEdgeConnectivity
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isEdgeConnectivity()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isEdgeConnectivityInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isEdgeConnectivity
 
 !----------------------------------------------------------------------------
@@ -2797,7 +3979,21 @@ END PROCEDURE obj_isEdgeConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isFaceConnectivity
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isFaceConnectivity()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isFaceConnectivityInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isFaceConnectivity
 
 !----------------------------------------------------------------------------
@@ -2805,7 +4001,21 @@ END PROCEDURE obj_isFaceConnectivity
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isBoundaryData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isBoundaryData()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isBoundaryDataInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isBoundaryData
 
 !----------------------------------------------------------------------------
@@ -2813,7 +4023,21 @@ END PROCEDURE obj_isBoundaryData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isFacetData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isFacetData()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isFacetDataInitiated
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isFacetData
 
 !----------------------------------------------------------------------------
@@ -2821,9 +4045,24 @@ END PROCEDURE obj_isFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isElementActive
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isElementActive()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
   ans = obj%elementData(iel)%ptr%isActive
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isElementActive
 
 !----------------------------------------------------------------------------
@@ -2831,8 +4070,22 @@ END PROCEDURE obj_isElementActive
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFacetParam
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFacetParam()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL FacetData_GetParam(obj=obj%facetData(facetElement), &
                           elementType=elementType)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetFacetParam
 
 !----------------------------------------------------------------------------
@@ -2864,10 +4117,24 @@ END PROCEDURE obj_GetTotalEntities1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEntities2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEntities2()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans(1) = obj%tNodes
   ans(2) = obj%tEdges
   ans(3) = obj%tFaces
   ans(4) = obj%tElements
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalEntities2
 
 !----------------------------------------------------------------------------
@@ -3009,6 +4276,11 @@ MODULE PROCEDURE obj_GetNearestNode1
   LOGICAL(LGT) :: isok
   INTEGER(I4B) :: tsize
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
   IF (.NOT. isok) THEN
 
@@ -3032,6 +4304,11 @@ MODULE PROCEDURE obj_GetNearestNode1
                              ans=x, tsize=tsize)
 
   globalNode = obj%GetGlobalNodeNumber(globalNode)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNearestNode1
 
 !----------------------------------------------------------------------------
@@ -3045,6 +4322,11 @@ MODULE PROCEDURE obj_GetNearestNode2
 
   LOGICAL(LGT) :: isok
   INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   isok = ALLOCATED(obj%kdresult) .AND. (ASSOCIATED(obj%kdtree))
   IF (.NOT. isok) THEN
@@ -3070,6 +4352,10 @@ MODULE PROCEDURE obj_GetNearestNode2
     globalNode(ii) = obj%GetGlobalNodeNumber(localnode=globalNode(ii))
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNearestNode2
 
 !----------------------------------------------------------------------------
@@ -3077,7 +4363,17 @@ END PROCEDURE obj_GetNearestNode2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxNodeToElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNodeToElements()"
+#endif
+
   INTEGER(I4B) :: ii, tsize, tnodes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   tnodes = obj%GetTotalNodes()
 
@@ -3087,6 +4383,11 @@ MODULE PROCEDURE obj_GetMaxNodeToElements
     tsize = NodeData_GetTotalGlobalElements(obj%nodeData(ii)%ptr)
     ans = MAX(ans, tsize)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMaxNodeToElements
 
 !----------------------------------------------------------------------------
@@ -3094,7 +4395,17 @@ END PROCEDURE obj_GetMaxNodeToElements
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxNodeToNodes
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMaxNodeToNodes()"
+#endif
+
   INTEGER(I4B) :: ii, tsize, tnodes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   tnodes = obj%GetTotalNodes()
 
@@ -3104,6 +4415,11 @@ MODULE PROCEDURE obj_GetMaxNodeToNodes
     tsize = NodeData_GetTotalGlobalNodes(obj%nodeData(ii)%ptr)
     ans = MAX(ans, tsize)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMaxNodeToNodes
 
 !----------------------------------------------------------------------------
@@ -3111,7 +4427,17 @@ END PROCEDURE obj_GetMaxNodeToNodes
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMaxElementToElements
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMaxElementToElements()"
+#endif
+
   INTEGER(I4B) :: ii, tsize, tElements
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
   tElements = obj%GetTotalElements()
 
@@ -3124,6 +4450,11 @@ MODULE PROCEDURE obj_GetMaxElementToElements
     tsize = Elemdata_GetTotalGlobalElements(obj%ElementData(ii)%ptr) / 3
     ans = MAX(ans, tsize)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetMaxElementToElements
 
 !----------------------------------------------------------------------------

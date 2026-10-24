@@ -45,15 +45,31 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
   LOGICAL(LGT) :: abool
   INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL Display(msg, unitno=unitno)
 
   CALL Display(obj%isInitiated, "Mesh object initiated: ", &
                unitno=unitno)
 
-  IF (.NOT. obj%isInitiated) RETURN
+  IF (.NOT. obj%isInitiated) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   CALL Display(obj%showTime, "showTime: ", unitno=unitno)
 
@@ -198,6 +214,10 @@ MODULE PROCEDURE obj_Display
   abool = ALLOCATED(obj%kdresult)
   CALL Display(abool, "kdresult Allocated: ", unitno=unitno)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -205,7 +225,16 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayElementData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayElementData()"
+#endif
+
   INTEGER(I4B) :: ii, telements
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL Display(msg, unitno=unitno)
 
@@ -214,6 +243,11 @@ MODULE PROCEDURE obj_DisplayElementData
     CALL elemData_Display(obj=obj%elementData(ii)%ptr, &
                           msg="elementData(" // ToString(ii) // "): ", &
                           unitno=unitno)
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -226,6 +260,10 @@ MODULE PROCEDURE obj_DisplayElementData
     CALL BlankLines(nol=1, unitno=unitno)
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayElementData
 
 !----------------------------------------------------------------------------
@@ -233,8 +271,17 @@ END PROCEDURE obj_DisplayElementData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayNodeData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayNodeData()"
+#endif
+
   INTEGER(I4B) :: ii, tNodes
   LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   tNodes = obj%GetTotalNodes()
   CALL Display(msg, unitno=unitno)
@@ -247,6 +294,11 @@ MODULE PROCEDURE obj_DisplayNodeData
     CALL BlankLines(nol=1, unitno=unitno)
 
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayNodeData
 
 !----------------------------------------------------------------------------
@@ -254,8 +306,17 @@ END PROCEDURE obj_DisplayNodeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayFacetData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayFacetData()"
+#endif
+
   INTEGER(I4B) :: ii, n
   LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL Display(msg, unitno=unitno)
 
@@ -278,6 +339,10 @@ MODULE PROCEDURE obj_DisplayFacetData
 
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayFacetData
 
 !----------------------------------------------------------------------------
@@ -285,9 +350,18 @@ END PROCEDURE obj_DisplayFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayInternalFacetData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayInternalFacetData()"
+#endif
+
   INTEGER(I4B) :: ii, n
   INTEGER(I4B), PARAMETER :: filter = INTERNAL_ELEMENT
   LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL Display(msg, unitno=unitno)
 
@@ -305,6 +379,10 @@ MODULE PROCEDURE obj_DisplayInternalFacetData
 
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayInternalFacetData
 
 !----------------------------------------------------------------------------
@@ -312,8 +390,17 @@ END PROCEDURE obj_DisplayInternalFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayBoundaryFacetData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayBoundaryFacetData()"
+#endif
+
   INTEGER(I4B) :: ii, n
   LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL Display(msg, unitno=unitno)
 
@@ -337,6 +424,11 @@ MODULE PROCEDURE obj_DisplayBoundaryFacetData
     CALL BlankLines(nol=1, unitno=unitno)
 
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayBoundaryFacetData
 
 !----------------------------------------------------------------------------
@@ -344,6 +436,15 @@ END PROCEDURE obj_DisplayBoundaryFacetData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayMeshInfo
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayMeshInfo()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL Display(msg, unitno=unitno)
   CALL EqualLine(unitno=unitno)
   CALL Display(obj%GetTotalNodes(), "total nodes: ", unitno=unitno)
@@ -351,6 +452,11 @@ MODULE PROCEDURE obj_DisplayMeshInfo
   CALL Display(obj%GetTotalEdges(), "tEdges: ", unitno=unitno)
   CALL Display(obj%GetTotalFaces(), "tFaces: ", unitno=unitno)
   CALL EqualLine(unitno=unitno)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayMeshInfo
 
 !----------------------------------------------------------------------------

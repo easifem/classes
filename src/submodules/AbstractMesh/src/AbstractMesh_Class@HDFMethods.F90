@@ -208,8 +208,19 @@ END PROCEDURE obj_GetNodeCoord1
 
 MODULE PROCEDURE obj_Export
   CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL e%RaiseError(modName // "::" // myName // " - " // &
                     "[WIP]: This routine has not been implemented yet.")
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------

@@ -41,7 +41,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetShowTime
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetShowTime()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   obj%showTime = VALUE
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetShowTime
 
 !----------------------------------------------------------------------------
@@ -49,12 +63,26 @@ END PROCEDURE obj_SetShowTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetBoundingBox1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetBoundingBox1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   obj%minX = (.Xmin.box)
   obj%minY = (.Ymin.box)
   obj%minZ = (.Zmin.box)
   obj%maxX = (.Xmax.box)
   obj%maxY = (.Ymax.box)
   obj%maxZ = (.Zmax.box)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetBoundingBox1
 
 !----------------------------------------------------------------------------
@@ -62,10 +90,25 @@ END PROCEDURE obj_SetBoundingBox1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetBoundingBox2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetBoundingBox2()"
+#endif
+
   TYPE(BoundingBox_) :: box
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   box = obj%GetBoundingBox(nodes=nodes, local_nptrs=local_nptrs)
   CALL obj%SetBoundingBox(box=box)
   CALL DeallocateBox(box)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetBoundingBox2
 
 !----------------------------------------------------------------------------
@@ -98,6 +141,11 @@ MODULE PROCEDURE obj_SetSparsity1
   IF (problem) THEN
     CALL e%RaiseWarning(modName // '::' // myName // ' - ' // &
                         '[INTERNAL ERROR] :: Empty mesh found, returning')
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -166,6 +214,11 @@ MODULE PROCEDURE obj_SetSparsity2
   IF (problem) THEN
     CALL e%RaiseWarning(modName // '::' // myName // ' - ' // &
                         '[INTERNAL ERROR] :: Empty mesh found, returning')
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -351,9 +404,24 @@ END PROCEDURE obj_SetSparsity4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTotalMedium1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetTotalMedium1()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   iel = obj%GetLocalElemNumber(globalelement, islocal=islocal)
   CALL ElemData_SetTotalMedium(obj%elementData(iel)%ptr, n=n)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetTotalMedium1
 
 !----------------------------------------------------------------------------
@@ -361,14 +429,28 @@ END PROCEDURE obj_SetTotalMedium1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetTotalMedium2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetTotalMedium2()"
+#endif
+
   INTEGER(I4B) :: ii
   LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   DO ii = 1, obj%tElements
     isok = obj%elementData(ii)%ptr%isActive
     IF (.NOT. isok) CYCLE
     CALL ElemData_SetTotalMedium(obj%elementData(ii)%ptr, n=n)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetTotalMedium2
 
 !----------------------------------------------------------------------------
@@ -376,10 +458,19 @@ END PROCEDURE obj_SetTotalMedium2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial1()"
+#endif
+
   INTEGER(I4B) :: ii
   LOGICAL(LGT) :: isok
 
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   DO ii = 1, obj%tElements
     isok = obj%elementData(ii)%ptr%isActive
@@ -395,6 +486,10 @@ MODULE PROCEDURE obj_SetMaterial1
 
   END DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetMaterial1
 
 !----------------------------------------------------------------------------
@@ -402,10 +497,19 @@ END PROCEDURE obj_SetMaterial1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial2()"
+#endif
+
   INTEGER(I4B) :: ii
   LOGICAL(LGT) :: isok
 
 ! start a loop of obj%elementData with ii = 1, size(obj%elementData)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   DO ii = 1, obj%tElements
     isok = obj%elementData(ii)%ptr%isActive
@@ -413,6 +517,11 @@ MODULE PROCEDURE obj_SetMaterial2
     CALL ElemData_Set(obj%elementData(ii)%ptr, material=material, &
                       medium=medium)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetMaterial2
 
 !----------------------------------------------------------------------------
@@ -420,7 +529,16 @@ END PROCEDURE obj_SetMaterial2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetMaterial3
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetMaterial3()"
+#endif
+
   INTEGER(I4B) :: iel
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   iel = obj%GetLocalElemNumber(globalElement=globalElement, &
                                islocal=islocal)
@@ -428,6 +546,10 @@ MODULE PROCEDURE obj_SetMaterial3
   CALL ElemData_Set(obj%elementData(iel)%ptr, material=material, &
                     medium=medium)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetMaterial3
 
 !----------------------------------------------------------------------------
@@ -435,10 +557,25 @@ END PROCEDURE obj_SetMaterial3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetElementType
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetFacetElementType()"
+#endif
+
   INTEGER(I4B) :: localElem
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   localElem = obj%GetLocalElemNumber(globalElement=globalElement, &
                                      islocal=islocal)
   obj%elementData(localElem)%ptr%elementType = facetElementType
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetFacetElementType
 
 !----------------------------------------------------------------------------
@@ -543,6 +680,15 @@ END PROCEDURE obj_SetQuality
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetParam
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (PRESENT(isInitiated)) obj%isInitiated = isInitiated
 
   IF (PRESENT(isNodeToElementsInitiated)) obj%isNodeToElementsInitiated = &
@@ -597,6 +743,11 @@ MODULE PROCEDURE obj_SetParam
   IF (PRESENT(maxY)) obj%maxY = maxY
 
   IF (PRESENT(maxZ)) obj%maxZ = maxZ
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetParam
 
 !----------------------------------------------------------------------------
@@ -604,8 +755,22 @@ END PROCEDURE obj_SetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFacetParam
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetFacetParam()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL FacetData_SetParam(obj=obj%facetData(facetElement), &
                           elementType=elementType)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetFacetParam
 
 !----------------------------------------------------------------------------
