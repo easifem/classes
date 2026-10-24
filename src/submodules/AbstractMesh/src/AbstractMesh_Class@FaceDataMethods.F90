@@ -24,8 +24,10 @@ USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
 USE ReallocateUtility, ONLY: Reallocate
 USE GlobalData, ONLY: INT8
 USE SortUtility, ONLY: Sort
-USE FaceData_Class
-USE FaceDataBinaryTree_Class
+USE FaceData_Class, ONLY: FaceData_
+USE FaceData_Class, ONLY: FaceData_Pointer
+USE FaceData_Class, ONLY: Initiate
+USE FaceDataBinaryTree_Class, ONLY: FaceDataBinaryTree_
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -77,7 +79,7 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity2D()"
   INTEGER(I4B) :: tElements, iel, elemType, tFaces, face0(2), &
     sorted_face(2), tsize1, tsize2, iface, &
-    localFaces(2_I4B, REFELEM_MAX_FACES)
+    localFaces(2_I4B, TypeRefelemOpt%maxFaces)
 
   LOGICAL(LGT) :: problem
   TYPE(FaceDataBinaryTree_) :: faceTree
@@ -106,10 +108,10 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
   obj%isFaceConnectivityInitiated = .TRUE.
 
-  DO iel = 1, tElements
+  loop1: DO iel = 1, tElements
 
     problem = .NOT. obj%elementData(iel)%ptr%isActive
-    IF (problem) CYCLE
+    IF (problem) CYCLE loop1
 
     elemType = obj%elementData(iel)%ptr%name
 
@@ -150,7 +152,7 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
     END DO
 
-  END DO
+  END DO loop1
 
   CALL faceTree%DEALLOCATE()
   facePtr => NULL()
@@ -172,10 +174,9 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity3D()"
   INTEGER(I4B) :: tElements, iel, elemType, tFaces, &
-    localFaces(4_I4B, REFELEM_MAX_FACES), face0(4), sorted_face(4), &
-    tNodes, tsize1, tsize2, iface, &
-    faceElemType(REFELEM_MAX_FACES), tFaceNodes(REFELEM_MAX_FACES), &
-    aint, faceOrient(3_I4B)
+    localFaces(4_I4B, TypeRefelemOpt%maxFaces), face0(4), sorted_face(4), &
+    tNodes, tsize1, tsize2, iface, faceElemType(TypeRefelemOpt%maxFaces), &
+    tFaceNodes(TypeRefelemOpt%maxFaces), aint, faceOrient(3_I4B)
   LOGICAL(LGT) :: problem, abool
   TYPE(FaceDataBinaryTree_) :: faceTree
   TYPE(FaceData_) :: faceValue
@@ -203,10 +204,10 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
 
   obj%isFaceConnectivityInitiated = .TRUE.
 
-  DO iel = 1, tElements
+  loop1: DO iel = 1, tElements
 
     problem = .NOT. obj%elementData(iel)%ptr%isActive
-    IF (problem) CYCLE
+    IF (problem) CYCLE loop1
 
     elemType = obj%elementData(iel)%ptr%name
 
@@ -257,7 +258,7 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
 
     END DO
 
-  END DO
+  END DO loop1
 
   CALL faceTree%DEALLOCATE()
   facePtr => NULL()

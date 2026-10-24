@@ -29,8 +29,7 @@ USE ElemData_Class, ONLY: TypeElem
 USE ElemData_Class, ONLY: DOMAIN_BOUNDARY_ELEMENT
 USE ElemData_Class, ONLY: INTERNAL_ELEMENT
 USE ElemData_Class, ONLY: ElemData_GetGlobalFaces
-USE FacetData_Class
-USE ReferenceElement_Method
+USE FacetData_Class, ONLY: FacetData_
 
 IMPLICIT NONE
 PRIVATE
@@ -40,7 +39,9 @@ PUBLIC :: InitiateElementToElements2D
 PUBLIC :: InitiateElementToElements1D
 PUBLIC :: GetFacetDataFromElemData
 
-CHARACTER(*), PARAMETER :: modName = "AbstractMeshUtility"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMeshUtility.F90"
+#endif
 
 CONTAINS
 
@@ -77,12 +78,19 @@ SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
   INTEGER(I4B), INTENT(IN), OPTIONAL :: faces(:)
 
   ! internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Help_GetFacetDataFromElemData()"
+#endif
   INTEGER(I4B) :: ii, iface, tsize, jj
 
-  ! now lets find the facets located on the DOMAIN_BOUNDARY_ELEMENT
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
+  ! now lets find the facets located on the DOMAIN_BOUNDARY_ELEMENT
   tsize = SIZE(elementData%boundaryData)
-  DO ii = 1, tsize
+  loop1: DO ii = 1, tsize
 
     ! this is local face number in master cell
     jj = elementData%boundaryData(ii)
@@ -91,7 +99,7 @@ SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
     iface = faces(jj)
 
     ! do not count two times
-    IF (masks(iface)) CYCLE
+    IF (masks(iface)) CYCLE loop1
 
     ! we have found the facet element so mark it.
     masks(iface) = math%yes
@@ -104,11 +112,11 @@ SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
     facetData(iface)%slaveCellNumber = 0_I4B
     facetData(iface)%slaveLocalFacetID = 0_I4B
 
-  END DO
+  END DO loop1
 
   tsize = SIZE(elementData%globalElements)
 
-  DO ii = 1, tsize, 3
+  loop2: DO ii = 1, tsize, 3
 
     ! this is local face number in master cell
     jj = elementData%globalElements(ii + 1)
@@ -117,7 +125,7 @@ SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
     iface = faces(jj)
 
     ! do not count two times
-    IF (masks(iface)) CYCLE
+    IF (masks(iface)) CYCLE loop2
 
     ! we have found the facet element so mark it.
     masks(iface) = math%yes
@@ -131,8 +139,12 @@ SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
     facetData(iface)%masterCellNumber = elementData%globalElemNum
     facetData(iface)%masterLocalFacetID = jj
 
-  END DO
+  END DO loop2
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END SUBROUTINE Help_GetFacetDataFromElemData
 
 !----------------------------------------------------------------------------
@@ -176,10 +188,10 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
   CALL Reallocate(amask, tFaceInMesh)
   amask = math%no
 
-  DO iel = 1, telems
+  loop1: DO iel = 1, telems
 
     problem = .NOT. elementData(iel)%ptr%isActive
-    IF (problem) CYCLE
+    IF (problem) CYCLE loop1
 
     tfaces = SIZE(elementData(iel)%ptr%globalFaces)
     DO ii = 1, tfaces
@@ -195,12 +207,12 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
       END IF
     END DO
 
-  END DO
+  END DO loop1
 
-  DO iel = 1, telems
+  loop2: DO iel = 1, telems
 
     problem = .NOT. elementData(iel)%ptr%isActive
-    IF (problem) CYCLE
+    IF (problem) CYCLE loop2
 
     tfaces = SIZE(elementData(iel)%ptr%globalFaces)
     jj = 0
@@ -253,15 +265,10 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
       elementData(iel)%ptr%elementType = TypeElem%internal
     END IF
 
-  END DO
+  END DO loop2
 
   IF (ALLOCATED(face2elem)) DEALLOCATE(face2elem)
   IF (ALLOCATED(amask)) DEALLOCATE(amask)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
 
   IF (showTime) THEN
     CALL TypeCPUTime%SetEndTime()
@@ -269,6 +276,11 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
                  " : time : " // &
                  ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END SUBROUTINE InitiateElementToElements3D
 
 !----------------------------------------------------------------------------
