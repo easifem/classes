@@ -620,10 +620,10 @@ END PROCEDURE obj_GetDimEntityNum
 MODULE PROCEDURE obj_GetNodeCoord1
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord1()"
+  LOGICAL(LGT) :: isok
 #endif
 
-  INTEGER(I4B) :: ii, tsize, nsd, jj
-  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: nrow, ncol
   CLASS(AbstractMesh_), POINTER :: meshptr
 
 #ifdef DEBUG_VER
@@ -637,36 +637,25 @@ MODULE PROCEDURE obj_GetNodeCoord1
                     "obj%nodeCoord is not allocated.")
 #endif
 
-  isok = .NOT. PRESENT(DIM)
-  IF (isok) THEN
+  nrow = obj%nsd
 
-    tsize = SIZE(obj%nodeCoord, 2)
-    nsd = SIZE(obj%nodeCoord, 1)
-    CALL Reallocate(nodeCoord, nsd, tsize)
-
-    DO CONCURRENT(ii=1:tsize)
-      nodeCoord(1:nsd, ii) = obj%nodeCoord(1:nsd, ii)
-    END DO
-
+  IF (PRESENT(DIM)) THEN
+    meshptr => obj%GetMeshPointer(DIM=DIM)
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                            '[END] ')
+    isok = ASSOCIATED(meshptr)
+    CALL AssertError1(isok, myName, &
+                      "the domain has no mesh of dimension dim.")
 #endif
-
-    RETURN
+    ncol = meshptr%GetTotalNodes()
+    meshptr => NULL()
+  ELSE
+    ncol = SIZE(obj%nodeCoord, 2)
   END IF
 
-  meshptr => obj%GetMeshPointer(DIM=DIM)
-  tsize = meshptr%GetTotalNodes()
-  CALL Reallocate(nodeCoord, 3_I4B, tsize)
-  nsd = SIZE(obj%nodeCoord, 1)
-  DO ii = 1, tsize
-    jj = meshptr%GetGlobalNodeNumber(localNode=ii)
-    jj = obj%GetLocalNodeNumber(globalNode=jj)
-    nodeCoord(1:nsd, ii) = obj%nodeCoord(1:nsd, jj)
-  END DO
+  CALL Reallocate(nodeCoord, nrow, ncol)
 
-  NULLIFY(meshptr)
+  CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=nrow, ncol=ncol, &
+                        DIM=DIM)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -728,6 +717,84 @@ MODULE PROCEDURE obj_GetNodeCoord3
                           '[END] ')
 #endif
 END PROCEDURE obj_GetNodeCoord3
+
+!----------------------------------------------------------------------------
+!                                                               GetNodeCoord
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetNodeCoord4
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNodeCoord4()"
+  LOGICAL(LGT) :: isok
+#endif
+  INTEGER(I4B) :: ii, localNode
+  CLASS(AbstractMesh_), POINTER :: meshptr
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  isok = ALLOCATED(obj%nodeCoord)
+  CALL AssertError1(isok, myName, &
+                    "obj%nodeCoord is not allocated.")
+#endif
+
+  nrow = obj%nsd
+
+  IF (.NOT. PRESENT(DIM)) THEN
+    ncol = SIZE(obj%nodeCoord, 2)
+
+#ifdef DEBUG_VER
+    CALL AssertError3(nrow, SIZE(nodeCoord, 1), myName, &
+                      "rows of nodeCoord are not enough, a=nsd, " // &
+                      "b=SIZE(nodeCoord, 1)")
+    CALL AssertError3(ncol, SIZE(nodeCoord, 2), myName, &
+                      "columns of nodeCoord are not enough, a=tNodes, " // &
+                      "b=SIZE(nodeCoord, 2)")
+#endif
+
+    DO CONCURRENT(ii=1:ncol)
+      nodeCoord(1:nrow, ii) = obj%nodeCoord(1:nrow, ii)
+    END DO
+
+  ELSE
+
+    meshptr => obj%GetMeshPointer(DIM=DIM)
+
+#ifdef DEBUG_VER
+    isok = ASSOCIATED(meshptr)
+    CALL AssertError1(isok, myName, &
+                      "the domain has no mesh of dimension dim.")
+#endif
+
+    ncol = meshptr%GetTotalNodes()
+
+#ifdef DEBUG_VER
+    CALL AssertError3(nrow, SIZE(nodeCoord, 1), myName, &
+                      "rows of nodeCoord are not enough, a=nsd, " // &
+                      "b=SIZE(nodeCoord, 1)")
+    CALL AssertError3(ncol, SIZE(nodeCoord, 2), myName, &
+                      "columns of nodeCoord are not enough, a=tNodes " // &
+                      "of mesh, b=SIZE(nodeCoord, 2)")
+#endif
+
+    DO ii = 1, ncol
+      localNode = meshptr%GetGlobalNodeNumber(localNode=ii)
+      localNode = obj%GetLocalNodeNumber(globalNode=localNode)
+      nodeCoord(1:nrow, ii) = obj%nodeCoord(1:nrow, localNode)
+    END DO
+
+    NULLIFY(meshptr)
+
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_GetNodeCoord4
 
 !----------------------------------------------------------------------------
 !                                                        GetNodeCoordPointer
@@ -1148,6 +1215,8 @@ MODULE PROCEDURE obj_GetParam
   CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
 #endif
 
+  INTEGER(I4B) :: ii, jj
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
@@ -1171,7 +1240,9 @@ MODULE PROCEDURE obj_GetParam
   IF (PRESENT(tEntitiesForNodes)) tEntitiesForNodes = obj%tEntitiesForNodes
   IF (PRESENT(tElements)) tElements = obj%tElements
   IF (PRESENT(tEntities)) tEntities = obj%tEntities
-  IF (PRESENT(nodeCoord)) nodeCoord = obj%nodeCoord
+  IF (PRESENT(nodeCoord)) THEN
+    CALL obj%GetNodeCoord(nodeCoord=nodeCoord, nrow=ii, ncol=jj)
+  END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

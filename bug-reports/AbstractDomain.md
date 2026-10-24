@@ -104,12 +104,17 @@ the listed test passes. **Open** means not changed.
 
 ### 7. Minor
 
-- `GetNodeCoord(dim=...)` returns three rows, but `GetNodeCoord()` (all
-  nodes), `GetNodeCoord(globalNode(:))` and `GetNodeCoord(globalNode)`
-  return `nsd` rows.
-- `GetParam(nodeCoord=...)` uses an assumed-shape dummy; the caller must
-  give the exact shape of the node coordinates.
-- Component `isNodeNumberSparse` is declared `LOGICAL(I4B)`; the other
-  flags are `LOGICAL(LGT)`.
+- Fixed: `GetNodeCoord(dim=...)` returned three rows, but `GetNodeCoord()`
+  (all nodes), `GetNodeCoord(globalNode(:))` and `GetNodeCoord(globalNode)`
+  return `nsd` rows. Now all of them return `nrow = obj%nsd` rows.
+- Fixed: `GetParam(nodeCoord=...)` assigned to an assumed-shape dummy, so
+  the caller had to give the exact shape. It now calls the new
+  `GetNodeCoord(nodeCoord, nrow, ncol, dim)` (`obj_GetNodeCoord4`), which
+  writes the nodes of the domain (or of the mesh of dimension dim) without
+  allocation; nodeCoord must be large enough. `GetNodeCoord(nodeCoord,
+  dim)` allocates and calls it. Test:
+  `GetNodeCoord_test_1`.
+- Fixed: component `isNodeNumberSparse` was declared `LOGICAL(I4B)`; it is
+  now `LOGICAL(LGT)` like the other flags.
 - `SetTotalElements` changes `tElements(indx)` only; `GetTotalElements`
   reads the meshes, so the two can disagree.

@@ -26,7 +26,6 @@ PROGRAM main
   USE GlobalData, ONLY: I4B
   USE HDF5File_Class, ONLY: HDF5File_
   USE Test_Method, ONLY: OK
-
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
@@ -37,6 +36,7 @@ PROGRAM main
   REAL(DFP), ALLOCATABLE :: xij(:, :)
   REAL(DFP), POINTER :: ptr(:, :)
   REAL(DFP) :: xx(3, 10), x(3)
+  REAL(DFP) :: buf(3, 20)
   INTEGER(I4B) :: nrow, ncol, tsize
 
   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
@@ -56,6 +56,14 @@ PROGRAM main
   CALL OK(ALL(ABS(xx(1:2, 1) - 1.0_DFP) .LT. tol), "node 4")
   CALL obj%GetNodeCoord(nodeCoord=x, tsize=tsize, globalNode=6_I4B)
   CALL OK(ALL(ABS(x(1:2) - [0.5_DFP, 1.0_DFP]) .LT. tol), "node 6")
+  CALL obj%GetNodeCoord(nodeCoord=buf, nrow=nrow, ncol=ncol)
+  CALL OK(nrow .EQ. 2_I4B .AND. ncol .EQ. 9_I4B, &
+          "all nodes without allocation: nrow and ncol")
+  CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), &
+          "all nodes without allocation: node 9")
+  buf = 0.0_DFP
+  CALL obj%GetParam(nodeCoord=buf)
+  CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), "GetParam")
   ptr => obj%GetNodeCoordPointer()
   CALL OK(SIZE(ptr, 2) .EQ. 9_I4B, "GetNodeCoordPointer")
   ptr => NULL()

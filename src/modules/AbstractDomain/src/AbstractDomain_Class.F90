@@ -94,7 +94,7 @@ TYPE, ABSTRACT :: AbstractDomain_
   !! Smallest node number in the domain
   INTEGER(I4B) :: tNodes = 0
   !! Total number of nodes in the mesh
-  LOGICAL(I4B) :: isNodeNumberSparse = .FALSE.
+  LOGICAL(LGT) :: isNodeNumberSparse = .FALSE.
   !! True if node numbers are not continuous
   INTEGER(I4B) :: maxElemNum = 0
   !! Largest element number in the domain
@@ -129,29 +129,21 @@ TYPE, ABSTRACT :: AbstractDomain_
   !! results of kdtree searches
 
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the domain from a HDF5 mesh file
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: DeallocateKdtree => obj_DeallocateKdtree
   !! Deallocate the kdtree of the domain
 
-  ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the meta data of the domain
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
   !! Import the domain from a toml table
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
     obj_ImportFromToml2
   !! Import the domain from a toml file
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
@@ -163,98 +155,93 @@ CONTAINS
     obj_DisplayDomainInfo
   !! Display the meta data of the domain
 
-  ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! Returns true if the domain is initiated
   PROCEDURE(obj_GetMeshPointer), DEFERRED, PUBLIC, PASS(obj) :: GetMeshPointer
   !! Get a pointer to a mesh of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
   !! Returns true if a node is present in the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
   !! Returns true if an element is present
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
   !! Get the vertex connectivity of an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
   !! Get the number of nodes in an element
-
-  PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements1 => obj_GetNodeToElements1
   !! Get the elements around a node
-  PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements2 => obj_GetNodeToElements2
   !! Get the elements around a list of nodes
   GENERIC, PUBLIC :: GetNodeToElements => &
     GetNodeToElements1, GetNodeToElements2
   !! Get the elements around nodes
 
-  PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements1_ => obj_GetNodeToElements1_
   !! Get the elements around a node without allocation
-  PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements2_ => obj_GetNodeToElements2_
   !! Get the elements around nodes without allocation
   GENERIC, PUBLIC :: GetNodeToElements_ => &
     GetNodeToElements1_, &
     GetNodeToElements2_
   !! Get the elements around nodes without allocation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
   !! Get the total number of nodes
-  PROCEDURE, PASS(obj) :: obj_tNodes1
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tNodes1
   !! Number of nodes of a mesh
-  PROCEDURE, PASS(obj) :: obj_tNodes2
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tNodes2
   !! Number of nodes of the domain
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
     obj_tNodes1, obj_tNodes2
   !! Get the number of nodes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_GetTotalElements
   !! Get the total number of elements
-  PROCEDURE, PASS(obj) :: obj_tElements1
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tElements1
   !! Number of elements of the nsd mesh
-  PROCEDURE, PASS(obj) :: obj_tElements2
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tElements2
   !! Number of elements of a mesh
-  PROCEDURE, PASS(obj) :: obj_tElements3
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tElements3
   !! Number of elements of an entity
   GENERIC, PUBLIC :: OPERATOR(.tElements.) => obj_tElements1, &
     obj_tElements2, obj_tElements3
   !! Get the number of elements
-
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
   !! Get the local number of a global node
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
   !! Get the local numbers of global nodes
   GENERIC, PUBLIC :: GetLocalNodeNumber => GetLocalNodeNumber1, &
     GetLocalNodeNumber2
   !! Get local node numbers
-
-  PROCEDURE, PASS(obj) :: GetLocalElemNumber1 => obj_GetLocalElemNumber1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalElemNumber1 => obj_GetLocalElemNumber1
   !! Get the local numbers of global elements
-  PROCEDURE, PASS(obj) :: GetLocalElemNumber2 => obj_GetLocalElemNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalElemNumber2 => obj_GetLocalElemNumber2
   !! Get the local number of a global element
   GENERIC, PUBLIC :: GetLocalElemNumber => GetLocalElemNumber1, &
     GetLocalElemNumber2
   !! Get local element numbers
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => &
     obj_GetElemDataPointer
   !! Get a pointer to the element data
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
   !! Get a copy of the element data
-
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
   !! Get the global number of a local node
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
   !! Get the global numbers of local nodes
   GENERIC, PUBLIC :: GetGlobalNodeNumber => &
     GetGlobalNodeNumber1, &
     GetGlobalNodeNumber2
   !! Get global node numbers
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
   !! Get the number of entities of a dimension
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntitiesList => &
@@ -262,155 +249,119 @@ CONTAINS
   !! Get the number of entities of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalEntities
   !! Same as GetTotalEntities (will be removed)
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
   !! Get the dimension and entity of an element
-
-  PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
   !! Get node coordinates
-  PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
   !! Get the coordinates of a list of nodes
-  PROCEDURE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
   !! Get the coordinates of a node
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord4 => obj_GetNodeCoord4
+  !! Get the coordinates of nodes without allocation
   GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2, &
-    GetNodeCoord3
+    GetNodeCoord3, GetNodeCoord4
   !! Get node coordinates
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
     obj_GetNodeCoordPointer
   !! Get a pointer to the node coordinates
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode1 => obj_GetNearestNode1
   !! Get the node nearest to a point
   PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
   !! Get the nn nodes nearest to a point
   GENERIC, PUBLIC :: GetNearestNode => GetNearestNode1, GetNearestNode2
   !! Get the nearest nodes to a point
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! Get the global node numbers of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
   !! Get the global node numbers of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
     obj_GetInternalNptrs
   !! Get the internal nodes of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
   !! Get the nodes of the domain in a box
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox_ => obj_GetNptrsInBox_
   !! Get the nodes in a box without allocation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingBox => obj_GetBoundingBox
   !! Get the bounding box
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Get the number of spatial dimensions
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
   !! Get the number of media of an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
   !! Get the maximum node number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinNodeNumber => obj_GetMinNodeNumber
   !! Get the minimum node number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxElemNumber => obj_GetMaxElemNumber
   !! Get the maximum element number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => obj_GetMinElemNumber
   !! Get the minimum element number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalEdgeNumber => &
     obj_GetGlobalEdgeNumber
   !! Get the global edge number of a local edge
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFaceNumber => &
     obj_GetGlobalFaceNumber
   !! Get the global face number of a local face
-
-  PROCEDURE, PASS(obj) :: GetConnectivity1_ => obj_GetConnectivity1_
+  PROCEDURE, PRIVATE, PASS(obj) :: GetConnectivity1_ => obj_GetConnectivity1_
   !! Get the connectivity of an element
-
-  PROCEDURE, PASS(obj) :: GetConnectivity2_ => obj_GetConnectivity2_
+  PROCEDURE, PRIVATE, PASS(obj) :: GetConnectivity2_ => obj_GetConnectivity2_
   !! Get all connectivities of an element
-
   GENERIC, PUBLIC :: GetConnectivity_ => GetConnectivity1_, &
     GetConnectivity2_
   !! Get the connectivity without allocation
-
-  PROCEDURE, PASS(obj) :: GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
   !! Get the number of vertex nodes
-  PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
   !! Get the number of vertex nodes of a list of elements
   GENERIC, PUBLIC :: GetTotalVertexNodes => GetTotalVertexNodes1, &
     GetTotalVertexNodes2
   !! Get the number of vertex nodes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrientation => obj_GetOrientation
   !! Get the orientation flags of an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemTopologyIndx => &
     obj_GetElemTopologyIndx
   !! Get the topology index of an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementActive => &
     obj_isElementActive
   !! Returns true if an element is active
 
-  ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
   !! Set the showTime option
-
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   !! Set the sparsity pattern of a matrix
-  PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
+  PROCEDURE, PRIVATE, NOPASS :: SetSparsity2 => obj_SetSparsity2
   !! Set the sparsity pattern for several domains
   GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
   !! Set the sparsity pattern of a matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMedium => obj_SetTotalMedium
   !! Set the number of media in the elements of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
   !! Set the material of a medium in an entity
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalElements => obj_SetTotalElements
   !! Set the number of elements of a dimension
 
-  ! SET:
   ! @MeshDataMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateKdtree => obj_InitiateKdtree
   !! Initiate the kdtree of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     obj_InitiateNodeToElements
   !! Initiate the node to elements data of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
     obj_InitiateNodeToNodes
   !! Initiate the node to nodes data of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     obj_InitiateElementToElements
   !! Initiate the element to elements data of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
     obj_InitiateFacetElements
   !! Initiate the facet elements of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
     obj_InitiateExtraNodeToNodes
   !! Initiate the extra node to nodes data of the meshes
@@ -2194,22 +2145,30 @@ END INTERFACE
 ! date: 2021-07-23
 ! update:
 !   - 2026-10-23: Removed the unused entityNum argument
+!   - 2026-10-24: With dim, nodeCoord has nsd rows (it had three); the
+!     coordinates are copied by GetNodeCoord(nodeCoord, nrow, ncol, dim)
 ! summary: Get node coordinates
 !
 ! GetNodeCoord is a generic method:
 !
-! - without dim, return the coordinates of all nodes of the domain (nsd rows);
+! - without dim, return the coordinates of all nodes of the domain;
 ! - with dim, return the coordinates of the nodes of the mesh of dimension dim
-!   (three rows, columns in local node order of the mesh);
+!   (columns in local node order of the mesh);
+! - with nrow and ncol, write the same coordinates without allocation (see
+!   [[obj_GetNodeCoord4]]);
 ! - with globalNode(:), return the coordinates of a list of nodes;
 ! - with globalNode and tsize, return the coordinates of one node.
+!
+! In all cases the number of rows is the number of spatial dimensions of the
+! domain, nsd = obj%nsd (GetNSD()). This routine reallocates nodeCoord to
+! nsd rows and as many columns as nodes.
 !
 ! GetNodeCoordPointer returns a pointer to the node coordinates.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   nodeCoord(:,:) : REAL(DFP), allocatable, intent(inout) - node coordinates
-!     in xiJ format, it is reallocated
+!     in xiJ format, reallocated to SIZE = [nsd, number of nodes]
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh; if
 !     absent, all nodes of the domain
 !
@@ -2236,6 +2195,7 @@ END INTERFACE
 !   REAL(DFP), ALLOCATABLE :: xij(:, :)
 !   REAL(DFP), POINTER :: ptr(:, :)
 !   REAL(DFP) :: xx(3, 10), x(3)
+!   REAL(DFP) :: buf(3, 20)
 !   INTEGER(I4B) :: nrow, ncol, tsize
 !
 !   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
@@ -2255,6 +2215,14 @@ END INTERFACE
 !   CALL OK(ALL(ABS(xx(1:2, 1) - 1.0_DFP) .LT. tol), "node 4")
 !   CALL obj%GetNodeCoord(nodeCoord=x, tsize=tsize, globalNode=6_I4B)
 !   CALL OK(ALL(ABS(x(1:2) - [0.5_DFP, 1.0_DFP]) .LT. tol), "node 6")
+!   CALL obj%GetNodeCoord(nodeCoord=buf, nrow=nrow, ncol=ncol)
+!   CALL OK(nrow .EQ. 2_I4B .AND. ncol .EQ. 9_I4B, &
+!           "all nodes without allocation: nrow and ncol")
+!   CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), &
+!           "all nodes without allocation: node 9")
+!   buf = 0.0_DFP
+!   CALL obj%GetParam(nodeCoord=buf)
+!   CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), "GetParam")
 !   ptr => obj%GetNodeCoordPointer()
 !   CALL OK(SIZE(ptr, 2) .EQ. 9_I4B, "GetNodeCoordPointer")
 !   ptr => NULL()
@@ -2272,7 +2240,8 @@ INTERFACE
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
-    !! node coordinates in xiJ format, it is reallocated
+    !! node coordinates in xiJ format, reallocated to nsd rows and as many
+    !! columns as nodes
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh; if absent, all nodes of the domain
   END SUBROUTINE obj_GetNodeCoord1
@@ -2357,6 +2326,56 @@ INTERFACE
     !! if true, the given element or node number is a local number; default is
     !! false
   END SUBROUTINE obj_GetNodeCoord3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetNodeCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-24
+! summary: Get the coordinates of nodes without allocation
+!
+! Write node coordinates in nodeCoord(1:nrow, 1:ncol):
+!
+! - without dim, the coordinates of all nodes of the domain; column ii is
+!   the local node ii of the domain;
+! - with dim, the coordinates of the nodes of the mesh of dimension dim;
+!   column ii is the local node ii of the mesh.
+!
+! nrow is always the number of spatial dimensions of the domain,
+! nrow = obj%nsd (GetNSD()), and ncol is the number of nodes written.
+! nodeCoord is not allocated; it must have at least nsd rows and ncol
+! columns. GetNodeCoord(nodeCoord, dim), which allocates nodeCoord, and
+! GetParam(nodeCoord=...) call this method.
+!
+! Arguments:
+!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+!   nodeCoord(:,:) : REAL(DFP), intent(inout) - node coordinates,
+!     SIZE(nodeCoord, 1) >= nsd and SIZE(nodeCoord, 2) >= number of nodes
+!     of the domain (or of the mesh of dimension dim)
+!   nrow : INTEGER(I4B), intent(out) - number of rows written, obj%nsd
+!   ncol : INTEGER(I4B), intent(out) - number of columns written (number
+!     of nodes)
+!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh; if
+!     absent, all nodes of the domain
+!
+! See also: [[obj_GetNodeCoord1]], [[obj_GetParam]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeCoord4(obj, nodeCoord, nrow, ncol, dim)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    !! domain object
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+    !! node coordinates, SIZE(nodeCoord, 1) >= nsd and SIZE(nodeCoord, 2) >=
+    !! number of nodes of the domain (or of the mesh of dimension dim)
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written, obj%nsd
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns written (number of nodes)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
+    !! dimension of the mesh; if absent, all nodes of the domain
+  END SUBROUTINE obj_GetNodeCoord4
 END INTERFACE
 
 !----------------------------------------------------------------------------
