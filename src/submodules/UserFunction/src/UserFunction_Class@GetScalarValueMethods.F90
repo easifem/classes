@@ -20,21 +20,6 @@ USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
 USE Display_Method, ONLY: Display
-USE ISO_C_BINDING, ONLY: C_PTR
-USE LuaInterface, ONLY: lual_newstate
-USE LuaInterface, ONLY: lual_openlibs
-USE LuaInterface, ONLY: lual_dofile
-USE LuaInterface, ONLY: lua_getglobal
-USE LuaInterface, ONLY: lua_isfunction
-USE LuaInterface, ONLY: lua_close
-USE LuaInterface, ONLY: lua_pushnumber
-USE LuaInterface, ONLY: lua_pcall
-USE LuaInterface, ONLY: lua_ok
-USE LuaInterface, ONLY: lua_tonumber
-USE LuaInterface, ONLY: lua_pop
-USE LuaInterface, ONLY: lua_close
-USE LuaInterface, ONLY: lua_number
-USE LuaInterface, ONLY: lua_pushvalue
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -58,183 +43,32 @@ SUBROUTINE CheckError(obj, args)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError2(obj%returnType, varopt%scalar, myName, &
-    'a=obj%returnType, b=scalar')
+                    'a=obj%returnType, b=scalar')
 #endif
 
 #ifdef DEBUG_VER
   IF (obj%isExternalFunc) THEN
     isok = ASSOCIATED(obj%scalarFunction)
     CALL AssertError1(isok, myName, &
-      'UserFunction_::obj%isUserFunctionSet is true but obj%scalarFunction &
-    &is not ASSOCIATED.')
+                      'UserFunction_::obj%isUserFunctionSet is true but ' // &
+                      'obj%scalarFunction is not ASSOCIATED.')
   END IF
 #endif
 
   IF (obj%isLuaScript) THEN
-    CALL CheckError_Lua(obj=obj, args=args)
+    CALL CheckError_Scalar_Lua(obj=obj, args=args)
   END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END SUBROUTINE CheckError
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-#ifdef USE_LUA
-
-SUBROUTINE CheckError_Lua(obj, args)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "CheckError_Lua()"
-  LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: tsize
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  CALL AssertError2(obj%numReturns, math%one_i, myName, &
-    'a=obj%numReturns, b=1')
-#endif
-
-#ifdef DEBUG_VER
-  isok = PRESENT(args)
-  IF (isok) THEN
-    tsize = SIZE(args)
-    CALL AssertError3(obj%numArgs, tsize, myName, &
-      'a=obj%numArgs and b=size(args)')
-  ELSE
-
-    CALL AssertError2(obj%numArgs, math%zero_i, myName, &
-      'a=obj%numArgs and b=0')
-  END IF
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
-#endif
-END SUBROUTINE CheckError_Lua
-
-!----------------------------------------------------------------------------
-!                                                           checkerror_lua
-!----------------------------------------------------------------------------
-
-#else
-
-SUBROUTINE CheckError_Lua(obj, args)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "CheckError_Lua()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  CALL AssertError1(math%no, myName, &
-    'Currently lua script cannot be used for UserFunction.')
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
-#endif
-
-END SUBROUTINE CheckError_Lua
-
-#endif
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-#ifdef USE_LUA
-
-SUBROUTINE GetValue_Lua(obj, val, args)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), INTENT(INOUT) :: val
-  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "GetValue_Lua()"
-#endif
-
-  LOGICAL(LGT) :: isok
-  TYPE(C_PTR) :: l
-  INTEGER(I4B) :: nargs, nresults, iarg, rc
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
-#endif
-
-  nargs = obj%numArgs
-  nresults = obj%numReturns
-
-  l = lual_newstate()
-  CALL lual_openlibs(l)
-  rc = lual_dofile(l, TRIM(obj%luaScript))
-  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
-  isok = lua_isfunction(l, -1) == 1
-
-#ifdef DEBUG_VER
-  CALL AssertError1( &
-    isok, myName, &
-    'UserFunction_::obj%isLuaScript is TRUE In the lua script' // &
-    TRIM(obj%luaScript) // 'lua function named ' // &
-    TRIM(obj%luaFunctionName) // ' is not a function.')
-#endif
-
-  DO iarg = 1, nargs
-    CALL lua_pushnumber(l, REAL(args(iarg), KIND=lua_number))
-  END DO
-
-  rc = lua_pcall(l, nargs, nresults, 0)
-
-#ifdef DEBUG_VER
-  CALL AssertError2(rc, lua_ok, myName, &
-    'a=lua_pcall(l, nargs, ...), b=lua_ok')
-#endif
-
-  val = REAL(lua_tonumber(l, -1), KIND=DFP)
-  CALL lua_pop(l, 1)
-  CALL lua_close(l)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
-#endif
-END SUBROUTINE GetValue_Lua
-
-#else
-
-SUBROUTINE GetValue_Lua(obj, val, args)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), INTENT(INOUT) :: val
-  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
-  val = 0.0_DFP
-END SUBROUTINE GetValue_Lua
-
-#endif
 
 !----------------------------------------------------------------------------
 !                                                                        Get
@@ -247,7 +81,7 @@ MODULE PROCEDURE obj_GetScalarValue_1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
@@ -264,11 +98,11 @@ MODULE PROCEDURE obj_GetScalarValue_1
   CASE (funcopt%specialFuncEngine)
 #ifdef DEBUG_VER
     CALL AssertError1(math%no, myName, &
-      "engineID=specialFuncEngine is notsupported yet")
+                      "engineID=specialFuncEngine is notsupported yet")
 #endif
 
   CASE (funcopt%luaEngine)
-    CALL GetValue_Lua(obj=obj, val=val, args=args)
+    CALL GetScalarValue_Lua1(obj=obj, val=val, args=args)
 
   CASE (funcopt%equationParserEngine)
     val = obj%scalarEqParser%Evaluate(val=args(1:obj%numArgs))
@@ -276,21 +110,21 @@ MODULE PROCEDURE obj_GetScalarValue_1
   CASE (funcopt%symengineEngine)
 #ifdef DEBUG_VER
     CALL AssertError1(math%no, myName, &
-      "engineID=specialFuncEngine is notsupported yet")
+                      "engineID=specialFuncEngine is notsupported yet")
 #endif
 
   CASE DEFAULT
 
 #ifdef DEBUG_VER
     CALL AssertError1(math%no, myName, &
-      "No case found for given engineID")
+                      "No case found for given engineID")
 #endif
 
   END SELECT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetScalarValue_1
 
@@ -304,13 +138,10 @@ MODULE PROCEDURE obj_GetScalarValue_2
 #endif
 
   INTEGER(I4B) :: ii
-  LOGICAL(LGT) :: isok
-  TYPE(C_PTR) :: l
-  INTEGER(I4B) :: nargs, nresults, iarg, rc
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   tsize = SIZE(args, 2)
@@ -319,68 +150,15 @@ MODULE PROCEDURE obj_GetScalarValue_2
     DO ii = 1, tsize
       CALL obj%GetScalarValue_(val=val(ii), args=args(:, ii))
     END DO
-
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
-#endif
-    RETURN
+  ELSE
+    ! In the following call tsize is read only;
+    ! so make sure tsize is set, above
+    CALL GetScalarValue_Lua2(obj=obj, val=val, tsize=tsize, args=args)
   END IF
-
-! the following code is executed when engineID is lua
-
-#ifdef USE_LUA
-  ! CALL GetValue_Lua(obj=obj, val=val, args=args(:, 1))
-  ! CALL obj%GetScalarValue_(val=val(ii), args=args(:, ii))
-
-  nargs = obj%numArgs
-  nresults = obj%numReturns
-
-  l = lual_newstate()
-  CALL lual_openlibs(l)
-  rc = lual_dofile(l, TRIM(obj%luaScript))
-  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
-
-#ifdef DEBUG_VER
-  isok = lua_isfunction(l, -1) == 1
-  CALL AssertError1( &
-    isok, myName, &
-    'UserFunction_::obj%isLuaScript is TRUE In the lua script' // &
-    TRIM(obj%luaScript) // 'lua function named ' // &
-    TRIM(obj%luaFunctionName) // ' is not a function.')
-#endif
-
-  DO ii = 1, tsize
-
-#ifdef DEBUG_VER
-    CALL CheckError(obj=obj, args=args(:, ii))
-#endif
-
-    CALL lua_pushvalue(l, -1)
-
-    DO iarg = 1, nargs
-      CALL lua_pushnumber(l, REAL(args(iarg, ii), KIND=lua_number))
-    END DO
-
-    rc = lua_pcall(l, nargs, nresults, 0)
-
-#ifdef DEBUG_VER
-    CALL AssertError2(rc, lua_ok, myName, &
-      'a=lua_pcall(l, nargs, ...), b=lua_ok')
-#endif
-
-    val(ii) = REAL(lua_tonumber(l, -1), KIND=DFP)
-    CALL lua_pop(l, 1)
-
-  END DO
-
-  CALL lua_close(l)
-
-#endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetScalarValue_2
 

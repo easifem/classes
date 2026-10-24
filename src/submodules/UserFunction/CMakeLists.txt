@@ -17,15 +17,18 @@
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/UserFunction_Class@ConstructorMethods.F90
-          ${src_path}/UserFunction_Class@IOMethods.F90
-          ${src_path}/UserFunction_Class@HDFMethods.F90
-          ${src_path}/UserFunction_Class@TomlMethods.F90
-          ${src_path}/UserFunction_Class@GetMethods.F90
-          ${src_path}/UserFunction_Class@GetScalarValueMethods.F90
-          ${src_path}/UserFunction_Class@GetVectorValueMethods.F90
-          ${src_path}/UserFunction_Class@GetMatrixValueMethods.F90
-          ${src_path}/UserFunction_Class@GetFEVariableMethods.F90
-          ${src_path}/UserFunction_Class@GetFEVariable2Methods.F90
-          ${src_path}/UserFunction_Class@SetMethods.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/UserFunction_Class@ConstructorMethods.F90
+        ${src_path}/UserFunction_Class@IOMethods.F90
+        ${src_path}/UserFunction_Class@HDFMethods.F90
+        ${src_path}/UserFunction_Class@TomlMethods.F90
+        ${src_path}/UserFunction_Class@GetMethods.F90
+        ${src_path}/UserFunction_Class@GetScalarValueMethods.F90
+        ${src_path}/UserFunction_Class@GetVectorValueMethods.F90
+        ${src_path}/UserFunction_Class@GetMatrixValueMethods.F90
+        ${src_path}/UserFunction_Class@GetFEVariableMethods.F90
+        ${src_path}/UserFunction_Class@GetFEVariable2Methods.F90
+        ${src_path}/UserFunction_Class@SetMethods.F90
+        ${src_path}/UserFunction_Class@LuaScalarMethods.F90
+)
