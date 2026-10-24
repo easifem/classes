@@ -226,7 +226,21 @@ END PROCEDURE obj_InitiateNodeToNodeData2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetNodeToNodePointer
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetNodeToNodePointer()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans => obj%NodeToNode
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetNodeToNodePointer
 
 !----------------------------------------------------------------------------

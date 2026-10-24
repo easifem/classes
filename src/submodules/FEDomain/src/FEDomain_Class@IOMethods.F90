@@ -31,11 +31,27 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
   LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL AbstractDomainDisplay(obj=obj, msg=msg, unitno=unitno)
 
-  IF (.NOT. obj%IsInitiated()) RETURN
+  IF (.NOT. obj%IsInitiated()) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   abool = ASSOCIATED(obj%meshVolume)
   CALL Display(abool, "meshVolume ASSOCIATED: ", unitno=unitno)
@@ -72,6 +88,10 @@ MODULE PROCEDURE obj_Display
   abool = ASSOCIATED(obj%mesh)
   CALL Display(abool, "mesh ASSOCIATED: ", unitno=unitno)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -79,7 +99,16 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayDomainInfo
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayDomainInfo()"
+#endif
+
   LOGICAL(LGT) :: abool
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL AbstractDomainDisplayDomainInfo(obj=obj, unitno=unitno, msg=msg)
 
@@ -89,6 +118,10 @@ MODULE PROCEDURE obj_DisplayDomainInfo
     CALL obj%mesh%DisplayMeshInfo("Mesh Info:", unitno=unitno)
   END IF
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayDomainInfo
 
 !----------------------------------------------------------------------------

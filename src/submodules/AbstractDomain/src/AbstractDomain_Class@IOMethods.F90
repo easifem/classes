@@ -42,7 +42,14 @@ MODULE PROCEDURE obj_Display
 #endif
 
   CALL Display(obj%isInit, "AbstractDomain_::obj Initiated: ", unitno=unitno)
-  IF (.NOT. obj%isInit) RETURN
+  IF (.NOT. obj%isInit) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   CALL Display("engine: " // obj%engine, unitno=unitno)
   CALL Display("majorVersion: " // ToString(obj%majorVersion), unitno=unitno)
@@ -93,7 +100,14 @@ MODULE PROCEDURE obj_DisplayDomainInfo
 #endif
 
   CALL Display(obj%isInit, "AbstractDomain_::obj Initiated: ", unitno=unitno)
-  IF (.NOT. obj%isInit) RETURN
+  IF (.NOT. obj%isInit) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
   CALL Display("engine: " // obj%engine, unitno=unitno)

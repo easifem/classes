@@ -20,6 +20,11 @@ USE BaseMethod
 USE ElemData_Class, ONLY: ElemData_
 USE ElemData_Class, ONLY: Elemdata_meshID
 IMPLICIT NONE
+
+! modName is used outside DEBUG_VER (RaiseError) in this submodule
+CHARACTER(*), PARAMETER :: modName = &
+  "DomainConnectivity_Class@FacetMethods.F90"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -172,6 +177,11 @@ MODULE PROCEDURE dc_InitiateFacetToCellData1
     CALL e%raiseInformation(modName // "::" // myName // " - " // &
                             "It seems, obj%facetToCell data is already " // &
                             "initiated")
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -204,6 +214,11 @@ MODULE PROCEDURE dc_InitiateFacetToCellData2
     CALL e%raiseInformation(modName // "::" // myName // " - " // &
                             "It seems, obj%facetToCell data is already " // &
                             "initiated")
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -295,6 +310,11 @@ MODULE PROCEDURE dc_InitiateFacetToCellData3
     CALL e%raiseInformation(modName // "::" // myName // " - " // &
                             "It seems, obj%facetToCell data is already " // &
                             "initiated")
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -402,6 +422,11 @@ MODULE PROCEDURE dc_InitiateFacetToCellData4
     CALL e%raiseInformation(modName // "::" // myName // " - " // &
                             "It seems, obj%facetToCell data is already " // &
                             "initiated")
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 

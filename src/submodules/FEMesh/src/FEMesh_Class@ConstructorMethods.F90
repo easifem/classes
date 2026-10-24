@@ -29,7 +29,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Final()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------

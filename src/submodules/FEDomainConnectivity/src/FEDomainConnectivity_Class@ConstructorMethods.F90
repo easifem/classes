@@ -20,7 +20,7 @@ IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-                           "FEDomainConnectivity_Class@ConstructorMethods.F90"
+  "FEDomainConnectivity_Class@ConstructorMethods.F90"
 #endif
 CONTAINS
 
@@ -30,26 +30,26 @@ CONTAINS
 
 MODULE PROCEDURE obj_Deallocate1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-obj%isInitiated = .FALSE.
-obj%isFacetToCell = .FALSE.
-obj%isNodeToNode = .FALSE.
-obj%isCellToCell = .FALSE.
-IF (ALLOCATED(obj%nodeToNode)) DEALLOCATE (obj%nodeToNode)
-IF (ALLOCATED(obj%cellToCell)) DEALLOCATE (obj%cellToCell)
-IF (ALLOCATED(obj%facetToCell)) DEALLOCATE (obj%facetToCell)
-IF (ALLOCATED(obj%elemToElem)) DEALLOCATE (obj%elemToElem)
+  obj%isInitiated = .FALSE.
+  obj%isFacetToCell = .FALSE.
+  obj%isNodeToNode = .FALSE.
+  obj%isCellToCell = .FALSE.
+  IF (ALLOCATED(obj%nodeToNode)) DEALLOCATE(obj%nodeToNode)
+  IF (ALLOCATED(obj%cellToCell)) DEALLOCATE(obj%cellToCell)
+  IF (ALLOCATED(obj%facetToCell)) DEALLOCATE(obj%facetToCell)
+  IF (ALLOCATED(obj%elemToElem)) DEALLOCATE(obj%elemToElem)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_Deallocate1
 
@@ -59,9 +59,19 @@ END PROCEDURE obj_Deallocate1
 
 MODULE PROCEDURE obj_Deallocate2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate2()"
 #endif
 #include "../../include/deallocate_vector.F90"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Deallocate2
 
 !----------------------------------------------------------------------------
@@ -70,10 +80,20 @@ END PROCEDURE obj_Deallocate2
 
 MODULE PROCEDURE obj_Deallocate3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Deallocate3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate3()"
 #endif
 
 #include "../../include/deallocate_vector_ptr.F90"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Deallocate3
 
 !----------------------------------------------------------------------------
@@ -81,7 +101,21 @@ END PROCEDURE obj_Deallocate3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
-CALL obj%DEALLOCATE()
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Final()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------

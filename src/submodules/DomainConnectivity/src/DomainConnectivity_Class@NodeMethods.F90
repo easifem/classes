@@ -18,6 +18,11 @@
 SUBMODULE(DomainConnectivity_Class) NodeMethods
 USE BaseMethod
 IMPLICIT NONE
+
+! modName is used outside DEBUG_VER (RaiseError) in this submodule
+CHARACTER(*), PARAMETER :: modName = &
+  "DomainConnectivity_Class@NodeMethods.F90"
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -239,7 +244,21 @@ END PROCEDURE dc_InitiateNodeToNodeData2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_GetNodeToNodePointer
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_GetNodeToNodePointer()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans => obj%NodeToNode
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE dc_GetNodeToNodePointer
 
 !----------------------------------------------------------------------------

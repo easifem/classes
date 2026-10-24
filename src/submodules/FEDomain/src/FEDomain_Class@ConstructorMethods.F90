@@ -30,6 +30,14 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   CALL AbstractDomainDeallocate(obj=obj)
 
@@ -58,6 +66,11 @@ MODULE PROCEDURE obj_Deallocate
     CALL obj%meshPoint%DEALLOCATE()
     DEALLOCATE(obj%meshPoint)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -65,7 +78,21 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Final()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
@@ -73,8 +100,22 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor_1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Constructor_1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ALLOCATE(FEDomain_ :: ans)
   CALL ans%Initiate(hdf5=hdf5, group=group)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------

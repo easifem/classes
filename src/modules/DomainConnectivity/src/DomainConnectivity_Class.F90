@@ -27,7 +27,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 IMPLICIT NONE
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "DomainConnectivity_Class"
+
 INTEGER(I4B), PUBLIC, PARAMETER :: pType = 1
 INTEGER(I4B), PUBLIC, PARAMETER :: hType = 2
 INTEGER(I4B), PUBLIC, PARAMETER :: rType = 3

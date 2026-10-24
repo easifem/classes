@@ -81,6 +81,11 @@ MODULE PROCEDURE obj_IsNodePresent
 
   IF (islocal0) THEN
     ans = (globalNode .GT. math%zero_i) .AND. (globalNode .LE. obj%tNodes)
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
@@ -294,13 +299,25 @@ MODULE PROCEDURE obj_GetTotalNodes
   case1 = .NOT. PRESENT(DIM)
   IF (case1) THEN
     ans = obj%tNodes
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
     RETURN
   END IF
 
   meshptr => obj%GetMeshPointer(DIM=DIM)
 
   problem = .NOT. ASSOCIATED(meshptr)
-  IF (problem) RETURN
+  IF (problem) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
 
   ans = meshptr%GetTotalNodes()
   NULLIFY(meshptr)
