@@ -1,0 +1,33 @@
+[test1]
+name = "func"
+returnType = "Vector"
+argType = "Constant"
+numArgs = 0
+numReturns = 3
+value = [1.0, 1.0, 1.0]
+
+[test2]
+name = "func"
+returnType = "Vector"
+argType = "Constant"
+value = [1.0, 1.0, 1.0]
+# default numReturns is 3
+
+[test3]
+name = "func"
+returnType = "Vector"
+argType = "Space"
+numArgs = 1
+numReturns = 2
+luaScript = "./vectorfuncs.lua"
+luaFunctionName = "Func1"
+
+[test4]
+name = "func"
+returnType = "Vector"
+argType = "Space"
+numArgs = 1
+numReturns = 2
+equationParser = true
+vars = ["x"]
+expression = ["2.0*x", "2.0*x"]

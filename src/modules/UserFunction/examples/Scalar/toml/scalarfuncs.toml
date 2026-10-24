@@ -1,0 +1,30 @@
+[test1]
+name = "func"
+returnType = "Scalar"
+argType = "Constant"
+numArgs = 0
+numReturns = 1
+value = 1.0
+
+[test2]
+name = "func"
+returnType = "Scalar"
+argType = "Constant"
+value = 1.0
+
+[test3]
+name = "func"
+returnType = "Scalar"
+argType = "Space"
+numArgs = 1
+luaScript = "./scalarfuncs.lua"
+luaFunctionName = "Func1"
+
+[test4]
+name = "func"
+returnType = "Scalar"
+argType = "Space"
+numArgs = 1
+equationParser = true
+vars = ["x"]
+expression = "2.0*x"
