@@ -30,7 +30,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   INTEGER(I4B) :: ent(4)
@@ -43,14 +43,14 @@ PROGRAM main
 
   CALL OK(obj%GetTotalVertexNodes() .EQ. 9_I4B, "mesh")
   CALL OK(obj%GetTotalVertexNodes(globalElement=13_I4B) .EQ. 4_I4B, &
-    "element 13")
+          "element 13")
   CALL OK(obj%GetTotalVertexNodes(globalElement=[13_I4B, 14_I4B]) &
-    .EQ. 6_I4B, "elements 13 and 14")
+          .EQ. 6_I4B, "elements 13 and 14")
   ent = obj%GetTotalEntitiesList(globalElement=13_I4B)
   CALL OK(ent(1) .EQ. 4_I4B .AND. ent(4) .EQ. 1_I4B, &
-    "GetTotalEntitiesList")
+          "GetTotalEntitiesList")
   CALL OK(obj%GetElemTopologyIndx(13_I4B) .EQ. 4_I4B, &
-    "GetElemTopologyIndx")
+          "GetElemTopologyIndx")
 
   CALL obj%DEALLOCATE()
   CALL meshfile%DEALLOCATE()

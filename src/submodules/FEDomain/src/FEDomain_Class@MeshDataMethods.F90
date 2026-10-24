@@ -27,6 +27,11 @@ MODULE PROCEDURE obj_InitiateNodeToElements
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateNodeToElements()"
 #endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (ASSOCIATED(obj%meshVolume)) THEN
     CALL obj%meshVolume%InitiateNodeToElements()
   END IF
@@ -45,7 +50,7 @@ MODULE PROCEDURE obj_InitiateNodeToElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateNodeToElements
@@ -61,7 +66,7 @@ MODULE PROCEDURE obj_InitiateNodeToNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (ASSOCIATED(obj%meshVolume)) THEN
@@ -82,7 +87,7 @@ MODULE PROCEDURE obj_InitiateNodeToNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateNodeToNodes
 
@@ -97,7 +102,7 @@ MODULE PROCEDURE obj_InitiateElementToElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (ASSOCIATED(obj%meshVolume)) THEN
@@ -118,7 +123,7 @@ MODULE PROCEDURE obj_InitiateElementToElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateElementToElements
 
@@ -131,7 +136,7 @@ MODULE PROCEDURE obj_InitiateFacetElements
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateFacetElements()"
 
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif DEBUG_VER
 
   IF (ASSOCIATED(obj%meshVolume)) &
@@ -145,7 +150,7 @@ MODULE PROCEDURE obj_InitiateFacetElements
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif DEBUG_VER
 END PROCEDURE obj_InitiateFacetElements
 
@@ -160,7 +165,7 @@ MODULE PROCEDURE obj_InitiateExtraNodeToNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (ASSOCIATED(obj%meshVolume)) THEN
@@ -181,7 +186,7 @@ MODULE PROCEDURE obj_InitiateExtraNodeToNodes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_InitiateExtraNodeToNodes
 

@@ -35,7 +35,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   TYPE(DOF_) :: dofobj
@@ -48,11 +48,11 @@ PROGRAM main
   CALL obj%Initiate(hdf5=meshfile, group="")
 
   CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalNodes()], &
-    names=["K"], spacecompo=[1_I4B], &
-    timecompo=[1_I4B], storagefmt=NODES_FMT)
+                   names=["K"], spacecompo=[1_I4B], &
+                   timecompo=[1_I4B], storagefmt=NODES_FMT)
   CALL CSRMatrixInitiate(obj=mat, ncol=DOFSize(dofobj), &
-    nrow=DOFSize(dofobj), idof=dofobj, &
-    jdof=dofobj)
+                         nrow=DOFSize(dofobj), idof=dofobj, &
+                         jdof=dofobj)
   CALL obj%SetSparsity(mat=mat)
   CALL OK(GetNNZ(mat) .EQ. 49_I4B, "number of nonzeros")
 

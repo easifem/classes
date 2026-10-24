@@ -18,6 +18,12 @@
 SUBMODULE(DomainConnectivity_Class) ConstructorMethods
 USE BaseMethod
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "Domain_Connectivity_Class@ContructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -25,14 +31,28 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Deallocate
-obj%isInitiated = .FALSE.
-obj%isFacetToCell = .FALSE.
-obj%isNodeToNode = .FALSE.
-obj%isCellToCell = .FALSE.
-IF (ALLOCATED(obj%facetToCell)) DEALLOCATE (obj%facetToCell)
-IF (ALLOCATED(obj%nodeToNode)) DEALLOCATE (obj%nodeToNode)
-IF (ALLOCATED(obj%cellToCell)) DEALLOCATE (obj%cellToCell)
-IF (ALLOCATED(obj%elemToElem)) DEALLOCATE (obj%elemToElem)
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  obj%isInitiated = .FALSE.
+  obj%isFacetToCell = .FALSE.
+  obj%isNodeToNode = .FALSE.
+  obj%isCellToCell = .FALSE.
+  IF (ALLOCATED(obj%facetToCell)) DEALLOCATE(obj%facetToCell)
+  IF (ALLOCATED(obj%nodeToNode)) DEALLOCATE(obj%nodeToNode)
+  IF (ALLOCATED(obj%cellToCell)) DEALLOCATE(obj%cellToCell)
+  IF (ALLOCATED(obj%elemToElem)) DEALLOCATE(obj%elemToElem)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE dc_Deallocate
 
 !----------------------------------------------------------------------------
@@ -40,13 +60,28 @@ END PROCEDURE dc_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Deallocate2
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    CALL obj(ii)%DEALLOCATE()
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_Deallocate2()"
+#endif
+
+  INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (ALLOCATED(obj)) THEN
+    DO ii = 1, SIZE(obj)
+      CALL obj(ii)%DEALLOCATE()
+    END DO
+    DEALLOCATE(obj)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE dc_Deallocate2
 
 !----------------------------------------------------------------------------
@@ -54,16 +89,31 @@ END PROCEDURE dc_Deallocate2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Deallocate3
-INTEGER(I4B) :: ii
-IF (ALLOCATED(obj)) THEN
-  DO ii = 1, SIZE(obj)
-    IF (ASSOCIATED(obj(ii)%ptr)) THEN
-      CALL obj(ii)%ptr%DEALLOCATE()
-      obj(ii)%ptr => NULL()
-    END IF
-  END DO
-  DEALLOCATE (obj)
-END IF
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_Deallocate3()"
+#endif
+
+  INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (ALLOCATED(obj)) THEN
+    DO ii = 1, SIZE(obj)
+      IF (ASSOCIATED(obj(ii)%ptr)) THEN
+        CALL obj(ii)%ptr%DEALLOCATE()
+        obj(ii)%ptr => NULL()
+      END IF
+    END DO
+    DEALLOCATE(obj)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE dc_Deallocate3
 
 !----------------------------------------------------------------------------
@@ -71,7 +121,21 @@ END PROCEDURE dc_Deallocate3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_Final
-CALL obj%DEALLOCATE()
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_Final()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE dc_Final
 
 !----------------------------------------------------------------------------

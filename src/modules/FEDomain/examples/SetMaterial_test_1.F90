@@ -2,8 +2,8 @@
 ! date: 2026-10-22
 ! summary: Set the materials of the elements
 !
-! SetTotalMedium adds space for n media in the elements of the mesh
-! of dimension dim. SetMaterial sets the material id of a medium in
+! SetTotalMedium sets the number of media in the elements of the mesh
+! of dimension dim to n. SetMaterial sets the material id of a medium in
 ! the elements of an entity. GetTotalMaterial returns the number of
 ! media of an element.
 !
@@ -28,7 +28,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh_two_region.h5"
+    "./meshdata/very_small_quad4_mesh_two_region.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   CLASS(AbstractMesh_), POINTER :: mesh
@@ -41,16 +41,16 @@ PROGRAM main
 
   CALL obj%SetTotalMedium(DIM=2_I4B, n=1_I4B)
   CALL OK(obj%GetTotalMaterial(DIM=2_I4B, globalElement=18_I4B) &
-    .EQ. 1_I4B, "GetTotalMaterial")
+          .EQ. 1_I4B, "GetTotalMaterial")
   CALL obj%SetMaterial(DIM=2_I4B, entityNum=1_I4B, medium=1_I4B, &
-    material=8_I4B)
+                       material=8_I4B)
   CALL obj%SetMaterial(DIM=2_I4B, entityNum=2_I4B, medium=1_I4B, &
-    material=9_I4B)
+                       material=9_I4B)
   mesh => obj%GetMeshPointer()
   CALL OK(mesh%GetMaterial(medium=1_I4B, globalElement=18_I4B) &
-    .EQ. 8_I4B, "entity 1")
+          .EQ. 8_I4B, "entity 1")
   CALL OK(mesh%GetMaterial(medium=1_I4B, globalElement=21_I4B) &
-    .EQ. 9_I4B, "entity 2")
+          .EQ. 9_I4B, "entity 2")
   mesh => NULL()
 
   CALL obj%DEALLOCATE()

@@ -21,7 +21,7 @@
 
 SUBMODULE(FEDomain_Class) ConstructorMethods
 USE AbstractDomain_Class, ONLY: AbstractDomainInitiate, &
-                                AbstractDomainDeallocate
+  AbstractDomainDeallocate
 IMPLICIT NONE
 CONTAINS
 
@@ -30,30 +30,47 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
 
-CALL AbstractDomainDeallocate(obj=obj)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
-obj%mesh => NULL()
+  CALL AbstractDomainDeallocate(obj=obj)
 
-IF (ASSOCIATED(obj%meshVolume)) THEN
-  CALL obj%meshVolume%DEALLOCATE()
-  obj%meshVolume => NULL()
-END IF
+! obj%mesh points to one of the meshes below
+  obj%mesh => NULL()
 
-IF (ASSOCIATED(obj%meshSurface)) THEN
-  CALL obj%meshSurface%DEALLOCATE()
-  obj%meshSurface => NULL()
-END IF
+! The meshes are created by FEMesh_Pointer() in Import; the domain owns
+! them, so they are freed here.
 
-IF (ASSOCIATED(obj%meshCurve)) THEN
-  CALL obj%meshCurve%DEALLOCATE()
-  obj%meshCurve => NULL()
-END IF
+  IF (ASSOCIATED(obj%meshVolume)) THEN
+    CALL obj%meshVolume%DEALLOCATE()
+    DEALLOCATE(obj%meshVolume)
+  END IF
 
-IF (ASSOCIATED(obj%meshPoint)) THEN
-  CALL obj%meshPoint%DEALLOCATE()
-  obj%meshPoint => NULL()
-END IF
+  IF (ASSOCIATED(obj%meshSurface)) THEN
+    CALL obj%meshSurface%DEALLOCATE()
+    DEALLOCATE(obj%meshSurface)
+  END IF
+
+  IF (ASSOCIATED(obj%meshCurve)) THEN
+    CALL obj%meshCurve%DEALLOCATE()
+    DEALLOCATE(obj%meshCurve)
+  END IF
+
+  IF (ASSOCIATED(obj%meshPoint)) THEN
+    CALL obj%meshPoint%DEALLOCATE()
+    DEALLOCATE(obj%meshPoint)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -61,7 +78,21 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
-CALL obj%DEALLOCATE()
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Final()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
@@ -69,8 +100,22 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (FEDomain_ :: ans)
-CALL ans%Initiate(hdf5=hdf5, group=group)
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Constructor_1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ALLOCATE(FEDomain_ :: ans)
+  CALL ans%Initiate(hdf5=hdf5, group=group)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------

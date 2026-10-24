@@ -29,7 +29,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
@@ -45,7 +45,7 @@ PROGRAM main
 
   CALL obj%GetNodeCoord(nodeCoord=xij)
   CALL obj%SetNodeCoord(nodeCoord=xij, scale=1.0_DFP, &
-    addContribution=.TRUE.)
+                        addContribution=.TRUE.)
   CALL obj%GetNodeCoord(nodeCoord=x, tsize=tsize, globalNode=4_I4B)
   CALL OK(ALL(ABS(x(1:2) - 2.0_DFP) .LT. tol), "add")
   CALL obj%SetNodeCoord(nodeCoord=xij)

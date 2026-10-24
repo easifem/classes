@@ -1,0 +1,35 @@
+[test1]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = "./toml/order.csv"
+# [
+#   [14, 1],
+#   [15, 1],
+#   [17, 1],
+#   [18, 1],
+#   [24, 1],
+#   [21, 2],
+#   [22, 2],
+#   [23, 2],
+#   [25, 2],
+#   [13, 3],
+#   [16, 3],
+#   [19, 3],
+#   [20, 3],
+#   [26, 3]
+# ]
+
+[test2]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = 2
+
+[test3]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = 3
+
+[test4]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+order = 4

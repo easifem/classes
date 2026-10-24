@@ -29,7 +29,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   CLASS(AbstractMesh_), POINTER :: mesh
@@ -41,15 +41,15 @@ PROGRAM main
   CALL obj%Initiate(hdf5=meshfile, group="")
 
   CALL OK(obj%GetGlobalFaceNumber(globalElement=13_I4B, &
-    localFaceNumber=1_I4B) .EQ. 1_I4B, &
-    "GetGlobalFaceNumber")
+                                  localFaceNumber=1_I4B) .EQ. 1_I4B, &
+          "GetGlobalFaceNumber")
   mesh => obj%GetMeshPointer()
   CALL mesh%InitiateEdgeConnectivity()
   CALL OK(obj%GetGlobalEdgeNumber(globalElement=13_I4B, &
-    localEdgeNumber=2_I4B) .EQ. &
-    obj%GetGlobalEdgeNumber(globalElement=14_I4B, &
-    localEdgeNumber=1_I4B), &
-    "GetGlobalEdgeNumber")
+                                  localEdgeNumber=2_I4B) .EQ. &
+          obj%GetGlobalEdgeNumber(globalElement=14_I4B, &
+                                  localEdgeNumber=1_I4B), &
+          "GetGlobalEdgeNumber")
   mesh => NULL()
 
   CALL obj%DEALLOCATE()

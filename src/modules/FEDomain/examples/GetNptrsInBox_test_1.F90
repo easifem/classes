@@ -30,7 +30,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   TYPE(BoundingBox_) :: box
@@ -44,8 +44,8 @@ PROGRAM main
   CALL obj%Initiate(hdf5=meshfile, group="")
 
   CALL BoundingBoxInitiate(obj=box, nsd=3_I4B, &
-    lim=[-0.1_DFP, 0.6_DFP, -0.1_DFP, &
-    0.6_DFP, -0.1_DFP, 0.1_DFP])
+                           lim=[-0.1_DFP, 0.6_DFP, -0.1_DFP, &
+                                0.6_DFP, -0.1_DFP, 0.1_DFP])
   CALL obj%GetNptrsInBox(box=box, nptrs=nodes)
   CALL OK(ALL(Sort(nodes) .EQ. [1, 5, 7, 9]), "GetNptrsInBox")
   CALL obj%GetNptrsInBox_(box=box, nptrs=buf, tnodes=tnodes)

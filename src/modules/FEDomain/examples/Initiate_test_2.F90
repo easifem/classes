@@ -26,7 +26,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh_two_region.h5"
+    "./meshdata/very_small_quad4_mesh_two_region.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   INTEGER(I4B), ALLOCATABLE :: con(:)
@@ -40,9 +40,9 @@ PROGRAM main
   CALL OK(obj%GetTotalNodes() .EQ. 10_I4B, "GetTotalNodes")
   CALL OK(obj%GetTotalElements() .EQ. 4_I4B, "GetTotalElements")
   CALL OK(obj%GetTotalEntities(DIM=2_I4B) .EQ. 2_I4B, &
-    "GetTotalEntities")
+          "GetTotalEntities")
   CALL OK(obj%GetTotalElements(DIM=2_I4B, entityNum=2_I4B) &
-    .EQ. 2_I4B, "elements of entity 2")
+          .EQ. 2_I4B, "elements of entity 2")
   con = obj%GetConnectivity(globalElement=16_I4B, DIM=1_I4B)
   CALL OK(ALL(con .EQ. [2, 5]), "interface element 16")
 

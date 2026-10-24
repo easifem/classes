@@ -24,8 +24,13 @@ USE AbstractMeshUtility, ONLY: InitiateElementToElements2D
 USE AbstractMeshUtility, ONLY: InitiateElementToElements1D
 USE NodeData_Class, ONLY: TypeNode
 USE NodeData_Class, ONLY: NodeData_SetNodeType
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "AbstractMesh_Class@ElementDataMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,61 +38,65 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateElementToElements
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
-LOGICAL(LGT) :: problem
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
+  LOGICAL(LGT) :: problem
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-problem = .NOT. ALLOCATED(obj%elementData)
+  problem = .NOT. ALLOCATED(obj%elementData)
 
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
-  RETURN
-END IF
+  IF (problem) THEN
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                      '[INTERNAL ERROR] :: ' // &
+                      'AbstractMesh_::obj%elementData is not allocated')
+    RETURN
+  END IF
 
-IF (obj%isElementToElementsInitiated) RETURN
-obj%isElementToElementsInitiated = .TRUE.
+  IF (obj%isElementToElementsInitiated) RETURN
+  obj%isElementToElementsInitiated = .TRUE.
 
-SELECT CASE (obj%xidim)
-CASE (0_I4B)
+  SELECT CASE (obj%xidim)
+  CASE (0_I4B)
 
-CASE (1_I4B)
+  CASE (1_I4B)
 
-  CALL InitiateElementToElements1D(elementData=obj%elementData, &
-                             tNodesInMesh=obj%tNodes, showTime=obj%showTime, &
-                                   local_nptrs=obj%local_nptrs)
+    CALL InitiateElementToElements1D(elementData=obj%elementData, &
+                                     tNodesInMesh=obj%tNodes, &
+                                     showTime=obj%showTime, &
+                                     local_nptrs=obj%local_nptrs)
 
-CASE (2_I4B)
+  CASE (2_I4B)
 
-  problem = .NOT. obj%isFaceConnectivityInitiated
-  IF (problem) CALL obj%InitiateFaceConnectivity()
+    problem = .NOT. obj%isFaceConnectivityInitiated
+    IF (problem) CALL obj%InitiateFaceConnectivity()
 
-  CALL InitiateElementToElements3D(elementData=obj%elementData, &
-                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
+    CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                     tFaceInMesh=obj%tFaces, &
+                                     showTime=obj%showTime)
 
-CASE (3_I4B)
+  CASE (3_I4B)
 
-  problem = .NOT. obj%isFaceConnectivityInitiated
-  IF (problem) CALL obj%InitiateFaceConnectivity()
+    problem = .NOT. obj%isFaceConnectivityInitiated
+    IF (problem) CALL obj%InitiateFaceConnectivity()
 
-  CALL InitiateElementToElements3D(elementData=obj%elementData, &
-                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
+    CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                     tFaceInMesh=obj%tFaces, &
+                                     showTime=obj%showTime)
 
-CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for xidim ' &
-                    //ToString(obj%xidim))
-END SELECT
+  CASE DEFAULT
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                      '[INTERNAL ERROR] :: No case found for xidim ' &
+                      // ToString(obj%xidim))
+  END SELECT
 
-CALL MarkInternalNodes(obj=obj)
+  CALL MarkInternalNodes(obj=obj)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateElementToElements
@@ -99,13 +108,13 @@ END PROCEDURE obj_InitiateElementToElements
 SUBROUTINE MarkInternalNodes(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
-  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll
+  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll, iface
   LOGICAL(LGT) :: isok
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
@@ -113,16 +122,18 @@ SUBROUTINE MarkInternalNodes(obj)
 
   tElements = obj%GetTotalElements()
 
-  DO ii = 1, tElements
+  loop1: DO ii = 1, tElements
 
     isok = obj%isBoundaryElement(ii, isLocal=.TRUE.)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     tsize = SIZE(obj%elementData(ii)%ptr%boundaryData)
     DO jj = 1, tsize
-      nptrs = obj%GetFacetConnectivity(globalElement=ii, &
-                             iface=obj%elementData(ii)%ptr%boundaryData(jj), &
-                                       isLocal=.TRUE.)
+
+      iface = obj%elementData(ii)%ptr%boundaryData(jj)
+      nptrs = &
+        obj%GetFacetConnectivity(globalElement=ii, &
+                                 iface=iface, isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
         ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
         ! obj%nodeData(ll)%ptr%nodeType = TypeNode%domainBoundary
@@ -131,17 +142,19 @@ SUBROUTINE MarkInternalNodes(obj)
       END DO
     END DO
 
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
 
 END SUBROUTINE MarkInternalNodes
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ElementDataMethods

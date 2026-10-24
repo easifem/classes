@@ -38,6 +38,7 @@ PROGRAM main
 
   ALLOCATE(aptrs(1))
   aptrs(1)%ptr => ptr
+  ! frees the mesh of ptr; ptr must not be used after this
   CALL AbstractMeshPointerDeallocate(aptrs)
   CALL OK(.NOT. ALLOCATED(aptrs), "AbstractMeshPointerDeallocate")
 END PROGRAM main

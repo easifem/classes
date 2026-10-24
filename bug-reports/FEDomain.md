@@ -23,8 +23,6 @@ the listed test passes. **Open** means not changed.
 - Test: `InitiateNodeToElements_test_1`, `InitiateNodeToNodes_test_1`,
   `InitiateElementToElements_test_1`, `InitiateExtraNodeToNodes_test_1`
 
-## Open
-
 ### 2. InitiateBoundaryData crashes (removed)
 
 - Where: `obj_InitiateBoundaryData` (FEDomain_ and AbstractDomain_)
@@ -35,37 +33,43 @@ the listed test passes. **Open** means not changed.
   called it. Call `InitiateBoundaryData` of a mesh (from GetMeshPointer)
   instead.
 
-### 3. InitiateFacetElements fails for 2D and 3D domains
+### 3. InitiateFacetElements fails for 2D and 3D domains (fixed)
 
 - Where: `obj_InitiateFacetElements` in `FEDomain_Class@MeshDataMethods.F90`
-- Symptom: "[ERROR] :: Facet elements not found in the mesh" (stops).
-- Cause: `InitiateFacetElements` of the curve mesh raises an error
-  because 1D meshes have no faces (see `AbstractMesh.md`, bug 11).
-- Proposal: call it only for meshes with `xidim >= 2`, or fix the mesh
-  routine.
-- No test.
+- Cause: `InitiateFacetElements` of the curve mesh raised an error
+  because 1D meshes have no faces.
+- Fix: the mesh method now returns early for `xidim <= 1` (see
+  `AbstractMesh.md`, bug 11).
+- Test: `InitiateFacetElements_test_1`
 
-### 4. GetMeshPointer ignores entityNum and globalElement
+### 4. GetMeshPointer ignores entityNum and globalElement (fixed)
 
 - Where: `obj_GetMeshPointer1` in `FEDomain_Class@GetMethods.F90`
-- Note: the mesh of a dimension holds all entities of that dimension, so
-  `entityNum`, `globalElement` and `isLocal` are not used. Methods which
-  pass `entityNum` to it (`SetTotalMedium`, `GetTotalMaterial`,
-  `GetBoundingBox`, `GetDimEntityNum`, ...) work on the whole mesh.
-  `GetTotalElements(dim, entityNum)` and `SetMaterial` are correct,
-  because they use the mesh id of the elements.
-- If `dim` is larger than nsd the returned pointer is not associated;
-  callers which use it without a check crash.
+- The mesh of a dimension holds all entities of that dimension, so
+  `entityNum`, `globalElement` and `isLocal` were not used. They are
+  removed: `GetMeshPointer(dim)` (see `AbstractDomain.md`, bug 4).
+- If `dim` is larger than nsd the returned pointer is not associated
+  (documented); callers must check it.
 
-### 5. Deallocate does not free the meshes
+### 5. Deallocate does not free the meshes (fixed)
 
 - Where: `obj_Deallocate` in `FEDomain_Class@ConstructorMethods.F90`
-- Symptom: memory leak.
 - Cause: the meshes are allocated with `FEMesh_Pointer()` in `Import`;
-  `Deallocate` calls `Deallocate` on each mesh and nullifies the pointer,
-  but never `DEALLOCATE (obj%meshVolume)` etc.
+  `Deallocate` called `Deallocate` on each mesh and nullified the pointer,
+  but never freed the mesh objects.
+- Fix: the four meshes are freed with `DEALLOCATE (obj%meshVolume)` etc.
+  The domain owns them; pointers from `GetMeshPointer` (for example in
+  FEDOF_) are dangling after the domain is deallocated.
+- Test: `Deallocate_test_1`
 
-### 6. GetOrder is not available
+### 6. GetOrder is not available (removed)
 
-- `AbstractDomain_%GetOrder` raises an error and FEDomain_ does not
-  override it (see `AbstractDomain.md`, bug 3).
+- `AbstractDomain_%GetOrder` raised an error and FEDomain_ did not
+  override it. It was removed from AbstractDomain_ (see
+  `AbstractDomain.md`, bug 3). Use `GetMeshPointer(dim)` and the mesh
+  method `GetOrder()`.
+
+## Open
+
+
+None.

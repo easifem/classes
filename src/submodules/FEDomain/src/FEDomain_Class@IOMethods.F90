@@ -20,8 +20,8 @@ USE Display_Method, ONLY: ToString
 USE Display_Method, ONLY: BlankLines
 USE FEMesh_Class, ONLY: FEMesh_, FEMesh_Pointer
 USE AbstractDomain_Class, ONLY: AbstractDomainDisplay, &
-                                AbstractDomainDisplayDomainInfo, &
-                                AbstractDomainImport
+  AbstractDomainDisplayDomainInfo, &
+  AbstractDomainImport
 
 IMPLICIT NONE
 CONTAINS
@@ -31,47 +31,67 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
-LOGICAL(LGT) :: abool
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
 
-CALL AbstractDomainDisplay(obj=obj, msg=msg, unitno=unitno)
+  LOGICAL(LGT) :: abool
 
-IF (.NOT. obj%IsInitiated()) RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
-abool = ASSOCIATED(obj%meshVolume)
-CALL Display(abool, "meshVolume ASSOCIATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL BlankLines(nol=1, unitno=unitno)
-  CALL obj%meshVolume%DisplayMeshInfo("Volume Mesh Info:", unitno=unitno)
-  CALL BlankLines(nol=1, unitno=unitno)
-END IF
+  CALL AbstractDomainDisplay(obj=obj, msg=msg, unitno=unitno)
 
-abool = ASSOCIATED(obj%meshSurface)
-CALL Display(abool, "meshSurface ASSOCIATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL BlankLines(nol=1, unitno=unitno)
-  CALL obj%meshSurface%DisplayMeshInfo("Surface Mesh Info:", unitno=unitno)
-  CALL BlankLines(nol=1, unitno=unitno)
-END IF
+  IF (.NOT. obj%IsInitiated()) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
 
-abool = ASSOCIATED(obj%meshCurve)
-CALL Display(abool, "meshCurve ASSOCIATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL BlankLines(nol=1, unitno=unitno)
-  CALL obj%meshCurve%DisplayMeshInfo("Curve Mesh Info:", unitno=unitno)
-  CALL BlankLines(nol=1, unitno=unitno)
-END IF
+    RETURN
+  END IF
 
-abool = ASSOCIATED(obj%meshPoint)
-CALL Display(abool, "meshPoint ASSOCIATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL BlankLines(nol=1, unitno=unitno)
-  CALL obj%meshPoint%DisplayMeshInfo("Point Mesh Info:", unitno=unitno)
-  CALL BlankLines(nol=1, unitno=unitno)
-END IF
+  abool = ASSOCIATED(obj%meshVolume)
+  CALL Display(abool, "meshVolume ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL BlankLines(nol=1, unitno=unitno)
+    CALL obj%meshVolume%DisplayMeshInfo("Volume Mesh Info:", unitno=unitno)
+    CALL BlankLines(nol=1, unitno=unitno)
+  END IF
 
-abool = ASSOCIATED(obj%mesh)
-CALL Display(abool, "mesh ASSOCIATED: ", unitno=unitno)
+  abool = ASSOCIATED(obj%meshSurface)
+  CALL Display(abool, "meshSurface ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL BlankLines(nol=1, unitno=unitno)
+    CALL obj%meshSurface%DisplayMeshInfo("Surface Mesh Info:", unitno=unitno)
+    CALL BlankLines(nol=1, unitno=unitno)
+  END IF
 
+  abool = ASSOCIATED(obj%meshCurve)
+  CALL Display(abool, "meshCurve ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL BlankLines(nol=1, unitno=unitno)
+    CALL obj%meshCurve%DisplayMeshInfo("Curve Mesh Info:", unitno=unitno)
+    CALL BlankLines(nol=1, unitno=unitno)
+  END IF
+
+  abool = ASSOCIATED(obj%meshPoint)
+  CALL Display(abool, "meshPoint ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL BlankLines(nol=1, unitno=unitno)
+    CALL obj%meshPoint%DisplayMeshInfo("Point Mesh Info:", unitno=unitno)
+    CALL BlankLines(nol=1, unitno=unitno)
+  END IF
+
+  abool = ASSOCIATED(obj%mesh)
+  CALL Display(abool, "mesh ASSOCIATED: ", unitno=unitno)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -79,16 +99,29 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayDomainInfo
-LOGICAL(LGT) :: abool
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayDomainInfo()"
+#endif
 
-CALL AbstractDomainDisplayDomainInfo(obj=obj, unitno=unitno, msg=msg)
+  LOGICAL(LGT) :: abool
 
-abool = ASSOCIATED(obj%mesh)
-CALL Display(abool, "mesh ASSOCIATED: ", unitno=unitno)
-IF (abool) THEN
-  CALL obj%mesh%DisplayMeshInfo("Mesh Info:", unitno=unitno)
-END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
+  CALL AbstractDomainDisplayDomainInfo(obj=obj, unitno=unitno, msg=msg)
+
+  abool = ASSOCIATED(obj%mesh)
+  CALL Display(abool, "mesh ASSOCIATED: ", unitno=unitno)
+  IF (abool) THEN
+    CALL obj%mesh%DisplayMeshInfo("Mesh Info:", unitno=unitno)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayDomainInfo
 
 !----------------------------------------------------------------------------
@@ -96,84 +129,76 @@ END PROCEDURE obj_DisplayDomainInfo
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-INTEGER(I4B) :: nsd, aintval
+  CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+  INTEGER(I4B) :: nsd
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL AbstractDomainImport(obj=obj, hdf5=hdf5, group=group)
+  CALL AbstractDomainImport(obj=obj, hdf5=hdf5, group=group)
 
-nsd = obj%GetNSD()
+  nsd = obj%GetNSD()
 
-IF (nsd .EQ. 3_I4B) THEN
+  IF (nsd .EQ. 3_I4B) THEN
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Importing meshVolume')
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            'Importing meshVolume')
 #endif
 
-  obj%meshVolume => FEMesh_Pointer()
-  CALL obj%meshVolume%Initiate(hdf5=hdf5, group=group, dim=3_I4B)
-  aintval = obj%meshVolume%GetTotalElements()
-  CALL obj%SetTotalElements(indx=3, VALUE=aintval)
-END IF
+    obj%meshVolume => FEMesh_Pointer()
+    CALL obj%meshVolume%Initiate(hdf5=hdf5, group=group, DIM=3_I4B)
+  END IF
 
-IF (nsd .GT. 1_I4B) THEN
+  IF (nsd .GT. 1_I4B) THEN
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Importing meshSurface')
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            'Importing meshSurface')
 #endif
 
-  obj%meshSurface => FEMesh_Pointer()
-  CALL obj%meshSurface%Initiate(hdf5=hdf5, group=group, dim=2_I4B)
-  aintval = obj%meshSurface%GetTotalElements()
-  CALL obj%SetTotalElements(indx=2, VALUE=aintval)
+    obj%meshSurface => FEMesh_Pointer()
+    CALL obj%meshSurface%Initiate(hdf5=hdf5, group=group, DIM=2_I4B)
 
-END IF
+  END IF
 
-IF (nsd .GE. 1_I4B) THEN
+  IF (nsd .GE. 1_I4B) THEN
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'Importing meshCurve')
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            'Importing meshCurve')
 #endif
 
-  obj%meshCurve => FEMesh_Pointer()
-  CALL obj%meshCurve%Initiate(hdf5=hdf5, group=group, dim=1_I4B)
-  aintval = obj%meshCurve%GetTotalElements()
-  CALL obj%SetTotalElements(indx=1, VALUE=aintval)
+    obj%meshCurve => FEMesh_Pointer()
+    CALL obj%meshCurve%Initiate(hdf5=hdf5, group=group, DIM=1_I4B)
 
-END IF
+  END IF
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Importing meshPoint')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          'Importing meshPoint')
 #endif
 
-obj%meshPoint => FEMesh_Pointer()
-CALL obj%meshPoint%Initiate(hdf5=hdf5, group=group, dim=0_I4B)
-aintval = obj%meshPoint%GetTotalElements()
-CALL obj%SetTotalElements(indx=0, VALUE=aintval)
+  obj%meshPoint => FEMesh_Pointer()
+  CALL obj%meshPoint%Initiate(hdf5=hdf5, group=group, DIM=0_I4B)
 
 ! Setting mesh pointer based on nsd
-SELECT CASE (nsd)
-CASE (0)
-  obj%mesh => obj%meshPoint
-CASE (1)
-  obj%mesh => obj%meshCurve
-CASE (2)
-  obj%mesh => obj%meshSurface
-CASE (3)
-  obj%mesh => obj%meshVolume
-END SELECT
+  SELECT CASE (nsd)
+  CASE (0)
+    obj%mesh => obj%meshPoint
+  CASE (1)
+    obj%mesh => obj%meshCurve
+  CASE (2)
+    obj%mesh => obj%meshSurface
+  CASE (3)
+    obj%mesh => obj%meshVolume
+  END SELECT
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_Import

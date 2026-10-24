@@ -63,8 +63,9 @@ PUBLIC :: AbstractDomainDisplayDomainInfo
 ! volumes).
 !
 ! - nodeCoord(:, :) has nsd rows and one column per node.
-! - tElements(0:3) and tEntities(0:3) are the number of elements and entities
-!   of each dimension.
+! - tEntities(0:3) is the number of entities of each dimension. The number of
+!   elements is not stored; it is read from the meshes (GetTotalElements,
+!   GetParam(tElements=...)).
 ! - Most methods take dim (default nsd) to select a mesh, and work on that
 !   mesh.
 ! - kdtree is a kdtree of the node coordinates, used by GetNearestNode and
@@ -94,7 +95,7 @@ TYPE, ABSTRACT :: AbstractDomain_
   !! Smallest node number in the domain
   INTEGER(I4B) :: tNodes = 0
   !! Total number of nodes in the mesh
-  LOGICAL(I4B) :: isNodeNumberSparse = .FALSE.
+  LOGICAL(LGT) :: isNodeNumberSparse = .FALSE.
   !! True if node numbers are not continuous
   INTEGER(I4B) :: maxElemNum = 0
   !! Largest element number in the domain
@@ -106,12 +107,6 @@ TYPE, ABSTRACT :: AbstractDomain_
   !! Total number of entities required for reading nodes
   INTEGER(I4B) :: tEntitiesForElements = 0
   !! Total number of entities required for reading elements
-  INTEGER(I4B) :: tElements(0:3) = [0, 0, 0, 0]
-  !! Total number of elements inside the domain
-  !! tElements( 0 ) = total number of point elements
-  !! tElements( 1 ) = total number of line elements
-  !! tElements( 2 ) =  total number of surface elements
-  !! tElements( 3 ) = total number of volume/cell elements
   INTEGER(I4B) :: tEntities(0:3) = [0, 0, 0, 0]
   !! Total number of entities inside the domain
   !! tEntities( 0 ) = total number of point mesh entities, mesh of Points
@@ -129,29 +124,21 @@ TYPE, ABSTRACT :: AbstractDomain_
   !! results of kdtree searches
 
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate the domain from a HDF5 mesh file
-
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: DeallocateKdtree => obj_DeallocateKdtree
   !! Deallocate the kdtree of the domain
 
-  ! IO:
   ! @IOMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import the meta data of the domain
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
   !! Import the domain from a toml table
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
     obj_ImportFromToml2
   !! Import the domain from a toml file
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
@@ -163,100 +150,93 @@ CONTAINS
     obj_DisplayDomainInfo
   !! Display the meta data of the domain
 
-  ! GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
   !! Returns true if the domain is initiated
   PROCEDURE(obj_GetMeshPointer), DEFERRED, PUBLIC, PASS(obj) :: GetMeshPointer
   !! Get a pointer to a mesh of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsNodePresent => obj_IsNodePresent
   !! Returns true if a node is present in the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
   !! Returns true if an element is present
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
   !! Get the vertex connectivity of an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNNE => obj_GetNNE
   !! Get the number of nodes in an element
-
-  PROCEDURE, PASS(obj) :: GetNodeToElements1 => obj_GetNodeToElements1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements1 => obj_GetNodeToElements1
   !! Get the elements around a node
-  PROCEDURE, PASS(obj) :: GetNodeToElements2 => obj_GetNodeToElements2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements2 => obj_GetNodeToElements2
   !! Get the elements around a list of nodes
   GENERIC, PUBLIC :: GetNodeToElements => &
     GetNodeToElements1, GetNodeToElements2
   !! Get the elements around nodes
 
-  PROCEDURE, PASS(obj) :: GetNodeToElements1_ => obj_GetNodeToElements1_
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements1_ => obj_GetNodeToElements1_
   !! Get the elements around a node without allocation
-  PROCEDURE, PASS(obj) :: GetNodeToElements2_ => obj_GetNodeToElements2_
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetNodeToElements2_ => obj_GetNodeToElements2_
   !! Get the elements around nodes without allocation
   GENERIC, PUBLIC :: GetNodeToElements_ => &
     GetNodeToElements1_, &
     GetNodeToElements2_
   !! Get the elements around nodes without allocation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalNodes => obj_GetTotalNodes
   !! Get the total number of nodes
-  PROCEDURE, PASS(obj) :: obj_tNodes1
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tNodes1
   !! Number of nodes of a mesh
-  PROCEDURE, PASS(obj) :: obj_tNodes2
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tNodes2
   !! Number of nodes of the domain
-  PROCEDURE, PASS(obj) :: obj_tNodes3
-  !! Number of nodes of a mesh (dim, entityNum)
   GENERIC, PUBLIC :: OPERATOR(.tNodes.) => &
-    obj_tNodes1, obj_tNodes2, obj_tNodes3
+    obj_tNodes1, obj_tNodes2
   !! Get the number of nodes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalElements => obj_GetTotalElements
   !! Get the total number of elements
-  PROCEDURE, PASS(obj) :: obj_tElements1
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tElements1
   !! Number of elements of the nsd mesh
-  PROCEDURE, PASS(obj) :: obj_tElements2
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tElements2
   !! Number of elements of a mesh
-  PROCEDURE, PASS(obj) :: obj_tElements3
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_tElements3
   !! Number of elements of an entity
   GENERIC, PUBLIC :: OPERATOR(.tElements.) => obj_tElements1, &
     obj_tElements2, obj_tElements3
   !! Get the number of elements
-
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalNodeNumber1 => obj_GetLocalNodeNumber1
   !! Get the local number of a global node
-  PROCEDURE, PASS(obj) :: GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalNodeNumber2 => obj_GetLocalNodeNumber2
   !! Get the local numbers of global nodes
   GENERIC, PUBLIC :: GetLocalNodeNumber => GetLocalNodeNumber1, &
     GetLocalNodeNumber2
   !! Get local node numbers
-
-  PROCEDURE, PASS(obj) :: GetLocalElemNumber1 => obj_GetLocalElemNumber1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalElemNumber1 => obj_GetLocalElemNumber1
   !! Get the local numbers of global elements
-  PROCEDURE, PASS(obj) :: GetLocalElemNumber2 => obj_GetLocalElemNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetLocalElemNumber2 => obj_GetLocalElemNumber2
   !! Get the local number of a global element
   GENERIC, PUBLIC :: GetLocalElemNumber => GetLocalElemNumber1, &
     GetLocalElemNumber2
   !! Get local element numbers
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemDataPointer => &
     obj_GetElemDataPointer
   !! Get a pointer to the element data
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemData => obj_GetElemData
   !! Get a copy of the element data
-
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetGlobalNodeNumber1 => obj_GetGlobalNodeNumber1
   !! Get the global number of a local node
-  PROCEDURE, PASS(obj) :: GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetGlobalNodeNumber2 => obj_GetGlobalNodeNumber2
   !! Get the global numbers of local nodes
   GENERIC, PUBLIC :: GetGlobalNodeNumber => &
     GetGlobalNodeNumber1, &
     GetGlobalNodeNumber2
   !! Get global node numbers
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntities => obj_GetTotalEntities
   !! Get the number of entities of a dimension
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEntitiesList => &
@@ -264,186 +244,120 @@ CONTAINS
   !! Get the number of entities of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMesh => obj_GetTotalEntities
   !! Same as GetTotalEntities (will be removed)
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetDimEntityNum => obj_GetDimEntityNum
   !! Get the dimension and entity of an element
-
-  PROCEDURE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord1 => obj_GetNodeCoord1
   !! Get node coordinates
-  PROCEDURE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord2 => obj_GetNodeCoord2
   !! Get the coordinates of a list of nodes
-  PROCEDURE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord3 => obj_GetNodeCoord3
   !! Get the coordinates of a node
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeCoord4 => obj_GetNodeCoord4
+  !! Get the coordinates of nodes without allocation
   GENERIC, PUBLIC :: GetNodeCoord => GetNodeCoord1, GetNodeCoord2, &
-    GetNodeCoord3
+    GetNodeCoord3, GetNodeCoord4
   !! Get node coordinates
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoordPointer => &
     obj_GetNodeCoordPointer
   !! Get a pointer to the node coordinates
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode1 => obj_GetNearestNode1
   !! Get the node nearest to a point
   PROCEDURE, PUBLIC, PASS(obj) :: GetNearestNode2 => obj_GetNearestNode2
   !! Get the nn nodes nearest to a point
   GENERIC, PUBLIC :: GetNearestNode => GetNearestNode1, GetNearestNode2
   !! Get the nearest nodes to a point
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs => obj_GetNptrs
   !! Get the global node numbers of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrs_ => obj_GetNptrs_
   !! Get the global node numbers of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetInternalNptrs => &
     obj_GetInternalNptrs
   !! Get the internal nodes of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox => obj_GetNptrsInBox
   !! Get the nodes of the domain in a box
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNptrsInBox_ => obj_GetNptrsInBox_
   !! Get the nodes in a box without allocation
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetBoundingBox => obj_GetBoundingBox
   !! Get the bounding box
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetNSD => obj_GetNSD
   !! Get the number of spatial dimensions
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetOrder => obj_GetOrder
-  !! Get the order of the meshes of a dimension
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMeshFacetData => &
-    obj_GetTotalMeshFacetData
-  !! Get the size of mesh facet data
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalMaterial => obj_GetTotalMaterial
   !! Get the number of media of an element
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetElemType => obj_GetElemType
-  !! Get the element types of a mesh
-
-  PROCEDURE, PUBLIC, PASS(obj) :: GetUniqueElemType => &
-    obj_GetUniqueElemType
-  !! Get the unique element types of a mesh
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeNumber => obj_GetMaxNodeNumber
   !! Get the maximum node number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinNodeNumber => obj_GetMinNodeNumber
   !! Get the minimum node number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxElemNumber => obj_GetMaxElemNumber
   !! Get the maximum element number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetMinElemNumber => obj_GetMinElemNumber
   !! Get the minimum element number
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Get the parameters of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalEdgeNumber => &
     obj_GetGlobalEdgeNumber
   !! Get the global edge number of a local edge
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFaceNumber => &
     obj_GetGlobalFaceNumber
   !! Get the global face number of a local face
-
-  PROCEDURE, PASS(obj) :: GetConnectivity1_ => obj_GetConnectivity1_
+  PROCEDURE, PRIVATE, PASS(obj) :: GetConnectivity1_ => obj_GetConnectivity1_
   !! Get the connectivity of an element
-
-  PROCEDURE, PASS(obj) :: GetConnectivity2_ => obj_GetConnectivity2_
+  PROCEDURE, PRIVATE, PASS(obj) :: GetConnectivity2_ => obj_GetConnectivity2_
   !! Get all connectivities of an element
-
   GENERIC, PUBLIC :: GetConnectivity_ => GetConnectivity1_, &
     GetConnectivity2_
   !! Get the connectivity without allocation
-
-  PROCEDURE, PASS(obj) :: GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetTotalVertexNodes1 => obj_GetTotalVertexNodes1
   !! Get the number of vertex nodes
-  PROCEDURE, PASS(obj) :: GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetTotalVertexNodes2 => obj_GetTotalVertexNodes2
   !! Get the number of vertex nodes of a list of elements
   GENERIC, PUBLIC :: GetTotalVertexNodes => GetTotalVertexNodes1, &
     GetTotalVertexNodes2
   !! Get the number of vertex nodes
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrientation => obj_GetOrientation
   !! Get the orientation flags of an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemTopologyIndx => &
     obj_GetElemTopologyIndx
   !! Get the topology index of an element
-
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementActive => &
     obj_isElementActive
   !! Returns true if an element is active
 
-  ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
   !! Set the showTime option
-
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   !! Set the sparsity pattern of a matrix
-  PROCEDURE, NOPASS :: SetSparsity2 => obj_SetSparsity2
+  PROCEDURE, PRIVATE, NOPASS :: SetSparsity2 => obj_SetSparsity2
   !! Set the sparsity pattern for several domains
   GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
   !! Set the sparsity pattern of a matrix
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalMedium => obj_SetTotalMedium
-  !! Add space for media in the elements of a mesh
-
+  !! Set the number of media in the elements of a mesh
   PROCEDURE, PUBLIC, PASS(obj) :: SetMaterial => obj_SetMaterial
   !! Set the material of a medium in an entity
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates of the domain
 
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuality => obj_SetQuality
-  !! Set the quality of the meshes
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalElements => obj_SetTotalElements
-  !! Set the number of elements of a dimension
-
-  ! SET:
   ! @MeshDataMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateKdtree => obj_InitiateKdtree
   !! Initiate the kdtree of the domain
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToElements => &
     obj_InitiateNodeToElements
   !! Initiate the node to elements data of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateNodeToNodes => &
     obj_InitiateNodeToNodes
   !! Initiate the node to nodes data of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateElementToElements => &
     obj_InitiateElementToElements
   !! Initiate the element to elements data of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateFacetElements => &
     obj_InitiateFacetElements
   !! Initiate the facet elements of the meshes
-
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateExtraNodeToNodes => &
     obj_InitiateExtraNodeToNodes
   !! Initiate the extra node to nodes data of the meshes
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetDomainFacetElement => &
-    obj_SetDomainFacetElement
-  !! Set the domain boundary facet elements
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshmap => obj_SetMeshmap
-  !! Set the mesh map
-
-  PROCEDURE, PUBLIC, PASS(obj) :: SetMeshFacetElement => &
-    obj_SetMeshFacetElement
-  !! Set the mesh facet elements
 
 END TYPE AbstractDomain_
 
@@ -496,7 +410,7 @@ END TYPE AbstractDomainPointer_
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -537,7 +451,7 @@ END TYPE AbstractDomainPointer_
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh_two_region.h5"
+!     "./meshdata/very_small_quad4_mesh_two_region.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B), ALLOCATABLE :: con(:)
@@ -603,7 +517,7 @@ END INTERFACE AbstractDomainInitiate
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -765,8 +679,8 @@ END INTERFACE
 ! See also: [[obj_ImportFromToml1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml2( &
-    obj, tomlName, afile, filename, printToml)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
+                                        printToml)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -810,7 +724,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -900,22 +814,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
+! update:
+!   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
+!     arguments
 ! summary: Get a pointer to a mesh of the domain
 !
 ! Return the mesh of dimension dim, or the mesh of dimension nsd if dim is
 ! absent. In FEDomain_ the mesh of a dimension contains all entities of that
-! dimension; entityNum, globalElement and islocal are not used. The pointer is
-! not associated if the domain has no mesh of dimension dim.
+! dimension; the entity of an element is its mesh id. The pointer is not
+! associated if the domain has no mesh of dimension dim.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
-!     by FEDomain_
-!   globalElement : INTEGER(I4B), optional, intent(in) - global element
-!     number; not used by FEDomain_
-!   islocal : LOGICAL(LGT), optional, intent(in) - not used by FEDomain_
 !
 ! Returns:
 !   ans : CLASS(AbstractMesh_), pointer - pointer to the mesh
@@ -936,7 +848,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -963,20 +875,13 @@ END INTERFACE
 !```
 
 ABSTRACT INTERFACE
-  FUNCTION obj_GetMeshPointer(obj, dim, entityNum, &
-    globalElement, islocal) RESULT(ans)
+  FUNCTION obj_GetMeshPointer(obj, dim) RESULT(ans)
     IMPORT :: AbstractDomain_, I4B, LGT, AbstractMesh_
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used by FEDomain_
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: globalElement
-    !! global element number; not used by FEDomain_
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    !! not used by FEDomain_
     CLASS(AbstractMesh_), POINTER :: ans
     !! pointer to the mesh
   END FUNCTION obj_GetMeshPointer
@@ -1015,7 +920,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -1059,6 +964,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-11-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Returns true if an element is present
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -1070,8 +977,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1081,8 +986,8 @@ END INTERFACE
 ! See also: [[obj_IsNodePresent]], [[obj_isElementActive]]
 
 INTERFACE
-  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, entityNum, &
-    islocal) RESULT(ans)
+  MODULE FUNCTION obj_IsElementPresent(obj, globalElement, dim, &
+                                       islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1090,8 +995,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1106,6 +1009,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the vertex connectivity of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -1117,8 +1022,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1140,7 +1043,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B), ALLOCATABLE :: con(:)
@@ -1170,8 +1073,8 @@ END INTERFACE
 ! See also: [[obj_GetNNE]], [[obj_GetConnectivity1_]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, entityNum, &
-    islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetConnectivity(obj, globalElement, dim, &
+                                      islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1179,8 +1082,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1195,6 +1096,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of nodes in an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -1206,8 +1109,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1217,7 +1118,7 @@ END INTERFACE
 ! See also: [[obj_GetConnectivity]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetNNE(obj, globalElement, dim, entityNum, islocal) &
+  MODULE FUNCTION obj_GetNNE(obj, globalElement, dim, islocal) &
     RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -1226,8 +1127,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1274,7 +1173,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B), ALLOCATABLE :: elems(:)
@@ -1376,7 +1275,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeToElements1_(obj, ans, tsize, &
-    globalNode, islocal)
+                                            globalNode, islocal)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -1415,7 +1314,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeToElements2_(obj, ans, tsize, &
-    globalNode, islocal)
+                                            globalNode, islocal)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
@@ -1436,17 +1335,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-28
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the total number of nodes
 !
-! Without dim and entityNum, return the number of nodes of the domain. Else
+! Without dim, return the number of nodes of the domain. Else
 ! return the number of nodes of the mesh of dimension dim. The operator
 ! .tNodes. calls this method.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes
@@ -1466,7 +1365,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -1487,16 +1386,14 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_tNodes1]], [[obj_tNodes2]], [[obj_tNodes3]]
+! See also: [[obj_tNodes1]], [[obj_tNodes2]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetTotalNodes(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetTotalNodes(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     INTEGER(I4B) :: ans
     !! number of nodes
   END FUNCTION obj_GetTotalNodes
@@ -1560,36 +1457,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         tNodes@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2021-06-28
-! summary: Get the number of nodes of a mesh (operator)
-!
-! obj .tNodes. [dim, entityNum] calls GetTotalNodes(dim, entityNum).
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   opt(2) : INTEGER(I4B), intent(in) - opt(1) is dim, opt(2) is entityNum
-!
-! Returns:
-!   ans : INTEGER(I4B) - number of nodes
-!
-! See also: [[obj_GetTotalNodes]]
-
-INTERFACE
-  MODULE FUNCTION obj_tNodes3(obj, opt) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: opt(2)
-    !! opt(1) is dim, opt(2) is entityNum
-    INTEGER(I4B) :: ans
-    !! number of nodes
-  END FUNCTION obj_tNodes3
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                GetTotalElements@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1626,7 +1493,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -1789,7 +1656,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -1984,7 +1851,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   TYPE(ElemData_) :: elemdata
@@ -2195,12 +2062,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-11-12
+! update:
+!   - 2026-10-23: entityNum is the mesh id of the element
 ! summary: Get the dimension and entity of an element
 !
-! Return [dim, entityNum] of the first mesh which contains the element,
-! searching dim = 0 to nsd and entityNum = 1 to the number of entities. In
-! FEDomain_ the mesh of a dimension contains all its entities, so the returned
-! entityNum is 1. Zero is returned if the element is not found.
+! Return [dim, entityNum] of the element: dim is the dimension of the mesh
+! which contains the element (dim = 0 to nsd is searched), and entityNum is
+! the mesh id (entity number) of the element. Zero is returned if the element
+! is not found.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2227,7 +2096,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -2239,7 +2108,7 @@ END INTERFACE
 !
 !   CALL OK(ALL(obj%GetDimEntityNum(15_I4B) .EQ. [2, 1]), "element 15")
 !   CALL OK(ALL(obj%GetDimEntityNum(6_I4B) .EQ. [1, 1]), "element 6")
-!   CALL OK(ALL(obj%GetDimEntityNum(2_I4B) .EQ. [0, 1]), "element 2")
+!   CALL OK(ALL(obj%GetDimEntityNum(2_I4B) .EQ. [0, 2]), "element 2")
 !
 !   CALL obj%DEALLOCATE()
 !   CALL meshfile%DEALLOCATE()
@@ -2267,26 +2136,34 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
+!   - 2026-10-24: With dim, nodeCoord has nsd rows (it had three); the
+!     coordinates are copied by GetNodeCoord(nodeCoord, nrow, ncol, dim)
 ! summary: Get node coordinates
 !
 ! GetNodeCoord is a generic method:
 !
-! - without dim, return the coordinates of all nodes of the domain (nsd rows);
+! - without dim, return the coordinates of all nodes of the domain;
 ! - with dim, return the coordinates of the nodes of the mesh of dimension dim
-!   (three rows, columns in local node order of the mesh);
+!   (columns in local node order of the mesh);
+! - with nrow and ncol, write the same coordinates without allocation (see
+!   [[obj_GetNodeCoord4]]);
 ! - with globalNode(:), return the coordinates of a list of nodes;
 ! - with globalNode and tsize, return the coordinates of one node.
+!
+! In all cases the number of rows is the number of spatial dimensions of the
+! domain, nsd = obj%nsd (GetNSD()). This routine reallocates nodeCoord to
+! nsd rows and as many columns as nodes.
 !
 ! GetNodeCoordPointer returns a pointer to the node coordinates.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   nodeCoord(:,:) : REAL(DFP), allocatable, intent(inout) - node coordinates
-!     in xiJ format, it is reallocated
+!     in xiJ format, reallocated to SIZE = [nsd, number of nodes]
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh; if
 !     absent, all nodes of the domain
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !
 ! Examples
 !
@@ -2304,13 +2181,14 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
 !   REAL(DFP), ALLOCATABLE :: xij(:, :)
 !   REAL(DFP), POINTER :: ptr(:, :)
 !   REAL(DFP) :: xx(3, 10), x(3)
+!   REAL(DFP) :: buf(3, 20)
 !   INTEGER(I4B) :: nrow, ncol, tsize
 !
 !   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
@@ -2330,6 +2208,18 @@ END INTERFACE
 !   CALL OK(ALL(ABS(xx(1:2, 1) - 1.0_DFP) .LT. tol), "node 4")
 !   CALL obj%GetNodeCoord(nodeCoord=x, tsize=tsize, globalNode=6_I4B)
 !   CALL OK(ALL(ABS(x(1:2) - [0.5_DFP, 1.0_DFP]) .LT. tol), "node 6")
+!   CALL obj%GetNodeCoord(nodeCoord=buf, nrow=nrow, ncol=ncol)
+!   CALL OK(nrow .EQ. 2_I4B .AND. ncol .EQ. 9_I4B, &
+!           "all nodes without allocation: nrow and ncol")
+!   CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), &
+!           "all nodes without allocation: node 9")
+!   buf = 0.0_DFP
+!   CALL obj%GetParam(nodeCoord=buf)
+!   CALL OK(ALL(ABS(buf(1:2, 9) - 0.5_DFP) .LT. tol), "GetParam")
+!   CALL obj%GetNodeCoord(nodeCoord=buf, nrow=nrow, ncol=ncol, &
+!                         dim=1_I4B)
+!   CALL OK(nrow .EQ. 2_I4B .AND. ncol .EQ. 8_I4B, &
+!           "nodes of the curve mesh without allocation")
 !   ptr => obj%GetNodeCoordPointer()
 !   CALL OK(SIZE(ptr, 2) .EQ. 9_I4B, "GetNodeCoordPointer")
 !   ptr => NULL()
@@ -2343,15 +2233,14 @@ END INTERFACE
 !   [[obj_GetNodeCoordPointer]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNodeCoord1(obj, nodeCoord, dim, entityNum)
+  MODULE SUBROUTINE obj_GetNodeCoord1(obj, nodeCoord, dim)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: nodeCoord(:, :)
-    !! node coordinates in xiJ format, it is reallocated
+    !! node coordinates in xiJ format, reallocated to nsd rows and as many
+    !! columns as nodes
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh; if absent, all nodes of the domain
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
   END SUBROUTINE obj_GetNodeCoord1
 END INTERFACE
 
@@ -2380,7 +2269,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord2(obj, nodeCoord, nrow, ncol, &
-    globalNode, islocal)
+                                      globalNode, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
@@ -2421,7 +2310,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetNodeCoord3(obj, nodeCoord, tsize, globalNode, &
-    islocal)
+                                      islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:)
@@ -2434,6 +2323,56 @@ INTERFACE
     !! if true, the given element or node number is a local number; default is
     !! false
   END SUBROUTINE obj_GetNodeCoord3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetNodeCoord@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-24
+! summary: Get the coordinates of nodes without allocation
+!
+! Write node coordinates in nodeCoord(1:nrow, 1:ncol):
+!
+! - without dim, the coordinates of all nodes of the domain; column ii is
+!   the local node ii of the domain;
+! - with dim, the coordinates of the nodes of the mesh of dimension dim;
+!   column ii is the local node ii of the mesh.
+!
+! nrow is always the number of spatial dimensions of the domain,
+! nrow = obj%nsd (GetNSD()), and ncol is the number of nodes written.
+! nodeCoord is not allocated; it must have at least nsd rows and ncol
+! columns. GetNodeCoord(nodeCoord, dim), which allocates nodeCoord, and
+! GetParam(nodeCoord=...) call this method.
+!
+! Arguments:
+!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+!   nodeCoord(:,:) : REAL(DFP), intent(inout) - node coordinates,
+!     SIZE(nodeCoord, 1) >= nsd and SIZE(nodeCoord, 2) >= number of nodes
+!     of the domain (or of the mesh of dimension dim)
+!   nrow : INTEGER(I4B), intent(out) - number of rows written, obj%nsd
+!   ncol : INTEGER(I4B), intent(out) - number of columns written (number
+!     of nodes)
+!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh; if
+!     absent, all nodes of the domain
+!
+! See also: [[obj_GetNodeCoord1]], [[obj_GetParam]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeCoord4(obj, nodeCoord, nrow, ncol, dim)
+    CLASS(AbstractDomain_), INTENT(IN) :: obj
+    !! domain object
+    REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
+    !! node coordinates, SIZE(nodeCoord, 1) >= nsd and SIZE(nodeCoord, 2) >=
+    !! number of nodes of the domain (or of the mesh of dimension dim)
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written, obj%nsd
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns written (number of nodes)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
+    !! dimension of the mesh; if absent, all nodes of the domain
+  END SUBROUTINE obj_GetNodeCoord4
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -2499,7 +2438,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   REAL(DFP) :: x(3), xn(3, 1)
@@ -2582,17 +2521,18 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-09-02
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the global node numbers of a mesh
 !
 ! Return the global node numbers of the mesh of dimension dim. GetNptrs_ works
 ! without allocation, and GetInternalNptrs returns the internal nodes of the
-! mesh. entityNum is not used.
+! mesh. For the nodes of one entity, use GetMeshPointer(dim) and the mesh
+! method GetNptrs(meshid=entityNum).
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   entityNum(:) : INTEGER(I4B), optional, intent(in) - entity numbers; not
-!     used
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers
@@ -2612,7 +2552,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B), ALLOCATABLE :: nodes(:)
@@ -2641,13 +2581,11 @@ END INTERFACE
 ! See also: [[obj_GetNptrs_]], [[obj_GetInternalNptrs]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetNptrs(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetNptrs(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum(:)
-    !! entity numbers; not used
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! global node numbers
   END FUNCTION obj_GetNptrs
@@ -2659,6 +2597,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the global node numbers of a mesh
 !
 ! See GetNptrs.
@@ -2668,15 +2608,13 @@ END INTERFACE
 !   nptrs(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
 !     at least the number of nodes of the mesh
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   entityNum(:) : INTEGER(I4B), optional, intent(in) - entity numbers; not
-!     used
 !   tsize : INTEGER(I4B), optional, intent(out) - number of entries written in
 !     nptrs
 !
 ! See also: [[obj_GetNptrs]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim, entityNum, tsize)
+  MODULE SUBROUTINE obj_GetNptrs_(obj, nptrs, dim, tsize)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
@@ -2684,8 +2622,6 @@ INTERFACE
     !! mesh
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum(:)
-    !! entity numbers; not used
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: tsize
     !! number of entries written in nptrs
   END SUBROUTINE obj_GetNptrs_
@@ -2697,6 +2633,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-09-02
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the internal nodes of a mesh
 !
 ! See GetNptrs.
@@ -2704,8 +2642,6 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   entityNum(:) : INTEGER(I4B), optional, intent(in) - entity numbers; not
-!     used
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global numbers of the internal nodes
@@ -2713,13 +2649,11 @@ END INTERFACE
 ! See also: [[obj_GetNptrs]]
 
 INTERFACE
-  MODULE FUNCTION obj_GetInternalNptrs(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetInternalNptrs(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum(:)
-    !! entity numbers; not used
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! global numbers of the internal nodes
   END FUNCTION obj_GetInternalNptrs
@@ -2764,7 +2698,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   TYPE(BoundingBox_) :: box
@@ -2848,17 +2782,17 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the bounding box
 !
-! Without dim and entityNum, return the box of all nodes of the domain. Else
+! Without dim, return the box of all nodes of the domain. Else
 ! return the box of the nodes of the mesh of dimension dim.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !
 ! Returns:
 !   ans : TYPE(BoundingBox_) - bounding box
@@ -2882,7 +2816,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
@@ -2906,14 +2840,12 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE FUNCTION obj_GetBoundingBox(obj, dim, entityNum) RESULT(ans)
+  MODULE FUNCTION obj_GetBoundingBox(obj, dim) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     TYPE(BoundingBox_) :: ans
     !! bounding box
   END FUNCTION obj_GetBoundingBox
@@ -2945,69 +2877,13 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        GetOrder@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2021-09-21
-! summary: Get the order of the meshes of a dimension
-!
-! This routine is not implemented; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
-! Returns:
-!   ans(:) : INTEGER(I4B), allocatable - order of the meshes
-
-INTERFACE
-  MODULE FUNCTION obj_GetOrder(obj, dim) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    !! order of the meshes
-  END FUNCTION obj_GetOrder
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                          GetTotalMeshFacetData@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-05-24
-! summary: Get the size of mesh facet data
-!
-! This method is deprecated; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   imeshFacetData : INTEGER(I4B), optional, intent(in) - index of the mesh
-!     facet data
-!
-! Returns:
-!   ans : INTEGER(I4B) - zero
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalMeshFacetData(obj, imeshFacetData) &
-    RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: imeshFacetData
-    !! index of the mesh facet data
-    INTEGER(I4B) :: ans
-    !! zero
-  END FUNCTION obj_GetTotalMeshFacetData
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                               GetTotalMaterial@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of media of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -3020,8 +2896,6 @@ END INTERFACE
 !     element number if islocal is true
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
-!     by FEDomain_
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of media of the element
@@ -3030,7 +2904,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalMaterial(obj, dim, globalElement, &
-    islocal, entityNum) RESULT(ans)
+                                       islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
@@ -3040,71 +2914,9 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used by FEDomain_
     INTEGER(I4B) :: ans
     !! number of media of the element
   END FUNCTION obj_GetTotalMaterial
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 GetElemType@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-23
-! summary: Get the element types of a mesh
-!
-! This routine is not implemented; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
-! Returns:
-!   ans(:) : INTEGER(I4B), allocatable - element types
-!
-! See also: [[obj_GetUniqueElemType]]
-
-INTERFACE
-  MODULE FUNCTION obj_GetElemType(obj, dim) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    !! element types
-  END FUNCTION obj_GetElemType
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               GetUniqueElemType@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-23
-! summary: Get the unique element types of a mesh
-!
-! This routine calls GetElemType, which is not implemented.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
-! Returns:
-!   ans(:) : INTEGER(I4B), allocatable - element types without duplicates
-!
-! See also: [[obj_GetElemType]]
-
-INTERFACE
-  MODULE FUNCTION obj_GetUniqueElemType(obj, dim) RESULT(ans)
-    CLASS(AbstractDomain_), INTENT(IN) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: dim
-    !! dimension of the mesh
-    INTEGER(I4B), ALLOCATABLE :: ans(:)
-    !! element types without duplicates
-  END FUNCTION obj_GetUniqueElemType
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -3215,9 +3027,12 @@ END INTERFACE
 ! date: 2024-04-08
 ! summary: Get the parameters of the domain
 !
-! Each present argument returns the component of the same name. tElements(0:3)
-! and tEntities(0:3) are the number of elements and entities of each
-! dimension.
+! Each present argument returns the component of the same name. tEntities(0:3)
+! is the number of entities of each dimension. tElements(0:3) is the number
+! of elements of each dimension; it is computed from the meshes
+! (GetTotalElements of the mesh of dimension 0 to nsd; zero for the other
+! dimensions). nodeCoord gets the coordinates of all nodes (see
+! GetNodeCoord(nodeCoord, nrow, ncol)).
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3248,7 +3063,7 @@ END INTERFACE
 !   tEntities(0:3) : INTEGER(I4B), optional, intent(inout) - number of
 !     entities of each dimension
 !   nodeCoord(:,:) : REAL(DFP), optional, intent(inout) - node coordinates,
-!     SHAPE must be that of the domain
+!     at least nsd rows and as many columns as nodes
 !
 ! Examples
 !
@@ -3265,7 +3080,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B) :: nsd, tNodes, tElements(0:3), tEntities(0:3)
@@ -3282,22 +3097,20 @@ END INTERFACE
 !   CALL OK(ALL(tElements .EQ. [4, 8, 4, 0]), "tElements")
 !   CALL OK(ALL(tEntities .EQ. [4, 4, 1, 0]), "tEntities")
 !
-!   CALL obj%SetTotalElements(indx=0_I4B, VALUE=5_I4B)
-!   CALL obj%GetParam(tElements=tElements)
-!   CALL OK(tElements(0) .EQ. 5_I4B, "SetTotalElements")
-!
 !   CALL obj%DEALLOCATE()
 !   CALL meshfile%DEALLOCATE()
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_SetTotalElements]]
+! See also: [[obj_GetTotalElements]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam(obj, isInitiated, engine, majorVersion, &
-    minorVersion, version, nsd, maxNptrs, minNptrs, tNodes, &
-    isNodeNumberSparse, maxElemNum, minElemNum, isElemNumberSparse, &
-    tEntitiesForNodes, tEntitiesForElements, tElements, tEntities, nodeCoord)
+                                 minorVersion, version, nsd, maxNptrs, &
+                                 minNptrs, tNodes, isNodeNumberSparse, &
+                                 maxElemNum, minElemNum, isElemNumberSparse, &
+                                 tEntitiesForNodes, tEntitiesForElements, &
+                                 tElements, tEntities, nodeCoord)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     LOGICAL(LGT), INTENT(OUT), OPTIONAL :: isInitiated
@@ -3379,7 +3192,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -3411,7 +3224,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, &
-    localEdgeNumber, islocal) RESULT(ans)
+                                          localEdgeNumber, &
+                                          islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3453,7 +3267,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, &
-    localFaceNumber, islocal) RESULT(ans)
+                                          localFaceNumber, &
+                                          islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3474,6 +3289,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the connectivity of an element
 !
 ! This method is implemented by the child class (see FEDomain_).
@@ -3490,8 +3307,6 @@ END INTERFACE
 !     (default), E edges, F faces, C cell, A all
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3499,7 +3314,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
-    opt, dim, entityNum, islocal)
+                                          opt, dim, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3513,8 +3328,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3527,6 +3340,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get all connectivities of an element
 !
 ! This method is implemented by the child class (see FEDomain_).
@@ -3552,8 +3367,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3561,9 +3374,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
-    nodeCon, tCellCon, tFaceCon, &
-    tEdgeCon, tnodeCon, globalElement, &
-    dim, entityNum, islocal)
+                                          nodeCon, tCellCon, tFaceCon, &
+                                          tEdgeCon, tnodeCon, globalElement, &
+                                          dim, islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
@@ -3587,8 +3400,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3637,7 +3448,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B) :: ent(4)
@@ -3669,7 +3480,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes1(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           entityNum, islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: globalElement
@@ -3693,6 +3504,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-05
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of vertex nodes of a list of elements
 !
 ! This method is implemented by the child class (see FEDomain_).
@@ -3703,8 +3516,6 @@ END INTERFACE
 !     (local if islocal is true)
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3715,7 +3526,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes2(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
@@ -3723,8 +3534,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3739,6 +3548,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the orientation flags of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -3760,8 +3571,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3781,7 +3590,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -3811,9 +3620,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetOrientation(obj, cellOrient, faceOrient, &
-    edgeOrient, tCellOrient, tFaceOrient, &
-    tEdgeOrient, globalElement, dim, &
-    entityNum, islocal)
+                                       edgeOrient, tCellOrient, tFaceOrient, &
+                                       tEdgeOrient, globalElement, dim, &
+                                       islocal)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
@@ -3833,8 +3642,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3847,6 +3654,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-23
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the topology index of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -3859,8 +3668,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3871,7 +3678,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetElemTopologyIndx(obj, globalElement, dim, &
-    entityNum, islocal) &
+                                          islocal) &
     RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
@@ -3880,8 +3687,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3896,6 +3701,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Returns true if an element is active
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
@@ -3907,8 +3714,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -3918,8 +3723,8 @@ END INTERFACE
 ! See also: [[obj_IsElementPresent]]
 
 INTERFACE
-  MODULE FUNCTION obj_isElementActive(obj, globalElement, dim, entityNum, &
-    islocal) RESULT(ans)
+  MODULE FUNCTION obj_isElementActive(obj, globalElement, dim, &
+                                      islocal) RESULT(ans)
     CLASS(AbstractDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -3927,8 +3732,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number of the mesh of dimension dim
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -3965,7 +3768,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -4031,7 +3834,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   TYPE(DOF_) :: dofobj
@@ -4074,6 +3877,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-10-12
+! update:
+!   - 2026-10-24: Works for one domain (the node to node map was empty)
 ! summary: Set the sparsity pattern for several domains
 !
 ! Each domain is a physical variable: the block (ivar, jvar) of mat gets the
@@ -4085,6 +3890,59 @@ END INTERFACE
 !   domains(:) : CLASS(AbstractDomainPointer_), intent(inout) - domains, one
 !     per physical variable
 !   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractDomain_Class, ONLY: AbstractDomainPointer_
+!   USE AbstractDomain_Class, ONLY: AbstractDomainSetSparsity
+!   USE BaseType, ONLY: CSRMatrix_
+!   USE BaseType, ONLY: DOF_
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE CSRMatrix_Method, ONLY: CSRMatrixInitiate => Initiate
+!   USE CSRMatrix_Method, ONLY: GetNNZ
+!   USE DOF_Method, ONLY: DOFInitiate => Initiate
+!   USE DOF_Method, ONLY: DOFSize => Size
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: I4B
+!   USE GlobalData, ONLY: NODES_FMT
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = &
+!     "./meshdata/very_small_quad4_mesh.h5"
+!   TYPE(HDF5File_) :: meshfile
+!   TYPE(FEDomain_), TARGET :: obj
+!   TYPE(DOF_) :: dofobj
+!   TYPE(CSRMatrix_) :: mat
+!   TYPE(AbstractDomainPointer_) :: domains(1)
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+!   CALL meshfile%Initiate(filename=filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL obj%Initiate(hdf5=meshfile, group="")
+!
+!   CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalNodes()], &
+!                    names=["K"], spacecompo=[1_I4B], &
+!                    timecompo=[1_I4B], storagefmt=NODES_FMT)
+!   CALL CSRMatrixInitiate(obj=mat, ncol=DOFSize(dofobj), &
+!                          nrow=DOFSize(dofobj), idof=dofobj, &
+!                          jdof=dofobj)
+!   domains(1)%ptr => obj
+!   CALL AbstractDomainSetSparsity(domains=domains, mat=mat)
+!   CALL OK(GetNNZ(mat) .EQ. 49_I4B, "number of nonzeros")
+!   domains(1)%ptr => NULL()
+!
+!   CALL obj%DEALLOCATE()
+!   CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
 !
 ! See also: [[obj_SetSparsity1]]
 
@@ -4103,17 +3961,17 @@ END INTERFACE AbstractDomainSetSparsity
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
-! summary: Add space for media in the elements of a mesh
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
+! summary: Set the number of media in the elements of a mesh
 !
-! Call SetTotalMedium of the mesh of dimension dim; n media are added to every
-! element.
+! Call SetTotalMedium of the mesh of dimension dim; the number of media of
+! every element is set to n.
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(inout) - domain object
 !   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   n : INTEGER(I4B), intent(in) - number of media to add
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
-!     by FEDomain_
+!   n : INTEGER(I4B), intent(in) - number of media
 !
 ! Examples
 !
@@ -4131,7 +3989,7 @@ END INTERFACE AbstractDomainSetSparsity
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh_two_region.h5"
+!     "./meshdata/very_small_quad4_mesh_two_region.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -4164,15 +4022,13 @@ END INTERFACE AbstractDomainSetSparsity
 ! See also: [[obj_SetMaterial]], [[obj_GetTotalMaterial]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetTotalMedium(obj, dim, n, entityNum)
+  MODULE SUBROUTINE obj_SetTotalMedium(obj, dim, n)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
     !! dimension of the mesh
     INTEGER(I4B), INTENT(IN) :: n
-    !! number of media to add
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used by FEDomain_
+    !! number of media
   END SUBROUTINE obj_SetTotalMedium
 END INTERFACE
 
@@ -4199,7 +4055,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMaterial(obj, dim, entityNum, &
-    medium, material)
+                                    medium, material)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: dim
@@ -4248,7 +4104,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
@@ -4278,7 +4134,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_SetNodeCoord(obj, nodeCoord, scale, &
-    addContribution)
+                                     addContribution)
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
     REAL(DFP), INTENT(IN) :: nodeCoord(:, :)
@@ -4288,73 +4144,6 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! if true, add scale * nodeCoord; default is false
   END SUBROUTINE obj_SetNodeCoord
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   SetQuality@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-10-22
-! summary: Set the quality of the meshes
-!
-! This routine is not implemented; it raises an error.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   measures(:) : INTEGER(I4B), intent(in) - quality measures
-!   max_measures(:) : REAL(DFP), intent(out) - maximum value of each measure
-!   min_measures(:) : REAL(DFP), intent(out) - minimum value of each measure
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
-    min_measures, dim, entityNum)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: measures(:)
-    !! quality measures
-    REAL(DFP), INTENT(OUT) :: max_measures(:)
-    !! maximum value of each measure
-    REAL(DFP), INTENT(OUT) :: min_measures(:)
-    !! minimum value of each measure
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
-    !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
-    !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number
-  END SUBROUTINE obj_SetQuality
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                               SetTotalElements@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-11
-! summary: Set the number of elements of a dimension
-!
-! Set tElements(indx) = VALUE. It does not change the meshes.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   indx : INTEGER(I4B), intent(in) - dimension: 0 points, 1 curves, 2
-!     surfaces, 3 volumes
-!   VALUE : INTEGER(I4B), intent(in) - number of elements
-!
-! See also: [[obj_GetParam]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetTotalElements(obj, indx, VALUE)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-    INTEGER(I4B), INTENT(IN) :: indx
-    !! dimension: 0 points, 1 curves, 2 surfaces, 3 volumes
-    INTEGER(I4B), INTENT(IN) :: VALUE
-    !! number of elements
-  END SUBROUTINE obj_SetTotalElements
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -4387,7 +4176,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   REAL(DFP) :: x(3), xn(3, 1)
@@ -4529,66 +4318,6 @@ INTERFACE
     CLASS(AbstractDomain_), INTENT(INOUT) :: obj
     !! domain object
   END SUBROUTINE obj_InitiateExtraNodeToNodes
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                              SetAbstractDomainFacetElement@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-04-14
-! summary: Set the domain boundary facet elements
-!
-! This routine is not implemented; it does nothing.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetDomainFacetElement(obj)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-  END SUBROUTINE obj_SetDomainFacetElement
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 SetMeshmap@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-05-20
-! summary: Set the mesh map
-!
-! This routine is not implemented; it does nothing.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshmap(obj)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-  END SUBROUTINE obj_SetMeshmap
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                        SetMeshFacetElement@MeshDataMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-05-20
-! summary: Set the mesh facet elements
-!
-! This routine is not implemented; it does nothing.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-
-INTERFACE
-  MODULE SUBROUTINE obj_SetMeshFacetElement(obj)
-    CLASS(AbstractDomain_), INTENT(INOUT) :: obj
-    !! domain object
-  END SUBROUTINE obj_SetMeshFacetElement
 END INTERFACE
 
 !----------------------------------------------------------------------------

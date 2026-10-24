@@ -114,62 +114,93 @@ the listed test passes. **Open** means not changed.
   `InitiateBoundaryData`) were removed earlier.
 - Test: `SetFacetElementType_test_1`
 
-## Open
-
 ### 11. InitiateFacetElements fails for curve meshes
 
 - Where: `obj_InitiateFacetElements` in `AbstractMesh_Class@FacetDataMethods.F90`
-- Symptom: "[ERROR] :: Facet elements not found in the mesh" (stops the
+- Symptom: "[ERROR] :: Facet elements not found in the mesh" (stopped the
   program) for a mesh with `xidim = 1`.
-- Cause: it uses `obj%tFaces`, which is zero for 1D meshes; point meshes
-  return early.
-- Proposal: decide whether 1D meshes have point facets. If not, return
-  early for `xidim <= 1` as for `xidim = 0`.
-- Impact: `FEDomain_%InitiateFacetElements` fails for 2D and 3D domains.
-
-### 12. Routines which are not implemented
-
-| Routine | Behaviour |
-|---|---|
-| `obj_Export` | raises "[WIP]: This routine has not been implemented yet" and stops |
-| `obj_GetOrder1` (`GetOrder()` without element) | raises "[WIP ERROR]" and stops |
-| `obj_DisplayFacetElements` | raises "[DEPRECATED]" and stops |
-| `obj_SetQuality` | empty body |
+- Cause: it uses `obj%tFaces`, which is zero for 1D meshes; only point
+  meshes returned early.
+- Fix: return early for `xidim <= 1`; point and curve meshes have no
+  facet elements. This also makes `FEDomain_%InitiateFacetElements` work
+  for 2D and 3D domains.
+- Test: `InitiateFacetElements_test_4` (FEMesh),
+  `InitiateFacetElements_test_1` (FEDomain)
 
 ### 13. SetTotalMedium adds media instead of setting the number
 
-- Where: `obj_SetTotalMedium1`, `obj_SetTotalMedium2` (SetMethods) via
-  `Elemdata_SetTotalMedium`.
-- Symptom: `SetTotalMedium(n=2)` then `SetTotalMedium(n=3,
-  globalElement=14)` gives `GetTotalMaterial(14) = 5`.
-- Cause: `Elemdata_SetTotalMedium` extends the existing array by `n`.
-- Question: is this intended? The argument comment says "Total number of
-  medium assigned to a given element". The docblocks describe the
-  present behaviour.
+- Where: `Elemdata_SetTotalMedium` (ElemData_Class.F90), used by
+  `obj_SetTotalMedium1`, `obj_SetTotalMedium2` (SetMethods).
+- Cause: the material array was extended by `n`, so `SetTotalMedium(n=2)`
+  then `SetTotalMedium(n=3, globalElement=14)` gave 5 media.
+- Fix: the size of the material array becomes `n`. The material ids of the
+  first `MIN(n, old size)` media are kept; new media get id 0. Docblocks of
+  the mesh and domain routines updated.
+- Test: `SetTotalMedium_test_1`
 
 ### 14. GetNodeToNodes does not initiate its data
 
-- Where: `obj_GetNodeToNodes1/2`, `obj_GetNodeToNodes1_/2_`
+- Where: `obj_GetNodeToNodes1/2`, `obj_GetNodeToNodes1_/2_` (GetMethods)
 - Symptom: empty result if `InitiateNodeToNodes` was not called.
-- Note: `GetNodeToElements` initiates its data on demand. Either make
-  `GetNodeToNodes` do the same, or keep the documented requirement.
+- Fix: the four routines call `InitiateNodeToNodes` when the data is not
+  initiated, like `GetNodeToElements`; `obj` is now INTENT(INOUT). All
+  library callers (`SetSparsity`, `InitiateExtraNodeToNodes`) already have
+  `obj` INTENT(INOUT).
+- Also fixed: `obj_GetNodeToNodes2` sized its work array without the extra
+  nodes, while `GetNodeToNodes_` writes them, so it wrote past the array
+  after `InitiateExtraNodeToNodes`. The extra nodes are now counted.
+- Test: `GetNodeToNodes_test_3` (no InitiateNodeToNodes),
+  `GetNodeToNodes_test_4` (list of nodes with extra nodes)
+- Found by `GetNodeToNodes_test_4`, fixed in `obj_InitiateExtraNodetoNodes`
+  (NodeDataMethods):
+  - no extra nodes were stored: `NodeData_SetExtraGlobalNodes` copies into
+    the existing `extraGlobalNodes`, which was never allocated (size 0).
+    Now `NodeData_Set(extraGlobalNodes=...)` is used, which allocates.
+  - the extra nodes were reset and stored for every element around the
+    node, so only those of the last element were kept. They are now
+    collected over all elements and stored once.
 
 ### 15. AbstractMeshPointerDeallocate does not free the meshes
 
-- Where: `AbstractMeshPointerDeallocate` (ConstructorMethods)
-- Symptom: memory leak.
-- Cause: it calls `Deallocate` on each mesh and deallocates the array,
-  but never `DEALLOCATE (obj(ii)%ptr)`.
+- Where: `AbstractMeshPointerDeallocate` (AbstractMesh ConstructorMethods),
+  `FEMeshPointerDeallocate` (FEMesh ConstructorMethods)
+- Cause: they called `Deallocate` on each mesh and deallocated the array,
+  but never `DEALLOCATE (obj(ii)%ptr)`, so the mesh objects leaked.
+- Fix: each associated mesh is freed after `Deallocate`. The array must own
+  its meshes (created by ALLOCATE or FEMesh_Pointer, no aliases, no
+  pointers to TARGET variables); this is documented in the docblocks.
+- Test: `FEMesh_Pointer_test_1`
+
+## Open
+
+### 12. Routines which are not implemented
+
+| Routine | Behaviour | Decision |
+|---|---|---|
+| `obj_Export` | raises "[WIP]: This routine has not been implemented yet" and stops | kept; docblock says it needs to be implemented |
+| `obj_SetQuality` | debug build: raises "[WIP ERROR] :: This routine is under development"; release build: does nothing | kept; docblock says it needs to be implemented |
+
+`obj_DisplayFacetElements` (raised "[DEPRECATED]") was removed: binding,
+interface and implementation. Nothing called it.
+
+`obj_GetOrder1` (`GetOrder()` without element) is implemented. It returns
+the largest element order, stored in the new components `maxElemOrder` and
+`isMaxElemOrderSet` (reset by Deallocate, shown by Display); `obj` is now
+INTENT(INOUT). Tests: `GetOrder_test_2` (Quadrangle4, order 1, computed and
+stored), `GetOrder_test_3` (Triangle6, order 2, again after Deallocate).
 
 ### 16. Minor
 
 - `GetNearestNode` with `nn` returns nodes in no fixed order: the kdtree
-  is created with `sort=.FALSE.` (documented, not a bug).
-- `GetFacetConnectivity`, `GetFacetConnectivity_` and
-  `GetTotalFacetConnectivity` declare `islocal` as `LOGICAL(I4B)`;
-  the rest of the class uses `LOGICAL(LGT)`.
-- `GetMasterCellNumber`, `GetSlaveCellNumber`, `GetCellNumber`,
-  `GetLocalFacetID` and `AbstractMeshGetFacetConnectivity` ignore
-  `elementType`.
+  is created with `sort=.FALSE.` (documented, not a bug; left as is).
+- Fixed: `GetFacetConnectivity`, `GetFacetConnectivity_` and
+  `GetTotalFacetConnectivity` declared `islocal` as `LOGICAL(I4B)`; now
+  `LOGICAL(LGT)` like the rest of the class.
+- Fixed: `GetMasterCellNumber`, `GetSlaveCellNumber`, `GetCellNumber`,
+  `GetLocalFacetID` and `AbstractMeshGetFacetConnectivity` took an
+  `elementType` argument and ignored it (it selected the internal or
+  boundary facet array of the old mesh; now there is one `facetData(:)`
+  and each facet stores its type). The argument is removed. Test:
+  `GetCellNumber_test_1`.
 - The edge orientation is zero-sized until `InitiateEdgeConnectivity` is
-  called; no error is raised.
+  called; no error is raised (left as is).

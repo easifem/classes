@@ -51,7 +51,6 @@ USE FaceDataBinaryTree_Class
 USE FacetData_Class
 
 USE AbstractMesh_Class
-USE Mesh_Class
 USE FEMesh_Class
 USE MeshPointerVector_Class
 

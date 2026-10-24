@@ -16,17 +16,21 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ConstructorMethods
-USE Display_Method, ONLY: Display, &
-  EqualLine, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: ToString
 USE GlobalData, ONLY: stdout
-USE ElemData_Class, ONLY: ElemData_Pointer, &
-  ElemData_Copy
-USE NodeData_Class, ONLY: NodeData_Pointer, &
-  NodeData_Copy
-
+USE ElemData_Class, ONLY: ElemData_Pointer
+USE ElemData_Class, ONLY: ElemData_Copy
+USE NodeData_Class, ONLY: NodeData_Pointer
+USE NodeData_Class, ONLY: NodeData_Copy
 USE Kdtree2_Module, ONLY: Kdtree2_Destroy
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractMesh_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
@@ -41,7 +45,7 @@ MODULE PROCEDURE obj_Initiate
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   CALL obj%DEALLOCATE()
@@ -52,7 +56,7 @@ MODULE PROCEDURE obj_Initiate
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -61,6 +65,15 @@ END PROCEDURE obj_Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   obj%readFromFile = .FALSE.
   obj%isInitiated = .FALSE.
   obj%isNodeToElementsInitiated = .FALSE.
@@ -78,6 +91,8 @@ MODULE PROCEDURE obj_Deallocate
   obj%nsd = 0
   obj%xidim = 0
   obj%maxNNE = 0
+  obj%maxElemOrder = 0
+  obj%isMaxElemOrderSet = .FALSE.
   obj%maxNptrs = 0
   obj%minNptrs = 0
   obj%maxElemNum = 0
@@ -109,6 +124,11 @@ MODULE PROCEDURE obj_Deallocate
   CALL obj%elementDataBinaryTree%DEALLOCATE()
   CALL obj%nodeDataList%DEALLOCATE()
   CALL obj%nodeDataBinaryTree%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -116,6 +136,15 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isEmpty
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_isEmpty()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = .FALSE.
   IF (obj%tElements .LE. 0_I4B) THEN
     ans = .TRUE.
@@ -124,6 +153,11 @@ MODULE PROCEDURE obj_isEmpty
   IF (obj%tNodes .LE. 0_I4B) THEN
     ans = .TRUE.
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_isEmpty
 
 !----------------------------------------------------------------------------
@@ -137,12 +171,12 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (.NOT. obj%isInitiated) THEN
     CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-      '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
+                      '[INTERNAL ERROR] :: AbstractMesh_ is not initiated.')
     RETURN
   END IF
 
@@ -155,7 +189,7 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
 
   IF (obj%showTime) THEN
     CALL Display("Showing Time States of InitiateDynamicDataStructure", &
-      unitno=stdout)
+                 unitno=stdout)
     CALL EqualLine(unitno=stdout)
     CALL TypeCPUTime%SetStartTime()
   END IF
@@ -168,8 +202,8 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName // " : " // myName // &
-      " : time for making elementDataList: " // &
-      ToString(TypeCPUTime%GetTime()), unitno=stdout)
+                 " : time for making elementDataList: " // &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 
   IF (obj%showTime) CALL TypeCPUTime%SetStartTime()
@@ -182,14 +216,14 @@ MODULE PROCEDURE obj_InitiateDynamicDataStructure
   IF (obj%showTime) THEN
     CALL TypeCPUTime%SetEndTime()
     CALL Display(modName // " : " // myName // &
-      " : time for making nodeDataList: " // &
-      ToString(TypeCPUTime%GetTime()), unitno=stdout)
+                 " : time for making nodeDataList: " // &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
     CALL EqualLine(unitno=stdout)
   END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateDynamicDataStructure
@@ -199,9 +233,18 @@ END PROCEDURE obj_InitiateDynamicDataStructure
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractMeshPointerDeallocate
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "AbstractMeshPointerDeallocate()"
+#endif
+
   CLASS(AbstractMesh_), POINTER :: meshptr
   INTEGER(I4B) :: ii, tsize
   LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   meshptr => NULL()
   IF (ALLOCATED(obj)) THEN
@@ -213,6 +256,8 @@ MODULE PROCEDURE AbstractMeshPointerDeallocate
       isok = ASSOCIATED(meshptr)
       IF (isok) THEN
         CALL meshptr%DEALLOCATE()
+        ! free the mesh object; obj(ii)%ptr must own it
+        DEALLOCATE(obj(ii)%ptr)
         meshptr => NULL()
       END IF
 
@@ -220,6 +265,11 @@ MODULE PROCEDURE AbstractMeshPointerDeallocate
 
     DEALLOCATE(obj)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE AbstractMeshPointerDeallocate
 
 !----------------------------------------------------------------------------
@@ -227,12 +277,32 @@ END PROCEDURE AbstractMeshPointerDeallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DeallocateKdtree
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DeallocateKdtree()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   IF (ASSOCIATED(obj%kdtree)) THEN
     CALL Kdtree2_Destroy(obj%kdtree)
     obj%kdtree => NULL()
   END IF
 
   IF (ALLOCATED(obj%kdresult)) DEALLOCATE(obj%kdresult)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DeallocateKdtree
+
+!----------------------------------------------------------------------------
+!                                                             Include errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

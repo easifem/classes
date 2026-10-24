@@ -28,7 +28,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   INTEGER(I4B) :: nsd, tNodes, tElements(0:3), tEntities(0:3)
@@ -40,14 +40,10 @@ PROGRAM main
   CALL obj%Initiate(hdf5=meshfile, group="")
 
   CALL obj%GetParam(nsd=nsd, tNodes=tNodes, tElements=tElements, &
-    tEntities=tEntities)
+                    tEntities=tEntities)
   CALL OK(nsd .EQ. 2_I4B .AND. tNodes .EQ. 9_I4B, "nsd and tNodes")
   CALL OK(ALL(tElements .EQ. [4, 8, 4, 0]), "tElements")
   CALL OK(ALL(tEntities .EQ. [4, 4, 1, 0]), "tEntities")
-
-  CALL obj%SetTotalElements(indx=0_I4B, VALUE=5_I4B)
-  CALL obj%GetParam(tElements=tElements)
-  CALL OK(tElements(0) .EQ. 5_I4B, "SetTotalElements")
 
   CALL obj%DEALLOCATE()
   CALL meshfile%DEALLOCATE()

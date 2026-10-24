@@ -28,7 +28,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
   INTEGER(I4B), ALLOCATABLE :: con(:)
@@ -47,7 +47,7 @@ PROGRAM main
   CALL OK(obj%GetNNE(13_I4B) .EQ. 4_I4B, "GetNNE")
   CALL OK(obj%GetNNE(6_I4B, DIM=1_I4B) .EQ. 2_I4B, "GetNNE dim=1")
   CALL obj%GetConnectivity_(globalElement=13_I4B, ans=buf, &
-    tsize=tsize, opt="V")
+                            tsize=tsize, opt="V")
   CALL OK(ALL(buf(1:tsize) .EQ. [1, 5, 9, 7]), "GetConnectivity_")
 
   CALL obj%DEALLOCATE()

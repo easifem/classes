@@ -181,11 +181,14 @@ END TYPE FEDomainPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-28
+! update:
+!   - 2026-10-23: The mesh objects are freed (they leaked before)
 ! summary: Deallocate the data of the domain
 !
 ! Deallocate the data of AbstractDomain_, call Deallocate on every mesh of the
-! domain and nullify the mesh pointers. The mesh objects themselves are not
-! freed.
+! domain and free the mesh objects. The domain owns its meshes (they are
+! created in Import), so pointers to them obtained from GetMeshPointer are
+! dangling after this call.
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(inout) - domain object
@@ -205,7 +208,7 @@ END TYPE FEDomainPointer_
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -290,7 +293,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(FEDomain_), POINTER :: ptr
@@ -354,7 +357,7 @@ END INTERFACE FEDomain_Pointer
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -415,7 +418,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -480,22 +483,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
+! update:
+!   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
+!     arguments
 ! summary: Get a pointer to a mesh of the domain
 !
 ! Return the mesh of dimension dim, or the mesh of dimension nsd if dim is
 ! absent. In FEDomain_ the mesh of a dimension contains all entities of that
-! dimension; entityNum, globalElement and islocal are not used. The pointer is
-! not associated if the domain has no mesh of dimension dim.
+! dimension; the entity of an element is its mesh id. The pointer is not
+! associated if the domain has no mesh of dimension dim.
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(in) - domain object
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
-!     by FEDomain_
-!   globalElement : INTEGER(I4B), optional, intent(in) - global element
-!     number; not used by FEDomain_
-!   islocal : LOGICAL(LGT), optional, intent(in) - not used by FEDomain_
 !
 ! Returns:
 !   ans : CLASS(AbstractMesh_), pointer - pointer to the mesh
@@ -516,7 +517,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -543,19 +544,12 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE FUNCTION obj_GetMeshPointer1(obj, dim, entityNum, &
-    globalElement, islocal) RESULT(ans)
+  MODULE FUNCTION obj_GetMeshPointer1(obj, dim) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used by FEDomain_
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: globalElement
-    !! global element number; not used by FEDomain_
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    !! not used by FEDomain_
     CLASS(AbstractMesh_), POINTER :: ans
     !! pointer to the mesh
   END FUNCTION obj_GetMeshPointer1
@@ -597,7 +591,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !
@@ -796,7 +790,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -828,7 +822,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalEdgeNumber(obj, globalElement, &
-    localEdgeNumber, islocal) RESULT(ans)
+                                          localEdgeNumber, &
+                                          islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -870,7 +865,8 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetGlobalFaceNumber(obj, globalElement, &
-    localFaceNumber, islocal) RESULT(ans)
+                                          localFaceNumber, &
+                                          islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -922,7 +918,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   TYPE(ElemData_) :: elemdata
@@ -1045,6 +1041,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the connectivity of an element
 !
 ! Call GetConnectivity_ of the mesh of dimension dim (default nsd).
@@ -1060,7 +1058,6 @@ END INTERFACE
 !     (default), E edges, F faces, C cell, A all
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1079,7 +1076,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B), ALLOCATABLE :: con(:)
@@ -1110,7 +1107,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity1_(obj, globalElement, ans, tsize, &
-    opt, dim, entityNum, islocal)
+                                          opt, dim, islocal)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1124,8 +1121,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1138,6 +1133,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get all connectivities of an element
 !
 ! Call GetConnectivity_ of the mesh of dimension dim (default nsd).
@@ -1163,7 +1160,6 @@ END INTERFACE
 !     element number if islocal is true
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1171,9 +1167,9 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity2_(obj, cellCon, faceCon, edgeCon, &
-    nodeCon, tCellCon, tFaceCon, &
-    tEdgeCon, tnodeCon, globalElement, &
-    dim, entityNum, islocal)
+                                          nodeCon, tCellCon, tFaceCon, &
+                                          tEdgeCon, tnodeCon, globalElement, &
+                                          dim, islocal)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
@@ -1197,8 +1193,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1246,7 +1240,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   INTEGER(I4B) :: ent(4)
@@ -1277,7 +1271,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes1(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           entityNum, islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN), OPTIONAL :: globalElement
@@ -1301,6 +1295,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-05
+! update:
+!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of vertex nodes of a list of elements
 !
 ! Use the mesh of dimension dim (default nsd).
@@ -1311,7 +1307,6 @@ END INTERFACE
 !     (local if islocal is true)
 !   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
 !     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number; not used
 !   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
 !     or node number is a local number; default is false
 !
@@ -1322,7 +1317,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalVertexNodes2(obj, globalElement, dim, &
-    entityNum, islocal) RESULT(ans)
+                                           islocal) RESULT(ans)
     CLASS(FEDomain_), INTENT(IN) :: obj
     !! domain object
     INTEGER(I4B), INTENT(IN) :: globalElement(:)
@@ -1330,8 +1325,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dim
     !! dimension of the mesh: 0 points, 1 curves, 2 surfaces, 3 volumes;
     !! default is nsd
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: entityNum
-    !! entity number; not used
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element or node number is a local number; default is
     !! false
@@ -1370,7 +1363,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -1432,7 +1425,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -1494,7 +1487,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh
@@ -1535,11 +1528,51 @@ END INTERFACE
 ! summary: Initiate the facet elements of the meshes
 !
 ! Call InitiateFacetElements of every mesh of the domain (volume, surface,
-! curve, point). This fails at present for 2D and 3D domains, because the
-! curve mesh has no faces (InitiateFacetElements of the mesh raises an error).
+! curve, point). Point and curve meshes have no facet elements.
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(inout) - domain object
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractMesh_Class, ONLY: AbstractMesh_
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: I4B
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = &
+!     "./meshdata/very_small_quad4_mesh.h5"
+!   TYPE(HDF5File_) :: meshfile
+!   TYPE(FEDomain_) :: obj
+!   CLASS(AbstractMesh_), POINTER :: mesh
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+!   CALL meshfile%Initiate(filename=filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL obj%Initiate(hdf5=meshfile, group="")
+!
+!   CALL obj%InitiateFacetElements()
+!   mesh => obj%GetMeshPointer(dim=2_I4B)
+!   CALL OK(mesh%IsFacetData(), "surface mesh")
+!   CALL OK(mesh%GetTotalFacetElements() .EQ. 12_I4B, &
+!           "facet elements of the surface mesh")
+!   mesh => obj%GetMeshPointer(dim=1_I4B)
+!   CALL OK(.NOT. mesh%IsFacetData(), "no facet data in the curve mesh")
+!   mesh => NULL()
+!
+!   CALL obj%DEALLOCATE()
+!   CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
 !
 ! See also: [[AbstractDomain_:InitiateFacetElements]]
 
@@ -1580,7 +1613,7 @@ END INTERFACE
 !   IMPLICIT NONE
 !
 !   CHARACTER(*), PARAMETER :: filename = &
-!     "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+!     "./meshdata/very_small_quad4_mesh.h5"
 !   TYPE(HDF5File_) :: meshfile
 !   TYPE(FEDomain_) :: obj
 !   CLASS(AbstractMesh_), POINTER :: mesh

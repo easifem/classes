@@ -2,9 +2,9 @@
 ! date: 2026-10-22
 ! summary: Get the dimension of an element
 !
-! GetDimEntityNum returns [dim, entityNum] of the first mesh which
-! contains the element, searching dim = 0 to nsd. The meshes of
-! FEDomain_ contain all entities of a dimension, so entityNum is 1.
+! GetDimEntityNum returns [dim, entityNum] of an element: dim is the
+! dimension of the mesh which contains it, entityNum its mesh id
+! (entity number). Element 2 is the point element of point entity 2.
 !
 ! The mesh very_small_quad4_mesh.h5 is the unit square: four
 ! Quadrangle4 elements (13 to 16), eight Line2 elements (5 to 12) on
@@ -28,7 +28,7 @@ PROGRAM main
   IMPLICIT NONE
 
   CHARACTER(*), PARAMETER :: filename = &
-    "../../FEMesh/examples/meshdata/very_small_quad4_mesh.h5"
+    "./meshdata/very_small_quad4_mesh.h5"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEDomain_) :: obj
 
@@ -40,7 +40,7 @@ PROGRAM main
 
   CALL OK(ALL(obj%GetDimEntityNum(15_I4B) .EQ. [2, 1]), "element 15")
   CALL OK(ALL(obj%GetDimEntityNum(6_I4B) .EQ. [1, 1]), "element 6")
-  CALL OK(ALL(obj%GetDimEntityNum(2_I4B) .EQ. [0, 1]), "element 2")
+  CALL OK(ALL(obj%GetDimEntityNum(2_I4B) .EQ. [0, 2]), "element 2")
 
   CALL obj%DEALLOCATE()
   CALL meshfile%DEALLOCATE()

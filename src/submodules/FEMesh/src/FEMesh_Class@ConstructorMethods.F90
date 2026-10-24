@@ -29,7 +29,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Final()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
@@ -43,14 +57,14 @@ MODULE PROCEDURE obj_Constructor_1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ALLOCATE(FEMesh_ :: ans)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_Constructor_1
@@ -68,7 +82,7 @@ MODULE PROCEDURE FEMeshPointerDeallocate
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (ALLOCATED(obj)) THEN
@@ -79,7 +93,8 @@ MODULE PROCEDURE FEMeshPointerDeallocate
       isok = ASSOCIATED(obj(ii)%ptr)
       IF (isok) THEN
         CALL obj(ii)%ptr%DEALLOCATE()
-        obj(ii)%ptr => NULL()
+        ! free the mesh object; obj(ii)%ptr must own it
+        DEALLOCATE(obj(ii)%ptr)
       END IF
 
     END DO
@@ -89,7 +104,7 @@ MODULE PROCEDURE FEMeshPointerDeallocate
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE FEMeshPointerDeallocate
 
