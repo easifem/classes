@@ -12,19 +12,18 @@ PROGRAM main
   USE ApproxUtility, ONLY: OPERATOR(.APPROXEQ.)
   USE Test_Method, ONLY: OK, ISNEAR
   USE BaseType, ONLY: InterfaceVectorSubroutine
-
   IMPLICIT NONE
 
   TYPE(UserFunction_) :: obj
   CHARACTER(*), PARAMETER :: testname = &
-    "Vector function setting external function"
+    "Vector function, external function"
   REAL(DFP), PARAMETER :: val = 4.0, args(1) = 2.0
   INTEGER(I4B), PARAMETER :: numArgs = 1, numReturns = 3
   REAL(DFP) :: want(numReturns), got(numReturns)
   PROCEDURE(InterfaceVectorSubroutine), POINTER :: func
   INTEGER(I4B) :: tsize
 
-  CALL e%setQuietMode(math%yes)
+  CALL e%SetQuietMode(math%yes)
 
   CALL obj%Initiate(NAME="func", &
                     returnType=varopt%vector, &
@@ -52,4 +51,4 @@ CONTAINS
   END SUBROUTINE vectorFunc1
 
 END PROGRAM main
-! ok 1 - Vector function setting external function
+! ok 1 - Vector function, external function

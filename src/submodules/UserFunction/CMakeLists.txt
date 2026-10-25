@@ -31,4 +31,5 @@ target_sources(
         ${src_path}/UserFunction_Class@GetFEVariable2Methods.F90
         ${src_path}/UserFunction_Class@SetMethods.F90
         ${src_path}/UserFunction_Class@LuaScalarMethods.F90
+        ${src_path}/UserFunction_Class@LuaVectorMethods.F90
 )

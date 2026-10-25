@@ -16,13 +16,13 @@ PROGRAM main
 
   TYPE(UserFunction_) :: obj
   CHARACTER(*), PARAMETER :: testname = &
-    "Vector function setting constant value"
+    "Vector function, constant"
   REAL(DFP), PARAMETER :: val = 1.0, args(1) = 2.0
   INTEGER(I4B), PARAMETER :: numArgs = 1, numReturns = 3
   REAL(DFP) :: want(numReturns), got(numReturns)
   INTEGER(I4B) :: tsize
 
-  CALL e%setQuietMode(math%yes)
+  CALL e%SetQuietMode(math%yes)
 
   CALL obj%Initiate(NAME="func", &
                     returnType=varopt%vector, &
@@ -31,11 +31,8 @@ PROGRAM main
                     numReturns=numReturns)
 
   want = val
-
   CALL obj%SetVectorConstantVal(val=want)
-
   CALL obj%Get_(val=got, tsize=tsize, args=args)
-
   CALL OK(ALL(got.APPROXEQ.want), testname)
 
 END PROGRAM main

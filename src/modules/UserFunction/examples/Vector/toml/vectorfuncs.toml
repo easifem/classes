@@ -19,7 +19,7 @@ returnType = "Vector"
 argType = "Space"
 numArgs = 1
 numReturns = 2
-luaScript = "./vectorfuncs.lua"
+luaScript = "./toml/vectorfuncs.lua"
 luaFunctionName = "Func1"
 
 [test4]

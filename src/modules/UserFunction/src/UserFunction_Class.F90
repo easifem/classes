@@ -2501,25 +2501,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                    CheckError_Scalar_Lua@ScalarLuaMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-10-24
-! summary: private method to check error while getting value from scalar lua
-!
-! This method is private. It is used in [[GetScalarValue1_]] and
-! [[GetScalarValue2_]] method when engineID is Lua.
-! These methods are defined in ScalarLuaMethods submodule.
-
-INTERFACE
-  MODULE SUBROUTINE CheckError_Scalar_Lua(obj, args)
-    CLASS(UserFunction_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
-  END SUBROUTINE CheckError_Scalar_Lua
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                      GetScalarValue_Lua1@ScalarLuaMethods
 !----------------------------------------------------------------------------
 
@@ -2547,14 +2528,72 @@ END INTERFACE
 !
 ! This is a private method. It is called from [[GetScalarValue1_]]
 ! and [[GetScalarValue2_]].
+!
 INTERFACE
   MODULE SUBROUTINE GetScalarValue_Lua2(obj, val, tsize, args)
     CLASS(UserFunction_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(INOUT) :: val(:)
+    !! val(i) denotes the value at args(:,i)
     INTEGER(I4B), INTENT(IN) :: tsize
     !! note tsize is intent(IN)
+    !! note tsize is intent(IN), denotes size of val.
     REAL(DFP), INTENT(IN), OPTIONAL :: args(:, :)
+    !! number of rows in args denotes the arguments.
+    !! number of rows in args should be at least obj%numArgs
+    !! number of cols in args should be atlest tsize.
+    !! column denotes different args
   END SUBROUTINE GetScalarValue_Lua2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetVectorValue_Lua1@VectorLuaMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-24
+! summary: Get value from Vector valued lua user function
+!
+! This is a private method. It is called from [[GetVectorValue1_]]
+! and [[GetVectorValue2_]].
+INTERFACE
+  MODULE SUBROUTINE GetVectorValue_Lua1(obj, val, tsize, args)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: val(:)
+    !! size of val should be atleast obj%numReturns
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! size of data in val, that should be touced by this method.
+    !! note that tsize is read only:
+    REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
+    !! the size of args should be atleast obj%numArgs
+  END SUBROUTINE GetVectorValue_Lua1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetVectorValue_Lua2@VectorLuaMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-24
+! summary: Get value from Vector lua user function
+!
+! This is a private method. It is called from [[GetVectorValue1_]]
+! and [[GetVectorValue2_]].
+!
+INTERFACE
+  MODULE SUBROUTINE GetVectorValue_Lua2(obj, val, ncol, args)
+    CLASS(UserFunction_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: val(:, :)
+    !! val(:, i) denotes the value at args(:,i)
+    !! number of rows in val should be alteast obj%numReturns
+    INTEGER(I4B), INTENT(IN) :: ncol
+    !! ncol is number of columns in args and val that should be used.
+    !! ncol is read only
+    REAL(DFP), INTENT(IN), OPTIONAL :: args(:, :)
+    !! number of rows in args denotes the arguments.
+    !! number of rows in args should be at least obj%numArgs
+    !! number of cols in args should be atlest tsize.
+    !! column denotes different args
+  END SUBROUTINE GetVectorValue_Lua2
 END INTERFACE
 
 !----------------------------------------------------------------------------

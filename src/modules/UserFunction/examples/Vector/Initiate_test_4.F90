@@ -11,17 +11,19 @@ PROGRAM main
   USE ExceptionHandler_Class, ONLY: e
   USE ApproxUtility, ONLY: OPERATOR(.APPROXEQ.)
   USE Test_Method, ONLY: OK, ISNEAR
+  USE Display_Method, ONLY: Display
 
   IMPLICIT NONE
 
   TYPE(UserFunction_) :: obj
-  CHARACTER(*), PARAMETER :: testname = "test4: lua script test", &
-    luaScript = "./vectorfuncs.lua", &
+  CHARACTER(*), PARAMETER :: &
+    testname = "Vector function, test 4, lua sript", &
+    luaScript = "./toml/vectorfuncs.lua", &
     luaFunctionName = "Func1"
   INTEGER(I4B), PARAMETER :: numArgs = 1, numReturns = 3
   INTEGER(I4B) :: tsize
-  REAL(DFP), PARAMETER :: val = 4.0, args(1) = 2.0
-  REAL(DFP) :: want(numReturns), got(numReturns)
+  REAL(DFP) :: args(numArgs)
+  REAL(DFP) :: want(numReturns), found(numReturns)
 
   CALL e%setQuietMode(math%yes)
 
@@ -33,9 +35,12 @@ PROGRAM main
 
   CALL obj%SetLuaScript(luaScript=luaScript, luaFunctionName=luaFunctionName)
 
-  CALL obj%Get_(val=got, args=args, tsize=tsize)
-  want = val
-  CALL OK(ALL(got.APPROXEQ.want), testname)
+  CALL RANDOM_NUMBER(args)
 
+  want = math%two * args(1)
+
+  CALL obj%Get_(val=found, args=args, tsize=tsize)
+
+  CALL OK(ALL(found.APPROXEQ.want), testname)
 END PROGRAM main
-! ok 1 - test4: lua script test
+! ok 1 - Vector function, test 4, lua sript

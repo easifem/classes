@@ -109,7 +109,9 @@ MODULE PROCEDURE obj_GetVectorValue_1
 #endif
 
   CASE (funcopt%luaEngine)
-    CALL GetValue_LuaEngine(obj=obj, val=val, args=args)
+    !! tsize is read only in the following
+    !! so make sure tsize is set
+    CALL GetVectorValue_Lua1(obj=obj, val=val, tsize=tsize, args=args)
 
   CASE (funcopt%equationParserEngine)
 
@@ -158,9 +160,15 @@ MODULE PROCEDURE obj_GetVectorValue_2
 #endif
 
   ncol = SIZE(args, 2)
-  DO ii = 1, ncol
-    CALL obj%GetVectorValue_(val=val(:, ii), tsize=nrow, args=args(:, ii))
-  END DO
+
+  IF (obj%engineID .NE. funcopt%luaEngine) THEN
+    DO ii = 1, ncol
+      CALL obj%GetVectorValue_(val=val(:, ii), tsize=nrow, args=args(:, ii))
+    END DO
+  ELSE
+    nrow = obj%numReturns
+    CALL GetVectorValue_Lua2(obj=obj, val=val, ncol=ncol, args=args)
+  END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -297,90 +305,6 @@ SUBROUTINE CheckError_EquationParserEngine(obj)
                           '[END] ')
 #endif
 END SUBROUTINE CheckError_EquationParserEngine
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-#ifdef USE_LUA
-
-SUBROUTINE GetValue_LuaEngine(obj, val, args)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  !! User function
-  REAL(DFP), INTENT(INOUT) :: val(:)
-  !! returned value
-  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
-  !! List of the arguments
-
-  ! Define internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "GetValue_LuaEngine()"
-#endif
-  LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: rc, iarg
-  TYPE(C_PTR) :: l
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  l = lual_newstate()
-  CALL lual_openlibs(l)
-  rc = lual_dofile(l, TRIM(obj%luaScript))
-  rc = lua_getglobal(l, TRIM(obj%luaFunctionName))
-  isok = lua_isfunction(l, -1) == 1
-
-  IF (.NOT. isok) THEN
-    CALL lua_close(l)
-
-#ifdef DEBUG_VER
-    CALL AssertError1(isok, myName, &
-                      'UserFunction_::obj%isLuaScript is TRUE' // CHAR_LF // &
-                      'In the lua script' // TRIM(obj%luaScript) // &
-                      CHAR_LF // 'lua function named ' // &
-                      TRIM(obj%luaFunctionName) // CHAR_LF // &
-                      ' is not a function.')
-#endif
-
-  END IF
-
-  DO iarg = 1, obj%numArgs
-    CALL lua_pushnumber(l, REAL(args(iarg), KIND=lua_number))
-  END DO
-
-  rc = lua_pcall(l, obj%numArgs, obj%numReturns, math%zero_i)
-
-#ifdef DEBUG_VER
-  CALL AssertError2(rc, lua_ok, myName, 'a=lua_pcall(...), b=lua_ok')
-#endif
-
-  DO iarg = 1, obj%numReturns
-    val(iarg) = REAL(lua_tonumber(l, iarg), KIND=DFP)
-  END DO
-
-  CALL lua_pop(l, obj%numReturns)
-  CALL lua_close(l)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END SUBROUTINE GetValue_LuaEngine
-
-!----------------------------------------------------------------------------
-!                                                               GetGalue_Lua
-!----------------------------------------------------------------------------
-
-#else
-
-SUBROUTINE GetValue_LuaEngine(obj, val, args)
-  CLASS(UserFunction_), INTENT(INOUT) :: obj
-  REAL(DFP), INTENT(INOUT) :: val(:)
-  !! returned value
-  REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
-END SUBROUTINE GetValue_LuaEngine
-#endif
 
 !----------------------------------------------------------------------------
 !                                                               Include error

@@ -81,46 +81,6 @@ SUBROUTINE OpenSaveLuaState(obj)
 END SUBROUTINE OpenSaveLuaState
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE CheckError_Scalar_Lua
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "CheckError_Scalar_Lua()"
-  LOGICAL(LGT) :: isok
-  INTEGER(I4B) :: tsize
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  CALL AssertError2(obj%numReturns, math%one_i, myName, &
-                    'a=obj%numReturns, b=1')
-#endif
-
-#ifdef DEBUG_VER
-  isok = PRESENT(args)
-  IF (isok) THEN
-    tsize = SIZE(args)
-    CALL AssertError3(obj%numArgs, tsize, myName, &
-                      'a=obj%numArgs and b=size(args)')
-  ELSE
-
-    CALL AssertError2(obj%numArgs, math%zero_i, myName, &
-                      'a=obj%numArgs and b=0')
-  END IF
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE CheckError_Scalar_Lua
-
-!----------------------------------------------------------------------------
 !                                                       GetScalarValue_Lua1
 !----------------------------------------------------------------------------
 
@@ -169,7 +129,6 @@ MODULE PROCEDURE GetScalarValue_Lua2
 #endif
 
   INTEGER(I4B) :: ii
-  LOGICAL(LGT) :: isok
   INTEGER(I4B) :: iarg, rc
 
 #ifdef DEBUG_VER
@@ -178,12 +137,6 @@ MODULE PROCEDURE GetScalarValue_Lua2
 #endif
 
   CALL OpenSaveLuaState(obj=obj)
-
-#ifdef DEBUG_VER
-  IF (tsize .GE. 1) THEN
-    CALL CheckError_Scalar_Lua(obj=obj, args=args(:, 1))
-  END IF
-#endif
 
   DO ii = 1, tsize
 
@@ -235,34 +188,6 @@ CHARACTER(*), PARAMETER :: modName = "UserFunction_Class@LuaScalarMethods.F90"
 #endif
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE CheckError_Scalar_Lua
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "CheckError_Scalar_Lua()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          'You are seeing this method because ' // &
-                          'easifemBase is build with' // &
-                          ' USE_LUA flag set to FALSE. This method is ' // &
-                          'not implemented in this case.')
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE CheckError_Scalar_Lua
 
 !----------------------------------------------------------------------------
 !

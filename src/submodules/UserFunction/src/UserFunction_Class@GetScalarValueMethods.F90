@@ -60,9 +60,26 @@ SUBROUTINE CheckError(obj, args)
   END IF
 #endif
 
+#ifdef DEBUG_VER
   IF (obj%isLuaScript) THEN
-    CALL CheckError_Scalar_Lua(obj=obj, args=args)
+    ! numReturns must be 1
+    CALL AssertError2(obj%numReturns, math%one_i, myName, &
+                      'a=obj%numReturns, b=1')
+
   END IF
+
+  isok = PRESENT(args)
+  IF (isok) THEN
+    ! if args present make sure args has sufficient size
+    CALL AssertError3(obj%numArgs, SIZE(args), myName, &
+                      'a=obj%numArgs and b=size(args)')
+  ELSE
+    ! if args not present make sure numArgs is set to zero
+    CALL AssertError2(obj%numArgs, math%zero_i, myName, &
+                      'a=obj%numArgs and b=0')
+  END IF
+
+#endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
