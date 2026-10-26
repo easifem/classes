@@ -24,7 +24,7 @@ USE HDF5, ONLY: SIZE_T, H5P_FILE_ACCESS_F, H5P_DATASET_CREATE_F, &
   H5P_DATASET_XFER_F, H5PCLOSE_F, H5F_CLOSE_SEMI_F, &
   H5F_ACC_RDONLY_F, H5F_ACC_RDWR_F, H5F_ACC_TRUNC_F, &
   H5FCREATE_F, H5FOPEN_F, H5_INDEX_NAME_F, &
-  H5_ITER_INC_F, H5I_GROUP_F, H5D_CHUNKED_F, &
+  H5_ITER_NATIVE_F, H5I_GROUP_F, H5D_CHUNKED_F, &
   H5Z_FILTER_DEFLATE_F, H5Z_FILTER_NBIT_F, &
   H5Z_FILTER_SZIP_F, H5S_SCALAR_F, H5T_FLOAT_F, &
   H5T_INTEGER_F, H5T_STRING_F, H5DCREATE_F, H5CLOSE_F, &
@@ -662,10 +662,12 @@ MODULE PROCEDURE obj_Ls
   CHARACTER(*), PARAMETER :: myName = 'obj_Ls()'
 #endif
   CHARACTER(1024) :: tmpchar
-  TYPE(String) :: path2
+  TYPE(String), ALLOCATABLE :: names(:)
   INTEGER(HSIZE_T) :: i
   INTEGER(HID_T) :: grp_id
   INTEGER :: store_type, nlinks, max_corder, ierr
+  INTEGER(I4B) :: k
+  INTEGER(I4B), ALLOCATABLE :: idx(:)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -696,7 +698,6 @@ MODULE PROCEDURE obj_Ls
     RETURN
   END IF
 
-  path2 = TRIM(path)
   CALL H5GOPEN_F(obj%file_id, TRIM(path), grp_id, ierr)
 
 #ifdef DEBUG_VER
@@ -711,18 +712,30 @@ MODULE PROCEDURE obj_Ls
                     'Unable to get group information.')
 #endif
 
-  ALLOCATE(objs(nlinks))
+  ! The names are read in the native order of the group, which HDF5 gives
+  ! without sorting (in increasing order it sorts all the names for every
+  ! call, which is O(n^2 log n) for n names), and then sorted once
+  ALLOCATE(names(nlinks))
   DO i = 0, nlinks - 1
-    CALL H5LGET_NAME_BY_IDX_F(obj%file_id, TRIM(path), &
-                              H5_INDEX_NAME_F, H5_ITER_INC_F, i, &
-                              tmpchar, ierr)
-    objs(i + 1) = TRIM(tmpchar)
+    CALL H5LGET_NAME_BY_IDX_F(grp_id, ".", H5_INDEX_NAME_F, &
+                              H5_ITER_NATIVE_F, i, tmpchar, ierr)
+    names(i + 1) = TRIM(tmpchar)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ierr .EQ. 0, myName, &
                       'Unable to get object name.')
 #endif
 
+  END DO
+
+  ALLOCATE(idx(nlinks))
+  DO k = 1, nlinks
+    idx(k) = k
+  END DO
+  CALL ArgSortNames(names, idx)
+  ALLOCATE(objs(nlinks))
+  DO k = 1, nlinks
+    objs(k) = names(idx(k))
   END DO
 
   CALL H5GCLOSE_F(grp_id, ierr)
@@ -737,6 +750,61 @@ MODULE PROCEDURE obj_Ls
                           '[END] ')
 #endif
 END PROCEDURE obj_Ls
+
+!----------------------------------------------------------------------------
+!                                                               ArgSortNames
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Sort the indices of names in increasing (byte) order
+!
+! Merge sort of idx, so that names(idx(:)) is in increasing order of the
+! character codes (as the name index of HDF5); O(n log n).
+
+SUBROUTINE ArgSortNames(names, idx)
+  TYPE(String), INTENT(IN) :: names(:)
+  !! names to sort
+  INTEGER(I4B), INTENT(INOUT) :: idx(:)
+  !! on entry 1, ..., n; on exit the sorted order
+  INTEGER(I4B), ALLOCATABLE :: tmp(:)
+  INTEGER(I4B) :: n, width, lo, mid, hi, i, j, k
+
+  n = SIZE(idx)
+  IF (n .LT. 2) RETURN
+  ALLOCATE(tmp(n))
+
+  width = 1
+  DO WHILE (width .LT. n)
+    lo = 1
+    DO WHILE (lo .LE. n)
+      mid = MIN(lo + width - 1, n)
+      hi = MIN(lo + 2 * width - 1, n)
+      i = lo
+      j = mid + 1
+      DO k = lo, hi
+        IF (i .LE. mid .AND. j .LE. hi) THEN
+          IF (LLE(names(idx(i))%chars(), names(idx(j))%chars())) THEN
+            tmp(k) = idx(i)
+            i = i + 1
+          ELSE
+            tmp(k) = idx(j)
+            j = j + 1
+          END IF
+        ELSE IF (i .LE. mid) THEN
+          tmp(k) = idx(i)
+          i = i + 1
+        ELSE
+          tmp(k) = idx(j)
+          j = j + 1
+        END IF
+      END DO
+      lo = lo + 2 * width
+    END DO
+    idx = tmp
+    width = 2 * width
+  END DO
+END SUBROUTINE ArgSortNames
 
 !----------------------------------------------------------------------------
 !                                                                       mkdir

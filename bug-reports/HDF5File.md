@@ -32,6 +32,7 @@ a bug and should pass after the fix:
 | Write_test_9 | rank-3 String Write, Read, Read_ | passes (A7 fixed) |
 | Write_test_10 | logical and String arrays larger than the stack | passes (C3) |
 | Mkdir_test_2 | Mkdir of an existing group in mode WRITE | passes (A8) |
+| Ls_test_2 | Ls of 300 names created in decreasing order | passes (C4) |
 | WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
 | AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
 | WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
@@ -338,6 +339,25 @@ Problem (before the fix):
   in `READ`; only `READ_` has rank 3. So a rank-3 String can be read with
   Read_ but not written.
 
+### C4. Ls is quadratic for large groups
+
+- Fixed 2026-10-26. `Ls` read the i-th name in increasing order
+  (`H5_ITER_INC_F`), for which HDF5 sorts all the names on each call. It
+  now reads the names in native order (`H5_ITER_NATIVE_F`) through the
+  open group and sorts them once (merge sort `ArgSortNames`, O(n log n));
+  the result is still in increasing order.
+- Result (Storage_test_1, 2000 names): 0.64 s -> 0.002 s.
+- Tests: Ls_test_1, Ls_test_2 (new, 300 names created in decreasing
+  order) and RootGroup_test_1 pass. Full suite: 56 tests, all pass.
+
+Problem (before the fix):
+
+
+- `obj_Ls` (Constructor:636) calls `H5Lget_name_by_idx` for each index.
+  For old-format groups (B3) each call walks the group, so listing n
+  members costs O(n^2). `H5Literate` lists in one pass. The name buffer
+  is a fixed `CHARACTER(1024)`.
+
 ## Open
 
 ### A. Correctness
@@ -573,18 +593,6 @@ Problem (before the fix):
   one character at a time (`vals = vals // valsc(i)`), which is O(n^2) for
   long strings. Use one assignment from a `CHARACTER(LEN=n)` buffer, as
   `convert_char_array_to_str` already does.
-
-#### C4. Ls is quadratic for large groups
-
-- Measured 2026-10-26 (Storage_test_1, file format 1.10): `Ls` of a group
-  with 2000 datasets takes 0.64 s (about 320 us per name), while writing
-  the 2000 datasets takes 0.07 s. The new file format did not remove the
-  cost. Still open.
-
-- `obj_Ls` (Constructor:636) calls `H5Lget_name_by_idx` for each index.
-  For old-format groups (B3) each call walks the group, so listing n
-  members costs O(n^2). `H5Literate` lists in one pass. The name buffer
-  is a fixed `CHARACTER(1024)`.
 
 #### C5. Smaller items
 

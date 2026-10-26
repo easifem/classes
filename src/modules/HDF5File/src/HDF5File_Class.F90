@@ -1216,6 +1216,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
+! update:
+!   - 2026-10-26: read the names in native order and sort them once
 ! summary: List the contents of a group
 !
 ! Return the names of the objects (groups and datasets) in the group path, in
