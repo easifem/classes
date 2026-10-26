@@ -23,12 +23,13 @@ a bug and should pass after the fix:
 | Test | Checks | Now |
 | --- | --- | --- |
 | Write_test_7 | Real64 rank 4-7, Real32 and integer rank 3 | expected to pass |
-| Write_test_8 | empty String, scalar and rank 1 | passes, HDF5 prints errors (A4) |
+| Write_test_8 | empty String, scalar and rank 1 | passes (A4 fixed) |
 | Overwrite_test_1 | overwrite in place; attributes kept | passes (A3 fixed) |
 | Compression_test_1 | rank-2 data is compressed; file is smaller | passes (B1 fixed) |
 | ChunkPolicy_test_1 | default and custom chunk policy | passes (B1 fixed) |
 | OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
 | WriteAttribute_test_2 | longer String attribute replaces the old one | passes (A5 fixed) |
+| Write_test_9 | rank-3 String Write, Read, Read_ | passes (A7 fixed) |
 | WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
 | AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
 | WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
@@ -284,6 +285,57 @@ Problem (before the fix):
 - Proposal: return true for `"/"` (the root group always exists) before
   the loop, and skip empty segments.
 
+### A4. Empty strings cannot be written
+
+- Fixed 2026-10-26 (attributes: with A5). `obj_Write_st0` writes an empty
+  String as one NUL character (Read removes it) with a type of size 1;
+  the String arrays use a string length of at least 1. The type size is
+  passed as `SIZE_T` (before `INT(length_max, REAL64)`, see A8).
+- Test: Write_test_8 passes without the HDF5 "size must be positive"
+  messages.
+
+Problem (before the fix):
+
+- `obj_Write_st0` (WriteString:70) sets the type size to `LEN_TRIM`;
+  `obj_Write_st1/2/3` set it to the longest `LEN_TRIM`. For an empty
+  string (or an array of empty strings) the size is 0, and
+  `H5Tset_size(0)` fails. The same happens for an empty String attribute
+  (WriteAttribute:238) and for `Write_c1` with `LEN(vals)=0` (zero-size
+  dataspace).
+- Proposal: use `MAX(1, len)`; Read already removes `C_NULL_CHAR`.
+- Test: Write_test_8. It passes: `H5Tset_size(0)` fails, but the type keeps
+  the size 1 of `H5T_NATIVE_CHARACTER`, so a 1-character value is written
+  and read back as empty. HDF5 prints "size must be positive" for each call,
+  and the stored size is not the one the code meant to set.
+
+### A6. Deallocate(delete=.TRUE.) deletes an open file
+
+- Fixed 2026-10-26. `obj_Deallocate` always calls Close first, then
+  Delete when delete is true.
+- Test: Deallocate_test_1 (now deletes a file that is still open) passes.
+
+Problem (before the fix):
+
+- `obj_Deallocate` (Constructor:491) calls `Delete` without `Close`. The
+  HDF5 file id stays open while the file is removed, and
+  `nhdf5fileinuse` is decremented anyway. The docblock asks the user to
+  call Close first; Deallocate should do it.
+
+### A7. Rank-3 String write is not bound
+
+- Fixed 2026-10-26. `obj_Write_st3`, `obj_Write_st3_helper`,
+  `obj_Read_st3` and `obj_Read_st3_helper` are bound to the WRITE and READ
+  generics.
+- Test: Write_test_9 (new) passes: Write, Read and Read_ of a rank-3
+  String array, with an empty string.
+
+Problem (before the fix):
+
+- `obj_Write_st3` and `obj_Write_st3_helper` are implemented, but they are
+  not in the `WRITE` generic. `Read_st3` and `Read_st3_helper` are also not
+  in `READ`; only `READ_` has rank 3. So a rank-3 String can be read with
+  Read_ but not written.
+
 ## Open
 
 ### A. Correctness
@@ -314,38 +366,10 @@ Problem (before the fix):
   `H5Dopen`, `H5Dwrite` and `H5Dread` in release builds. They cost
   nothing next to the I/O.
 
-#### A4. Empty strings cannot be written
-
-- `obj_Write_st0` (WriteString:70) sets the type size to `LEN_TRIM`;
-  `obj_Write_st1/2/3` set it to the longest `LEN_TRIM`. For an empty
-  string (or an array of empty strings) the size is 0, and
-  `H5Tset_size(0)` fails. The same happens for an empty String attribute
-  (WriteAttribute:238) and for `Write_c1` with `LEN(vals)=0` (zero-size
-  dataspace).
-- Proposal: use `MAX(1, len)`; Read already removes `C_NULL_CHAR`.
-- Test: Write_test_8. It passes: `H5Tset_size(0)` fails, but the type keeps
-  the size 1 of `H5T_NATIVE_CHARACTER`, so a 1-character value is written
-  and read back as empty. HDF5 prints "size must be positive" for each call,
-  and the stored size is not the one the code meant to set.
-
-#### A6. Deallocate(delete=.TRUE.) deletes an open file
-
-- `obj_Deallocate` (Constructor:491) calls `Delete` without `Close`. The
-  HDF5 file id stays open while the file is removed, and
-  `nhdf5fileinuse` is decremented anyway. The docblock asks the user to
-  call Close first; Deallocate should do it.
-
-#### A7. Rank-3 String write is not bound
-
-- `obj_Write_st3` and `obj_Write_st3_helper` are implemented, but they are
-  not in the `WRITE` generic. `Read_st3` and `Read_st3_helper` are also not
-  in `READ`; only `READ_` has rank 3. So a rank-3 String can be read with
-  Read_ but not written.
-
 #### A8. Minor
 
-- `INT(length_max, REAL64)` (WriteString:129, :354): REAL64 is a real
-  kind used as an integer kind; use `SIZE_T`.
+- Fixed with A4: `INT(length_max, REAL64)` (WriteString): REAL64 is a
+  real kind used as an integer kind; now `SIZE_T`.
 - `compute_chunk_size`: for a type larger than 1 MB, `mb = 0` and the chunk
   size is 0, so `H5Pset_chunk` fails.
 - `GetDataType` returns `'Rea'` for both Real32 and Real64, and `'Int'` for
@@ -473,8 +497,8 @@ Problem (before the fix):
 - Tests: Append_test_1 (14 checks) and ReadSlab_test_1 (7 checks) pass;
   the chunk shapes match the policy (8192 values for one-value appends,
   3 x 2731 for points, 3000 x 4 with stepsPerChunk = 4).
-- Full suite (2026-10-26): 51 tests, 50 pass; not passing is A9
-  (Ls_test_1).
+- Full suite (2026-10-26): 51 tests, 50 pass; not passing was A9
+  (Ls_test_1, fixed since).
 
 ### C. I/O efficiency
 

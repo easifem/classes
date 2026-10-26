@@ -31,9 +31,9 @@ PROGRAM main
   INQUIRE(FILE=filename, EXIST=isok)
   CALL OK(isok, "file is kept")
 
+  ! the file is still open: Deallocate closes it before deleting it
   CALL obj%Initiate(filename=filename, mode="WRITE")
   CALL obj%OPEN()
-  CALL obj%CLOSE()
   CALL obj%DEALLOCATE(delete=.TRUE.)
   INQUIRE(FILE=filename, EXIST=isok)
   CALL OK(.NOT. isok, "Deallocate with delete")

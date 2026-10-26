@@ -18,7 +18,8 @@
 SUBMODULE(HDF5File_Class) WriteString
 USE HDF5, ONLY: H5DWRITE_F, H5TCLOSE_F, H5TCOPY_F, H5TSET_SIZE_F, &
   H5TSET_STRPAD_F, H5T_NATIVE_CHARACTER
-USE GlobalData, ONLY: INT64
+USE HDF5, ONLY: SIZE_T
+USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -44,11 +45,14 @@ MODULE PROCEDURE obj_Write_st0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
   valss = vals%chars()
+  ! A type of size 0 is not allowed: an empty String is written as one NUL
+  ! character, which Read removes
+  IF (vals%LEN_TRIM() .EQ. 0) valss = C_NULL_CHAR
 ! stash offset
   offset(1) = 0
   IF (PRESENT(offset_in)) offset = offset_in
@@ -67,18 +71,18 @@ MODULE PROCEDURE obj_Write_st0
 
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, mem, ierr)
   CALL H5TSET_STRPAD_F(mem, 0, ierr)
-  CALL H5TSET_SIZE_F(mem, INT(vals%LEN_TRIM(), INT64), ierr)
+  CALL H5TSET_SIZE_F(mem, INT(MAX(vals%LEN_TRIM(), 1), SIZE_T), ierr)
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, &
-    dset_id, dspace_id, gspace_id, plist_id, ierr, &
-    cnt, offset)
+                dset_id, dspace_id, gspace_id, plist_id, ierr, &
+                cnt, offset)
   IF (ierr == 0) CALL H5DWRITE_F(dset_id, mem, valss, gdims, ierr, &
-    dspace_id, gspace_id, plist_id)
+                                 dspace_id, gspace_id, plist_id)
   CALL postWrite(obj, ierr, dset_id, dspace_id, gspace_id, plist_id)
   CALL H5TCLOSE_F(mem, ierr)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Write_st0
 
@@ -90,7 +94,7 @@ MODULE PROCEDURE obj_Write_st1
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_st1()"
 #endif
-  CHARACTER(LEN=length_max) :: valss(SIZE(vals))
+  CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals))
   TYPE(String) :: path
   INTEGER(I4B) :: j, ierr
   INTEGER(HSIZE_T), DIMENSION(1) :: ldims, gdims, offset, cnt
@@ -99,7 +103,7 @@ MODULE PROCEDURE obj_Write_st1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -126,18 +130,19 @@ MODULE PROCEDURE obj_Write_st1
 
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, mem, ierr)
   CALL H5TSET_STRPAD_F(mem, 0, ierr)
-  CALL H5TSET_SIZE_F(mem, INT(length_max, REAL64), ierr)
+  ! The string length is at least 1 (a type of size 0 is not allowed)
+  CALL H5TSET_SIZE_F(mem, INT(MAX(length_max, 1), SIZE_T), ierr)
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, dset_id, &
-    dspace_id, gspace_id, plist_id, ierr, cnt, offset)
+                dspace_id, gspace_id, plist_id, ierr, cnt, offset)
   IF (ierr == 0) CALL H5DWRITE_F(dset_id, mem, valss, gdims, ierr, &
-    dspace_id, gspace_id, plist_id)
+                                 dspace_id, gspace_id, plist_id)
 
   CALL postWrite(obj, ierr, dset_id, dspace_id, gspace_id, plist_id)
   CALL H5TCLOSE_F(mem, ierr)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Write_st1
 
@@ -153,7 +158,7 @@ MODULE PROCEDURE obj_Write_st1_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   length_max = 0
@@ -166,7 +171,7 @@ MODULE PROCEDURE obj_Write_st1_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Write_st1_helper
 
@@ -182,7 +187,7 @@ MODULE PROCEDURE obj_Write_st2_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   length_max = 0
@@ -200,7 +205,7 @@ MODULE PROCEDURE obj_Write_st2_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Write_st2_helper
 
@@ -212,7 +217,7 @@ MODULE PROCEDURE obj_Write_st2
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_st2()"
 #endif
-  CHARACTER(LEN=length_max) :: valss(SIZE(vals, 1), SIZE(vals, 2))
+  CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals, 1), SIZE(vals, 2))
   TYPE(String) :: path
   INTEGER(I4B) :: j, k, ierr
   INTEGER(HSIZE_T), DIMENSION(2) :: gdims, ldims, offset, cnt
@@ -221,7 +226,7 @@ MODULE PROCEDURE obj_Write_st2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -250,18 +255,19 @@ MODULE PROCEDURE obj_Write_st2
 
   CALL h5tcopy_f(H5T_NATIVE_CHARACTER, mem, ierr)
   CALL h5tset_strpad_f(mem, 0, ierr)
-  CALL h5tset_size_f(mem, INT(length_max, REAL64), ierr)
+  ! The string length is at least 1 (a type of size 0 is not allowed)
+  CALL h5tset_size_f(mem, INT(MAX(length_max, 1), SIZE_T), ierr)
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, dset_id, &
-    dspace_id, gspace_id, plist_id, ierr, cnt, offset)
+                dspace_id, gspace_id, plist_id, ierr, cnt, offset)
   IF (ierr == 0) CALL H5DWRITE_F(dset_id, mem, valss, gdims, ierr, &
-    dspace_id, gspace_id, plist_id)
+                                 dspace_id, gspace_id, plist_id)
 
   CALL postWrite(obj, ierr, dset_id, dspace_id, gspace_id, plist_id)
   CALL H5TCLOSE_F(mem, ierr)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Write_st2
 
@@ -277,7 +283,7 @@ MODULE PROCEDURE obj_Write_st3_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   length_max = 0
@@ -297,7 +303,7 @@ MODULE PROCEDURE obj_Write_st3_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 
 END PROCEDURE obj_Write_st3_helper
@@ -310,8 +316,8 @@ MODULE PROCEDURE obj_Write_st3
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_st3()"
 #endif
-  CHARACTER(LEN=length_max) :: valss(SIZE(vals, 1), SIZE(vals, 2), &
-    SIZE(vals, 3))
+  CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals, 1), SIZE(vals, 2), &
+                                             SIZE(vals, 3))
   TYPE(String) :: path
   INTEGER(I4B) :: i, j, k, ierr
   INTEGER(HSIZE_T), DIMENSION(3) :: gdims, ldims, offset, cnt
@@ -320,7 +326,7 @@ MODULE PROCEDURE obj_Write_st3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -351,20 +357,21 @@ MODULE PROCEDURE obj_Write_st3
   IF (PRESENT(cnt_in)) cnt = cnt_in
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, mem, ierr)
   CALL H5TSET_STRPAD_F(mem, 0, ierr)
-  CALL H5TSET_SIZE_F(mem, INT(length_max, REAL64), ierr)
+  ! The string length is at least 1 (a type of size 0 is not allowed)
+  CALL H5TSET_SIZE_F(mem, INT(MAX(length_max, 1), SIZE_T), ierr)
 
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, dset_id, &
-    dspace_id, gspace_id, plist_id, ierr, cnt, offset)
+                dspace_id, gspace_id, plist_id, ierr, cnt, offset)
 
   IF (ierr == 0) CALL H5DWRITE_F(dset_id, mem, valss, gdims, ierr, &
-    dspace_id, gspace_id, plist_id)
+                                 dspace_id, gspace_id, plist_id)
 
   CALL postWrite(obj, ierr, dset_id, dspace_id, gspace_id, plist_id)
   CALL H5TCLOSE_F(mem, ierr)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Write_st3
 
@@ -384,7 +391,7 @@ MODULE PROCEDURE obj_Write_c1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 ! stash offset
@@ -403,15 +410,15 @@ MODULE PROCEDURE obj_Write_c1
   IF (PRESENT(cnt_in)) cnt = cnt_in
   mem = H5T_NATIVE_CHARACTER
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, dset_id, &
-    dspace_id, gspace_id, plist_id, error, cnt, offset)
+                dspace_id, gspace_id, plist_id, error, cnt, offset)
 
   IF (error == 0) CALL H5DWRITE_F(dset_id, mem, vals, gdims, error, &
-    dspace_id, gspace_id, plist_id)
+                                  dspace_id, gspace_id, plist_id)
   CALL postWrite(obj, error, dset_id, dspace_id, gspace_id, plist_id)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Write_c1
 

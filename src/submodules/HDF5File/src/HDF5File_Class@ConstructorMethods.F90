@@ -563,14 +563,12 @@ MODULE PROCEDURE obj_Deallocate
     RETURN
   END IF
 
-  !Logical to close or delete the file.
+  ! Close the file; then delete it if delete is true (the HDF5 file id
+  ! must not stay open while the file is removed)
   bool = math%no
   IF (PRESENT(delete)) bool = delete
-  IF (bool) THEN
-    CALL obj%Delete()
-  ELSE
-    CALL obj%CLOSE()
-  END IF
+  CALL obj%CLOSE()
+  IF (bool) CALL obj%Delete()
 
   ! Close the HDF5 interface. This can only be done once all calls to the
   ! HDF5 library are complete.

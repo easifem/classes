@@ -200,8 +200,9 @@ END TYPE HDF5ChunkPolicy_
 ! missing groups are created by Write.
 !
 ! - Write writes data of rank 0 to 7 of Real64, Real32 and Int32, rank 0 to 3
-!   of logical, rank 0 to 2 of String, and character variables.
-! - Read reads the same data and allocates the array (logical up to rank 2).
+!   of logical, rank 0 to 3 of String, and character variables.
+! - Read reads the same data and allocates the array (logical up to rank 3,
+!   String up to rank 3).
 ! - Read_ reads arrays without allocating them and returns the extent of the
 !   data: rank 1 to 7 of Real64, Real32 and Int32, and rank 1 to 3 of logical
 !   and String.
@@ -307,6 +308,7 @@ CONTAINS
     obj_Write_n6, obj_Write_n7, &
     obj_Write_st0, obj_Write_st1, obj_Write_st1_helper, &
     obj_Write_st2, obj_Write_st2_helper, &
+    obj_Write_st3, obj_Write_st3_helper, &
     obj_Write_c1
   !! Specific procedures of WRITE
   GENERIC, PUBLIC :: WRITE => &
@@ -323,6 +325,7 @@ CONTAINS
     obj_Write_n6, obj_Write_n7, &
     obj_Write_st0, obj_Write_st1, obj_Write_st1_helper, &
     obj_Write_st2, obj_Write_st2_helper, &
+    obj_Write_st3, obj_Write_st3_helper, &
     obj_Write_c1
   !! Write data to a dataset
 
@@ -340,6 +343,7 @@ CONTAINS
     obj_Read_st0, obj_Read_st0_helper, &
     obj_Read_st1, obj_Read_st1_helper, &
     obj_Read_st2, obj_Read_st2_helper, &
+    obj_Read_st3, obj_Read_st3_helper, &
     obj_Read_c1, obj_Read_b0, obj_Read_b1, &
     obj_Read_b2, obj_Read_b3
   !! Specific procedures of READ
@@ -356,6 +360,7 @@ CONTAINS
     obj_Read_st0, obj_Read_st0_helper, &
     obj_Read_st1, obj_Read_st1_helper, &
     obj_Read_st2, obj_Read_st2_helper, &
+    obj_Read_st3, obj_Read_st3_helper, &
     obj_Read_c1, obj_Read_b0, obj_Read_b1, &
     obj_Read_b2, obj_Read_b3
   !! Read data from a dataset
@@ -903,14 +908,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-06
+! update:
+!   - 2026-10-26: close the file before deleting it
 ! summary: Deallocate the HDF5 file object
 !
 ! Close the file (or delete it when delete is true) and reset obj to its
 ! default state. The HDF5 library is closed when no HDF5 file object is
 ! initiated any more. Deallocate does nothing if obj is not initiated.
 !
-! When delete is true the file is not closed first, so call Close before
-! Deallocate.
+! The file is always closed first, also when delete is true; then the file
+! is deleted from disk.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -946,9 +953,9 @@ END INTERFACE
 ! INQUIRE (FILE=filename, EXIST=isok)
 ! CALL OK(isok, "file is kept")
 !
+! ! the file is still open: Deallocate closes it before deleting it
 ! CALL obj%Initiate(filename=filename, mode="WRITE")
 ! CALL obj%OPEN()
-! CALL obj%CLOSE()
 ! CALL obj%DEALLOCATE(delete=.TRUE.)
 ! INQUIRE (FILE=filename, EXIST=isok)
 ! CALL OK(.NOT. isok, "Deallocate with delete")
