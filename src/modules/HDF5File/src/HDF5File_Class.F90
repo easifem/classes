@@ -382,20 +382,52 @@ CONTAINS
   !! Read data without allocating the array
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_WriteAttribute_st0, obj_WriteAttribute_c0, &
-    obj_WriteAttribute_i0, obj_WriteAttribute_d0
+    obj_WriteAttribute_i0, obj_WriteAttribute_d0, &
+    obj_WriteAttribute_b0, obj_WriteAttribute_i1, &
+    obj_WriteAttribute_d1, obj_WriteAttribute_b1, &
+    obj_WriteAttribute_st1
   !! Specific procedures of WriteAttribute
   GENERIC, PUBLIC :: WriteAttribute => &
     obj_WriteAttribute_st0, obj_WriteAttribute_c0, &
-    obj_WriteAttribute_i0, obj_WriteAttribute_d0
+    obj_WriteAttribute_i0, obj_WriteAttribute_d0, &
+    obj_WriteAttribute_b0, obj_WriteAttribute_i1, &
+    obj_WriteAttribute_d1, obj_WriteAttribute_b1, &
+    obj_WriteAttribute_st1
   !! Write an attribute
   PROCEDURE, PRIVATE, PASS(Obj) :: &
     obj_ReadAttribute_st0, obj_ReadAttribute_c0, &
-    obj_ReadAttribute_i0, obj_ReadAttribute_d0
+    obj_ReadAttribute_i0, obj_ReadAttribute_d0, &
+    obj_ReadAttribute_b0, obj_ReadAttribute_i1, &
+    obj_ReadAttribute_d1, obj_ReadAttribute_b1, &
+    obj_ReadAttribute_st1
   !! Specific procedures of ReadAttribute
   GENERIC, PUBLIC :: ReadAttribute => &
     obj_ReadAttribute_st0, obj_ReadAttribute_c0, &
-    obj_ReadAttribute_i0, obj_ReadAttribute_d0
+    obj_ReadAttribute_i0, obj_ReadAttribute_d0, &
+    obj_ReadAttribute_b0, obj_ReadAttribute_i1, &
+    obj_ReadAttribute_d1, obj_ReadAttribute_b1, &
+    obj_ReadAttribute_st1
   !! Read an attribute
+#ifdef USE_Real64
+  PROCEDURE, PRIVATE, PASS(Obj) :: &
+    obj_WriteAttribute_s0, obj_WriteAttribute_s1, &
+    obj_ReadAttribute_s0, obj_ReadAttribute_s1
+  !! Real32 attributes (only when DFP is Real64)
+  GENERIC, PUBLIC :: WriteAttribute => &
+    obj_WriteAttribute_s0, obj_WriteAttribute_s1
+  GENERIC, PUBLIC :: ReadAttribute => &
+    obj_ReadAttribute_s0, obj_ReadAttribute_s1
+#endif
+#ifndef USE_Int64
+  PROCEDURE, PRIVATE, PASS(Obj) :: &
+    obj_WriteAttribute_l0, obj_WriteAttribute_l1, &
+    obj_ReadAttribute_l0, obj_ReadAttribute_l1
+  !! Int64 attributes (only when I4B is Int32)
+  GENERIC, PUBLIC :: WriteAttribute => &
+    obj_WriteAttribute_l0, obj_WriteAttribute_l1
+  GENERIC, PUBLIC :: ReadAttribute => &
+    obj_ReadAttribute_l0, obj_ReadAttribute_l1
+#endif
   PROCEDURE, PUBLIC, PASS(Obj) :: GetDataShape => obj_GetDataShape
   !! Get the shape of a dataset
   PROCEDURE, PUBLIC, PASS(Obj) :: GetDataType => obj_GetDataType
@@ -7028,6 +7060,457 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a logical attribute
+!
+! Write a logical attribute attr_name to the object obj_name, which can be a
+! group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
+! The value is stored as the character "T" or "F", as logical datasets.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : LOGICAL(LGT) - value of the attribute
+!
+! See also: [[obj_WriteAttribute_i1]], [[obj_ReadAttribute_b0]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_b0(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    LOGICAL(LGT), INTENT(IN) :: attr_val
+    !! value of the attribute
+  END SUBROUTINE obj_WriteAttribute_b0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a rank-1 integer attribute
+!
+! Write a rank-1 integer attribute attr_name to the object obj_name, which
+! can be a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
+! The HDF5 type follows the kind of attr_val (H5kind_to_type), so the
+! data is stored correctly for every integer kind. This holds for the
+! integer and real attributes of rank 0 and 1.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(I4B) - values of the attribute, SIZE(attr_val)
+!       entries
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "WriteAttribute_test_4.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(HDF5File_) :: obj
+! INTEGER(I4B), ALLOCATABLE :: ivec(:)
+! REAL(DFP), ALLOCATABLE :: rvec(:)
+! LOGICAL(LGT) :: flag
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%Mkdir("/mesh")
+! CALL obj%WriteAttribute(obj_name="/mesh", attr_name="isActive", &
+!                         attr_val=.TRUE.)
+! CALL obj%WriteAttribute(obj_name="/mesh", attr_name="isBoundary", &
+!                         attr_val=.FALSE.)
+! CALL obj%WriteAttribute(obj_name="/mesh", attr_name="orders", &
+!                         attr_val=[1_I4B, 2_I4B, 3_I4B])
+! CALL obj%WriteAttribute(obj_name="/mesh", attr_name="boundingBox", &
+!                         attr_val=[0.0_DFP, 1.0_DFP, 0.0_DFP, 2.0_DFP])
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%ReadAttribute(obj_name="/mesh", attr_name="isActive", &
+!                        attr_val=flag)
+! CALL OK(flag, "logical attribute: true")
+! CALL obj%ReadAttribute(obj_name="/mesh", attr_name="isBoundary", &
+!                        attr_val=flag)
+! CALL OK(.NOT. flag, "logical attribute: false")
+! CALL obj%ReadAttribute(obj_name="/mesh", attr_name="orders", &
+!                        attr_val=ivec)
+! CALL OK(SIZE(ivec) .EQ. 3, "integer vector: size")
+! CALL OK(ALL(ivec .EQ. [1, 2, 3]), "integer vector: values")
+! CALL obj%ReadAttribute(obj_name="/mesh", attr_name="boundingBox", &
+!                        attr_val=rvec)
+! CALL OK(SIZE(rvec) .EQ. 4, "real vector: size")
+! CALL OK(ALL(ABS(rvec - [0.0_DFP, 1.0_DFP, 0.0_DFP, 2.0_DFP]) .LT. tol), &
+!         "real vector: values")
+! ! an integer vector read as a real vector is converted by HDF5
+! CALL obj%ReadAttribute(obj_name="/mesh", attr_name="orders", &
+!                        attr_val=rvec)
+! CALL OK(ALL(ABS(rvec - [1.0_DFP, 2.0_DFP, 3.0_DFP]) .LT. tol), &
+!         "integer vector read as real")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_WriteAttribute_d1]], [[obj_WriteAttribute_b0]],
+!   [[obj_ReadAttribute_i1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_i1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    INTEGER(I4B), INTENT(IN) :: attr_val(:)
+    !! values of the attribute
+  END SUBROUTINE obj_WriteAttribute_i1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a rank-1 real attribute
+!
+! Write a rank-1 real attribute attr_name to the object obj_name, which can
+! be a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(DFP) - values of the attribute, SIZE(attr_val) entries
+!
+! See also: [[obj_WriteAttribute_i1]], [[obj_ReadAttribute_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_d1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    REAL(DFP), INTENT(IN) :: attr_val(:)
+    !! values of the attribute
+  END SUBROUTINE obj_WriteAttribute_d1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a rank-1 logical attribute
+!
+! Write a rank-1 logical attribute attr_name to the object obj_name, which can
+! be a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0. Each value
+! is stored as the character "T" or "F".
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : LOGICAL(LGT) - values of the attribute
+!
+! See also: [[obj_ReadAttribute_b1]], [[obj_WriteAttribute_b0]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_b1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    LOGICAL(LGT), INTENT(IN) :: attr_val(:)
+    !! values of the attribute
+  END SUBROUTINE obj_WriteAttribute_b1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a rank-1 String attribute
+!
+! Write a rank-1 String attribute attr_name to the object obj_name, which can
+! be a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0. The
+! strings are stored as fixed-length strings of the longest length (at least
+! 1); shorter strings are padded with blanks, which ReadAttribute removes. So
+! trailing blanks of a value are not kept. Empty strings are allowed.
+!
+! The example writes and reads all the vector attributes: String,
+! logical, Real32 and Int64.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : TYPE(String) - values of the attribute
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: INT64
+! USE GlobalData, ONLY: LGT
+! USE GlobalData, ONLY: REAL32
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE String_Class, ONLY: String
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "WriteAttribute_test_5.h5"
+! TYPE(HDF5File_) :: obj
+! TYPE(String) :: names(3)
+! TYPE(String), ALLOCATABLE :: names1(:)
+! LOGICAL(LGT), ALLOCATABLE :: flags(:)
+! REAL(REAL32) :: r32
+! REAL(REAL32), ALLOCATABLE :: r32v(:)
+! INTEGER(INT64), ALLOCATABLE :: i64v(:)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! names(1) = "steel"
+! names(2) = "concrete"
+! names(3) = ""
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%Mkdir("/model")
+! CALL obj%WriteAttribute(obj_name="/model", attr_name="materials", &
+!                         attr_val=names)
+! CALL obj%WriteAttribute(obj_name="/model", attr_name="isFixed", &
+!                         attr_val=[.TRUE., .FALSE., .TRUE.])
+! CALL obj%WriteAttribute(obj_name="/model", attr_name="tol", &
+!                         attr_val=1.0E-3_REAL32)
+! CALL obj%WriteAttribute(obj_name="/model", attr_name="weights", &
+!                         attr_val=[0.25_REAL32, 0.75_REAL32])
+! CALL obj%WriteAttribute(obj_name="/model", attr_name="bigIds", &
+!                         attr_val=[3000000000_INT64, 4000000000_INT64])
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+! CALL obj%ReadAttribute(obj_name="/model", attr_name="materials", &
+!                        attr_val=names1)
+! CALL OK(SIZE(names1) .EQ. 3, "String vector: size")
+! CALL OK(names1(1)%chars() .EQ. "steel" .AND. &
+!         names1(2)%chars() .EQ. "concrete" .AND. &
+!         names1(3)%LEN() .EQ. 0, "String vector: values")
+! CALL obj%ReadAttribute(obj_name="/model", attr_name="isFixed", &
+!                        attr_val=flags)
+! CALL OK(SIZE(flags) .EQ. 3, "logical vector: size")
+! CALL OK(flags(1) .AND. (.NOT. flags(2)) .AND. flags(3), &
+!         "logical vector: values")
+! CALL obj%ReadAttribute(obj_name="/model", attr_name="tol", attr_val=r32)
+! CALL OK(ABS(r32 - 1.0E-3_REAL32) .LT. 1.0E-9_REAL32, "Real32 scalar")
+! CALL obj%ReadAttribute(obj_name="/model", attr_name="weights", &
+!                        attr_val=r32v)
+! CALL OK(ALL(ABS(r32v - [0.25_REAL32, 0.75_REAL32]) .LT. 1.0E-6_REAL32), &
+!         "Real32 vector")
+! CALL obj%ReadAttribute(obj_name="/model", attr_name="bigIds", &
+!                        attr_val=i64v)
+! CALL OK(ALL(i64v .EQ. [3000000000_INT64, 4000000000_INT64]), &
+!         "Int64 vector")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ReadAttribute_st1]], [[obj_WriteAttribute_b1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_st1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    TYPE(String), INTENT(IN) :: attr_val(:)
+    !! values of the attribute
+  END SUBROUTINE obj_WriteAttribute_st1
+END INTERFACE
+
+#ifdef USE_Real64
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a Real32 attribute
+!
+! Write a Real32 attribute attr_name to the object obj_name, which can be
+! a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
+! Only available when DFP is Real64 (USE_Real64).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(REAL32) - value of the attribute
+!
+! See also: [[obj_ReadAttribute_s0]], [[obj_WriteAttribute_d0]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_s0(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    REAL(REAL32), INTENT(IN) :: attr_val
+    !! value of the attribute
+  END SUBROUTINE obj_WriteAttribute_s0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a rank-1 Real32 attribute
+!
+! Write a rank-1 Real32 attribute attr_name to the object obj_name, which can
+! be a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
+! Only available when DFP is Real64 (USE_Real64).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(REAL32) - values of the attribute
+!
+! See also: [[obj_ReadAttribute_s1]], [[obj_WriteAttribute_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_s1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    REAL(REAL32), INTENT(IN) :: attr_val(:)
+    !! values of the attribute
+  END SUBROUTINE obj_WriteAttribute_s1
+END INTERFACE
+
+#endif
+
+#ifndef USE_Int64
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write an Int64 attribute
+!
+! Write an Int64 attribute attr_name to the object obj_name, which can be
+! a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
+! Only available when I4B is Int32 (USE_Int64 is not defined).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(INT64) - value of the attribute
+!
+! See also: [[obj_ReadAttribute_l0]], [[obj_WriteAttribute_i0]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_l0(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    INTEGER(INT64), INTENT(IN) :: attr_val
+    !! value of the attribute
+  END SUBROUTINE obj_WriteAttribute_l0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write a rank-1 Int64 attribute
+!
+! Write a rank-1 Int64 attribute attr_name to the object obj_name, which can
+! be a group or a dataset. The object must exist. An existing attribute is
+! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
+! Only available when I4B is Int32 (USE_Int64 is not defined).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(INT64) - values of the attribute
+!
+! See also: [[obj_ReadAttribute_l1]], [[obj_WriteAttribute_i1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteAttribute_l1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    INTEGER(INT64), INTENT(IN) :: attr_val(:)
+    !! values of the attribute
+  END SUBROUTINE obj_WriteAttribute_l1
+END INTERFACE
+
+#endif
+
+!----------------------------------------------------------------------------
 !                                                           AttributeExists
 !----------------------------------------------------------------------------
 
@@ -7111,6 +7594,9 @@ END INTERFACE
 ! Read a String attribute attr_name of the object obj_name, which can be a
 ! group or a dataset. The object and the attribute must exist.
 !
+! The example reads the scalar attributes (String, character, integer,
+! real) and the rank-1 integer, real and Real32 attributes.
+!
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   obj_name : CHARACTER(*) - path of the group or dataset
@@ -7127,6 +7613,7 @@ END INTERFACE
 ! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 ! USE GlobalData, ONLY: DFP
 ! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: REAL32
 ! USE HDF5File_Class, ONLY: HDF5File_
 ! USE String_Class, ONLY: String
 ! USE Test_Method, ONLY: OK
@@ -7135,11 +7622,16 @@ END INTERFACE
 !
 ! CHARACTER(*), PARAMETER :: filename = "ReadAttribute_test_1.h5"
 ! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! REAL(REAL32), PARAMETER :: tol32 = 1.0E-6_REAL32
 ! TYPE(HDF5File_) :: obj
 ! TYPE(String) :: strval
 ! CHARACTER(LEN=5) :: cval
 ! INTEGER(I4B) :: ival
 ! REAL(DFP) :: rval
+! INTEGER(I4B) :: empty(0)
+! INTEGER(I4B), ALLOCATABLE :: ivec(:)
+! REAL(DFP), ALLOCATABLE :: rvec(:)
+! REAL(REAL32), ALLOCATABLE :: svec(:)
 !
 ! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
 ! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
@@ -7151,6 +7643,11 @@ END INTERFACE
 ! CALL obj%WriteAttribute("/length", "unit", strval)
 ! CALL obj%WriteAttribute("/length", "count", 3_I4B)
 ! CALL obj%WriteAttribute("/length", "scale", 0.5_DFP)
+! CALL obj%WriteAttribute("/length", "ids", [4_I4B, 5_I4B, 6_I4B])
+! CALL obj%WriteAttribute("/length", "noIds", empty)
+! CALL obj%WriteAttribute("/length", "limits", [-1.5_DFP, 1.5_DFP])
+! CALL obj%WriteAttribute("/length", "weights", &
+!                         [0.1_REAL32, 0.2_REAL32, 0.3_REAL32, 0.4_REAL32])
 ! CALL obj%DEALLOCATE()
 !
 ! CALL obj%Initiate(filename=filename, mode="READ")
@@ -7163,12 +7660,41 @@ END INTERFACE
 !                        attr_val=ival)
 ! CALL obj%ReadAttribute(obj_name="/length", attr_name="scale", &
 !                        attr_val=rval)
-! CALL obj%DEALLOCATE()
 !
 ! CALL OK(strval%chars() .EQ. "meter", "read in String")
 ! CALL OK(cval .EQ. "meter", "read in character")
 ! CALL OK(ival .EQ. 3, "integer attribute")
 ! CALL OK(ABS(rval - 0.5_DFP) .LT. tol, "real attribute")
+!
+! ! rank-1 integer (_i1); ivec is allocated with another size first
+! ALLOCATE (ivec(10))
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="ids", &
+!                        attr_val=ivec)
+! CALL OK(SIZE(ivec) .EQ. 3, "integer vector: size")
+! CALL OK(ALL(ivec .EQ. [4, 5, 6]), "integer vector: values")
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="noIds", &
+!                        attr_val=ivec)
+! CALL OK(SIZE(ivec) .EQ. 0, "empty integer vector")
+!
+! ! rank-1 real (_d1)
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="limits", &
+!                        attr_val=rvec)
+! CALL OK(SIZE(rvec) .EQ. 2, "real vector: size")
+! CALL OK(ALL(ABS(rvec - [-1.5_DFP, 1.5_DFP]) .LT. tol), &
+!         "real vector: values")
+! ! an integer vector read into a real vector is converted by HDF5
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="ids", &
+!                        attr_val=rvec)
+! CALL OK(ALL(ABS(rvec - [4.0_DFP, 5.0_DFP, 6.0_DFP]) .LT. tol), &
+!         "integer vector read as real vector")
+!
+! ! rank-1 Real32 (_s1)
+! CALL obj%ReadAttribute(obj_name="/length", attr_name="weights", &
+!                        attr_val=svec)
+! CALL OK(SIZE(svec) .EQ. 4, "Real32 vector: size")
+! CALL OK(ALL(ABS(svec - [0.1_REAL32, 0.2_REAL32, 0.3_REAL32, &
+!                         0.4_REAL32]) .LT. tol32), "Real32 vector: values")
+! CALL obj%DEALLOCATE()
 ! END PROGRAM main
 !```
 !
@@ -7281,6 +7807,315 @@ INTERFACE
     !! value of the attribute
   END SUBROUTINE obj_ReadAttribute_d0
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a logical attribute
+!
+! Read a logical attribute attr_name of the object obj_name, which can be a
+! group or a dataset. The object and the attribute must exist (see
+! AttributeExists).
+! attr_val is true if the stored character is "T".
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : LOGICAL(LGT) - value of the attribute
+!
+! See also: [[obj_WriteAttribute_b0]], [[obj_ReadAttribute_i1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_b0(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    LOGICAL(LGT), INTENT(INOUT) :: attr_val
+    !! value of the attribute
+  END SUBROUTINE obj_ReadAttribute_b0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a rank-1 integer attribute
+!
+! Read a rank-1 integer attribute attr_name of the object obj_name, which
+! can be a group or a dataset. The object and the attribute must exist (see
+! AttributeExists).
+! attr_val is allocated to the number of values of the attribute. HDF5
+! converts the stored type to the kind of attr_val.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(I4B), allocatable - values of the attribute
+!
+! See also: [[obj_WriteAttribute_i1]], [[obj_ReadAttribute_d1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_i1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of the attribute; allocated by the routine
+  END SUBROUTINE obj_ReadAttribute_i1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a rank-1 real attribute
+!
+! Read a rank-1 real attribute attr_name of the object obj_name, which can
+! be a group or a dataset. The object and the attribute must exist (see
+! AttributeExists).
+! attr_val is allocated to the number of values of the attribute. HDF5
+! converts the stored type, for example an integer attribute, to REAL(DFP).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(DFP), allocatable - values of the attribute
+!
+! See also: [[obj_WriteAttribute_d1]], [[obj_ReadAttribute_i1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_d1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name
+    !! path of the group or dataset, and
+    CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of the attribute
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of the attribute; allocated by the routine
+  END SUBROUTINE obj_ReadAttribute_d1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a rank-1 logical attribute
+!
+! Read a rank-1 logical attribute attr_name of the object obj_name, which can
+! be a group or a dataset. The object and the attribute must exist (see
+! AttributeExists). attr_val is allocated to the number of values of the
+! attribute. A value is true if the stored character is "T".
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : LOGICAL(LGT), allocatable - values of the attribute
+!
+! See also: [[obj_WriteAttribute_b1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_b1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of the attribute; allocated by the routine
+  END SUBROUTINE obj_ReadAttribute_b1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a rank-1 String attribute
+!
+! Read a rank-1 String attribute attr_name of the object obj_name, which can
+! be a group or a dataset. The object and the attribute must exist (see
+! AttributeExists). attr_val is allocated to the number of values of the
+! attribute. The padding (blanks and NUL characters) is removed from each
+! value.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : TYPE(String), allocatable - values of the attribute
+!
+! See also: [[obj_WriteAttribute_st1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_st1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    TYPE(String), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of the attribute; allocated by the routine
+  END SUBROUTINE obj_ReadAttribute_st1
+END INTERFACE
+
+#ifdef USE_Real64
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a Real32 attribute
+!
+! Read a Real32 attribute attr_name of the object obj_name, which can be a
+! group or a dataset. The object and the attribute must exist (see
+! AttributeExists).
+! Only available when DFP is Real64 (USE_Real64).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(REAL32) - value of the attribute
+!
+! See also: [[obj_WriteAttribute_s0]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_s0(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    REAL(REAL32), INTENT(INOUT) :: attr_val
+    !! value of the attribute
+  END SUBROUTINE obj_ReadAttribute_s0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a rank-1 Real32 attribute
+!
+! Read a rank-1 Real32 attribute attr_name of the object obj_name, which can
+! be a group or a dataset. The object and the attribute must exist (see
+! AttributeExists). attr_val is allocated to the number of values of the
+! attribute.
+! Only available when DFP is Real64 (USE_Real64).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : REAL(REAL32), allocatable - values of the attribute
+!
+! See also: [[obj_WriteAttribute_s1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_s1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of the attribute; allocated by the routine
+  END SUBROUTINE obj_ReadAttribute_s1
+END INTERFACE
+
+#endif
+
+#ifndef USE_Int64
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read an Int64 attribute
+!
+! Read an Int64 attribute attr_name of the object obj_name, which can be a
+! group or a dataset. The object and the attribute must exist (see
+! AttributeExists).
+! Only available when I4B is Int32 (USE_Int64 is not defined).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(INT64) - value of the attribute
+!
+! See also: [[obj_WriteAttribute_l0]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_l0(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    INTEGER(INT64), INTENT(INOUT) :: attr_val
+    !! value of the attribute
+  END SUBROUTINE obj_ReadAttribute_l0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Read a rank-1 Int64 attribute
+!
+! Read a rank-1 Int64 attribute attr_name of the object obj_name, which can be
+! a group or a dataset. The object and the attribute must exist (see
+! AttributeExists). attr_val is allocated to the number of values of the
+! attribute.
+! Only available when I4B is Int32 (USE_Int64 is not defined).
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset
+!   attr_name : CHARACTER(*) - name of the attribute
+!   attr_val : INTEGER(INT64), allocatable - values of the attribute
+!
+! See also: [[obj_WriteAttribute_l1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadAttribute_l1(obj, obj_name, attr_name, attr_val)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
+    !! path of the group or dataset, and
+    !! name of the attribute
+    INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: attr_val(:)
+    !! values of the attribute; allocated by the routine
+  END SUBROUTINE obj_ReadAttribute_l1
+END INTERFACE
+
+#endif
 
 !----------------------------------------------------------------------------
 !                                                                OpenObject

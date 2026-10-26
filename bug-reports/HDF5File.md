@@ -31,6 +31,9 @@ a bug and should pass after the fix:
 | WriteAttribute_test_2 | longer String attribute replaces the old one | passes (A5 fixed) |
 | WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
 | AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
+| WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
+| WriteAttribute_test_5 | String, logical, Real32, Int64 vectors | passes (B7 step 2b) |
+| ReadAttribute_test_1 | scalar and rank-1 integer, real, Real32 attributes | passes |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
 | Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
 
@@ -369,6 +372,43 @@ Problem (before the fix):
   Fixed-length strings compress well, so this is acceptable for big
   arrays; set `H5T_STR_SPACEPAD` (or trim on read) so that the stored form
   matches the data.
+
+#### B7. Attributes for small data
+
+- Plan (2026-10-26): the classes will write small data (sizes, flags,
+  names, short vectors) as attributes instead of datasets. An attribute is
+  stored in the object header of its group or dataset, without an own
+  object header and link (about 323 B per scalar dataset, see B4).
+- Step 1 (fixed with A5): replace attributes on overwrite,
+  `AttributeExists`.
+- Step 2 (2026-10-26, done; tests pass): new specific procedures of the
+  `WriteAttribute`/`ReadAttribute` generics:
+  - logical scalar (`obj_WriteAttribute_b0`, `obj_ReadAttribute_b0`),
+    stored as "T"/"F" like logical datasets;
+  - rank-1 integer and real (`*_i1`, `*_d1`); Read allocates the array to
+    the length of the attribute.
+  - The integer and real attributes (rank 0 and 1) now get the HDF5 type
+    from the kind of `attr_val` (`H5kind_to_type`) and use the typed
+    `h5awrite_f`/`h5aread_f` (they exist for integer kinds 1-16 and real
+    kinds 4-16). Before, `H5T_NATIVE_INTEGER` (4 bytes) was used for
+    `INTEGER(I4B)`, which is wrong when `I4B` is 64-bit. The scalar
+    readers read only from an attribute with one value. Rank-1 readers
+    allocate the array (private helper `GetAttributeSize`).
+  - Test: WriteAttribute_test_4 (new).
+- Step 2b (2026-10-26, done; tests pass): vector attributes:
+  - rank-1 String (`*_st1`): fixed-length strings of the longest length
+    (at least 1); the padding is removed on read, so trailing blanks of a
+    value are not kept;
+  - rank-1 logical (`*_b1`), stored as "T"/"F";
+  - Real32 scalar and rank 1 (`*_s0`, `*_s1`), only when `USE_Real64`;
+    Int64 scalar and rank 1 (`*_l0`, `*_l1`), only when `USE_Int64` is not
+    defined (otherwise they clash with the DFP and I4B versions); they are
+    added with their own `GENERIC` statements inside the `#ifdef`.
+  - Test: WriteAttribute_test_5 (new).
+- Step 3 (open): attributes of the root group `"/"` (`open_object` checks
+  the path with `H5Lexists`, see A9).
+- Step 4 (open): measure the size of 2000 scalar attributes against 2000
+  scalar datasets in Storage_test_1.
 
 ### C. I/O efficiency
 

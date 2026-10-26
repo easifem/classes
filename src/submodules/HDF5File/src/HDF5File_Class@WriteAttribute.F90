@@ -20,10 +20,11 @@ USE ISO_C_BINDING, ONLY: C_CHAR
 USE HDF5, ONLY: SIZE_T, H5ACREATE_F, H5AOPEN_F, H5AWRITE_F, H5LEXISTS_F, &
   H5OCLOSE_F, H5OOPEN_F, H5SCLOSE_F, H5SCREATE_SIMPLE_F, &
   H5TCLOSE_F, H5TCOPY_F, H5T_NATIVE_CHARACTER, &
-  H5T_NATIVE_DOUBLE, H5ACLOSE_F, H5AEXISTS_F, &
-  H5SCREATE_SIMPLE_F, H5TSET_SIZE_F, &
-  H5T_NATIVE_INTEGER
+  H5ACLOSE_F, H5AEXISTS_F, H5TSET_SIZE_F
 USE HDF5, ONLY: H5ADELETE_F
+USE HDF5, ONLY: H5KIND_TO_TYPE
+USE HDF5, ONLY: H5_INTEGER_KIND
+USE HDF5, ONLY: H5_REAL_KIND
 USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 IMPLICIT NONE
 
@@ -307,8 +308,8 @@ MODULE PROCEDURE obj_WriteAttribute_i0
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_i0()'
 #endif
-  INTEGER(I4B) :: num_dims, error
-  INTEGER(HID_T) :: attr_id, dspace_id, obj_id
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
 
 #ifdef DEBUG_VER
@@ -316,19 +317,27 @@ MODULE PROCEDURE obj_WriteAttribute_i0
                           '[START] ')
 #endif
 
-  num_dims = 1
+  ! The HDF5 type follows the kind of attr_val
   dims(1) = 1
-!Prepare the File and object for the attribute
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+
   CALL open_object(obj, obj_name, obj_id)
-!Create the data space for memory type and size
-  CALL H5SCREATE_SIMPLE_F(num_dims, dims, dspace_id, error)
-!Create and write to the attribute within the dataspce
-  CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_INTEGER, &
-                       dspace_id, attr_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
   IF (attr_id .GT. 0) THEN
-    CALL H5AWRITE_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
     CALL close_attribute(obj, attr_id)
   END IF
+
   CALL H5SCLOSE_F(dspace_id, error)
   CALL close_object(obj, obj_id)
 
@@ -346,8 +355,8 @@ MODULE PROCEDURE obj_WriteAttribute_d0
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_d0()'
 #endif
-  INTEGER(I4B) :: num_dims, error
-  INTEGER(HID_T) :: attr_id, dspace_id, obj_id
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
 
 #ifdef DEBUG_VER
@@ -355,19 +364,27 @@ MODULE PROCEDURE obj_WriteAttribute_d0
                           '[START] ')
 #endif
 
-  num_dims = 1
+  ! The HDF5 type follows the kind of attr_val
   dims(1) = 1
-!Prepare the File and object for the attribute
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+
   CALL open_object(obj, obj_name, obj_id)
-!Create the data space for memory type and size
-  CALL H5SCREATE_SIMPLE_F(num_dims, dims, dspace_id, error)
-!Create and write to the attribute within the dataspce
-  CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_DOUBLE, &
-                       dspace_id, attr_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
   IF (attr_id .GT. 0) THEN
-    CALL H5AWRITE_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
     CALL close_attribute(obj, attr_id)
   END IF
+
   CALL H5SCLOSE_F(dspace_id, error)
   CALL close_object(obj, obj_id)
 
@@ -376,6 +393,430 @@ MODULE PROCEDURE obj_WriteAttribute_d0
                           '[END] ')
 #endif
 END PROCEDURE obj_WriteAttribute_d0
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteAttribute_b0
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_b0()'
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! A logical is stored as the character "T" or "F", as in Write
+  IF (attr_val) THEN
+    CALL obj%WriteAttribute(obj_name, attr_name, "T")
+  ELSE
+    CALL obj%WriteAttribute(obj_name, attr_name, "F")
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_b0
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteAttribute_i1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_i1()'
+#endif
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! The HDF5 type follows the kind of attr_val
+  dims(1) = SIZE(attr_val)
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_i1
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteAttribute_d1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_d1()'
+#endif
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! The HDF5 type follows the kind of attr_val
+  dims(1) = SIZE(attr_val)
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_d1
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteAttribute_b1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_b1()'
+#endif
+  INTEGER(I4B) :: error, ii
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  CHARACTER(LEN=1) :: buf(SIZE(attr_val))
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! A logical is stored as the character "T" or "F", as in Write
+  DO ii = 1, SIZE(attr_val)
+    buf(ii) = 'F'
+    IF (attr_val(ii)) buf(ii) = 'T'
+  END DO
+  dims(1) = SIZE(attr_val)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_CHARACTER, &
+                       dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, H5T_NATIVE_CHARACTER, buf, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_b1
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteAttribute_st1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_st1()'
+#endif
+  INTEGER(I4B) :: error, ii, lmax
+  INTEGER(HID_T) :: atype_id, attr_id, dspace_id, obj_id
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  CHARACTER(LEN=:), ALLOCATABLE :: buf(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! Fixed-length strings of the longest length (at least 1, since a type
+  ! of size 0 is not allowed); shorter strings are padded with blanks
+  lmax = 1
+  DO ii = 1, SIZE(attr_val)
+    lmax = MAX(lmax, attr_val(ii)%LEN())
+  END DO
+  ALLOCATE(CHARACTER(LEN=lmax) :: buf(SIZE(attr_val)))
+  DO ii = 1, SIZE(attr_val)
+    buf(ii) = attr_val(ii)%chars()
+  END DO
+  dims(1) = SIZE(attr_val)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, atype_id, error)
+  CALL H5TSET_SIZE_F(atype_id, INT(lmax, SIZE_T), error)
+  CALL createAttribute(obj, obj_id, attr_name, atype_id, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, atype_id, buf, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5TCLOSE_F(atype_id, error)
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_st1
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+#ifdef USE_Real64
+MODULE PROCEDURE obj_WriteAttribute_s0
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_s0()'
+#endif
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! The HDF5 type follows the kind of attr_val
+  dims(1) = 1
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_s0
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteAttribute_s1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_s1()'
+#endif
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! The HDF5 type follows the kind of attr_val
+  dims(1) = SIZE(attr_val)
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_s1
+#endif
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+#ifndef USE_Int64
+MODULE PROCEDURE obj_WriteAttribute_l0
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_l0()'
+#endif
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! The HDF5 type follows the kind of attr_val
+  dims(1) = 1
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_l0
+
+!----------------------------------------------------------------------------
+!                                                              WriteAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_WriteAttribute_l1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_l1()'
+#endif
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! The HDF5 type follows the kind of attr_val
+  dims(1) = SIZE(attr_val)
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, attr_val, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
+  END IF
+
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteAttribute_l1
+#endif
 
 !----------------------------------------------------------------------------
 !                                                              Include Error

@@ -16,13 +16,22 @@
 !
 
 SUBMODULE(HDF5File_Class) ReadAttribute
-USE HDF5, ONLY: SIZE_T, H5AGET_TYPE_F, H5AREAD_F, H5T_NATIVE_INTEGER, &
-  H5T_NATIVE_DOUBLE, H5AREAD_F, H5AGET_STORAGE_SIZE_F
+USE HDF5, ONLY: SIZE_T
+USE HDF5, ONLY: H5AGET_TYPE_F
+USE HDF5, ONLY: H5AREAD_F
+USE HDF5, ONLY: H5AGET_STORAGE_SIZE_F
 USE HDF5, ONLY: H5TCLOSE_F
-
 USE ISO_C_BINDING, ONLY: C_CHAR
 USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 USE HDF5, ONLY: H5AEXISTS_BY_NAME_F
+USE HDF5, ONLY: H5KIND_TO_TYPE
+USE HDF5, ONLY: H5_INTEGER_KIND
+USE HDF5, ONLY: H5_REAL_KIND
+USE HDF5, ONLY: H5AGET_SPACE_F
+USE HDF5, ONLY: H5SCLOSE_F
+USE HDF5, ONLY: H5SGET_SIMPLE_EXTENT_NPOINTS_F
+USE HDF5, ONLY: H5TGET_SIZE_F
+USE HDF5, ONLY: H5T_NATIVE_CHARACTER
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -168,7 +177,7 @@ MODULE PROCEDURE obj_ReadAttribute_i0
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_i0()'
 #endif
-  INTEGER(HID_T) :: attr_id, obj_id
+  INTEGER(HID_T) :: attr_id, obj_id, mem
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
   INTEGER(I4B) :: error
 
@@ -177,11 +186,24 @@ MODULE PROCEDURE obj_ReadAttribute_i0
                           '[START] ')
 #endif
 
-  dims(1) = 1
-!Prepare the File and object for the attribute
+  error = 0
   CALL open_object(obj, obj_name, obj_id)
   CALL open_attribute(obj, obj_id, attr_name, attr_id)
-  CALL H5AREAD_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
+
+  ! A scalar is read only from an attribute with one value
+  dims(1) = GetAttributeSize(attr_id)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(dims(1) .EQ. 1, myName, &
+                    'The attribute ' // attr_name // ' is not a scalar.')
+#endif
+
+  IF (dims(1) .NE. 1) dims(1) = 0
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
 
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
@@ -205,7 +227,7 @@ MODULE PROCEDURE obj_ReadAttribute_d0
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_d0()'
 #endif
-  INTEGER(HID_T) :: attr_id, obj_id
+  INTEGER(HID_T) :: attr_id, obj_id, mem
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
   INTEGER(I4B) :: error
 
@@ -214,11 +236,24 @@ MODULE PROCEDURE obj_ReadAttribute_d0
                           '[START] ')
 #endif
 
-  dims(1) = 1
-!Prepare the File and object for the attribute
+  error = 0
   CALL open_object(obj, obj_name, obj_id)
   CALL open_attribute(obj, obj_id, attr_name, attr_id)
-  CALL H5AREAD_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
+
+  ! A scalar is read only from an attribute with one value
+  dims(1) = GetAttributeSize(attr_id)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(dims(1) .EQ. 1, myName, &
+                    'The attribute ' // attr_name // ' is not a scalar.')
+#endif
+
+  IF (dims(1) .NE. 1) dims(1) = 0
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
 
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
@@ -233,6 +268,446 @@ MODULE PROCEDURE obj_ReadAttribute_d0
                           '[END] ')
 #endif
 END PROCEDURE obj_ReadAttribute_d0
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadAttribute_b0
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_b0()'
+#endif
+  TYPE(String) :: str_val
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! A logical is stored as the character "T" or "F"
+  CALL obj%ReadAttribute(obj_name, attr_name, str_val)
+  attr_val = str_val%chars() .EQ. "T"
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_b0
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadAttribute_i1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_i1()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  dims(1) = GetAttributeSize(attr_id)
+  IF (ALLOCATED(attr_val)) THEN
+    IF (SIZE(attr_val) .NE. dims(1)) DEALLOCATE(attr_val)
+  END IF
+  IF (.NOT. ALLOCATED(attr_val)) ALLOCATE(attr_val(dims(1)))
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_i1
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadAttribute_d1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_d1()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  dims(1) = GetAttributeSize(attr_id)
+  IF (ALLOCATED(attr_val)) THEN
+    IF (SIZE(attr_val) .NE. dims(1)) DEALLOCATE(attr_val)
+  END IF
+  IF (.NOT. ALLOCATED(attr_val)) ALLOCATE(attr_val(dims(1)))
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_d1
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadAttribute_b1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_b1()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+  CHARACTER(LEN=1), ALLOCATABLE :: buf(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  dims(1) = GetAttributeSize(attr_id)
+  ALLOCATE(buf(dims(1)))
+  IF (dims(1) .GT. 0) THEN
+    CALL H5AREAD_F(attr_id, H5T_NATIVE_CHARACTER, buf, dims, error)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+  ! A logical is stored as the character "T" or "F"
+  IF (ALLOCATED(attr_val)) THEN
+    IF (SIZE(attr_val) .NE. dims(1)) DEALLOCATE(attr_val)
+  END IF
+  IF (.NOT. ALLOCATED(attr_val)) ALLOCATE(attr_val(dims(1)))
+  attr_val = buf .EQ. 'T'
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_b1
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadAttribute_st1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_st1()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id, atype_id
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(SIZE_T) :: lsize
+  INTEGER(I4B) :: error, ii
+  CHARACTER(LEN=:), ALLOCATABLE :: buf(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  ! Number of strings and length of a string
+  dims(1) = GetAttributeSize(attr_id)
+  CALL H5AGET_TYPE_F(attr_id, atype_id, error)
+  CALL H5TGET_SIZE_F(atype_id, lsize, error)
+  ALLOCATE(CHARACTER(LEN=lsize) :: buf(dims(1)))
+
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, atype_id, buf, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL H5TCLOSE_F(atype_id, error)
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+  ! The padding (blanks or NUL characters) is removed
+  IF (ALLOCATED(attr_val)) THEN
+    IF (SIZE(attr_val) .NE. dims(1)) DEALLOCATE(attr_val)
+  END IF
+  IF (.NOT. ALLOCATED(attr_val)) ALLOCATE(attr_val(dims(1)))
+  DO ii = 1, SIZE(attr_val)
+    attr_val(ii) = TRIM(buf(ii))
+    attr_val(ii) = attr_val(ii)%Replace(C_NULL_CHAR, '')
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_st1
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+#ifdef USE_Real64
+MODULE PROCEDURE obj_ReadAttribute_s0
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_s0()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  ! A scalar is read only from an attribute with one value
+  dims(1) = GetAttributeSize(attr_id)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(dims(1) .EQ. 1, myName, &
+                    'The attribute ' // attr_name // ' is not a scalar.')
+#endif
+
+  IF (dims(1) .NE. 1) dims(1) = 0
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_s0
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadAttribute_s1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_s1()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  dims(1) = GetAttributeSize(attr_id)
+  IF (ALLOCATED(attr_val)) THEN
+    IF (SIZE(attr_val) .NE. dims(1)) DEALLOCATE(attr_val)
+  END IF
+  IF (.NOT. ALLOCATED(attr_val)) ALLOCATE(attr_val(dims(1)))
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_REAL_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_s1
+#endif
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+#ifndef USE_Int64
+MODULE PROCEDURE obj_ReadAttribute_l0
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_l0()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  ! A scalar is read only from an attribute with one value
+  dims(1) = GetAttributeSize(attr_id)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(dims(1) .EQ. 1, myName, &
+                    'The attribute ' // attr_name // ' is not a scalar.')
+#endif
+
+  IF (dims(1) .NE. 1) dims(1) = 0
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_l0
+
+!----------------------------------------------------------------------------
+!                                                               ReadAttribute
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadAttribute_l1
+#ifdef DEBUG_VER
+  CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_l1()'
+#endif
+  INTEGER(HID_T) :: attr_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  dims(1) = GetAttributeSize(attr_id)
+  IF (ALLOCATED(attr_val)) THEN
+    IF (SIZE(attr_val) .NE. dims(1)) DEALLOCATE(attr_val)
+  END IF
+  IF (.NOT. ALLOCATED(attr_val)) ALLOCATE(attr_val(dims(1)))
+
+  ! The HDF5 type follows the kind of attr_val; HDF5 converts the stored
+  ! type to it
+  mem = H5KIND_TO_TYPE(KIND(attr_val), H5_INTEGER_KIND)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, attr_val, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_ReadAttribute_l1
+#endif
+
+!----------------------------------------------------------------------------
+!                                                            GetAttributeSize
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Number of values of an attribute
+
+FUNCTION GetAttributeSize(attr_id) RESULT(ans)
+  INTEGER(HID_T), INTENT(IN) :: attr_id
+  !! id of the attribute
+  INTEGER(HSIZE_T) :: ans
+  !! number of values; 1 for a scalar
+  INTEGER(HID_T) :: space_id
+  INTEGER(I4B) :: error
+
+  CALL H5AGET_SPACE_F(attr_id, space_id, error)
+  CALL H5SGET_SIMPLE_EXTENT_NPOINTS_F(space_id, ans, error)
+  CALL H5SCLOSE_F(space_id, error)
+  IF (error .NE. 0) ans = 0
+END FUNCTION GetAttributeSize
 
 !----------------------------------------------------------------------------
 !                                                              Include error
