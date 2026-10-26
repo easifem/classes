@@ -3,8 +3,8 @@
 ! summary: Get the chunk size of a dataset
 !
 ! Only compressed datasets are chunked. A dataset is compressed when
-! the file uses compression and it has more than 1 MB of data along
-! a dimension.
+! the file uses compression and it has at least 64 KiB of data (the
+! default chunkPolicy%minBytes). A chunk has about 1 MiB of data.
 ! cdims is unallocated for a dataset which is not chunked.
 
 PROGRAM main

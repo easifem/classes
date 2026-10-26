@@ -29,15 +29,16 @@ USE HDF5, ONLY: SIZE_T, H5P_FILE_ACCESS_F, H5P_DATASET_CREATE_F, &
   H5Z_FILTER_SZIP_F, H5S_SCALAR_F, H5T_FLOAT_F, &
   H5T_INTEGER_F, H5T_STRING_F, H5DCREATE_F, H5CLOSE_F, &
   H5DCLOSE_F, H5DGET_CREATE_PLIST_F, H5DGET_SPACE_F, &
-  H5DGET_STORAGE_SIZE_F, H5DGET_TYPE_F, H5DOPEN_F, &
+  H5DGET_TYPE_F, H5DOPEN_F, &
   H5GGET_INFO_F, H5GOPEN_F, H5IGET_TYPE_F, H5LCREATE_HARD_F, &
   H5LEXISTS_F, H5LGET_NAME_BY_IDX_F, H5OCLOSE_F, H5OOPEN_F, &
   H5OPEN_F, H5PCREATE_F, H5PGET_CHUNK_F, H5PGET_LAYOUT_F, &
   H5PGET_NFILTERS_F, H5ESET_AUTO_F, H5FCLOSE_F, &
   H5GCLOSE_F, H5GCREATE_F, H5PGET_FILTER_F, H5PSET_CHUNK_F, &
-  H5PSET_DEFLATE_F, H5PSET_FCLOSE_DEGREE_F, &
+  H5PSET_DEFLATE_F, H5PSET_FCLOSE_DEGREE_F, H5PSET_SHUFFLE_F, &
   H5SCLOSE_F, H5SCREATE_F, H5SCREATE_SIMPLE_F, &
   H5SGET_SIMPLE_EXTENT_DIMS_F, H5SGET_SIMPLE_EXTENT_NDIMS_F, &
+  H5SGET_SIMPLE_EXTENT_NPOINTS_F, &
   H5TGET_CLASS_F, H5TGET_PRECISION_F, H5TGET_SIZE_F, H5TCLOSE_F
 
 IMPLICIT NONE
@@ -392,12 +393,23 @@ MODULE PROCEDURE obj_Initiate
   END IF
 #endif
 
-  IF (PRESENT(zlibOpt)) THEN
-    IF (zlibOpt .GE. 0) THEN
-      obj%hasCompression = math%yes
-      obj%zlibOpt = zlibOpt
-    END IF
-  END IF
+  ! Layout and compression settings: default values unless chunkPolicy
+  ! is present; zlibOpt replaces the deflate level
+  obj%chunkPolicy = HDF5ChunkPolicy_()
+  IF (PRESENT(chunkPolicy)) obj%chunkPolicy = chunkPolicy
+  IF (PRESENT(zlibOpt)) obj%chunkPolicy%deflateLevel = zlibOpt
+
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%chunkPolicy%deflateLevel .GE. -1 .AND. &
+                    obj%chunkPolicy%deflateLevel .LE. 9, myName, &
+                    'deflateLevel must be -1 (no compression) or 0 to 9.')
+  CALL AssertError1(obj%chunkPolicy%targetBytes .GT. 0, myName, &
+                    'targetBytes must be positive.')
+  CALL AssertError1(obj%chunkPolicy%minBytes .GE. 0, myName, &
+                    'minBytes must not be negative.')
+#endif
+
+  obj%hasCompression = obj%chunkPolicy%deflateLevel .GE. 0
 
 ! Store the access mode
   mode_in = mode
@@ -518,7 +530,7 @@ MODULE PROCEDURE obj_Deallocate
   obj%isinit = math%no
   obj%newstat = math%no
   obj%hasCompression = math%no
-  obj%zlibOpt = -1
+  obj%chunkPolicy = HDF5ChunkPolicy_()
   obj%fullname = ''
   obj%unitno = -1
   obj%overwriteStat = math%no
@@ -1178,11 +1190,13 @@ END PROCEDURE obj_IsCompressed
 MODULE PROCEDURE preWrite
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'preWrite()'
-  INTEGER(HID_T) :: oldmem
-  INTEGER(HSIZE_T) :: oldsize, newsize
+  INTEGER(HID_T) :: oldmem, oldspace
+  INTEGER(HSIZE_T) :: oldsize, newsize, oldnpoints
 #endif
   INTEGER(HID_T) :: file_id
   INTEGER(HSIZE_T) :: cdims(RANK)
+  INTEGER(SIZE_T) :: bsize
+  INTEGER(INT64) :: nbytes
   LOGICAL :: dset_exists
   INTEGER(I4B) :: lastslash, ierr
   TYPE(String) :: path2
@@ -1264,33 +1278,50 @@ MODULE PROCEDURE preWrite
                       'Could not create dataspace.')
 #endif
 
-    ! Setup the DSpace creation property list to use ZLIB compression
-    ! (requires chunking).
-    ! Do not compress on scalar data sets.
-    IF (obj%hasCompression .AND. &
-        .NOT. (RANK .EQ. 1 .AND. gdims(1) .EQ. 1)) THEN
-
-      !Compute optimal chunk size and specify in property list.
-      CALL compute_chunk_size(mem, gdims, cdims)
-      !Logic is equivalent to "compress anything > 1MB"
-      IF (.NOT. ALL(gdims == cdims)) THEN
-        CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ierr)
-        IF (ERROR .EQ. 0) ERROR = ierr
+    ! Compression needs chunking. Datasets with less than
+    ! chunkPolicy%minBytes of data (and empty datasets) stay contiguous.
+    nbytes = 0
+    IF (obj%hasCompression .AND. ERROR .EQ. 0 .AND. ALL(gdims .GT. 0)) THEN
+      CALL H5TGET_SIZE_F(mem, bsize, ierr)
+      IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-        CALL AssertError1(ierr .EQ. 0, myName, &
-                          'Could not set the chunk size.')
+      CALL AssertError1(ierr .EQ. 0, myName, &
+                        'Could not get the size of the data type.')
 #endif
 
-        CALL H5PSET_DEFLATE_F(plist_id, obj%zlibOpt, ierr)
+      IF (ierr .EQ. 0) nbytes = INT(bsize, INT64) * PRODUCT(INT(gdims, INT64))
+    END IF
+
+    IF (nbytes .GT. 0 .AND. nbytes .GE. obj%chunkPolicy%minBytes) THEN
+      CALL compute_chunk_size(mem, gdims, obj%chunkPolicy%targetBytes, &
+                              cdims)
+      CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ierr)
+      IF (ERROR .EQ. 0) ERROR = ierr
+
+#ifdef DEBUG_VER
+      CALL AssertError1(ierr .EQ. 0, myName, &
+                        'Could not set the chunk size.')
+#endif
+
+      ! Shuffle the bytes before deflate; useless for 1-byte elements
+      IF (obj%chunkPolicy%shuffle .AND. bsize .GT. 1) THEN
+        CALL H5PSET_SHUFFLE_F(plist_id, ierr)
         IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
         CALL AssertError1(ierr .EQ. 0, myName, &
-                          'Could not set the deflate filter.')
+                          'Could not set the shuffle filter.')
 #endif
       END IF
 
+      CALL H5PSET_DEFLATE_F(plist_id, obj%chunkPolicy%deflateLevel, ierr)
+      IF (ERROR .EQ. 0) ERROR = ierr
+
+#ifdef DEBUG_VER
+      CALL AssertError1(ierr .EQ. 0, myName, &
+                        'Could not set the deflate filter.')
+#endif
     END IF
   END IF
 
@@ -1351,11 +1382,14 @@ MODULE PROCEDURE preWrite
                         'Size of new data is greater than size of ' // &
                         'pre-existing data  type:' // path)
 
-      CALL H5DGET_STORAGE_SIZE_F(dset_id, oldsize, ierr)
-      CALL AssertError1(oldsize .GE. (newsize * PRODUCT(gdims)), &
-                        myName, &
-                        'Storage size of the pre-existing dataset ' // &
-                        'is too small:' // path)
+      ! Compare the number of elements, not the storage size: the
+      ! storage size of a compressed dataset is the compressed size
+      CALL H5DGET_SPACE_F(dset_id, oldspace, ierr)
+      CALL H5SGET_SIMPLE_EXTENT_NPOINTS_F(oldspace, oldnpoints, ierr)
+      CALL H5SCLOSE_F(oldspace, ierr)
+      CALL AssertError1(oldnpoints .GE. PRODUCT(gdims), myName, &
+                        'The pre-existing dataset has less elements ' // &
+                        'than the new data:' // path)
 
       CALL H5TCLOSE_F(oldmem, ierr)
       CALL AssertError1(ierr .EQ. 0, myName, &
@@ -1444,7 +1478,8 @@ MODULE PROCEDURE compute_chunk_size
   CHARACTER(*), PARAMETER :: myName = "compute_chunk_size()"
 #endif
   INTEGER(I4B) :: i, error
-  INTEGER(SIZE_T) :: mb, bsize
+  INTEGER(SIZE_T) :: bsize
+  INTEGER(HSIZE_T) :: ntarget, nother
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1452,11 +1487,23 @@ MODULE PROCEDURE compute_chunk_size
 #endif
 
   CALL H5TGET_SIZE_F(mem, bsize, error)
-  mb = 1048576 / bsize
-!1MB in terms of the number of elements
-  DO i = 1, SIZE(cdims)
-    cdims(i) = MIN(gdims(i), INT(mb, HSIZE_T))
-  END DO
+  bsize = MAX(bsize, 1_SIZE_T)
+
+  ! targetBytes in terms of the number of elements
+  ntarget = MAX(INT(targetBytes / INT(bsize, INT64), HSIZE_T), &
+                1_HSIZE_T)
+
+  ! Start from the whole dataset and reduce the last dimensions first
+  cdims = MAX(gdims, 1_HSIZE_T)
+  dimLoop: DO i = SIZE(cdims), 1, -1
+    IF (PRODUCT(cdims) .LE. ntarget) EXIT dimLoop
+    nother = PRODUCT(cdims) / cdims(i)
+    IF (nother .GE. ntarget) THEN
+      cdims(i) = 1
+    ELSE
+      cdims(i) = MAX(ntarget / nother, 1_HSIZE_T)
+    END IF
+  END DO dimLoop
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

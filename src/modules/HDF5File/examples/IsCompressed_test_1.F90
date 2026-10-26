@@ -2,7 +2,8 @@
 ! date: 2026-10-22
 ! summary: Check if a HDF5 file uses compression
 !
-! A file uses compression when zlibOpt is given in Initiate.
+! A file uses compression by default (chunk policy with deflate level 1).
+! zlibOpt replaces the deflate level; zlibOpt=-1 turns compression off.
 
 PROGRAM main
   USE BaseType, ONLY: math => TypeMathOpt
@@ -20,13 +21,18 @@ PROGRAM main
   CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-  CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=5)
-  CALL obj%OPEN()
-  CALL OK(obj%IsCompressed(), "with zlibOpt")
-  CALL obj%DEALLOCATE()
-
   CALL obj%Initiate(filename=filename, mode="NEW")
   CALL obj%OPEN()
-  CALL OK(.NOT. obj%IsCompressed(), "without zlibOpt")
+  CALL OK(obj%IsCompressed(), "default chunk policy")
+  CALL obj%DEALLOCATE()
+
+  CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=5)
+  CALL obj%OPEN()
+  CALL OK(obj%IsCompressed(), "with zlibOpt=5")
+  CALL obj%DEALLOCATE()
+
+  CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=-1)
+  CALL obj%OPEN()
+  CALL OK(.NOT. obj%IsCompressed(), "with zlibOpt=-1")
   CALL obj%DEALLOCATE()
 END PROGRAM main

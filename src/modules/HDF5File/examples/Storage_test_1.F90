@@ -46,7 +46,8 @@ PROGRAM main
 
   ! many small datasets
   CALL SYSTEM_CLOCK(t0, rate)
-  CALL obj%Initiate(filename="Storage_test_1_small.h5", mode="NEW")
+  CALL obj%Initiate(filename="Storage_test_1_small.h5", mode="NEW", &
+                    zlibOpt=-1)
   CALL obj%OPEN()
   DO k = 1, nsmall
     WRITE(dname, '(A,I0)') "/small/x", k
@@ -78,11 +79,7 @@ CONTAINS
     INTEGER(INT64) :: tw, tr
 
     CALL SYSTEM_CLOCK(t0, rate)
-    IF (zlib .GE. 0) THEN
-      CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=zlib)
-    ELSE
-      CALL obj%Initiate(filename=filename, mode="NEW")
-    END IF
+    CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=zlib)
     CALL obj%OPEN()
     DO k = 1, nfield
       WRITE(dname, '(A,I0)') "/field/f", k

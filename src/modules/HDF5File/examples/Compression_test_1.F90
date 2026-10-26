@@ -2,8 +2,8 @@
 ! date: 2026-10-26
 ! summary: Compress rank-1 and rank-2 datasets
 !
-! With zlibOpt the datasets with more than 1 MB of data are chunked
-! and compressed. This must hold for a rank-1 array and for a rank-2
+! With compression the datasets with at least 64 KiB of data are
+! chunked and compressed. This must hold for a rank-1 array and for a rank-2
 ! array of the same size (400 x 400 Real64 is 1.28 MB). The data is
 ! read back unchanged, and the compressed file is smaller than the file
 ! without compression.
@@ -47,7 +47,7 @@ PROGRAM main
   CALL OK(obj%IsCompressed(path="/m"), "rank 2 is compressed")
   CALL obj%DEALLOCATE()
 
-  CALL obj%Initiate(filename=file2, mode="NEW")
+  CALL obj%Initiate(filename=file2, mode="NEW", zlibOpt=-1)
   CALL obj%OPEN()
   CALL obj%WRITE(dsetname="/v", vals=v)
   CALL obj%WRITE(dsetname="/m", vals=m)

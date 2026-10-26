@@ -23,6 +23,7 @@
 
 MODULE HDF5File_Class
 USE GlobalData, ONLY: LGT, DFP, I4B, REAL32, REAL64, INT32
+USE GlobalData, ONLY: INT64
 USE String_Class, ONLY: String
 USE BaseType, ONLY: math => TypeMathOpt
 USE HDF5, ONLY: HID_T, HSIZE_T, HSSIZE_T
@@ -35,6 +36,7 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: HDF5File_
 PUBLIC :: HDF5FilePointer_
+PUBLIC :: HDF5ChunkPolicy_
 ! PUBLIC :: HDF5Open, HDF5Close, HDF5Quiet
 
 INTEGER(I4B), PARAMETER :: MAXSTRLEN = 1024
@@ -45,6 +47,121 @@ INTEGER(I4B), SAVE :: nhdf5fileinuse = 0
 LOGICAL(LGT), SAVE :: libh5Open = math%no
 !! Variable to make sure that the hdf5 interface was opened, and thus
 !! can then be closed.
+
+!----------------------------------------------------------------------------
+!                                                           HDF5ChunkPolicy_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Layout and compression settings of the datasets of an HDF5 file
+!
+! HDF5ChunkPolicy_ controls how Write stores a dataset. It is passed to
+! Initiate; the default values are used when it is absent.
+!
+! A dataset whose data has at least minBytes bytes is chunked and compressed
+! when deflateLevel >= 0. Smaller datasets, and all scalars, are stored
+! contiguously. The chunk has about targetBytes bytes: the chunk starts as
+! the whole dataset, and the last (slowest) dimension is reduced first, so a
+! chunk holds whole columns whenever possible. When shuffle is true and the
+! element has more than one byte, the shuffle filter is applied before the
+! deflate filter; it usually improves the compression of numeric data.
+!
+! Components:
+!
+! - targetBytes: target size of a chunk in bytes (default 1 MiB)
+! - minBytes: datasets with less data are not chunked or compressed
+!   (default 64 KiB)
+! - stepsPerChunk: number of steps per chunk along the last dimension of an
+!   extendible dataset; not used yet, since extendible datasets are not
+!   implemented
+! - shuffle: apply the shuffle filter before deflate (default true)
+! - deflateLevel: gzip compression level [0-9]; -1 means no compression
+!   (default 1)
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5, ONLY: HSIZE_T
+! USE HDF5File_Class, ONLY: HDF5ChunkPolicy_
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "ChunkPolicy_test_1.h5"
+! INTEGER(I4B), PARAMETER :: n = 1000
+! TYPE(HDF5File_) :: obj
+! TYPE(HDF5ChunkPolicy_) :: policy
+! REAL(DFP), ALLOCATABLE :: m(:, :), small(:)
+! INTEGER(HSIZE_T), ALLOCATABLE :: cdims(:)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! ALLOCATE (m(n, n), small(10))
+! m = 1.0_DFP
+! small = 2.0_DFP
+!
+! ! default policy: deflate level 1, chunks of about 1 MiB
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%WRITE(dsetname="/small", vals=small)
+! CALL OK(obj%IsCompressed(path="/m"), "default: m is compressed")
+! CALL OK(.NOT. obj%IsCompressed(path="/small"), &
+!         "default: small is not compressed")
+! CALL obj%GetChunkSize(path="/m", cdims=cdims)
+! CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 131_HSIZE_T]), &
+!         "default: chunk of whole columns")
+! CALL obj%DEALLOCATE()
+!
+! ! no compression
+! policy%deflateLevel = -1
+! CALL obj%Initiate(filename=filename, mode="NEW", chunkPolicy=policy)
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL OK(.NOT. obj%IsCompressed(), "deflateLevel=-1: no compression")
+! CALL OK(.NOT. obj%IsCompressed(path="/m"), &
+!         "deflateLevel=-1: m is not compressed")
+! CALL obj%DEALLOCATE()
+!
+! ! smaller chunks
+! policy%deflateLevel = 4
+! policy%targetBytes = 80000
+! CALL obj%Initiate(filename=filename, mode="NEW", chunkPolicy=policy)
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%GetChunkSize(path="/m", cdims=cdims)
+! CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 10_HSIZE_T]), &
+!         "targetBytes=80000: chunk 1000 x 10")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[compute_chunk_size]], [[obj_GetChunkSize]],
+!   [[obj_IsCompressed]]
+
+TYPE :: HDF5ChunkPolicy_
+  INTEGER(INT64) :: targetBytes = 1048576_INT64
+  !! target size of a chunk in bytes (about 1 MiB)
+  INTEGER(INT64) :: minBytes = 65536_INT64
+  !! datasets with less data are not chunked or compressed
+  INTEGER(I4B) :: stepsPerChunk = 1
+  !! steps per chunk along the last dimension of an extendible dataset
+  !! (not used yet)
+  LOGICAL(LGT) :: shuffle = .TRUE.
+  !! apply the shuffle filter before deflate
+  INTEGER(I4B) :: deflateLevel = 1
+  !! gzip compression level [0-9]; -1 means no compression
+END TYPE HDF5ChunkPolicy_
 
 !----------------------------------------------------------------------------
 !                                                                  HDF5File_
@@ -74,8 +191,9 @@ LOGICAL(LGT), SAVE :: libh5Open = math%no
 ! Components:
 !
 ! - isInit: true if the object is initiated
-! - hasCompression: true if datasets are written with compression
-! - zlibOpt: gzip compression level, -1 means no compression
+! - hasCompression: true if datasets are written with compression, that is,
+!   chunkPolicy%deflateLevel >= 0
+! - chunkPolicy: layout and compression settings, see HDF5ChunkPolicy_
 ! - newstat: true if Open must create the file
 ! - fullname: full name of the file
 ! - unitno: Fortran unit number, used only to delete the file
@@ -90,9 +208,8 @@ TYPE, EXTENDS(AbstractFile_) :: HDF5File_
   !! Initialization status
   LOGICAL(LGT) :: hasCompression = math%no
   !! Whether or not the file uses compression for writing
-  INTEGER(I4B), PRIVATE :: zlibOpt = -1
-  !! Option for gzip compression -1 (no filter) or [0-9].
-  !! these options are defined by HDF5.
+  TYPE(HDF5ChunkPolicy_), PRIVATE :: chunkPolicy
+  !! layout and compression settings of the datasets
   LOGICAL(LGT), PRIVATE :: newstat = math%no
   !! The 'new' status of a file
   TYPE(String) :: fullname
@@ -535,9 +652,12 @@ END INTERFACE
 ! When a dataset is overwritten, the new data must have the same type and must
 ! not be larger than the old data.
 !
-! If zlibOpt is present and zlibOpt >= 0, datasets with more than 1 MB of data
-! along a dimension are chunked and written with gzip compression of level
-! zlibOpt.
+! chunkPolicy sets the layout and compression of the datasets, see
+! HDF5ChunkPolicy_. If it is absent, the default values are used: datasets
+! with at least 64 KiB of data are chunked (about 1 MiB per chunk) and
+! written with the shuffle filter and gzip level 1. If zlibOpt is present,
+! it replaces chunkPolicy%deflateLevel (-1 means no compression); it is kept
+! for compatibility.
 !
 ! In DEBUG mode an error is raised if obj is already initiated, if the mode is
 ! unknown, or if the file does not exist in mode READ, WRITE or OVERWRITE.
@@ -546,7 +666,10 @@ END INTERFACE
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   filename : CHARACTER(*) - path of the file
 !   mode : CHARACTER(*) - NEW, READ, WRITE or OVERWRITE
-!   zlibOpt : INTEGER(I4B), optional - gzip compression level [0-9]
+!   zlibOpt : INTEGER(I4B), optional - gzip compression level [0-9];
+!       replaces chunkPolicy%deflateLevel
+!   chunkPolicy : TYPE(HDF5ChunkPolicy_), optional - layout and compression
+!       settings; default values if absent
 !
 ! Examples
 !
@@ -637,7 +760,8 @@ END INTERFACE
 !   [[obj_IsCompressed]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate(Obj, filename, mode, zlibOpt)
+  MODULE SUBROUTINE obj_Initiate(Obj, filename, mode, zlibOpt, &
+                                 chunkPolicy)
     CLASS(HDF5File_), INTENT(INOUT) :: Obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: filename
@@ -648,7 +772,10 @@ INTERFACE
     !! 'WRITE' does not allow overwriting datasets
     !! 'NEW' creates the file and truncates an existing one
     INTEGER(I4B), INTENT(IN), OPTIONAL :: zlibOpt
-    !! gzip compression level [0-9]; no compression if absent
+    !! gzip compression level [0-9], -1 for no compression;
+    !! replaces chunkPolicy%deflateLevel
+    TYPE(HDF5ChunkPolicy_), INTENT(IN), OPTIONAL :: chunkPolicy
+    !! layout and compression settings; default values if absent
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -1513,8 +1640,8 @@ END INTERFACE
 ! date: 2021-06-07
 ! summary: Returns true if the file or a dataset uses compression
 !
-! - If path is absent, returns true if the file was initiated with zlibOpt >=
-!   0.
+! - If path is absent, returns true if datasets of the file are written
+!   with compression, that is, chunkPolicy%deflateLevel >= 0 (the default).
 ! - If path is present, returns true if the dataset has a deflate, szip or
 !   nbit filter. The dataset must exist.
 !
@@ -1547,14 +1674,19 @@ END INTERFACE
 ! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
 ! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
-! CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=5)
-! CALL obj%OPEN()
-! CALL OK(obj%IsCompressed(), "with zlibOpt")
-! CALL obj%DEALLOCATE()
-!
 ! CALL obj%Initiate(filename=filename, mode="NEW")
 ! CALL obj%OPEN()
-! CALL OK(.NOT. obj%IsCompressed(), "without zlibOpt")
+! CALL OK(obj%IsCompressed(), "default chunk policy")
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=5)
+! CALL obj%OPEN()
+! CALL OK(obj%IsCompressed(), "with zlibOpt=5")
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=-1)
+! CALL obj%OPEN()
+! CALL OK(.NOT. obj%IsCompressed(), "with zlibOpt=-1")
 ! CALL obj%DEALLOCATE()
 ! END PROGRAM main
 !```
@@ -1585,9 +1717,11 @@ END INTERFACE
 ! Create the dataspaces and the dataset creation property list, create the
 ! missing parent groups of path, and create the dataset (or open it when it
 ! exists and overwriting is allowed). When the file uses compression and the
-! dataset has more than 1 MB of data along a dimension, the dataset is chunked
-! and compressed. This routine is used by all Write routines; postWrite closes
-! what it opens.
+! dataset has at least chunkPolicy%minBytes of data, the dataset is chunked
+! (see compute_chunk_size), the shuffle filter is set when
+! chunkPolicy%shuffle is true and an element has more than one byte, and the
+! deflate filter is set. This routine is used by all Write routines;
+! postWrite closes what it opens.
 !
 ! error is 0 on success. Otherwise it is the status of the first call that
 ! failed, and the steps which need the dataset are skipped. The ids which are
@@ -1638,23 +1772,33 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-08-08
+! update:
+!   - 2026-10-26: limit the total size of the chunk to targetBytes
 ! summary: Compute the chunk size of a compressed dataset
 !
 ! The chunk size controls the memory used by the HDF5 library for compression,
 ! see https://support.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html
 !
-! Each chunk dimension is the smaller of the dataset dimension and the number
-! of entries in 1 MB. Only memory use is considered, not the speed of reading
-! and writing.
+! The chunk starts as the whole dataset. While it has more than
+! targetBytes / (size of an element) entries, the last dimension that is
+! larger than 1 is reduced: to 1 if the other dimensions already hold the
+! target, else to target / (product of the other dimensions). So the first
+! (fastest) dimension is reduced last, and a chunk holds whole columns when
+! a column is smaller than targetBytes. Every chunk dimension is at least 1.
+!
+! For example, with targetBytes = 1 MiB and Real64 data (131072 entries):
+! 1000 x 1000 gives 1000 x 131, and 200000 x 200 gives 131072 x 1.
 !
 ! See also: [[preWrite]]
 
 INTERFACE
-  MODULE SUBROUTINE compute_chunk_size(mem, gdims, cdims)
+  MODULE SUBROUTINE compute_chunk_size(mem, gdims, targetBytes, cdims)
     INTEGER(HID_T), INTENT(IN) :: mem
     !! HDF5 data type of the dataset
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
     !! global dimensions of the dataset
+    INTEGER(INT64), INTENT(IN) :: targetBytes
+    !! target size of a chunk in bytes
     INTEGER(HSIZE_T), INTENT(OUT) :: cdims(:)
     !! chunk dimensions to use
   END SUBROUTINE compute_chunk_size

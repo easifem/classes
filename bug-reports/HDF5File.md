@@ -25,7 +25,8 @@ a bug and should pass after the fix:
 | Write_test_7 | Real64 rank 4-7, Real32 and integer rank 3 | expected to pass |
 | Write_test_8 | empty String, scalar and rank 1 | passes, HDF5 prints errors (A4) |
 | Overwrite_test_1 | overwrite with the same and a smaller shape | expected to fail (A3) |
-| Compression_test_1 | rank-2 data is compressed; file is smaller | expected to fail (B1) |
+| Compression_test_1 | rank-2 data is compressed; file is smaller | passes (B1 fixed) |
+| ChunkPolicy_test_1 | default and custom chunk policy | passes (B1 fixed) |
 | OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
 | WriteAttribute_test_2 | longer String attribute replaces the old one | expected to fail (A5) |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
@@ -70,6 +71,69 @@ data (B3, B4).
 - The checks of the close calls are only in DEBUG mode.
 - Also in this commit: `obj_Delete` uses `ACTION='READ'` and `IOMSG` in
   `OPEN` and `CLOSE`.
+
+### B1. Compression is almost never applied to arrays of rank >= 2
+
+- Fixed 2026-10-26. New public type `HDF5ChunkPolicy_` (targetBytes =
+  1 MiB, minBytes = 64 KiB, stepsPerChunk = 1 (not used yet), shuffle =
+  true, deflateLevel = 1), passed to `Initiate` as the optional
+  `chunkPolicy`; the defaults are used when it is absent. `zlibOpt` is kept
+  and replaces `deflateLevel`. `compute_chunk_size` limits the total chunk
+  size to `targetBytes` and reduces the last dimension first. Datasets with
+  less than `minBytes` of data stay contiguous.
+- Tests: Compression_test_1, ChunkPolicy_test_1 (new), IsCompressed_test_1
+  (updated), Storage_test_1, all pass.
+- Result (Storage_test_1, debug build, zlibOpt=4):
+
+  | Case | Before | After |
+  | --- | --- | --- |
+  | 4 x (1000 x 1000) Real64 | 32002048 B | 21727414 B (-32 %) |
+  | write / read time | 0.008 s / 0.009 s | 0.349 s / 0.029 s |
+  | Compression_test_1 (400 x 400) | 1294078 B | 10081 B |
+
+  The smooth field compresses by 1.5x; compression costs write time (about
+  0.09 s per 8 MB field at level 4). Level 1, the default, is faster;
+  measure it before choosing the default for large runs.
+- **Change of behaviour:** with the default policy every file is now
+  compressed (gzip level 1); before, compression needed `zlibOpt`. Use
+  `zlibOpt=-1` or `chunkPolicy%deflateLevel = -1` to turn it off.
+- The DEBUG check of the overwrite branch of `preWrite` now compares the
+  number of elements of the old dataspace with the new data, not the
+  storage size (which is the compressed size for a compressed dataset).
+
+Problem (before the fix):
+
+- `compute_chunk_size` (Constructor:1353-1370) caps **each** dimension at
+  1 MB of elements: `cdims(i) = MIN(gdims(i), 1MB/elemsize)`. Compression is
+  used only if `cdims /= gdims`, so a rank-2 array is compressed only when
+  one dimension alone holds more than 1 MB (131072 Real64 values). A
+  1000 x 1000 Real64 field (8 MB) or a 3 x 10^5 coordinate array is stored
+  uncompressed, even with `zlibOpt`.
+- When it does apply, the chunk size is not bounded: for 200000 x 200
+  Real64 the chunk is 131072 x 200 x 8 B = 200 MB. Every read decompresses
+  whole chunks, so one such chunk costs 200 MB of memory. This is the case
+  the warning in `postRead` describes.
+- Proposal: choose the chunk by the **total** size, for example
+  64 KB-1 MB per chunk. Keep the fastest-varying (first, Fortran)
+  dimension whole when possible, and halve the slowest dimensions until the
+  chunk fits. Compress every dataset above a small threshold (for example
+  16 KB), not only those with one dimension over 1 MB.
+- Test: Compression_test_1; Storage_test_1 prints the sizes.
+
+### B2. No shuffle filter
+
+- Fixed 2026-10-26 (with B1). `preWrite` sets `H5Pset_shuffle` before
+  deflate when `chunkPolicy%shuffle` is true and an element has more than
+  one byte.
+
+Problem (before the fix):
+
+- Only deflate is set (Constructor:1234). For floating-point and integer
+  arrays, `H5Pset_shuffle` before deflate usually gives a much better
+  ratio at almost no CPU cost. It is a standard HDF5 setting and needs no
+  extra library.
+- Proposal: `H5Pset_shuffle_f` and then `H5Pset_deflate_f`, for numeric
+  types.
 
 ## Open
 
@@ -183,34 +247,6 @@ data (B3, B4).
   `obj_Read_ca0` uses `"obj_Read_st0_helper()"`.
 
 ### B. Storage
-
-#### B1. Compression is almost never applied to arrays of rank >= 2
-
-- `compute_chunk_size` (Constructor:1353-1370) caps **each** dimension at
-  1 MB of elements: `cdims(i) = MIN(gdims(i), 1MB/elemsize)`. Compression is
-  used only if `cdims /= gdims`, so a rank-2 array is compressed only when
-  one dimension alone holds more than 1 MB (131072 Real64 values). A
-  1000 x 1000 Real64 field (8 MB) or a 3 x 10^5 coordinate array is stored
-  uncompressed, even with `zlibOpt`.
-- When it does apply, the chunk size is not bounded: for 200000 x 200
-  Real64 the chunk is 131072 x 200 x 8 B = 200 MB. Every read decompresses
-  whole chunks, so one such chunk costs 200 MB of memory. This is the case
-  the warning in `postRead` describes.
-- Proposal: choose the chunk by the **total** size, for example
-  64 KB-1 MB per chunk. Keep the fastest-varying (first, Fortran)
-  dimension whole when possible, and halve the slowest dimensions until the
-  chunk fits. Compress every dataset above a small threshold (for example
-  16 KB), not only those with one dimension over 1 MB.
-- Test: Compression_test_1; Storage_test_1 prints the sizes.
-
-#### B2. No shuffle filter
-
-- Only deflate is set (Constructor:1234). For floating-point and integer
-  arrays, `H5Pset_shuffle` before deflate usually gives a much better
-  ratio at almost no CPU cost. It is a standard HDF5 setting and needs no
-  extra library.
-- Proposal: `H5Pset_shuffle_f` and then `H5Pset_deflate_f`, for numeric
-  types.
 
 #### B3. Old file format
 
