@@ -20,6 +20,7 @@ USE HDF5, ONLY: SIZE_T, H5DCLOSE_F, H5DGET_SPACE_F, H5DGET_TYPE_F, &
   H5DOPEN_F, H5DREAD_F, H5SCLOSE_F, &
   H5SGET_SIMPLE_EXTENT_NDIMS_F, &
   H5TGET_SIZE_F, H5T_NATIVE_CHARACTER
+USE HDF5, ONLY: H5TCLOSE_F
 USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 
 IMPLICIT NONE
@@ -48,7 +49,7 @@ MODULE PROCEDURE obj_Read_st0_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   mem = -1
@@ -59,6 +60,10 @@ MODULE PROCEDURE obj_Read_st0_helper
   CALL H5DOPEN_F(obj%file_id, path%Chars(), dset_id, error)
   CALL H5DGET_TYPE_F(dset_id, mem, error)
   CALL H5TGET_SIZE_F(mem, max_size, error)
+  CALL H5TCLOSE_F(mem, error)
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, 'Failed to close datatype.')
+#endif
   CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
   CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
 
@@ -73,7 +78,7 @@ MODULE PROCEDURE obj_Read_st0_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st0_helper
 
@@ -91,11 +96,11 @@ MODULE PROCEDURE obj_Read_st0
   INTEGER(I4B), PARAMETER :: rank = 0
   INTEGER(HID_T) :: mem
   INTEGER(HID_T) :: dspace_id, dset_id
-  INTEGER(I4B) :: error
+  INTEGER(I4B) :: error, ierr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 ! Allocate surrogate data
@@ -107,6 +112,10 @@ MODULE PROCEDURE obj_Read_st0
     ! Read the dataset
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
 
     IF (length_max == 1) THEN
       CALL convert_char_array_to_str(valsc, vals)
@@ -121,7 +130,7 @@ MODULE PROCEDURE obj_Read_st0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st0
 
@@ -135,7 +144,7 @@ MODULE PROCEDURE obj_Read_ca0
 #endif
   INTEGER(I4B), PARAMETER :: rank = 1
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:)
-  INTEGER(I4B) :: i, error
+  INTEGER(I4B) :: i, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
   INTEGER(HID_T) :: mem
@@ -143,7 +152,7 @@ MODULE PROCEDURE obj_Read_ca0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -153,6 +162,10 @@ MODULE PROCEDURE obj_Read_ca0
     ALLOCATE(valsc(dims(1)))
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
     ! Allocate space if needed, make sure it is the right size
     vals = ''
     ! Convert to StringType
@@ -166,7 +179,7 @@ MODULE PROCEDURE obj_Read_ca0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_ca0
 
@@ -185,7 +198,7 @@ SUBROUTINE convert_char_array_to_str(char_array, s)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   DO i = 1, LEN(c)
@@ -195,7 +208,7 @@ SUBROUTINE convert_char_array_to_str(char_array, s)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END SUBROUTINE convert_char_array_to_str
 
@@ -216,7 +229,7 @@ MODULE PROCEDURE obj_Read_st1_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   mem = -1
@@ -226,6 +239,10 @@ MODULE PROCEDURE obj_Read_st1_helper
   CALL H5DOPEN_F(obj%file_id, path%Chars(), dset_id, error)
   CALL H5DGET_TYPE_F(dset_id, mem, error)
   CALL H5TGET_SIZE_F(mem, max_size, error)
+  CALL H5TCLOSE_F(mem, error)
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, 'Failed to close datatype.')
+#endif
   CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
   CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
   IF ((ndims .EQ. rank + 1) .AND. (max_size .EQ. 1)) THEN
@@ -238,7 +255,7 @@ MODULE PROCEDURE obj_Read_st1_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st1_helper
 
@@ -251,7 +268,7 @@ MODULE PROCEDURE obj_Read_st1
   CHARACTER(*), PARAMETER :: myName = "obj_Read_st1()"
 #endif
   CHARACTER(LEN=length_max), ALLOCATABLE :: valsc(:)
-  INTEGER(I4B) :: i, error
+  INTEGER(I4B) :: i, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
   INTEGER(I4B), PARAMETER :: rank = 1
@@ -260,7 +277,7 @@ MODULE PROCEDURE obj_Read_st1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -270,6 +287,10 @@ MODULE PROCEDURE obj_Read_st1
     ALLOCATE(valsc(dims(1)))
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
     IF (ALLOCATED(vals)) THEN
       IF (SIZE(vals) .NE. dims(1)) THEN
         DEALLOCATE(vals)
@@ -293,7 +314,7 @@ MODULE PROCEDURE obj_Read_st1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st1
 
@@ -306,7 +327,7 @@ MODULE PROCEDURE obj_Read_ca1
   CHARACTER(*), PARAMETER :: myName = "obj_Read_ca1()"
 #endif
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :)
-  INTEGER(I4B) :: i, j, error
+  INTEGER(I4B) :: i, j, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(2) :: dims
   INTEGER(I4B), PARAMETER :: rank = 2
@@ -315,7 +336,7 @@ MODULE PROCEDURE obj_Read_ca1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -326,6 +347,10 @@ MODULE PROCEDURE obj_Read_ca1
     ALLOCATE(valsc(dims(1), dims(2)))
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
     ! Allocate space if needed, make sure it is the right size
     IF (ALLOCATED(vals)) THEN
       IF (SIZE(vals) /= dims(2)) THEN
@@ -348,7 +373,7 @@ MODULE PROCEDURE obj_Read_ca1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_ca1
 
@@ -364,7 +389,7 @@ MODULE PROCEDURE obj_Read__st1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   tsize = math%zero_i
@@ -377,7 +402,7 @@ MODULE PROCEDURE obj_Read__st1
 
 #ifdef DEBUG_VER
     CALL AssertError3(tsize, SIZE(vals), myName, &
-      'a=tsize from hdf5File, b=SIZE(vals)')
+                      'a=tsize from hdf5File, b=SIZE(vals)')
 #endif
 
     vals(1:tsize) = temp
@@ -386,7 +411,7 @@ MODULE PROCEDURE obj_Read__st1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__st1
 
@@ -407,7 +432,7 @@ MODULE PROCEDURE obj_Read_st2_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   mem = -1
@@ -417,6 +442,10 @@ MODULE PROCEDURE obj_Read_st2_helper
   CALL H5DOPEN_F(obj%file_id, path%Chars(), dset_id, error)
   CALL H5DGET_TYPE_F(dset_id, mem, error)
   CALL H5TGET_SIZE_F(mem, max_size, error)
+  CALL H5TCLOSE_F(mem, error)
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, 'Failed to close datatype.')
+#endif
   CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
   CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
   IF ((ndims == rank + 1) .AND. (max_size == 1)) THEN
@@ -429,7 +458,7 @@ MODULE PROCEDURE obj_Read_st2_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st2_helper
 
@@ -442,7 +471,7 @@ MODULE PROCEDURE obj_Read_st2
   CHARACTER(*), PARAMETER :: myName = "obj_Read_st2()"
 #endif
   CHARACTER(LEN=length_max), ALLOCATABLE :: valsc(:, :)
-  INTEGER(I4B) :: i, j, error
+  INTEGER(I4B) :: i, j, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(2) :: dims
   INTEGER(I4B), PARAMETER :: rank = 2
@@ -451,7 +480,7 @@ MODULE PROCEDURE obj_Read_st2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -461,6 +490,10 @@ MODULE PROCEDURE obj_Read_st2
     ALLOCATE(valsc(dims(1), dims(2)))
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
     IF (ALLOCATED(vals)) THEN
       IF (ANY(SHAPE(vals) /= (/dims(1), dims(2)/))) THEN
         DEALLOCATE(vals)
@@ -486,7 +519,7 @@ MODULE PROCEDURE obj_Read_st2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st2
 
@@ -499,7 +532,7 @@ MODULE PROCEDURE obj_Read_ca2
   CHARACTER(*), PARAMETER :: myName = "obj_Read_ca2()"
 #endif
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :, :)
-  INTEGER(I4B) :: i, j, k, error
+  INTEGER(I4B) :: i, j, k, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(3) :: dims
   INTEGER(I4B), PARAMETER :: rank = 3
@@ -508,7 +541,7 @@ MODULE PROCEDURE obj_Read_ca2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -519,6 +552,10 @@ MODULE PROCEDURE obj_Read_ca2
     ALLOCATE(valsc(dims(1), dims(2), dims(3)))
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
     ! Allocate space if needed, make sure it is the right size
     IF (ALLOCATED(vals)) THEN
       IF (ANY(SHAPE(vals) /= (/dims(2), dims(3)/))) THEN
@@ -543,7 +580,7 @@ MODULE PROCEDURE obj_Read_ca2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_ca2
 
@@ -559,7 +596,7 @@ MODULE PROCEDURE obj_Read__st2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   nrow = math%zero_i
@@ -574,9 +611,9 @@ MODULE PROCEDURE obj_Read__st2
 
 #ifdef DEBUG_VER
     CALL AssertError3(nrow, SIZE(vals, 1), myName, &
-      'a=nrow from hdf5File, b=SIZE(vals, 1)')
+                      'a=nrow from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(ncol, SIZE(vals, 2), myName, &
-      'a=ncol from hdf5File, b=SIZE(vals, 2)')
+                      'a=ncol from hdf5File, b=SIZE(vals, 2)')
 #endif
 
     vals(1:nrow, 1:ncol) = temp
@@ -585,7 +622,7 @@ MODULE PROCEDURE obj_Read__st2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__st2
 
@@ -606,7 +643,7 @@ MODULE PROCEDURE obj_Read_st3_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   mem = -1
@@ -616,6 +653,10 @@ MODULE PROCEDURE obj_Read_st3_helper
   CALL H5DOPEN_F(obj%file_id, path%Chars(), dset_id, error)
   CALL H5DGET_TYPE_F(dset_id, mem, error)
   CALL H5TGET_SIZE_F(mem, max_size, error)
+  CALL H5TCLOSE_F(mem, error)
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, 'Failed to close datatype.')
+#endif
   CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
   CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
   IF ((ndims == rank + 1) .AND. (max_size == 1)) THEN
@@ -628,7 +669,7 @@ MODULE PROCEDURE obj_Read_st3_helper
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st3_helper
 
@@ -641,7 +682,7 @@ MODULE PROCEDURE obj_Read_st3
   CHARACTER(*), PARAMETER :: myName = "obj_Read_st3()"
 #endif
   CHARACTER(LEN=length_max), ALLOCATABLE :: valsc(:, :, :)
-  INTEGER(I4B) :: i, j, k, error
+  INTEGER(I4B) :: i, j, k, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(3) :: dims
   INTEGER(I4B), PARAMETER :: rank = 3
@@ -650,7 +691,7 @@ MODULE PROCEDURE obj_Read_st3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -660,6 +701,10 @@ MODULE PROCEDURE obj_Read_st3
     ALLOCATE(valsc(dims(1), dims(2), dims(3)))
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
     IF (ALLOCATED(vals)) THEN
       IF (ANY(SHAPE(vals) /= (/dims(1), dims(2), dims(3)/))) THEN
         DEALLOCATE(vals)
@@ -688,7 +733,7 @@ MODULE PROCEDURE obj_Read_st3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_st3
 
@@ -701,7 +746,7 @@ MODULE PROCEDURE obj_Read_ca3
   CHARACTER(*), PARAMETER :: myName = "obj_Read_ca3()"
 #endif
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :, :, :)
-  INTEGER(I4B) :: i, j, k, m, error
+  INTEGER(I4B) :: i, j, k, m, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(4) :: dims
   INTEGER(I4B), PARAMETER :: rank = 4
@@ -710,7 +755,7 @@ MODULE PROCEDURE obj_Read_ca3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -721,6 +766,10 @@ MODULE PROCEDURE obj_Read_ca3
     ALLOCATE(valsc(dims(1), dims(2), dims(3), dims(4)))
     CALL H5DGET_TYPE_F(dset_id, mem, error)
     CALL H5DREAD_F(dset_id, mem, valsc, dims, error)
+    CALL H5TCLOSE_F(mem, ierr)
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
+#endif
     ! Allocate space if needed, make sure it is the right size
     IF (ALLOCATED(vals)) THEN
       IF (ANY(SHAPE(vals) /= (/dims(2), dims(3), dims(4)/))) THEN
@@ -746,7 +795,7 @@ MODULE PROCEDURE obj_Read_ca3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_ca3
 
@@ -762,7 +811,7 @@ MODULE PROCEDURE obj_Read__st3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dim1 = math%zero_i
@@ -779,11 +828,11 @@ MODULE PROCEDURE obj_Read__st3
 
 #ifdef DEBUG_VER
     CALL AssertError3(dim1, SIZE(vals, 1), myName, &
-      'a=dim1 from hdf5File, b=SIZE(vals, 1)')
+                      'a=dim1 from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(dim2, SIZE(vals, 2), myName, &
-      'a=dim2 from hdf5File, b=SIZE(vals, 2)')
+                      'a=dim2 from hdf5File, b=SIZE(vals, 2)')
     CALL AssertError3(dim3, SIZE(vals, 3), myName, &
-      'a=dim3 from hdf5File, b=SIZE(vals, 3)')
+                      'a=dim3 from hdf5File, b=SIZE(vals, 3)')
 #endif
 
     vals(1:dim1, 1:dim2, 1:dim3) = temp
@@ -792,7 +841,7 @@ MODULE PROCEDURE obj_Read__st3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__st3
 
@@ -814,7 +863,7 @@ MODULE PROCEDURE obj_Read_c1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
@@ -836,7 +885,7 @@ MODULE PROCEDURE obj_Read_c1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_c1
 

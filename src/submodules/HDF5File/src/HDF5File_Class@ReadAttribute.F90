@@ -18,6 +18,7 @@
 SUBMODULE(HDF5File_Class) ReadAttribute
 USE HDF5, ONLY: SIZE_T, H5AGET_TYPE_F, H5AREAD_F, H5T_NATIVE_INTEGER, &
   H5T_NATIVE_DOUBLE, H5AREAD_F, H5AGET_STORAGE_SIZE_F
+USE HDF5, ONLY: H5TCLOSE_F
 
 USE ISO_C_BINDING, ONLY: C_CHAR
 IMPLICIT NONE
@@ -47,7 +48,7 @@ SUBROUTINE obj_ReadAttribute_st0_helper(attr_id, length_max, attr_val)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dims(1) = 1
@@ -55,9 +56,14 @@ SUBROUTINE obj_ReadAttribute_st0_helper(attr_id, length_max, attr_val)
   CALL H5AREAD_F(attr_id, atype_id, buf, dims, error)
   attr_val = buf
 
+  CALL H5TCLOSE_F(atype_id, error)
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, 'Failed to close datatype.')
+#endif
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END SUBROUTINE obj_ReadAttribute_st0_helper
 
@@ -75,7 +81,7 @@ MODULE PROCEDURE obj_ReadAttribute_st0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 !Prepare the File and object for the attribute
@@ -88,7 +94,7 @@ MODULE PROCEDURE obj_ReadAttribute_st0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_ReadAttribute_st0
 
@@ -104,7 +110,7 @@ MODULE PROCEDURE obj_ReadAttribute_c0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   CALL obj%ReadAttribute(obj_name, attr_name, str_val)
@@ -112,7 +118,7 @@ MODULE PROCEDURE obj_ReadAttribute_c0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_ReadAttribute_c0
 
@@ -130,7 +136,7 @@ MODULE PROCEDURE obj_ReadAttribute_i0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dims(1) = 1
@@ -141,7 +147,7 @@ MODULE PROCEDURE obj_ReadAttribute_i0
 
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to read attribute.')
+                    'Failed to read attribute.')
 #endif
 
   CALL close_attribute(obj, attr_id)
@@ -149,7 +155,7 @@ MODULE PROCEDURE obj_ReadAttribute_i0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_ReadAttribute_i0
 
@@ -167,7 +173,7 @@ MODULE PROCEDURE obj_ReadAttribute_d0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dims(1) = 1
@@ -178,7 +184,7 @@ MODULE PROCEDURE obj_ReadAttribute_d0
 
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to read attribute.')
+                    'Failed to read attribute.')
 #endif
 
   CALL close_attribute(obj, attr_id)
@@ -186,7 +192,7 @@ MODULE PROCEDURE obj_ReadAttribute_d0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_ReadAttribute_d0
 

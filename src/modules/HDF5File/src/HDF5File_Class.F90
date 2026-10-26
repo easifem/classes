@@ -1586,8 +1586,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE preWrite(obj, rank, gdims, ldims, path, mem, dset_id, &
-    dspace_id, gspace_id, plist_id, error, &
-    cnt, offset)
+                             dspace_id, gspace_id, plist_id, error, &
+                             cnt, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     INTEGER, INTENT(IN) :: rank
@@ -1661,7 +1661,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE postWrite(obj, error, dset_id, dspace_id, gspace_id, &
-    plist_id)
+                              plist_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     INTEGER(I4B), INTENT(INOUT) :: error
@@ -1704,7 +1704,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d0(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1799,7 +1799,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d1(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1842,7 +1842,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d2(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1885,7 +1885,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d3(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1928,7 +1928,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d4(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -1971,7 +1971,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d5(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2014,7 +2014,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d6(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2057,7 +2057,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_d7(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2100,7 +2100,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s0(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2191,7 +2191,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s1(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2234,7 +2234,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s2(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2277,7 +2277,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s3(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2320,7 +2320,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s4(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2363,7 +2363,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s5(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2406,7 +2406,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s6(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2449,7 +2449,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_s7(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2493,7 +2493,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_b0(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2584,7 +2584,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_b1(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2628,7 +2628,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_b2(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2672,7 +2672,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_b3(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2715,7 +2715,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n0(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2805,7 +2805,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n1(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2848,7 +2848,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n2(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2891,7 +2891,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n3(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2934,7 +2934,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n4(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -2977,7 +2977,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n5(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3020,7 +3020,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n6(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3063,7 +3063,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_n7(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                 cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3107,7 +3107,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_st0(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                  cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3209,7 +3209,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_st1_helper(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                         cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3255,7 +3255,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_st1(obj, dsetname, vals, length_max, &
-    gdims_in, cnt_in, offset_in)
+                                  gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3302,7 +3302,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_st2_helper(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                         cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3348,7 +3348,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_st2(obj, dsetname, vals, length_max, &
-    gdims_in, cnt_in, offset_in)
+                                  gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3396,7 +3396,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_st3_helper(obj, dsetname, vals, gdims_in, &
-    cnt_in, offset_in)
+                                         cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3442,7 +3442,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_st3(obj, dsetname, vals, length_max, &
-    gdims_in, cnt_in, offset_in)
+                                  gdims_in, cnt_in, offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3527,7 +3527,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Write_c1(obj, dsetname, vals, gdims_in, cnt_in, &
-    offset_in)
+                                 offset_in)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -3562,7 +3562,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE preRead(obj, path, rank, dset_id, dspace_id, &
-    dims, error)
+                            dims, error)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
@@ -4163,7 +4163,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__d4(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4)
+                                 dim4)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4240,7 +4240,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__d5(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5)
+                                 dim4, dim5)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4319,7 +4319,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__d6(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5, dim6)
+                                 dim4, dim5, dim6)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4400,7 +4400,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__d7(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5, dim6, dim7)
+                                 dim4, dim5, dim6, dim7)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4776,7 +4776,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__s4(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4)
+                                 dim4)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4853,7 +4853,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__s5(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5)
+                                 dim4, dim5)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -4932,7 +4932,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__s6(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5, dim6)
+                                 dim4, dim5, dim6)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5013,7 +5013,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__s7(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5, dim6, dim7)
+                                 dim4, dim5, dim6, dim7)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5342,7 +5342,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__n4(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4)
+                                 dim4)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5419,7 +5419,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__n5(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5)
+                                 dim4, dim5)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5498,7 +5498,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__n6(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5, dim6)
+                                 dim4, dim5, dim6)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -5579,7 +5579,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Read__n7(obj, dsetname, vals, dim1, dim2, dim3, &
-    dim4, dim5, dim6, dim7)
+                                 dim4, dim5, dim6, dim7)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
@@ -6667,13 +6667,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteAttribute_st0(obj, obj_name, attr_name, &
-    attr_val)
+                                           attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
     !! path of the group or dataset, and
     !! name of the attribute
-    TYPE(String) :: attr_val
+    TYPE(String), INTENT(IN) :: attr_val
     !! value of the attribute
   END SUBROUTINE obj_WriteAttribute_st0
 END INTERFACE
@@ -6701,13 +6701,13 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteAttribute_c0(obj, obj_name, attr_name, &
-    attr_val)
+                                          attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
     !! path of the group or dataset, and
     !! name of the attribute
-    CHARACTER(LEN=*) :: attr_val
+    CHARACTER(LEN=*), INTENT(IN) :: attr_val
     !! value of the attribute
   END SUBROUTINE obj_WriteAttribute_c0
 END INTERFACE
@@ -6734,7 +6734,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteAttribute_i0(obj, obj_name, attr_name, &
-    attr_val)
+                                          attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
@@ -6767,7 +6767,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteAttribute_d0(obj, obj_name, attr_name, &
-    attr_val)
+                                          attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
@@ -6854,7 +6854,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ReadAttribute_st0(obj, obj_name, attr_name, &
-    attr_val)
+                                          attr_val)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: obj_name, attr_name
@@ -6894,7 +6894,7 @@ INTERFACE
     !! path of the group or dataset, and
     !! name of the attribute
     CHARACTER(LEN=*), INTENT(INOUT) :: attr_val
-    !! value of the attribute
+    !! value of the attribut
   END SUBROUTINE obj_ReadAttribute_c0
 END INTERFACE
 
@@ -7022,7 +7022,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE createAttribute(obj, obj_id, attr_name, atype_id, &
-    dspace_id, attr_id)
+                                    dspace_id, attr_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: attr_name

@@ -60,14 +60,14 @@ MODULE PROCEDURE obj_IsInitiated
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ans = obj%isInit
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_IsInitiated
 
@@ -83,7 +83,7 @@ SUBROUTINE HDF5Open
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (.NOT. libh5Open) THEN
@@ -98,7 +98,7 @@ SUBROUTINE HDF5Open
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END SUBROUTINE HDF5Open
 
@@ -114,7 +114,7 @@ SUBROUTINE HDF5Close
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ierr = -1
@@ -123,7 +123,7 @@ SUBROUTINE HDF5Close
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END SUBROUTINE HDF5Close
 
@@ -144,7 +144,7 @@ SUBROUTINE HDF5Quiet(quiet)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (quiet) THEN
@@ -155,7 +155,7 @@ SUBROUTINE HDF5Quiet(quiet)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END SUBROUTINE HDF5Quiet
 
@@ -173,7 +173,7 @@ MODULE PROCEDURE obj_Open
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (obj%isinit) THEN
@@ -188,7 +188,7 @@ MODULE PROCEDURE obj_Open
     IF (obj%IsNew()) THEN
       acc = H5F_ACC_TRUNC_F
       CALL H5FCREATE_F(obj%fullname%Chars(), acc, obj%file_id, ierr, &
-        access_prp=plist_id)
+                       access_prp=plist_id)
       ! If the file is NEW, change the mode to WRITE after
       ! Creating it so we don't keep truncating it repeatedly.
       CALL obj%SetNewStat(math%no)
@@ -196,17 +196,17 @@ MODULE PROCEDURE obj_Open
     ELSE IF (obj%IsWrite()) THEN
       acc = H5F_ACC_RDWR_F
       CALL H5FOPEN_F(obj%fullname%Chars(), acc, obj%file_id, ierr, &
-        access_prp=plist_id)
+                     access_prp=plist_id)
 
     ELSE IF (obj%IsRead()) THEN
       acc = H5F_ACC_RDONLY_F
       CALL H5FOPEN_F(obj%fullname%chars(), acc, obj%file_id, ierr, &
-        access_prp=plist_id)
+                     access_prp=plist_id)
 
     ELSE
       CALL e%RaiseError(modName // '::' // myName // " - " // &
-        'Unrecognized access mode! The file is not' // &
-        ' set as either new, read, or write!')
+                        'Unrecognized access mode! The file is not' // &
+                        ' set as either new, read, or write!')
     END IF
 
 #ifdef DEBUG_VER
@@ -224,7 +224,7 @@ MODULE PROCEDURE obj_Open
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Open
 
@@ -241,7 +241,7 @@ MODULE PROCEDURE obj_Close
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   lastStopOnError = e%isStopOnError()
@@ -267,7 +267,7 @@ MODULE PROCEDURE obj_Close
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Close
 
@@ -279,50 +279,52 @@ MODULE PROCEDURE obj_Delete
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'obj_Delete()'
 #endif
-  CHARACTER(EXCEPTION_MAX_MESG_LENGTH) :: emesg
+  CHARACTER(EXCEPTION_MAX_MESG_LENGTH) :: emesg, iomsg
   TYPE(String) :: fileName
   INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (.NOT. obj%isinit) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
     RETURN
   END IF
 
-!So, HDF5 is special in that the unitno assigned isn't used in the
-!fopen() operation.  So, regardless of the %IsOpen() status, it needs
-!to be opened.
+  !So, HDF5 is special in that the unitno assigned isn't used in the
+  !fopen() operation.  So, regardless of the %IsOpen() status, it needs
+  !to be opened.
   fileName = obj%GetFilePath() // "/" // obj%GetFileName() // &
     obj%GetFileExt()
 
-  OPEN(UNIT=obj%unitno, FILE=fileName%chars(), IOSTAT=ierr)
+  iomsg = ''
+  OPEN(UNIT=obj%unitno, FILE=fileName%chars(), ACTION='READ', &
+       IOSTAT=ierr, iomsg=iomsg)
 
 #ifdef DEBUG_VER
-  WRITE(emesg, '(a,i4,a,i4)') 'Error deleting file (UNIT=', &
-    obj%unitno, ' ) IOSTAT=', ierr
-  CALL AssertError1(ierr .EQ. 0, myName, emesg)
+  WRITE(emesg, '(a,i4,a,i4,a)') 'Error opening file (UNIT=', &
+    obj%unitno, ' ) IOSTAT=', ierr, ' IOMSG='
+  CALL AssertError1(ierr .EQ. 0, myName, TRIM(emesg) // TRIM(iomsg))
 #endif
 
-  CLOSE(UNIT=obj%unitno, STATUS='DELETE', IOSTAT=ierr)
+  CLOSE(UNIT=obj%unitno, STATUS='DELETE', IOSTAT=ierr, iomsg=iomsg)
 
 #ifdef DEBUG_VER
-  WRITE(emesg, '(a,i4,a,i4)') 'Error deleting file (UNIT=', &
-    obj%unitno, ' ) IOSTAT=', ierr
-  CALL AssertError1(ierr .EQ. 0, myName, emesg)
+  WRITE(emesg, '(a,i4,a,i4,a)') 'Error deleting file (UNIT=', &
+    obj%unitno, ' ) IOSTAT=', ierr, ' IOMSG='
+  CALL AssertError1(ierr .EQ. 0, myName, TRIM(emesg) // TRIM(iomsg))
 #endif
 
   CALL obj%SetOpenStat(math%no)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Delete
 
@@ -337,17 +339,16 @@ MODULE PROCEDURE obj_Initiate
   TYPE(String) :: fpath, fname, fext, mode_in, file_
   INTEGER(I4B) :: unitno, ierr
   LOGICAL(LGT) :: ostat, exists
-  CHARACTER(LEN(filename)) :: tempchars
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(.NOT. obj%isInit, myName, &
-    ' - HDF5file ' // obj%GetFileName() // &
-    ' is already initialized!')
+                    ' - HDF5file ' // obj%GetFileName() // &
+                    ' is already initialized!')
 #endif
 
   file_ = TRIM(filename)
@@ -373,7 +374,7 @@ MODULE PROCEDURE obj_Initiate
 #ifdef DEBUG_VER
   IF (ierr .NE. 0_I4B .AND. ierr .NE. -1_I4B) THEN
     CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-      'error occured while creating the directory')
+                      'error occured while creating the directory')
   END IF
 #endif
 
@@ -395,40 +396,43 @@ MODULE PROCEDURE obj_Initiate
 
 #ifdef DEBUG_VER
     CALL AssertError1(exists, myName, &
-      ' - HDF5 file ' // filename // ' is being opened with ' // &
-      'mode READ but does not exist.')
+                      ' - HDF5 file ' // filename // &
+                      ' is being opened with ' // &
+                      'mode READ but does not exist.')
 #endif
-    CALL obj%SetWriteStat(.FALSE.)
-    CALL obj%SetReadStat(.TRUE.)
+    CALL obj%SetWriteStat(math%no)
+    CALL obj%SetReadStat(math%yes)
 
   CASE ('WRITE')
     INQUIRE(FILE=filename, EXIST=exists)
 
 #ifdef DEBUG_VER
     CALL AssertError1(exists, myName, &
-      ' - HDF5 file ' // filename // ' is being opened with ' // &
-      'mode WRITE but does not exist.')
+                      ' - HDF5 file ' // filename // &
+                      ' is being opened with ' // &
+                      'mode WRITE but does not exist.')
 #endif
-    CALL obj%SetWriteStat(.TRUE.)
-    CALL obj%SetReadStat(.FALSE.)
+    CALL obj%SetWriteStat(math%yes)
+    CALL obj%SetReadStat(math%no)
 
   CASE ('OVERWRITE', 'READWRITE')
     INQUIRE(FILE=filename, EXIST=exists)
 
 #ifdef DEBUG_VER
     CALL AssertError1(exists, myName, &
-      ' - HDF5 file ' // filename // ' is being opened with ' // &
-      'mode OVERWRITE but does not exist.')
+                      ' - HDF5 file ' // filename // &
+                      ' is being opened with ' // &
+                      'mode OVERWRITE but does not exist.')
 #endif
-    CALL obj%SetWriteStat(.TRUE.)
-    CALL obj%SetOverwriteStat(.TRUE.)
-    CALL obj%SetReadStat(.TRUE.)
+    CALL obj%SetWriteStat(math%yes)
+    CALL obj%SetOverwriteStat(math%yes)
+    CALL obj%SetReadStat(math%yes)
 
   CASE ('NEW')
-    CALL obj%SetWriteStat(.TRUE.)
-    CALL obj%SetReadStat(.TRUE.)
-    CALL obj%SetNewStat(.TRUE.)
-    CALL obj%SetOverwriteStat(.TRUE.)
+    CALL obj%SetWriteStat(math%yes)
+    CALL obj%SetReadStat(math%yes)
+    CALL obj%SetNewStat(math%yes)
+    CALL obj%SetOverwriteStat(math%yes)
 
   CASE DEFAULT
 #ifdef DEBUG_VER
@@ -452,12 +456,12 @@ MODULE PROCEDURE obj_Initiate
       obj%unitno = unitno
     END IF
   END DO
-  obj%isinit = .TRUE.
+  obj%isinit = math%yes
   nhdf5fileinuse = nhdf5fileinuse + 1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Initiate
 
@@ -473,19 +477,19 @@ MODULE PROCEDURE obj_Deallocate
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   IF (.NOT. obj%isInit) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
     RETURN
   END IF
 
   !Logical to close or delete the file.
-  bool = .FALSE.
+  bool = math%no
   IF (PRESENT(delete)) bool = delete
   IF (bool) THEN
     CALL obj%Delete()
@@ -497,19 +501,19 @@ MODULE PROCEDURE obj_Deallocate
   ! HDF5 library are complete.
   nhdf5fileinuse = nhdf5fileinuse - 1
   IF (libh5Open .AND. (nhdf5fileinuse == 0)) CALL HDF5Close()
-  obj%isinit = .FALSE.
-  obj%newstat = .FALSE.
-  obj%hasCompression = .FALSE.
+  obj%isinit = math%no
+  obj%newstat = math%no
+  obj%hasCompression = math%no
   obj%zlibOpt = -1
   obj%fullname = ''
   obj%unitno = -1
-  obj%overwriteStat = .FALSE.
+  obj%overwriteStat = math%no
 
   CALL AbstractFileDeallocate(obj)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Deallocate
 
@@ -524,14 +528,14 @@ MODULE PROCEDURE obj_SetOverwriteStat
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   obj%overwriteStat = bool
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetOverwriteStat
 
@@ -562,14 +566,14 @@ MODULE PROCEDURE obj_SetNewStat
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   obj%newstat = bool
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetNewStat
 
@@ -589,18 +593,18 @@ MODULE PROCEDURE obj_Ls
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
-    "File not Initialized")
+                    "File not Initialized")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
-    'HDF5file ' // obj%GetFileName() // &
-    ' is not opened!')
+                    'HDF5file ' // obj%GetFileName() // &
+                    ' is not opened!')
 #endif
 
 ! Make sure the object is initialized
@@ -611,7 +615,7 @@ MODULE PROCEDURE obj_Ls
   IF (.NOT. obj%IsGroup(path)) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
     RETURN
   END IF
@@ -621,26 +625,26 @@ MODULE PROCEDURE obj_Ls
 
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myName, &
-    'Unable to open file.')
+                    'Unable to open file.')
 #endif
 
   CALL H5GGET_INFO_F(grp_id, store_type, nlinks, max_corder, ierr)
 
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myName, &
-    'Unable to get group information.')
+                    'Unable to get group information.')
 #endif
 
   ALLOCATE(objs(nlinks))
   DO i = 0, nlinks - 1
     CALL H5LGET_NAME_BY_IDX_F(obj%file_id, TRIM(path), &
-      H5_INDEX_NAME_F, H5_ITER_INC_F, i, &
-      tmpchar, ierr)
+                              H5_INDEX_NAME_F, H5_ITER_INC_F, i, &
+                              tmpchar, ierr)
     objs(i + 1) = TRIM(tmpchar)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ierr .EQ. 0, myName, &
-      'Unable to get object name.')
+                      'Unable to get object name.')
 #endif
 
   END DO
@@ -649,12 +653,12 @@ MODULE PROCEDURE obj_Ls
 
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myName, &
-    "Unable to close group.")
+                    "Unable to close group.")
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Ls
 
@@ -673,27 +677,27 @@ MODULE PROCEDURE obj_Mkdir
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myname // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myname, &
-    "file object is not initialized.")
+                    "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myname, &
-    "file object is not open.")
+                    "file object is not open.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsWrite(), myname, &
-    "file object does not have write access.")
+                    "file object does not have write access.")
 #endif
 
 ! Make sure the object is initialized
 ! Convert the path to use slashes
-  lastslash = INDEX(path, '/', .TRUE.)
+  lastslash = INDEX(path, '/', math%yes)
   IF (lastslash > 1) THEN
     path3 = path(1:lastslash - 1)
     IF (.NOT. obj%PathExists(path3%chars())) THEN
@@ -704,14 +708,14 @@ MODULE PROCEDURE obj_Mkdir
   CALL H5LEXISTS_F(obj%file_id, path, dset_exists, ierr)
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myname, &
-    'invalid group path: ' // path)
+                    'invalid group path: ' // path)
 #endif
 
 ! If group exists, do nothing, but only if overwrites are allowed
   IF (obj%overwriteStat .AND. dset_exists) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myname // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
     RETURN
   END IF
@@ -730,7 +734,7 @@ MODULE PROCEDURE obj_Mkdir
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myname // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Mkdir
 
@@ -749,18 +753,18 @@ MODULE PROCEDURE obj_Mkalldir
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
-    "file object is not Initialized.")
+                    "file object is not Initialized.")
 
   CALL AssertError1(obj%IsOpen(), myName, &
-    "file object is not open.")
+                    "file object is not open.")
 
   CALL AssertError1(obj%IsWrite(), myName, &
-    "file object does not have write access.")
+                    "file object does not have write access.")
 #endif
 
 ! Make sure the object is initialized
@@ -783,7 +787,7 @@ MODULE PROCEDURE obj_Mkalldir
 
 #ifdef DEBUG_VER
       CALL AssertError1(ierr .EQ. 0, myName, &
-        'Failed to close a HDF group')
+                        'Failed to close a HDF group')
 #endif
     END IF
   END DO
@@ -795,21 +799,21 @@ MODULE PROCEDURE obj_Mkalldir
 
 #ifdef DEBUG_VER
     CALL AssertError1(ierr .EQ. 0, myName, &
-      'Failed to create a HDF group')
+                      'Failed to create a HDF group')
 #endif
 
     CALL H5GCLOSE_F(group_id, ierr)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ierr .EQ. 0, myName, &
-      'Failed to close HDF group')
+                      'Failed to close HDF group')
 #endif
 
   END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Mkalldir
 
@@ -826,19 +830,19 @@ MODULE PROCEDURE obj_Ngrp
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 ! Make sure the object is initialized
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
-    "file object is not initialized.")
+                    "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
-    "file object is not open.")
+                    "file object is not open.")
 #endif
 
   CALL H5GOPEN_F(obj%file_id, TRIM(path), grp_id, ierr)
@@ -849,21 +853,21 @@ MODULE PROCEDURE obj_Ngrp
   CALL H5GGET_INFO_F(grp_id, store_type, nlinks, max_corder, ierr)
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myName, &
-    'Could not get group info in HDF5 file.')
+                    'Could not get group info in HDF5 file.')
 #endif
 
 ! Close the group
   CALL H5GCLOSE_F(grp_id, ierr)
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myName, &
-    'Failed to close HDF group')
+                    'Failed to close HDF group')
 #endif
 
   ans = nlinks
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Ngrp
 
@@ -880,11 +884,11 @@ MODULE PROCEDURE obj_IsGroup
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 ! Make sure the object is initialized and opened
-  ans = .FALSE.
+  ans = math%no
 
   IF (obj%isinit .AND. obj%IsOpen()) THEN
     ans = obj%PathExists(path)
@@ -893,7 +897,7 @@ MODULE PROCEDURE obj_IsGroup
       !Need to get the object ID from the path...
       CALL H5OOPEN_F(obj%file_id, path, obj_id, ierr)
       IF (ierr == -1) THEN
-        ans = .FALSE.
+        ans = math%no
       ELSE
         CALL h5iget_type_f(obj_id, TYPE, ierr)
         ans = (TYPE .EQ. H5I_GROUP_F)
@@ -903,7 +907,7 @@ MODULE PROCEDURE obj_IsGroup
 
 #ifdef DEBUG_VER
       CALL AssertError1(ierr .EQ. 0, myName, &
-        'Failed to close HDF object.')
+                        'Failed to close HDF object.')
 #endif
 
     END IF
@@ -911,7 +915,7 @@ MODULE PROCEDURE obj_IsGroup
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_IsGroup
 
@@ -929,25 +933,25 @@ MODULE PROCEDURE obj_PathExists
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
-  ans = .FALSE.
+  ans = math%no
   IF (obj%isinit .AND. obj%IsOpen()) THEN
     strpath = TRIM(path)
     CALL strpath%split(segments, '/')
-    ans = .TRUE.
+    ans = math%yes
     path2 = ''
-    DO iseg = 1, SIZE(segments)
+    aloop: DO iseg = 1, SIZE(segments)
       path2 = path2 // '/' // segments(iseg)
       CALL H5LEXISTS_F(obj%file_id, TRIM(path2%chars()), ans, ierr)
-      IF (.NOT. ans) EXIT
-    END DO
+      IF (.NOT. ans) EXIT aloop
+    END DO aloop
   END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_PathExists
 
@@ -973,7 +977,7 @@ MODULE PROCEDURE obj_CreateHardLink
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
@@ -990,7 +994,7 @@ MODULE PROCEDURE obj_CreateHardLink
   CALL H5OOPEN_F(obj%file_id, TRIM(source_path), src_obj_id, ierr)
 !Create the link target object ID
   CALL H5LCREATE_HARD_F(src_obj_id, TRIM(source_path), obj%file_id, &
-    TRIM(link_path), ierr)
+                        TRIM(link_path), ierr)
 
 !Close the source object
 !CALL H5Oclose_f(src_obj_id,ierr)
@@ -998,7 +1002,7 @@ MODULE PROCEDURE obj_CreateHardLink
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_CreateHardLink
 
@@ -1016,43 +1020,64 @@ MODULE PROCEDURE obj_GetChunkSize
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
-    "file object is not initialized.")
+                    "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
-    "file object is not open.")
+                    "file object is not open.")
 #endif
 
-  IF (obj%PathExists(path)) THEN
-    !Get the data set ID, associated data space, and rank
-    CALL H5DOPEN_F(obj%file_id, TRIM(path), dset_id, ierr)
-    CALL H5DGET_SPACE_F(dset_id, dspace_id, ierr)
-    CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, ierr)
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%PathExists(path), myName, &
+                    "path: " // path // " does not exit.")
+#endif
 
-    !Get the data set creation property list
-    CALL H5DGET_CREATE_PLIST_F(dset_id, dcpl, ierr)
+  !Get the data set ID, associated data space, and rank
+  CALL H5DOPEN_F(obj%file_id, TRIM(path), dset_id, ierr)
+  CALL H5DGET_SPACE_F(dset_id, dspace_id, ierr)
+  CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, ierr)
 
-    !Get the data space layout and chunk size
-    CALL H5PGET_LAYOUT_F(dcpl, layout, ierr)
-    IF (layout == H5D_CHUNKED_F) THEN
-      ALLOCATE(cdims(ndims))
-      cdims = -1
-      ALLOCATE(cdimsH5(ndims))
-      cdimsH5 = -1
-      CALL H5PGET_CHUNK_F(dcpl, ndims, cdimsH5, ierr)
-      cdims = cdimsH5
-    END IF
+  !Get the data set creation property list
+  CALL H5DGET_CREATE_PLIST_F(dset_id, dcpl, ierr)
+
+  !Get the data space layout and chunk size
+  CALL H5PGET_LAYOUT_F(dcpl, layout, ierr)
+  IF (layout == H5D_CHUNKED_F) THEN
+    ALLOCATE(cdims(ndims))
+    cdims = -1
+    ALLOCATE(cdimsH5(ndims))
+    cdimsH5 = -1
+    CALL H5PGET_CHUNK_F(dcpl, ndims, cdimsH5, ierr)
+    cdims = cdimsH5
   END IF
+
+  CALL H5PCLOSE_F(dcpl, ierr)
+#ifdef DEBUG_VER
+  CALL AssertError1(ierr .EQ. 0, myName, &
+                    'Failed to close the creation property list.')
+#endif
+
+  CALL H5SCLOSE_F(dspace_id, ierr)
+#ifdef DEBUG_VER
+  CALL AssertError1(ierr .EQ. 0, myName, &
+                    'Failed to close the dataspace.')
+#endif
+
+  CALL H5DCLOSE_F(dset_id, ierr)
+#ifdef DEBUG_VER
+  CALL AssertError1(ierr .EQ. 0, myName, &
+                    'Failed to close the dataset.')
+#endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetChunkSize
 
@@ -1073,10 +1098,10 @@ MODULE PROCEDURE obj_IsCompressed
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
-  ans = .FALSE.
+  ans = math%no
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, "file object is not initialized.")
@@ -1092,7 +1117,7 @@ MODULE PROCEDURE obj_IsCompressed
 
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-      '[END] ')
+                            '[END] ')
 #endif
 
     RETURN
@@ -1116,10 +1141,10 @@ MODULE PROCEDURE obj_IsCompressed
 
   mainloop: DO i = 0, nfilters - 1
     CALL H5PGET_FILTER_F(dcpl, i, flags, nelmts, cd_values, &
-      namelen, filter_name, filter_id, ierr)
+                         namelen, filter_name, filter_id, ierr)
     ans = ANY(filter_id .EQ. [H5Z_FILTER_DEFLATE_F, &
-      H5Z_FILTER_SZIP_F, &
-      H5Z_FILTER_NBIT_F])
+                              H5Z_FILTER_SZIP_F, &
+                              H5Z_FILTER_NBIT_F])
     IF (ans) EXIT mainloop
   END DO mainloop
 
@@ -1128,7 +1153,7 @@ MODULE PROCEDURE obj_IsCompressed
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_IsCompressed
 
@@ -1149,7 +1174,7 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ERROR = 0
@@ -1158,19 +1183,19 @@ MODULE PROCEDURE preWrite
 #ifdef DEBUG_VER
 ! error = -1
   CALL AssertError1(obj%isInit, myName, &
-    "file object is not initialized.")
+                    "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
 ! error = -3
   CALL AssertError1(obj%IsOpen(), myName, &
-    "file object is not open.")
+                    "file object is not open.")
 #endif
 
 #ifdef DEBUG_VER
 ! error = -2
   CALL AssertError1(obj%IsWrite(), myName, &
-    "file object does not have write access.")
+                    "file object does not have write access.")
 #endif
 
 ! Make sure the object is initialized
@@ -1180,7 +1205,7 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not create parameter list.')
+                    'Could not create parameter list.')
 #endif
 
   IF (RANK .EQ. 0) THEN
@@ -1188,14 +1213,14 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      'Could not create scalar dataspace.')
+                      'Could not create scalar dataspace.')
 #endif
 
     CALL H5SCREATE_F(H5S_SCALAR_F, dspace_id, ERROR)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      'Could not create scalar dataspace.')
+                      'Could not create scalar dataspace.')
 #endif
 
   ELSE
@@ -1206,7 +1231,7 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      'Could not create dataspace.')
+                      'Could not create dataspace.')
 #endif
 
     ! Local dataspace
@@ -1214,14 +1239,14 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      ' Could not create dataspace.')
+                      ' Could not create dataspace.')
 #endif
 
     ! Setup the DSpace creation property list to use ZLIB compression
     ! (requires chunking).
     ! Do not compress on scalar data sets.
     IF (obj%hasCompression .AND. &
-      .NOT. (RANK .EQ. 1 .AND. gdims(1) .EQ. 1)) THEN
+        .NOT. (RANK .EQ. 1 .AND. gdims(1) .EQ. 1)) THEN
 
       !Compute optimal chunk size and specify in property list.
       CALL compute_chunk_size(mem, gdims, cdims)
@@ -1237,8 +1262,8 @@ MODULE PROCEDURE preWrite
     END IF
   END IF
 
-!Create the path if it doesn't exist
-  lastslash = INDEX(path, '/', .TRUE.)
+  !Create the path if it doesn't exist
+  lastslash = INDEX(path, '/', math%yes)
   IF (lastslash > 1) THEN
     path2 = path(1:lastslash - 1)
     IF (.NOT. obj%PathExists(path2%chars())) THEN
@@ -1246,12 +1271,12 @@ MODULE PROCEDURE preWrite
     END IF
   END IF
 
-! Create the dataset, if necessary
+  ! Create the dataset, if necessary
   CALL H5LEXISTS_F(file_id, path, dset_exists, ERROR)
 
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'invalid group path:' // path)
+                    'invalid group path:' // path)
 #endif
 
   IF (obj%overwriteStat .AND. dset_exists) THEN
@@ -1261,7 +1286,7 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      ' Could not open dataset:' // path)
+                      ' Could not open dataset:' // path)
 #endif
 
     ! Get the old and new data type sizes
@@ -1269,21 +1294,21 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      'Could not retrieve data type:' // path)
+                      'Could not retrieve data type:' // path)
 #endif
 
     CALL H5TGET_SIZE_F(oldmem, oldsize, ERROR)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      'Could not retrieve old data type size:' // path)
+                      'Could not retrieve old data type size:' // path)
 #endif
 
     CALL H5TGET_SIZE_F(mem, newsize, ERROR)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      'Could not retrieve new data type size:' // path)
+                      'Could not retrieve new data type size:' // path)
 #endif
 
     ! Check that the size of the data type is equal to or less than the
@@ -1292,8 +1317,8 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
     CALL AssertError1(oldsize .GE. newsize, myName, &
-      'Size of new data is greater than size of pre-existing data &
-    & type:' // path)
+                      'Size of new data is greater than size of ' // &
+                      'pre-existing data  type:' // path)
 #endif
 
     ! For non-scalar data, check that the size of the array equal to
@@ -1304,16 +1329,22 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
     CALL AssertError1(oldsize .GE. (newsize * PRODUCT(gdims)), myName, &
-      'Storage size of the pre-existing dataset is too small:' &
-      // path)
+                      'Storage size of the pre-existing dataset is too ' // &
+                      'small:' // path)
+#endif
+
+    CALL H5TCLOSE_F(oldmem, ERROR)
+#ifdef DEBUG_VER
+    CALL AssertError1(ERROR .EQ. 0, myName, &
+                      'Could not close old data type:' // path)
 #endif
   ELSE
     CALL H5DCREATE_F(file_id, path, mem, gspace_id, dset_id, ERROR, &
-      dcpl_id=plist_id)
+                     dcpl_id=plist_id)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .EQ. 0, myName, &
-      'Could not create dataset:' // path)
+                      'Could not create dataset:' // path)
 #endif
 
   END IF
@@ -1323,26 +1354,33 @@ MODULE PROCEDURE preWrite
 
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not close parameter list.')
+                    'Could not close parameter list.')
+#endif
+
+! Close the dataspace created above; H5DGET_SPACE_F returns a new one
+  CALL H5SCLOSE_F(gspace_id, ERROR)
+#ifdef DEBUG_VER
+  CALL AssertError1(ERROR .EQ. 0, myName, &
+                    'Could not close the created dataspace.')
 #endif
 
 ! Select the global dataspace for the dataset
   CALL H5DGET_SPACE_F(dset_id, gspace_id, ERROR)
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not select global dataspace for the dataset.')
+                    'Could not select global dataspace for the dataset.')
 #endif
 
 ! Create a property list for the write operation
   CALL H5PCREATE_F(H5P_DATASET_XFER_F, plist_id, ERROR)
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not create property list for write operation.')
+                    'Could not create property list for write operation.')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE preWrite
 
@@ -1359,7 +1397,7 @@ MODULE PROCEDURE compute_chunk_size
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   CALL H5TGET_SIZE_F(mem, bsize, error)
@@ -1371,7 +1409,7 @@ MODULE PROCEDURE compute_chunk_size
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE compute_chunk_size
 
@@ -1386,27 +1424,27 @@ MODULE PROCEDURE postWrite
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
-    "file object is not initialized.")
+                    "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
-    "file object is not open.")
+                    "file object is not open.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsWrite(), myName, &
-    "file object does not have write access.")
+                    "file object does not have write access.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not write to the dataset.')
+                    'Could not write to the dataset.')
 #endif
 
 ! Close the dataset
@@ -1414,7 +1452,7 @@ MODULE PROCEDURE postWrite
 
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not close the dataset.')
+                    'Could not close the dataset.')
 #endif
 
 ! Close the dataspace
@@ -1422,24 +1460,24 @@ MODULE PROCEDURE postWrite
 
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not close the dataspace.')
+                    'Could not close the dataspace.')
 #endif
 
   CALL H5SCLOSE_F(gspace_id, ERROR)
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not close the dataspace.')
+                    'Could not close the dataspace.')
 #endif
 
   CALL H5PCLOSE_F(plist_id, ERROR)
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Could not close the parameter list.')
+                    'Could not close the parameter list.')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE postWrite
 
@@ -1456,7 +1494,7 @@ MODULE PROCEDURE preRead
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   ERROR = 0
@@ -1465,32 +1503,32 @@ MODULE PROCEDURE preRead
 #ifdef DEBUG_VER
 ! error = -1
   CALL AssertError1(obj%isInit, myName, &
-    "file object is not initialized.")
+                    "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
-    "file object is not open.")
+                    "file object is not open.")
 #endif
 
 #ifdef DEBUG_VER
 ! error = -2
   CALL AssertError1(obj%IsRead(), myName, &
-    "file object does not have read access.")
+                    "file object does not have read access.")
 #endif
 
 ! Open the dataset
   CALL H5DOPEN_F(obj%file_id, path, dset_id, ERROR)
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Failed to open dataset.')
+                    'Failed to open dataset.')
 #endif
 
 ! Get dataset dimensions for allocation
   CALL H5DGET_SPACE_F(dset_id, dspace_id, ERROR)
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Failed to obtain the dataspace.')
+                    'Failed to obtain the dataspace.')
 #endif
 
 ! Make sure the rank is right
@@ -1499,19 +1537,19 @@ MODULE PROCEDURE preRead
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .GE. 0, myName, &
-      'Failed to retrieve number of dataspace dimensions.')
+                      'Failed to retrieve number of dataspace dimensions.')
 #endif
 
 #ifdef DEBUG_VER
     CALL AssertError1(ndims .EQ. RANK, myName, &
-      'Using wrong read function for rank.')
+                      'Using wrong read function for rank.')
 #endif
 
     CALL H5SGET_SIMPLE_EXTENT_DIMS_F(dspace_id, dims, maxdims, ERROR)
 
 #ifdef DEBUG_VER
     CALL AssertError1(ERROR .GE. 0, myName, &
-      'Failed to retrieve dataspace dimensions.')
+                      'Failed to retrieve dataspace dimensions.')
 #endif
 
   ELSE
@@ -1520,7 +1558,7 @@ MODULE PROCEDURE preRead
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE preRead
 
@@ -1539,7 +1577,7 @@ MODULE PROCEDURE obj_GetDataShape
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   error = 0
@@ -1554,27 +1592,27 @@ MODULE PROCEDURE obj_GetDataShape
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsRead(), myName, &
-    "file object does not have read access.")
+                    "file object does not have read access.")
 #endif
 
   ! Open the dataset
   CALL H5DOPEN_F(obj%file_id, dsetname, dset_id, error)
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to open dataset.')
+                    'Failed to open dataset.')
 #endif
 
   CALL H5DGET_SPACE_F(dset_id, dspace_id, error)
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to obtain the dataspace.')
+                    'Failed to obtain the dataspace.')
 #endif
 
 ! Get the number of dimensions
   CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, error)
 #ifdef DEBUG_VER
   CALL AssertError1(error .GE. 0, myName, &
-    'Failed to retrieve number of dataspace dimensions.')
+                    'Failed to retrieve number of dataspace dimensions.')
 #endif
 
   ! Get the dimensions
@@ -1583,7 +1621,7 @@ MODULE PROCEDURE obj_GetDataShape
   CALL H5SGET_SIMPLE_EXTENT_DIMS_F(dspace_id, dims, maxdims, error)
 #ifdef DEBUG_VER
   CALL AssertError1(error .GE. 0, myName, &
-    'Failed to retrieve dataspace dimensions.')
+                    'Failed to retrieve dataspace dimensions.')
 #endif
 
   ! Copy to the Futility integer type
@@ -1595,7 +1633,7 @@ MODULE PROCEDURE obj_GetDataShape
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetDataShape
 
@@ -1613,7 +1651,7 @@ MODULE PROCEDURE obj_GetDataType
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   error = 0
@@ -1628,7 +1666,7 @@ MODULE PROCEDURE obj_GetDataType
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsRead(), myName, &
-    "file object does not have read access.")
+                    "file object does not have read access.")
 #endif
 
 ! Open the dataset
@@ -1641,19 +1679,19 @@ MODULE PROCEDURE obj_GetDataType
   CALL H5DGET_TYPE_F(dset_id, dtype, error)
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    ' Failed to retrive dataset type identifier.')
+                    ' Failed to retrive dataset type identifier.')
 #endif
 
   CALL H5TGET_CLASS_F(dtype, class_type, error)
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to retrive dataset class.')
+                    'Failed to retrive dataset class.')
 #endif
 
   CALL H5TGET_PRECISION_F(dtype, dtype_prec, error)
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to retrive dataset precision.')
+                    'Failed to retrive dataset precision.')
 #endif
 
   dataType = 'N/A'
@@ -1674,7 +1712,7 @@ MODULE PROCEDURE obj_GetDataType
   ELSE
 #ifdef DEBUG_VER
     CALL AssertError1(math%no, myName, &
-      'Unsupported data type ')
+                      'Unsupported data type ')
 #endif
   END IF
 
@@ -1683,7 +1721,7 @@ MODULE PROCEDURE obj_GetDataType
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetDataType
 
@@ -1699,22 +1737,22 @@ MODULE PROCEDURE postRead
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%isInit, myName, &
-    "file object is not initialized.")
+                    "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
-    "file object is not open.")
+                    "file object is not open.")
 #endif
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsRead(), myName, &
-    "file object does not have read access.")
+                    "file object does not have read access.")
 #endif
 
 ! Make sure the object is initialized
@@ -1729,17 +1767,19 @@ MODULE PROCEDURE postRead
 
         !This is 64/128MB
         CALL e%RaiseWarning(modName // '::' // myName // &
-          ' - Potentially high memory usage' // &
-          'when reading decompressed dataset "' // TRIM(path) // '".' // &
-          CHAR(10) // CHAR(10) // &
-          'Try decompressing file before rerunning:' // CHAR(10) // &
-          '$ h5repack -f NONE "' // obj%fullname%Chars() // '" "' // &
-          obj%fullname%Chars() // '.uncompressed"')
+                            ' - Potentially high memory usage' // &
+                            'when reading decompressed dataset "' // &
+                            TRIM(path) // '".' // CHAR(10) // CHAR(10) // &
+                            'Try decompressing file before rerunning:' // &
+                            CHAR(10) // '$ h5repack -f NONE "' // &
+                            obj%fullname%Chars() // '" "' // &
+                            obj%fullname%Chars() // '.uncompressed"')
       END IF
     END IF
 
     CALL e%RaiseError(modName // '::' // myName // " - " // &
-      'Failed to read data from dataset"' // TRIM(path) // '".')
+                      'Failed to read data from dataset"' // TRIM(path) // &
+                      '".')
   END IF
 #endif
 
@@ -1748,19 +1788,19 @@ MODULE PROCEDURE postRead
 
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Failed to close dataset "' // TRIM(path))
+                    'Failed to close dataset "' // TRIM(path))
 #endif
 
 ! Close the dataspace
   CALL H5SCLOSE_F(dspace_id, ERROR)
 #ifdef DEBUG_VER
   CALL AssertError1(ERROR .EQ. 0, myName, &
-    'Failed to close dataspace for "' // TRIM(path))
+                    'Failed to close dataspace for "' // TRIM(path))
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE postRead
 

@@ -43,6 +43,13 @@ None.
 
 #### A1. Leaked HDF5 handles
 
+- Status (2026-10-26): source changed, not built yet. `GetChunkSize`
+  closes `dcpl`, `dspace_id` and `dset_id`; `preWrite` closes the created
+  dataspace before `H5Dget_space` and closes `oldmem`; ReadString closes
+  every type from `H5Dget_type` (12 places, not the predefined type in
+  `Read_c1`); ReadAttribute closes the type of a String attribute. The
+  checks of the close calls are only in DEBUG mode.
+
 - `obj_GetChunkSize` (Constructor:1009): `dset_id`, `dspace_id` and `dcpl`
   are never closed. The file uses `H5F_CLOSE_SEMI`, so a later `H5Fclose`
   **fails** while the dataset is open: the file stays open and the error is
