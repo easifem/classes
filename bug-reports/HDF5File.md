@@ -38,7 +38,7 @@ a bug and should pass after the fix:
 | ReadSlab_test_1 | ReadSlab of integer, 8-bit and Write datasets | passes (B8) |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
 | Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
-| RootGroup_test_1 | root group: PathExists, IsGroup, Ls, attributes | expected to pass after A9 |
+| RootGroup_test_1 | root group: PathExists, IsGroup, Ls, attributes | passes (A9 fixed) |
 
 Storage_test_1 prints `#` lines with the file size and the write/read
 times. Run it before and after each change to compare.
@@ -259,6 +259,31 @@ Problem (before the fix):
   `maxdims` and `H5Dset_extent`.
 - Test: Overwrite_test_1.
 
+### A9. IsGroup("/") is false, so Ls("/") returns nothing
+
+- Fixed 2026-10-26. `String%split` does not give empty segments for
+  "/", so the prefix built for the root was "//", not a valid link
+  name for `H5Lexists`. `PathExists` now returns true for a path of
+  slashes only (the root group) and skips segments of slashes only (double
+  slashes). `open_object` (used by the attribute routines) checks the path
+  with `PathExists` instead of `H5Lexists`, so attributes of "/" work
+  (B7 step 3).
+- Tests: Ls_test_1 and RootGroup_test_1 (new) pass. Full suite
+  (2026-10-26): 52 tests, all pass.
+
+Problem (before the fix):
+
+
+- `obj_PathExists` (Constructor) splits the path at `/` and calls
+  `H5Lexists` on each prefix. For the root `"/"` the prefixes built from
+  the empty segments are most likely not valid links (not checked yet), so
+  `PathExists("/")` is false; `IsGroup("/")` then returns false, and `Ls`
+  returns `objs` unallocated for the root group. Found by Ls_test_1
+  (`IsGroup("/")` is F while `PathExists("/a")` is T); not caused by A1 or
+  A2, which do not change these routines.
+- Proposal: return true for `"/"` (the root group always exists) before
+  the loop, and skip empty segments.
+
 ## Open
 
 ### A. Correctness
@@ -316,26 +341,6 @@ Problem (before the fix):
   not in the `WRITE` generic. `Read_st3` and `Read_st3_helper` are also not
   in `READ`; only `READ_` has rank 3. So a rank-3 String can be read with
   Read_ but not written.
-
-#### A9. IsGroup("/") is false, so Ls("/") returns nothing
-
-- Status (2026-10-26, not built yet): the cause was the prefixes built
-  from the empty segments of the split path ("/", "//"), which are not
-  valid link names for `H5Lexists`. `PathExists` now returns true for
-  "/" and skips empty segments; `open_object` (used by the attribute
-  routines) checks the path with `PathExists` instead of `H5Lexists`, so
-  attributes of "/" work (B7 step 3).
-- Tests: Ls_test_1, RootGroup_test_1 (new).
-
-- `obj_PathExists` (Constructor) splits the path at `/` and calls
-  `H5Lexists` on each prefix. For the root `"/"` the prefixes built from
-  the empty segments are most likely not valid links (not checked yet), so
-  `PathExists("/")` is false; `IsGroup("/")` then returns false, and `Ls`
-  returns `objs` unallocated for the root group. Found by Ls_test_1
-  (`IsGroup("/")` is F while `PathExists("/a")` is T); not caused by A1 or
-  A2, which do not change these routines.
-- Proposal: return true for `"/"` (the root group always exists) before
-  the loop, and skip empty segments.
 
 #### A8. Minor
 
@@ -438,8 +443,8 @@ Problem (before the fix):
     defined (otherwise they clash with the DFP and I4B versions); they are
     added with their own `GENERIC` statements inside the `#ifdef`.
   - Test: WriteAttribute_test_5 (new).
-- Step 3 (2026-10-26, with A9, not built yet): attributes of the root
-  group `"/"`; RootGroup_test_1.
+- Step 3 (2026-10-26, done with A9): attributes of the root group `"/"`;
+  RootGroup_test_1 passes.
 - Step 4 (open): measure the size of 2000 scalar attributes against 2000
   scalar datasets in Storage_test_1.
 
