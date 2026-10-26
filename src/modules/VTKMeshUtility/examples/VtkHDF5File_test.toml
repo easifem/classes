@@ -1,4 +1,4 @@
-# Common input file for the VTKHDFFile tests which need FEDOF.
+# Common input file for the VtkHDF5File tests which need FEDOF.
 
 [domain]
 filename = "./meshdata/small_tri3_mesh.h5"
@@ -32,10 +32,10 @@ quadOptName = "quadOpt"
 isHomogeneous = true
 quadratureType = "GaussLegendre"
 
-# options read by VTKHDFFile_%ImportFromToml
+# options read by VtkHDF5File_%ImportFromToml
 [vtkhdf]
 isActive = true
-filename = "./VTKHDFFile_test_5.vtkhdf"
+filename = "./VtkHDF5File_test_5.vtkhdf"
 isTransient = true
 frequency = 1
 zlib = -1

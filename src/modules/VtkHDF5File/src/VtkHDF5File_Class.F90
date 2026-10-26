@@ -23,10 +23,10 @@
 ! ParaView (VTK >= 9.3). See
 ! https://docs.vtk.org/en/latest/vtk_file_formats/vtkhdf_file_format/
 !
-! VTKHDFFile_ extends HDF5File_, so all the methods of HDF5File_ can be
+! VtkHDF5File_ extends HDF5File_, so all the methods of HDF5File_ can be
 ! used to write additional data in the same file.
 
-MODULE VTKHDFFile_Class
+MODULE VtkHDF5File_Class
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: math => TypeMathOpt
@@ -41,17 +41,17 @@ USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 PRIVATE
 
-PUBLIC :: VTKHDFFile_
-PUBLIC :: VTKHDFFilePointer_
+PUBLIC :: VtkHDF5File_
+PUBLIC :: VtkHDF5FilePointer_
 PUBLIC :: VTKHDF_VERSION
 
-CHARACTER(*), PARAMETER :: modName = "VTKHDFFile_Class"
+CHARACTER(*), PARAMETER :: modName = "VtkHDF5File_Class"
 
 INTEGER(I4B), PARAMETER :: VTKHDF_VERSION(2) = [2, 2]
-!! Version of VTKHDF format written by VTKHDFFile_
+!! Version of VTKHDF format written by VtkHDF5File_
 
 !----------------------------------------------------------------------------
-!                                                                VTKHDFFile_
+!                                                               VtkHDF5File_
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -110,7 +110,7 @@ INTEGER(I4B), PARAMETER :: VTKHDF_VERSION(2) = [2, 2]
 ! CALL obj%DEALLOCATE()
 !```
 
-TYPE, EXTENDS(HDF5File_) :: VTKHDFFile_
+TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   PRIVATE
   LOGICAL(LGT) :: isRequested = math%yes
   !! output is requested (ImportFromToml)
@@ -202,15 +202,15 @@ CONTAINS
   !! Read point data of a step
   PROCEDURE, PUBLIC, PASS(obj) :: ReadCellData => obj_ReadCellData
   !! Read cell data of a step
-END TYPE VTKHDFFile_
+END TYPE VtkHDF5File_
 
 !----------------------------------------------------------------------------
-!                                                         VTKHDFFilePointer_
+!                                                         VtkHDF5FilePointer_
 !----------------------------------------------------------------------------
 
-TYPE :: VTKHDFFilePointer_
-  CLASS(VTKHDFFile_), POINTER :: ptr => NULL()
-END TYPE VTKHDFFilePointer_
+TYPE :: VtkHDF5FilePointer_
+  CLASS(VtkHDF5File_), POINTER :: ptr => NULL()
+END TYPE VtkHDF5FilePointer_
 
 !----------------------------------------------------------------------------
 !                                       InitiateVTKHDF@ConstructorMethods
@@ -229,7 +229,7 @@ END TYPE VTKHDFFilePointer_
 ! mode = "NEW", isTransient = .TRUE., frequency = 1, zlibOpt = -1.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !   filename : CHARACTER(*) - name of file (.vtkhdf or .hdf)
 !   mode : CHARACTER(*) - "NEW" or "READ"
 !   isTransient : LOGICAL(LGT) - write time steps (Steps group)
@@ -242,10 +242,10 @@ END TYPE VTKHDFFilePointer_
 ! PROGRAM main
 ! USE BaseType, ONLY: math => TypeMathOpt
 ! USE Test_Method, ONLY: OK
-! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
-! CHARACTER(*), PARAMETER :: filename = "VTKHDFFile_test_1.vtkhdf"
-! TYPE(VTKHDFFile_) :: obj
+! CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_1.vtkhdf"
+! TYPE(VtkHDF5File_) :: obj
 ! LOGICAL :: isok
 ! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
 !                         isTransient=math%no)
@@ -262,8 +262,8 @@ END TYPE VTKHDFFilePointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateVTKHDF(obj, filename, mode, isTransient, &
-    frequency, zlibOpt)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+                                       frequency, zlibOpt)
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN), OPTIONAL :: filename
     !! name of file
@@ -302,7 +302,7 @@ END INTERFACE
 ! The file is not opened here. Call InitiateVTKHDF() after this.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !   table : TYPE(toml_table) - parent table
 !
 ! Examples
@@ -312,11 +312,11 @@ END INTERFACE
 ! USE Test_Method, ONLY: OK
 ! USE tomlf, ONLY: toml_table
 ! USE tomlf, ONLY: toml_load
-! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
-! TYPE(VTKHDFFile_) :: obj
+! TYPE(VtkHDF5File_) :: obj
 ! TYPE(toml_table), ALLOCATABLE :: table
-! CALL toml_load(table, "VTKHDFFile_test.toml")
+! CALL toml_load(table, "VtkHDF5File_test.toml")
 ! CALL obj%ImportFromToml(table)
 ! CALL OK(obj%IsActive(), "ImportFromToml")
 ! CALL obj%DEALLOCATE()
@@ -327,7 +327,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml(obj, table)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     TYPE(toml_table), INTENT(INOUT) :: table
     !! parent toml table
@@ -343,14 +343,14 @@ END INTERFACE
 ! summary: Close the file and deallocate the data
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !   Delete : LOGICAL(LGT) - (optional) delete the file
 !
 ! See also: [[obj_InitiateVTKHDF]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj, Delete)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: Delete
     !! delete the file
@@ -363,10 +363,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! summary: Display the content of VTKHDFFile_
+! summary: Display the content of VtkHDF5File_
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !   msg : CHARACTER(*) - message
 !   unitno : INTEGER(I4B) - (optional) unit number
 !
@@ -374,7 +374,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: msg
     !! message
@@ -394,7 +394,7 @@ END INTERFACE
 ! The default value is true. It is set by ImportFromToml.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - output is requested
@@ -403,7 +403,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_IsActive(obj) RESULT(ans)
-    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    CLASS(VtkHDF5File_), INTENT(IN) :: obj
     !! VTKHDF file
     LOGICAL(LGT) :: ans
     !! output is requested
@@ -424,7 +424,7 @@ END INTERFACE
 ! data in the skipped steps.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - data should be written
@@ -433,7 +433,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_IsOutputStep(obj) RESULT(ans)
-    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    CLASS(VtkHDF5File_), INTENT(IN) :: obj
     !! VTKHDF file
     LOGICAL(LGT) :: ans
     !! data should be written
@@ -449,7 +449,7 @@ END INTERFACE
 ! summary: Number of points of the current mesh
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of points (size of point data)
@@ -458,7 +458,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalPoints(obj) RESULT(ans)
-    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    CLASS(VtkHDF5File_), INTENT(IN) :: obj
     !! VTKHDF file
     INTEGER(I4B) :: ans
     !! number of points
@@ -474,7 +474,7 @@ END INTERFACE
 ! summary: Number of cells of the current mesh
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of cells (size of cell data)
@@ -483,7 +483,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalCells(obj) RESULT(ans)
-    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    CLASS(VtkHDF5File_), INTENT(IN) :: obj
     !! VTKHDF file
     INTEGER(I4B) :: ans
     !! number of cells
@@ -507,7 +507,7 @@ END INTERFACE
 ! (moving or adaptive mesh), the mesh is used from the current step.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   mesh : CLASS(AbstractMesh_) - mesh
 !
 ! Examples
@@ -523,12 +523,12 @@ END INTERFACE
 ! USE GlobalData, ONLY: INT8
 ! USE HDF5File_Class, ONLY: HDF5File_
 ! USE Test_Method, ONLY: OK
-! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
-! CHARACTER(*), PARAMETER :: filename = "VTKHDFFile_test_2.vtkhdf"
+! CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_2.vtkhdf"
 ! TYPE(HDF5File_) :: meshfile
 ! TYPE(FEMesh_) :: amesh
-! TYPE(VTKHDFFile_) :: obj
+! TYPE(VtkHDF5File_) :: obj
 ! REAL(DFP), ALLOCATABLE :: xij(:, :), points(:, :), vals(:, :), &
 !                           cellIds(:)
 ! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
@@ -572,7 +572,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteMesh1(obj, mesh)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
     !! mesh
@@ -596,7 +596,7 @@ END INTERFACE
 ! The rules of steps are the same as [[obj_WriteMesh1]].
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   fedof : CLASS(FEDOF_) - FEDOF of the fields
 !   geofedof : CLASS(FEDOF_) - FEDOF of the geometry
 !
@@ -614,14 +614,14 @@ END INTERFACE
 ! USE GlobalData, ONLY: INT8
 ! USE ScalarField_Class, ONLY: ScalarField_
 ! USE Test_Method, ONLY: OK
-! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
-! CHARACTER(*), PARAMETER :: tomlFileName = "VTKHDFFile_test.toml", &
-!                            filename = "VTKHDFFile_test_4.vtkhdf"
+! CHARACTER(*), PARAMETER :: tomlFileName = "VtkHDF5File_test.toml", &
+!                            filename = "VtkHDF5File_test_4.vtkhdf"
 ! TYPE(FEDomain_) :: dom
 ! TYPE(FEDOF_) :: fedof, geofedof
 ! TYPE(ScalarField_) :: u
-! TYPE(VTKHDFFile_) :: obj
+! TYPE(VtkHDF5File_) :: obj
 ! REAL(DFP), ALLOCATABLE :: vals(:, :)
 ! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
 ! INTEGER(INT8), ALLOCATABLE :: types(:)
@@ -654,7 +654,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteMesh2(obj, fedof, geofedof)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CLASS(FEDOF_), INTENT(INOUT) :: fedof
     !! FEDOF of the fields
@@ -678,7 +678,7 @@ END INTERFACE
 ! Nothing is done if the file is not initiated or not transient.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   time : REAL(DFP) - time value of the step
 !
 ! Examples
@@ -694,12 +694,12 @@ END INTERFACE
 ! USE GlobalData, ONLY: INT8
 ! USE HDF5File_Class, ONLY: HDF5File_
 ! USE Test_Method, ONLY: OK
-! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
-! CHARACTER(*), PARAMETER :: filename = "VTKHDFFile_test_3.vtkhdf"
+! CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_3.vtkhdf"
 ! TYPE(HDF5File_) :: meshfile
 ! TYPE(FEMesh_) :: amesh
-! TYPE(VTKHDFFile_) :: obj
+! TYPE(VtkHDF5File_) :: obj
 ! REAL(DFP), ALLOCATABLE :: u(:), vals(:, :), times(:), xij(:, :), &
 !                           points(:, :)
 ! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
@@ -745,7 +745,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_BeginStep(obj, time)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     REAL(DFP), INTENT(IN) :: time
     !! time value
@@ -770,13 +770,13 @@ END INTERFACE
 ! offset zero in the previous steps.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !
 ! See also: [[obj_BeginStep]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_EndStep(obj)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
   END SUBROUTINE obj_EndStep
 END INTERFACE
@@ -799,7 +799,7 @@ END INTERFACE
 ! BeginStep and EndStep.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   field : CLASS(AbstractNodeField_) - ScalarField_ or VectorField_
 !
@@ -808,7 +808,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WritePointData1(obj, name, field)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -826,7 +826,7 @@ END INTERFACE
 ! summary: Write a rank-1 array as point data (one component)
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - values, SIZE(vals) = GetTotalPoints()
 !
@@ -835,7 +835,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WritePointData2(obj, name, vals)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -855,7 +855,7 @@ END INTERFACE
 ! vals(i, j) is the i-th component at the j-th point.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalPoints())
 !
@@ -863,7 +863,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WritePointData3(obj, name, vals)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -883,7 +883,7 @@ END INTERFACE
 ! The order of cells is the order of active elements of the mesh.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - values, SIZE(vals) = GetTotalCells()
 !
@@ -891,7 +891,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteCellData1(obj, name, vals)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -909,7 +909,7 @@ END INTERFACE
 ! summary: Write a rank-2 array as cell data (multiple components)
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalCells())
 !
@@ -917,7 +917,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteCellData2(obj, name, vals)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -939,7 +939,7 @@ END INTERFACE
 ! tuple with SIZE(vals) components.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - values
 !
@@ -947,7 +947,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteFieldData(obj, name, vals)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -968,7 +968,7 @@ END INTERFACE
 ! is not transient.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of steps
@@ -977,7 +977,7 @@ END INTERFACE
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalSteps(obj) RESULT(ans)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     INTEGER(I4B) :: ans
     !! number of steps
@@ -993,14 +993,14 @@ END INTERFACE
 ! summary: Time values of all steps
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
 !   vals : REAL(DFP) - time values (allocatable), SIZE(vals) = NSteps
 !
 ! See also: [[obj_BeginStep]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetTimeValues(obj, vals)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! time values
@@ -1019,7 +1019,7 @@ END INTERFACE
 ! the file is not transient, the first part is read.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
 !   points : REAL(DFP) - SIZE(points) = (3, nPoints)
 !   connectivity : INTEGER(I4B) - zero based point ids
 !   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1
@@ -1030,8 +1030,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ReadMesh(obj, points, connectivity, offsets, &
-    types, step)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+                                 types, step)
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
@@ -1059,7 +1059,7 @@ END INTERFACE
 ! not transient, the first data is read.
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - values (allocatable), (nComp, nPoints)
 !   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
@@ -1068,7 +1068,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ReadPointData(obj, name, vals, step)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -1088,7 +1088,7 @@ END INTERFACE
 ! summary: Read cell data of a step
 !
 ! Arguments:
-!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - values (allocatable), (nComp, nCells)
 !   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
@@ -1097,7 +1097,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ReadCellData(obj, name, vals, step)
-    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
@@ -1108,4 +1108,4 @@ INTERFACE
   END SUBROUTINE obj_ReadCellData
 END INTERFACE
 
-END MODULE VTKHDFFile_Class
+END MODULE VtkHDF5File_Class

@@ -20,7 +20,7 @@
 ! summary: Build VTK unstructured grid data from mesh, FEDOF, and fields
 !
 ! This module converts easifem data to the arrays of a VTK unstructured
-! grid, which are used by VTK writers (VTKHDFFile_, etc.):
+! grid, which are used by VTK writers (VtkHDF5File_, etc.):
 !
 ! - points(3, nPoints): coordinates of points
 ! - connectivity(:): zero based point ids, VTK local node ordering
@@ -187,7 +187,7 @@ END INTERFACE
 ! USE Test_Method, ONLY: OK
 ! USE VTKMeshUtility, ONLY: VTKGetLagrangeGrid
 ! IMPLICIT NONE
-! CHARACTER(*), PARAMETER :: tomlFileName = "VTKHDFFile_test.toml"
+! CHARACTER(*), PARAMETER :: tomlFileName = "VtkHDF5File_test.toml"
 ! TYPE(FEDomain_) :: dom
 ! TYPE(FEDOF_) :: fedof, geofedof
 ! TYPE(ScalarField_) :: u
@@ -254,7 +254,7 @@ END INTERFACE
 !   values : REAL(DFP) - SIZE(values) = (ncomp, nPoints)
 !
 ! See also: [[VTKGetLinearGrid]], [[VTKGetFieldCompo]]
-! (an example is given in VTKHDFFile_Class, WritePointData)
+! (an example is given in VtkHDF5File_Class, WritePointData)
 
 INTERFACE
   MODULE SUBROUTINE VTKGetVertexValues(field, nPoints, values)
@@ -289,7 +289,7 @@ END INTERFACE
 !   values : REAL(DFP) - SIZE(values) = (ncomp, nPoints)
 !
 ! See also: [[VTKGetLagrangeGrid]], [[VTKGetFieldCompo]]
-! (an example is given in VTKHDFFile_Class, WritePointData)
+! (an example is given in VtkHDF5File_Class, WritePointData)
 
 INTERFACE
   MODULE SUBROUTINE VTKGetLagrangeValues(field, values)

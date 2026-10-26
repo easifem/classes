@@ -51,9 +51,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/CSVFile/CMakeLists.txt)
 # InputFile
 include(${CMAKE_CURRENT_LIST_DIR}/InputFile/CMakeLists.txt)
 
-# HDF5File
-include(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
-
 # XMLFile
 include(${CMAKE_CURRENT_LIST_DIR}/XMLFile/CMakeLists.txt)
 
@@ -62,6 +59,15 @@ include(${CMAKE_CURRENT_LIST_DIR}/VTKFile/CMakeLists.txt)
 
 # PVDFile
 include(${CMAKE_CURRENT_LIST_DIR}/PVDFile/CMakeLists.txt)
+
+# VTKMeshUtility
+include(${CMAKE_CURRENT_LIST_DIR}/VTKMeshUtility/CMakeLists.txt)
+
+# HDF5File
+include(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
+
+# VtkHDF5File
+include(${CMAKE_CURRENT_LIST_DIR}/VtkHDF5File/CMakeLists.txt)
 
 # Toml
 include(${CMAKE_CURRENT_LIST_DIR}/Toml/CMakeLists.txt)

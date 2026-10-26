@@ -20,7 +20,7 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
     ${PROJECT_NAME}
     PRIVATE
-        ${src_path}/VTKHDFFile_Class@ConstructorMethods.F90
-        ${src_path}/VTKHDFFile_Class@WriteMethods.F90
-        ${src_path}/VTKHDFFile_Class@ReadMethods.F90
+        ${src_path}/VtkHDF5File_Class@ConstructorMethods.F90
+        ${src_path}/VtkHDF5File_Class@WriteMethods.F90
+        ${src_path}/VtkHDF5File_Class@ReadMethods.F90
 )
