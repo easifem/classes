@@ -61,11 +61,14 @@ LOGICAL(LGT), SAVE :: libh5Open = math%no
 !
 ! A dataset whose data has at least minBytes bytes is chunked and compressed
 ! when deflateLevel >= 0. Smaller datasets, and all scalars, are stored
-! contiguously. The chunk has about targetBytes bytes: the chunk starts as
+! contiguously. The chunk has at most targetBytes bytes: the chunk starts as
 ! the whole dataset, and the last (slowest) dimension is reduced first, so a
-! chunk holds whole columns whenever possible. When shuffle is true and the
-! element has more than one byte, the shuffle filter is applied before the
-! deflate filter; it usually improves the compression of numeric data.
+! chunk holds whole columns whenever possible. With chunkMethod 1 (uniform,
+! the default) the cut dimension is split into equal parts, so the last chunk
+! is (almost) full; with chunkMethod 2 (max) the chunk is as large as
+! possible, and the last chunk can be partly empty. When shuffle is true and
+! the element has more than one byte, the shuffle filter is applied before
+! the deflate filter; it usually improves the compression of numeric data.
 !
 ! Components:
 !
@@ -78,6 +81,8 @@ LOGICAL(LGT), SAVE :: libh5Open = math%no
 ! - shuffle: apply the shuffle filter before deflate (default true)
 ! - deflateLevel: gzip compression level [0-9]; -1 means no compression
 !   (default 1)
+! - chunkMethod: 1 for uniform chunks (default), 2 for the largest chunk
+!   that fits targetBytes; see compute_chunk_size
 !
 ! Examples
 !
@@ -119,9 +124,20 @@ LOGICAL(LGT), SAVE :: libh5Open = math%no
 ! CALL OK(.NOT. obj%IsCompressed(path="/small"), &
 !         "default: small is not compressed")
 ! CALL obj%GetChunkSize(path="/m", cdims=cdims)
-! CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 131_HSIZE_T]), &
-!         "default: chunk of whole columns")
+! CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 125_HSIZE_T]), &
+!         "default: uniform chunks of whole columns")
 ! CALL obj%DEALLOCATE()
+!
+! ! largest chunk that fits targetBytes
+! policy%chunkMethod = 2
+! CALL obj%Initiate(filename=filename, mode="NEW", chunkPolicy=policy)
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/m", vals=m)
+! CALL obj%GetChunkSize(path="/m", cdims=cdims)
+! CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 131_HSIZE_T]), &
+!         "chunkMethod=2: largest chunk")
+! CALL obj%DEALLOCATE()
+! policy%chunkMethod = 1
 !
 ! ! no compression
 ! policy%deflateLevel = -1
@@ -161,6 +177,9 @@ TYPE :: HDF5ChunkPolicy_
   !! apply the shuffle filter before deflate
   INTEGER(I4B) :: deflateLevel = 1
   !! gzip compression level [0-9]; -1 means no compression
+  INTEGER(I4B) :: chunkMethod = 1
+  !! 1: uniform chunks (equal parts along the cut dimension, least padding)
+  !! 2: largest chunk that fits targetBytes (last chunk can be partly empty)
 END TYPE HDF5ChunkPolicy_
 
 !----------------------------------------------------------------------------
@@ -654,8 +673,8 @@ END INTERFACE
 !
 ! chunkPolicy sets the layout and compression of the datasets, see
 ! HDF5ChunkPolicy_. If it is absent, the default values are used: datasets
-! with at least 64 KiB of data are chunked (about 1 MiB per chunk) and
-! written with the shuffle filter and gzip level 1. If zlibOpt is present,
+! with at least 64 KiB of data are chunked (uniform chunks of at most 1 MiB)
+! and written with the shuffle filter and gzip level 1. If zlibOpt is present,
 ! it replaces chunkPolicy%deflateLevel (-1 means no compression); it is kept
 ! for compatibility.
 !
@@ -1774,31 +1793,45 @@ END INTERFACE
 ! date: 2026-08-08
 ! update:
 !   - 2026-10-26: limit the total size of the chunk to targetBytes
+!   - 2026-10-26: chunkMethod 1 (uniform) and 2 (max); policy argument
 ! summary: Compute the chunk size of a compressed dataset
 !
 ! The chunk size controls the memory used by the HDF5 library for compression,
 ! see https://support.hdfgroup.org/HDF5/doc/Advanced/Chunking/index.html
 !
 ! The chunk starts as the whole dataset. While it has more than
-! targetBytes / (size of an element) entries, the last dimension that is
-! larger than 1 is reduced: to 1 if the other dimensions already hold the
-! target, else to target / (product of the other dimensions). So the first
-! (fastest) dimension is reduced last, and a chunk holds whole columns when
-! a column is smaller than targetBytes. Every chunk dimension is at least 1.
+! policy%targetBytes / (size of an element) entries, the last dimension that
+! is larger than 1 is reduced: to 1 if the other dimensions already hold the
+! target, else to c = target / (product of the other dimensions). So the
+! first (fastest) dimension is reduced last, and a chunk holds whole columns
+! when a column is smaller than targetBytes. Every chunk dimension is at
+! least 1.
+!
+! HDF5 stores whole chunks, so the last chunk along a dimension is padded
+! when the dimension is not a multiple of the chunk size. With
+! policy%chunkMethod = 2 (max) the cut dimension is c. With
+! policy%chunkMethod = 1 (uniform, the default) the number of chunks along
+! the cut dimension is kept, nch = CEILING(n / c), and the chunk size is
+! CEILING(n / nch) <= c, so the chunks are equal and the padding is less
+! than one entry per chunk.
 !
 ! For example, with targetBytes = 1 MiB and Real64 data (131072 entries):
-! 1000 x 1000 gives 1000 x 131, and 200000 x 200 gives 131072 x 1.
+!
+! | Dataset | uniform | max |
+! | --- | --- | --- |
+! | 1000 x 1000 | 1000 x 125 | 1000 x 131 |
+! | 200000 x 200 | 100000 x 1 | 131072 x 1 |
 !
 ! See also: [[preWrite]]
 
 INTERFACE
-  MODULE SUBROUTINE compute_chunk_size(mem, gdims, targetBytes, cdims)
+  MODULE SUBROUTINE compute_chunk_size(mem, gdims, policy, cdims)
     INTEGER(HID_T), INTENT(IN) :: mem
     !! HDF5 data type of the dataset
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
     !! global dimensions of the dataset
-    INTEGER(INT64), INTENT(IN) :: targetBytes
-    !! target size of a chunk in bytes
+    TYPE(HDF5ChunkPolicy_), INTENT(IN) :: policy
+    !! chunk policy; targetBytes and chunkMethod are used
     INTEGER(HSIZE_T), INTENT(OUT) :: cdims(:)
     !! chunk dimensions to use
   END SUBROUTINE compute_chunk_size

@@ -407,6 +407,9 @@ MODULE PROCEDURE obj_Initiate
                     'targetBytes must be positive.')
   CALL AssertError1(obj%chunkPolicy%minBytes .GE. 0, myName, &
                     'minBytes must not be negative.')
+  CALL AssertError1(obj%chunkPolicy%chunkMethod .EQ. 1 .OR. &
+                    obj%chunkPolicy%chunkMethod .EQ. 2, myName, &
+                    'chunkMethod must be 1 (uniform) or 2 (max).')
 #endif
 
   obj%hasCompression = obj%chunkPolicy%deflateLevel .GE. 0
@@ -1294,8 +1297,7 @@ MODULE PROCEDURE preWrite
     END IF
 
     IF (nbytes .GT. 0 .AND. nbytes .GE. obj%chunkPolicy%minBytes) THEN
-      CALL compute_chunk_size(mem, gdims, obj%chunkPolicy%targetBytes, &
-                              cdims)
+      CALL compute_chunk_size(mem, gdims, obj%chunkPolicy, cdims)
       CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ierr)
       IF (ERROR .EQ. 0) ERROR = ierr
 
@@ -1479,7 +1481,7 @@ MODULE PROCEDURE compute_chunk_size
 #endif
   INTEGER(I4B) :: i, error
   INTEGER(SIZE_T) :: bsize
-  INTEGER(HSIZE_T) :: ntarget, nother
+  INTEGER(HSIZE_T) :: ntarget, nother, c, nch
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1490,7 +1492,7 @@ MODULE PROCEDURE compute_chunk_size
   bsize = MAX(bsize, 1_SIZE_T)
 
   ! targetBytes in terms of the number of elements
-  ntarget = MAX(INT(targetBytes / INT(bsize, INT64), HSIZE_T), &
+  ntarget = MAX(INT(policy%targetBytes / INT(bsize, INT64), HSIZE_T), &
                 1_HSIZE_T)
 
   ! Start from the whole dataset and reduce the last dimensions first
@@ -1501,7 +1503,17 @@ MODULE PROCEDURE compute_chunk_size
     IF (nother .GE. ntarget) THEN
       cdims(i) = 1
     ELSE
-      cdims(i) = MAX(ntarget / nother, 1_HSIZE_T)
+      ! largest size that fits (chunkMethod 2)
+      c = MAX(ntarget / nother, 1_HSIZE_T)
+
+      ! chunkMethod 1: same number of chunks along dimension i, but equal
+      ! parts, so the last chunk is (almost) full
+      IF (policy%chunkMethod .NE. 2) THEN
+        nch = (cdims(i) + c - 1) / c
+        c = (cdims(i) + nch - 1) / nch
+      END IF
+
+      cdims(i) = c
     END IF
   END DO dimLoop
 

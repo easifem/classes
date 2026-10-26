@@ -94,6 +94,27 @@ data (B3, B4).
   The smooth field compresses by 1.5x; compression costs write time (about
   0.09 s per 8 MB field at level 4). Level 1, the default, is faster;
   measure it before choosing the default for large runs.
+- Chunk method (2026-10-26): `chunkMethod` 1 (uniform,
+  default) splits the cut dimension into equal parts, so the last chunk is
+  (almost) full; 2 (max) keeps the largest chunk that fits. HDF5 stores and
+  compresses whole chunks, so the padding of a partly empty last chunk
+  costs CPU (and space when not compressed). Same number of chunks, chunk
+  never larger:
+
+  | Dataset (Real64, 1 MiB) | max | padding | uniform | padding |
+  | --- | --- | --- | --- | --- |
+  | 1000 x 1000 | 1000 x 131 | +4.8 % | 1000 x 125 | 0 |
+  | 200000 | 131072 | +31 % | 100000 | 0 |
+  | 400 x 400 | 400 x 327 | +64 % | 400 x 200 | 0 |
+
+  Measured (Storage_test_1 and Compression_test_1, zlibOpt=4): the
+  1000 x 1000 fields give 21727846 B, write 0.363 s, read 0.030 s with
+  uniform chunks, against 21727414 B, 0.349 s, 0.029 s with max. The
+  difference is within the timing noise: the padding is 5 % of the data
+  and compresses to almost nothing. Compression_test_1 (400 x 400, padding
+  64 % with max) shrinks from 10081 B to 9000 B. Full suite: 44 tests, 41
+  pass; not passing are A3, A5 and A9 (known, open).
+
 - **Change of behaviour:** with the default policy every file is now
   compressed (gzip level 1); before, compression needed `zlibOpt`. Use
   `zlibOpt=-1` or `chunkPolicy%deflateLevel = -1` to turn it off.

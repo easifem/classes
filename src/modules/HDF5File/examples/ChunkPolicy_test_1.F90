@@ -3,8 +3,9 @@
 ! summary: Set the layout and compression of datasets with a chunk policy
 !
 ! The default policy compresses datasets with at least 64 KiB of data,
-! in chunks of about 1 MiB of whole columns. deflateLevel=-1 turns the
-! compression off, and targetBytes changes the chunk size.
+! in uniform chunks of at most 1 MiB of whole columns. chunkMethod=2 uses
+! the largest chunk that fits, deflateLevel=-1 turns the compression off,
+! and targetBytes changes the chunk size.
 
 PROGRAM main
   USE BaseType, ONLY: math => TypeMathOpt
@@ -43,9 +44,20 @@ PROGRAM main
   CALL OK(.NOT. obj%IsCompressed(path="/small"), &
           "default: small is not compressed")
   CALL obj%GetChunkSize(path="/m", cdims=cdims)
-  CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 131_HSIZE_T]), &
-          "default: chunk of whole columns")
+  CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 125_HSIZE_T]), &
+          "default: uniform chunks of whole columns")
   CALL obj%DEALLOCATE()
+
+  ! largest chunk that fits targetBytes
+  policy%chunkMethod = 2
+  CALL obj%Initiate(filename=filename, mode="NEW", chunkPolicy=policy)
+  CALL obj%OPEN()
+  CALL obj%WRITE(dsetname="/m", vals=m)
+  CALL obj%GetChunkSize(path="/m", cdims=cdims)
+  CALL OK(ALL(cdims .EQ. [1000_HSIZE_T, 131_HSIZE_T]), &
+          "chunkMethod=2: largest chunk")
+  CALL obj%DEALLOCATE()
+  policy%chunkMethod = 1
 
   ! no compression
   policy%deflateLevel = -1
