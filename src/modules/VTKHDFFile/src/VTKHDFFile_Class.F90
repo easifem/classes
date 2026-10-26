@@ -1,0 +1,1111 @@
+! This program is a part of EASIFEM library
+! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+!
+! This program is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! This program is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Reader and writer of VTKHDF (UnstructuredGrid) files
+!
+! VTKHDF is a VTK file format based on HDF5, which can be opened by
+! ParaView (VTK >= 9.3). See
+! https://docs.vtk.org/en/latest/vtk_file_formats/vtkhdf_file_format/
+!
+! VTKHDFFile_ extends HDF5File_, so all the methods of HDF5File_ can be
+! used to write additional data in the same file.
+
+MODULE VTKHDFFile_Class
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE BaseType, ONLY: math => TypeMathOpt
+USE FEDOF_Class, ONLY: FEDOF_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: INT8
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE String_Class, ONLY: String
+USE tomlf, ONLY: toml_table
+IMPLICIT NONE
+PRIVATE
+
+PUBLIC :: VTKHDFFile_
+PUBLIC :: VTKHDFFilePointer_
+PUBLIC :: VTKHDF_VERSION
+
+CHARACTER(*), PARAMETER :: modName = "VTKHDFFile_Class"
+
+INTEGER(I4B), PARAMETER :: VTKHDF_VERSION(2) = [2, 2]
+!! Version of VTKHDF format written by VTKHDFFile_
+
+!----------------------------------------------------------------------------
+!                                                                VTKHDFFile_
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: VTKHDF file for unstructured grids and time series
+!
+! The following layout is written (Fortran shape in parenthesis, the
+! shape in C order, which is used by VTK and h5py, is reversed):
+!
+!```txt
+! /VTKHDF                  attrs: Version = [2, 2], Type = UnstructuredGrid
+!   NumberOfPoints(nParts), NumberOfCells(nParts),
+!   NumberOfConnectivityIds(nParts)
+!   Points(3, nPoints), Connectivity(nIds), Offsets(nCells+1),
+!   Types(nCells) (uint8)
+!   PointData/<name>(nComp, nPoints) or (nPoints)
+!   CellData/<name>(nComp, nCells) or (nCells)
+!   FieldData/<name>(nComp, nTuples)
+!   Steps                  attr: NSteps (only if isTransient)
+!     Values(NSteps), PartOffsets(NSteps), NumberOfParts(NSteps),
+!     PointOffsets(NSteps), CellOffsets(1, NSteps),
+!     ConnectivityIdOffsets(1, NSteps),
+!     PointDataOffsets/<name>(NSteps), CellDataOffsets/<name>(NSteps),
+!     FieldDataOffsets/<name>(NSteps), FieldDataSizes/<name>(2, NSteps)
+!```
+!
+! All the datasets are extendable (see [[HDF5File_:Append]]).
+! A mesh is written by WriteMesh. One mesh is one part (piece). If the
+! mesh does not change, it is written only once and all the steps
+! refer to it (the geometry offsets are repeated). If WriteMesh is
+! called in a step, then the new mesh is used from that step.
+!
+! Two kinds of grids can be written:
+!
+! - Linear grid, WriteMesh(mesh): the nodes and elements of the mesh.
+!   The vertex DOFs of fields are written as point data.
+! - Lagrange grid, WriteMesh(fedof, geofedof): each cell has its own
+!   equidistance points of the order of fedof, and higher order VTK
+!   cells are used. Fields are evaluated at these points.
+!
+! Usage in a time dependent simulation:
+!
+!```fortran
+! CALL obj%ImportFromToml(table)              ! reads [<table>.vtkhdf]
+! IF (obj%IsActive()) THEN
+!   CALL obj%InitiateVTKHDF()                 ! filename from toml
+!   CALL obj%WriteMesh(mesh)                  ! or WriteMesh(fedof, ...)
+! END IF
+! ! every time step
+! CALL obj%BeginStep(time=t)
+! IF (obj%IsOutputStep()) THEN
+!   CALL obj%WritePointData(name="u", field=u)
+! END IF
+! CALL obj%EndStep()
+! ! end of simulation
+! CALL obj%DEALLOCATE()
+!```
+
+TYPE, EXTENDS(HDF5File_) :: VTKHDFFile_
+  PRIVATE
+  LOGICAL(LGT) :: isRequested = math%yes
+  !! output is requested (ImportFromToml)
+  LOGICAL(LGT) :: isVTKHDFInit = math%no
+  !! InitiateVTKHDF has been called
+  LOGICAL(LGT) :: isTransient = math%yes
+  !! write time steps (Steps group)
+  LOGICAL(LGT) :: isLagrange = math%no
+  !! the current mesh is a Lagrange grid (WriteMesh(fedof, geofedof))
+  LOGICAL(LGT) :: isMeshWritten = math%no
+  !! a mesh has been written
+  LOGICAL(LGT) :: isStepOpen = math%no
+  !! BeginStep has been called, EndStep is not called yet
+  LOGICAL(LGT) :: isSkipped = math%no
+  !! the current step is skipped (frequency)
+  INTEGER(I4B) :: frequency = 1
+  !! write every frequency steps
+  INTEGER(I4B) :: zlib = -1
+  !! compression level (-1 means no compression)
+  INTEGER(I4B) :: stepCounter = 0
+  !! number of calls of BeginStep
+  INTEGER(I4B) :: nSteps = 0
+  !! number of steps written in the file
+  INTEGER(I4B) :: nPoints = 0, nCells = 0, nIds = 0
+  !! size of the current mesh
+  INTEGER(I4B) :: partOffset = 0, pointOffset = 0, cellOffset = 0, &
+    connOffset = 0
+  !! offsets of the current mesh in the datasets
+  TYPE(String) :: outputFile
+  !! name of output file (ImportFromToml)
+  INTEGER(I4B) :: nArrays = 0
+  !! number of data arrays written in the file
+  TYPE(String), ALLOCATABLE :: arrayNames(:)
+  !! names of data arrays
+  INTEGER(I4B), ALLOCATABLE :: arrayLoc(:)
+  !! 1: PointData, 2: CellData, 3: FieldData
+  INTEGER(I4B), ALLOCATABLE :: arrayOffset(:)
+  !! offset (in tuples) of the latest data of arrays
+  INTEGER(I4B), ALLOCATABLE :: arraySize(:, :)
+  !! number of components and tuples of the latest data of arrays
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVTKHDF => obj_InitiateVTKHDF
+  !! Open a VTKHDF file for writing or reading
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml => obj_ImportFromToml
+  !! Import options from toml table [<table>.vtkhdf]
+  PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Close the file and deallocate the data
+  PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
+  !! Display the content
+  PROCEDURE, PUBLIC, PASS(obj) :: IsActive => obj_IsActive
+  !! Returns true if output is requested
+  PROCEDURE, PUBLIC, PASS(obj) :: IsOutputStep => obj_IsOutputStep
+  !! Returns true if data should be written in the current step
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPoints => obj_GetTotalPoints
+  !! Number of points of the current mesh
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCells => obj_GetTotalCells
+  !! Number of cells of the current mesh
+  PROCEDURE, PASS(obj) :: WriteMesh1 => obj_WriteMesh1
+  !! Write the linear grid of a mesh
+  PROCEDURE, PASS(obj) :: WriteMesh2 => obj_WriteMesh2
+  !! Write the Lagrange grid of a fedof
+  GENERIC, PUBLIC :: WriteMesh => WriteMesh1, WriteMesh2
+  PROCEDURE, PUBLIC, PASS(obj) :: BeginStep => obj_BeginStep
+  !! Start a time step
+  PROCEDURE, PUBLIC, PASS(obj) :: EndStep => obj_EndStep
+  !! Finish a time step
+  PROCEDURE, PASS(obj) :: WritePointData1 => obj_WritePointData1
+  !! Write a nodal field as point data
+  PROCEDURE, PASS(obj) :: WritePointData2 => obj_WritePointData2
+  !! Write a rank-1 array as point data
+  PROCEDURE, PASS(obj) :: WritePointData3 => obj_WritePointData3
+  !! Write a rank-2 array as point data
+  GENERIC, PUBLIC :: WritePointData => WritePointData1, &
+    WritePointData2, WritePointData3
+  PROCEDURE, PASS(obj) :: WriteCellData1 => obj_WriteCellData1
+  !! Write a rank-1 array as cell data
+  PROCEDURE, PASS(obj) :: WriteCellData2 => obj_WriteCellData2
+  !! Write a rank-2 array as cell data
+  GENERIC, PUBLIC :: WriteCellData => WriteCellData1, WriteCellData2
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteFieldData => obj_WriteFieldData
+  !! Write a rank-1 array as field data
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalSteps => obj_GetTotalSteps
+  !! Number of steps in the file
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTimeValues => obj_GetTimeValues
+  !! Time values of steps
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadMesh => obj_ReadMesh
+  !! Read the grid of a step
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadPointData => obj_ReadPointData
+  !! Read point data of a step
+  PROCEDURE, PUBLIC, PASS(obj) :: ReadCellData => obj_ReadCellData
+  !! Read cell data of a step
+END TYPE VTKHDFFile_
+
+!----------------------------------------------------------------------------
+!                                                         VTKHDFFilePointer_
+!----------------------------------------------------------------------------
+
+TYPE :: VTKHDFFilePointer_
+  CLASS(VTKHDFFile_), POINTER :: ptr => NULL()
+END TYPE VTKHDFFilePointer_
+
+!----------------------------------------------------------------------------
+!                                       InitiateVTKHDF@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Open a VTKHDF file for writing or reading
+!
+! Mode "NEW" creates a new file (an existing file is overwritten), and
+! writes the root group /VTKHDF with the attributes Version and Type.
+! Mode "READ" opens an existing file and checks the Type attribute.
+!
+! The optional arguments are taken from ImportFromToml if they are not
+! present. The default values are filename = "./result.vtkhdf",
+! mode = "NEW", isTransient = .TRUE., frequency = 1, zlibOpt = -1.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   filename : CHARACTER(*) - name of file (.vtkhdf or .hdf)
+!   mode : CHARACTER(*) - "NEW" or "READ"
+!   isTransient : LOGICAL(LGT) - write time steps (Steps group)
+!   frequency : INTEGER(I4B) - write every frequency steps
+!   zlibOpt : INTEGER(I4B) - compression level 0-9, -1 for none
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE Test_Method, ONLY: OK
+! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! IMPLICIT NONE
+! CHARACTER(*), PARAMETER :: filename = "VTKHDFFile_test_1.vtkhdf"
+! TYPE(VTKHDFFile_) :: obj
+! LOGICAL :: isok
+! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
+!                         isTransient=math%no)
+! CALL obj%DEALLOCATE()
+! INQUIRE (FILE=filename, EXIST=isok)
+! CALL OK(isok, "InitiateVTKHDF NEW")
+! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+! CALL OK(obj%GetTotalSteps() .EQ. 0, "InitiateVTKHDF READ")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ImportFromToml]], [[obj_WriteMesh1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateVTKHDF(obj, filename, mode, isTransient, &
+    frequency, zlibOpt)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN), OPTIONAL :: filename
+    !! name of file
+    CHARACTER(*), INTENT(IN), OPTIONAL :: mode
+    !! "NEW" or "READ"
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTransient
+    !! write time steps
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: frequency
+    !! write every frequency steps
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: zlibOpt
+    !! compression level
+  END SUBROUTINE obj_InitiateVTKHDF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       ImportFromToml@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Import VTKHDF output options from toml
+!
+! table is the parent table (e.g. kernel), and options are read from
+! the subtable `vtkhdf`. If the subtable is not found, then output is
+! not active.
+!
+!```toml
+![kernel.vtkhdf]
+!isActive = true
+!filename = "./results/result.vtkhdf"
+!isTransient = true
+!frequency = 1
+!zlib = -1
+!```
+!
+! The file is not opened here. Call InitiateVTKHDF() after this.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   table : TYPE(toml_table) - parent table
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE Test_Method, ONLY: OK
+! USE tomlf, ONLY: toml_table
+! USE tomlf, ONLY: toml_load
+! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! IMPLICIT NONE
+! TYPE(VTKHDFFile_) :: obj
+! TYPE(toml_table), ALLOCATABLE :: table
+! CALL toml_load(table, "VTKHDFFile_test.toml")
+! CALL obj%ImportFromToml(table)
+! CALL OK(obj%IsActive(), "ImportFromToml")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_InitiateVTKHDF]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml(obj, table)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! parent toml table
+  END SUBROUTINE obj_ImportFromToml
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           Deallocate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Close the file and deallocate the data
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   Delete : LOGICAL(LGT) - (optional) delete the file
+!
+! See also: [[obj_InitiateVTKHDF]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj, Delete)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: Delete
+    !! delete the file
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              Display@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Display the content of VTKHDFFile_
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!   msg : CHARACTER(*) - message
+!   unitno : INTEGER(I4B) - (optional) unit number
+!
+! See also: [[obj_InitiateVTKHDF]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: msg
+    !! message
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
+    !! unit number
+  END SUBROUTINE obj_Display
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             IsActive@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Returns true if VTKHDF output is requested
+!
+! The default value is true. It is set by ImportFromToml.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!
+! Returns:
+!   ans : LOGICAL(LGT) - output is requested
+!
+! See also: [[obj_ImportFromToml]] (contains an example)
+
+INTERFACE
+  MODULE FUNCTION obj_IsActive(obj) RESULT(ans)
+    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    !! VTKHDF file
+    LOGICAL(LGT) :: ans
+    !! output is requested
+  END FUNCTION obj_IsActive
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           IsOutputStep@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Returns true if data should be written now
+!
+! Returns false if the file is not initiated, or if the current step
+! is skipped by frequency. For a non-transient file, true is returned
+! if the file is initiated. Use it to avoid the computation of output
+! data in the skipped steps.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!
+! Returns:
+!   ans : LOGICAL(LGT) - data should be written
+!
+! See also: [[obj_BeginStep]] (contains an example)
+
+INTERFACE
+  MODULE FUNCTION obj_IsOutputStep(obj) RESULT(ans)
+    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    !! VTKHDF file
+    LOGICAL(LGT) :: ans
+    !! data should be written
+  END FUNCTION obj_IsOutputStep
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetTotalPoints@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Number of points of the current mesh
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!
+! Returns:
+!   ans : INTEGER(I4B) - number of points (size of point data)
+!
+! See also: [[obj_GetTotalCells]], [[obj_WriteMesh1]]
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalPoints(obj) RESULT(ans)
+    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    !! VTKHDF file
+    INTEGER(I4B) :: ans
+    !! number of points
+  END FUNCTION obj_GetTotalPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetTotalCells@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Number of cells of the current mesh
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file
+!
+! Returns:
+!   ans : INTEGER(I4B) - number of cells (size of cell data)
+!
+! See also: [[obj_GetTotalPoints]], [[obj_WriteMesh1]]
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalCells(obj) RESULT(ans)
+    CLASS(VTKHDFFile_), INTENT(IN) :: obj
+    !! VTKHDF file
+    INTEGER(I4B) :: ans
+    !! number of cells
+  END FUNCTION obj_GetTotalCells
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  WriteMesh@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write the linear grid of a mesh
+!
+! The nodes and the active elements of the mesh are written as a new
+! part (see [[VTKGetLinearGrid]]). The point data written after this
+! are the vertex DOFs of the fields.
+!
+! If it is called before the first BeginStep (or in a non-transient
+! file), the mesh is used for all steps. If it is called in a step
+! (moving or adaptive mesh), the mesh is used from the current step.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   mesh : CLASS(AbstractMesh_) - mesh
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEMesh_Class, ONLY: FEMesh_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: INT8
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! IMPLICIT NONE
+! CHARACTER(*), PARAMETER :: filename = "VTKHDFFile_test_2.vtkhdf"
+! TYPE(HDF5File_) :: meshfile
+! TYPE(FEMesh_) :: amesh
+! TYPE(VTKHDFFile_) :: obj
+! REAL(DFP), ALLOCATABLE :: xij(:, :), points(:, :), vals(:, :), &
+!                           cellIds(:)
+! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
+! INTEGER(INT8), ALLOCATABLE :: types(:)
+! INTEGER(I4B) :: nPoints, nCells, nrow, ncol, ii
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL meshfile%Initiate(fileName="./meshdata/small_tri3_mesh.h5", &
+!                        MODE="READ")
+! CALL meshfile%OPEN()
+! CALL amesh%Initiate(hdf5=meshfile, dim=2)
+! nPoints = amesh%GetTotalNodes()
+! ALLOCATE (xij(3, nPoints))
+! CALL amesh%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
+! ! write a static mesh with point and cell data
+! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
+!                         isTransient=math%no)
+! CALL obj%WriteMesh(amesh)
+! nCells = obj%GetTotalCells()
+! cellIds = [(REAL(ii, DFP), ii=1, nCells)]
+! CALL obj%WritePointData(name="x", vals=xij)
+! CALL obj%WriteCellData(name="id", vals=cellIds)
+! CALL obj%DEALLOCATE()
+! ! read back
+! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+! CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
+!                   types=types)
+! CALL OK(SIZE(points, 2) .EQ. nPoints, "ReadMesh: nPoints")
+! CALL OK(ALL(types .EQ. 5_INT8), "ReadMesh: VTK_TRIANGLE")
+! CALL obj%ReadPointData(name="x", vals=vals)
+! CALL OK(MAXVAL(ABS(vals - points)) .LT. 1.0E-12_DFP, "ReadPointData")
+! CALL obj%ReadCellData(name="id", vals=vals)
+! CALL OK(MAXVAL(ABS(vals(1, :) - cellIds)) .LT. 1.0E-12_DFP, &
+!         "ReadCellData")
+! CALL obj%DEALLOCATE()
+! CALL amesh%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_WriteMesh2]], [[obj_ReadMesh]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteMesh1(obj, mesh)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CLASS(AbstractMesh_), INTENT(INOUT) :: mesh
+    !! mesh
+  END SUBROUTINE obj_WriteMesh1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  WriteMesh@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write the Lagrange grid of a fedof (higher order cells)
+!
+! Each active element is written as a higher order VTK cell with the
+! equidistance points of the cell order of fedof (see
+! [[VTKGetLagrangeGrid]]). The points are not shared between cells.
+! The point data written after this are evaluated at these points by
+! the shape functions of the field (any basis can be used).
+!
+! The rules of steps are the same as [[obj_WriteMesh1]].
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   fedof : CLASS(FEDOF_) - FEDOF of the fields
+!   geofedof : CLASS(FEDOF_) - FEDOF of the geometry
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: INT8
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE Test_Method, ONLY: OK
+! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! IMPLICIT NONE
+! CHARACTER(*), PARAMETER :: tomlFileName = "VTKHDFFile_test.toml", &
+!                            filename = "VTKHDFFile_test_4.vtkhdf"
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_) :: fedof, geofedof
+! TYPE(ScalarField_) :: u
+! TYPE(VTKHDFFile_) :: obj
+! REAL(DFP), ALLOCATABLE :: vals(:, :)
+! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
+! INTEGER(INT8), ALLOCATABLE :: types(:)
+! REAL(DFP), ALLOCATABLE :: points(:, :)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL dom%ImportFromToml(fileName=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       fileName=tomlFileName, tomlName="u")
+! CALL u%Set(VALUE=2.0_DFP)
+! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
+!                         isTransient=math%no)
+! CALL obj%WriteMesh(fedof=fedof, geofedof=geofedof)
+! CALL obj%WritePointData(name="u", field=u)
+! CALL obj%DEALLOCATE()
+! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+! CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
+!                   types=types)
+! CALL OK(ALL(types .EQ. 22_INT8), "WriteMesh2: VTK_QUADRATIC_TRIANGLE")
+! CALL obj%ReadPointData(name="u", vals=vals)
+! CALL OK(MAXVAL(ABS(vals - 2.0_DFP)) .LT. 1.0E-10_DFP, "WriteMesh2: u")
+! CALL obj%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_WriteMesh1]], [[obj_WritePointData1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteMesh2(obj, fedof, geofedof)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CLASS(FEDOF_), INTENT(INOUT) :: fedof
+    !! FEDOF of the fields
+    CLASS(FEDOF_), INTENT(INOUT) :: geofedof
+    !! FEDOF of the geometry
+  END SUBROUTINE obj_WriteMesh2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  BeginStep@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Start a time step
+!
+! The step counter is increased. If MOD(counter - 1, frequency) is not
+! zero, the step is skipped, and all the write methods do nothing
+! until EndStep. Otherwise, time is appended to Steps/Values.
+!
+! Nothing is done if the file is not initiated or not transient.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   time : REAL(DFP) - time value of the step
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEMesh_Class, ONLY: FEMesh_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: INT8
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! USE VTKHDFFile_Class, ONLY: VTKHDFFile_
+! IMPLICIT NONE
+! CHARACTER(*), PARAMETER :: filename = "VTKHDFFile_test_3.vtkhdf"
+! TYPE(HDF5File_) :: meshfile
+! TYPE(FEMesh_) :: amesh
+! TYPE(VTKHDFFile_) :: obj
+! REAL(DFP), ALLOCATABLE :: u(:), vals(:, :), times(:), xij(:, :), &
+!                           points(:, :)
+! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
+! INTEGER(INT8), ALLOCATABLE :: types(:)
+! INTEGER(I4B) :: istep, nPoints, nrow, ncol
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL meshfile%Initiate(fileName="./meshdata/small_tri3_mesh.h5", &
+!                        MODE="READ")
+! CALL meshfile%OPEN()
+! CALL amesh%Initiate(hdf5=meshfile, dim=2)
+! nPoints = amesh%GetTotalNodes()
+! ALLOCATE (u(nPoints), xij(3, nPoints))
+! xij = 0.0_DFP
+! CALL amesh%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
+! ! 4 steps, every 2 steps are written (steps 1 and 3)
+! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", frequency=2)
+! CALL obj%WriteMesh(amesh)
+! DO istep = 1, 4
+!   CALL obj%BeginStep(time=0.1_DFP * istep)
+!   IF (obj%IsOutputStep()) THEN
+!     u = REAL(istep, DFP)
+!     CALL obj%WritePointData(name="u", vals=u)
+!   END IF
+!   CALL obj%EndStep()
+! END DO
+! CALL obj%DEALLOCATE()
+! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+! CALL OK(obj%GetTotalSteps() .EQ. 2, "GetTotalSteps")
+! CALL obj%GetTimeValues(times)
+! CALL OK(ABS(times(2) - 0.3_DFP) .LT. 1.0E-12_DFP, "GetTimeValues")
+! CALL obj%ReadPointData(name="u", vals=vals, step=2)
+! CALL OK(ALL(ABS(vals - 3.0_DFP) .LT. 1.0E-12_DFP), "ReadPointData step")
+! CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
+!                   types=types, step=2)
+! CALL OK(MAXVAL(ABS(points - xij)) .LT. 1.0E-12_DFP, "ReadMesh step")
+! CALL obj%DEALLOCATE()
+! CALL amesh%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_EndStep]], [[obj_IsOutputStep]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_BeginStep(obj, time)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    REAL(DFP), INTENT(IN) :: time
+    !! time value
+  END SUBROUTINE obj_BeginStep
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    EndStep@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Finish a time step
+!
+! The offsets of the current mesh (PartOffsets, PointOffsets, etc.) and
+! the offsets of all the data arrays are appended to the Steps group,
+! and the NSteps attribute is updated. Therefore, the file can be read
+! after each EndStep.
+!
+! The data arrays which are not written in the step refer to their
+! latest data. A data array which is written for the first time has
+! offset zero in the previous steps.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!
+! See also: [[obj_BeginStep]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_EndStep(obj)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+  END SUBROUTINE obj_EndStep
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             WritePointData@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a nodal field as point data
+!
+! - Linear grid: the vertex DOFs of the field are written
+!   ([[VTKGetVertexValues]]).
+! - Lagrange grid: the field is evaluated at the points of the grid
+!   ([[VTKGetLagrangeValues]]).
+!
+! ScalarField_ is written with 1 component and VectorField_ with 3
+! components. In a transient file, it should be called between
+! BeginStep and EndStep.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   name : CHARACTER(*) - name of data array
+!   field : CLASS(AbstractNodeField_) - ScalarField_ or VectorField_
+!
+! See also: [[obj_WriteMesh2]] (contains an example),
+! [[obj_WritePointData2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WritePointData1(obj, name, field)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: field
+    !! nodal field
+  END SUBROUTINE obj_WritePointData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             WritePointData@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a rank-1 array as point data (one component)
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - values, SIZE(vals) = GetTotalPoints()
+!
+! See also: [[obj_BeginStep]] (contains an example),
+! [[obj_WritePointData3]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WritePointData2(obj, name, vals)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), INTENT(IN) :: vals(:)
+    !! values at points
+  END SUBROUTINE obj_WritePointData2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             WritePointData@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a rank-2 array as point data (multiple components)
+!
+! vals(i, j) is the i-th component at the j-th point.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalPoints())
+!
+! See also: [[obj_WriteMesh1]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_WritePointData3(obj, name, vals)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), INTENT(IN) :: vals(:, :)
+    !! values at points, shape (nComp, nPoints)
+  END SUBROUTINE obj_WritePointData3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              WriteCellData@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a rank-1 array as cell data (one component)
+!
+! The order of cells is the order of active elements of the mesh.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - values, SIZE(vals) = GetTotalCells()
+!
+! See also: [[obj_WriteMesh1]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteCellData1(obj, name, vals)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), INTENT(IN) :: vals(:)
+    !! values at cells
+  END SUBROUTINE obj_WriteCellData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              WriteCellData@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a rank-2 array as cell data (multiple components)
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalCells())
+!
+! See also: [[obj_WriteCellData1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteCellData2(obj, name, vals)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), INTENT(IN) :: vals(:, :)
+    !! values at cells, shape (nComp, nCells)
+  END SUBROUTINE obj_WriteCellData2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                             WriteFieldData@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Write a rank-1 array as field data (one tuple)
+!
+! Field data are global values which are not attached to points or
+! cells (e.g., energy, number of iterations). vals is written as one
+! tuple with SIZE(vals) components.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - VTKHDF file opened with mode "NEW"
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - values
+!
+! See also: [[obj_WritePointData2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WriteFieldData(obj, name, vals)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), INTENT(IN) :: vals(:)
+    !! values
+  END SUBROUTINE obj_WriteFieldData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTotalSteps@ReadMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Number of steps in the file
+!
+! Returns the NSteps attribute of the Steps group, or zero if the file
+! is not transient.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!
+! Returns:
+!   ans : INTEGER(I4B) - number of steps
+!
+! See also: [[obj_BeginStep]] (contains an example)
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalSteps(obj) RESULT(ans)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    INTEGER(I4B) :: ans
+    !! number of steps
+  END FUNCTION obj_GetTotalSteps
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetTimeValues@ReadMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Time values of all steps
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   vals : REAL(DFP) - time values (allocatable), SIZE(vals) = NSteps
+!
+! See also: [[obj_BeginStep]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetTimeValues(obj, vals)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: vals(:)
+    !! time values
+  END SUBROUTINE obj_GetTimeValues
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    ReadMesh@ReadMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read the grid of a step
+!
+! The grid (part) used in the step is read. If step is not present or
+! the file is not transient, the first part is read.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   points : REAL(DFP) - SIZE(points) = (3, nPoints)
+!   connectivity : INTEGER(I4B) - zero based point ids
+!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1
+!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
+!   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
+!
+! See also: [[obj_WriteMesh1]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadMesh(obj, points, connectivity, offsets, &
+    types, step)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
+    !! coordinates of points, shape (3, nPoints)
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
+    !! zero based point ids
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
+    !! offsets of cells, size nCells + 1
+    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
+    !! VTK cell types
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: step
+    !! step number (1 to NSteps)
+  END SUBROUTINE obj_ReadMesh
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ReadPointData@ReadMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read point data of a step
+!
+! vals(i, j) is the i-th component at the j-th point. A one component
+! array gives SIZE(vals, 1) = 1. If step is not present or the file is
+! not transient, the first data is read.
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - values (allocatable), (nComp, nPoints)
+!   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
+!
+! See also: [[obj_BeginStep]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadPointData(obj, name, vals, step)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! values, shape (nComp, nPoints)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: step
+    !! step number (1 to NSteps)
+  END SUBROUTINE obj_ReadPointData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                ReadCellData@ReadMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Read cell data of a step
+!
+! Arguments:
+!   obj : CLASS(VTKHDFFile_) - opened VTKHDF file
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - values (allocatable), (nComp, nCells)
+!   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
+!
+! See also: [[obj_ReadPointData]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadCellData(obj, name, vals, step)
+    CLASS(VTKHDFFile_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
+    !! values, shape (nComp, nCells)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: step
+    !! step number (1 to NSteps)
+  END SUBROUTINE obj_ReadCellData
+END INTERFACE
+
+END MODULE VTKHDFFile_Class

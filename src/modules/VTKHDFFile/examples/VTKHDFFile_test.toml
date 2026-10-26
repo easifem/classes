@@ -1,0 +1,41 @@
+# Common input file for the VTKHDFFile tests which need FEDOF.
+
+[domain]
+filename = "./meshdata/small_tri3_mesh.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 1
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 2
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+# options read by VTKHDFFile_%ImportFromToml
+[vtkhdf]
+isActive = true
+filename = "./VTKHDFFile_test_5.vtkhdf"
+isTransient = true
+frequency = 1
+zlib = -1
