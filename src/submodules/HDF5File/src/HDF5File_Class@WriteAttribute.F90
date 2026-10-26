@@ -23,6 +23,8 @@ USE HDF5, ONLY: SIZE_T, H5ACREATE_F, H5AOPEN_F, H5AWRITE_F, H5LEXISTS_F, &
   H5T_NATIVE_DOUBLE, H5ACLOSE_F, H5AEXISTS_F, &
   H5SCREATE_SIMPLE_F, H5TSET_SIZE_F, &
   H5T_NATIVE_INTEGER
+USE HDF5, ONLY: H5ADELETE_F
+USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -45,7 +47,7 @@ MODULE PROCEDURE open_object
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = obj_name
@@ -53,7 +55,7 @@ MODULE PROCEDURE open_object
   CALL H5LEXISTS_F(obj%file_id, path%Chars(), dset_exists, ierr)
 #ifdef DEBUG_VER
   CALL AssertError1(dset_exists, myName, &
-    'Incorrect path to object.')
+                    'Incorrect path to object.')
 #endif
 
 !Open the object
@@ -61,12 +63,12 @@ MODULE PROCEDURE open_object
 
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myName, &
-    'Failed to open object.')
+                    'Failed to open object.')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE open_object
 
@@ -82,19 +84,19 @@ MODULE PROCEDURE close_object
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   CALL H5OCLOSE_F(obj_id, ierr)
 
 #ifdef DEBUG_VER
   CALL AssertError1(ierr .EQ. 0, myName, &
-    'Failed to close object.')
+                    'Failed to close object.')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE close_object
 
@@ -111,33 +113,49 @@ MODULE PROCEDURE createAttribute
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
+
+  ! attr_id is -1 if the attribute is not created
+  attr_id = -1
 
   CALL H5AEXISTS_F(obj_id, attr_name, attr_exists, error)
-!Create and write to the attribute within the dataspce
-  IF (obj%overwriteStat .AND. attr_exists) THEN
-    ! Open the attribute
-    CALL H5AOPEN_F(obj_id, attr_name, attr_id, error)
 
+  IF (attr_exists) THEN
+    ! An existing attribute is replaced only when overwriting is allowed
+    IF (.NOT. obj%overwriteStat) THEN
 #ifdef DEBUG_VER
-    CALL AssertError1(error .EQ. 0, myName, &
-      'Unable to open attribute.')
+      CALL AssertError1(math%no, myName, &
+                        'Attribute ' // attr_name // &
+                        ' exists and overwriting is ' // &
+                        'not allowed (mode WRITE); call ' // &
+                        'SetOverwriteStat(.TRUE.).')
+      CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                              '[END] ')
 #endif
+      RETURN
+    END IF
 
-  ELSE
-    ! Create the attribute
-    CALL H5ACREATE_F(obj_id, attr_name, atype_id, dspace_id, attr_id, error)
+    ! Delete it, so that it is created with the new type and size
+    CALL H5ADELETE_F(obj_id, attr_name, error)
 
 #ifdef DEBUG_VER
     CALL AssertError1(error .EQ. 0, myName, &
-      'Unable to create attribute.')
+                      'Unable to delete the old attribute ' // attr_name)
 #endif
   END IF
 
+  CALL H5ACREATE_F(obj_id, attr_name, atype_id, dspace_id, attr_id, error)
+  IF (error .NE. 0) attr_id = -1
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Unable to create attribute.')
+#endif
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE createAttribute
 
@@ -154,7 +172,7 @@ MODULE PROCEDURE open_attribute
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 !Check that the named attribute exists
@@ -162,7 +180,7 @@ MODULE PROCEDURE open_attribute
 
 #ifdef DEBUG_VER
   CALL AssertError1(attr_exists, myName, &
-    'Attribute does not exist for object.')
+                    'Attribute does not exist for object.')
 #endif
 
 !Open the Attribute
@@ -170,12 +188,12 @@ MODULE PROCEDURE open_attribute
 
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to open attribute.')
+                    'Failed to open attribute.')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE open_attribute
 
@@ -191,19 +209,19 @@ MODULE PROCEDURE close_attribute
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   CALL H5ACLOSE_F(attr_id, error)
 
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
-    'Failed to close objectt.')
+                    'Failed to close objectt.')
 #endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE close_attribute
 
@@ -223,13 +241,17 @@ MODULE PROCEDURE obj_WriteAttribute_st0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   num_dims = 1
   dims(1) = 1
+  ! The buffer and the type have the same length; an empty String is
+  ! written as one NUL character (ReadAttribute removes it), since a type
+  ! of size 0 is not allowed
   valss = attr_val%chars()
-  attr_len = INT(LEN(valss), I4B)
+  IF (LEN(valss) .EQ. 0) valss = C_NULL_CHAR
+  attr_len = INT(LEN(valss), SIZE_T)
 !Prepare the File and object for the attribute
   CALL open_object(obj, obj_name, obj_id)
 !Create the data space for memory type and size
@@ -237,17 +259,19 @@ MODULE PROCEDURE obj_WriteAttribute_st0
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, atype_id, error)
   CALL H5TSET_SIZE_F(atype_id, attr_len, error)
   CALL createAttribute(obj, obj_id, attr_name, atype_id, dspace_id, attr_id)
-  CALL H5AWRITE_F(attr_id, atype_id, TRIM(valss), dims, error)
+  IF (attr_id .GT. 0) THEN
+    CALL H5AWRITE_F(attr_id, atype_id, valss, dims, error)
+    CALL close_attribute(obj, attr_id)
+  END IF
 !Close datatype opened by h5tcopy_f
   CALL H5TCLOSE_F(atype_id, error)
-!Close dataspace, attribute and object
+!Close dataspace and object
   CALL H5SCLOSE_F(dspace_id, error)
-  CALL close_attribute(obj, attr_id)
   CALL close_object(obj, obj_id)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteAttribute_st0
 
@@ -263,7 +287,7 @@ MODULE PROCEDURE obj_WriteAttribute_c0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   str_val = TRIM(attr_val)
@@ -271,7 +295,7 @@ MODULE PROCEDURE obj_WriteAttribute_c0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteAttribute_c0
 
@@ -289,7 +313,7 @@ MODULE PROCEDURE obj_WriteAttribute_i0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   num_dims = 1
@@ -300,15 +324,17 @@ MODULE PROCEDURE obj_WriteAttribute_i0
   CALL H5SCREATE_SIMPLE_F(num_dims, dims, dspace_id, error)
 !Create and write to the attribute within the dataspce
   CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_INTEGER, &
-    dspace_id, attr_id)
-  CALL H5AWRITE_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
+                       dspace_id, attr_id)
+  IF (attr_id .GT. 0) THEN
+    CALL H5AWRITE_F(attr_id, H5T_NATIVE_INTEGER, attr_val, dims, error)
+    CALL close_attribute(obj, attr_id)
+  END IF
   CALL H5SCLOSE_F(dspace_id, error)
-  CALL close_attribute(obj, attr_id)
   CALL close_object(obj, obj_id)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteAttribute_i0
 
@@ -326,7 +352,7 @@ MODULE PROCEDURE obj_WriteAttribute_d0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   num_dims = 1
@@ -337,15 +363,17 @@ MODULE PROCEDURE obj_WriteAttribute_d0
   CALL H5SCREATE_SIMPLE_F(num_dims, dims, dspace_id, error)
 !Create and write to the attribute within the dataspce
   CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_DOUBLE, &
-    dspace_id, attr_id)
-  CALL H5AWRITE_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
+                       dspace_id, attr_id)
+  IF (attr_id .GT. 0) THEN
+    CALL H5AWRITE_F(attr_id, H5T_NATIVE_DOUBLE, attr_val, dims, error)
+    CALL close_attribute(obj, attr_id)
+  END IF
   CALL H5SCLOSE_F(dspace_id, error)
-  CALL close_attribute(obj, attr_id)
   CALL close_object(obj, obj_id)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_WriteAttribute_d0
 

@@ -21,6 +21,8 @@ USE HDF5, ONLY: SIZE_T, H5AGET_TYPE_F, H5AREAD_F, H5T_NATIVE_INTEGER, &
 USE HDF5, ONLY: H5TCLOSE_F
 
 USE ISO_C_BINDING, ONLY: C_CHAR
+USE ISO_C_BINDING, ONLY: C_NULL_CHAR
+USE HDF5, ONLY: H5AEXISTS_BY_NAME_F
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -55,6 +57,8 @@ SUBROUTINE obj_ReadAttribute_st0_helper(attr_id, length_max, attr_val)
   CALL H5AGET_TYPE_F(attr_id, atype_id, error)
   CALL H5AREAD_F(attr_id, atype_id, buf, dims, error)
   attr_val = buf
+  ! An empty String is stored as one NUL character
+  attr_val = attr_val%Replace(C_NULL_CHAR, '')
 
   CALL H5TCLOSE_F(atype_id, error)
 #ifdef DEBUG_VER
@@ -97,6 +101,40 @@ MODULE PROCEDURE obj_ReadAttribute_st0
                           '[END] ')
 #endif
 END PROCEDURE obj_ReadAttribute_st0
+
+!----------------------------------------------------------------------------
+!                                                           AttributeExists
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_AttributeExists
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_AttributeExists()"
+#endif
+  LOGICAL :: isok
+  INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ans = math%no
+
+  isok = obj%isInit .AND. obj%IsOpen()
+
+  ! The object must exist; the root group "/" always exists
+  IF (isok .AND. TRIM(obj_name) .NE. "/") isok = obj%PathExists(obj_name)
+
+  IF (isok) THEN
+    CALL H5AEXISTS_BY_NAME_F(obj%file_id, obj_name, attr_name, isok, ierr)
+    ans = isok .AND. (ierr .EQ. 0)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_AttributeExists
 
 !----------------------------------------------------------------------------
 !                                                             ReadAttribute

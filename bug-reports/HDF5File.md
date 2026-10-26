@@ -28,7 +28,9 @@ a bug and should pass after the fix:
 | Compression_test_1 | rank-2 data is compressed; file is smaller | passes (B1 fixed) |
 | ChunkPolicy_test_1 | default and custom chunk policy | passes (B1 fixed) |
 | OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
-| WriteAttribute_test_2 | longer String attribute replaces the old one | expected to fail (A5) |
+| WriteAttribute_test_2 | longer String attribute replaces the old one | passes (A5 fixed) |
+| WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
+| AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
 | Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
 
@@ -186,6 +188,36 @@ Problem (before the fix):
   H5F_LIBVER_LATEST_F)` (or V110). Files then need HDF5 >= 1.8 to read;
   ParaView, h5py and current HDF5 tools are fine with that.
 
+### A5. A String attribute keeps its old length
+
+- Fixed 2026-10-26.
+  - `createAttribute`: an existing attribute is deleted (`H5Adelete`)
+    and created again when overwriting is allowed, so a value of another
+    length or type replaces it. When overwriting is not allowed (mode
+    WRITE) it is left unchanged, nothing is written (DEBUG error), and
+    `attr_id` is -1; the writers write and close only a valid id. Before,
+    `H5Acreate` failed and the writers used the invalid id.
+  - `obj_WriteAttribute_st0` set the type size from `LEN(valss)` but
+    wrote `TRIM(valss)`, so HDF5 read past the buffer for a String with
+    trailing blanks; now the buffer and the type have the same length. An
+    empty String is stored as one NUL character (size 0 is not allowed),
+    and `obj_ReadAttribute_st0` removes it.
+  - New method `AttributeExists(obj_name, attr_name)`: false, without
+    an error, if the object or the attribute does not exist.
+- Tests: WriteAttribute_test_2, WriteAttribute_test_3 (new),
+  AttributeExists_test_1 (new) pass. Full suite: 47 tests, 45 pass; not
+  passing are A3 (Overwrite_test_1) and A9 (Ls_test_1).
+
+Problem (before the fix):
+
+
+- `createAttribute` (WriteAttribute:121) opens an existing attribute
+  with its old type. A longer value is converted to the old size and cut
+  without any message.
+- Proposal: delete the attribute (`H5Adelete`) and create it again when the
+  size differs.
+- Test: WriteAttribute_test_2.
+
 ## Open
 
 ### A. Correctness
@@ -246,15 +278,6 @@ Problem (before the fix):
   the size 1 of `H5T_NATIVE_CHARACTER`, so a 1-character value is written
   and read back as empty. HDF5 prints "size must be positive" for each call,
   and the stored size is not the one the code meant to set.
-
-#### A5. A String attribute keeps its old length
-
-- `createAttribute` (WriteAttribute:121) opens an existing attribute
-  with its old type. A longer value is converted to the old size and cut
-  without any message.
-- Proposal: delete the attribute (`H5Adelete`) and create it again when the
-  size differs.
-- Test: WriteAttribute_test_2.
 
 #### A6. Deallocate(delete=.TRUE.) deletes an open file
 

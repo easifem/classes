@@ -400,6 +400,8 @@ CONTAINS
   !! Get the shape of a dataset
   PROCEDURE, PUBLIC, PASS(Obj) :: GetDataType => obj_GetDataType
   !! Get the data type of a dataset
+  PROCEDURE, PUBLIC, PASS(Obj) :: AttributeExists => obj_AttributeExists
+  !! Returns true if an attribute exists
 END TYPE HDF5File_
 
 !----------------------------------------------------------------------------
@@ -6838,8 +6840,14 @@ END INTERFACE
 ! summary: Write a String attribute
 !
 ! Write a String attribute attr_name to the object obj_name, which can be a
-! group or a dataset. The object must exist. An existing attribute is
-! overwritten when overwriting is allowed (see SetOverwriteStat).
+! group or a dataset. The object must exist. An empty String is allowed.
+!
+! An existing attribute is replaced when overwriting is allowed (modes NEW
+! and OVERWRITE, or SetOverwriteStat(.TRUE.)): it is deleted and created
+! again, so the new value can have another length or type. When
+! overwriting is not allowed (mode WRITE) the attribute is not changed; in
+! DEBUG mode an error is raised. The same rules hold for the character,
+! integer and real attributes.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -7017,6 +7025,79 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: attr_val
     !! value of the attribute
   END SUBROUTINE obj_WriteAttribute_d0
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           AttributeExists
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Returns true if an attribute exists
+!
+! Returns true if the object obj_name (a group or a dataset) exists and has
+! the attribute attr_name. Returns false if the object or the attribute
+! does not exist, or if the file is not initiated or not open; no error is
+! raised. Use it before ReadAttribute to read optional attributes.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - HDF5 file object
+!   obj_name : CHARACTER(*) - path of the group or dataset ("/" is the root)
+!   attr_name : CHARACTER(*) - name of the attribute
+!
+! Returns:
+!   ans : LOGICAL(LGT) - true if the attribute exists
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "AttributeExists_test_1.h5"
+! TYPE(HDF5File_) :: obj
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%WRITE(dsetname="/mesh/x", vals=1.0_DFP)
+! CALL obj%WriteAttribute(obj_name="/mesh/x", attr_name="unit", &
+!                         attr_val="m")
+! CALL obj%WriteAttribute(obj_name="/mesh", attr_name="nsd", attr_val=2)
+!
+! CALL OK(obj%AttributeExists("/mesh/x", "unit"), "attribute of a dataset")
+! CALL OK(obj%AttributeExists("/mesh", "nsd"), "attribute of a group")
+! CALL OK(.NOT. obj%AttributeExists("/mesh/x", "scale"), &
+!         "missing attribute")
+! CALL OK(.NOT. obj%AttributeExists("/missing", "unit"), "missing object")
+! CALL OK(.NOT. obj%AttributeExists("/", "unit"), "root group")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ReadAttribute_st0]], [[obj_WriteAttribute_st0]]
+
+INTERFACE
+  MODULE FUNCTION obj_AttributeExists(obj, obj_name, attr_name) RESULT(ans)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: obj_name
+    !! path of the group or dataset
+    CHARACTER(LEN=*), INTENT(IN) :: attr_name
+    !! name of the attribute
+    LOGICAL(LGT) :: ans
+    !! true if the attribute exists
+  END FUNCTION obj_AttributeExists
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -7254,10 +7335,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! summary: Create an attribute or open it for overwriting
+! update:
+!   - 2026-10-26: replace an existing attribute (delete and create)
+! summary: Create an attribute, replacing an existing one
 !
-! If the attribute exists and overwriting is allowed, it is opened; otherwise
-! it is created. In DEBUG mode an error is raised on failure.
+! If the attribute exists and overwriting is allowed, it is deleted and
+! created again with atype_id and dspace_id, so its type and size can
+! change. If it exists and overwriting is not allowed, attr_id is -1 and
+! nothing is written (DEBUG mode raises an error). attr_id is also -1 if
+! the attribute can not be created; the callers write and close it only
+! when attr_id > 0.
 !
 ! See also: [[open_attribute]], [[close_attribute]]
 
