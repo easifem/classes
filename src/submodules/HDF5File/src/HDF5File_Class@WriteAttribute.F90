@@ -22,6 +22,8 @@ USE HDF5, ONLY: SIZE_T, H5ACREATE_F, H5AOPEN_F, H5AWRITE_F, &
   H5TCLOSE_F, H5TCOPY_F, H5T_NATIVE_CHARACTER, &
   H5ACLOSE_F, H5AEXISTS_F, H5TSET_SIZE_F
 USE HDF5, ONLY: H5ADELETE_F
+USE HDF5, ONLY: H5TSET_STRPAD_F
+USE HDF5, ONLY: H5T_STR_NULLPAD_F
 USE HDF5, ONLY: H5KIND_TO_TYPE
 USE HDF5, ONLY: H5_INTEGER_KIND
 USE HDF5, ONLY: H5_REAL_KIND
@@ -43,7 +45,9 @@ MODULE PROCEDURE open_object
   CHARACTER(LEN=*), PARAMETER :: myName = 'open_object_HDF5File_Class()'
 #endif
   TYPE(String) :: path
+#ifdef DEBUG_VER
   LOGICAL(LGT) :: dset_exists
+#endif
   INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
@@ -52,10 +56,10 @@ MODULE PROCEDURE open_object
 #endif
 
   path = obj_name
-!Check for expected links between object, and File; PathExists also
-!accepts the root group "/"
-  dset_exists = obj%PathExists(path%Chars())
+!Check the path only in DEBUG mode (PathExists also accepts the root
+!group "/"); in release mode H5Oopen fails for a missing object
 #ifdef DEBUG_VER
+  dset_exists = obj%PathExists(path%Chars())
   CALL AssertError1(dset_exists, myName, &
                     'Incorrect path to object.')
 #endif
@@ -403,18 +407,43 @@ MODULE PROCEDURE obj_WriteAttribute_b0
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_b0()'
 #endif
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(INT8) :: bvals
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
-  ! A logical is stored as the character "T" or "F", as in Write
-  IF (attr_val) THEN
-    CALL obj%WriteAttribute(obj_name, attr_name, "T")
-  ELSE
-    CALL obj%WriteAttribute(obj_name, attr_name, "F")
+  ! A logical is stored as the enum {FALSE=0, TRUE=1} on an 8-bit
+  ! integer, as logical datasets (h5py reads it as bool)
+  bvals = 0_INT8
+  IF (attr_val) bvals = 1_INT8
+  dims(1) = 1
+  CALL BoolEnumType(mem)
+
+  CALL open_object(obj, obj_name, obj_id)
+  CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
+
+  IF (attr_id .GT. 0) THEN
+    IF (dims(1) .GT. 0) THEN
+      CALL H5AWRITE_F(attr_id, mem, bvals, dims, error)
+    END IF
+
+#ifdef DEBUG_VER
+    CALL AssertError1(error .EQ. 0, myName, &
+                      'Failed to write attribute.')
+#endif
+
+    CALL close_attribute(obj, attr_id)
   END IF
+
+  CALL H5TCLOSE_F(mem, error)
+  CALL H5SCLOSE_F(dspace_id, error)
+  CALL close_object(obj, obj_id)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -524,31 +553,30 @@ MODULE PROCEDURE obj_WriteAttribute_b1
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_WriteAttribute_b1()'
 #endif
-  INTEGER(I4B) :: error, ii
-  INTEGER(HID_T) :: attr_id, dspace_id, obj_id
+  INTEGER(I4B) :: error
+  INTEGER(HID_T) :: attr_id, dspace_id, obj_id, mem
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
-  CHARACTER(LEN=1) :: buf(SIZE(attr_val))
+  INTEGER(INT8) :: bvals(SIZE(attr_val))
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
-  ! A logical is stored as the character "T" or "F", as in Write
-  DO ii = 1, SIZE(attr_val)
-    buf(ii) = 'F'
-    IF (attr_val(ii)) buf(ii) = 'T'
-  END DO
+  ! A logical is stored as the enum {FALSE=0, TRUE=1} on an 8-bit
+  ! integer, as logical datasets (h5py reads it as bool)
+  bvals = 0_INT8
+  WHERE (attr_val) bvals = 1_INT8
   dims(1) = SIZE(attr_val)
+  CALL BoolEnumType(mem)
 
   CALL open_object(obj, obj_name, obj_id)
   CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
-  CALL createAttribute(obj, obj_id, attr_name, H5T_NATIVE_CHARACTER, &
-                       dspace_id, attr_id)
+  CALL createAttribute(obj, obj_id, attr_name, mem, dspace_id, attr_id)
 
   IF (attr_id .GT. 0) THEN
     IF (dims(1) .GT. 0) THEN
-      CALL H5AWRITE_F(attr_id, H5T_NATIVE_CHARACTER, buf, dims, error)
+      CALL H5AWRITE_F(attr_id, mem, bvals, dims, error)
     END IF
 
 #ifdef DEBUG_VER
@@ -559,6 +587,7 @@ MODULE PROCEDURE obj_WriteAttribute_b1
     CALL close_attribute(obj, attr_id)
   END IF
 
+  CALL H5TCLOSE_F(mem, error)
   CALL H5SCLOSE_F(dspace_id, error)
   CALL close_object(obj, obj_id)
 
@@ -594,7 +623,11 @@ MODULE PROCEDURE obj_WriteAttribute_st1
   END DO
   ALLOCATE(CHARACTER(LEN=lmax) :: buf(SIZE(attr_val)))
   DO ii = 1, SIZE(attr_val)
-    buf(ii) = attr_val(ii)%chars()
+    ! the rest of the buffer is NUL (padding H5T_STR_NULLPAD)
+    buf(ii) = REPEAT(C_NULL_CHAR, lmax)
+    IF (attr_val(ii)%LEN_TRIM() .GT. 0) THEN
+      buf(ii) (1:MIN(attr_val(ii)%LEN_TRIM(), lmax)) = attr_val(ii)%chars()
+    END IF
   END DO
   dims(1) = SIZE(attr_val)
 
@@ -602,6 +635,7 @@ MODULE PROCEDURE obj_WriteAttribute_st1
   CALL H5SCREATE_SIMPLE_F(1, dims, dspace_id, error)
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, atype_id, error)
   CALL H5TSET_SIZE_F(atype_id, INT(lmax, SIZE_T), error)
+  CALL H5TSET_STRPAD_F(atype_id, H5T_STR_NULLPAD_F, error)
   CALL createAttribute(obj, obj_id, attr_name, atype_id, dspace_id, attr_id)
 
   IF (attr_id .GT. 0) THEN

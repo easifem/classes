@@ -18,6 +18,7 @@
 SUBMODULE(HDF5File_Class) WriteString
 USE HDF5, ONLY: H5DWRITE_F, H5TCLOSE_F, H5TCOPY_F, H5TSET_SIZE_F, &
   H5TSET_STRPAD_F, H5T_NATIVE_CHARACTER
+USE HDF5, ONLY: H5T_STR_NULLPAD_F
 USE HDF5, ONLY: SIZE_T
 USE ISO_C_BINDING, ONLY: C_NULL_CHAR
 IMPLICIT NONE
@@ -70,7 +71,7 @@ MODULE PROCEDURE obj_Write_st0
   IF (PRESENT(cnt_in)) cnt = cnt_in
 
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, mem, ierr)
-  CALL H5TSET_STRPAD_F(mem, 0, ierr)
+  CALL H5TSET_STRPAD_F(mem, H5T_STR_NULLPAD_F, ierr)
   CALL H5TSET_SIZE_F(mem, INT(MAX(vals%LEN_TRIM(), 1), SIZE_T), ierr)
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, &
                 dset_id, dspace_id, gspace_id, plist_id, ierr, &
@@ -110,7 +111,7 @@ MODULE PROCEDURE obj_Write_st1
 ! Fill character array (allocatable, so it is not on the stack)
   ALLOCATE(CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals)))
   DO j = 1, SIZE(vals, DIM=1)
-    valss(j) = vals(j)%chars()
+    CALL SetNulPadded(valss(j), vals(j)%chars())
   END DO
 
 ! stash offset
@@ -130,7 +131,7 @@ MODULE PROCEDURE obj_Write_st1
   IF (PRESENT(cnt_in)) cnt = cnt_in
 
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, mem, ierr)
-  CALL H5TSET_STRPAD_F(mem, 0, ierr)
+  CALL H5TSET_STRPAD_F(mem, H5T_STR_NULLPAD_F, ierr)
   ! The string length is at least 1 (a type of size 0 is not allowed)
   CALL H5TSET_SIZE_F(mem, INT(MAX(length_max, 1), SIZE_T), ierr)
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, dset_id, &
@@ -236,7 +237,7 @@ MODULE PROCEDURE obj_Write_st2
            valss(SIZE(vals, 1), SIZE(vals, 2)))
   DO k = 1, SIZE(vals, 2)
     DO j = 1, SIZE(vals, 1)
-      valss(j, k) = vals(j, k)%chars()
+      CALL SetNulPadded(valss(j, k), vals(j, k)%chars())
     END DO
   END DO
 
@@ -258,7 +259,7 @@ MODULE PROCEDURE obj_Write_st2
   IF (PRESENT(cnt_in)) cnt = cnt_in
 
   CALL h5tcopy_f(H5T_NATIVE_CHARACTER, mem, ierr)
-  CALL h5tset_strpad_f(mem, 0, ierr)
+  CALL h5tset_strpad_f(mem, H5T_STR_NULLPAD_F, ierr)
   ! The string length is at least 1 (a type of size 0 is not allowed)
   CALL h5tset_size_f(mem, INT(MAX(length_max, 1), SIZE_T), ierr)
   CALL preWrite(obj, rank, gdims, ldims, path%Chars(), mem, dset_id, &
@@ -339,7 +340,7 @@ MODULE PROCEDURE obj_Write_st3
   DO i = 1, SIZE(vals, 3)
     DO k = 1, SIZE(vals, 2)
       DO j = 1, SIZE(vals, 1)
-        valss(j, k, i) = vals(j, k, i)%chars()
+        CALL SetNulPadded(valss(j, k, i), vals(j, k, i)%chars())
       END DO
     END DO
   END DO
@@ -362,7 +363,7 @@ MODULE PROCEDURE obj_Write_st3
   cnt = gdims
   IF (PRESENT(cnt_in)) cnt = cnt_in
   CALL H5TCOPY_F(H5T_NATIVE_CHARACTER, mem, ierr)
-  CALL H5TSET_STRPAD_F(mem, 0, ierr)
+  CALL H5TSET_STRPAD_F(mem, H5T_STR_NULLPAD_F, ierr)
   ! The string length is at least 1 (a type of size 0 is not allowed)
   CALL H5TSET_SIZE_F(mem, INT(MAX(length_max, 1), SIZE_T), ierr)
 
@@ -430,6 +431,31 @@ END PROCEDURE obj_Write_c1
 
 !----------------------------------------------------------------------------
 !                                                              Include error
+!----------------------------------------------------------------------------
+!                                                               SetNulPadded
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Copy a string into a fixed-length buffer padded with NUL
+!
+! The value without trailing blanks is copied into dst, and the rest of
+! dst is filled with NUL characters. The datasets are written with the
+! padding H5T_STR_NULLPAD, so h5py shows the values without padding, and
+! Read removes the NUL characters.
+
+PURE SUBROUTINE SetNulPadded(dst, src)
+  CHARACTER(LEN=*), INTENT(OUT) :: dst
+  !! fixed-length buffer
+  CHARACTER(LEN=*), INTENT(IN) :: src
+  !! value
+  INTEGER(I4B) :: n
+
+  dst = REPEAT(C_NULL_CHAR, LEN(dst))
+  n = MIN(LEN_TRIM(src), LEN(dst))
+  IF (n .GT. 0) dst(1:n) = src(1:n)
+END SUBROUTINE SetNulPadded
+
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

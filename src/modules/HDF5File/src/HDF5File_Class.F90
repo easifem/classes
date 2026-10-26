@@ -208,6 +208,15 @@ END TYPE HDF5ChunkPolicy_
 !   and String.
 ! - WriteAttribute and ReadAttribute handle attributes of groups and datasets.
 !
+! Storage of logical and String data (datasets and attributes):
+!
+! - Logical values are stored as the HDF5 enum {FALSE=0, TRUE=1} on an 8-bit
+!   integer, which h5py reads as bool. Read also accepts the characters
+!   'T'/'F' of older files and integers (0 is false).
+! - String arrays are stored as fixed-length strings of the longest length,
+!   padded with NUL characters (H5T_STR_NULLPAD); Read removes the padding.
+!   Trailing blanks of a value are not kept.
+!
 ! Components:
 !
 ! - isInit: true if the object is initiated
@@ -1995,6 +2004,81 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                               BoolEnumType
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: HDF5 type of logical data
+!
+! Create the HDF5 enum type {FALSE=0, TRUE=1} on an 8-bit integer, which
+! is the type of logical datasets and attributes. It is the convention of
+! h5py, which reads such data as bool. The caller closes the type with
+! H5Tclose. Files of older versions store logical data as the characters
+! 'T' and 'F'; Read and ReadAttribute accept both.
+!
+! See also: [[obj_Write_b1]], [[obj_Read_b1]]
+
+INTERFACE
+  MODULE SUBROUTINE BoolEnumType(enum_id)
+    INTEGER(HID_T), INTENT(OUT) :: enum_id
+    !! id of the new enum type
+  END SUBROUTINE BoolEnumType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                BoolMemType
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Memory type to read logical data as 8-bit values
+!
+! dtype is the HDF5 type of a logical dataset or attribute: the enum
+! {FALSE, TRUE} (this version), the characters 'T'/'F' (older files), or
+! an integer (other tools). If it has one byte, memtype is dtype and the
+! bytes are read as they are; otherwise memtype is the native 8-bit
+! integer, to which HDF5 converts. isChar is true for characters. The
+! caller closes dtype. Use BoolValue to get the logical values.
+!
+! See also: [[BoolValue]], [[BoolEnumType]]
+
+INTERFACE
+  MODULE SUBROUTINE BoolMemType(dtype, memtype, isChar)
+    INTEGER(HID_T), INTENT(IN) :: dtype
+    !! type of the data in the file
+    INTEGER(HID_T), INTENT(OUT) :: memtype
+    !! type to read the data into 8-bit integers
+    LOGICAL(LGT), INTENT(OUT) :: isChar
+    !! true if the data are the characters 'T'/'F'
+  END SUBROUTINE BoolMemType
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                  BoolValue
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Logical value of an 8-bit value read by BoolMemType
+!
+! For characters (isChar) the value is true if b is 'T'; otherwise it is
+! true if b is not 0.
+!
+! See also: [[BoolMemType]]
+
+INTERFACE
+  MODULE ELEMENTAL FUNCTION BoolValue(b, isChar) RESULT(ans)
+    INTEGER(INT8), INTENT(IN) :: b
+    !! 8-bit value read from the file
+    LOGICAL(LGT), INTENT(IN) :: isChar
+    !! true if the values are the characters 'T'/'F'
+    LOGICAL(LGT) :: ans
+    !! logical value
+  END FUNCTION BoolValue
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
 
@@ -2794,7 +2878,8 @@ END INTERFACE
 ! dsetname are created. An existing dataset is overwritten when overwriting is
 ! allowed (see SetOverwriteStat); the new data must have the same shape as the
 ! old data, since it is written in place (use Append for data that grows).
-! Logical values are stored as the characters 'T' and 'F'.
+! Logical values are stored as the HDF5 enum {FALSE=0, TRUE=1} on an 8-bit
+! integer, which h5py reads as bool.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2838,7 +2923,8 @@ END INTERFACE
 ! dsetname are created. An existing dataset is overwritten when overwriting is
 ! allowed (see SetOverwriteStat); the new data must have the same shape as the
 ! old data, since it is written in place (use Append for data that grows).
-! Logical values are stored as the characters 'T' and 'F'.
+! Logical values are stored as the HDF5 enum {FALSE=0, TRUE=1} on an 8-bit
+! integer, which h5py reads as bool.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2929,7 +3015,8 @@ END INTERFACE
 ! dsetname are created. An existing dataset is overwritten when overwriting is
 ! allowed (see SetOverwriteStat); the new data must have the same shape as the
 ! old data, since it is written in place (use Append for data that grows).
-! Logical values are stored as the characters 'T' and 'F'.
+! Logical values are stored as the HDF5 enum {FALSE=0, TRUE=1} on an 8-bit
+! integer, which h5py reads as bool.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2973,7 +3060,8 @@ END INTERFACE
 ! dsetname are created. An existing dataset is overwritten when overwriting is
 ! allowed (see SetOverwriteStat); the new data must have the same shape as the
 ! old data, since it is written in place (use Append for data that grows).
-! Logical values are stored as the characters 'T' and 'F'.
+! Logical values are stored as the HDF5 enum {FALSE=0, TRUE=1} on an 8-bit
+! integer, which h5py reads as bool.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3988,7 +4076,7 @@ END INTERFACE
 !
 ! Returns the class and the precision (bits) of the dataset: 'R32' or 'R64'
 ! for a real, 'I08', 'I16', 'I32' or 'I64' for an integer, 'STR' for a
-! string (also logical data, which is stored as characters), and 'N/A' for
+! string, 'BOL' for logical data (the enum {FALSE, TRUE}), and 'N/A' for
 ! a real or integer of another precision. In DEBUG mode an error is raised
 ! for other data types.
 !
@@ -3998,7 +4086,7 @@ END INTERFACE
 !
 ! Returns:
 !   dataType : CHARACTER(3) - 'R32', 'R64', 'I08', 'I16', 'I32', 'I64',
-!       'STR' or 'N/A'
+!       'STR', 'BOL' or 'N/A'
 !
 ! Examples
 !
@@ -4053,7 +4141,7 @@ INTERFACE
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     CHARACTER(LEN=3) :: dataType
-    !! 'R32', 'R64', 'I08', 'I16', 'I32', 'I64', 'STR' or 'N/A'
+    !! 'R32', 'R64', 'I08', 'I16', 'I32', 'I64', 'STR', 'BOL' or 'N/A'
   END FUNCTION obj_GetDataType
 END INTERFACE
 
@@ -6632,8 +6720,9 @@ END INTERFACE
 ! date: 2021-06-09
 ! summary: Read a scalar of logical
 !
-! Read a scalar of logical from the dataset dsetname. The characters 'T' and
-! 'F' stored by Write are converted to logical values.
+! Read a scalar of logical from the dataset dsetname. The enum {FALSE, TRUE}
+! written by Write, the characters 'T'/'F' of older files, and integers
+! (0 is false) are converted to logical values.
 !
 ! In DEBUG mode an error is raised if the file is not open with read access,
 ! the dataset can not be opened, or its rank is not the rank of vals.
@@ -6666,7 +6755,8 @@ END INTERFACE
 !
 ! Read a rank-1 array of logical from the dataset dsetname. vals is allocated
 ! to the shape of the dataset; it is reallocated if it has another shape. The
-! characters 'T' and 'F' stored by Write are converted to logical values.
+! enum {FALSE, TRUE} written by Write, the characters 'T'/'F' of older
+! files, and integers (0 is false) are converted to logical values.
 !
 ! In DEBUG mode an error is raised if the file is not open with read access,
 ! the dataset can not be opened, or its rank is not the rank of vals.
@@ -6789,7 +6879,8 @@ END INTERFACE
 !
 ! Read a rank-2 array of logical from the dataset dsetname. vals is allocated
 ! to the shape of the dataset; it is reallocated if it has another shape. The
-! characters 'T' and 'F' stored by Write are converted to logical values.
+! enum {FALSE, TRUE} written by Write, the characters 'T'/'F' of older
+! files, and integers (0 is false) are converted to logical values.
 !
 ! In DEBUG mode an error is raised if the file is not open with read access,
 ! the dataset can not be opened, or its rank is not the rank of vals.
@@ -6859,11 +6950,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-09
+! update:
+!   - 2026-10-26: implemented (it was a stub)
 ! summary: Read a rank-3 array of logical
 !
-! Read a rank-3 array of logical. This routine is not implemented yet: in
-! DEBUG mode it raises an error, otherwise it does nothing. Use obj_Read__b3
-! instead.
+! Read a rank-3 array of logical. vals is allocated to the shape of the
+! dataset. The enum {FALSE, TRUE} written by Write, the characters 'T'/'F'
+! of older files, and integers (0 is false) are converted to logical
+! values.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -7133,7 +7227,8 @@ END INTERFACE
 ! Write a logical attribute attr_name to the object obj_name, which can be a
 ! group or a dataset. The object must exist. An existing attribute is
 ! replaced when overwriting is allowed; see obj_WriteAttribute_st0.
-! The value is stored as the character "T" or "F", as logical datasets.
+! The value is stored as the enum {FALSE=0, TRUE=1} on an 8-bit integer, as
+! logical datasets.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -7303,7 +7398,7 @@ END INTERFACE
 ! Write a rank-1 logical attribute attr_name to the object obj_name, which can
 ! be a group or a dataset. The object must exist. An existing attribute is
 ! replaced when overwriting is allowed; see obj_WriteAttribute_st0. Each value
-! is stored as the character "T" or "F".
+! is stored as the enum {FALSE=0, TRUE=1} on an 8-bit integer.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -7338,8 +7433,9 @@ END INTERFACE
 ! be a group or a dataset. The object must exist. An existing attribute is
 ! replaced when overwriting is allowed; see obj_WriteAttribute_st0. The
 ! strings are stored as fixed-length strings of the longest length (at least
-! 1); shorter strings are padded with blanks, which ReadAttribute removes. So
-! trailing blanks of a value are not kept. Empty strings are allowed.
+! 1); shorter strings are padded with NUL characters (H5T_STR_NULLPAD),
+! which ReadAttribute removes. Trailing blanks of a value are not kept.
+! Empty strings are allowed.
 !
 ! The example writes and reads all the vector attributes: String,
 ! logical, Real32 and Int64.
@@ -7891,7 +7987,8 @@ END INTERFACE
 ! Read a logical attribute attr_name of the object obj_name, which can be a
 ! group or a dataset. The object and the attribute must exist (see
 ! AttributeExists).
-! attr_val is true if the stored character is "T".
+! The enum {FALSE, TRUE}, the character "T"/"F" of older files and integers
+! (0 is false) are converted to a logical value.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -7993,7 +8090,8 @@ END INTERFACE
 ! Read a rank-1 logical attribute attr_name of the object obj_name, which can
 ! be a group or a dataset. The object and the attribute must exist (see
 ! AttributeExists). attr_val is allocated to the number of values of the
-! attribute. A value is true if the stored character is "T".
+! attribute. The enum {FALSE, TRUE}, the characters "T"/"F" of older files
+! and integers (0 is false) are converted to logical values.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object

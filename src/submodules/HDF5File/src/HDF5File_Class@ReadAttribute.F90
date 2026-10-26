@@ -31,7 +31,6 @@ USE HDF5, ONLY: H5AGET_SPACE_F
 USE HDF5, ONLY: H5SCLOSE_F
 USE HDF5, ONLY: H5SGET_SIMPLE_EXTENT_NPOINTS_F
 USE HDF5, ONLY: H5TGET_SIZE_F
-USE HDF5, ONLY: H5T_NATIVE_CHARACTER
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -277,16 +276,45 @@ MODULE PROCEDURE obj_ReadAttribute_b0
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_b0()'
 #endif
-  TYPE(String) :: str_val
+  INTEGER(HID_T) :: attr_id, obj_id, atype_id, mem
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B) :: error
+  LOGICAL(LGT) :: isChar
+  INTEGER(INT8) :: bvals
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
-  ! A logical is stored as the character "T" or "F"
-  CALL obj%ReadAttribute(obj_name, attr_name, str_val)
-  attr_val = str_val%chars() .EQ. "T"
+  error = 0
+  CALL open_object(obj, obj_name, obj_id)
+  CALL open_attribute(obj, obj_id, attr_name, attr_id)
+
+  ! A scalar is read only from an attribute with one value
+  dims(1) = GetAttributeSize(attr_id)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(dims(1) .EQ. 1, myName, &
+                    'The attribute ' // attr_name // ' is not a scalar.')
+#endif
+
+  ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+  ! the characters "T"/"F" of older files
+  CALL H5AGET_TYPE_F(attr_id, atype_id, error)
+  CALL BoolMemType(atype_id, mem, isChar)
+  IF (dims(1) .EQ. 1) CALL H5AREAD_F(attr_id, mem, bvals, dims, error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Failed to read attribute.')
+#endif
+
+  CALL H5TCLOSE_F(atype_id, error)
+  CALL close_attribute(obj, attr_id)
+  CALL close_object(obj, obj_id)
+
+  IF (dims(1) .EQ. 1) attr_val = BoolValue(bvals, isChar)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -394,10 +422,11 @@ MODULE PROCEDURE obj_ReadAttribute_b1
 #ifdef DEBUG_VER
   CHARACTER(LEN=*), PARAMETER :: myName = 'obj_ReadAttribute_b1()'
 #endif
-  INTEGER(HID_T) :: attr_id, obj_id
+  INTEGER(HID_T) :: attr_id, obj_id, atype_id, mem
   INTEGER(HSIZE_T), DIMENSION(1) :: dims
   INTEGER(I4B) :: error
-  CHARACTER(LEN=1), ALLOCATABLE :: buf(:)
+  LOGICAL(LGT) :: isChar
+  INTEGER(INT8), ALLOCATABLE :: bvals(:)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -409,25 +438,28 @@ MODULE PROCEDURE obj_ReadAttribute_b1
   CALL open_attribute(obj, obj_id, attr_name, attr_id)
 
   dims(1) = GetAttributeSize(attr_id)
-  ALLOCATE(buf(dims(1)))
-  IF (dims(1) .GT. 0) THEN
-    CALL H5AREAD_F(attr_id, H5T_NATIVE_CHARACTER, buf, dims, error)
-  END IF
+  ALLOCATE(bvals(dims(1)))
+
+  ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+  ! the characters "T"/"F" of older files
+  CALL H5AGET_TYPE_F(attr_id, atype_id, error)
+  CALL BoolMemType(atype_id, mem, isChar)
+  IF (dims(1) .GT. 0) CALL H5AREAD_F(attr_id, mem, bvals, dims, error)
 
 #ifdef DEBUG_VER
   CALL AssertError1(error .EQ. 0, myName, &
                     'Failed to read attribute.')
 #endif
 
+  CALL H5TCLOSE_F(atype_id, error)
   CALL close_attribute(obj, attr_id)
   CALL close_object(obj, obj_id)
 
-  ! A logical is stored as the character "T" or "F"
   IF (ALLOCATED(attr_val)) THEN
     IF (SIZE(attr_val) .NE. dims(1)) DEALLOCATE(attr_val)
   END IF
   IF (.NOT. ALLOCATED(attr_val)) ALLOCATE(attr_val(dims(1)))
-  attr_val = buf .EQ. 'T'
+  attr_val = BoolValue(bvals, isChar)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

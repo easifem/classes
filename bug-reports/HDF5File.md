@@ -33,6 +33,8 @@ a bug and should pass after the fix:
 | Write_test_10 | logical and String arrays larger than the stack | passes (C3) |
 | Mkdir_test_2 | Mkdir of an existing group in mode WRITE | passes (A8) |
 | Ls_test_2 | Ls of 300 names created in decreasing order | passes (C4) |
+| LogicalFormat_test_1 | logical enum, old 'T'/'F' data, rank-3 Read | not run yet (B6) |
+| StringPadding_test_1 | String arrays padded with NUL | not run yet (B6) |
 | WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
 | AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
 | WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
@@ -451,6 +453,26 @@ Problem (before the fix):
   with persistent free-space tracking, or document h5repack.
 
 #### B6. Booleans and strings
+
+- Status (2026-10-26): source changed and committed, **not built or
+  tested yet**.
+  - Logical datasets (rank 0-3) and attributes are stored as the HDF5 enum
+    {FALSE=0, TRUE=1} on an 8-bit integer (`BoolEnumType`); h5py reads it
+    as bool. Read and ReadAttribute read the raw 8-bit values
+    (`BoolMemType`, `BoolValue`) and accept the enum, the characters
+    'T'/'F' of older files, and integers (0 is false). `GetDataType`
+    returns 'BOL' for the enum.
+  - `obj_Read_b3` was a stub ("[WIP ERROR]"); it is implemented.
+  - String arrays (datasets rank 1-3 and attributes) are padded with NUL
+    and marked `H5T_STR_NULLPAD` (`SetNulPadded`); scalars are marked
+    NULLPAD too. Read removes the NUL characters, so values come back
+    with their own length.
+  - `open_object` checks the path only in DEBUG mode (B7: attribute
+    reads were 40 % slower than dataset reads).
+  - Limitation: overwriting (mode OVERWRITE) a logical dataset written by
+    an older version ('T'/'F') fails, since HDF5 does not convert the
+    enum to characters; reading such files works.
+- Tests: LogicalFormat_test_1, StringPadding_test_1 (new).
 
 - Logical data is stored as the characters `'T'`/`'F'` (1 byte). The size
   is fine, but other tools (h5py, ParaView) see characters, not booleans.
