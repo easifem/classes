@@ -38,7 +38,7 @@ USE HDF5, ONLY: SIZE_T, H5P_FILE_ACCESS_F, H5P_DATASET_CREATE_F, &
   H5PSET_DEFLATE_F, H5PSET_FCLOSE_DEGREE_F, H5PSET_SHUFFLE_F, &
   H5SCLOSE_F, H5SCREATE_F, H5SCREATE_SIMPLE_F, &
   H5SGET_SIMPLE_EXTENT_DIMS_F, H5SGET_SIMPLE_EXTENT_NDIMS_F, &
-  H5SGET_SIMPLE_EXTENT_NPOINTS_F, H5PSET_LAYOUT_F, H5D_COMPACT_F, &
+  H5PSET_LAYOUT_F, H5D_COMPACT_F, &
   H5PSET_LIBVER_BOUNDS_F, H5F_LIBVER_V18_F, H5F_LIBVER_V110_F, &
   H5F_LIBVER_V112_F, H5F_LIBVER_V114_F, H5F_LIBVER_V200_F, &
   H5F_LIBVER_LATEST_F, &
@@ -1241,9 +1241,13 @@ END PROCEDURE obj_IsCompressed
 MODULE PROCEDURE preWrite
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'preWrite()'
-  INTEGER(HID_T) :: oldmem, oldspace
-  INTEGER(HSIZE_T) :: oldsize, newsize, oldnpoints
+  INTEGER(HID_T) :: oldmem
+  INTEGER(HSIZE_T) :: oldsize, newsize
 #endif
+  INTEGER(HID_T) :: oldspace
+  INTEGER(HSIZE_T) :: olddims(MAX(RANK, 1)), oldmaxdims(MAX(RANK, 1))
+  INTEGER(I4B) :: oldrank
+  LOGICAL(LGT) :: sameShape
   INTEGER(HID_T) :: file_id
   INTEGER(HSIZE_T) :: cdims(RANK)
   INTEGER(SIZE_T) :: bsize
@@ -1426,11 +1430,35 @@ MODULE PROCEDURE preWrite
                       ' Could not open dataset:' // path)
 #endif
 
+    ! The data is written in place, so the new data must have the shape of
+    ! the existing dataset (use Append for data that grows); otherwise
+    ! nothing is written and ERROR is not 0
+    IF (ERROR .EQ. 0) THEN
+      CALL H5DGET_SPACE_F(dset_id, oldspace, ierr)
+      CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(oldspace, oldrank, ierr)
+      sameShape = oldrank .EQ. RANK
+      IF (sameShape .AND. RANK .GT. 0) THEN
+        CALL H5SGET_SIMPLE_EXTENT_DIMS_F(oldspace, olddims, oldmaxdims, ierr)
+        sameShape = ALL(olddims(1:RANK) .EQ. gdims(1:RANK))
+      END IF
+      CALL H5SCLOSE_F(oldspace, ierr)
+
 #ifdef DEBUG_VER
-    ! Check that the size of the data type is equal to or less than the
-    ! data type size in the dataset, and that the size of the array is
-    ! equal to or less than the storage size of the dataset, since there
-    ! is currently no way to resize the dataset
+      CALL AssertError1(sameShape, myName, &
+                        'The dataset ' // path // ' exists with another ' // &
+                        'shape. Overwrite writes in place, so the new ' // &
+                        'data must have the same shape; use Append for ' // &
+                        'data that grows, or write a new dataset.')
+#endif
+
+      IF (.NOT. sameShape) THEN
+        CALL H5DCLOSE_F(dset_id, ierr)
+        ERROR = -1
+      END IF
+    END IF
+
+#ifdef DEBUG_VER
+    ! The element of the dataset must not be smaller than the new one
     IF (ERROR .EQ. 0) THEN
       CALL H5DGET_TYPE_F(dset_id, oldmem, ierr)
       CALL AssertError1(ierr .EQ. 0, myName, &
@@ -1447,15 +1475,6 @@ MODULE PROCEDURE preWrite
       CALL AssertError1(oldsize .GE. newsize, myName, &
                         'Size of new data is greater than size of ' // &
                         'pre-existing data  type:' // path)
-
-      ! Compare the number of elements, not the storage size: the
-      ! storage size of a compressed dataset is the compressed size
-      CALL H5DGET_SPACE_F(dset_id, oldspace, ierr)
-      CALL H5SGET_SIMPLE_EXTENT_NPOINTS_F(oldspace, oldnpoints, ierr)
-      CALL H5SCLOSE_F(oldspace, ierr)
-      CALL AssertError1(oldnpoints .GE. PRODUCT(gdims), myName, &
-                        'The pre-existing dataset has less elements ' // &
-                        'than the new data:' // path)
 
       CALL H5TCLOSE_F(oldmem, ierr)
       CALL AssertError1(ierr .EQ. 0, myName, &

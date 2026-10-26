@@ -745,8 +745,8 @@ END INTERFACE
 ! - OVERWRITE (or READWRITE): read and write access. The file must exist.
 !   Datasets can be overwritten.
 !
-! When a dataset is overwritten, the new data must have the same type and must
-! not be larger than the old data.
+! When a dataset is overwritten, the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! chunkPolicy sets the layout and compression of the datasets, see
 ! HDF5ChunkPolicy_. If it is absent, the default values are used: datasets
@@ -1831,6 +1831,7 @@ END INTERFACE
 ! update:
 !   - 2026-10-26: error keeps the first failure; ids not created are -1
 !   - 2026-10-26: compact layout for datasets below compactBytes
+!   - 2026-10-26: an existing dataset must have the shape of the new data
 ! summary: Prepare a dataset for writing
 !
 ! Create the dataspaces and the dataset creation property list, create the
@@ -1843,6 +1844,11 @@ END INTERFACE
 ! data uses the compact layout (data in the object header), and a larger one
 ! is contiguous. This routine is used by all Write routines; postWrite closes
 ! what it opens.
+!
+! An existing dataset is written in place, so it must have the shape of the
+! new data (gdims). If the shape differs, the dataset is closed, error is
+! -1 and nothing is written; DEBUG mode raises an error that suggests
+! Append for data that grows.
 !
 ! error is 0 on success. Otherwise it is the status of the first call that
 ! failed, and the steps which need the dataset are skipped. The ids which are
@@ -1984,8 +1990,8 @@ END INTERFACE
 !
 ! Write a scalar of Real64 to the dataset dsetname. Missing groups in dsetname
 ! are created. An existing dataset is overwritten when overwriting is allowed
-! (see SetOverwriteStat); the new data must have the same type and must not be
-! larger than the old data.
+! (see SetOverwriteStat); the new data must have the same shape as the old
+! data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2027,8 +2033,8 @@ END INTERFACE
 !
 ! Write a rank-1 array of Real64 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2122,8 +2128,8 @@ END INTERFACE
 !
 ! Write a rank-2 array of Real64 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2165,8 +2171,8 @@ END INTERFACE
 !
 ! Write a rank-3 array of Real64 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2208,8 +2214,8 @@ END INTERFACE
 !
 ! Write a rank-4 array of Real64 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2251,8 +2257,8 @@ END INTERFACE
 !
 ! Write a rank-5 array of Real64 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2294,8 +2300,8 @@ END INTERFACE
 !
 ! Write a rank-6 array of Real64 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2337,8 +2343,8 @@ END INTERFACE
 !
 ! Write a rank-7 array of Real64 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2380,8 +2386,8 @@ END INTERFACE
 !
 ! Write a scalar of Real32 to the dataset dsetname. Missing groups in dsetname
 ! are created. An existing dataset is overwritten when overwriting is allowed
-! (see SetOverwriteStat); the new data must have the same type and must not be
-! larger than the old data.
+! (see SetOverwriteStat); the new data must have the same shape as the old
+! data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2423,8 +2429,8 @@ END INTERFACE
 !
 ! Write a rank-1 array of Real32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2514,8 +2520,8 @@ END INTERFACE
 !
 ! Write a rank-2 array of Real32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2557,8 +2563,8 @@ END INTERFACE
 !
 ! Write a rank-3 array of Real32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2600,8 +2606,8 @@ END INTERFACE
 !
 ! Write a rank-4 array of Real32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2643,8 +2649,8 @@ END INTERFACE
 !
 ! Write a rank-5 array of Real32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2686,8 +2692,8 @@ END INTERFACE
 !
 ! Write a rank-6 array of Real32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2729,8 +2735,8 @@ END INTERFACE
 !
 ! Write a rank-7 array of Real32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2772,9 +2778,9 @@ END INTERFACE
 !
 ! Write a scalar of logical to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. Logical values are stored as the
-! characters 'T' and 'F'.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! Logical values are stored as the characters 'T' and 'F'.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2816,9 +2822,9 @@ END INTERFACE
 !
 ! Write a rank-1 array of logical to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. Logical values are stored as the
-! characters 'T' and 'F'.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! Logical values are stored as the characters 'T' and 'F'.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2907,9 +2913,9 @@ END INTERFACE
 !
 ! Write a rank-2 array of logical to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. Logical values are stored as the
-! characters 'T' and 'F'.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! Logical values are stored as the characters 'T' and 'F'.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2951,9 +2957,9 @@ END INTERFACE
 !
 ! Write a rank-3 array of logical to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. Logical values are stored as the
-! characters 'T' and 'F'.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! Logical values are stored as the characters 'T' and 'F'.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -2995,8 +3001,8 @@ END INTERFACE
 !
 ! Write a scalar of Int32 to the dataset dsetname. Missing groups in dsetname
 ! are created. An existing dataset is overwritten when overwriting is allowed
-! (see SetOverwriteStat); the new data must have the same type and must not be
-! larger than the old data.
+! (see SetOverwriteStat); the new data must have the same shape as the old
+! data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3038,8 +3044,8 @@ END INTERFACE
 !
 ! Write a rank-1 array of Int32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3128,8 +3134,8 @@ END INTERFACE
 !
 ! Write a rank-2 array of Int32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3171,8 +3177,8 @@ END INTERFACE
 !
 ! Write a rank-3 array of Int32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3214,8 +3220,8 @@ END INTERFACE
 !
 ! Write a rank-4 array of Int32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3257,8 +3263,8 @@ END INTERFACE
 !
 ! Write a rank-5 array of Int32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3300,8 +3306,8 @@ END INTERFACE
 !
 ! Write a rank-6 array of Int32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3343,8 +3349,8 @@ END INTERFACE
 !
 ! Write a rank-7 array of Int32 to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3386,9 +3392,9 @@ END INTERFACE
 !
 ! Write a scalar of String to the dataset dsetname. Missing groups in dsetname
 ! are created. An existing dataset is overwritten when overwriting is allowed
-! (see SetOverwriteStat); the new data must have the same type and must not be
-! larger than the old data. The string is stored with length LEN_TRIM(vals),
-! so trailing blanks are removed.
+! (see SetOverwriteStat); the new data must have the same shape as the old
+! data, since it is written in place (use Append for data that grows). The
+! string is stored with length LEN_TRIM(vals), so trailing blanks are removed.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3430,10 +3436,10 @@ END INTERFACE
 !
 ! Write a rank-1 array of String to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. length_max is the length of the
-! longest string in vals; the data is written by obj_Write_st1. cnt_in and
-! offset_in are not passed on.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! length_max is the length of the longest string in vals; the data is written
+! by obj_Write_st1. cnt_in and offset_in are not passed on.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3532,9 +3538,9 @@ END INTERFACE
 !
 ! Write a rank-1 array of String to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. Every string is stored with the fixed
-! length length_max.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! Every string is stored with the fixed length length_max.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3580,9 +3586,10 @@ END INTERFACE
 !
 ! Write a rank-2 array of String to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. length_max is the length of the
-! longest string in vals; the data is written by obj_Write_st2.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! length_max is the length of the longest string in vals; the data is written
+! by obj_Write_st2.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3625,9 +3632,9 @@ END INTERFACE
 !
 ! Write a rank-2 array of String to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. Every string is stored with the fixed
-! length length_max.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! Every string is stored with the fixed length length_max.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3673,10 +3680,10 @@ END INTERFACE
 !
 ! Write a rank-3 array of String to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. length_max is the length of the
-! longest string in vals; the data is written by obj_Write_st3. This routine
-! is not bound to the WRITE generic.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! length_max is the length of the longest string in vals; the data is written
+! by obj_Write_st3. This routine is not bound to the WRITE generic.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3719,9 +3726,10 @@ END INTERFACE
 !
 ! Write a rank-3 array of String to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. Every string is stored with the fixed
-! length length_max. This routine is not bound to the WRITE generic.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows).
+! Every string is stored with the fixed length length_max. This routine is not
+! bound to the WRITE generic.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3767,10 +3775,10 @@ END INTERFACE
 !
 ! Write a character variable to the dataset dsetname. Missing groups in
 ! dsetname are created. An existing dataset is overwritten when overwriting is
-! allowed (see SetOverwriteStat); the new data must have the same type and
-! must not be larger than the old data. The variable is stored as a rank-1
-! array of single characters. It can be read in a character variable or in a
-! String.
+! allowed (see SetOverwriteStat); the new data must have the same shape as the
+! old data, since it is written in place (use Append for data that grows). The
+! variable is stored as a rank-1 array of single characters. It can be read in
+! a character variable or in a String.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.

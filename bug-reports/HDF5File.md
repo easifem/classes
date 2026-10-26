@@ -24,7 +24,7 @@ a bug and should pass after the fix:
 | --- | --- | --- |
 | Write_test_7 | Real64 rank 4-7, Real32 and integer rank 3 | expected to pass |
 | Write_test_8 | empty String, scalar and rank 1 | passes, HDF5 prints errors (A4) |
-| Overwrite_test_1 | overwrite with the same and a smaller shape | expected to fail (A3) |
+| Overwrite_test_1 | overwrite in place; attributes kept | passes (A3 fixed) |
 | Compression_test_1 | rank-2 data is compressed; file is smaller | passes (B1 fixed) |
 | ChunkPolicy_test_1 | default and custom chunk policy | passes (B1 fixed) |
 | OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
@@ -34,8 +34,8 @@ a bug and should pass after the fix:
 | WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
 | WriteAttribute_test_5 | String, logical, Real32, Int64 vectors | passes (B7 step 2b) |
 | ReadAttribute_test_1 | scalar and rank-1 integer, real, Real32 attributes | passes |
-| Append_test_1 | Append, GetExtent, chunk shape from the policy | expected to pass after B8 |
-| ReadSlab_test_1 | ReadSlab of integer, 8-bit and Write datasets | expected to pass after B8 |
+| Append_test_1 | Append, GetExtent, chunk shape from the policy | passes (B8) |
+| ReadSlab_test_1 | ReadSlab of integer, 8-bit and Write datasets | passes (B8) |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
 | Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
 
@@ -223,6 +223,41 @@ Problem (before the fix):
   size differs.
 - Test: WriteAttribute_test_2.
 
+### A3. Overwrite does not change the shape of a dataset
+
+- Decision (2026-10-26): overwrite stays an in-place operation; the shape
+  must not change. Replacing the dataset (delete and create) is not done:
+  it hides errors (a field of the wrong size silently changes the file),
+  drops the attributes of the dataset, breaks hard links, and needs B5
+  to reuse the space. Data that grows uses Append (B8).
+- Fixed 2026-10-26: `preWrite` compares the shape of the
+  existing dataset with the new data in all builds. If it differs, the
+  dataset is closed, `error` is -1 and nothing is written; DEBUG mode
+  raises an error that suggests Append. Before, `H5Dwrite` failed with
+  "src and dest dataspaces have different number of elements". The debug
+  element-count check is replaced by this shape check; the element-size
+  check stays debug-only. The Write docblocks now say "the same shape".
+- Test: Overwrite_test_1 (rewritten) passes: same shape for a small and a
+  large compressed dataset, integers into a real dataset, attributes kept.
+
+Problem (before the fix):
+
+
+- `preWrite` (Constructor:1257): when the dataset exists it is opened
+  and written with its old dataspace. Data with a different number of
+  elements fails in `H5Dwrite` because the memory space and the file space
+  do not match. A smaller array is documented as allowed, but it fails too.
+- The DEBUG check `oldsize >= newsize*PRODUCT(gdims)` uses
+  `H5Dget_storage_size` (Constructor:1303). For a compressed dataset that
+  is the compressed size, so overwriting compressed data raises a false
+  error.
+- Proposal: if the shape or type differs, delete the link (`H5Ldelete`)
+  and create the dataset again. Note that HDF5 does not reuse freed space
+  unless a file-space strategy is set (see B5). For datasets that are
+  rewritten often (time steps), use chunked datasets with unlimited
+  `maxdims` and `H5Dset_extent`.
+- Test: Overwrite_test_1.
+
 ## Open
 
 ### A. Correctness
@@ -252,23 +287,6 @@ Problem (before the fix):
 - Proposal: keep the checks of `H5Fopen`/`H5Fcreate`, `H5Dcreate`,
   `H5Dopen`, `H5Dwrite` and `H5Dread` in release builds. They cost
   nothing next to the I/O.
-
-#### A3. Overwrite does not change the shape of a dataset
-
-- `preWrite` (Constructor:1257): when the dataset exists it is opened
-  and written with its old dataspace. Data with a different number of
-  elements fails in `H5Dwrite` because the memory space and the file space
-  do not match. A smaller array is documented as allowed, but it fails too.
-- The DEBUG check `oldsize >= newsize*PRODUCT(gdims)` uses
-  `H5Dget_storage_size` (Constructor:1303). For a compressed dataset that
-  is the compressed size, so overwriting compressed data raises a false
-  error.
-- Proposal: if the shape or type differs, delete the link (`H5Ldelete`)
-  and create the dataset again. Note that HDF5 does not reuse freed space
-  unless a file-space strategy is set (see B5). For datasets that are
-  rewritten often (time steps), use chunked datasets with unlimited
-  `maxdims` and `H5Dset_extent`.
-- Test: Overwrite_test_1.
 
 #### A4. Empty strings cannot be written
 
@@ -355,6 +373,10 @@ Problem (before the fix):
 
 #### B5. Space of overwritten or deleted data is not reused
 
+- Status (2026-10-26): not needed for now. With the A3 decision the class
+  never deletes datasets, so no space is freed. Revisit if a method that
+  deletes datasets is added (then set a persistent file-space strategy).
+
 - Once A3 deletes and recreates datasets, the old space becomes free space
   that HDF5 does not track by default, so the file only grows (h5repack is
   needed).
@@ -418,8 +440,7 @@ Problem (before the fix):
   integer, unsigned 8-bit), `ReadSlab`, `GetExtent`
   (`HDF5File_Class@AppendMethods.F90`). This is the extendable-dataset part
   of C1.
-- Updated 2026-10-26 (committed; not built or tested yet, the
-  Append_test_1 and ReadSlab_test_1 results are pending):
+- Updated 2026-10-26 (done; Append_test_1 and ReadSlab_test_1 pass):
   - It used `obj%zlibOpt`, removed by B1, so it did not compile.
   - The chunk shape now follows the chunk policy (`AppendChunkSize`):
     `stepsPerChunk` calls of Append, grown to at least `minBytes`,
@@ -435,7 +456,11 @@ Problem (before the fix):
     `SlabClose`; before, rank 2 opened it twice) and allocates without
     zero filling.
   - `Initiate` checks `stepsPerChunk >= 1` in DEBUG mode.
-- Tests: Append_test_1, ReadSlab_test_1 (new).
+- Tests: Append_test_1 (14 checks) and ReadSlab_test_1 (7 checks) pass;
+  the chunk shapes match the policy (8192 values for one-value appends,
+  3 x 2731 for points, 3000 x 4 with stepsPerChunk = 4).
+- Full suite (2026-10-26): 51 tests, 50 pass; not passing is A9
+  (Ls_test_1).
 
 ### C. I/O efficiency
 
