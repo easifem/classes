@@ -330,10 +330,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
+! update:
+!   - 2026-10-26: the open status is set only on success
 ! summary: Open the HDF5 file
 !
 ! Open the file which was set by Initiate. Open does nothing if obj is not
-! initiated.
+! initiated. The open status (and, in mode NEW, the new status) changes
+! only when the file is created or opened; check IsOpen after Open.
 !
 ! - mode NEW: the file is created; an existing file with the same name is
 !   truncated. The new status is then set to false, so a second Open (after
@@ -392,10 +395,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
+! update:
+!   - 2026-10-26: the open status is kept when H5Fclose fails
 ! summary: Close the HDF5 file
 !
 ! Close the file. The object stays initiated, so the file can be opened again
 ! with Open. Close does nothing if the file is not open.
+!
+! The file is closed with the close degree H5F_CLOSE_SEMI, so H5Fclose fails
+! while a dataset, group or attribute of the file is open. Then the file
+! stays open and IsOpen stays true (an error is raised in DEBUG mode).
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -1569,6 +1578,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
+! update:
+!   - 2026-10-26: error keeps the first failure; ids not created are -1
 ! summary: Prepare a dataset for writing
 !
 ! Create the dataspaces and the dataset creation property list, create the
@@ -1577,6 +1588,10 @@ END INTERFACE
 ! dataset has more than 1 MB of data along a dimension, the dataset is chunked
 ! and compressed. This routine is used by all Write routines; postWrite closes
 ! what it opens.
+!
+! error is 0 on success. Otherwise it is the status of the first call that
+! failed, and the steps which need the dataset are skipped. The ids which are
+! not created are set to -1, so postWrite closes only valid ids.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access. An error is also raised when an
@@ -1651,11 +1666,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
+! update:
+!   - 2026-10-26: close only valid ids; error is not changed
 ! summary: Close the objects opened by preWrite
 !
-! Close the dataset, the dataspaces and the property list. In DEBUG mode an
-! error is raised if error is not zero, that is, if the write failed, or if an
-! object can not be closed.
+! Close the dataset, the dataspaces and the property list; ids equal to -1
+! are skipped and the closed ids are set to -1. error keeps the status of the
+! write. In DEBUG mode an error is raised if error is not zero, that is, if
+! the write failed, or if an object can not be closed.
 !
 ! See also: [[preWrite]]
 
@@ -3549,10 +3567,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
+! update:
+!   - 2026-10-26: error keeps the first failure; ids not opened are -1
 ! summary: Open a dataset for reading
 !
 ! Open the dataset and get its dimensions. For rank 0, dims is set to 1. This
 ! routine is used by all Read routines; postRead closes what it opens.
+!
+! error is 0 on success and negative if a call fails; the later steps are
+! then skipped. The ids which are not opened are set to -1.
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open or does not have read access, the dataset can not be opened, or the
@@ -3728,11 +3751,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-08
+! update:
+!   - 2026-10-26: close only valid ids; error is not changed
 ! summary: Close the objects opened by preRead
 !
-! Close the dataset and the dataspace. If error is not zero, an error is
-! raised; for a compressed dataset with large chunks a warning about memory
-! use is raised first.
+! Close the dataset and the dataspace; ids equal to -1 are skipped. error
+! keeps the status of the read. In DEBUG mode, if error is not zero, an error
+! is raised; for a compressed dataset with large chunks a warning about
+! memory use is raised first.
 !
 ! See also: [[preRead]]
 

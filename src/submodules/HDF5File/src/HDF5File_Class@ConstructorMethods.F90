@@ -169,7 +169,7 @@ MODULE PROCEDURE obj_Open
 #endif
   INTEGER :: acc
   INTEGER(HID_T) :: plist_id
-  INTEGER(I4B) :: ierr
+  INTEGER(I4B) :: ierr, ierr2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -177,6 +177,8 @@ MODULE PROCEDURE obj_Open
 #endif
 
   IF (obj%isinit) THEN
+    ! ierr is the status of creating or opening the file; the open
+    ! status (and the new status) change only on success
     CALL H5PCREATE_F(H5P_FILE_ACCESS_F, plist_id, ierr)
     CALL H5PSET_FCLOSE_DEGREE_F(plist_id, H5F_CLOSE_SEMI_F, ierr)
 
@@ -191,7 +193,7 @@ MODULE PROCEDURE obj_Open
                        access_prp=plist_id)
       ! If the file is NEW, change the mode to WRITE after
       ! Creating it so we don't keep truncating it repeatedly.
-      CALL obj%SetNewStat(math%no)
+      IF (ierr .EQ. 0) CALL obj%SetNewStat(math%no)
 
     ELSE IF (obj%IsWrite()) THEN
       acc = H5F_ACC_RDWR_F
@@ -204,22 +206,30 @@ MODULE PROCEDURE obj_Open
                      access_prp=plist_id)
 
     ELSE
+      ierr = -1
+#ifdef DEBUG_VER
       CALL e%RaiseError(modName // '::' // myName // " - " // &
                         'Unrecognized access mode! The file is not' // &
                         ' set as either new, read, or write!')
+#endif
     END IF
 
 #ifdef DEBUG_VER
     CALL AssertError1(ierr .EQ. 0, myName, "Unable to open file.")
 #endif
 
-    CALL H5PCLOSE_F(plist_id, ierr)
+    CALL H5PCLOSE_F(plist_id, ierr2)
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ierr .EQ. 0, myName, "Unable to destroy property list.")
+    CALL AssertError1(ierr2 .EQ. 0, myName, &
+                      "Unable to destroy property list.")
 #endif
 
-    CALL obj%SetOpenStat(math%yes)
+    IF (ierr .EQ. 0) THEN
+      CALL obj%SetOpenStat(math%yes)
+    ELSE
+      obj%file_id = 0
+    END IF
   END IF
 
 #ifdef DEBUG_VER
@@ -254,13 +264,17 @@ MODULE PROCEDURE obj_Close
 !Check open status.
   IF (obj%IsOpen()) THEN
     CALL H5FCLOSE_F(obj%file_id, ierr)
-    obj%file_id = 0
 
 #ifdef DEBUG_VER
     CALL AssertError1(ierr .EQ. 0, myName, "Unable to close file.")
 #endif
 
-    CALL obj%SetOpenStat(math%no)
+    ! On failure the file is still open (for example, an object of the
+    ! file is still open), so keep the id and the open status
+    IF (ierr .EQ. 0) THEN
+      obj%file_id = 0
+      CALL obj%SetOpenStat(math%no)
+    END IF
   END IF
 
   CALL e%SetStopOnError(lastStopOnError)
@@ -1164,12 +1178,13 @@ END PROCEDURE obj_IsCompressed
 MODULE PROCEDURE preWrite
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'preWrite()'
-#endif
-  INTEGER(HID_T) :: file_id, oldmem
-  INTEGER(HSIZE_T) :: cdims(RANK)
+  INTEGER(HID_T) :: oldmem
   INTEGER(HSIZE_T) :: oldsize, newsize
+#endif
+  INTEGER(HID_T) :: file_id
+  INTEGER(HSIZE_T) :: cdims(RANK)
   LOGICAL :: dset_exists
-  INTEGER(I4B) :: lastslash
+  INTEGER(I4B) :: lastslash, ierr
   TYPE(String) :: path2
 
 #ifdef DEBUG_VER
@@ -1177,69 +1192,76 @@ MODULE PROCEDURE preWrite
                           '[START] ')
 #endif
 
+  ! ERROR keeps the first failure; ierr is the status of each call.
+  ! The ids which are not created are set to -1, so postWrite does not
+  ! close them.
   ERROR = 0
   dset_id = -1
+  dspace_id = -1
+  gspace_id = -1
+  plist_id = -1
 
 #ifdef DEBUG_VER
-! error = -1
   CALL AssertError1(obj%isInit, myName, &
                     "file object is not initialized.")
 #endif
 
 #ifdef DEBUG_VER
-! error = -3
   CALL AssertError1(obj%IsOpen(), myName, &
                     "file object is not open.")
 #endif
 
 #ifdef DEBUG_VER
-! error = -2
   CALL AssertError1(obj%IsWrite(), myName, &
                     "file object does not have write access.")
 #endif
 
-! Make sure the object is initialized
   file_id = obj%file_id
-!Create an HDF5 parameter list for the dataset creation.
-  CALL H5PCREATE_F(H5P_DATASET_CREATE_F, plist_id, ERROR)
+
+  ! Create an HDF5 parameter list for the dataset creation.
+  CALL H5PCREATE_F(H5P_DATASET_CREATE_F, plist_id, ierr)
+  IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
+  CALL AssertError1(ierr .EQ. 0, myName, &
                     'Could not create parameter list.')
 #endif
 
   IF (RANK .EQ. 0) THEN
-    CALL H5SCREATE_F(H5S_SCALAR_F, gspace_id, ERROR)
+    CALL H5SCREATE_F(H5S_SCALAR_F, gspace_id, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
+    CALL AssertError1(ierr .EQ. 0, myName, &
                       'Could not create scalar dataspace.')
 #endif
 
-    CALL H5SCREATE_F(H5S_SCALAR_F, dspace_id, ERROR)
+    CALL H5SCREATE_F(H5S_SCALAR_F, dspace_id, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
+    CALL AssertError1(ierr .EQ. 0, myName, &
                       'Could not create scalar dataspace.')
 #endif
 
   ELSE
 
-    ! Create the dataspace
     ! Global dataspace
-    CALL H5SCREATE_SIMPLE_F(RANK, gdims, gspace_id, ERROR)
+    CALL H5SCREATE_SIMPLE_F(RANK, gdims, gspace_id, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
+    CALL AssertError1(ierr .EQ. 0, myName, &
                       'Could not create dataspace.')
 #endif
 
     ! Local dataspace
-    CALL H5SCREATE_SIMPLE_F(RANK, ldims, dspace_id, ERROR)
+    CALL H5SCREATE_SIMPLE_F(RANK, ldims, dspace_id, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
-                      ' Could not create dataspace.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not create dataspace.')
 #endif
 
     ! Setup the DSpace creation property list to use ZLIB compression
@@ -1252,19 +1274,29 @@ MODULE PROCEDURE preWrite
       CALL compute_chunk_size(mem, gdims, cdims)
       !Logic is equivalent to "compress anything > 1MB"
       IF (.NOT. ALL(gdims == cdims)) THEN
-        CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ERROR)
-        !Do not presently support user defined compression levels,
-        !just level 5 seems like a good trade-off of speed vs.
-        !compression ratio.
-        CALL H5PSET_DEFLATE_F(plist_id, obj%zlibOpt, ERROR)
+        CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ierr)
+        IF (ERROR .EQ. 0) ERROR = ierr
+
+#ifdef DEBUG_VER
+        CALL AssertError1(ierr .EQ. 0, myName, &
+                          'Could not set the chunk size.')
+#endif
+
+        CALL H5PSET_DEFLATE_F(plist_id, obj%zlibOpt, ierr)
+        IF (ERROR .EQ. 0) ERROR = ierr
+
+#ifdef DEBUG_VER
+        CALL AssertError1(ierr .EQ. 0, myName, &
+                          'Could not set the deflate filter.')
+#endif
       END IF
 
     END IF
   END IF
 
-  !Create the path if it doesn't exist
+  ! Create the path if it doesn't exist
   lastslash = INDEX(path, '/', math%yes)
-  IF (lastslash > 1) THEN
+  IF (ERROR .EQ. 0 .AND. lastslash > 1) THEN
     path2 = path(1:lastslash - 1)
     IF (.NOT. obj%PathExists(path2%chars())) THEN
       CALL obj%Mkdir(path2%chars())
@@ -1272,109 +1304,128 @@ MODULE PROCEDURE preWrite
   END IF
 
   ! Create the dataset, if necessary
-  CALL H5LEXISTS_F(file_id, path, dset_exists, ERROR)
+  dset_exists = .FALSE.
+  IF (ERROR .EQ. 0) THEN
+    CALL H5LEXISTS_F(file_id, path, dset_exists, ierr)
+    ERROR = ierr
 
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'invalid group path:' // path)
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'invalid group path:' // path)
 #endif
+  END IF
 
-  IF (obj%overwriteStat .AND. dset_exists) THEN
+  IF (ERROR .NE. 0) THEN
+    ! Nothing to do; the dataset is not opened or created
+
+  ELSE IF (obj%overwriteStat .AND. dset_exists) THEN
     ! Open group for overwrite if it already exists and
     ! the file has overwrite status
-    CALL H5DOPEN_F(file_id, path, dset_id, ERROR)
+    CALL H5DOPEN_F(file_id, path, dset_id, ierr)
+    ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
+    CALL AssertError1(ierr .EQ. 0, myName, &
                       ' Could not open dataset:' // path)
 #endif
 
-    ! Get the old and new data type sizes
-    CALL H5DGET_TYPE_F(dset_id, oldmem, ERROR)
-
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
-                      'Could not retrieve data type:' // path)
-#endif
-
-    CALL H5TGET_SIZE_F(oldmem, oldsize, ERROR)
-
-#ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
-                      'Could not retrieve old data type size:' // path)
-#endif
-
-    CALL H5TGET_SIZE_F(mem, newsize, ERROR)
-
-#ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
-                      'Could not retrieve new data type size:' // path)
-#endif
-
     ! Check that the size of the data type is equal to or less than the
-    ! data type size
-    ! in the dataset since there is currently no way to resize the dataset
+    ! data type size in the dataset, and that the size of the array is
+    ! equal to or less than the storage size of the dataset, since there
+    ! is currently no way to resize the dataset
+    IF (ERROR .EQ. 0) THEN
+      CALL H5DGET_TYPE_F(dset_id, oldmem, ierr)
+      CALL AssertError1(ierr .EQ. 0, myName, &
+                        'Could not retrieve data type:' // path)
 
-#ifdef DEBUG_VER
-    CALL AssertError1(oldsize .GE. newsize, myName, &
-                      'Size of new data is greater than size of ' // &
-                      'pre-existing data  type:' // path)
+      CALL H5TGET_SIZE_F(oldmem, oldsize, ierr)
+      CALL AssertError1(ierr .EQ. 0, myName, &
+                        'Could not retrieve old data type size:' // path)
+
+      CALL H5TGET_SIZE_F(mem, newsize, ierr)
+      CALL AssertError1(ierr .EQ. 0, myName, &
+                        'Could not retrieve new data type size:' // path)
+
+      CALL AssertError1(oldsize .GE. newsize, myName, &
+                        'Size of new data is greater than size of ' // &
+                        'pre-existing data  type:' // path)
+
+      CALL H5DGET_STORAGE_SIZE_F(dset_id, oldsize, ierr)
+      CALL AssertError1(oldsize .GE. (newsize * PRODUCT(gdims)), &
+                        myName, &
+                        'Storage size of the pre-existing dataset ' // &
+                        'is too small:' // path)
+
+      CALL H5TCLOSE_F(oldmem, ierr)
+      CALL AssertError1(ierr .EQ. 0, myName, &
+                        'Could not close old data type:' // path)
+    END IF
 #endif
 
-    ! For non-scalar data, check that the size of the array equal to
-    ! or less than the
-    ! array size in the dataset since there is currently no way to
-    ! resize the dataset
-    CALL H5DGET_STORAGE_SIZE_F(dset_id, oldsize, ERROR)
-
-#ifdef DEBUG_VER
-    CALL AssertError1(oldsize .GE. (newsize * PRODUCT(gdims)), myName, &
-                      'Storage size of the pre-existing dataset is too ' // &
-                      'small:' // path)
-#endif
-
-    CALL H5TCLOSE_F(oldmem, ERROR)
-#ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
-                      'Could not close old data type:' // path)
-#endif
   ELSE
-    CALL H5DCREATE_F(file_id, path, mem, gspace_id, dset_id, ERROR, &
+    CALL H5DCREATE_F(file_id, path, mem, gspace_id, dset_id, ierr, &
                      dcpl_id=plist_id)
+    ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .EQ. 0, myName, &
+    CALL AssertError1(ierr .EQ. 0, myName, &
                       'Could not create dataset:' // path)
 #endif
 
   END IF
 
-! Destroy the property list
-  CALL H5PCLOSE_F(plist_id, ERROR)
+  IF (ERROR .NE. 0) dset_id = -1
+
+  ! Destroy the property list
+  IF (plist_id .GT. 0) THEN
+    CALL H5PCLOSE_F(plist_id, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
+    plist_id = -1
 
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Could not close parameter list.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not close parameter list.')
 #endif
+  END IF
 
-! Close the dataspace created above; H5DGET_SPACE_F returns a new one
-  CALL H5SCLOSE_F(gspace_id, ERROR)
+  ! Close the dataspace created above; H5DGET_SPACE_F returns a new one
+  IF (gspace_id .GT. 0) THEN
+    CALL H5SCLOSE_F(gspace_id, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
+    gspace_id = -1
+
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Could not close the created dataspace.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not close the created dataspace.')
 #endif
+  END IF
 
-! Select the global dataspace for the dataset
-  CALL H5DGET_SPACE_F(dset_id, gspace_id, ERROR)
+  IF (ERROR .NE. 0) THEN
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
+
+  ! Select the global dataspace for the dataset
+  CALL H5DGET_SPACE_F(dset_id, gspace_id, ierr)
+  ERROR = ierr
+  IF (ierr .NE. 0) gspace_id = -1
+
+#ifdef DEBUG_VER
+  CALL AssertError1(ierr .EQ. 0, myName, &
                     'Could not select global dataspace for the dataset.')
 #endif
 
-! Create a property list for the write operation
-  CALL H5PCREATE_F(H5P_DATASET_XFER_F, plist_id, ERROR)
+  ! Create a property list for the write operation
+  CALL H5PCREATE_F(H5P_DATASET_XFER_F, plist_id, ierr)
+  IF (ERROR .EQ. 0) ERROR = ierr
+  IF (ierr .NE. 0) plist_id = -1
+
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
+  CALL AssertError1(ierr .EQ. 0, myName, &
                     'Could not create property list for write operation.')
 #endif
 
@@ -1421,6 +1472,7 @@ MODULE PROCEDURE postWrite
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'postWrite()'
 #endif
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1447,33 +1499,47 @@ MODULE PROCEDURE postWrite
                     'Could not write to the dataset.')
 #endif
 
-! Close the dataset
-  CALL H5DCLOSE_F(dset_id, ERROR)
+! Close the ids which were created; preWrite sets the others to -1.
+! ERROR keeps the status of the write.
+  IF (dset_id .GT. 0) THEN
+    CALL H5DCLOSE_F(dset_id, ierr)
+    dset_id = -1
 
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Could not close the dataset.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not close the dataset.')
 #endif
+  END IF
 
-! Close the dataspace
-  CALL H5SCLOSE_F(dspace_id, ERROR)
+  IF (dspace_id .GT. 0) THEN
+    CALL H5SCLOSE_F(dspace_id, ierr)
+    dspace_id = -1
 
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Could not close the dataspace.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not close the dataspace.')
 #endif
+  END IF
 
-  CALL H5SCLOSE_F(gspace_id, ERROR)
-#ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Could not close the dataspace.')
-#endif
+  IF (gspace_id .GT. 0) THEN
+    CALL H5SCLOSE_F(gspace_id, ierr)
+    gspace_id = -1
 
-  CALL H5PCLOSE_F(plist_id, ERROR)
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Could not close the parameter list.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not close the dataspace.')
 #endif
+  END IF
+
+  IF (plist_id .GT. 0) THEN
+    CALL H5PCLOSE_F(plist_id, ierr)
+    plist_id = -1
+
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not close the parameter list.')
+#endif
+  END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1489,7 +1555,7 @@ MODULE PROCEDURE preRead
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'preRead()'
 #endif
-  INTEGER(I4B) :: ndims
+  INTEGER(I4B) :: ndims, ierr
   INTEGER(HSIZE_T) :: maxdims(RANK)
 
 #ifdef DEBUG_VER
@@ -1497,11 +1563,14 @@ MODULE PROCEDURE preRead
                           '[START] ')
 #endif
 
+  ! ERROR is 0 on success and negative on the first failure. The ids
+  ! which are not opened are set to -1, so postRead does not close them.
   ERROR = 0
-! Make sure the object is initialized
+  dset_id = -1
+  dspace_id = -1
+  dims = 1
 
 #ifdef DEBUG_VER
-! error = -1
   CALL AssertError1(obj%isInit, myName, &
                     "file object is not initialized.")
 #endif
@@ -1512,31 +1581,39 @@ MODULE PROCEDURE preRead
 #endif
 
 #ifdef DEBUG_VER
-! error = -2
   CALL AssertError1(obj%IsRead(), myName, &
                     "file object does not have read access.")
 #endif
 
 ! Open the dataset
-  CALL H5DOPEN_F(obj%file_id, path, dset_id, ERROR)
+  CALL H5DOPEN_F(obj%file_id, path, dset_id, ierr)
+  ERROR = ierr
+  IF (ierr .NE. 0) dset_id = -1
+
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
+  CALL AssertError1(ierr .EQ. 0, myName, &
                     'Failed to open dataset.')
 #endif
 
 ! Get dataset dimensions for allocation
-  CALL H5DGET_SPACE_F(dset_id, dspace_id, ERROR)
+  IF (ERROR .EQ. 0) THEN
+    CALL H5DGET_SPACE_F(dset_id, dspace_id, ierr)
+    ERROR = ierr
+    IF (ierr .NE. 0) dspace_id = -1
+
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Failed to obtain the dataspace.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Failed to obtain the dataspace.')
 #endif
+  END IF
 
 ! Make sure the rank is right
-  IF (RANK > 0) THEN
-    CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, ERROR)
+  IF (RANK > 0 .AND. ERROR .EQ. 0) THEN
+    CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(dspace_id, ndims, ierr)
+    IF (ierr .LT. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .GE. 0, myName, &
+    CALL AssertError1(ierr .GE. 0, myName, &
                       'Failed to retrieve number of dataspace dimensions.')
 #endif
 
@@ -1545,15 +1622,16 @@ MODULE PROCEDURE preRead
                       'Using wrong read function for rank.')
 #endif
 
-    CALL H5SGET_SIMPLE_EXTENT_DIMS_F(dspace_id, dims, maxdims, ERROR)
+    ! On success hdferr is the rank of the dataspace, not 0
+    IF (ERROR .EQ. 0) THEN
+      CALL H5SGET_SIMPLE_EXTENT_DIMS_F(dspace_id, dims, maxdims, ierr)
+      IF (ierr .LT. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-    CALL AssertError1(ERROR .GE. 0, myName, &
-                      'Failed to retrieve dataspace dimensions.')
+      CALL AssertError1(ierr .GE. 0, myName, &
+                        'Failed to retrieve dataspace dimensions.')
 #endif
-
-  ELSE
-    dims = 1
+    END IF
   END IF
 
 #ifdef DEBUG_VER
@@ -1732,8 +1810,9 @@ END PROCEDURE obj_GetDataType
 MODULE PROCEDURE postRead
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'postRead()'
-#endif
   INTEGER(HSIZE_T), ALLOCATABLE :: cdims(:)
+#endif
+  INTEGER(I4B) :: ierr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1783,20 +1862,27 @@ MODULE PROCEDURE postRead
   END IF
 #endif
 
-! Close the dataset
-  CALL H5DCLOSE_F(dset_id, ERROR)
+! Close the ids which were opened; preRead sets the others to -1.
+! ERROR keeps the status of the read.
+  IF (dset_id .GT. 0) THEN
+    CALL H5DCLOSE_F(dset_id, ierr)
+    dset_id = -1
 
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Failed to close dataset "' // TRIM(path))
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Failed to close dataset "' // TRIM(path))
 #endif
+  END IF
 
-! Close the dataspace
-  CALL H5SCLOSE_F(dspace_id, ERROR)
+  IF (dspace_id .GT. 0) THEN
+    CALL H5SCLOSE_F(dspace_id, ierr)
+    dspace_id = -1
+
 #ifdef DEBUG_VER
-  CALL AssertError1(ERROR .EQ. 0, myName, &
-                    'Failed to close dataspace for "' // TRIM(path))
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Failed to close dataspace for "' // TRIM(path))
 #endif
+  END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

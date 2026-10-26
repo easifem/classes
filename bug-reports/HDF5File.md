@@ -23,51 +23,75 @@ a bug and should pass after the fix:
 | Test | Checks | Now |
 | --- | --- | --- |
 | Write_test_7 | Real64 rank 4-7, Real32 and integer rank 3 | expected to pass |
-| Write_test_8 | empty String, scalar and rank 1 | expected to fail (A4) |
+| Write_test_8 | empty String, scalar and rank 1 | passes, HDF5 prints errors (A4) |
 | Overwrite_test_1 | overwrite with the same and a smaller shape | expected to fail (A3) |
 | Compression_test_1 | rank-2 data is compressed; file is smaller | expected to fail (B1) |
-| OpenHandles_test_1 | no open HDF5 objects after each method | expected to fail (A1) |
+| OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
 | WriteAttribute_test_2 | longer String attribute replaces the old one | expected to fail (A5) |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
 
 Storage_test_1 prints `#` lines with the file size and the write/read
 times. Run it before and after each change to compare.
 
+Run of 2026-10-26 (after A1 and A2 part 1): 43 tests, 39 pass. Not passing:
+Compression_test_1 (B1), Overwrite_test_1 (A3, stops in `postWrite`:
+"src and dest dataspaces have different number of elements selected"),
+WriteAttribute_test_2 (A5), and Ls_test_1 (A9, not expected). Baseline of
+Storage_test_1 (HDF5 2.2.0, debug build):
+
+| Case | File size | Write | Read |
+| --- | --- | --- | --- |
+| 4 x (1000 x 1000) Real64, no compression | 32002048 B | 0.004 s | 0.010 s |
+| same, zlibOpt=4 | 32002048 B | 0.008 s | 0.009 s |
+| 2000 scalar datasets | 646993 B | 0.087 s | |
+
+The compressed file has the same size as the raw one: the rank-2 fields
+are not compressed (B1). The 2000 scalars take 323 B each for 8 B of
+data (B3, B4).
+
 ## Fixed
 
-None.
+### A1. Leaked HDF5 handles
+
+- Commit: ed886938 (2026-10-26). Test: OpenHandles_test_1 passes.
+- `obj_GetChunkSize` did not close `dset_id`, `dspace_id` and `dcpl`.
+  The file uses `H5F_CLOSE_SEMI`, so a later `H5Fclose` failed while the
+  dataset was open; the file stayed open, and the error was only seen in
+  DEBUG mode. Now all three are closed.
+- `preWrite` created `gspace_id` with `H5Screate_simple` and then
+  overwrote it with `H5Dget_space`, so one dataspace leaked per Write.
+  The created dataspace is now closed first. The old data type `oldmem`
+  of the overwrite branch is now closed.
+- ReadString: the 12 types from `H5Dget_type` were never closed; now each
+  is closed (`Read_c1` uses the predefined `H5T_NATIVE_CHARACTER`, which
+  must not be closed). The helpers still open each dataset twice (helper
+  and `preRead`); see C3.
+- ReadAttribute: the type of a String attribute is now closed.
+- The checks of the close calls are only in DEBUG mode.
+- Also in this commit: `obj_Delete` uses `ACTION='READ'` and `IOMSG` in
+  `OPEN` and `CLOSE`.
 
 ## Open
 
 ### A. Correctness
 
-#### A1. Leaked HDF5 handles
-
-- Status (2026-10-26): source changed, not built yet. `GetChunkSize`
-  closes `dcpl`, `dspace_id` and `dset_id`; `preWrite` closes the created
-  dataspace before `H5Dget_space` and closes `oldmem`; ReadString closes
-  every type from `H5Dget_type` (12 places, not the predefined type in
-  `Read_c1`); ReadAttribute closes the type of a String attribute. The
-  checks of the close calls are only in DEBUG mode.
-
-- `obj_GetChunkSize` (Constructor:1009): `dset_id`, `dspace_id` and `dcpl`
-  are never closed. The file uses `H5F_CLOSE_SEMI`, so a later `H5Fclose`
-  **fails** while the dataset is open: the file stays open and the error is
-  only seen in DEBUG mode. `Close` then sets the open status to false
-  anyway.
-- `preWrite` (Constructor:1205, :1330): `gspace_id` is created by
-  `H5Screate_simple` and then overwritten by `H5Dget_space`, so one
-  dataspace leaks on every Write of rank >= 1. In the overwrite branch the
-  datatype `oldmem` (Constructor:1268) is not closed.
-- ReadString: 13 calls of `H5Dget_type` and no `H5Tclose`, so one datatype
-  leaks per String read. Each `*_helper` also opens the dataset a second
-  time (helper and then `preRead`).
-- ReadAttribute:54: the type of a String attribute is not closed.
-- Effect: library memory grows with the number of calls. The
-  `GetChunkSize` leak can stop the file from being closed.
-- Test: OpenHandles_test_1.
-
 #### A2. Errors are checked only in DEBUG mode
+
+- Decision (2026-10-26): error checks stay DEBUG-only. Part 1 (correct
+  status bookkeeping) is done in the source, not built yet:
+  - `preWrite` and `preRead` keep the first failure in `error` (each call
+    writes to a local `ierr`), skip the steps that need the dataset, and
+    set the ids that are not created to -1. Before, `preWrite` returned
+    the status of its last call (`H5Pcreate`), so `H5Dwrite` ran on an
+    invalid dataset after a failed `H5Dcreate`.
+  - `postWrite` and `postRead` close only valid ids and do not overwrite
+    `error`.
+  - `Open` sets the open status (and clears the new status) only when
+    `H5Fcreate`/`H5Fopen` succeeds. `Close` keeps the id and the open
+    status when `H5Fclose` fails.
+  - The type-size checks of the overwrite branch of `preWrite` are now
+    only compiled in DEBUG mode, since only DEBUG mode uses them.
+  - The "unrecognized access mode" error of `Open` is now DEBUG-only.
 
 - Almost every `ierr` check is inside `#ifdef DEBUG_VER`. In a release
   build a failed `H5Fopen` still marks the file as open (Constructor:222),
@@ -103,7 +127,10 @@ None.
   (WriteAttribute:238) and for `Write_c1` with `LEN(vals)=0` (zero-size
   dataspace).
 - Proposal: use `MAX(1, len)`; Read already removes `C_NULL_CHAR`.
-- Test: Write_test_8.
+- Test: Write_test_8. It passes: `H5Tset_size(0)` fails, but the type keeps
+  the size 1 of `H5T_NATIVE_CHARACTER`, so a 1-character value is written
+  and read back as empty. HDF5 prints "size must be positive" for each call,
+  and the stored size is not the one the code meant to set.
 
 #### A5. A String attribute keeps its old length
 
@@ -127,6 +154,18 @@ None.
   not in the `WRITE` generic. `Read_st3` and `Read_st3_helper` are also not
   in `READ`; only `READ_` has rank 3. So a rank-3 String can be read with
   Read_ but not written.
+
+#### A9. IsGroup("/") is false, so Ls("/") returns nothing
+
+- `obj_PathExists` (Constructor) splits the path at `/` and calls
+  `H5Lexists` on each prefix. For the root `"/"` the prefixes built from
+  the empty segments are most likely not valid links (not checked yet), so
+  `PathExists("/")` is false; `IsGroup("/")` then returns false, and `Ls`
+  returns `objs` unallocated for the root group. Found by Ls_test_1
+  (`IsGroup("/")` is F while `PathExists("/a")` is T); not caused by A1 or
+  A2, which do not change these routines.
+- Proposal: return true for `"/"` (the root group always exists) before
+  the loop, and skip empty segments.
 
 #### A8. Minor
 
@@ -254,6 +293,9 @@ None.
   (8 MB by default on macOS). Use allocatable arrays.
 - `Read__st1` reads into a temporary array and copies it, so it holds
   twice the memory.
+- The String read helpers (`obj_Read_st*_helper`) open the dataset to get
+  the type size and the rank, close it, and then `preRead` opens it
+  again: two metadata lookups per String read.
 - `obj_Read_ca0` and `obj_Read_ca1` (ReadString:160) build the string
   one character at a time (`vals = vals // valsc(i)`), which is O(n^2) for
   long strings. Use one assignment from a `CHARACTER(LEN=n)` buffer, as
