@@ -30,6 +30,7 @@ a bug and should pass after the fix:
 | OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
 | WriteAttribute_test_2 | longer String attribute replaces the old one | passes (A5 fixed) |
 | Write_test_9 | rank-3 String Write, Read, Read_ | passes (A7 fixed) |
+| Write_test_10 | logical and String arrays larger than the stack | passes (C3) |
 | WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
 | AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
 | WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
@@ -37,7 +38,7 @@ a bug and should pass after the fix:
 | ReadAttribute_test_1 | scalar and rank-1 integer, real, Real32 attributes | passes |
 | Append_test_1 | Append, GetExtent, chunk shape from the policy | passes (B8) |
 | ReadSlab_test_1 | ReadSlab of integer, 8-bit and Write datasets | passes (B8) |
-| Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
+| Storage_test_1 | prints file sizes and times (baseline; scalars at depth 1 and 5) | passes |
 | Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
 | RootGroup_test_1 | root group: PathExists, IsGroup, Ls, attributes | passes (A9 fixed) |
 
@@ -516,6 +517,13 @@ Problem (before the fix):
 
 #### C2. Path checks on every write
 
+- Decision (2026-10-26): not changed. Measured with Storage_test_1 (2000
+  scalar datasets, debug build, 3 runs): write 0.068-0.069 s in a group of
+  depth 1 and 0.078-0.082 s in a group of depth 5, i.e. about 1.3 us per
+  level on about 35 us per write. A cache of the parent group would save
+  at most about 15 % for deep paths and less for depth 1-2, for extra
+  state in the class. Most of the time is HDF5's dataset creation.
+
 - Each Write calls `PathExists(parent)`. That splits the path into a
   `String` array and calls `H5Lexists` once per level. `Mkdir` then
   calls `PathExists` again for each level (recursive), and `preWrite`
@@ -529,6 +537,18 @@ Problem (before the fix):
   versions fail, instead of returning false, when a parent is missing).
 
 #### C3. Extra copies and passes on read and write
+
+- Status (2026-10-26): partly fixed.
+  - Done: Read (Real64, Real32, Int32, all ranks) allocates without zero
+    filling (before `Reallocate`). Storage_test_1: reading 4 x 8 MB raw
+    fields 0.010-0.012 s -> 0.004-0.006 s, compressed 0.030 -> 0.025 s.
+  - Done: the character copies of logical arrays (`include/write.F90`)
+    and String arrays (WriteString) are allocatable, not on the stack.
+    Write_test_10 (new) writes a 16 MB and a 12 MB copy.
+  - Done: `obj_Read_ca0` to `obj_Read_ca3` convert each string in one
+    pass (`convert_char_array_to_str`), not one character at a time.
+  - Not done (low value): `Read__st1` reads into a temporary array and
+    copies it; the String read helpers open the dataset twice.
 
 - `Read` allocates with `Reallocate`, which zero-fills the array before
   HDF5 overwrites it. That is one extra pass over the data.

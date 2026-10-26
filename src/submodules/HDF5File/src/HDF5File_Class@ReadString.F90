@@ -166,12 +166,8 @@ MODULE PROCEDURE obj_Read_ca0
 #ifdef DEBUG_VER
     CALL AssertError1(ierr .EQ. 0, myName, 'Failed to close datatype.')
 #endif
-    ! Allocate space if needed, make sure it is the right size
-    vals = ''
-    ! Convert to StringType
-    DO i = 1, SIZE(valsc)
-      vals = vals // valsc(i)
-    END DO
+    ! Convert to StringType in one pass (not one character at a time)
+    CALL convert_char_array_to_str(valsc, vals)
   END IF
 
   CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
@@ -327,7 +323,7 @@ MODULE PROCEDURE obj_Read_ca1
   CHARACTER(*), PARAMETER :: myName = "obj_Read_ca1()"
 #endif
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :)
-  INTEGER(I4B) :: i, j, error, ierr
+  INTEGER(I4B) :: i, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(2) :: dims
   INTEGER(I4B), PARAMETER :: rank = 2
@@ -360,12 +356,9 @@ MODULE PROCEDURE obj_Read_ca1
     ELSE
       ALLOCATE(vals(dims(2)))
     END IF
-    ! Convert to StringType
+    ! Convert to StringType, one string per column
     DO i = 1, SIZE(vals)
-      vals(i) = ''
-      DO j = 1, SIZE(valsc(:, i))
-        vals(i) = vals(i) // valsc(j, i)
-      END DO
+      CALL convert_char_array_to_str(valsc(:, i), vals(i))
     END DO
   END IF
   CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
@@ -532,7 +525,7 @@ MODULE PROCEDURE obj_Read_ca2
   CHARACTER(*), PARAMETER :: myName = "obj_Read_ca2()"
 #endif
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :, :)
-  INTEGER(I4B) :: i, j, k, error, ierr
+  INTEGER(I4B) :: i, j, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(3) :: dims
   INTEGER(I4B), PARAMETER :: rank = 3
@@ -565,13 +558,10 @@ MODULE PROCEDURE obj_Read_ca2
     ELSE
       ALLOCATE(vals(dims(2), dims(3)))
     END IF
-    ! Convert to StringType
-    DO i = 1, SIZE(vals, 1)
-      DO j = 1, SIZE(vals, 2)
-        vals(i, j) = ''
-        DO k = 1, SIZE(valsc(:, i, j))
-          vals(i, j) = vals(i, j) // valsc(k, i, j)
-        END DO
+    ! Convert to StringType, one string per column
+    DO j = 1, SIZE(vals, 2)
+      DO i = 1, SIZE(vals, 1)
+        CALL convert_char_array_to_str(valsc(:, i, j), vals(i, j))
       END DO
     END DO
   END IF
@@ -746,7 +736,7 @@ MODULE PROCEDURE obj_Read_ca3
   CHARACTER(*), PARAMETER :: myName = "obj_Read_ca3()"
 #endif
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:, :, :, :)
-  INTEGER(I4B) :: i, j, k, m, error, ierr
+  INTEGER(I4B) :: i, j, m, error, ierr
   TYPE(String) :: path
   INTEGER(HSIZE_T), DIMENSION(4) :: dims
   INTEGER(I4B), PARAMETER :: rank = 4
@@ -779,14 +769,11 @@ MODULE PROCEDURE obj_Read_ca3
     ELSE
       ALLOCATE(vals(dims(2), dims(3), dims(4)))
     END IF
-    ! Convert to StringType
-    DO i = 1, SIZE(vals, 1)
+    ! Convert to StringType, one string per column
+    DO m = 1, SIZE(vals, 3)
       DO j = 1, SIZE(vals, 2)
-        DO m = 1, SIZE(vals, 3)
-          vals(i, j, m) = ''
-          DO k = 1, SIZE(valsc(:, i, j, m))
-            vals(i, j, m) = vals(i, j, m) // valsc(k, i, j, m)
-          END DO
+        DO i = 1, SIZE(vals, 1)
+          CALL convert_char_array_to_str(valsc(:, i, j, m), vals(i, j, m))
         END DO
       END DO
     END DO

@@ -17,7 +17,6 @@
 
 SUBMODULE(HDF5File_Class) ReadInt32
 USE HDF5, ONLY: H5T_NATIVE_INTEGER, H5DREAD_F
-USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -43,7 +42,7 @@ MODULE PROCEDURE obj_Read_n0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 ! Read the dataset
@@ -58,7 +57,7 @@ MODULE PROCEDURE obj_Read_n0
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n0
 
@@ -79,7 +78,7 @@ MODULE PROCEDURE obj_Read_n1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
 ! Allocate space if needed, make sure it is the right size
@@ -87,7 +86,11 @@ MODULE PROCEDURE obj_Read_n1
   CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
 
   IF (error >= 0) THEN
-    CALL Reallocate(vals, INT(dims, I4B))
+    ! Allocate without filling; HDF5 writes every entry
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(dims(1)))
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals, dims, error)
   END IF
@@ -96,7 +99,7 @@ MODULE PROCEDURE obj_Read_n1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n1
 
@@ -117,7 +120,7 @@ MODULE PROCEDURE obj_Read__n1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   tsize = math%zero_i
@@ -128,7 +131,7 @@ MODULE PROCEDURE obj_Read__n1
 
 #ifdef DEBUG_VER
     CALL AssertError3(INT(dims(1), I4B), SIZE(vals), myName, &
-      'a=dims(1) from hdf5File, b=SIZE(vals)')
+                      'a=dims(1) from hdf5File, b=SIZE(vals)')
 #endif
 
     tsize = INT(dims(1), I4B)
@@ -139,7 +142,7 @@ MODULE PROCEDURE obj_Read__n1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__n1
 
@@ -160,13 +163,17 @@ MODULE PROCEDURE obj_Read_n2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
   CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
   IF (error >= 0) THEN
-    CALL Reallocate(vals, INT(dims, I4B))
+    ! Allocate without filling; HDF5 writes every entry
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(dims(1), dims(2)))
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals, dims, error)
   END IF
@@ -174,7 +181,7 @@ MODULE PROCEDURE obj_Read_n2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n2
 
@@ -195,7 +202,7 @@ MODULE PROCEDURE obj_Read__n2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   nrow = math%zero_i
@@ -207,9 +214,9 @@ MODULE PROCEDURE obj_Read__n2
 
 #ifdef DEBUG_VER
     CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
-      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
-      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
 #endif
 
     nrow = INT(dims(1), I4B)
@@ -221,7 +228,7 @@ MODULE PROCEDURE obj_Read__n2
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__n2
 
@@ -242,13 +249,17 @@ MODULE PROCEDURE obj_Read_n3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
   CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
   IF (error >= 0) THEN
-    CALL Reallocate(vals, INT(dims, I4B))
+    ! Allocate without filling; HDF5 writes every entry
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(dims(1), dims(2), dims(3)))
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals, dims, error)
   END IF
@@ -256,7 +267,7 @@ MODULE PROCEDURE obj_Read_n3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n3
 
@@ -277,7 +288,7 @@ MODULE PROCEDURE obj_Read__n3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dim1 = math%zero_i
@@ -290,11 +301,11 @@ MODULE PROCEDURE obj_Read__n3
 
 #ifdef DEBUG_VER
     CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
-      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
-      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
     CALL AssertError3(INT(dims(3), I4B), SIZE(vals, 3), myName, &
-      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+                      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
 #endif
 
     dim1 = INT(dims(1), I4B)
@@ -307,7 +318,7 @@ MODULE PROCEDURE obj_Read__n3
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__n3
 
@@ -328,14 +339,21 @@ MODULE PROCEDURE obj_Read_n4
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
   CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
 
   IF (error >= 0) THEN
-    CALL Reallocate(vals, INT(dims, I4B))
+    ! Allocate without filling; HDF5 writes every entry
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) THEN
+      ALLOCATE(vals(dims(1), dims(2), &
+                    dims(3), dims(4)))
+    END IF
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals, dims, error)
   END IF
@@ -344,7 +362,7 @@ MODULE PROCEDURE obj_Read_n4
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n4
 
@@ -365,7 +383,7 @@ MODULE PROCEDURE obj_Read__n4
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dim1 = math%zero_i
@@ -379,13 +397,13 @@ MODULE PROCEDURE obj_Read__n4
 
 #ifdef DEBUG_VER
     CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
-      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
-      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
     CALL AssertError3(INT(dims(3), I4B), SIZE(vals, 3), myName, &
-      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+                      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
     CALL AssertError3(INT(dims(4), I4B), SIZE(vals, 4), myName, &
-      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+                      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
 #endif
 
     dim1 = INT(dims(1), I4B)
@@ -394,13 +412,13 @@ MODULE PROCEDURE obj_Read__n4
     dim4 = INT(dims(4), I4B)
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4), dims, &
-      error)
+                   error)
   END IF
   CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__n4
 
@@ -421,13 +439,20 @@ MODULE PROCEDURE obj_Read_n5
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
   CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
   IF (error >= 0) THEN
-    CALL Reallocate(vals, INT(dims, I4B))
+    ! Allocate without filling; HDF5 writes every entry
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) THEN
+      ALLOCATE(vals(dims(1), dims(2), dims(3), &
+                    dims(4), dims(5)))
+    END IF
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals, dims, error)
   END IF
@@ -435,7 +460,7 @@ MODULE PROCEDURE obj_Read_n5
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n5
 
@@ -456,7 +481,7 @@ MODULE PROCEDURE obj_Read__n5
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dim1 = math%zero_i
@@ -471,15 +496,15 @@ MODULE PROCEDURE obj_Read__n5
 
 #ifdef DEBUG_VER
     CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
-      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
-      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
     CALL AssertError3(INT(dims(3), I4B), SIZE(vals, 3), myName, &
-      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+                      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
     CALL AssertError3(INT(dims(4), I4B), SIZE(vals, 4), myName, &
-      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+                      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
     CALL AssertError3(INT(dims(5), I4B), SIZE(vals, 5), myName, &
-      'a=dims(5) from hdf5File, b=SIZE(vals, 5)')
+                      'a=dims(5) from hdf5File, b=SIZE(vals, 5)')
 #endif
 
     dim1 = INT(dims(1), I4B)
@@ -489,13 +514,13 @@ MODULE PROCEDURE obj_Read__n5
     dim5 = INT(dims(5), I4B)
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4, &
-      1:dim5), dims, error)
+                                      1:dim5), dims, error)
   END IF
   CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__n5
 
@@ -516,13 +541,20 @@ MODULE PROCEDURE obj_Read_n6
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
   CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
   IF (error >= 0) THEN
-    CALL Reallocate(vals, INT(dims, I4B))
+    ! Allocate without filling; HDF5 writes every entry
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) THEN
+      ALLOCATE(vals(dims(1), dims(2), dims(3), &
+                    dims(4), dims(5), dims(6)))
+    END IF
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals, dims, error)
   END IF
@@ -530,7 +562,7 @@ MODULE PROCEDURE obj_Read_n6
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n6
 
@@ -551,7 +583,7 @@ MODULE PROCEDURE obj_Read__n6
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dim1 = math%zero_i
@@ -567,17 +599,17 @@ MODULE PROCEDURE obj_Read__n6
 
 #ifdef DEBUG_VER
     CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
-      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
-      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
     CALL AssertError3(INT(dims(3), I4B), SIZE(vals, 3), myName, &
-      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+                      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
     CALL AssertError3(INT(dims(4), I4B), SIZE(vals, 4), myName, &
-      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+                      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
     CALL AssertError3(INT(dims(5), I4B), SIZE(vals, 5), myName, &
-      'a=dims(5) from hdf5File, b=SIZE(vals, 5)')
+                      'a=dims(5) from hdf5File, b=SIZE(vals, 5)')
     CALL AssertError3(INT(dims(6), I4B), SIZE(vals, 6), myName, &
-      'a=dims(6) from hdf5File, b=SIZE(vals, 6)')
+                      'a=dims(6) from hdf5File, b=SIZE(vals, 6)')
 #endif
 
     dim1 = INT(dims(1), I4B)
@@ -588,13 +620,13 @@ MODULE PROCEDURE obj_Read__n6
     dim6 = INT(dims(6), I4B)
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4, &
-      1:dim5, 1:dim6), dims, error)
+                                      1:dim5, 1:dim6), dims, error)
   END IF
   CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__n6
 
@@ -615,13 +647,20 @@ MODULE PROCEDURE obj_Read_n7
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   path = dsetname
   CALL preRead(obj, path%Chars(), rank, dset_id, dspace_id, dims, error)
   IF (error >= 0) THEN
-    CALL Reallocate(vals, INT(dims, I4B))
+    ! Allocate without filling; HDF5 writes every entry
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) THEN
+      ALLOCATE(vals(dims(1), dims(2), dims(3), dims(4), &
+                    dims(5), dims(6), dims(7)))
+    END IF
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals, dims, error)
   END IF
@@ -629,7 +668,7 @@ MODULE PROCEDURE obj_Read_n7
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read_n7
 
@@ -650,7 +689,7 @@ MODULE PROCEDURE obj_Read__n7
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[START] ')
+                          '[START] ')
 #endif
 
   dim1 = math%zero_i
@@ -667,19 +706,19 @@ MODULE PROCEDURE obj_Read__n7
 
 #ifdef DEBUG_VER
     CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
-      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
     CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
-      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
     CALL AssertError3(INT(dims(3), I4B), SIZE(vals, 3), myName, &
-      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+                      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
     CALL AssertError3(INT(dims(4), I4B), SIZE(vals, 4), myName, &
-      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
+                      'a=dims(4) from hdf5File, b=SIZE(vals, 4)')
     CALL AssertError3(INT(dims(5), I4B), SIZE(vals, 5), myName, &
-      'a=dims(5) from hdf5File, b=SIZE(vals, 5)')
+                      'a=dims(5) from hdf5File, b=SIZE(vals, 5)')
     CALL AssertError3(INT(dims(6), I4B), SIZE(vals, 6), myName, &
-      'a=dims(6) from hdf5File, b=SIZE(vals, 6)')
+                      'a=dims(6) from hdf5File, b=SIZE(vals, 6)')
     CALL AssertError3(INT(dims(7), I4B), SIZE(vals, 7), myName, &
-      'a=dims(7) from hdf5File, b=SIZE(vals, 7)')
+                      'a=dims(7) from hdf5File, b=SIZE(vals, 7)')
 #endif
 
     dim1 = INT(dims(1), I4B)
@@ -691,13 +730,13 @@ MODULE PROCEDURE obj_Read__n7
     dim7 = INT(dims(7), I4B)
     mem = H5T_NATIVE_INTEGER
     CALL H5DREAD_F(dset_id, mem, vals(1:dim1, 1:dim2, 1:dim3, 1:dim4, &
-      1:dim5, 1:dim6, 1:dim7), dims, error)
+                                      1:dim5, 1:dim6, 1:dim7), dims, error)
   END IF
   CALL postRead(obj, path%Chars(), dset_id, dspace_id, error)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-    '[END] ')
+                          '[END] ')
 #endif
 END PROCEDURE obj_Read__n7
 

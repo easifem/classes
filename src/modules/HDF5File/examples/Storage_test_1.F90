@@ -3,7 +3,8 @@
 ! summary: Measure the file size and the time of Write and Read
 !
 ! Write and read nfield Real64 fields of n x n values, without and with
-! compression (zlibOpt=4), and many small datasets. The file sizes and
+! compression (zlibOpt=4), and 2000 scalar datasets in a group of depth 1
+! and of depth 5 (cost of the path checks). The file sizes and
 ! the times are printed as comments ("#"), so the numbers can be compared
 ! before and after a change of HDF5File_. The checks only test that the
 ! data is read back unchanged.
@@ -44,34 +45,46 @@ PROGRAM main
   CALL Fields("Storage_test_1_raw.h5", -1)
   CALL Fields("Storage_test_1_zlib.h5", 4)
 
-  ! many small datasets
-  CALL SYSTEM_CLOCK(t0, rate)
-  CALL obj%Initiate(filename="Storage_test_1_small.h5", mode="NEW", &
-                    zlibOpt=-1)
-  CALL obj%OPEN()
-  DO k = 1, nsmall
-    WRITE(dname, '(A,I0)') "/small/x", k
-    CALL obj%WRITE(dsetname=TRIM(dname), vals=REAL(k, DFP))
-  END DO
-  CALL obj%DEALLOCATE()
-  CALL SYSTEM_CLOCK(t1)
-  INQUIRE(FILE="Storage_test_1_small.h5", SIZE=fsize)
-  WRITE(*, '(A,I0,A,I0,A,F8.3,A)') "# ", nsmall, &
-    " scalar datasets: ", fsize, " bytes, write ", &
-    REAL(t1 - t0) / REAL(rate), " s"
-
-  CALL obj%Initiate(filename="Storage_test_1_small.h5", mode="READ")
-  CALL obj%OPEN()
-  isok = .TRUE.
-  DO k = 1, nsmall, 97
-    WRITE(dname, '(A,I0)') "/small/x", k
-    CALL obj%READ(dsetname=TRIM(dname), vals=x)
-    isok = isok .AND. (ABS(x - REAL(k, DFP)) .LT. tol)
-  END DO
-  CALL obj%DEALLOCATE()
-  CALL OK(isok, "small datasets: values")
+  ! many small datasets in a group of depth 1 and of depth 5
+  CALL Scalars("Storage_test_1_small.h5", "/small/x")
+  CALL Scalars("Storage_test_1_deep.h5", "/a/b/c/d/x")
 
 CONTAINS
+
+  SUBROUTINE Scalars(filename, prefix)
+    CHARACTER(*), INTENT(IN) :: filename, prefix
+    INTEGER(INT64) :: tw, tr
+
+    CALL SYSTEM_CLOCK(t0, rate)
+    CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=-1)
+    CALL obj%OPEN()
+    DO k = 1, nsmall
+      WRITE(dname, '(A,I0)') prefix, k
+      CALL obj%WRITE(dsetname=TRIM(dname), vals=REAL(k, DFP))
+    END DO
+    CALL obj%DEALLOCATE()
+    CALL SYSTEM_CLOCK(t1)
+    tw = t1 - t0
+
+    CALL SYSTEM_CLOCK(t0)
+    CALL obj%Initiate(filename=filename, mode="READ")
+    CALL obj%OPEN()
+    isok = .TRUE.
+    DO k = 1, nsmall
+      WRITE(dname, '(A,I0)') prefix, k
+      CALL obj%READ(dsetname=TRIM(dname), vals=x)
+      isok = isok .AND. (ABS(x - REAL(k, DFP)) .LT. tol)
+    END DO
+    CALL obj%DEALLOCATE()
+    CALL SYSTEM_CLOCK(t1)
+    tr = t1 - t0
+
+    INQUIRE(FILE=filename, SIZE=fsize)
+    WRITE(*, '(A,I0,A,A,A,I0,A,F8.3,A,F8.3,A)') "# ", nsmall, &
+      " scalars ", prefix, "N: ", fsize, " bytes, write ", &
+      REAL(tw) / REAL(rate), " s, read ", REAL(tr) / REAL(rate), " s"
+    CALL OK(isok, prefix // "N: values")
+  END SUBROUTINE Scalars
 
   SUBROUTINE Fields(filename, zlib)
     CHARACTER(*), INTENT(IN) :: filename

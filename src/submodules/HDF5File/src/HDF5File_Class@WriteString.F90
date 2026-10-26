@@ -94,7 +94,7 @@ MODULE PROCEDURE obj_Write_st1
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_st1()"
 #endif
-  CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals))
+  CHARACTER(LEN=:), ALLOCATABLE :: valss(:)
   TYPE(String) :: path
   INTEGER(I4B) :: j, ierr
   INTEGER(HSIZE_T), DIMENSION(1) :: ldims, gdims, offset, cnt
@@ -107,7 +107,8 @@ MODULE PROCEDURE obj_Write_st1
 #endif
 
   path = dsetname
-! Fill character array
+! Fill character array (allocatable, so it is not on the stack)
+  ALLOCATE(CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals)))
   DO j = 1, SIZE(vals, DIM=1)
     valss(j) = vals(j)%chars()
   END DO
@@ -217,7 +218,7 @@ MODULE PROCEDURE obj_Write_st2
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_st2()"
 #endif
-  CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals, 1), SIZE(vals, 2))
+  CHARACTER(LEN=:), ALLOCATABLE :: valss(:, :)
   TYPE(String) :: path
   INTEGER(I4B) :: j, k, ierr
   INTEGER(HSIZE_T), DIMENSION(2) :: gdims, ldims, offset, cnt
@@ -230,6 +231,9 @@ MODULE PROCEDURE obj_Write_st2
 #endif
 
   path = dsetname
+  ! Allocatable, so the copy is not on the stack
+  ALLOCATE(CHARACTER(LEN=MAX(length_max, 1)) :: &
+           valss(SIZE(vals, 1), SIZE(vals, 2)))
   DO k = 1, SIZE(vals, 2)
     DO j = 1, SIZE(vals, 1)
       valss(j, k) = vals(j, k)%chars()
@@ -316,8 +320,7 @@ MODULE PROCEDURE obj_Write_st3
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_st3()"
 #endif
-  CHARACTER(LEN=MAX(length_max, 1)) :: valss(SIZE(vals, 1), SIZE(vals, 2), &
-                                             SIZE(vals, 3))
+  CHARACTER(LEN=:), ALLOCATABLE :: valss(:, :, :)
   TYPE(String) :: path
   INTEGER(I4B) :: i, j, k, ierr
   INTEGER(HSIZE_T), DIMENSION(3) :: gdims, ldims, offset, cnt
@@ -330,6 +333,9 @@ MODULE PROCEDURE obj_Write_st3
 #endif
 
   path = dsetname
+  ! Allocatable, so the copy is not on the stack
+  ALLOCATE(CHARACTER(LEN=MAX(length_max, 1)) :: &
+           valss(SIZE(vals, 1), SIZE(vals, 2), SIZE(vals, 3)))
   DO i = 1, SIZE(vals, 3)
     DO k = 1, SIZE(vals, 2)
       DO j = 1, SIZE(vals, 1)
