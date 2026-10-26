@@ -326,6 +326,40 @@ Rules for the docblock above each `INTERFACE` (and above each `TYPE`):
 8. Wrap every docblock line to 78 characters or less. Use only simple
    LaTeX that the documentation renderer supports.
 
+#### Keeping Docs in Sync with Code
+
+Whenever a method is changed, update its documentation in the same
+change. A change is not complete while its docs describe the old
+behaviour. This applies to any change of the interface (arguments
+added, removed or renamed, intent, optional, defaults) and of the
+behaviour (algorithm, modes, checks, errors, return values).
+
+Update all of the following that are affected:
+
+- the docblock of the `INTERFACE` (description, `Arguments:`,
+  `Returns:`, `Formula:`, `See also:`), and add an `update:` entry
+  (`!   - YYYY-MM-DD: description`);
+- the `!!` inline comments of the dummy arguments;
+- the one-line `!!` comment of the binding in `TYPE ... CONTAINS`;
+- the `TYPE` docblock and the `!!` comments of its components, when
+  defaults or the meaning of components change;
+- the `Examples` program in the docblock and the matching test in
+  `src/modules/<Module>/examples/` (keep both the same);
+- the examples and docs of other methods that call the changed method
+  or refer to it (for example a renamed binding, or a new required
+  argument), including their tests;
+- section banners (`!---` blocks) when a procedure is renamed.
+
+After the change, search the module, submodules and examples for the
+old name or the removed argument (`grep`) to make sure nothing still
+refers to it. If some of the affected docs or tests are left for
+later, say so explicitly in the report to the user.
+
+Do not list the documentation changes in the report to the user;
+updating the docs is expected with every change. Report only the
+changes of code and behaviour, the checks that were run, and the open
+questions (including docs or tests that were not updated).
+
 #### Examples Section in Docblocks
 
 - Every public routine (or generic interface) has one `Examples`
@@ -480,6 +514,7 @@ END INTERFACE GetValue
 2. **Keep line length ≤ 78 characters** (fortitude.toml standard)
 3. **Use explicit ONLY clauses** in all USE statements
 4. **Document all public interfaces** with FORD docblocks (see "FORD Docblock Style"), including a runnable `Examples` program
+   - **Update the docs whenever a method changes** (see "Keeping Docs in Sync with Code")
 5. **Add GPL3 header** to all new files
 6. **Use preprocessor guards** for debug code
 7. **Follow camelCase** for variables, `EntityName_` for types

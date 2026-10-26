@@ -93,7 +93,9 @@ PUBLIC :: VtkHDF5FilePointer_
 !```fortran
 ! CALL obj%ImportFromToml(table)              ! reads [<table>.vtkhdf]
 ! IF (obj%IsActive()) THEN
-!   CALL obj%InitiateVTKHDF()                 ! filename from toml
+!   CALL obj%InitiateVTKHDF5(filename="result.vtkhdf", mode="NEW", &
+!                            vtkType="UnstructuredGrid", &
+!                            isTransient=math%yes)
 !   CALL obj%WriteMesh(mesh)                  ! or WriteMesh(fedof, ...)
 ! END IF
 ! ! every time step
@@ -108,12 +110,9 @@ PUBLIC :: VtkHDF5FilePointer_
 
 TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   PRIVATE
-  LOGICAL(LGT) :: isRequested = math%yes
+  LOGICAL(LGT) :: isRequested = math%no
   !! output is requested (ImportFromToml)
-  LOGICAL(LGT) :: isVTKHDFInit = math%no
-  !! InitiateVTKHDF has been called
-  !! TODO: Remove it as we already have IsInitiated
-  LOGICAL(LGT) :: isTransient = math%yes
+  LOGICAL(LGT) :: isTransient = math%no
   !! write time steps (Steps group)
   LOGICAL(LGT) :: isLagrange = math%no
   !! the current mesh is a Lagrange grid (WriteMesh(fedof, geofedof))
@@ -125,9 +124,6 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   !! the current step is skipped (frequency)
   INTEGER(I4B) :: frequency = 1
   !! write every frequency steps
-  INTEGER(I4B) :: zlib = -1
-  !! compression level (-1 means no compression)
-  !! TODO: Remove zlib
   INTEGER(I4B) :: stepCounter = 0
   !! number of calls of BeginStep
   INTEGER(I4B) :: nSteps = 0
@@ -139,9 +135,6 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   !! offsets of the current mesh in the datasets
   TYPE(String) :: vtkType
   !! name of vtk type
-  TYPE(String) :: outputFile
-  !! name of output file (ImportFromToml)
-  !! TODO: as we already have filename stored in HDF5File.
   INTEGER(I4B) :: nArrays = 0
   !! number of data arrays written in the file
   TYPE(String), ALLOCATABLE :: arrayNames(:)
@@ -174,6 +167,9 @@ CONTAINS
   PROCEDURE, PASS(obj) :: WriteMesh2 => obj_WriteMesh2
   !! Write the Lagrange grid of a fedof
   GENERIC, PUBLIC :: WriteMesh => WriteMesh1, WriteMesh2
+  PROCEDURE, PUBLIC, PASS(obj) :: WriteUnstructuredGrid => &
+    obj_WriteUnstructuredGrid
+  !! Write unstructured grid without allocation
   PROCEDURE, PUBLIC, PASS(obj) :: BeginStep => obj_BeginStep
   !! Start a time step
   PROCEDURE, PUBLIC, PASS(obj) :: EndStep => obj_EndStep
@@ -214,28 +210,54 @@ TYPE :: VtkHDF5FilePointer_
 END TYPE VtkHDF5FilePointer_
 
 !----------------------------------------------------------------------------
-!                                       InitiateVTKHDF@ConstructorMethods
+!                                      InitiateVTKHDF5@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-26: only modes NEW and READ; vtkType is checked by
+!     CheckVtkTypeSupport; zlibOpt is passed to HDF5File_%Initiate
 ! summary: Open a VTKHDF file for writing or reading
 !
-! Mode "NEW" creates a new file (an existing file is overwritten), and
-! writes the root group /VTKHDF with the attributes Version and Type.
-! Mode "READ" opens an existing file and checks the Type attribute.
+! The object is deallocated first, then the HDF5 file is initiated and
+! opened (see [[HDF5File_:Initiate]]).
 !
-! The optional arguments are taken from ImportFromToml if they are not
-! present. The default values are filename = "./result.vtkhdf",
-! mode = "NEW", isTransient = .TRUE., frequency = 1, zlibOpt = -1.
+! - Mode "NEW" creates a new file (an existing file is truncated), and
+!   writes the root group /VTKHDF with the attributes Version = [2, 2]
+!   and Type = vtkType.
+! - Mode "READ" opens an existing file and reads the Type attribute
+!   into vtkType. In a transient file (isTransient = .TRUE.), the group
+!   /VTKHDF/Steps must exist.
+! - Modes "WRITE" and "OVERWRITE" are not supported, because the state
+!   of the steps and data arrays is not read from an existing file.
+!
+! Only vtkType = "UnstructuredGrid" is supported. In DEBUG mode, the
+! vtkType argument and the Type attribute of a file opened in mode READ
+! are checked, as well as the mode and the groups of the file.
+!
+! The default values of the optional arguments are isTransient =
+! .FALSE. and frequency = 1. The layout and compression of the datasets
+! are set by zlibOpt, chunkPolicy, libverLow and compactBytes, as in
+! [[HDF5File_:Initiate]]; zlibOpt replaces chunkPolicy%deflateLevel.
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !   filename : CHARACTER(*) - name of file (.vtkhdf or .hdf)
 !   mode : CHARACTER(*) - "NEW" or "READ"
-!   isTransient : LOGICAL(LGT) - write time steps (Steps group)
-!   frequency : INTEGER(I4B) - write every frequency steps
-!   zlibOpt : INTEGER(I4B) - compression level 0-9, -1 for none
+!   vtkType : CHARACTER(*) - VTK data type, "UnstructuredGrid"
+!   zlibOpt : INTEGER(I4B) - (optional) gzip compression level 0-9,
+!     -1 for no compression
+!   chunkPolicy : TYPE(HDF5ChunkPolicy_) - (optional) layout and
+!     compression of datasets
+!   libverLow : INTEGER(I4B) - (optional) lower bound of the file
+!     format version of a new file
+!   compactBytes : INTEGER(INT64) - (optional) limit of the compact
+!     layout in bytes
+!   isTransient : LOGICAL(LGT) - (optional) write time steps (Steps
+!     group), default .FALSE.
+!   frequency : INTEGER(I4B) - (optional) write every frequency steps,
+!     default 1; values less than 1 are taken as 1
 !
 ! Examples
 !
@@ -248,35 +270,43 @@ END TYPE VtkHDF5FilePointer_
 ! CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_1.vtkhdf"
 ! TYPE(VtkHDF5File_) :: obj
 ! LOGICAL :: isok
-! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
-!                         isTransient=math%no)
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+!                          vtkType="UnstructuredGrid")
+! CALL OK(obj%IsInitiated(), "InitiateVTKHDF5 NEW: initiated")
+! CALL OK(obj%PathExists("/VTKHDF"), "InitiateVTKHDF5 NEW: /VTKHDF")
+! CALL OK(obj%IsOutputStep(), "IsOutputStep: NEW, not transient")
 ! CALL obj%DEALLOCATE()
 ! INQUIRE (FILE=filename, EXIST=isok)
-! CALL OK(isok, "InitiateVTKHDF NEW")
-! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
-! CALL OK(obj%GetTotalSteps() .EQ. 0, "InitiateVTKHDF READ")
+! CALL OK(isok, "InitiateVTKHDF5 NEW: file exists")
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
+!                          vtkType="UnstructuredGrid")
+! CALL OK(obj%IsInitiated(), "InitiateVTKHDF5 READ: initiated")
+! CALL OK(.NOT. obj%IsOutputStep(), "IsOutputStep: READ")
+! CALL OK(obj%GetTotalSteps() .EQ. 0, "InitiateVTKHDF5 READ: no steps")
 ! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%IsInitiated(), "Deallocate")
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_ImportFromToml]], [[obj_WriteMesh1]]
+! See also: [[obj_Deallocate]], [[obj_WriteMesh1]], [[obj_BeginStep]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateVTKHDF5(Obj, filename, mode, vtkType, &
-                                        zlibOpt, chunkPolicy, libverLow, &
-                                        compactBytes, isTransient, frequency)
-    CLASS(VtkHDF5File_), INTENT(INOUT) :: Obj
-    !! HDF5 file object
+  MODULE SUBROUTINE obj_InitiateVTKHDF5(obj, filename, mode, vtkType, &
+                                        zlibOpt, chunkPolicy, &
+                                        libverLow, compactBytes, &
+                                        isTransient, frequency)
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
+    !! VTKHDF file
     CHARACTER(LEN=*), INTENT(IN) :: filename
     !! path of the file on the file system
     CHARACTER(LEN=*), INTENT(IN) :: mode
-    !! access mode: 'NEW', 'READ', 'WRITE' or 'OVERWRITE'
-    !! 'READ', 'WRITE' and 'OVERWRITE' need an existing file
-    !! 'WRITE' does not allow overwriting datasets
+    !! access mode: 'NEW' or 'READ'
     !! 'NEW' creates the file and truncates an existing one
+    !! 'READ' opens an existing file
+    !! 'WRITE' and 'OVERWRITE' are not supported (DEBUG error)
     CHARACTER(LEN=*), INTENT(IN) :: vtkType
-    !! vtkType
-    !! TODO: complete the documentation
+    !! VTK data type written in the Type attribute of /VTKHDF;
+    !! only "UnstructuredGrid" is supported
     INTEGER(I4B), INTENT(IN), OPTIONAL :: zlibOpt
     !! gzip compression level [0-9], -1 for no compression;
     !! replaces chunkPolicy%deflateLevel
@@ -288,9 +318,9 @@ INTERFACE
     INTEGER(INT64), INTENT(IN), OPTIONAL :: compactBytes
     !! datasets with less data use the compact layout; default 4096
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTransient
-    !! write time steps
+    !! write time steps; default .FALSE.
     INTEGER(I4B), INTENT(IN), OPTIONAL :: frequency
-    !! write every frequency steps
+    !! write every frequency steps; default 1
   END SUBROUTINE obj_InitiateVTKHDF5
 END INTERFACE
 
@@ -315,7 +345,7 @@ END INTERFACE
 !zlib = -1
 !```
 !
-! The file is not opened here. Call InitiateVTKHDF() after this.
+! The file is not opened here. Call InitiateVTKHDF5() after this.
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file
@@ -339,7 +369,7 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_InitiateVTKHDF]]
+! See also: [[obj_InitiateVTKHDF5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml(obj, table)
@@ -362,7 +392,7 @@ END INTERFACE
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !   Delete : LOGICAL(LGT) - (optional) delete the file
 !
-! See also: [[obj_InitiateVTKHDF]] (contains an example)
+! See also: [[obj_InitiateVTKHDF5]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj, Delete)
@@ -386,7 +416,7 @@ END INTERFACE
 !   msg : CHARACTER(*) - message
 !   unitno : INTEGER(I4B) - (optional) unit number
 !
-! See also: [[obj_InitiateVTKHDF]]
+! See also: [[obj_InitiateVTKHDF5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
@@ -432,12 +462,15 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-26: false for a file which is not opened for writing
 ! summary: Returns true if data should be written now
 !
-! Returns false if the file is not initiated, or if the current step
-! is skipped by frequency. For a non-transient file, true is returned
-! if the file is initiated. Use it to avoid the computation of output
-! data in the skipped steps.
+! Returns false if the file is not initiated or not opened for writing
+! (mode READ). For a non-transient file, true is returned otherwise.
+! For a transient file, true is returned only between BeginStep and
+! EndStep of a step which is not skipped by frequency. Use it to avoid
+! the computation of output data in the skipped steps.
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file
@@ -445,7 +478,8 @@ END INTERFACE
 ! Returns:
 !   ans : LOGICAL(LGT) - data should be written
 !
-! See also: [[obj_BeginStep]] (contains an example)
+! See also: [[obj_InitiateVTKHDF5]], [[obj_BeginStep]] (both contain
+! an example)
 
 INTERFACE
   MODULE FUNCTION obj_IsOutputStep(obj) RESULT(ans)
@@ -512,15 +546,23 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-26: checks only in DEBUG mode; the mesh is written also in
+!     a skipped step
 ! summary: Write the linear grid of a mesh
 !
 ! The nodes and the active elements of the mesh are written as a new
 ! part (see [[VTKGetLinearGrid]]). The point data written after this
-! are the vertex DOFs of the fields.
+! are the vertex DOFs of the fields (see [[obj_WritePointData1]]).
 !
 ! If it is called before the first BeginStep (or in a non-transient
 ! file), the mesh is used for all steps. If it is called in a step
 ! (moving or adaptive mesh), the mesh is used from the current step.
+! The mesh is written also in a step which is skipped by frequency; it
+! is then used from the next output step.
+!
+! In DEBUG mode, an error is raised if the file is not initiated or
+! not opened with mode NEW.
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -559,8 +601,8 @@ END INTERFACE
 ! ALLOCATE (xij(3, nPoints))
 ! CALL amesh%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 ! ! write a static mesh with point and cell data
-! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
-!                         isTransient=math%no)
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+!                          vtkType="UnstructuredGrid")
 ! CALL obj%WriteMesh(amesh)
 ! nCells = obj%GetTotalCells()
 ! cellIds = [(REAL(ii, DFP), ii=1, nCells)]
@@ -568,7 +610,8 @@ END INTERFACE
 ! CALL obj%WriteCellData(name="id", vals=cellIds)
 ! CALL obj%DEALLOCATE()
 ! ! read back
-! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
+!                          vtkType="UnstructuredGrid")
 ! CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
 !                   types=types)
 ! CALL OK(SIZE(points, 2) .EQ. nPoints, "ReadMesh: nPoints")
@@ -601,6 +644,9 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-26: checks only in DEBUG mode; the mesh is written also in
+!     a skipped step
 ! summary: Write the Lagrange grid of a fedof (higher order cells)
 !
 ! Each active element is written as a higher order VTK cell with the
@@ -609,7 +655,8 @@ END INTERFACE
 ! The point data written after this are evaluated at these points by
 ! the shape functions of the field (any basis can be used).
 !
-! The rules of steps are the same as [[obj_WriteMesh1]].
+! The rules of steps and the DEBUG checks are the same as
+! [[obj_WriteMesh1]].
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -647,12 +694,13 @@ END INTERFACE
 ! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 !                       fileName=tomlFileName, tomlName="u")
 ! CALL u%Set(VALUE=2.0_DFP)
-! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
-!                         isTransient=math%no)
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+!                          vtkType="UnstructuredGrid")
 ! CALL obj%WriteMesh(fedof=fedof, geofedof=geofedof)
 ! CALL obj%WritePointData(name="u", field=u)
 ! CALL obj%DEALLOCATE()
-! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
+!                          vtkType="UnstructuredGrid")
 ! CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
 !                   types=types)
 ! CALL OK(ALL(types .EQ. 22_INT8), "WriteMesh2: VTK_QUADRATIC_TRIANGLE")
@@ -677,6 +725,30 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: geofedof
     !! FEDOF of the geometry
   END SUBROUTINE obj_WriteMesh2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          WriteUnstructuredGrid@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Write unstructured grid
+!
+! This method writes the unstructued grid
+INTERFACE
+  MODULE SUBROUTINE obj_WriteUnstructuredGrid(obj, points, connectivity, &
+                                              offsets, types)
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: points(:, :)
+    !! nodal coordinates, it should have three columns
+    INTEGER(I4B), INTENT(IN) :: connectivity(:)
+    !! connectivity
+    INTEGER(I4B), INTENT(IN) :: offsets(:)
+    !! offsets
+    INTEGER(INT8), INTENT(IN) :: types(:)
+    !! types
+  END SUBROUTINE obj_WriteUnstructuredGrid
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -731,7 +803,9 @@ END INTERFACE
 ! xij = 0.0_DFP
 ! CALL amesh%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 ! ! 4 steps, every 2 steps are written (steps 1 and 3)
-! CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", frequency=2)
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+!                          vtkType="UnstructuredGrid", &
+!                          isTransient=math%yes, frequency=2)
 ! CALL obj%WriteMesh(amesh)
 ! DO istep = 1, 4
 !   CALL obj%BeginStep(time=0.1_DFP * istep)
@@ -742,7 +816,8 @@ END INTERFACE
 !   CALL obj%EndStep()
 ! END DO
 ! CALL obj%DEALLOCATE()
-! CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
+!                          vtkType="UnstructuredGrid")
 ! CALL OK(obj%GetTotalSteps() .EQ. 2, "GetTotalSteps")
 ! CALL obj%GetTimeValues(times)
 ! CALL OK(ABS(times(2) - 0.3_DFP) .LT. 1.0E-12_DFP, "GetTimeValues")

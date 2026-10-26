@@ -33,7 +33,9 @@ PROGRAM main
   xij = 0.0_DFP
   CALL amesh%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 ! 4 steps, every 2 steps are written (steps 1 and 3)
-  CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", frequency=2)
+  CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+                           vtkType="UnstructuredGrid", &
+                           isTransient=math%yes, frequency=2)
   CALL obj%WriteMesh(amesh)
   DO istep = 1, 4
     CALL obj%BeginStep(time=0.1_DFP * istep)
@@ -44,7 +46,8 @@ PROGRAM main
     CALL obj%EndStep()
   END DO
   CALL obj%DEALLOCATE()
-  CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+  CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
+                           vtkType="UnstructuredGrid")
   CALL OK(obj%GetTotalSteps() .EQ. 2, "GetTotalSteps")
   CALL obj%GetTimeValues(times)
   CALL OK(ABS(times(2) - 0.3_DFP) .LT. 1.0E-12_DFP, "GetTimeValues")

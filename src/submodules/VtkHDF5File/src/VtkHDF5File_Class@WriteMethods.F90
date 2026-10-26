@@ -28,12 +28,11 @@ USE VTKMeshUtility, ONLY: VTKGetLinearGrid
 USE VTKMeshUtility, ONLY: VTKGetVertexValues
 IMPLICIT NONE
 
-INTEGER(I4B), PARAMETER :: LOC_POINT = 1, LOC_CELL = 2, LOC_FIELD = 3
-CHARACTER(*), PARAMETER :: ROOT = "/VTKHDF/", STEPS = "/VTKHDF/Steps/"
-
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "VtkHDF5File_Class@WriteMethods.F90"
 #endif
+
+#include "./include/vtkhdf5_definitions.F90"
 
 CONTAINS
 
@@ -42,18 +41,45 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteMesh1
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_WriteMesh1()"
+#endif
   REAL(DFP), ALLOCATABLE :: points(:, :)
   INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
   INTEGER(INT8), ALLOCATABLE :: types(:)
 
-  IF (.NOT. CanWriteMesh(obj, myName)) RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%IsInitiated(), myName, &
+                    "VtkHDF5File_ is not initiated.")
+  CALL AssertError1(obj%IsWrite(), myName, &
+                    "VtkHDF5File_ should be initiated with mode NEW.")
+#endif
+
+  ! The mesh is written also in a skipped step, so that a mesh which
+  ! changes in a skipped step is used from the next output step
   CALL VTKGetLinearGrid(mesh=mesh, points=points, &
                         connectivity=connectivity, offsets=offsets, &
                         types=types)
-  CALL WriteGrid(obj, points, connectivity, offsets, types)
+  ! TODO
+  ! Call mesh%GetVtkUnstructuredGridData(mesh=mesh, points=points, &
+  ! connectivity=connectivity, offsets=offsets, &
+  ! types=types)
+
+  CALL obj%WriteUnstructuredGrid(points=points, connectivity=connectivity, &
+                                 offsets=offsets, types=types)
+
+  ! WritePointData1 evaluates a field at the vertices of the mesh
   obj%isLagrange = math%no
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WriteMesh1
 
 !----------------------------------------------------------------------------
@@ -61,18 +87,41 @@ END PROCEDURE obj_WriteMesh1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WriteMesh2
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_WriteMesh2()"
+#endif
   REAL(DFP), ALLOCATABLE :: points(:, :)
   INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
   INTEGER(INT8), ALLOCATABLE :: types(:)
 
-  IF (.NOT. CanWriteMesh(obj, myName)) RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%IsInitiated(), myName, &
+                    "VtkHDF5File_ is not initiated.")
+  CALL AssertError1(obj%IsWrite(), myName, &
+                    "VtkHDF5File_ should be initiated with mode NEW.")
+#endif
+
+  ! The mesh is written also in a skipped step, so that a mesh which
+  ! changes in a skipped step is used from the next output step
   CALL VTKGetLagrangeGrid(fedof=fedof, geofedof=geofedof, points=points, &
                           connectivity=connectivity, offsets=offsets, &
                           types=types)
-  CALL WriteGrid(obj, points, connectivity, offsets, types)
+
+  CALL obj%WriteUnstructuredGrid(points=points, connectivity=connectivity, &
+                                 offsets=offsets, types=types)
+
+  ! WritePointData1 evaluates a field at the points of the Lagrange grid
   obj%isLagrange = math%yes
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WriteMesh2
 
 !----------------------------------------------------------------------------
@@ -80,24 +129,51 @@ END PROCEDURE obj_WriteMesh2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_BeginStep
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_BeginStep()"
+#endif
 
-  IF (.NOT. obj%isVTKHDFInit) RETURN
-  IF (.NOT. obj%isTransient) RETURN
+  REAL(DFP) :: times(1)
 
-  IF (obj%isStepOpen) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[ERROR] :: EndStep should be called before the ' // &
-                      'next BeginStep.')
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (.NOT. (obj%IsInitiated() .AND. obj%isTransient)) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
+                      'file is not initiated or not ' // &
+                      'transient.')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] file is not initiated or not ' // &
+                            'transient.')
+#endif
     RETURN
   END IF
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. obj%isStepOpen, myName, &
+                    'EndStep should be called before the ' // &
+                    'next BeginStep.')
+#endif
 
   obj%stepCounter = obj%stepCounter + 1
   obj%isStepOpen = math%yes
   obj%isSkipped = MOD(obj%stepCounter - 1, obj%frequency) .NE. 0
-  IF (obj%isSkipped) RETURN
 
-  CALL obj%Append(STEPS // "Values", [time])
+  IF (.NOT. obj%isSkipped) THEN
+    times(1) = time
+    CALL obj%Append(_STEPS_ // "Values", times)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_BeginStep
 
 !----------------------------------------------------------------------------
@@ -110,44 +186,69 @@ MODULE PROCEDURE obj_EndStep
   INTEGER(I4B) :: ii, nfill
   INTEGER(I4B), ALLOCATABLE :: fill1(:), fill2(:, :)
 
-  IF (.NOT. obj%isVTKHDFInit) RETURN
-  IF (.NOT. obj%isTransient) RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
-  IF (.NOT. obj%isStepOpen) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[ERROR] :: BeginStep should be called before ' // &
-                      'EndStep.')
+  IF (.NOT. (obj%IsInitiated() .AND. obj%isTransient)) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
+                      'file is not initiated or not ' // &
+                      'transient.')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
     RETURN
   END IF
+
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%isStepOpen, myName, &
+                    'BeginStep should be called before ' // &
+                    'EndStep.')
+#endif
 
   obj%isStepOpen = math%no
 
   IF (obj%isSkipped) THEN
     obj%isSkipped = math%no
+
+#ifdef DEBUG_VER
+    CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
+                      'step is skipped.')
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END]')
+#endif
+
     RETURN
   END IF
 
-  IF (.NOT. obj%isMeshWritten) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[ERROR] :: WriteMesh should be called before ' // &
-                      'the first EndStep.')
-    RETURN
-  END IF
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%isMeshWritten, myName, &
+                    'WriteMesh should be called before ' // &
+                    'the first EndStep.')
+#endif
 
   obj%nSteps = obj%nSteps + 1
 
 ! Geometry of the step
-  CALL obj%Append(STEPS // "PartOffsets", [obj%partOffset])
-  CALL obj%Append(STEPS // "NumberOfParts", [1_I4B])
-  CALL obj%Append(STEPS // "PointOffsets", [obj%pointOffset])
-  CALL obj%Append(STEPS // "CellOffsets", &
+  CALL obj%Append(_STEPS_ // "PartOffsets", [obj%partOffset])
+  CALL obj%Append(_STEPS_ // "NumberOfParts", [1_I4B])
+  CALL obj%Append(_STEPS_ // "PointOffsets", [obj%pointOffset])
+  CALL obj%Append(_STEPS_ // "CellOffsets", &
                   RESHAPE([obj%cellOffset], [1, 1]))
-  CALL obj%Append(STEPS // "ConnectivityIdOffsets", &
+  CALL obj%Append(_STEPS_ // "ConnectivityIdOffsets", &
                   RESHAPE([obj%connOffset], [1, 1]))
 
 ! Data arrays of the step
   DO ii = 1, obj%nArrays
-    path = STEPS // OffsetGroup(obj%arrayLoc(ii)) // "/" // &
+    path = _STEPS_ // OffsetGroup(obj%arrayLoc(ii)) // "/" // &
       obj%arrayNames(ii)%chars()
 
     ! The array is written for the first time, fill the previous steps
@@ -161,8 +262,8 @@ MODULE PROCEDURE obj_EndStep
 
     CALL obj%Append(path, [obj%arrayOffset(ii)])
 
-    IF (obj%arrayLoc(ii) .EQ. LOC_FIELD) THEN
-      path = STEPS // "FieldDataSizes/" // obj%arrayNames(ii)%chars()
+    IF (obj%arrayLoc(ii) .EQ. _LOC_FIELD_) THEN
+      path = _STEPS_ // "FieldDataSizes/" // obj%arrayNames(ii)%chars()
       nfill = obj%nSteps - 1 - obj%GetExtent(path)
       IF (nfill .GT. 0) THEN
         ALLOCATE(fill2(2, nfill))
@@ -176,6 +277,11 @@ MODULE PROCEDURE obj_EndStep
   END DO
 
   CALL obj%WriteAttribute("/VTKHDF/Steps", "NSteps", obj%nSteps)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_EndStep
 
 !----------------------------------------------------------------------------
@@ -183,10 +289,23 @@ END PROCEDURE obj_EndStep
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WritePointData1
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_WritePointData1()"
+#endif
   REAL(DFP), ALLOCATABLE :: values(:, :)
 
-  IF (.NOT. CanWriteData(obj, myName)) RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (.NOT. CanWriteData(obj, myName)) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] data is not written.')
+#endif
+    RETURN
+  END IF
 
   IF (obj%isLagrange) THEN
     CALL VTKGetLagrangeValues(field=field, values=values)
@@ -195,13 +314,18 @@ MODULE PROCEDURE obj_WritePointData1
                             values=values)
   END IF
 
-  IF (.NOT. ALLOCATED(values)) RETURN
-
-  IF (SIZE(values, 1) .EQ. 1) THEN
-    CALL WriteArray1(obj, LOC_POINT, NAME, values(1, :), myName)
-  ELSE
-    CALL WriteArray2(obj, LOC_POINT, NAME, values, myName)
+  IF (ALLOCATED(values)) THEN
+    IF (SIZE(values, 1) .EQ. 1) THEN
+      CALL WriteArray1(obj, _LOC_POINT_, NAME, values(1, :), myName)
+    ELSE
+      CALL WriteArray2(obj, _LOC_POINT_, NAME, values, myName)
+    END IF
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WritePointData1
 
 !----------------------------------------------------------------------------
@@ -209,9 +333,23 @@ END PROCEDURE obj_WritePointData1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_WritePointData2
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_WritePointData2()"
-  IF (.NOT. CanWriteData(obj, myName)) RETURN
-  CALL WriteArray1(obj, LOC_POINT, NAME, vals, myName)
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (CanWriteData(obj, myName)) THEN
+    CALL WriteArray1(obj, _LOC_POINT_, NAME, vals, myName)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WritePointData2
 
 !----------------------------------------------------------------------------
@@ -220,8 +358,20 @@ END PROCEDURE obj_WritePointData2
 
 MODULE PROCEDURE obj_WritePointData3
   CHARACTER(*), PARAMETER :: myName = "obj_WritePointData3()"
-  IF (.NOT. CanWriteData(obj, myName)) RETURN
-  CALL WriteArray2(obj, LOC_POINT, NAME, vals, myName)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (CanWriteData(obj, myName)) THEN
+    CALL WriteArray2(obj, _LOC_POINT_, NAME, vals, myName)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WritePointData3
 
 !----------------------------------------------------------------------------
@@ -230,8 +380,20 @@ END PROCEDURE obj_WritePointData3
 
 MODULE PROCEDURE obj_WriteCellData1
   CHARACTER(*), PARAMETER :: myName = "obj_WriteCellData1()"
-  IF (.NOT. CanWriteData(obj, myName)) RETURN
-  CALL WriteArray1(obj, LOC_CELL, NAME, vals, myName)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (CanWriteData(obj, myName)) THEN
+    CALL WriteArray1(obj, _LOC_CELL_, NAME, vals, myName)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WriteCellData1
 
 !----------------------------------------------------------------------------
@@ -240,8 +402,20 @@ END PROCEDURE obj_WriteCellData1
 
 MODULE PROCEDURE obj_WriteCellData2
   CHARACTER(*), PARAMETER :: myName = "obj_WriteCellData2()"
-  IF (.NOT. CanWriteData(obj, myName)) RETURN
-  CALL WriteArray2(obj, LOC_CELL, NAME, vals, myName)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (CanWriteData(obj, myName)) THEN
+    CALL WriteArray2(obj, _LOC_CELL_, NAME, vals, myName)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WriteCellData2
 
 !----------------------------------------------------------------------------
@@ -250,9 +424,21 @@ END PROCEDURE obj_WriteCellData2
 
 MODULE PROCEDURE obj_WriteFieldData
   CHARACTER(*), PARAMETER :: myName = "obj_WriteFieldData()"
-  IF (.NOT. CanWriteData(obj, myName)) RETURN
-  CALL WriteArray2(obj, LOC_FIELD, NAME, RESHAPE(vals, [SIZE(vals), 1]), &
-                   myName)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (CanWriteData(obj, myName)) THEN
+    CALL WriteArray2(obj, _LOC_FIELD_, NAME, &
+                     RESHAPE(vals, [SIZE(vals), 1]), myName)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_WriteFieldData
 
 !----------------------------------------------------------------------------
@@ -263,12 +449,10 @@ END PROCEDURE obj_WriteFieldData
 ! date: 2026-10-24
 ! summary: Append a grid as a new part and update the mesh offsets
 
-SUBROUTINE WriteGrid(obj, points, connectivity, offsets, types)
-  CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
-  REAL(DFP), INTENT(IN) :: points(:, :)
-  INTEGER(I4B), INTENT(IN) :: connectivity(:)
-  INTEGER(I4B), INTENT(IN) :: offsets(:)
-  INTEGER(INT8), INTENT(IN) :: types(:)
+MODULE PROCEDURE obj_WriteUnstructuredGrid
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_WriteUnstructuredGrid()"
+#endif
 
   INTEGER(I4B) :: nP, nC, nIds, pointOffset, connOffset, cellOffset, &
     partOffset
@@ -277,13 +461,13 @@ SUBROUTINE WriteGrid(obj, points, connectivity, offsets, types)
   nC = SIZE(types)
   nIds = SIZE(connectivity)
 
-  CALL obj%Append(ROOT // "Points", points, pointOffset)
-  CALL obj%Append(ROOT // "Connectivity", connectivity, connOffset)
-  CALL obj%Append(ROOT // "Offsets", offsets)
-  CALL obj%Append(ROOT // "Types", types, cellOffset)
-  CALL obj%Append(ROOT // "NumberOfPoints", [nP], partOffset)
-  CALL obj%Append(ROOT // "NumberOfCells", [nC])
-  CALL obj%Append(ROOT // "NumberOfConnectivityIds", [nIds])
+  CALL obj%Append(_ROOT_ // "Points", points, pointOffset)
+  CALL obj%Append(_ROOT_ // "Connectivity", connectivity, connOffset)
+  CALL obj%Append(_ROOT_ // "Offsets", offsets)
+  CALL obj%Append(_ROOT_ // "Types", types, cellOffset)
+  CALL obj%Append(_ROOT_ // "NumberOfPoints", [nP], partOffset)
+  CALL obj%Append(_ROOT_ // "NumberOfCells", [nC])
+  CALL obj%Append(_ROOT_ // "NumberOfConnectivityIds", [nIds])
 
   obj%nPoints = nP
   obj%nCells = nC
@@ -293,26 +477,12 @@ SUBROUTINE WriteGrid(obj, points, connectivity, offsets, types)
   obj%cellOffset = cellOffset
   obj%partOffset = partOffset
   obj%isMeshWritten = math%yes
-END SUBROUTINE WriteGrid
 
-!----------------------------------------------------------------------------
-!                                                              CanWriteMesh
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2026-10-24
-! summary: Returns true if a mesh can be written now
-
-FUNCTION CanWriteMesh(obj, myName) RESULT(ans)
-  CLASS(VtkHDF5File_), INTENT(IN) :: obj
-  CHARACTER(*), INTENT(IN) :: myName
-  LOGICAL(LGT) :: ans
-
-  ans = CheckWritable(obj, myName)
-  IF (.NOT. ans) RETURN
-
-  IF (obj%isTransient .AND. obj%isStepOpen) ans = .NOT. obj%isSkipped
-END FUNCTION CanWriteMesh
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_WriteUnstructuredGrid
 
 !----------------------------------------------------------------------------
 !                                                              CanWriteData
@@ -362,7 +532,7 @@ FUNCTION CheckWritable(obj, myName) RESULT(ans)
   CHARACTER(*), INTENT(IN) :: myName
   LOGICAL(LGT) :: ans
 
-  ans = obj%isVTKHDFInit
+  ans = obj%IsInitiated()
   IF (ans) ans = obj%IsWrite()
 
   IF (.NOT. ans) THEN
@@ -390,7 +560,7 @@ SUBROUTINE WriteArray1(obj, loc, name, vals, myName)
   INTEGER(I4B) :: offset
 
   IF (.NOT. CheckSize(obj, loc, SIZE(vals), name, myName)) RETURN
-  CALL obj%Append(ROOT // DataGroup(loc) // "/" // name, vals, offset)
+  CALL obj%Append(_ROOT_ // DataGroup(loc) // "/" // name, vals, offset)
   CALL RegisterArray(obj, loc, name, offset, 1, SIZE(vals))
 END SUBROUTINE WriteArray1
 
@@ -412,7 +582,7 @@ SUBROUTINE WriteArray2(obj, loc, name, vals, myName)
   INTEGER(I4B) :: offset
 
   IF (.NOT. CheckSize(obj, loc, SIZE(vals, 2), name, myName)) RETURN
-  CALL obj%Append(ROOT // DataGroup(loc) // "/" // name, vals, offset)
+  CALL obj%Append(_ROOT_ // DataGroup(loc) // "/" // name, vals, offset)
   CALL RegisterArray(obj, loc, name, offset, SIZE(vals, 1), &
                      SIZE(vals, 2))
 END SUBROUTINE WriteArray2
@@ -430,9 +600,9 @@ FUNCTION CheckSize(obj, loc, ntuples, name, myName) RESULT(ans)
   INTEGER(I4B) :: nexpected
 
   SELECT CASE (loc)
-  CASE (LOC_POINT)
+  CASE (_LOC_POINT_)
     nexpected = obj%nPoints
-  CASE (LOC_CELL)
+  CASE (_LOC_CELL_)
     nexpected = obj%nCells
   CASE DEFAULT
     nexpected = ntuples
@@ -466,12 +636,12 @@ SUBROUTINE RegisterArray(obj, loc, name, offset, ncomp, ntuples)
   INTEGER(I4B), ALLOCATABLE :: tempLoc(:), tempOffset(:), tempSize(:, :)
 
   indx = 0
-  DO ii = 1, obj%nArrays
+  loop1: DO ii = 1, obj%nArrays
     IF (obj%arrayLoc(ii) .EQ. loc .AND. obj%arrayNames(ii) == name) THEN
       indx = ii
-      EXIT
+      EXIT loop1
     END IF
-  END DO
+  END DO loop1
 
   IF (indx .EQ. 0) THEN
     n = obj%nArrays
@@ -507,9 +677,9 @@ FUNCTION DataGroup(loc) RESULT(ans)
   CHARACTER(:), ALLOCATABLE :: ans
 
   SELECT CASE (loc)
-  CASE (LOC_POINT)
+  CASE (_LOC_POINT_)
     ans = "PointData"
-  CASE (LOC_CELL)
+  CASE (_LOC_CELL_)
     ans = "CellData"
   CASE DEFAULT
     ans = "FieldData"

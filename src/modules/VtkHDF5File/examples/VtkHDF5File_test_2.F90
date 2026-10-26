@@ -32,8 +32,8 @@ PROGRAM main
   ALLOCATE(xij(3, nPoints))
   CALL amesh%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
 ! write a static mesh with point and cell data
-  CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
-                          isTransient=math%no)
+  CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+                           vtkType="UnstructuredGrid")
   CALL obj%WriteMesh(amesh)
   nCells = obj%GetTotalCells()
   cellIds = [(REAL(ii, DFP), ii=1, nCells)]
@@ -41,7 +41,8 @@ PROGRAM main
   CALL obj%WriteCellData(NAME="id", vals=cellIds)
   CALL obj%DEALLOCATE()
 ! read back
-  CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+  CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
+                           vtkType="UnstructuredGrid")
   CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
                     types=types)
   CALL OK(SIZE(points, 2) .EQ. nPoints, "ReadMesh: nPoints")

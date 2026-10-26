@@ -34,23 +34,32 @@ CHARACTER(*), PARAMETER :: modName = &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                            InitiateVTKHDF
+!                                                           InitiateVTKHDF5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateVTKHDF5
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateVTKHDF5()"
-#endif
   LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+  isok = CheckVtkTypeSupport(vtkType)
+  CALL AssertError1(isok, myName, &
+                    "vtkType=" // vtkType // " not supported yet.")
+#endif
+
+  ! Clean the obj
   CALL obj%DEALLOCATE()
 
+  ! Initiate obj
   CALL obj%Initiate(filename=filename, mode=mode, &
+                    zlibOpt=zlibOpt, &
                     chunkPolicy=chunkPolicy, &
                     libverLow=libverLow, &
                     compactBytes=compactBytes)
@@ -61,16 +70,16 @@ MODULE PROCEDURE obj_InitiateVTKHDF5
   IF (PRESENT(isTransient)) obj%isTransient = isTransient
   IF (PRESENT(frequency)) obj%frequency = MAX(frequency, 1)
 
-  ! Handle new file with write access
-  IF (obj%IsNew() .OR. obj%IsWrite()) THEN
-    CALL obj%SetOverwriteStat(math%yes)
-    CALL obj%mkdir("/VTKHDF")
+  ! Mode NEW sets both the read and the write status, so the mode is
+  ! checked in this order: NEW, READ (read only), WRITE/OVERWRITE
+  IF (obj%IsNew()) THEN
+    ! New file: write the root group (NEW already allows overwriting)
+    CALL obj%Mkdir("/VTKHDF")
     CALL obj%WriteAttribute("/VTKHDF", "Version", _VTKHDF_VERSION_)
     CALL obj%WriteAttribute("/VTKHDF", "Type", obj%vtkType)
-  END IF
 
-  ! Handle read access
-  IF (obj%IsRead()) THEN
+  ELSE IF (obj%IsRead() .AND. (.NOT. obj%IsWrite())) THEN
+    ! Read only file
 
 #ifdef DEBUG_VER
     isok = obj%PathExists("/VTKHDF")
@@ -80,11 +89,14 @@ MODULE PROCEDURE obj_InitiateVTKHDF5
 #endif
 
     CALL obj%ReadAttribute("/VTKHDF", "Type", obj%vtkType)
-    ! INDEX is used because the string may be padded by other writers
 
-    ! TODO:
     ! Check supported vtkType
-    ! Call CheckVtkTypeSupport(obj%vtkType)
+#ifdef DEBUG_VER
+    isok = CheckVtkTypeSupport(obj%vtkType%Chars())
+    CALL AssertError1(isok, myName, &
+                      "vtkType=" // obj%vtkType%Chars() // &
+                      " is not supported yet")
+#endif
 
     IF (obj%isTransient) THEN
 #ifdef DEBUG_VER
@@ -94,6 +106,16 @@ MODULE PROCEDURE obj_InitiateVTKHDF5
                         obj%GetFileName())
 #endif
     END IF
+
+  ELSE
+    ! WRITE or OVERWRITE of an existing file: the state of the steps
+    ! and data arrays is not read from the file, so appending would
+    ! corrupt the file
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "mode " // mode // " is not supported, use NEW " // &
+                      "to write or READ to read a VtkHDF5File.")
+#endif
 
   END IF
 
@@ -108,15 +130,25 @@ END PROCEDURE obj_InitiateVTKHDF5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-  IF (obj%IsInitiated()) THEN
-    CALL obj%HDF5File_%DEALLOCATE(delete=delete)
-  END IF
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  CALL obj%HDF5File_%DEALLOCATE(delete=delete)
   CALL ResetState(obj)
-  obj%isRequested = math%yes
-  obj%isTransient = math%yes
+  obj%isTransient = math%no
   obj%frequency = 1
-  obj%zlib = -1
-  obj%outputFile = ""
+  obj%vtkType = ""
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
@@ -124,15 +156,31 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
   INTEGER(I4B) :: ii
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   CALL Display(msg, unitno=unitno)
+  IF (.NOT. obj%IsInitiated()) THEN
+    CALL Display("VtkHDF5File NOT Initiated", unitno=unitno)
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
+
+  CALL Display("vtkType: " // obj%vtkType, unitno=unitno)
   CALL Display(obj%isRequested, "isRequested: ", unitno=unitno)
-  CALL Display(obj%isVTKHDFInit, "isVTKHDFInit: ", unitno=unitno)
-  CALL Display(obj%outputFile%chars(), "outputFile: ", unitno=unitno)
+  CALL Display(obj%IsInitiated(), "isInitiated: ", unitno=unitno)
   CALL Display(obj%isTransient, "isTransient: ", unitno=unitno)
   CALL Display(obj%frequency, "frequency: ", unitno=unitno)
-  CALL Display(obj%zlib, "zlib: ", unitno=unitno)
   CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
   CALL Display(obj%isMeshWritten, "isMeshWritten: ", unitno=unitno)
   CALL Display(obj%nPoints, "nPoints: ", unitno=unitno)
@@ -144,6 +192,11 @@ MODULE PROCEDURE obj_Display
   DO ii = 1, obj%nArrays
     CALL Display(obj%arrayNames(ii)%chars(), "array: ", unitno=unitno)
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -151,7 +204,21 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsActive
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsActive()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%isRequested
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_IsActive
 
 !----------------------------------------------------------------------------
@@ -159,10 +226,28 @@ END PROCEDURE obj_IsActive
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsOutputStep
-  ans = obj%isVTKHDFInit
-  IF (.NOT. ans) RETURN
-  IF (.NOT. obj%isTransient) RETURN
-  ans = obj%isStepOpen .AND. (.NOT. obj%isSkipped)
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsOutputStep()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ! Data can be written only in a file opened for writing (mode NEW)
+  ans = obj%IsInitiated() .AND. obj%IsWrite()
+
+  ! In a transient file, only between BeginStep and EndStep of a step
+  ! which is not skipped
+  IF (ans .AND. obj%isTransient) THEN
+    ans = obj%isStepOpen .AND. (.NOT. obj%isSkipped)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_IsOutputStep
 
 !----------------------------------------------------------------------------
@@ -170,7 +255,21 @@ END PROCEDURE obj_IsOutputStep
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalPoints
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPoints()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%nPoints
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalPoints
 
 !----------------------------------------------------------------------------
@@ -178,7 +277,21 @@ END PROCEDURE obj_GetTotalPoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalCells
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalCells()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%nCells
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalCells
 
 !----------------------------------------------------------------------------
@@ -192,7 +305,15 @@ END PROCEDURE obj_GetTotalCells
 SUBROUTINE ResetState(obj)
   CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
 
-  obj%isVTKHDFInit = math%no
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ResetState()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   obj%isLagrange = math%no
   obj%isMeshWritten = math%no
   obj%isStepOpen = math%no
@@ -211,7 +332,38 @@ SUBROUTINE ResetState(obj)
   IF (ALLOCATED(obj%arrayLoc)) DEALLOCATE(obj%arrayLoc)
   IF (ALLOCATED(obj%arrayOffset)) DEALLOCATE(obj%arrayOffset)
   IF (ALLOCATED(obj%arraySize)) DEALLOCATE(obj%arraySize)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END SUBROUTINE ResetState
+
+!----------------------------------------------------------------------------
+!                                                        CheckVtkTypeSupport
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Returns true if the VTK data type can be written and read
+!
+! The supported VTK data types are listed in the SELECT CASE below.
+! Currently only "UnstructuredGrid" is supported. The comparison is
+! case sensitive, as in VTK.
+
+FUNCTION CheckVtkTypeSupport(vtkType) RESULT(ans)
+  CHARACTER(*), INTENT(IN) :: vtkType
+  !! name of VTK data type
+  LOGICAL(LGT) :: ans
+  !! true if vtkType is supported
+
+  SELECT CASE (vtkType)
+  CASE ("UnstructuredGrid")
+    ans = math%yes
+  CASE DEFAULT
+    ans = math%no
+  END SELECT
+END FUNCTION CheckVtkTypeSupport
 
 !----------------------------------------------------------------------------
 !                                                            Include error

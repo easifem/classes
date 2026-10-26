@@ -30,12 +30,13 @@ PROGRAM main
   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                         filename=tomlFileName, tomlName="u")
   CALL u%Set(VALUE=2.0_DFP)
-  CALL obj%InitiateVTKHDF(filename=filename, mode="NEW", &
-                          isTransient=math%no)
+  CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+                           vtkType="UnstructuredGrid")
   CALL obj%WriteMesh(fedof=fedof, geofedof=geofedof)
   CALL obj%WritePointData(NAME="u", field=u)
   CALL obj%DEALLOCATE()
-  CALL obj%InitiateVTKHDF(filename=filename, mode="READ")
+  CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
+                           vtkType="UnstructuredGrid")
   CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
                     types=types)
   CALL OK(ALL(types .EQ. 22_INT8), "WriteMesh2: VTK_QUADRATIC_TRIANGLE")

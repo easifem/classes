@@ -42,47 +42,56 @@ MODULE PROCEDURE obj_ImportFromToml
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
 #endif
-  TYPE(toml_table), POINTER :: node
-  INTEGER(I4B) :: origin, stat
+  ! TYPE(toml_table), POINTER :: node
+  ! INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
-  CALL obj%DEALLOCATE()
-
-  node => NULL()
-  CALL toml_get(table, "vtkhdf", node, origin=origin, requested=math%no, &
-                stat=stat)
-
-  IF (.NOT. ASSOCIATED(node)) THEN
-    obj%isRequested = math%no
 #ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                            '[END] vtkhdf table not found.')
+  CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                    '[WIP ERROR] :: This routine is under development')
 #endif
-    RETURN
-  END IF
 
-  CALL GetValue(table=node, key="isActive", VALUE=obj%isRequested, &
-                default_value=math%yes, origin=origin, stat=stat)
+!   CALL obj%DEALLOCATE()
 
-  CALL GetValue(table=node, key="filename", VALUE=obj%outputFile, &
-                default_value=_VTK_FILENAME_, origin=origin, stat=stat)
+!   node => NULL()
+!   CALL toml_get(table, "vtkhdf", node, origin=origin, requested=math%no, &
+!                 stat=stat)
 
-  CALL GetValue(table=node, key="isTransient", VALUE=obj%isTransient, &
-                default_value=math%yes, origin=origin, stat=stat)
+!   IF (.NOT. ASSOCIATED(node)) THEN
+! #ifdef DEBUG_VER
+!     CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
+!                       'vtkhdf table not found')
+! #endif
 
-  CALL GetValue(table=node, key="frequency", VALUE=obj%frequency, &
-                default_value=math%one_i, origin=origin, stat=stat)
+! #ifdef DEBUG_VER
+!     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+!                             '[END].')
+! #endif
+!     RETURN
+!   END IF
 
-  obj%frequency = MAX(obj%frequency, 1)
+  ! CALL GetValue(table=node, key="isActive", VALUE=obj%isRequested, &
+  !               default_value=math%yes, origin=origin, stat=stat)
 
-  CALL GetValue(table=node, key="zlib", VALUE=obj%zlib, &
-                default_value=-1_I4B, origin=origin, stat=stat)
+  ! CALL GetValue(table=node, key="filename", VALUE=obj%outputFile, &
+  !               default_value=_VTK_FILENAME_, origin=origin, stat=stat)
 
-  node => NULL()
+  ! CALL GetValue(table=node, key="isTransient", VALUE=obj%isTransient, &
+  !               default_value=math%yes, origin=origin, stat=stat)
+
+  ! CALL GetValue(table=node, key="frequency", VALUE=obj%frequency, &
+  !               default_value=math%one_i, origin=origin, stat=stat)
+
+  ! obj%frequency = MAX(obj%frequency, 1)
+
+  ! CALL GetValue(table=node, key="zlib", VALUE=obj%zlib, &
+  !               default_value=-1_I4B, origin=origin, stat=stat)
+
+  ! node => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &

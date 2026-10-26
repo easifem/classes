@@ -45,9 +45,24 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalSteps
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalSteps()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = 0
-  IF (.NOT. obj%pathExists("/VTKHDF/Steps")) RETURN
-  CALL obj%ReadAttribute("/VTKHDF/Steps", "NSteps", ans)
+  IF (obj%pathExists("/VTKHDF/Steps")) THEN
+    CALL obj%ReadAttribute("/VTKHDF/Steps", "NSteps", ans)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTotalSteps
 
 !----------------------------------------------------------------------------
@@ -55,15 +70,28 @@ END PROCEDURE obj_GetTotalSteps
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTimeValues
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTimeValues()"
+#endif
   INTEGER(I4B) :: n
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   n = obj%GetTotalSteps()
   IF (n .EQ. 0) THEN
     IF (ALLOCATED(vals)) DEALLOCATE(vals)
     ALLOCATE(vals(0))
-    RETURN
+  ELSE
+    CALL obj%ReadSlab(STEPS // "Values", 0, n, vals)
   END IF
-  CALL obj%ReadSlab(STEPS // "Values", 0, n, vals)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetTimeValues
 
 !----------------------------------------------------------------------------
@@ -71,7 +99,15 @@ END PROCEDURE obj_GetTimeValues
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ReadMesh
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_ReadMesh()"
+#endif
   TYPE(StepInfo_) :: info
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   info = GetStepInfo(obj, step, "obj_ReadMesh()")
 
@@ -81,6 +117,11 @@ MODULE PROCEDURE obj_ReadMesh
   CALL obj%ReadSlab(ROOT // "Offsets", info%cellOffset + info%part, &
                     info%nCells + 1, offsets)
   CALL obj%ReadSlab(ROOT // "Types", info%cellOffset, info%nCells, types)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_ReadMesh
 
 !----------------------------------------------------------------------------
@@ -88,11 +129,24 @@ END PROCEDURE obj_ReadMesh
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ReadPointData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_ReadPointData()"
+#endif
   TYPE(StepInfo_) :: info
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   info = GetStepInfo(obj, step, "obj_ReadPointData()")
   CALL ReadData(obj, "PointData", NAME, info%pointOffset, info%nPoints, &
                 info, step, vals)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_ReadPointData
 
 !----------------------------------------------------------------------------
@@ -100,11 +154,24 @@ END PROCEDURE obj_ReadPointData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ReadCellData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_ReadCellData()"
+#endif
   TYPE(StepInfo_) :: info
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
   info = GetStepInfo(obj, step, "obj_ReadCellData()")
   CALL ReadData(obj, "CellData", NAME, info%cellOffset, info%nCells, &
                 info, step, vals)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_ReadCellData
 
 !----------------------------------------------------------------------------

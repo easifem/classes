@@ -541,7 +541,7 @@ END TYPE HDF5FilePointer_
 
 INTERFACE
   MODULE FUNCTION obj_IsInitiated(obj) RESULT(ans)
-    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    CLASS(HDF5File_), INTENT(IN) :: obj
     !! HDF5 file object
     LOGICAL(LGT) :: ans
     !! true if obj is initiated
