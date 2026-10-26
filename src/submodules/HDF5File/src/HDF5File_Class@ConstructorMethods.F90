@@ -1015,13 +1015,28 @@ MODULE PROCEDURE obj_PathExists
 
   ans = math%no
   IF (obj%isinit .AND. obj%IsOpen()) THEN
+    ! The root group always exists. Segments of slashes only (leading or
+    ! double slashes) are skipped, so that each checked prefix is a valid
+    ! link name: "/a", "/a/b", ...
+    ans = math%yes
+
+    ! A path of slashes only is the root group
+    IF (VERIFY(TRIM(path), '/') .EQ. 0) THEN
+#ifdef DEBUG_VER
+      CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                              '[END] ')
+#endif
+      RETURN
+    END IF
+
     strpath = TRIM(path)
     CALL strpath%split(segments, '/')
-    ans = math%yes
     path2 = ''
     aloop: DO iseg = 1, SIZE(segments)
+      IF (VERIFY(segments(iseg)%chars(), '/') .EQ. 0) CYCLE aloop
       path2 = path2 // '/' // segments(iseg)
       CALL H5LEXISTS_F(obj%file_id, TRIM(path2%chars()), ans, ierr)
+      IF (ierr .NE. 0) ans = math%no
       IF (.NOT. ans) EXIT aloop
     END DO aloop
   END IF

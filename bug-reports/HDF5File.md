@@ -38,6 +38,7 @@ a bug and should pass after the fix:
 | ReadSlab_test_1 | ReadSlab of integer, 8-bit and Write datasets | passes (B8) |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
 | Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
+| RootGroup_test_1 | root group: PathExists, IsGroup, Ls, attributes | expected to pass after A9 |
 
 Storage_test_1 prints `#` lines with the file size and the write/read
 times. Run it before and after each change to compare.
@@ -318,6 +319,14 @@ Problem (before the fix):
 
 #### A9. IsGroup("/") is false, so Ls("/") returns nothing
 
+- Status (2026-10-26, not built yet): the cause was the prefixes built
+  from the empty segments of the split path ("/", "//"), which are not
+  valid link names for `H5Lexists`. `PathExists` now returns true for
+  "/" and skips empty segments; `open_object` (used by the attribute
+  routines) checks the path with `PathExists` instead of `H5Lexists`, so
+  attributes of "/" work (B7 step 3).
+- Tests: Ls_test_1, RootGroup_test_1 (new).
+
 - `obj_PathExists` (Constructor) splits the path at `/` and calls
   `H5Lexists` on each prefix. For the root `"/"` the prefixes built from
   the empty segments are most likely not valid links (not checked yet), so
@@ -429,8 +438,8 @@ Problem (before the fix):
     defined (otherwise they clash with the DFP and I4B versions); they are
     added with their own `GENERIC` statements inside the `#ifdef`.
   - Test: WriteAttribute_test_5 (new).
-- Step 3 (open): attributes of the root group `"/"` (`open_object` checks
-  the path with `H5Lexists`, see A9).
+- Step 3 (2026-10-26, with A9, not built yet): attributes of the root
+  group `"/"`; RootGroup_test_1.
 - Step 4 (open): measure the size of 2000 scalar attributes against 2000
   scalar datasets in Storage_test_1.
 

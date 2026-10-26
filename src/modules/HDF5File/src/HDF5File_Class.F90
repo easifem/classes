@@ -1549,11 +1549,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-09
+! update:
+!   - 2026-10-26: the root group "/" exists; empty segments are skipped
 ! summary: Returns true if a path exists in the HDF5 file
 !
 ! Every part of path is checked, so a path with a missing parent group does
-! not exist. The path can be a group or a dataset. Returns false if the file
-! is not open.
+! not exist. The path can be a group or a dataset. The root group "/" always
+! exists, and empty segments (double slashes) are skipped. Returns false if
+! the file is not open.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object

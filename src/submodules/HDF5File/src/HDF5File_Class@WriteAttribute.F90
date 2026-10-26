@@ -17,7 +17,7 @@
 
 SUBMODULE(HDF5File_Class) WriteAttribute
 USE ISO_C_BINDING, ONLY: C_CHAR
-USE HDF5, ONLY: SIZE_T, H5ACREATE_F, H5AOPEN_F, H5AWRITE_F, H5LEXISTS_F, &
+USE HDF5, ONLY: SIZE_T, H5ACREATE_F, H5AOPEN_F, H5AWRITE_F, &
   H5OCLOSE_F, H5OOPEN_F, H5SCLOSE_F, H5SCREATE_SIMPLE_F, &
   H5TCLOSE_F, H5TCOPY_F, H5T_NATIVE_CHARACTER, &
   H5ACLOSE_F, H5AEXISTS_F, H5TSET_SIZE_F
@@ -52,8 +52,9 @@ MODULE PROCEDURE open_object
 #endif
 
   path = obj_name
-!Check for expected links between object, and File
-  CALL H5LEXISTS_F(obj%file_id, path%Chars(), dset_exists, ierr)
+!Check for expected links between object, and File; PathExists also
+!accepts the root group "/"
+  dset_exists = obj%PathExists(path%Chars())
 #ifdef DEBUG_VER
   CALL AssertError1(dset_exists, myName, &
                     'Incorrect path to object.')
