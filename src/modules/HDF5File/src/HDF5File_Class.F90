@@ -737,8 +737,8 @@ END INTERFACE
 ! summary: Initiate an HDF5 file object
 !
 ! Set the file name and the access mode, and initialize the HDF5 library.
-! Initiate does not open the file; call Open after Initiate. The directory of
-! filename is created if it does not exist.
+! Initiate does not open the file; call Open after Initiate. In mode NEW the
+! directory of filename is created if it does not exist.
 !
 ! The access mode is not case sensitive:
 !
@@ -1296,10 +1296,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
+! update:
+!   - 2026-10-26: an existing group is not an error in any mode
 ! summary: Create a group in the HDF5 file
 !
 ! Create the group path. Missing parent groups are created first. If the group
-! exists and overwriting is allowed, nothing is done.
+! exists, nothing is done (in every mode, also WRITE).
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
@@ -3978,18 +3980,23 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-08
+! update:
+!   - 2026-10-26: the code gives the class and the precision
 ! summary: Get the data type of a dataset
 !
-! Returns 'Rea' for a 32 or 64 bit real, 'Int' for a 32 or 64 bit integer,
-! 'STR' for a string, and 'N/A' for a real or integer of another precision. In
-! DEBUG mode an error is raised for other data types.
+! Returns the class and the precision (bits) of the dataset: 'R32' or 'R64'
+! for a real, 'I08', 'I16', 'I32' or 'I64' for an integer, 'STR' for a
+! string (also logical data, which is stored as characters), and 'N/A' for
+! a real or integer of another precision. In DEBUG mode an error is raised
+! for other data types.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
 !   dsetname : CHARACTER(*) - dataset name with full path
 !
 ! Returns:
-!   dataType : CHARACTER(3) - 'Rea', 'Int', 'STR' or 'N/A'
+!   dataType : CHARACTER(3) - 'R32', 'R64', 'I08', 'I16', 'I32', 'I64',
+!       'STR' or 'N/A'
 !
 ! Examples
 !
@@ -4001,6 +4008,8 @@ END INTERFACE
 ! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 ! USE GlobalData, ONLY: DFP
 ! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: INT8
+! USE GlobalData, ONLY: REAL32
 ! USE HDF5File_Class, ONLY: HDF5File_
 ! USE String_Class, ONLY: String
 ! USE Test_Method, ONLY: OK
@@ -4018,11 +4027,15 @@ END INTERFACE
 ! CALL obj%Initiate(filename=filename, mode="NEW")
 ! CALL obj%OPEN()
 ! CALL obj%WRITE(dsetname="/real", vals=1.0_DFP)
+! CALL obj%WRITE(dsetname="/real32", vals=1.0_REAL32)
 ! CALL obj%WRITE(dsetname="/int", vals=1_I4B)
+! CALL obj%Append("/types", [5_INT8, 9_INT8])
 ! CALL obj%WRITE(dsetname="/str", vals=strval)
 !
-! CALL OK(obj%GetDataType("/real") .EQ. "Rea", "real")
-! CALL OK(obj%GetDataType("/int") .EQ. "Int", "integer")
+! CALL OK(obj%GetDataType("/real") .EQ. "R64", "Real64")
+! CALL OK(obj%GetDataType("/real32") .EQ. "R32", "Real32")
+! CALL OK(obj%GetDataType("/int") .EQ. "I32", "Int32")
+! CALL OK(obj%GetDataType("/types") .EQ. "I08", "8-bit integer")
 ! CALL OK(obj%GetDataType("/str") .EQ. "STR", "string")
 !
 ! CALL obj%DEALLOCATE()
@@ -4038,7 +4051,7 @@ INTERFACE
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! dataset name with full path
     CHARACTER(LEN=3) :: dataType
-    !! 'Rea', 'Int', 'STR' or 'N/A'
+    !! 'R32', 'R64', 'I08', 'I16', 'I32', 'I64', 'STR' or 'N/A'
   END FUNCTION obj_GetDataType
 END INTERFACE
 

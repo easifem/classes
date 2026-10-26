@@ -18,6 +18,7 @@ PROGRAM main
   USE GlobalData, ONLY: I4B
   USE GlobalData, ONLY: INT64
   USE HDF5File_Class, ONLY: HDF5File_
+  USE String_Class, ONLY: String
   USE Test_Method, ONLY: OK
 
   IMPLICIT NONE
@@ -46,14 +47,15 @@ PROGRAM main
   CALL Fields("Storage_test_1_zlib.h5", 4)
 
   ! many small datasets in a group of depth 1 and of depth 5
-  CALL Scalars("Storage_test_1_small.h5", "/small/x")
-  CALL Scalars("Storage_test_1_deep.h5", "/a/b/c/d/x")
+  CALL Scalars("Storage_test_1_small.h5", "/small", "/small/x")
+  CALL Scalars("Storage_test_1_deep.h5", "/a/b/c/d", "/a/b/c/d/x")
 
 CONTAINS
 
-  SUBROUTINE Scalars(filename, prefix)
-    CHARACTER(*), INTENT(IN) :: filename, prefix
-    INTEGER(INT64) :: tw, tr
+  SUBROUTINE Scalars(filename, group, prefix)
+    CHARACTER(*), INTENT(IN) :: filename, group, prefix
+    INTEGER(INT64) :: tw, tr, tl
+    TYPE(String), ALLOCATABLE :: objs(:)
 
     CALL SYSTEM_CLOCK(t0, rate)
     CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=-1)
@@ -75,14 +77,22 @@ CONTAINS
       CALL obj%READ(dsetname=TRIM(dname), vals=x)
       isok = isok .AND. (ABS(x - REAL(k, DFP)) .LT. tol)
     END DO
-    CALL obj%DEALLOCATE()
     CALL SYSTEM_CLOCK(t1)
     tr = t1 - t0
 
+    ! list the group (C4: Ls is quadratic for old-format groups)
+    CALL SYSTEM_CLOCK(t0)
+    CALL obj%Ls(path=group, objs=objs)
+    CALL SYSTEM_CLOCK(t1)
+    tl = t1 - t0
+    CALL obj%DEALLOCATE()
+    isok = isok .AND. (SIZE(objs) .EQ. nsmall)
+
     INQUIRE(FILE=filename, SIZE=fsize)
-    WRITE(*, '(A,I0,A,A,A,I0,A,F8.3,A,F8.3,A)') "# ", nsmall, &
+    WRITE(*, '(A,I0,A,A,A,I0,A,F8.3,A,F8.3,A,F8.3,A)') "# ", nsmall, &
       " scalars ", prefix, "N: ", fsize, " bytes, write ", &
-      REAL(tw) / REAL(rate), " s, read ", REAL(tr) / REAL(rate), " s"
+      REAL(tw) / REAL(rate), " s, read ", REAL(tr) / REAL(rate), &
+      " s, Ls ", REAL(tl) / REAL(rate), " s"
     CALL OK(isok, prefix // "N: values")
   END SUBROUTINE Scalars
 

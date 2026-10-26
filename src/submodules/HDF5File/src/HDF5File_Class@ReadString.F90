@@ -140,7 +140,7 @@ END PROCEDURE obj_Read_st0
 
 MODULE PROCEDURE obj_Read_ca0
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_Read_st0_helper()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_ca0()"
 #endif
   INTEGER(I4B), PARAMETER :: rank = 1
   CHARACTER(LEN=1), ALLOCATABLE :: valsc(:)

@@ -31,6 +31,7 @@ a bug and should pass after the fix:
 | WriteAttribute_test_2 | longer String attribute replaces the old one | passes (A5 fixed) |
 | Write_test_9 | rank-3 String Write, Read, Read_ | passes (A7 fixed) |
 | Write_test_10 | logical and String arrays larger than the stack | passes (C3) |
+| Mkdir_test_2 | Mkdir of an existing group in mode WRITE | passes (A8) |
 | WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
 | AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
 | WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
@@ -371,16 +372,23 @@ Problem (before the fix):
 
 - Fixed with A4: `INT(length_max, REAL64)` (WriteString): REAL64 is a
   real kind used as an integer kind; now `SIZE_T`.
-- `compute_chunk_size`: for a type larger than 1 MB, `mb = 0` and the chunk
-  size is 0, so `H5Pset_chunk` fails.
-- `GetDataType` returns `'Rea'` for both Real32 and Real64, and `'Int'` for
-  both 32- and 64-bit integers.
-- `Mkdir` on an existing group fails when overwriting is not allowed (mode
-  WRITE), even though nothing is overwritten.
-- `Initiate` creates the directory of the file (Constructor:372) also in
-  mode READ.
-- Debug name: `obj_Write_st3_helper` uses `myName = "obj_Write_st0()"`;
-  `obj_Read_ca0` uses `"obj_Read_st0_helper()"`.
+- Fixed with B1: `compute_chunk_size`: for a type larger than 1 MB, `mb = 0`
+  and the chunk size was 0; now the target is at least 1 element.
+- Fixed 2026-10-26: `GetDataType` returned `'Rea'` for both Real32 and
+  Real64, and `'Int'` for all integers; it now returns `'R32'`, `'R64'`,
+  `'I08'`, `'I16'`, `'I32'`, `'I64'`, `'STR'` or `'N/A'`
+  (GetDataType_test_1).
+- Fixed 2026-10-26: `Mkdir` on an existing group failed when overwriting is
+  not allowed (mode WRITE); now an existing group is not an error in any
+  mode (Mkdir_test_2, new).
+- Fixed 2026-10-26: `Initiate` created the directory of the file also in
+  mode READ; now only in mode NEW.
+- Fixed 2026-10-26: debug names of `obj_Write_st3_helper` and
+  `obj_Read_ca0`.
+- Fixed 2026-10-26 (build): the commit hook (forformat) uppercased the
+  preprocessor macro `rank` in `include/write.F90` to `RANK` (an intrinsic
+  name), so commit a0da3e23 did not compile; the macro is now `DATA_RANK`
+  in `include/write.F90` and the four Write submodules.
 
 ### B. Storage
 
@@ -568,6 +576,11 @@ Problem (before the fix):
 
 #### C4. Ls is quadratic for large groups
 
+- Measured 2026-10-26 (Storage_test_1, file format 1.10): `Ls` of a group
+  with 2000 datasets takes 0.64 s (about 320 us per name), while writing
+  the 2000 datasets takes 0.07 s. The new file format did not remove the
+  cost. Still open.
+
 - `obj_Ls` (Constructor:636) calls `H5Lget_name_by_idx` for each index.
   For old-format groups (B3) each call walks the group, so listing n
   members costs O(n^2). `H5Literate` lists in one pass. The name buffer
@@ -575,12 +588,13 @@ Problem (before the fix):
 
 #### C5. Smaller items
 
-- `CreateHardLink` opens the source object only to pass its id as the
-  location; `H5Lcreate_hard(file_id, src, file_id, dst)` is enough. It also
-  declares its own C interface to `H5Oclose` instead of `H5Oclose_f`.
-- No raw-data chunk cache tuning (`H5Pset_chunk_cache`). The default
-  1 MB cache is smaller than the chunks of B1, so a chunk is decompressed
-  again for every partial access. It matters once C1 exists.
+- Fixed 2026-10-26: `CreateHardLink` opened the source object only to pass
+  its id as the location and declared its own C interface to `H5Oclose`;
+  it now calls `H5Lcreate_hard(file_id, src, file_id, dst)`
+  (CreateHardLink_test_1 passes).
+- Resolved by B1: no raw-data chunk cache tuning (`H5Pset_chunk_cache`).
+  Chunks are now at most `targetBytes` (1 MiB), which fits the default
+  1 MiB chunk cache, also for ReadSlab.
 
 ## Suggested order of work
 

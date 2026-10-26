@@ -414,14 +414,6 @@ MODULE PROCEDURE obj_Initiate
   CALL obj%SetFileName(fname)
   CALL obj%SetFileExt(fext)
 
-  ierr = System_Mkdir(fpath // '', RWX_U)
-#ifdef DEBUG_VER
-  IF (ierr .NE. 0_I4B .AND. ierr .NE. -1_I4B) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      'error occured while creating the directory')
-  END IF
-#endif
-
   ! Layout and compression settings: default values unless chunkPolicy
   ! is present; zlibOpt replaces the deflate level
   obj%chunkPolicy = HDF5ChunkPolicy_()
@@ -504,6 +496,15 @@ MODULE PROCEDURE obj_Initiate
     CALL obj%SetReadStat(math%yes)
 
   CASE ('NEW')
+    ! Only a new file needs its directory; create it if it is missing
+    ierr = System_Mkdir(fpath // '', RWX_U)
+#ifdef DEBUG_VER
+    IF (ierr .NE. 0_I4B .AND. ierr .NE. -1_I4B) THEN
+      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                        'error occured while creating the directory')
+    END IF
+#endif
+
     CALL obj%SetWriteStat(math%yes)
     CALL obj%SetReadStat(math%yes)
     CALL obj%SetNewStat(math%yes)
@@ -786,8 +787,9 @@ MODULE PROCEDURE obj_Mkdir
                     'invalid group path: ' // path)
 #endif
 
-! If group exists, do nothing, but only if overwrites are allowed
-  IF (obj%overwriteStat .AND. dset_exists) THEN
+! If the group exists, there is nothing to do (in every mode: creating
+! an existing group does not overwrite anything)
+  IF (dset_exists) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myname // ' - ' // &
                             '[END] ')
@@ -1054,16 +1056,7 @@ MODULE PROCEDURE obj_CreateHardLink
   CHARACTER(*), PARAMETER :: myName = 'obj_CreateHardLink()'
   LOGICAL(LGT) :: isok
 #endif
-  INTEGER(HID_T) :: src_obj_id
   INTEGER(I4B) :: ierr
-
-  INTERFACE
-    FUNCTION H5Oclose(object_id) RESULT(herr_t) BIND(C, NAME="H5Oclose")
-      USE HDF5, ONLY: HID_T
-      INTEGER(HID_T), VALUE :: object_id
-      INTEGER :: herr_t
-    END FUNCTION H5Oclose
-  END INTERFACE
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1080,15 +1073,14 @@ MODULE PROCEDURE obj_CreateHardLink
   CALL AssertError1(isok, myName, 'Location of new link already exists!')
 #endif
 
-! Get the source object ID
-  CALL H5OOPEN_F(obj%file_id, TRIM(source_path), src_obj_id, ierr)
-!Create the link target object ID
-  CALL H5LCREATE_HARD_F(src_obj_id, TRIM(source_path), obj%file_id, &
+! Both paths are absolute, so the file is the location of both; the
+! source object does not need to be opened
+  CALL H5LCREATE_HARD_F(obj%file_id, TRIM(source_path), obj%file_id, &
                         TRIM(link_path), ierr)
 
-!Close the source object
-!CALL H5Oclose_f(src_obj_id,ierr)
-  ierr = H5Oclose(src_obj_id)
+#ifdef DEBUG_VER
+  CALL AssertError1(ierr .EQ. 0, myName, 'Could not create the hard link.')
+#endif
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -1927,19 +1919,30 @@ MODULE PROCEDURE obj_GetDataType
                     'Failed to retrive dataset precision.')
 #endif
 
+  ! Class and precision (bits): R32, R64, I08, I16, I32, I64, STR
   dataType = 'N/A'
   IF (class_type == H5T_FLOAT_F) THEN
-    IF (dtype_prec == 64) THEN
-      dataType = 'Rea'
-    ELSE IF (dtype_prec == 32) THEN
-      dataType = 'Rea'
-    END IF
+    SELECT CASE (dtype_prec)
+    CASE (32)
+      dataType = 'R32'
+    CASE (64)
+      dataType = 'R64'
+    CASE DEFAULT
+      dataType = 'N/A'
+    END SELECT
   ELSE IF (class_type == H5T_INTEGER_F) THEN
-    IF (dtype_prec == 64) THEN
-      dataType = 'Int'
-    ELSE IF (dtype_prec == 32) THEN
-      dataType = 'Int'
-    END IF
+    SELECT CASE (dtype_prec)
+    CASE (8)
+      dataType = 'I08'
+    CASE (16)
+      dataType = 'I16'
+    CASE (32)
+      dataType = 'I32'
+    CASE (64)
+      dataType = 'I64'
+    CASE DEFAULT
+      dataType = 'N/A'
+    END SELECT
   ELSE IF (class_type == H5T_STRING_F) THEN
     dataType = 'STR'
   ELSE

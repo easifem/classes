@@ -37,9 +37,9 @@ MODULE PROCEDURE obj_Write_s0
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s0()"
 #endif
-#define rank 0
+#define DATA_RANK 0
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s0
 
 !----------------------------------------------------------------------------
@@ -50,9 +50,9 @@ MODULE PROCEDURE obj_Write_s1
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s1()"
 #endif
-#define rank 1
+#define DATA_RANK 1
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s1
 
 !----------------------------------------------------------------------------
@@ -63,9 +63,9 @@ MODULE PROCEDURE obj_Write_s2
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s2()"
 #endif
-#define rank 2
+#define DATA_RANK 2
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s2
 
 !----------------------------------------------------------------------------
@@ -76,9 +76,9 @@ MODULE PROCEDURE obj_Write_s3
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s3()"
 #endif
-#define rank 3
+#define DATA_RANK 3
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s3
 
 !----------------------------------------------------------------------------
@@ -89,9 +89,9 @@ MODULE PROCEDURE obj_Write_s4
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s4()"
 #endif
-#define rank 4
+#define DATA_RANK 4
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s4
 
 !----------------------------------------------------------------------------
@@ -102,9 +102,9 @@ MODULE PROCEDURE obj_Write_s5
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s5()"
 #endif
-#define rank 5
+#define DATA_RANK 5
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s5
 
 !----------------------------------------------------------------------------
@@ -115,9 +115,9 @@ MODULE PROCEDURE obj_Write_s6
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s6()"
 #endif
-#define rank 6
+#define DATA_RANK 6
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s6
 
 !----------------------------------------------------------------------------
@@ -128,9 +128,9 @@ MODULE PROCEDURE obj_Write_s7
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_Write_s7()"
 #endif
-#define rank 7
+#define DATA_RANK 7
 #include "./include/write.F90"
-#undef rank
+#undef DATA_RANK
 END PROCEDURE obj_Write_s7
 
 !----------------------------------------------------------------------------

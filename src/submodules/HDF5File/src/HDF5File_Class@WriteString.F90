@@ -281,7 +281,7 @@ END PROCEDURE obj_Write_st2
 
 MODULE PROCEDURE obj_Write_st3_helper
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_Write_st0()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_st3_helper()"
 #endif
   INTEGER(I4B) :: length_max, i, j, k
 
