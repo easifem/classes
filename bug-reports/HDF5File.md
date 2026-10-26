@@ -498,8 +498,20 @@ Problem (before the fix):
   - Test: WriteAttribute_test_5 (new).
 - Step 3 (2026-10-26, done with A9): attributes of the root group `"/"`;
   RootGroup_test_1 passes.
-- Step 4 (open): measure the size of 2000 scalar attributes against 2000
-  scalar datasets in Storage_test_1.
+- Step 4 (2026-10-26, measured with Storage_test_1, 3 runs): 2000 Real64
+  scalars
+
+  | Storage | File size | per scalar | Write | Read |
+  | --- | --- | --- | --- | --- |
+  | 2000 datasets in /small | 646607 B | about 323 B | 0.067 s | 0.042 s |
+  | 2000 attributes of /attrs | 175098 B | about 87 B | 0.063 s | 0.059 s |
+
+  Attributes need 73 % less space, and writing is as fast. Reading is
+  about 40 % slower: each ReadAttribute opens the object by path
+  (`open_object` -> `PathExists`, path split and one `H5Lexists` per
+  level), checks the attribute (`H5Aexists`) and opens it. This matters
+  only for many attributes per group; a possible improvement is to check
+  the path only in DEBUG mode in `open_object`.
 
 #### B8. Append and ReadSlab (extendable datasets)
 

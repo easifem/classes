@@ -4,7 +4,8 @@
 !
 ! Write and read nfield Real64 fields of n x n values, without and with
 ! compression (zlibOpt=4), and 2000 scalar datasets in a group of depth 1
-! and of depth 5 (cost of the path checks). The file sizes and
+! and of depth 5 (cost of the path checks), and as 2000 attributes of one
+! group (B7). The file sizes and
 ! the times are printed as comments ("#"), so the numbers can be compared
 ! before and after a change of HDF5File_. The checks only test that the
 ! data is read back unchanged.
@@ -50,7 +51,48 @@ PROGRAM main
   CALL Scalars("Storage_test_1_small.h5", "/small", "/small/x")
   CALL Scalars("Storage_test_1_deep.h5", "/a/b/c/d", "/a/b/c/d/x")
 
+  ! the same 2000 scalars as attributes of one group (B7)
+  CALL Attributes("Storage_test_1_attr.h5")
+
 CONTAINS
+
+  SUBROUTINE Attributes(filename)
+    CHARACTER(*), INTENT(IN) :: filename
+    INTEGER(INT64) :: tw, tr
+
+    CALL SYSTEM_CLOCK(t0, rate)
+    CALL obj%Initiate(filename=filename, mode="NEW", zlibOpt=-1)
+    CALL obj%OPEN()
+    CALL obj%Mkdir("/attrs")
+    DO k = 1, nsmall
+      WRITE(dname, '(A,I0)') "x", k
+      CALL obj%WriteAttribute(obj_name="/attrs", attr_name=TRIM(dname), &
+                              attr_val=REAL(k, DFP))
+    END DO
+    CALL obj%DEALLOCATE()
+    CALL SYSTEM_CLOCK(t1)
+    tw = t1 - t0
+
+    CALL SYSTEM_CLOCK(t0)
+    CALL obj%Initiate(filename=filename, mode="READ")
+    CALL obj%OPEN()
+    isok = .TRUE.
+    DO k = 1, nsmall
+      WRITE(dname, '(A,I0)') "x", k
+      CALL obj%ReadAttribute(obj_name="/attrs", attr_name=TRIM(dname), &
+                             attr_val=x)
+      isok = isok .AND. (ABS(x - REAL(k, DFP)) .LT. tol)
+    END DO
+    CALL obj%DEALLOCATE()
+    CALL SYSTEM_CLOCK(t1)
+    tr = t1 - t0
+
+    INQUIRE(FILE=filename, SIZE=fsize)
+    WRITE(*, '(A,I0,A,I0,A,F8.3,A,F8.3,A)') "# ", nsmall, &
+      " scalar attributes of /attrs: ", fsize, " bytes, write ", &
+      REAL(tw) / REAL(rate), " s, read ", REAL(tr) / REAL(rate), " s"
+    CALL OK(isok, "attributes: values")
+  END SUBROUTINE Attributes
 
   SUBROUTINE Scalars(filename, group, prefix)
     CHARACTER(*), INTENT(IN) :: filename, group, prefix
