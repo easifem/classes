@@ -33,5 +33,6 @@ target_sources(
         ${src_path}/HDF5File_Class@WriteReal64.F90
         ${src_path}/HDF5File_Class@WriteInt32.F90
         ${src_path}/HDF5File_Class@WriteString.F90
+        ${src_path}/HDF5File_Class@AppendMethods.F90
         ${src_path}/HDF5FileUtility@Methods.F90
 )

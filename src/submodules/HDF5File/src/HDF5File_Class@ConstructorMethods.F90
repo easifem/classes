@@ -439,6 +439,8 @@ MODULE PROCEDURE obj_Initiate
   CALL AssertError1(obj%chunkPolicy%chunkMethod .EQ. 1 .OR. &
                     obj%chunkPolicy%chunkMethod .EQ. 2, myName, &
                     'chunkMethod must be 1 (uniform) or 2 (max).')
+  CALL AssertError1(obj%chunkPolicy%stepsPerChunk .GE. 1, myName, &
+                    'stepsPerChunk must be at least 1.')
 #endif
 
   obj%hasCompression = obj%chunkPolicy%deflateLevel .GE. 0

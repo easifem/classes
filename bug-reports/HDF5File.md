@@ -34,6 +34,8 @@ a bug and should pass after the fix:
 | WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
 | WriteAttribute_test_5 | String, logical, Real32, Int64 vectors | passes (B7 step 2b) |
 | ReadAttribute_test_1 | scalar and rank-1 integer, real, Real32 attributes | passes |
+| Append_test_1 | Append, GetExtent, chunk shape from the policy | expected to pass after B8 |
+| ReadSlab_test_1 | ReadSlab of integer, 8-bit and Write datasets | expected to pass after B8 |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
 | Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
 
@@ -409,6 +411,31 @@ Problem (before the fix):
   the path with `H5Lexists`, see A9).
 - Step 4 (open): measure the size of 2000 scalar attributes against 2000
   scalar datasets in Storage_test_1.
+
+#### B8. Append and ReadSlab (extendable datasets)
+
+- Added by Shion Shimizu (2026-10-24): `Append` (rank 1 and 2, real,
+  integer, unsigned 8-bit), `ReadSlab`, `GetExtent`
+  (`HDF5File_Class@AppendMethods.F90`). This is the extendable-dataset part
+  of C1.
+- Updated 2026-10-26 (committed; not built or tested yet, the
+  Append_test_1 and ReadSlab_test_1 results are pending):
+  - It used `obj%zlibOpt`, removed by B1, so it did not compile.
+  - The chunk shape now follows the chunk policy (`AppendChunkSize`):
+    `stepsPerChunk` calls of Append, grown to at least `minBytes`,
+    limited to `targetBytes` with `compute_chunk_size`. Before, it used
+    local constants (1 MB, 1024 entries) and limited only the last
+    dimension, so a large first append gave a huge chunk.
+  - Shuffle and deflate from the policy.
+  - Memory types from the kind of the data (`H5kind_to_type`) instead of
+    `H5T_NATIVE_DOUBLE` / `H5T_NATIVE_INTEGER`.
+  - Error messages only in DEBUG mode; the routines still stop on a
+    failed step. Debug [START]/[END] lines.
+  - ReadSlab opens the dataset once (`SlabOpen`, `SlabRead`,
+    `SlabClose`; before, rank 2 opened it twice) and allocates without
+    zero filling.
+  - `Initiate` checks `stepsPerChunk >= 1` in DEBUG mode.
+- Tests: Append_test_1, ReadSlab_test_1 (new).
 
 ### C. I/O efficiency
 
