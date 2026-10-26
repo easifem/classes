@@ -77,9 +77,11 @@ USE NodeData_Class, ONLY: NodeData_GetNodeCoord
 USE Kdtree2_Module, ONLY: Kdtree2_r_nearest
 USE Kdtree2_Module, ONLY: Kdtree2_n_nearest
 USE BaseType, ONLY: TypeMeshOpt
+USE ReferenceElement_Method, ONLY: GetVTKElementType_
 IMPLICIT NONE
 
 INTEGER(I4B), PARAMETER :: MaxNodesInElement = TypeMeshOpt%maxNNE
+INTEGER(I4B), PARAMETER :: MAX_VTK_NODES = 1331
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "AbstractMesh_Classs@GetMethods.F90"
@@ -1514,7 +1516,7 @@ MODULE PROCEDURE obj_GetTotalVertexNodes1
   CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexNodes1()"
 #endif
 
-  INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize, found_meshid
+  INTEGER(I4B) :: ii, jj, kk, ll, fake_tsize
   LOGICAL(LGT) :: isok
   LOGICAL(LGT), ALLOCATABLE :: foundNodes(:)
   INTEGER(I4B), POINTER :: intptr(:)
@@ -2877,7 +2879,9 @@ MODULE PROCEDURE obj_GetElementToElements
                                    islocal=islocal, ans=temp(:, 1), &
                                    tsize=nrow)
     ALLOCATE(ans(nrow, 1))
-    DO ii = 1, nrow; ans(ii, 1) = temp(ii, 1); END DO
+    DO ii = 1, nrow
+      ans(ii, 1) = temp(ii, 1)
+    END DO
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                             '[END] ')
@@ -2892,7 +2896,11 @@ MODULE PROCEDURE obj_GetElementToElements
                                  ncol=ncol)
   ALLOCATE(ans(nrow, ncol))
 
-  DO jj = 1, ncol; DO ii = 1, nrow; ans(ii, jj) = temp(ii, jj); END DO; END DO
+  DO jj = 1, ncol
+    DO ii = 1, nrow
+      ans(ii, jj) = temp(ii, jj)
+    END DO
+  END DO
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -2917,8 +2925,8 @@ MODULE PROCEDURE obj_GetElementToElements1_
 #endif
 
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-  CALL Elemdata_GetElementToElements(obj=obj%elementData(iel)%ptr, ans=ans, &
-                                     tsize=tsize)
+  CALL Elemdata_GetElementToElements(obj=obj%elementData(iel)%ptr, &
+                                     ans=ans, tsize=tsize)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -2943,8 +2951,8 @@ MODULE PROCEDURE obj_GetElementToElements2_
 #endif
 
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-  CALL Elemdata_GetElementToElements(obj=obj%elementData(iel)%ptr, ans=ans, &
-                                     nrow=nrow, ncol=ncol)
+  CALL Elemdata_GetElementToElements(obj=obj%elementData(iel)%ptr, &
+                                     ans=ans, nrow=nrow, ncol=ncol)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -3038,7 +3046,8 @@ MODULE PROCEDURE obj_GetOrder2
                           '[START] ')
 #endif
 
-  iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+  iel = &
+    obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
   ans = Elemdata_Order(obj=obj%elementData(iel)%ptr)
 
 #ifdef DEBUG_VER
@@ -3162,7 +3171,8 @@ MODULE PROCEDURE obj_GetTotalMaterial1
 #endif
 
   iel = obj%GetLocalElemNumber(globalElement, islocal=islocal)
-  ans = 0 ! default value
+  ans = 0
+  ! default value
   IF (ALLOCATED(obj%elementData(iel)%ptr%material)) THEN
     ans = SIZE(obj%elementData(iel)%ptr%material)
   END IF
@@ -3202,7 +3212,8 @@ END PROCEDURE obj_GetTotalFacetElements
 
 MODULE PROCEDURE obj_GetTotalInternalFacetElements
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInternalFacetElements()"
+  CHARACTER(*), PARAMETER :: myName = &
+    "obj_GetTotalInternalFacetElements()"
 #endif
 
   LOGICAL(LGT) :: isok
@@ -3226,7 +3237,8 @@ MODULE PROCEDURE obj_GetTotalInternalFacetElements
 
   tsize = SIZE(obj%facetData)
   DO ii = 1, tsize
-    isok = FacetData_Iselement(obj=obj%facetData(ii), filter=INTERNAL_ELEMENT)
+    isok = &
+      FacetData_Iselement(obj=obj%facetData(ii), filter=INTERNAL_ELEMENT)
     IF (isok) ans = ans + 1
   END DO
 
@@ -3242,7 +3254,8 @@ END PROCEDURE obj_GetTotalInternalFacetElements
 
 MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalBoundaryFacetElements()"
+  CHARACTER(*), PARAMETER :: myName = &
+    "obj_GetTotalBoundaryFacetElements()"
 #endif
 
   LOGICAL(LGT) :: isok
@@ -3266,7 +3279,8 @@ MODULE PROCEDURE obj_GetTotalBoundaryFacetElements
   tsize = SIZE(obj%facetData)
 
   DO ii = 1, tsize
-    isok = FacetData_Iselement(obj=obj%facetData(ii), filter=BOUNDARY_ELEMENT)
+    isok = &
+      FacetData_Iselement(obj=obj%facetData(ii), filter=BOUNDARY_ELEMENT)
     IF (isok) ans = ans + 1
   END DO
 
@@ -3367,7 +3381,8 @@ MODULE PROCEDURE obj_FindFace
                           '[START] ')
 #endif
 
-  iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+  iel = &
+    obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
   IF (onlyBoundaryElement) THEN
     CALL obj%InitiateBoundaryData()
@@ -3459,7 +3474,8 @@ MODULE PROCEDURE obj_GetGlobalFaceNumber
                           '[START] ')
 #endif
 
-  iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+  iel = &
+    obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
   ans = Elemdata_GetGlobalFaceNumber(obj=obj%elementData(iel)%ptr, &
                                      localFaceNumber=localFaceNumber)
 
@@ -3485,7 +3501,8 @@ MODULE PROCEDURE obj_GetGlobalEdgeNumber
                           '[START] ')
 #endif
 
-  iel = obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+  iel = &
+    obj%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
   ans = Elemdata_GetGlobalEdgeNumber(obj=obj%elementData(iel)%ptr, &
                                      localEdgeNumber=localEdgeNumber)
 
@@ -3558,8 +3575,9 @@ MODULE PROCEDURE obj_GetFacetConnectivity
   tsize = obj%GetTotalFacetConnectivity(globalElement=globalElement, &
                                         iface=iface, islocal=islocal)
   CALL Reallocate(ans, tsize)
-  CALL obj%GetFacetConnectivity_(globalElement=globalElement, iface=iface, &
-                                 islocal=islocal, ans=ans, tsize=tsize)
+  CALL obj%GetFacetConnectivity_(globalElement=globalElement, &
+                                 iface=iface, islocal=islocal, ans=ans, &
+                                 tsize=tsize)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -3611,14 +3629,15 @@ MODULE PROCEDURE obj_GetFacetConnectivity_
       ans(ii) = obj%elementData(iel)%ptr%globalNodes(con(ii, iface))
     END DO
 
-  CASE (3_I4B)
+  CASE DEFAULT
 
     elemType = obj%elementData(iel)%ptr%name
     temp4 = TotalEntities(elemType)
     order = ElementOrder(elemType)
 
-    CALL RefElemGetGeoParam(elemType=elemType, faceCon=con, faceOpt=1_I4B, &
-                            order=order, tFaceNodes=tFaceNodes)
+    CALL RefElemGetGeoParam(elemType=elemType, faceCon=con, &
+                            faceOpt=1_I4B, order=order, &
+                            tFaceNodes=tFaceNodes)
 
     tsize = tFaceNodes(iface)
     DO ii = 1, tsize
@@ -3664,12 +3683,13 @@ MODULE PROCEDURE obj_GetTotalFacetConnectivity
     order = ElementOrder(elemType)
     ans = order + 1
 
-  CASE (3_I4B)
+  CASE DEFAULT
     elemType = obj%elementData(iel)%ptr%name
     temp4 = TotalEntities(elemType)
     order = ElementOrder(elemType)
-    CALL RefElemGetGeoParam(elemType=elemType, faceCon=con, faceOpt=1_I4B, &
-                            order=order, tFaceNodes=tFaceNodes)
+    CALL RefElemGetGeoParam(elemType=elemType, faceCon=con, &
+                            faceOpt=1_I4B, order=order, &
+                            tFaceNodes=tFaceNodes)
     ans = tFaceNodes(iface)
   END SELECT
 
@@ -3701,11 +3721,12 @@ MODULE PROCEDURE obj_GetParam
   IF (PRESENT(isNodeToNodesInitiated)) isNodeToNodesInitiated = &
     obj%isNodeToNodesInitiated
 
-  IF (PRESENT(isExtraNodeToNodesInitiated)) isExtraNodeToNodesInitiated = &
-    obj%isExtraNodeToNodesInitiated
+  IF (PRESENT(isExtraNodeToNodesInitiated)) isExtraNodeToNodesInitiated &
+    = obj%isExtraNodeToNodesInitiated
 
-  IF (PRESENT(isElementToElementsInitiated)) isElementToElementsInitiated = &
-    obj%isElementToElementsInitiated
+  IF (PRESENT(isElementToElementsInitiated)) THEN
+    isElementToElementsInitiated = obj%isElementToElementsInitiated
+  END IF
 
   IF (PRESENT(isBoundaryDataInitiated)) isBoundaryDataInitiated = &
     obj%isBoundaryDataInitiated
@@ -3715,8 +3736,9 @@ MODULE PROCEDURE obj_GetParam
 
   IF (PRESENT(uid)) uid = obj%uid
 
-  IF (PRESENT(tElements_topology_wise)) &
+  IF (PRESENT(tElements_topology_wise)) THEN
     tElements_topology_wise = obj%tElements_topology_wise
+  END IF
 
   IF (PRESENT(tElemTopologies)) tElemTopologies = obj%tElemTopologies
 
@@ -4166,7 +4188,8 @@ MODULE PROCEDURE obj_GetNodeCoord2
 ! again from the first node
   nrow = 0
   IF (ncol .GT. 0) CALL NodeData_GetNodeCoord(obj=obj%nodeData(1)%ptr, &
-                                              ans=nodeCoord(:, 1), tsize=nrow)
+                                              ans=nodeCoord(:, 1), &
+                                              tsize=nrow)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -4191,7 +4214,8 @@ MODULE PROCEDURE obj_GetNodeCoord3
                           '[START] ')
 #endif
 
-  iel = obj%GetLocalElemNumber(globalelement=globalelement, islocal=islocal)
+  iel = &
+    obj%GetLocalElemNumber(globalelement=globalelement, islocal=islocal)
   globalNode => Elemdata_GetGlobalNodesPointer(obj%elementData(iel)%ptr)
 
   CALL obj%GetNodeCoord(nodeCoord=nodeCoord, globalNode=globalNode, &
@@ -4377,7 +4401,8 @@ MODULE PROCEDURE obj_GetMaxNodeToElements
   ans = 0
   tnodes = obj%GetTotalNodes()
 
-  IF (.NOT. obj%isNodeToElementsInitiated) CALL obj%InitiateNodeToElements()
+  IF (.NOT. obj%isNodeToElementsInitiated) CALL &
+    obj%InitiateNodeToElements()
 
   DO ii = 1, tnodes
     tsize = NodeData_GetTotalGlobalElements(obj%nodeData(ii)%ptr)
@@ -4441,8 +4466,9 @@ MODULE PROCEDURE obj_GetMaxElementToElements
   ans = 0
   tElements = obj%GetTotalElements()
 
-  IF (.NOT. obj%isElementToElementsInitiated) &
+  IF (.NOT. obj%isElementToElementsInitiated) THEN
     CALL obj%InitiateElementToElements()
+  END IF
 
   DO ii = 1, tElements
     ! globalElements has three entries per neighbour: element number,
@@ -4456,6 +4482,92 @@ MODULE PROCEDURE obj_GetMaxElementToElements
                           '[END] ')
 #endif
 END PROCEDURE obj_GetMaxElementToElements
+
+!----------------------------------------------------------------------------
+!                                                GetVtkUnstructuredGridData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVtkUnstructuredGridData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredGridData()"
+  LOGICAL(LGT) :: isok
+#endif
+  INTEGER(I4B), ALLOCATABLE :: cellcon(:), vtkindx(:)
+  INTEGER(I4B) :: ii, jj, nrow, ncol, maxnne, nne, tsize, icell, &
+    elemtype, nPoints, nCells
+  INTEGER(INT8) :: vtktype
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  nPoints = obj%GetTotalNodes()
+  nCells = obj%GetTotalElements()
+
+! points are set to zero first, the missing components (e.g., z in 2D)
+! remain zero. nrow is not used, because GetNodeCoord2 does not return
+! a reliable nrow when it is compiled with OpenMP.
+  CALL Reallocate(points, 3, nPoints)
+  points = 0.0_DFP
+  CALL obj%GetNodeCoord(nodeCoord=points, nrow=nrow, ncol=ncol)
+
+  maxnne = obj%GetMaxNNE()
+  CALL Reallocate(cellcon, maxnne)
+  CALL Reallocate(vtkindx, MAX(maxnne, MAX_VTK_NODES))
+  CALL Reallocate(connectivity, maxnne * nCells)
+  CALL Reallocate(offsets, nCells + 1)
+  IF (ALLOCATED(types)) DEALLOCATE(types)
+  ALLOCATE(types(nCells))
+
+  offsets(1) = 0
+  tsize = 0
+  icell = 0
+
+  cellLoop: DO ii = 1, nCells
+
+    IF (.NOT. obj%isElementActive(globalElement=ii, &
+                                  islocal=math%yes)) THEN
+      CYCLE cellLoop
+    END IF
+
+    elemtype = obj%GetElemType(globalElement=ii, islocal=math%yes)
+    CALL GetVTKElementType_(elemtype=elemtype, vtk_type=vtktype, &
+                            nptrs=vtkindx, tsize=nne)
+
+#ifdef DEBUG_VER
+    isok = vtktype .GE. 0_INT8
+    CALL AssertError1(isok, myName, &
+                      'No VTK cell type for element type ' // &
+                      ToString(elemtype))
+#endif
+
+    CALL obj%GetConnectivity_(globalElement=ii, islocal=math%yes, &
+                              ans=cellcon, tsize=jj)
+    CALL obj%GetLocalNodeNumber_(globalNode=cellcon(1:jj), &
+                                 ans=cellcon(1:jj), islocal=math%no)
+
+    DO jj = 1, nne
+      connectivity(tsize + jj) = cellcon(vtkindx(jj)) - 1
+    END DO
+
+    tsize = tsize + nne
+    icell = icell + 1
+    offsets(icell + 1) = tsize
+    types(icell) = vtktype
+  END DO cellLoop
+
+  connectivity = connectivity(1:tsize)
+  offsets = offsets(1:icell + 1)
+  types = types(1:icell)
+
+  DEALLOCATE(cellcon, vtkindx)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_GetVtkUnstructuredGridData
 
 !----------------------------------------------------------------------------
 !                                                           Include error

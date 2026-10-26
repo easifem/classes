@@ -25,6 +25,7 @@
 
 MODULE AbstractMesh_Class
 USE GlobalData, ONLY: LGT, I4B, DFP
+USE GlobalData, ONLY: INT8
 USE Files, ONLY: HDF5File_
 USE files, ONLY: VTKFile_
 USE Basetype, ONLY: BoundingBox_
@@ -659,6 +660,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxNodeToNodes => &
     obj_GetMaxNodeToNodes
   !! Get the maximum number of nodes around a node
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVtkUnstructuredGridData => &
+    obj_GetVtkUnstructuredGridData
+  !! Get unstructured grid data for vtk
 
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetShowTime => obj_SetShowTime
@@ -9521,6 +9525,86 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: elementType
     !! facet element type
   END SUBROUTINE obj_SetFacetParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      GetVtkUnstructuredGridData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: VTK unstructured grid from the nodes and elements of a mesh
+!
+! The points are all the nodes of the mesh in local node order.
+! The cells are the active elements of the mesh. The VTK cell type and
+! node ordering are obtained from GetVTKElementType_ (easifemBase).
+! Inactive elements are skipped. Meshes with different element types
+! are supported.
+!
+! Arguments:
+!   mesh : CLASS(AbstractMesh_) - mesh
+!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
+!   connectivity : INTEGER(I4B) - zero based point ids of all cells
+!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
+!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
+!
+! Formula:
+!
+! The point ids of cell \(i\) are
+!
+! $$ \text{connectivity}(\text{offsets}(i)+1:\text{offsets}(i+1)) $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEMesh_Class, ONLY: FEMesh_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: INT8
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(HDF5File_) :: meshfile
+! TYPE(FEMesh_) :: amesh
+! REAL(DFP), ALLOCATABLE :: points(:, :)
+! INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
+! INTEGER(INT8), ALLOCATABLE :: types(:)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL meshfile%Initiate(fileName="./meshdata/small_tri3_mesh.h5", &
+!                        MODE="READ")
+! CALL meshfile%OPEN()
+! CALL amesh%Initiate(hdf5=meshfile, dim=2)
+! CALL amesh%GetVtkUnstructuredGridData(points=points, &
+!                       connectivity=connectivity, offsets=offsets, &
+!                       types=types)
+! CALL OK(SIZE(points, 2) .EQ. amesh%GetTotalNodes(), "nPoints")
+! CALL OK(SIZE(types) .EQ. amesh%GetTotalElements(), "nCells")
+! CALL OK(ALL(types .EQ. 5_INT8), "VTK_TRIANGLE")
+! CALL OK(offsets(SIZE(offsets)) .EQ. SIZE(connectivity), "offsets")
+! CALL amesh%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVtkUnstructuredGridData(obj, points, &
+                                                   connectivity, offsets, &
+                                                   types)
+    CLASS(AbstractMesh_), INTENT(INOUT) :: obj
+    !! mesh
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
+    !! coordinates of points, shape (3, nPoints)
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
+    !! zero based point ids of cells
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
+    !! offsets of cells in connectivity, size nCells + 1
+    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
+    !! VTK cell types, size nCells
+  END SUBROUTINE obj_GetVtkUnstructuredGridData
 END INTERFACE
 
 !----------------------------------------------------------------------------
