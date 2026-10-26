@@ -101,7 +101,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(BlockNodeFieldLis_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL :: dims
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
 END INTERFACE
@@ -118,7 +118,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -136,10 +136,10 @@ INTERFACE
     CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -181,9 +181,9 @@ INTERFACE
     !! physical variable number in value
     INTEGER(I4B), INTENT(IN) :: idof_value
     !! local degree of freedom number in value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set18
 END INTERFACE

@@ -246,8 +246,8 @@ END INTERFACE
 ! Currently, copyStructure and usePointer is not used
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1( &
-    obj, obj2, copyFull, copyStructure, usePointer)
+  MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
+                                  usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
@@ -274,12 +274,15 @@ END INTERFACE AbstractNodeFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
-    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
-    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
-    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
-    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
-    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
+                                  comm, local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar, tNodes, &
+                                  isTNodes, isTNodesScalar, tSize, fedof, &
+                                  geofedof, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -359,11 +362,13 @@ END INTERFACE AbstractNodeFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate3( &
-    obj, name, engine, fieldType, comm, local_n, global_n, spaceCompo, &
-    isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
-    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
-    isPhysicalVarNames, fedof, geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate3(obj, name, engine, fieldType, comm, &
+                                  local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, fedof, geofedof, &
+                                  timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -572,9 +577,9 @@ END INTERFACE AbstractNodeFieldGetPointer
 ! summary:  Set parameters of AbstractNodeField_
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetParam( &
-    obj, dof_tPhysicalVars, dof_storageFMT, dof_spaceCompo, dof_timeCompo, &
-    dof_tNodes, dof_names_char, tSize)
+  MODULE SUBROUTINE obj_SetParam(obj, dof_tPhysicalVars, dof_storageFMT, &
+                                 dof_spaceCompo, dof_timeCompo, dof_tNodes, &
+                                 dof_names_char, tSize)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dof_tPhysicalVars
     !! total number of physical variables
@@ -664,8 +669,7 @@ END INTERFACE
 ! summary: Set multiple entries using indices
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple1( &
-    obj, indx, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! index, size(indx) = size(value) = tsize
@@ -687,8 +691,8 @@ END INTERFACE
 ! summary: Get single entry
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple2( &
-    obj, istart, iend, stride, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple2(obj, istart, iend, stride, VALUE, &
+                                     scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -710,9 +714,9 @@ END INTERFACE
 ! summary: Get multiple entries using trides
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple3( &
-    obj, istart, iend, stride, VALUE, istart_value, iend_value, &
-    stride_value, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple3(obj, istart, iend, stride, VALUE, &
+                                     istart_value, iend_value, stride_value, &
+                                     scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -736,8 +740,8 @@ END INTERFACE
 ! summary: Get single entry
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetMultiple4( &
-    obj, istart, iend, stride, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_SetMultiple4(obj, istart, iend, stride, VALUE, &
+                                     scale, addContribution)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -799,9 +803,9 @@ END INTERFACE
 ! summary: Get multiple entries using trides
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetMultiple3( &
-    obj, istart, iend, stride, VALUE, istart_value, iend_value, &
-    stride_value, tsize)
+  MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
+                                     istart_value, iend_value, stride_value, &
+                                     tsize)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -936,7 +940,7 @@ END INTERFACE
 INTERFACE
   MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL :: dims
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
 END INTERFACE
@@ -1174,7 +1178,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-    timefedofs, geofedof, geofedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group

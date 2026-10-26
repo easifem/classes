@@ -204,84 +204,87 @@ END TYPE ScalarFieldPointer_
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
-    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
-    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
-    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
-    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
-    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
+                                  comm, local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar, tNodes, &
+                                  isTNodes, isTNodesScalar, tSize, fedof, &
+                                  geofedof, timefedof)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
     !! name of the engine
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
     !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
     !! storage format of the scalar field
     !! Not required.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
     !! local size of field on each processor
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
     !! space components
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
     !! if true we will try to access spaceCompo
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
     !! Time components
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
     !! if true we will try to access TimeCompo
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
     !! Not required
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
+    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
     !! Names of the physical variables
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
     !! if true then physicalVarNames is scalar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
     !! total number of nodes in each physical variable
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
     !! if true we will try to access tNodes
     !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
     !! is tNodes scalar
     !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
     !! total size of node field
     !! not required
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
 END INTERFACE
@@ -353,8 +356,8 @@ END INTERFACE ScalarFieldSafeAllocate
 ! summary: This routine Sets the single entry of the scalar field
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1( &
-    obj, globalNode, islocal, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global node number
@@ -362,9 +365,9 @@ INTERFACE
     !! if present and true then globalNode is a local node
     REAL(DFP), INTENT(IN) :: VALUE
     !! value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add contribution
   END SUBROUTINE obj_Set1
 END INTERFACE
@@ -382,9 +385,9 @@ INTERFACE
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! All values of scalar field will be set to value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add contribution (add or set)
   END SUBROUTINE obj_Set2
 END INTERFACE
@@ -401,8 +404,8 @@ INTERFACE
   MODULE SUBROUTINE obj_Set3(obj, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
   END SUBROUTINE obj_Set3
 END INTERFACE
 
@@ -415,8 +418,8 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set4( &
-    obj, globalNode, islocal, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set4(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global nodes
@@ -424,9 +427,9 @@ INTERFACE
     !! if true, then globalNodes are local nodes
     REAL(DFP), INTENT(IN) :: VALUE
     !! value to be assigned on globalNode
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale (if we are adding)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set4
 END INTERFACE
@@ -440,8 +443,8 @@ END INTERFACE
 ! summary: This routine Sets the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set5( &
-    obj, globalNode, islocal, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set5(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local nodes
@@ -449,9 +452,9 @@ INTERFACE
     !! if true, then globalNodes are local nodes
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! value to be assigned on globalNode
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale (if we are adding)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set5
 END INTERFACE
@@ -465,8 +468,8 @@ END INTERFACE
 ! summary: This routine Sets the selected entries using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6( &
-    obj, globalNode, islocal, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set6(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -475,9 +478,9 @@ INTERFACE
     !! if true, then globalNodes are local nodes
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! Scalar, Nodal, FEVariable (Space or Constant)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale (if we are adding)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
     !! add or set
   END SUBROUTINE obj_Set6
 END INTERFACE
@@ -532,8 +535,8 @@ INTERFACE
   MODULE SUBROUTINE obj_SetByFunction(obj, func, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
-      !! User function
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    !! User function
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
     !! If present then its size should be 1
   END SUBROUTINE obj_SetByFunction
 END INTERFACE
@@ -637,7 +640,7 @@ INTERFACE ScalarFieldGetFEVariable
     !! if true then globalNode is a local node
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! returned value in fevariable
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
     !! physical variable
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE ScalarFieldGetFEVariable
@@ -653,7 +656,7 @@ END INTERFACE ScalarFieldGetFEVariable
 INTERFACE
   MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(ScalarField_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL :: dims
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
 END INTERFACE
@@ -686,7 +689,7 @@ INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -702,7 +705,7 @@ INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
@@ -721,7 +724,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
@@ -796,7 +799,7 @@ INTERFACE
     !! Scalar field
     REAL(DFP), INTENT(IN) :: scale
     !! scale for neumann boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
   END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
 
@@ -810,7 +813,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplySurfaceNeumannBC1( &
-    obj, nbcField, scale, times)
+                                                obj, nbcField, scale, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     CLASS(ScalarField_), INTENT(INOUT) :: nbcField
@@ -818,7 +821,7 @@ INTERFACE
     !! extension to the entire domain
     REAL(DFP), INTENT(IN) :: scale
     !! Scale for neumann boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
     !! times
   END SUBROUTINE obj_ApplySurfaceNeumannBC1
 END INTERFACE
@@ -832,8 +835,8 @@ END INTERFACE
 ! summary: Add Contribution of neumann boundary condition
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC2( &
-    obj, nbc, nbcField, scale, times)
+  MODULE SUBROUTINE obj_ApplySurfaceNeumannBC2(obj, nbc, nbcField, scale, &
+                                               times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     TYPE(NeumannBCPointer_), INTENT(INOUT) :: nbc(:)
@@ -843,7 +846,7 @@ INTERFACE
     !! extension to the entire domain
     REAL(DFP), INTENT(IN) :: scale
     !! Scale for neumann boundary condition
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
     !! times
   END SUBROUTINE obj_ApplySurfaceNeumannBC2
 END INTERFACE
@@ -866,7 +869,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     !! scale for body source
     !! obj = obj + scale * bodySource integral
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL :: times
     !! time, which will be passed to the body source function
   END SUBROUTINE obj_ApplyBodySource1
 END INTERFACE
@@ -929,10 +932,10 @@ INTERFACE
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
   END SUBROUTINE obj_Import
 END INTERFACE
 

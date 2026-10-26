@@ -92,7 +92,7 @@ END TYPE VectorFieldLisPointer_
 INTERFACE
   MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(VectorFieldLis_), INTENT(IN) :: obj
-    INTEGER(I4B), OPTIONAL :: dims
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dims
     INTEGER(I4B) :: ans
   END FUNCTION obj_Size
 END INTERFACE
@@ -147,7 +147,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-    timefedofs, geofedof, geofedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
