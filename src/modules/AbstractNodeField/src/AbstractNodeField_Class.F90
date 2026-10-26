@@ -23,6 +23,7 @@ USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE GlobalData, ONLY: DFP, LGT, I4B
+USE GlobalData, ONLY: INT8
 USE HDF5File_Class, ONLY: HDF5File_
 USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_
@@ -100,35 +101,37 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of AbstractNodeField
+
+  !@HDF5Methods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import AbstractNodeField from HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export AbstractNodeField to HDF5File_
+
+  !@VTKMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk1
   PROCEDURE, NOPASS :: WriteData_vtk2 => &
     obj_WriteData_vtk2
   GENERIC, PUBLIC :: WriteData => WriteData_vtk2
   !! Export data in VTKformat
+  PROCEDURE, PUBLIC, PASS(obj) :: GetVtkUnstructuredGridData => &
+    obj_GetVtkUnstructuredGridData
+  !! Get vtk data for unstructured grid
 
-  ! GET
   ! @GetMethods, deferred methods from AbstractField_
   PROCEDURE, PUBLIC, PASS(obj) :: GetStorageFMT => obj_GetStorageFMT
   !! Get storage format of the field
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
   !! GetPointer to the fortran vector stored inside the realvec
   !! This function should be called for Native engine only
-
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Returns the length of data stored inside the fortran vector
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
   PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
@@ -137,23 +140,17 @@ CONTAINS
   !! get many values from trides
   PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
   !! get many values from trides
-
   GENERIC, PUBLIC :: GetMultiple => GetMultiple1, GetMultiple2, &
     GetMultiple3
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetPhysicalNames => obj_GetPhysicalNames
   !! Get physical names
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalPhysicalVars => &
     obj_GetTotalPhysicalVars
   !! Get total physical variables
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetSpaceCompo => obj_GetSpaceCompo
   !! Get GetSpaceCompo
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeCompo => obj_GetTimeCompo
   !! Get the time components
 
@@ -1212,6 +1209,67 @@ END INTERFACE
 INTERFACE AbstractNodeFieldExport
   MODULE PROCEDURE obj_Export
 END INTERFACE AbstractNodeFieldExport
+
+!----------------------------------------------------------------------------
+!                                      GetVtkUnstructuredGridData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: Get unstructured grid data for writing vtk files.
+
+!----------------------------------------------------------------------------
+!                                         GetVtkUnstructuredGridData@Methods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: VTK unstructured grid of Lagrange cells from FEDOF
+!
+! For each active element of the mesh of fedof:
+!
+! 1. The cell order \(p\) is obtained from fedof%GetCellOrder.
+! 2. The VTK cell type and node ordering for the topology and order
+!    are obtained from GetVTKElementTypeFromTopology_ (easifemBase),
+!    e.g., VTK_QUADRATIC_TRIANGLE for a triangle with \(p=2\), and
+!    VTK_LAGRANGE_QUADRILATERAL for a quadrangle with \(p \ge 3\).
+! 3. The equidistance interpolation points of order \(p\) are
+!    computed in the reference element and mapped to the physical
+!    element by using the shape functions of geofedof.
+!
+! The points are not shared between cells (discontinuous grid). The
+! same loop is used in [[VTKGetLagrangeValues]], so the values
+! computed there match the points computed here.
+!
+! An error is raised if a VTK cell type is not available for a
+! topology and order (e.g., triangle with \(p \ge 3\)).
+!
+! Arguments:
+!   fedof : CLASS(FEDOF_) - FEDOF of the field
+!   geofedof : CLASS(FEDOF_) - FEDOF of the geometry
+!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
+!   connectivity : INTEGER(I4B) - zero based point ids of all cells
+!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
+!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVtkUnstructuredGridData(obj, points, &
+                                                   connectivity, offsets, &
+                                                   types, ivar)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! AbstractNodeField obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
+    !! coordinates of points, shape (3, nPoints)
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
+    !! zero based point ids of cells
+    INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
+    !! offsets of cells in connectivity, size nCells + 1
+    INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
+    !! VTK cell types, size nCells
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
+    !! physical variables, only needed in case of block node field
+  END SUBROUTINE obj_GetVtkUnstructuredGridData
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

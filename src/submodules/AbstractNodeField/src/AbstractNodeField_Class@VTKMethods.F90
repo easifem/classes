@@ -22,6 +22,7 @@ USE BaseType, ONLY: TypeFEVariableSpaceTime
 USE BaseType, ONLY: IntVector_
 USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
 USE AbstractMesh_Class, ONLY: AbstractMesh_
@@ -32,12 +33,20 @@ USE FEVariable_Method, ONLY: FEVariable_Get => Get
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
 USE IntVector_Method, ONLY: IntVector_Initiate => Initiate
 USE IntVector_Method, ONLY: ASSIGNMENT(=)
+USE ReallocateUtility, ONLY: Reallocate
+USE ReferenceElement_Method, ONLY: GetVTKElementTypeFromTopology_
+USE AbstractFE_Class, ONLY: AbstractFE_
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: &
   modName = "AbstractNodeField_Class@VTKMethods.F90"
 #endif
+
+INTEGER(I4B), PARAMETER :: MAX_VTK_NODES = 1331
 
 CONTAINS
 
@@ -162,10 +171,10 @@ MODULE PROCEDURE obj_WriteData_vtk2
 #endif
 
 #ifdef DEBUG_VER
-  DO iobj = 1, tfield
+  loop1: DO iobj = 1, tfield
     obj0 => obj(iobj)%ptr
     isOK = ASSOCIATED(obj0)
-    IF (.NOT. isOK) CYCLE
+    IF (.NOT. isOK) CYCLE loop1
 
     isOK = obj0%IsInitiated()
     CALL AssertError1(isOK, myName, &
@@ -176,7 +185,7 @@ MODULE PROCEDURE obj_WriteData_vtk2
     CALL AssertError1(isOK, myName, &
                       'AbstractNodeField_::obj(' // &
                       ToString(iobj) // ')%fedof is not associated')
-  END DO
+  END DO loop1
 #endif
 
   tsize = 0
@@ -203,10 +212,10 @@ MODULE PROCEDURE obj_WriteData_vtk2
   ALLOCATE(dofNames(tsize))
 
   tsize = 0
-  DO iobj = 1, tfield
+  loop2: DO iobj = 1, tfield
     obj0 => obj(iobj)%ptr
     isOK = ASSOCIATED(obj0)
-    IF (.NOT. isOK) CYCLE
+    IF (.NOT. isOK) CYCLE loop2
 
     ALLOCATE(dofNames_sub(tPhysicalVars(iobj)))
     CALL obj0%GetPhysicalNames(dofNames_sub)
@@ -215,7 +224,7 @@ MODULE PROCEDURE obj_WriteData_vtk2
     DEALLOCATE(dofNames_sub)
 
     fedof => obj0%fedof
-  END DO
+  END DO loop2
 
   meshptr => fedof%GetMeshPointer()
   tnodes = meshptr%GetTotalNodes()
@@ -233,9 +242,9 @@ MODULE PROCEDURE obj_WriteData_vtk2
   nptrs = meshptr%GetNptrs()
 
   tsize = 0
-  DO iobj = 1, tfield
+  loop3: DO iobj = 1, tfield
     obj0 => obj(iobj)%ptr
-    IF (.NOT. ASSOCIATED(obj0)) CYCLE
+    IF (.NOT. ASSOCIATED(obj0)) CYCLE loop3
 
     aint = tsize + tPhysicalVars(iobj)
     CALL ExportFieldToVTK(obj=obj0, vtk=vtk, nptrs=nptrs, &
@@ -245,7 +254,7 @@ MODULE PROCEDURE obj_WriteData_vtk2
                           timeCompo=timeCompo(iobj)%val, islocal=math%no)
 
     tsize = aint
-  END DO
+  END DO loop3
 
   action = String('close')
   CALL vtk%WriteDataArray(location=location, action=action)
@@ -497,6 +506,197 @@ SUBROUTINE Writedata_vtk1_checkerror(obj, vtk)
                           '[END] ')
 #endif
 END SUBROUTINE Writedata_vtk1_checkerror
+
+!----------------------------------------------------------------------------
+!                                                 GetVtkUnstructuredGridData
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVtkUnstructuredGridData
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredGridData()"
+  LOGICAL(LGT) :: isok
+#endif
+
+  CLASS(AbstractMesh_), POINTER :: mesh
+  CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+  TYPE(QuadraturePoint_) :: quad
+  TYPE(ElemShapeData_) :: geoelemsd
+  REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), &
+    elemCoord(:, :)
+  INTEGER(I4B), ALLOCATABLE :: vtkindx(:)
+  INTEGER(I4B) :: tElements, iel, ii, nn, nPoints, nCells, nIds, &
+    icell, ip0, ic0, maxNNE, maxCon, cellOrder(3), &
+    ipType(3), topo, nrow, ncol, xrow, xcol, crow, ccol, &
+    ncomp, tsize
+  INTEGER(INT8) :: vtktype
+  CLASS(FEDOF_), POINTER :: geofedof, fedof
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (PRESENT(ivar)) THEN
+    !add checks
+#ifdef DEBUG_VER
+    isok = ALLOCATED(obj%fedofs)
+    CALL AssertError1(isok, myName, "obj%fedofs not allocated.")
+
+    CALL AssertError3(ivar, SIZE(obj%fedofs), myName, &
+                      "a=ivar, b=size(obj%fedofs)")
+
+    isok = ASSOCIATED(obj%fedofs(ivar)%ptr)
+    CALL AssertError1(isok, myName, "obj%fedofs(ivar) not associated.")
+
+    isok = ALLOCATED(obj%geofedofs)
+    CALL AssertError1(isok, myName, "obj%geofedofs not allocated.")
+
+    CALL AssertError3(ivar, SIZE(obj%geofedofs), myName, &
+                      "a=ivar, b=size(obj%geofedofs)")
+
+    isok = ASSOCIATED(obj%geofedofs(ivar)%ptr)
+    CALL AssertError1(isok, myName, "obj%geofedofs(ivar) not associated.")
+#endif
+
+    fedof => obj%fedofs(ivar)%ptr
+    geofedof => obj%geofedofs(ivar)%ptr
+
+  ELSE
+    fedof => obj%fedof
+    geofedof => obj%geofedof
+  END IF
+
+#ifdef DEBUG_VER
+  isok = geofedof%IsInitiated()
+  CALL AssertError1(isok, myName, "geofedof is not initiated.")
+
+  isok = fedof%IsInitiated()
+  CALL AssertError1(isok, myName, "fedof is not initiated.")
+#endif
+
+  mesh => fedof%GetMeshPointer()
+  tElements = mesh%GetTotalElements()
+  maxNNE = mesh%GetMaxNNE()
+  maxCon = fedof%GetMaxTotalConnectivity()
+  ipType = TypeInterpolationOpt%Equidistance
+
+  CALL Reallocate(vtkindx, MAX(MAX_VTK_NODES, maxNNE))
+
+  ! First pass: count points and cells
+  nPoints = 0
+  nCells = 0
+  loop1: DO iel = 1, tElements
+
+    IF (.NOT. mesh%isElementActive(globalElement=iel, islocal=math%yes)) THEN
+      CYCLE loop1
+    END IF
+
+    ! GetCellTypes in internal routine in this method.
+    ! CALL GetCellType(iel, vtktype, nn)
+    CALL fedof%GetCellOrder(ans=cellOrder, tsize=tsize, &
+                            globalElement=iel, islocal=math%yes)
+    ! cellOrder(2:3) = cellOrder(1)
+    topo = mesh%GetElemTopology(globalElement=iel, islocal=math%yes)
+    CALL GetVTKElementTypeFromTopology_(topoType=topo, &
+                                        order=cellOrder(1), &
+                                        vtk_type=vtktype, &
+                                        nptrs=vtkindx, tsize=nn)
+
+#ifdef DEBUG_VER
+    isok = vtktype .GE. 0_INT8
+    CALL AssertError1(isok, myName, &
+                      "negative vtktype encounted.")
+#endif
+
+    nPoints = nPoints + nn
+    nCells = nCells + 1
+  END DO loop1
+  nIds = nPoints
+
+  ncomp = 0
+
+  CALL Reallocate(points, 3, nPoints)
+  CALL Reallocate(connectivity, nIds)
+  CALL Reallocate(offsets, nCells + 1)
+  CALL Reallocate(types, nCells)
+
+  offsets(1) = 0
+
+  CALL Reallocate(refElemCoord, 3, maxNNE)
+  CALL Reallocate(elemCoord, 3, maxNNE)
+  CALL Reallocate(xij, 4, MAX(MAX_VTK_NODES, maxNNE))
+
+  ! Second pass: points, cells, and values
+  icell = 0
+  ip0 = 0
+  ic0 = 0
+
+  loop2: DO iel = 1, tElements
+
+    IF (.NOT. mesh%isElementActive(globalElement=iel, islocal=math%yes)) THEN
+      CYCLE loop2
+    END IF
+
+    ! CALL GetCellType(iel, vtktype, nn)
+    CALL fedof%GetCellOrder(ans=cellOrder, tsize=tsize, &
+                            globalElement=iel, islocal=math%yes)
+    cellOrder(2:3) = cellOrder(1)
+    topo = mesh%GetElemTopology(globalElement=iel, islocal=math%yes)
+    CALL GetVTKElementTypeFromTopology_(topoType=topo, &
+                                        order=cellOrder(1), &
+                                        vtk_type=vtktype, &
+                                        nptrs=vtkindx, tsize=nn)
+
+    CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
+    CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
+    feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+    geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+    CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=nrow, ncol=ncol)
+
+    ! xij = math%zero
+    CALL feptr%GetInterpolationPoints(xij=refElemCoord(1:nrow, 1:ncol), &
+                                      ans=xij, nrow=xrow, ncol=xcol, &
+                                      order=cellOrder, ipType=ipType)
+
+#ifdef DEBUG_VER
+    CALL AssertError2(xcol, nn, myName, &
+                      'Number of interpolation points (' // &
+                      ToString(xcol) // ') does not match ' // &
+                      'number of nodes of VTK cell (' // ToString(nn) // &
+                      ') in element ' // ToString(iel))
+#endif
+
+    CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:nn))
+    CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+
+    CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
+                           nrow=crow, ncol=ccol, islocal=math%yes)
+
+    ! points(:, ip0 + 1:ip0 + nn) = math%zero
+    points(1:crow, ip0 + 1:ip0 + nn) = &
+      MATMUL(elemCoord(1:crow, 1:ccol), geoelemsd%N(1:ccol, 1:nn))
+
+    DO ii = 1, nn
+      connectivity(ic0 + ii) = ip0 + vtkindx(ii) - 1
+    END DO
+
+    icell = icell + 1
+    offsets(icell + 1) = ic0 + nn
+    types(icell) = vtktype
+
+    ip0 = ip0 + nn
+    ic0 = ic0 + nn
+  END DO loop2
+
+  NULLIFY(mesh, feptr, fedof, geofeptr)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+
+END PROCEDURE obj_GetVtkUnstructuredGridData
 
 !----------------------------------------------------------------------------
 !
