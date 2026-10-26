@@ -24,7 +24,7 @@
 !
 ! The extendable datasets are chunked, and the size of the last
 ! (Fortran) dimension is unlimited. In C order (h5py, VTK) this is the
-! first dimension, i.e., rows are appended.
+! first dimension, i.e., rows are Appended.
 
 SUBMODULE(HDF5File_Class) AppendMethods
 USE ISO_C_BINDING, ONLY: C_PTR
@@ -68,9 +68,9 @@ CONTAINS
 !                                                                    Append
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_append_d1
+MODULE PROCEDURE obj_Append_d1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_append_d1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Append_d1()"
 #endif
   INTEGER(HSIZE_T) :: ldims(1)
   INTEGER(HID_T) :: mem
@@ -93,15 +93,15 @@ MODULE PROCEDURE obj_append_d1
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE obj_append_d1
+END PROCEDURE obj_Append_d1
 
 !----------------------------------------------------------------------------
 !                                                                    Append
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_append_d2
+MODULE PROCEDURE obj_Append_d2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_append_d2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Append_d2()"
 #endif
   INTEGER(HSIZE_T) :: ldims(2)
   INTEGER(HID_T) :: mem
@@ -124,15 +124,15 @@ MODULE PROCEDURE obj_append_d2
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE obj_append_d2
+END PROCEDURE obj_Append_d2
 
 !----------------------------------------------------------------------------
 !                                                                    Append
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_append_n1
+MODULE PROCEDURE obj_Append_n1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_append_n1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Append_n1()"
 #endif
   INTEGER(HSIZE_T) :: ldims(1)
   INTEGER(HID_T) :: mem
@@ -155,15 +155,15 @@ MODULE PROCEDURE obj_append_n1
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE obj_append_n1
+END PROCEDURE obj_Append_n1
 
 !----------------------------------------------------------------------------
 !                                                                    Append
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_append_n2
+MODULE PROCEDURE obj_Append_n2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_append_n2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Append_n2()"
 #endif
   INTEGER(HSIZE_T) :: ldims(2)
   INTEGER(HID_T) :: mem
@@ -186,15 +186,15 @@ MODULE PROCEDURE obj_append_n2
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE obj_append_n2
+END PROCEDURE obj_Append_n2
 
 !----------------------------------------------------------------------------
 !                                                                    Append
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_append_u1
+MODULE PROCEDURE obj_Append_u1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_append_u1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Append_u1()"
 #endif
   INTEGER(HSIZE_T) :: ldims(1)
   INTEGER(HID_T) :: mem
@@ -219,7 +219,7 @@ MODULE PROCEDURE obj_append_u1
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE obj_append_u1
+END PROCEDURE obj_Append_u1
 
 !----------------------------------------------------------------------------
 !                                                                  ReadSlab
@@ -465,7 +465,7 @@ END PROCEDURE obj_GetExtent
 !     checks only in DEBUG mode
 ! summary: Append data to an extendable dataset (creates if needed)
 !
-! ldims is the shape of the data (Fortran order). The data is appended
+! ldims is the shape of the data (Fortran order). The data is Appended
 ! along the last dimension. filetype is the data type in the file and
 ! memtype is the data type in memory (buf).
 !
@@ -484,7 +484,7 @@ SUBROUTINE AppendCore(obj, path, ldims, filetype, memtype, buf, offset)
   CHARACTER(*), INTENT(IN) :: path
   !! path of the dataset
   INTEGER(HSIZE_T), INTENT(IN) :: ldims(:)
-  !! shape of the data to append (Fortran order)
+  !! shape of the data to Append (Fortran order)
   INTEGER(HID_T), INTENT(IN) :: filetype, memtype
   !! data type in the file and in memory
   TYPE(C_PTR), INTENT(IN) :: buf
@@ -528,7 +528,7 @@ SUBROUTINE AppendCore(obj, path, ldims, filetype, memtype, buf, offset)
 #ifdef DEBUG_VER
     CALL AssertError1(isok, myName, &
                       'Only the last dimension can be zero in the ' // &
-                      'first append of ' // path)
+                      'first Append of ' // path)
 #endif
 
     IF (.NOT. isok) RETURN
@@ -654,7 +654,7 @@ END SUBROUTINE AppendCore
 ! 1. It holds policy%stepsPerChunk steps: the last dimension is
 !    MAX(ldims(rank), 1) * stepsPerChunk.
 ! 2. If it has less than policy%minBytes bytes, its last dimension is
-!    increased until it has policy%minBytes bytes; so appending a few
+!    increased until it has policy%minBytes bytes; so Appending a few
 !    values per call does not create tiny chunks.
 ! 3. It is limited to policy%targetBytes with compute_chunk_size (the
 !    same rule and policy%chunkMethod as for Write).

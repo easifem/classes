@@ -464,10 +464,10 @@ CONTAINS
   !! Size of the last dimension of a dataset
 
   !@AppendMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: obj_append_d1, obj_append_d2, &
-    obj_append_n1, obj_append_n2, obj_append_u1
-  GENERIC, PUBLIC :: Append => obj_append_d1, obj_append_d2, obj_append_n1, &
-    obj_append_n2, obj_append_u1
+  PROCEDURE, PRIVATE, PASS(obj) :: obj_Append_d1, obj_Append_d2, &
+    obj_Append_n1, obj_Append_n2, obj_Append_u1
+  GENERIC, PUBLIC :: Append => obj_Append_d1, obj_Append_d2, obj_Append_n1, &
+    obj_Append_n2, obj_Append_u1
   !! Append values to an extendable dataset along the last dimension
 
   !@ReadSlabMethods
@@ -8438,19 +8438,19 @@ END INTERFACE
 ! deflate filters of the policy are used.
 !
 ! The parent groups are created if they do not exist.
-! It is not possible to append to a dataset created by Write, because
+! It is not possible to Append to a dataset created by Write, because
 ! such a dataset is not extendable.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - opened hdf5 file with write access
 !   dsetname : CHARACTER(*) - path of dataset
-!   vals : REAL(DFP) - values to append, SIZE(vals)
+!   vals : REAL(DFP) - values to Append, SIZE(vals)
 !   offset : INTEGER(I4B) - (optional) the starting index (zero based)
-!     of vals in the dataset, i.e., size of the dataset before append
+!     of vals in the dataset, i.e., size of the dataset before Append
 !
 ! Formula:
 !
-! Let \(n_0\) be the size of the last dimension before append, and
+! Let \(n_0\) be the size of the last dimension before Append, and
 ! \(n\) the size of the last dimension of vals, then
 !
 ! $$ \text{dset}(:, n_0+1:n_0+n) = \text{vals}(:, 1:n),
@@ -8498,10 +8498,10 @@ END INTERFACE
 !
 ! ! the chunk has at least minBytes (64 KiB): 8192 Real64 values
 ! CALL obj%GetChunkSize(path="/steps/values", cdims=cdims)
-! CALL OK(ALL(cdims .EQ. [8192_HSIZE_T]), "chunk of rank-1 appends")
+! CALL OK(ALL(cdims .EQ. [8192_HSIZE_T]), "chunk of rank-1 Appends")
 ! CALL OK(obj%IsCompressed(path="/steps/values"), "compressed")
 !
-! ! rank-2: points (3, nPoints), appended along nPoints
+! ! rank-2: points (3, nPoints), Appended along nPoints
 ! CALL obj%Append("/points", RESHAPE([0.0_DFP, 0.0_DFP, 0.0_DFP, &
 !                 1.0_DFP, 0.0_DFP, 0.0_DFP], [3, 2]))
 ! CALL obj%Append("/points", RESHAPE([0.0_DFP, 1.0_DFP, 0.0_DFP], &
@@ -8537,16 +8537,16 @@ END INTERFACE
 ! See also: [[obj_readslab_d1]], [[obj_GetExtent]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_append_d1(obj, dsetname, vals, offset)
+  MODULE SUBROUTINE obj_Append_d1(obj, dsetname, vals, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! hdf5 file
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! path of dataset
     REAL(DFP), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:)
-    !! values to append
+    !! values to Append
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: offset
     !! zero based starting index of vals in the dataset
-  END SUBROUTINE obj_append_d1
+  END SUBROUTINE obj_Append_d1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -8557,28 +8557,28 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Append a rank-2 real array to an extendable dataset
 !
-! vals(:, 1:n) is appended along the second (last) dimension. The size
+! vals(:, 1:n) is Appended along the second (last) dimension. The size
 ! of the first dimension should be the same in all calls.
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - opened hdf5 file with write access
 !   dsetname : CHARACTER(*) - path of dataset
-!   vals : REAL(DFP) - values to append, SIZE(vals, 1) x SIZE(vals, 2)
+!   vals : REAL(DFP) - values to Append, SIZE(vals, 1) x SIZE(vals, 2)
 !   offset : INTEGER(I4B) - (optional) zero based starting column
 !
-! See also: [[obj_append_d1]]
+! See also: [[obj_Append_d1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_append_d2(obj, dsetname, vals, offset)
+  MODULE SUBROUTINE obj_Append_d2(obj, dsetname, vals, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! hdf5 file
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! path of dataset
     REAL(DFP), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:, :)
-    !! values to append
+    !! values to Append
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: offset
     !! zero based starting column of vals in the dataset
-  END SUBROUTINE obj_append_d2
+  END SUBROUTINE obj_Append_d2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -8592,22 +8592,22 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(HDF5File_) - opened hdf5 file with write access
 !   dsetname : CHARACTER(*) - path of dataset
-!   vals : INTEGER(I4B) - values to append, SIZE(vals)
+!   vals : INTEGER(I4B) - values to Append, SIZE(vals)
 !   offset : INTEGER(I4B) - (optional) zero based starting index
 !
-! See also: [[obj_append_d1]]
+! See also: [[obj_Append_d1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_append_n1(obj, dsetname, vals, offset)
+  MODULE SUBROUTINE obj_Append_n1(obj, dsetname, vals, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! hdf5 file
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! path of dataset
     INTEGER(I4B), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:)
-    !! values to append
+    !! values to Append
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: offset
     !! zero based starting index of vals in the dataset
-  END SUBROUTINE obj_append_n1
+  END SUBROUTINE obj_Append_n1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -8621,22 +8621,22 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(HDF5File_) - opened hdf5 file with write access
 !   dsetname : CHARACTER(*) - path of dataset
-!   vals : INTEGER(I4B) - values to append, SIZE(vals, 1) x SIZE(vals, 2)
+!   vals : INTEGER(I4B) - values to Append, SIZE(vals, 1) x SIZE(vals, 2)
 !   offset : INTEGER(I4B) - (optional) zero based starting column
 !
-! See also: [[obj_append_d1]]
+! See also: [[obj_Append_d1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_append_n2(obj, dsetname, vals, offset)
+  MODULE SUBROUTINE obj_Append_n2(obj, dsetname, vals, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! hdf5 file
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! path of dataset
     INTEGER(I4B), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:, :)
-    !! values to append
+    !! values to Append
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: offset
     !! zero based starting column of vals in the dataset
-  END SUBROUTINE obj_append_n2
+  END SUBROUTINE obj_Append_n2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -8654,22 +8654,22 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(HDF5File_) - opened hdf5 file with write access
 !   dsetname : CHARACTER(*) - path of dataset
-!   vals : INTEGER(INT8) - values to append, SIZE(vals)
+!   vals : INTEGER(INT8) - values to Append, SIZE(vals)
 !   offset : INTEGER(I4B) - (optional) zero based starting index
 !
-! See also: [[obj_append_d1]], [[obj_readslab_u1]]
+! See also: [[obj_Append_d1]], [[obj_readslab_u1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_append_u1(obj, dsetname, vals, offset)
+  MODULE SUBROUTINE obj_Append_u1(obj, dsetname, vals, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! hdf5 file
     CHARACTER(LEN=*), INTENT(IN) :: dsetname
     !! path of dataset
     INTEGER(INT8), TARGET, CONTIGUOUS, INTENT(IN) :: vals(:)
-    !! values to append
+    !! values to Append
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: offset
     !! zero based starting index of vals in the dataset
-  END SUBROUTINE obj_append_u1
+  END SUBROUTINE obj_Append_u1
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -8696,7 +8696,7 @@ END INTERFACE
 ! $$ \text{vals}(:, 1:n) = \text{dset}(:, s+1:s+n),
 !    \quad s = \text{istart}, n = \text{icount} $$
 !
-! See also: [[obj_append_d1]] (contains an example)
+! See also: [[obj_Append_d1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_readslab_d1(obj, dsetname, istart, icount, vals)
@@ -8830,7 +8830,7 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_readslab_d1]], [[obj_append_n1]]
+! See also: [[obj_readslab_d1]], [[obj_Append_n1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_readslab_n1(obj, dsetname, istart, icount, vals)
@@ -8894,7 +8894,7 @@ END INTERFACE
 !   icount : INTEGER(I4B) - number of entries to read
 !   vals : INTEGER(INT8) - values (allocatable), SIZE(vals) = icount
 !
-! See also: [[obj_append_u1]]
+! See also: [[obj_Append_u1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_readslab_u1(obj, dsetname, istart, icount, vals)
@@ -8929,7 +8929,7 @@ END INTERFACE
 ! Returns:
 !   ans : INTEGER(I4B) - size of the last dimension
 !
-! See also: [[obj_append_d1]] (contains an example)
+! See also: [[obj_Append_d1]] (contains an example)
 
 INTERFACE
   MODULE FUNCTION obj_GetExtent(obj, dsetname) RESULT(ans)
