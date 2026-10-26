@@ -31,6 +31,10 @@ IMPLICIT NONE
 INTEGER(I4B), PARAMETER :: LOC_POINT = 1, LOC_CELL = 2, LOC_FIELD = 3
 CHARACTER(*), PARAMETER :: ROOT = "/VTKHDF/", STEPS = "/VTKHDF/Steps/"
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "VtkHDF5File_Class@WriteMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -522,5 +526,11 @@ FUNCTION OffsetGroup(loc) RESULT(ans)
 
   ans = DataGroup(loc) // "Offsets"
 END FUNCTION OffsetGroup
+
+!----------------------------------------------------------------------------
+!                                                            Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE WriteMethods

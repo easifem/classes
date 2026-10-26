@@ -22,11 +22,14 @@
 SUBMODULE(VtkHDF5File_Class) ConstructorMethods
 USE Display_Method, ONLY: Display
 USE ExceptionHandler_Class, ONLY: e
-USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value
 IMPLICIT NONE
 
-CHARACTER(*), PARAMETER :: defaultFile = "./result.vtkhdf"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "VtkHDF5File_Class@ConstructorMethods.F90"
+#endif
+
+#include "./include/vtkhdf5_definitions.F90"
 
 CONTAINS
 
@@ -34,91 +37,11 @@ CONTAINS
 !                                                            InitiateVTKHDF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_InitiateVTKHDF
-  CHARACTER(*), PARAMETER :: myName = "obj_InitiateVTKHDF()"
-  CHARACTER(:), ALLOCATABLE :: filename0, mode0
-  TYPE(String) :: vtkType
-  INTEGER(I4B) :: zlib0
-
+MODULE PROCEDURE obj_InitiateVTKHDF5
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+  CHARACTER(*), PARAMETER :: myName = "obj_InitiateVTKHDF5()"
 #endif
-
-  IF (PRESENT(filename)) THEN
-    filename0 = TRIM(filename)
-  ELSE IF (LEN_TRIM(obj%outputFile%chars()) .GT. 0) THEN
-    filename0 = obj%outputFile%chars()
-  ELSE
-    filename0 = defaultFile
-  END IF
-
-  mode0 = "NEW"
-  IF (PRESENT(mode)) mode0 = TRIM(ADJUSTL(mode))
-  IF (PRESENT(isTransient)) obj%isTransient = isTransient
-  IF (PRESENT(frequency)) obj%frequency = MAX(frequency, 1)
-  IF (PRESENT(zlibOpt)) obj%zlib = zlibOpt
-  zlib0 = obj%zlib
-
-  IF (obj%IsInitiated()) CALL obj%HDF5File_%DEALLOCATE()
-  CALL ResetState(obj)
-
-  SELECT CASE (mode0)
-  CASE ("NEW", "new", "New")
-    CALL obj%Initiate(filename=filename0, mode="NEW", zlibOpt=zlib0)
-    CALL obj%OPEN()
-    CALL obj%setOverwriteStat(math%yes)
-    CALL obj%mkdir("/VTKHDF")
-    CALL obj%WriteAttribute("/VTKHDF", "Version", VTKHDF_VERSION)
-    CALL obj%WriteAttribute("/VTKHDF", "Type", "UnstructuredGrid")
-
-  CASE ("READ", "read", "Read")
-    CALL obj%Initiate(filename=filename0, mode="READ")
-    CALL obj%OPEN()
-
-    IF (.NOT. obj%pathExists("/VTKHDF")) THEN
-      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                        '[ERROR] :: /VTKHDF group not found in ' // &
-                        filename0)
-      RETURN
-    END IF
-
-    CALL obj%ReadAttribute("/VTKHDF", "Type", vtkType)
-    ! INDEX is used because the string may be padded by other writers
-    IF (INDEX(vtkType%chars(), "UnstructuredGrid") .NE. 1) THEN
-      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                        '[NOT IMPLEMENTED] :: Only UnstructuredGrid is ' // &
-                        'supported, found ' // vtkType%chars())
-      RETURN
-    END IF
-
-    obj%isTransient = obj%pathExists("/VTKHDF/Steps")
-
-  CASE DEFAULT
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[ERROR] :: Unknown mode ' // mode0 // &
-                      ', it should be NEW or READ.')
-    RETURN
-  END SELECT
-
-  obj%isVTKHDFInit = math%yes
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE obj_InitiateVTKHDF
-
-!----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportFromToml
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
-#endif
-  TYPE(toml_table), POINTER :: node
-  INTEGER(I4B) :: origin, stat
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -127,49 +50,67 @@ MODULE PROCEDURE obj_ImportFromToml
 
   CALL obj%DEALLOCATE()
 
-  node => NULL()
-  CALL toml_get(table, "vtkhdf", node, origin=origin, requested=math%no, &
-                stat=stat)
+  CALL obj%Initiate(filename=filename, mode=mode, &
+                    chunkPolicy=chunkPolicy, &
+                    libverLow=libverLow, &
+                    compactBytes=compactBytes)
 
-  IF (.NOT. ASSOCIATED(node)) THEN
-    obj%isRequested = math%no
-#ifdef DEBUG_VER
-    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                            '[END] vtkhdf table not found.')
-#endif
-    RETURN
+  CALL obj%OPEN()
+
+  obj%vtkType = vtkType
+  IF (PRESENT(isTransient)) obj%isTransient = isTransient
+  IF (PRESENT(frequency)) obj%frequency = MAX(frequency, 1)
+
+  ! Handle new file with write access
+  IF (obj%IsNew() .OR. obj%IsWrite()) THEN
+    CALL obj%SetOverwriteStat(math%yes)
+    CALL obj%mkdir("/VTKHDF")
+    CALL obj%WriteAttribute("/VTKHDF", "Version", _VTKHDF_VERSION_)
+    CALL obj%WriteAttribute("/VTKHDF", "Type", obj%vtkType)
   END IF
 
-  CALL GetValue(table=node, key="isActive", VALUE=obj%isRequested, &
-                default_value=math%yes, origin=origin, stat=stat)
+  ! Handle read access
+  IF (obj%IsRead()) THEN
 
-  CALL GetValue(table=node, key="filename", VALUE=obj%outputFile, &
-                default_value=defaultFile, origin=origin, stat=stat)
+#ifdef DEBUG_VER
+    isok = obj%PathExists("/VTKHDF")
+    CALL AssertError1(isok, myName, &
+                      "/VTKHDF group not found in VtkHDF5File: " // &
+                      obj%GetFileName())
+#endif
 
-  CALL GetValue(table=node, key="isTransient", VALUE=obj%isTransient, &
-                default_value=math%yes, origin=origin, stat=stat)
+    CALL obj%ReadAttribute("/VTKHDF", "Type", obj%vtkType)
+    ! INDEX is used because the string may be padded by other writers
 
-  CALL GetValue(table=node, key="frequency", VALUE=obj%frequency, &
-                default_value=math%one_i, origin=origin, stat=stat)
-  obj%frequency = MAX(obj%frequency, 1)
+    ! TODO:
+    ! Check supported vtkType
+    ! Call CheckVtkTypeSupport(obj%vtkType)
 
-  CALL GetValue(table=node, key="zlib", VALUE=obj%zlib, &
-                default_value=-1_I4B, origin=origin, stat=stat)
+    IF (obj%isTransient) THEN
+#ifdef DEBUG_VER
+      isok = obj%PathExists("/VTKHDF/Steps")
+      CALL AssertError1(isok, myName, &
+                        "/VTKHDF/Steps group not found in VtkHDF5File: " // &
+                        obj%GetFileName())
+#endif
+    END IF
 
-  node => NULL()
+  END IF
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE obj_ImportFromToml
+END PROCEDURE obj_InitiateVTKHDF5
 
 !----------------------------------------------------------------------------
 !                                                                Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
-  IF (obj%IsInitiated()) CALL obj%HDF5File_%DEALLOCATE(Delete=Delete)
+  IF (obj%IsInitiated()) THEN
+    CALL obj%HDF5File_%DEALLOCATE(delete=delete)
+  END IF
   CALL ResetState(obj)
   obj%isRequested = math%yes
   obj%isTransient = math%yes
@@ -271,5 +212,11 @@ SUBROUTINE ResetState(obj)
   IF (ALLOCATED(obj%arrayOffset)) DEALLOCATE(obj%arrayOffset)
   IF (ALLOCATED(obj%arraySize)) DEALLOCATE(obj%arraySize)
 END SUBROUTINE ResetState
+
+!----------------------------------------------------------------------------
+!                                                            Include error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

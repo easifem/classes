@@ -34,25 +34,25 @@ PROGRAM main
   CALL obj%WRITE(dsetname="/length", vals=2.0_DFP)
 
   CALL obj%WriteAttribute(obj_name="/length", attr_name="unit", &
-    attr_val=strval)
+                          attr_val=strval)
   CALL obj%WriteAttribute(obj_name="/length", attr_name="note", &
-    attr_val="measured")
+                          attr_val="measured")
   CALL obj%WriteAttribute(obj_name="/length", attr_name="count", &
-    attr_val=3_I4B)
+                          attr_val=3_I4B)
   CALL obj%WriteAttribute(obj_name="/length", attr_name="scale", &
-    attr_val=0.5_DFP)
+                          attr_val=0.5_DFP)
 
   CALL obj%ReadAttribute(obj_name="/length", attr_name="unit", &
-    attr_val=found)
+                         attr_val=found)
   CALL OK(found%chars() .EQ. "meter", "String attribute")
   CALL obj%ReadAttribute(obj_name="/length", attr_name="note", &
-    attr_val=found)
+                         attr_val=found)
   CALL OK(found%chars() .EQ. "measured", "character attribute")
   CALL obj%ReadAttribute(obj_name="/length", attr_name="count", &
-    attr_val=ival)
+                         attr_val=ival)
   CALL OK(ival .EQ. 3, "integer attribute")
   CALL obj%ReadAttribute(obj_name="/length", attr_name="scale", &
-    attr_val=rval)
+                         attr_val=rval)
   CALL OK(ABS(rval - 0.5_DFP) .LT. tol, "real attribute")
 
   CALL obj%DEALLOCATE()

@@ -33,6 +33,11 @@ TYPE :: StepInfo_
   LOGICAL(LGT) :: hasStep = .FALSE.
 END TYPE StepInfo_
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "VtkHDF5File_Class@ReadMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

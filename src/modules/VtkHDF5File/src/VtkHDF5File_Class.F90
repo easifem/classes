@@ -34,8 +34,10 @@ USE FEDOF_Class, ONLY: FEDOF_
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: INT8
+USE GlobalData, ONLY: INT64
 USE GlobalData, ONLY: LGT
 USE HDF5File_Class, ONLY: HDF5File_
+USE HDF5File_Class, ONLY: HDF5ChunkPolicy_
 USE String_Class, ONLY: String
 USE tomlf, ONLY: toml_table
 IMPLICIT NONE
@@ -43,12 +45,6 @@ PRIVATE
 
 PUBLIC :: VtkHDF5File_
 PUBLIC :: VtkHDF5FilePointer_
-PUBLIC :: VTKHDF_VERSION
-
-CHARACTER(*), PARAMETER :: modName = "VtkHDF5File_Class"
-
-INTEGER(I4B), PARAMETER :: VTKHDF_VERSION(2) = [2, 2]
-!! Version of VTKHDF format written by VtkHDF5File_
 
 !----------------------------------------------------------------------------
 !                                                               VtkHDF5File_
@@ -116,6 +112,7 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   !! output is requested (ImportFromToml)
   LOGICAL(LGT) :: isVTKHDFInit = math%no
   !! InitiateVTKHDF has been called
+  !! TODO: Remove it as we already have IsInitiated
   LOGICAL(LGT) :: isTransient = math%yes
   !! write time steps (Steps group)
   LOGICAL(LGT) :: isLagrange = math%no
@@ -130,6 +127,7 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   !! write every frequency steps
   INTEGER(I4B) :: zlib = -1
   !! compression level (-1 means no compression)
+  !! TODO: Remove zlib
   INTEGER(I4B) :: stepCounter = 0
   !! number of calls of BeginStep
   INTEGER(I4B) :: nSteps = 0
@@ -139,8 +137,11 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   INTEGER(I4B) :: partOffset = 0, pointOffset = 0, cellOffset = 0, &
     connOffset = 0
   !! offsets of the current mesh in the datasets
+  TYPE(String) :: vtkType
+  !! name of vtk type
   TYPE(String) :: outputFile
   !! name of output file (ImportFromToml)
+  !! TODO: as we already have filename stored in HDF5File.
   INTEGER(I4B) :: nArrays = 0
   !! number of data arrays written in the file
   TYPE(String), ALLOCATABLE :: arrayNames(:)
@@ -152,7 +153,7 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   INTEGER(I4B), ALLOCATABLE :: arraySize(:, :)
   !! number of components and tuples of the latest data of arrays
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVTKHDF => obj_InitiateVTKHDF
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateVTKHDF5 => obj_InitiateVTKHDF5
   !! Open a VTKHDF file for writing or reading
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml => obj_ImportFromToml
   !! Import options from toml table [<table>.vtkhdf]
@@ -261,21 +262,36 @@ END TYPE VtkHDF5FilePointer_
 ! See also: [[obj_ImportFromToml]], [[obj_WriteMesh1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_InitiateVTKHDF(obj, filename, mode, isTransient, &
-                                       frequency, zlibOpt)
-    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
-    !! VTKHDF file
-    CHARACTER(*), INTENT(IN), OPTIONAL :: filename
-    !! name of file
-    CHARACTER(*), INTENT(IN), OPTIONAL :: mode
-    !! "NEW" or "READ"
+  MODULE SUBROUTINE obj_InitiateVTKHDF5(Obj, filename, mode, vtkType, &
+                                        zlibOpt, chunkPolicy, libverLow, &
+                                        compactBytes, isTransient, frequency)
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: Obj
+    !! HDF5 file object
+    CHARACTER(LEN=*), INTENT(IN) :: filename
+    !! path of the file on the file system
+    CHARACTER(LEN=*), INTENT(IN) :: mode
+    !! access mode: 'NEW', 'READ', 'WRITE' or 'OVERWRITE'
+    !! 'READ', 'WRITE' and 'OVERWRITE' need an existing file
+    !! 'WRITE' does not allow overwriting datasets
+    !! 'NEW' creates the file and truncates an existing one
+    CHARACTER(LEN=*), INTENT(IN) :: vtkType
+    !! vtkType
+    !! TODO: complete the documentation
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: zlibOpt
+    !! gzip compression level [0-9], -1 for no compression;
+    !! replaces chunkPolicy%deflateLevel
+    TYPE(HDF5ChunkPolicy_), INTENT(IN), OPTIONAL :: chunkPolicy
+    !! layout and compression settings; default values if absent
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: libverLow
+    !! lower bound of the file format version of a new file:
+    !! 0 (library default), 18, 110 (default), 112, 114 or 200
+    INTEGER(INT64), INTENT(IN), OPTIONAL :: compactBytes
+    !! datasets with less data use the compact layout; default 4096
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTransient
     !! write time steps
     INTEGER(I4B), INTENT(IN), OPTIONAL :: frequency
     !! write every frequency steps
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: zlibOpt
-    !! compression level
-  END SUBROUTINE obj_InitiateVTKHDF
+  END SUBROUTINE obj_InitiateVTKHDF5
 END INTERFACE
 
 !----------------------------------------------------------------------------

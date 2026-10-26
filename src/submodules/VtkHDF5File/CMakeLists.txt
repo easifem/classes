@@ -23,4 +23,5 @@ target_sources(
         ${src_path}/VtkHDF5File_Class@ConstructorMethods.F90
         ${src_path}/VtkHDF5File_Class@WriteMethods.F90
         ${src_path}/VtkHDF5File_Class@ReadMethods.F90
+        ${src_path}/VtkHDF5File_Class@TomlMethods.F90
 )
