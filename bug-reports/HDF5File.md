@@ -30,6 +30,7 @@ a bug and should pass after the fix:
 | OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
 | WriteAttribute_test_2 | longer String attribute replaces the old one | expected to fail (A5) |
 | Storage_test_1 | prints file sizes and times (baseline) | expected to pass |
+| Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
 
 Storage_test_1 prints `#` lines with the file size and the write/read
 times. Run it before and after each change to compare.
@@ -156,6 +157,35 @@ Problem (before the fix):
 - Proposal: `H5Pset_shuffle_f` and then `H5Pset_deflate_f`, for numeric
   types.
 
+### B3. Old file format
+
+- Fixed 2026-10-26. New private component `libverLow` of `HDF5File_`
+  (optional `Initiate` argument): 110 (HDF5 1.10, default), 18, 112, 114
+  or 200; 0 does not set the bounds, so the default of the HDF5 library is
+  used. `Open` sets `H5Pset_libver_bounds(libverLow, latest)` only when it
+  creates the file (mode NEW); existing files keep their format. Files
+  written with the default need HDF5 >= 1.10 to read.
+- Note: the default lower bound of HDF5 2.2 is already V18 (checked with
+  `H5Pget_libver_bounds`), not the earliest format; so before this change
+  the files used the 1.8 format, not the 1.6 format assumed below.
+- Tests: Layout_test_1 (new) passes.
+- Result: Compression_test_1 (two chunked datasets) 9000 B -> 5002 B; the
+  1000 x 1000 fields 21727846 B -> 21720000 B; 2000 scalars 646993 B ->
+  646607 B (with B4).
+
+Problem (before the fix):
+
+
+
+- The file access list (Constructor:180) sets only the close degree.
+  Without `H5Pset_libver_bounds`, HDF5 writes the earliest format: groups
+  use symbol tables (a B-tree and a local heap per group, about 1 KB or
+  more even for an empty group). Attributes are limited to 64 KB in the object
+  header, and there is no compact or dense link storage.
+- Proposal: `H5Pset_libver_bounds_f(fapl, H5F_LIBVER_V18_F,
+  H5F_LIBVER_LATEST_F)` (or V110). Files then need HDF5 >= 1.8 to read;
+  ParaView, h5py and current HDF5 tools are fine with that.
+
 ## Open
 
 ### A. Correctness
@@ -269,18 +299,23 @@ Problem (before the fix):
 
 ### B. Storage
 
-#### B3. Old file format
-
-- The file access list (Constructor:180) sets only the close degree.
-  Without `H5Pset_libver_bounds`, HDF5 writes the earliest format: groups
-  use symbol tables (a B-tree and a local heap per group, about 1 KB or
-  more even for an empty group). Attributes are limited to 64 KB in the object
-  header, and there is no compact or dense link storage.
-- Proposal: `H5Pset_libver_bounds_f(fapl, H5F_LIBVER_V18_F,
-  H5F_LIBVER_LATEST_F)` (or V110). Files then need HDF5 >= 1.8 to read;
-  ParaView, h5py and current HDF5 tools are fine with that.
-
 #### B4. Many small datasets
+
+- Status (2026-10-26): compact layout done, but **no measurable gain** for
+  scalars. New private component `compactBytes` of `HDF5File_` (optional
+  `Initiate` argument, default 4096, at most 64000); `preWrite` uses the
+  compact layout for a dataset with less data, scalars included, unless it
+  is chunked. Layout_test_1 checks the layouts and passes.
+- Result: 2000 scalar datasets 646993 B -> 646607 B (-0.06 %), still
+  about 323 B per scalar. The compact layout saves only the separate data
+  block (8 B); the cost is the object header of each dataset (dataspace,
+  datatype, layout, fill value and time messages) and its link in the
+  group. Not measured yet, possible next steps:
+  - `H5Pset_obj_track_times(dcpl, .FALSE.)`: no time stamps in headers;
+  - `H5Pset_dset_no_attrs_hint` (HDF5 >= 1.10.5): smaller headers for
+    datasets without attributes;
+  - in the callers, store many scalars as attributes of one group or as
+    one array instead of one dataset each.
 
 - Mesh and field files hold many scalars and small arrays (sizes, flags,
   names). Each one is a contiguous dataset with its own object header and

@@ -38,7 +38,10 @@ USE HDF5, ONLY: SIZE_T, H5P_FILE_ACCESS_F, H5P_DATASET_CREATE_F, &
   H5PSET_DEFLATE_F, H5PSET_FCLOSE_DEGREE_F, H5PSET_SHUFFLE_F, &
   H5SCLOSE_F, H5SCREATE_F, H5SCREATE_SIMPLE_F, &
   H5SGET_SIMPLE_EXTENT_DIMS_F, H5SGET_SIMPLE_EXTENT_NDIMS_F, &
-  H5SGET_SIMPLE_EXTENT_NPOINTS_F, &
+  H5SGET_SIMPLE_EXTENT_NPOINTS_F, H5PSET_LAYOUT_F, H5D_COMPACT_F, &
+  H5PSET_LIBVER_BOUNDS_F, H5F_LIBVER_V18_F, H5F_LIBVER_V110_F, &
+  H5F_LIBVER_V112_F, H5F_LIBVER_V114_F, H5F_LIBVER_V200_F, &
+  H5F_LIBVER_LATEST_F, &
   H5TGET_CLASS_F, H5TGET_PRECISION_F, H5TGET_SIZE_F, H5TCLOSE_F
 
 IMPLICIT NONE
@@ -168,7 +171,7 @@ MODULE PROCEDURE obj_Open
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'obj_Open()'
 #endif
-  INTEGER :: acc
+  INTEGER :: acc, libver
   INTEGER(HID_T) :: plist_id
   INTEGER(I4B) :: ierr, ierr2
 
@@ -189,6 +192,32 @@ MODULE PROCEDURE obj_Open
 
     ! Decide what access type to use
     IF (obj%IsNew()) THEN
+      ! Format version of the new file: (libverLow, latest); 0 keeps the
+      ! default bounds of the HDF5 library
+      SELECT CASE (obj%libverLow)
+      CASE (18)
+        libver = H5F_LIBVER_V18_F
+      CASE (110)
+        libver = H5F_LIBVER_V110_F
+      CASE (112)
+        libver = H5F_LIBVER_V112_F
+      CASE (114)
+        libver = H5F_LIBVER_V114_F
+      CASE (200)
+        libver = H5F_LIBVER_V200_F
+      CASE DEFAULT
+        libver = -1
+      END SELECT
+
+      IF (libver .GE. 0) THEN
+        CALL H5PSET_LIBVER_BOUNDS_F(plist_id, libver, H5F_LIBVER_LATEST_F, &
+                                    ierr2)
+#ifdef DEBUG_VER
+        CALL AssertError1(ierr2 .EQ. 0, myName, &
+                          "Unable to set the file format version.")
+#endif
+      END IF
+
       acc = H5F_ACC_TRUNC_F
       CALL H5FCREATE_F(obj%fullname%Chars(), acc, obj%file_id, ierr, &
                        access_prp=plist_id)
@@ -414,6 +443,21 @@ MODULE PROCEDURE obj_Initiate
 
   obj%hasCompression = obj%chunkPolicy%deflateLevel .GE. 0
 
+  ! File format version of a new file and limit of the compact layout
+  obj%libverLow = 110
+  IF (PRESENT(libverLow)) obj%libverLow = libverLow
+  obj%compactBytes = 4096_INT64
+  IF (PRESENT(compactBytes)) obj%compactBytes = compactBytes
+
+#ifdef DEBUG_VER
+  CALL AssertError1(ANY(obj%libverLow .EQ. [0, 18, 110, 112, 114, 200]), &
+                    myName, &
+                    'libverLow must be 0, 18, 110, 112, 114 or 200.')
+  CALL AssertError1(obj%compactBytes .GE. 0 .AND. &
+                    obj%compactBytes .LE. 64000, myName, &
+                    'compactBytes must be between 0 and 64000.')
+#endif
+
 ! Store the access mode
   mode_in = mode
   mode_in = mode_in%upper()
@@ -534,6 +578,8 @@ MODULE PROCEDURE obj_Deallocate
   obj%newstat = math%no
   obj%hasCompression = math%no
   obj%chunkPolicy = HDF5ChunkPolicy_()
+  obj%libverLow = 110
+  obj%compactBytes = 4096_INT64
   obj%fullname = ''
   obj%unitno = -1
   obj%overwriteStat = math%no
@@ -1281,50 +1327,66 @@ MODULE PROCEDURE preWrite
                       'Could not create dataspace.')
 #endif
 
-    ! Compression needs chunking. Datasets with less than
-    ! chunkPolicy%minBytes of data (and empty datasets) stay contiguous.
-    nbytes = 0
-    IF (obj%hasCompression .AND. ERROR .EQ. 0 .AND. ALL(gdims .GT. 0)) THEN
-      CALL H5TGET_SIZE_F(mem, bsize, ierr)
+  END IF
+
+  ! Size of the data in bytes (0 for an empty dataset)
+  nbytes = 0
+  bsize = 0
+  IF (ERROR .EQ. 0 .AND. ALL(gdims .GT. 0)) THEN
+    CALL H5TGET_SIZE_F(mem, bsize, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
+
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not get the size of the data type.')
+#endif
+
+    IF (ierr .EQ. 0) nbytes = INT(bsize, INT64) * PRODUCT(INT(gdims, INT64))
+  END IF
+
+  ! Layout of a new dataset:
+  ! - chunked and compressed: rank > 0, compression on, at least
+  !   chunkPolicy%minBytes of data (compression needs chunking)
+  ! - compact (data in the object header): less than compactBytes
+  ! - contiguous: otherwise
+  IF (RANK .GT. 0 .AND. obj%hasCompression .AND. nbytes .GT. 0 .AND. &
+      nbytes .GE. obj%chunkPolicy%minBytes) THEN
+    CALL compute_chunk_size(mem, gdims, obj%chunkPolicy, cdims)
+    CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
+
+#ifdef DEBUG_VER
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not set the chunk size.')
+#endif
+
+    ! Shuffle the bytes before deflate; useless for 1-byte elements
+    IF (obj%chunkPolicy%shuffle .AND. bsize .GT. 1) THEN
+      CALL H5PSET_SHUFFLE_F(plist_id, ierr)
       IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
       CALL AssertError1(ierr .EQ. 0, myName, &
-                        'Could not get the size of the data type.')
+                        'Could not set the shuffle filter.')
 #endif
-
-      IF (ierr .EQ. 0) nbytes = INT(bsize, INT64) * PRODUCT(INT(gdims, INT64))
     END IF
 
-    IF (nbytes .GT. 0 .AND. nbytes .GE. obj%chunkPolicy%minBytes) THEN
-      CALL compute_chunk_size(mem, gdims, obj%chunkPolicy, cdims)
-      CALL H5PSET_CHUNK_F(plist_id, RANK, cdims, ierr)
-      IF (ERROR .EQ. 0) ERROR = ierr
+    CALL H5PSET_DEFLATE_F(plist_id, obj%chunkPolicy%deflateLevel, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-      CALL AssertError1(ierr .EQ. 0, myName, &
-                        'Could not set the chunk size.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not set the deflate filter.')
 #endif
 
-      ! Shuffle the bytes before deflate; useless for 1-byte elements
-      IF (obj%chunkPolicy%shuffle .AND. bsize .GT. 1) THEN
-        CALL H5PSET_SHUFFLE_F(plist_id, ierr)
-        IF (ERROR .EQ. 0) ERROR = ierr
+  ELSE IF (nbytes .GT. 0 .AND. nbytes .LT. obj%compactBytes) THEN
+    CALL H5PSET_LAYOUT_F(plist_id, H5D_COMPACT_F, ierr)
+    IF (ERROR .EQ. 0) ERROR = ierr
 
 #ifdef DEBUG_VER
-        CALL AssertError1(ierr .EQ. 0, myName, &
-                          'Could not set the shuffle filter.')
+    CALL AssertError1(ierr .EQ. 0, myName, &
+                      'Could not set the compact layout.')
 #endif
-      END IF
-
-      CALL H5PSET_DEFLATE_F(plist_id, obj%chunkPolicy%deflateLevel, ierr)
-      IF (ERROR .EQ. 0) ERROR = ierr
-
-#ifdef DEBUG_VER
-      CALL AssertError1(ierr .EQ. 0, myName, &
-                        'Could not set the deflate filter.')
-#endif
-    END IF
   END IF
 
   ! Create the path if it doesn't exist

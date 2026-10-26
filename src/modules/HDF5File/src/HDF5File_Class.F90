@@ -213,6 +213,11 @@ END TYPE HDF5ChunkPolicy_
 ! - hasCompression: true if datasets are written with compression, that is,
 !   chunkPolicy%deflateLevel >= 0
 ! - chunkPolicy: layout and compression settings, see HDF5ChunkPolicy_
+! - libverLow: lower bound of the file format version used when the file is
+!   created: 110 (HDF5 1.10, default), 18, 112, 114 or 200; 0 uses the
+!   default of the HDF5 library (1.8 format in HDF5 2.x)
+! - compactBytes: datasets with less data are stored in their object
+!   header (compact layout), unless they are chunked (default 4 KiB)
 ! - newstat: true if Open must create the file
 ! - fullname: full name of the file
 ! - unitno: Fortran unit number, used only to delete the file
@@ -229,6 +234,11 @@ TYPE, EXTENDS(AbstractFile_) :: HDF5File_
   !! Whether or not the file uses compression for writing
   TYPE(HDF5ChunkPolicy_), PRIVATE :: chunkPolicy
   !! layout and compression settings of the datasets
+  INTEGER(I4B), PRIVATE :: libverLow = 110
+  !! lower bound of the file format version of a new file:
+  !! 0 (library default), 18, 110 (default), 112, 114 or 200
+  INTEGER(INT64), PRIVATE :: compactBytes = 4096_INT64
+  !! datasets with less data use the compact layout
   LOGICAL(LGT), PRIVATE :: newstat = math%no
   !! The 'new' status of a file
   TYPE(String) :: fullname
@@ -468,6 +478,7 @@ END INTERFACE
 ! date: 2021-05-08
 ! update:
 !   - 2026-10-26: the open status is set only on success
+!   - 2026-10-26: a new file uses the format version libverLow
 ! summary: Open the HDF5 file
 !
 ! Open the file which was set by Initiate. Open does nothing if obj is not
@@ -476,7 +487,9 @@ END INTERFACE
 !
 ! - mode NEW: the file is created; an existing file with the same name is
 !   truncated. The new status is then set to false, so a second Open (after
-!   Close) opens the file without truncating it.
+!   Close) opens the file without truncating it. The file is created with
+!   the format version bounds (libverLow, latest), see Initiate; HDF5 1.10
+!   or newer is needed to read it with the default libverLow = 110.
 ! - mode WRITE or OVERWRITE: the file is opened with read-write access.
 ! - mode READ: the file is opened with read-only access.
 !
@@ -678,6 +691,19 @@ END INTERFACE
 ! it replaces chunkPolicy%deflateLevel (-1 means no compression); it is kept
 ! for compatibility.
 !
+! libverLow is the lower bound of the file format version used when Open
+! creates the file (mode NEW): 110 (HDF5 1.10, the default), 18, 112, 114 or
+! 200; 0 does not set the bounds, so the default of the HDF5 library is used
+! (the 1.8 format in HDF5 2.x, the earliest format in HDF5 1.x). A newer
+! format has smaller groups and object headers, and better chunk indexes.
+! Existing files (modes READ, WRITE, OVERWRITE) keep their format.
+!
+! compactBytes: a dataset with less data (default 4 KiB) is stored in its
+! object header (compact layout), so it needs no separate data block and is
+! read in one access. It must be at most 64000 bytes, since the object
+! header is limited to 64 KiB. Chunked datasets (see chunkPolicy) are never
+! compact.
+!
 ! In DEBUG mode an error is raised if obj is already initiated, if the mode is
 ! unknown, or if the file does not exist in mode READ, WRITE or OVERWRITE.
 !
@@ -689,6 +715,10 @@ END INTERFACE
 !       replaces chunkPolicy%deflateLevel
 !   chunkPolicy : TYPE(HDF5ChunkPolicy_), optional - layout and compression
 !       settings; default values if absent
+!   libverLow : INTEGER(I4B), optional - lower bound of the format version
+!       of a new file; default 110
+!   compactBytes : INTEGER(INT64), optional - limit of the compact layout
+!       in bytes; default 4096
 !
 ! Examples
 !
@@ -780,7 +810,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(Obj, filename, mode, zlibOpt, &
-                                 chunkPolicy)
+                                 chunkPolicy, libverLow, compactBytes)
     CLASS(HDF5File_), INTENT(INOUT) :: Obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: filename
@@ -795,6 +825,11 @@ INTERFACE
     !! replaces chunkPolicy%deflateLevel
     TYPE(HDF5ChunkPolicy_), INTENT(IN), OPTIONAL :: chunkPolicy
     !! layout and compression settings; default values if absent
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: libverLow
+    !! lower bound of the file format version of a new file:
+    !! 0 (library default), 18, 110 (default), 112, 114 or 200
+    INTEGER(INT64), INTENT(IN), OPTIONAL :: compactBytes
+    !! datasets with less data use the compact layout; default 4096
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -1731,6 +1766,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! update:
 !   - 2026-10-26: error keeps the first failure; ids not created are -1
+!   - 2026-10-26: compact layout for datasets below compactBytes
 ! summary: Prepare a dataset for writing
 !
 ! Create the dataspaces and the dataset creation property list, create the
@@ -1739,8 +1775,10 @@ END INTERFACE
 ! dataset has at least chunkPolicy%minBytes of data, the dataset is chunked
 ! (see compute_chunk_size), the shuffle filter is set when
 ! chunkPolicy%shuffle is true and an element has more than one byte, and the
-! deflate filter is set. This routine is used by all Write routines;
-! postWrite closes what it opens.
+! deflate filter is set. Otherwise a dataset with less than compactBytes of
+! data uses the compact layout (data in the object header), and a larger one
+! is contiguous. This routine is used by all Write routines; postWrite closes
+! what it opens.
 !
 ! error is 0 on success. Otherwise it is the status of the first call that
 ! failed, and the steps which need the dataset are skipped. The ids which are
