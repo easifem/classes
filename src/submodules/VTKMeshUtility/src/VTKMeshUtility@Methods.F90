@@ -49,78 +49,78 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKGetLinearGrid
-CHARACTER(*), PARAMETER :: myName = "VTKGetLinearGrid()"
-INTEGER(I4B), ALLOCATABLE :: cellcon(:), vtkindx(:)
-INTEGER(I4B) :: ii, jj, nrow, ncol, maxnne, nne, tsize, icell, elemtype, &
-                nPoints, nCells
-INTEGER(INT8) :: vtktype
+  CHARACTER(*), PARAMETER :: myName = "VTKGetLinearGrid()"
+  INTEGER(I4B), ALLOCATABLE :: cellcon(:), vtkindx(:)
+  INTEGER(I4B) :: ii, jj, nrow, ncol, maxnne, nne, tsize, icell, elemtype, &
+    nPoints, nCells
+  INTEGER(INT8) :: vtktype
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-nPoints = mesh%GetTotalNodes()
-nCells = mesh%GetTotalElements()
+  nPoints = mesh%GetTotalNodes()
+  nCells = mesh%GetTotalElements()
 
 ! points are set to zero first, the missing components (e.g., z in 2D)
 ! remain zero. nrow is not used, because GetNodeCoord2 does not return
 ! a reliable nrow when it is compiled with OpenMP.
-CALL Reallocate(points, 3, nPoints)
-points = 0.0_DFP
-CALL mesh%GetNodeCoord(nodeCoord=points, nrow=nrow, ncol=ncol)
+  CALL Reallocate(points, 3, nPoints)
+  points = 0.0_DFP
+  CALL mesh%GetNodeCoord(nodeCoord=points, nrow=nrow, ncol=ncol)
 
-maxnne = mesh%GetMaxNNE()
-CALL Reallocate(cellcon, maxnne)
-CALL Reallocate(vtkindx, MAX(maxnne, MAX_VTK_NODES))
-CALL Reallocate(connectivity, maxnne * nCells)
-CALL Reallocate(offsets, nCells + 1)
-IF (ALLOCATED(types)) DEALLOCATE (types)
-ALLOCATE (types(nCells))
+  maxnne = mesh%GetMaxNNE()
+  CALL Reallocate(cellcon, maxnne)
+  CALL Reallocate(vtkindx, MAX(maxnne, MAX_VTK_NODES))
+  CALL Reallocate(connectivity, maxnne * nCells)
+  CALL Reallocate(offsets, nCells + 1)
+  IF (ALLOCATED(types)) DEALLOCATE(types)
+  ALLOCATE(types(nCells))
 
-offsets(1) = 0
-tsize = 0
-icell = 0
+  offsets(1) = 0
+  tsize = 0
+  icell = 0
 
-cellLoop: DO ii = 1, nCells
-  IF (.NOT. mesh%isElementActive(globalElement=ii, islocal=math%yes)) &
-    CYCLE cellLoop
+  cellLoop: DO ii = 1, nCells
+    IF (.NOT. mesh%isElementActive(globalElement=ii, islocal=math%yes)) &
+      CYCLE cellLoop
 
-  elemtype = mesh%GetElemType(globalElement=ii, islocal=math%yes)
-  CALL GetVTKElementType_(elemType=elemtype, vtk_type=vtktype, &
-                          nptrs=vtkindx, tsize=nne)
+    elemtype = mesh%GetElemType(globalElement=ii, islocal=math%yes)
+    CALL GetVTKElementType_(elemtype=elemtype, vtk_type=vtktype, &
+                            nptrs=vtkindx, tsize=nne)
 
-  IF (vtktype .LT. 0_INT8) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[NOT IMPLEMENTED] :: No VTK cell type for '// &
-                      'element type '//ToString(elemtype))
-    RETURN
-  END IF
+    IF (vtktype .LT. 0_INT8) THEN
+      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                        '[NOT IMPLEMENTED] :: No VTK cell type for ' // &
+                        'element type ' // ToString(elemtype))
+      RETURN
+    END IF
 
-  CALL mesh%GetConnectivity_(globalElement=ii, islocal=math%yes, &
-                             ans=cellcon, tsize=jj)
-  CALL mesh%GetLocalNodeNumber_(globalNode=cellcon(1:jj), &
-                                ans=cellcon(1:jj), islocal=math%no)
+    CALL mesh%GetConnectivity_(globalElement=ii, islocal=math%yes, &
+                               ans=cellcon, tsize=jj)
+    CALL mesh%GetLocalNodeNumber_(globalNode=cellcon(1:jj), &
+                                  ans=cellcon(1:jj), islocal=math%no)
 
-  DO jj = 1, nne
-    connectivity(tsize + jj) = cellcon(vtkindx(jj)) - 1
-  END DO
+    DO jj = 1, nne
+      connectivity(tsize + jj) = cellcon(vtkindx(jj)) - 1
+    END DO
 
-  tsize = tsize + nne
-  icell = icell + 1
-  offsets(icell + 1) = tsize
-  types(icell) = vtktype
-END DO cellLoop
+    tsize = tsize + nne
+    icell = icell + 1
+    offsets(icell + 1) = tsize
+    types(icell) = vtktype
+  END DO cellLoop
 
-connectivity = connectivity(1:tsize)
-offsets = offsets(1:icell + 1)
-types = types(1:icell)
+  connectivity = connectivity(1:tsize)
+  offsets = offsets(1:icell + 1)
+  types = types(1:icell)
 
-DEALLOCATE (cellcon, vtkindx)
+  DEALLOCATE(cellcon, vtkindx)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE VTKGetLinearGrid
 
@@ -129,9 +129,9 @@ END PROCEDURE VTKGetLinearGrid
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKGetLagrangeGrid
-CALL LagrangeWorker(fedof=fedof, geofedof=geofedof, points=points, &
-                    connectivity=connectivity, offsets=offsets, &
-                    types=types)
+  CALL LagrangeWorker(fedof=fedof, geofedof=geofedof, points=points, &
+                      connectivity=connectivity, offsets=offsets, &
+                      types=types)
 END PROCEDURE VTKGetLagrangeGrid
 
 !----------------------------------------------------------------------------
@@ -139,41 +139,41 @@ END PROCEDURE VTKGetLagrangeGrid
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKGetVertexValues
-CHARACTER(*), PARAMETER :: myName = "VTKGetVertexValues()"
-INTEGER(I4B) :: tdof, tsize, nrow, ncol
-REAL(DFP), ALLOCATABLE :: temp1(:), temp2(:, :)
+  CHARACTER(*), PARAMETER :: myName = "VTKGetVertexValues()"
+  INTEGER(I4B) :: tdof, tsize, nrow, ncol
+  REAL(DFP), ALLOCATABLE :: temp1(:), temp2(:, :)
 
-tdof = field%fedof%GetTotalDOF()
+  tdof = field%fedof%GetTotalDOF()
 
-IF (tdof .LT. nPoints) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[ERROR] :: Total DOF of field '// &
-                    ToString(tdof)//' is less than number of points '// &
-                    ToString(nPoints))
-  RETURN
-END IF
+  IF (tdof .LT. nPoints) THEN
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                      '[ERROR] :: Total DOF of field ' // &
+                      ToString(tdof) // ' is less than number of points ' // &
+                      ToString(nPoints))
+    RETURN
+  END IF
 
-SELECT TYPE (field)
-TYPE IS (ScalarField_)
-  CALL Reallocate(temp1, tdof)
-  CALL field%Get(VALUE=temp1, tsize=tsize)
-  CALL Reallocate(values, 1, nPoints)
-  values(1, :) = temp1(1:nPoints)
+  SELECT TYPE (field)
+  TYPE IS (ScalarField_)
+    CALL Reallocate(temp1, tdof)
+    CALL field%Get(VALUE=temp1, tsize=tsize)
+    CALL Reallocate(values, 1, nPoints)
+    values(1, :) = temp1(1:nPoints)
 
-TYPE IS (VectorField_)
-  CALL Reallocate(temp2, 3, tdof)
-  CALL field%Get(VALUE=temp2, nrow=nrow, ncol=ncol, &
-                 storageFMT=TypeFieldOpt%storageFormatNodes, &
-                 force3D=math%yes)
-  CALL Reallocate(values, 3, nPoints)
-  values(1:3, :) = temp2(1:3, 1:nPoints)
+  TYPE IS (VectorField_)
+    CALL Reallocate(temp2, 3, tdof)
+    CALL field%Get(VALUE=temp2, nrow=nrow, ncol=ncol, &
+                   storageFMT=TypeFieldOpt%storageFormatNodes, &
+                   force3D=math%yes)
+    CALL Reallocate(values, 3, nPoints)
+    values(1:3, :) = temp2(1:3, 1:nPoints)
 
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[NOT IMPLEMENTED] :: Only ScalarField_ and '// &
-                    'VectorField_ are supported.')
-  RETURN
-END SELECT
+  CLASS DEFAULT
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                      '[NOT IMPLEMENTED] :: Only ScalarField_ and ' // &
+                      'VectorField_ are supported.')
+    RETURN
+  END SELECT
 END PROCEDURE VTKGetVertexValues
 
 !----------------------------------------------------------------------------
@@ -181,18 +181,18 @@ END PROCEDURE VTKGetVertexValues
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKGetLagrangeValues
-CHARACTER(*), PARAMETER :: myName = "VTKGetLagrangeValues()"
+  CHARACTER(*), PARAMETER :: myName = "VTKGetLagrangeValues()"
 
-IF (.NOT. ASSOCIATED(field%fedof) .OR. &
-    .NOT. ASSOCIATED(field%geofedof)) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[ERROR] :: fedof and geofedof of field should '// &
-                    'be associated.')
-  RETURN
-END IF
+  IF (.NOT. ASSOCIATED(field%fedof) .OR. &
+      .NOT. ASSOCIATED(field%geofedof)) THEN
+    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                      '[ERROR] :: fedof and geofedof of field should ' // &
+                      'be associated.')
+    RETURN
+  END IF
 
-CALL LagrangeWorker(fedof=field%fedof, geofedof=field%geofedof, &
-                    field=field, values=values)
+  CALL LagrangeWorker(fedof=field%fedof, geofedof=field%geofedof, &
+                      field=field, values=values)
 END PROCEDURE VTKGetLagrangeValues
 
 !----------------------------------------------------------------------------
@@ -200,14 +200,14 @@ END PROCEDURE VTKGetLagrangeValues
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE VTKGetFieldCompo
-SELECT TYPE (field)
-TYPE IS (ScalarField_)
-  ans = 1
-TYPE IS (VectorField_)
-  ans = 3
-CLASS DEFAULT
-  ans = 0
-END SELECT
+  SELECT TYPE (field)
+  TYPE IS (ScalarField_)
+    ans = 1
+  TYPE IS (VectorField_)
+    ans = 3
+  CLASS DEFAULT
+    ans = 0
+  END SELECT
 END PROCEDURE VTKGetFieldCompo
 
 !----------------------------------------------------------------------------
@@ -226,12 +226,12 @@ SUBROUTINE LagrangeWorker(fedof, geofedof, points, connectivity, &
                           offsets, types, field, values)
   CLASS(FEDOF_), INTENT(INOUT) :: fedof
   CLASS(FEDOF_), INTENT(INOUT) :: geofedof
-  REAL(DFP), ALLOCATABLE, OPTIONAL, INTENT(INOUT) :: points(:, :)
-  INTEGER(I4B), ALLOCATABLE, OPTIONAL, INTENT(INOUT) :: connectivity(:)
-  INTEGER(I4B), ALLOCATABLE, OPTIONAL, INTENT(INOUT) :: offsets(:)
-  INTEGER(INT8), ALLOCATABLE, OPTIONAL, INTENT(INOUT) :: types(:)
-  CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: field
-  REAL(DFP), ALLOCATABLE, OPTIONAL, INTENT(INOUT) :: values(:, :)
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT), OPTIONAL :: points(:, :)
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT), OPTIONAL :: connectivity(:)
+  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT), OPTIONAL :: offsets(:)
+  INTEGER(INT8), ALLOCATABLE, INTENT(INOUT), OPTIONAL :: types(:)
+  CLASS(AbstractNodeField_), INTENT(INOUT), OPTIONAL :: field
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT), OPTIONAL :: values(:, :)
 
   CHARACTER(*), PARAMETER :: myName = "LagrangeWorker()"
   CLASS(AbstractMesh_), POINTER :: mesh
@@ -239,12 +239,12 @@ SUBROUTINE LagrangeWorker(fedof, geofedof, points, connectivity, &
   TYPE(QuadraturePoint_) :: quad
   TYPE(ElemShapeData_) :: elemsd, geoelemsd
   REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), &
-                            elemCoord(:, :), sol(:), sol2(:, :)
+    elemCoord(:, :), sol(:), sol2(:, :)
   INTEGER(I4B), ALLOCATABLE :: vtkindx(:), solCon(:)
   INTEGER(I4B) :: tElements, iel, ii, nn, nPoints, nCells, nIds, &
-                  icell, ip0, ic0, maxNNE, maxCon, cellOrder(3), &
-                  ipType(3), topo, nrow, ncol, xrow, xcol, crow, ccol, &
-                  tsol, ncomp
+    icell, ip0, ic0, maxNNE, maxCon, cellOrder(3), &
+    ipType(3), topo, nrow, ncol, xrow, xcol, crow, ccol, &
+    tsol, ncomp
   INTEGER(INT8) :: vtktype
   LOGICAL(LGT) :: isGrid, isValue
 
@@ -276,8 +276,8 @@ SUBROUTINE LagrangeWorker(fedof, geofedof, points, connectivity, &
   IF (isValue) THEN
     ncomp = VTKGetFieldCompo(field)
     IF (ncomp .EQ. 0) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[NOT IMPLEMENTED] :: Only ScalarField_ and '// &
+      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                        '[NOT IMPLEMENTED] :: Only ScalarField_ and ' // &
                         'VectorField_ are supported.')
       RETURN
     END IF
@@ -291,8 +291,8 @@ SUBROUTINE LagrangeWorker(fedof, geofedof, points, connectivity, &
     CALL Reallocate(points, 3, nPoints)
     CALL Reallocate(connectivity, nIds)
     CALL Reallocate(offsets, nCells + 1)
-    IF (ALLOCATED(types)) DEALLOCATE (types)
-    ALLOCATE (types(nCells))
+    IF (ALLOCATED(types)) DEALLOCATE(types)
+    ALLOCATE(types(nCells))
     offsets(1) = 0
   END IF
 
@@ -319,16 +319,17 @@ SUBROUTINE LagrangeWorker(fedof, geofedof, points, connectivity, &
     CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=nrow, ncol=ncol)
 
     xij = 0.0_DFP
-    CALL feptr%GetInterpolationPoints( &
-      xij=refElemCoord(1:nrow, 1:ncol), ans=xij, nrow=xrow, ncol=xcol, &
-      order=cellOrder, ipType=ipType)
+    CALL feptr%GetInterpolationPoints(xij=refElemCoord(1:nrow, 1:ncol), &
+                                      ans=xij, nrow=xrow, ncol=xcol, &
+                                      order=cellOrder, ipType=ipType)
 
     IF (xcol .NE. nn) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[INTERNAL ERROR] :: Number of interpolation '// &
-                        'points ('//ToString(xcol)//') does not match '// &
-                        'number of nodes of VTK cell ('//ToString(nn)// &
-                        ') in element '//ToString(iel))
+      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                        '[INTERNAL ERROR] :: Number of interpolation ' // &
+                        'points (' // ToString(xcol) // &
+                        ') does not match ' // &
+                        'number of nodes of VTK cell (' // ToString(nn) // &
+                        ') in element ' // ToString(iel))
       RETURN
     END IF
 
@@ -357,8 +358,8 @@ SUBROUTINE LagrangeWorker(fedof, geofedof, points, connectivity, &
 
       ! This step is necessary to fix the orientation of shape functions
       CALL feptr%GetGlobalElemShapeData( &
-        elemsd=elemsd, geoelemsd=geoelemsd, &
-        xij=elemCoord(1:crow, 1:ccol))
+                                         elemsd=elemsd, geoelemsd=geoelemsd, &
+                                         xij=elemCoord(1:crow, 1:ccol))
 
       CALL fedof%GetConnectivity_(ans=solCon, tsize=tsol, opt="A", &
                                   globalElement=iel, islocal=math%yes)
@@ -384,7 +385,7 @@ SUBROUTINE LagrangeWorker(fedof, geofedof, points, connectivity, &
     ic0 = ic0 + nn
   END DO
 
-  NULLIFY (mesh, feptr, geofeptr)
+  NULLIFY(mesh, feptr, geofeptr)
 
 CONTAINS
 
@@ -406,10 +407,10 @@ CONTAINS
                                         nptrs=vtkindx, tsize=nn)
 
     IF (vtktype .LT. 0_INT8) THEN
-      CALL e%RaiseError(modName//'::'//myName//' - '// &
-                        '[NOT IMPLEMENTED] :: No VTK cell type for '// &
-                        'topology '//ToString(topo)//' and order '// &
-                        ToString(cellOrder(1))//' in element '// &
+      CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                        '[NOT IMPLEMENTED] :: No VTK cell type for ' // &
+                        'topology ' // ToString(topo) // ' and order ' // &
+                        ToString(cellOrder(1)) // ' in element ' // &
                         ToString(iel))
     END IF
   END SUBROUTINE GetCellType

@@ -9531,22 +9531,37 @@ END INTERFACE
 !                                      GetVtkUnstructuredGridData@GetMethods
 !----------------------------------------------------------------------------
 
-!> author: Shion Shimizu
-! date: 2026-10-24
-! summary: VTK unstructured grid from the nodes and elements of a mesh
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-26
+! summary: VTK unstructured grid data from the nodes and elements of a
+!   mesh
 !
-! The points are all the nodes of the mesh in local node order.
-! The cells are the active elements of the mesh. The VTK cell type and
-! node ordering are obtained from GetVTKElementType_ (easifemBase).
-! Inactive elements are skipped. Meshes with different element types
-! are supported.
+! Returns the data of a VTK unstructured grid of the mesh, which can be
+! written by [[VtkHDF5File_:WriteUnstructuredGrid]].
+!
+! - The points are all the nodes of the mesh in local node order. The
+!   coordinates are stored in three rows; the missing components (z in
+!   2D, y and z in 1D) are zero.
+! - The cells are the active elements of the mesh in local element
+!   order; inactive elements are skipped. Meshes with different element
+!   types are supported.
+! - The VTK cell type and the VTK node ordering of each element are
+!   obtained from GetVTKElementType_ (easifemBase). In DEBUG mode, an
+!   error is raised if an element type has no VTK cell type.
+! - The point ids in connectivity are zero based local node numbers.
+!
+! The allocatable arguments are reallocated to their exact sizes.
+! The implementation follows VTKGetLinearGrid (VTKMeshUtility).
 !
 ! Arguments:
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
-!   connectivity : INTEGER(I4B) - zero based point ids of all cells
+!   obj : CLASS(AbstractMesh_) - mesh
+!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints),
+!     nPoints = GetTotalNodes()
+!   connectivity : INTEGER(I4B) - zero based point ids of all cells,
+!     SIZE(connectivity) = offsets(nCells + 1)
 !   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
-!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
+!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells,
+!     nCells = number of active elements
 !
 ! Formula:
 !
@@ -9567,28 +9582,49 @@ END INTERFACE
 ! USE GlobalData, ONLY: INT8
 ! USE HDF5File_Class, ONLY: HDF5File_
 ! USE Test_Method, ONLY: OK
+!
 ! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = &
+!   "./meshdata/very_small_quad4_mesh.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
+! TYPE(FEMesh_) :: obj
 ! TYPE(HDF5File_) :: meshfile
-! TYPE(FEMesh_) :: amesh
 ! REAL(DFP), ALLOCATABLE :: points(:, :)
 ! INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
 ! INTEGER(INT8), ALLOCATABLE :: types(:)
+!
 ! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-! CALL meshfile%Initiate(fileName="./meshdata/small_tri3_mesh.h5", &
-!                        MODE="READ")
+!
+! CALL meshfile%Initiate(filename=filename, mode="READ")
 ! CALL meshfile%OPEN()
-! CALL amesh%Initiate(hdf5=meshfile, dim=2)
-! CALL amesh%GetVtkUnstructuredGridData(points=points, &
-!                       connectivity=connectivity, offsets=offsets, &
-!                       types=types)
-! CALL OK(SIZE(points, 2) .EQ. amesh%GetTotalNodes(), "nPoints")
-! CALL OK(SIZE(types) .EQ. amesh%GetTotalElements(), "nCells")
-! CALL OK(ALL(types .EQ. 5_INT8), "VTK_TRIANGLE")
-! CALL OK(offsets(SIZE(offsets)) .EQ. SIZE(connectivity), "offsets")
-! CALL amesh%DEALLOCATE()
+! CALL obj%Initiate(hdf5=meshfile, DIM=2)
+!
+! CALL obj%GetVtkUnstructuredGridData(points=points, &
+!                                     connectivity=connectivity, &
+!                                     offsets=offsets, types=types)
+!
+! CALL OK(ALL(SHAPE(points) .EQ. [3, 9]), "points: shape")
+! CALL OK(ALL(ABS(points(:, 9) - [0.5_DFP, 0.5_DFP, 0.0_DFP]) &
+!             .LT. tol), "points: node 9")
+! CALL OK(ALL(ABS(points(3, :)) .LT. tol), "points: z = 0 in 2D")
+!
+! CALL OK(SIZE(types) .EQ. 4, "types: number of cells")
+! CALL OK(ALL(types .EQ. 9_INT8), "types: VTK_QUAD")
+!
+! CALL OK(ALL(offsets .EQ. [0, 4, 8, 12, 16]), "offsets")
+! CALL OK(SIZE(connectivity) .EQ. 16, "connectivity: size")
+! CALL OK(ALL(connectivity(1:4) .EQ. [0, 4, 8, 6]), &
+!         "connectivity: element 13")
+! CALL OK(ALL(connectivity .GE. 0 .AND. connectivity .LT. 9), &
+!         "connectivity: zero based")
+!
+! CALL obj%DEALLOCATE()
 ! CALL meshfile%DEALLOCATE()
 ! END PROGRAM main
 !```
+!
+! See also: [[obj_GetNodeCoord2]], [[obj_GetConnectivity1_]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetVtkUnstructuredGridData(obj, points, &

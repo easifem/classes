@@ -44,7 +44,7 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetStorageFMT
-ans = MYSTORAGEFORMAT
+  ans = MYSTORAGEFORMAT
 END PROCEDURE obj_GetStorageFMT
 
 !----------------------------------------------------------------------------
@@ -53,22 +53,23 @@ END PROCEDURE obj_GetStorageFMT
 
 MODULE PROCEDURE obj_GetFEVariable
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[WIP ERROR] :: This routine should be implemented by child class.')
+  CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                    '[WIP ERROR] :: This routine should be implemented ' // &
+                    'by child class.')
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetFEVariable
 
@@ -78,42 +79,43 @@ END PROCEDURE obj_GetFEVariable
 
 MODULE PROCEDURE obj_GetPhysicalNames
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalNames()"
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_GetPhysicalNames()"
+  LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: tnames
-INTEGER(I4B) :: aint
+  INTEGER(I4B) :: tnames
+  INTEGER(I4B) :: aint
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-isok = ALLOCATED(obj%dof_names_char)
-CALL AssertError1(isok, myName, &
-                  'AbstractNodeField_::obj%dof_names_char is not allocated.')
+  isok = ALLOCATED(obj%dof_names_char)
+  CALL AssertError1(isok, myName, &
+                    'AbstractNodeField_::obj%dof_names_char is not ' // &
+                    'allocated.')
 #endif
 
-tnames = SIZE(obj%dof_names_char)
+  tnames = SIZE(obj%dof_names_char)
 
 #ifdef DEBUG_VER
-aint = SIZE(ans)
-isok = tnames .EQ. aint
-CALL AssertError1(isok, myName, &
-                  'The size of ans ('//ToString(aint)// &
-                  ') is not same as total physical variables = '// &
-                  ToString(tnames))
+  aint = SIZE(ans)
+  isok = tnames .EQ. aint
+  CALL AssertError1(isok, myName, &
+                    'The size of ans (' // ToString(aint) // &
+                    ') is not same as total physical variables = ' // &
+                    ToString(tnames))
 #endif
 
-DO aint = 1, tnames
-  ans(aint) = obj%dof_names_char(aint)
-END DO
+  DO aint = 1, tnames
+    ans(aint) = obj%dof_names_char(aint)
+  END DO
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetPhysicalNames
 
@@ -123,41 +125,43 @@ END PROCEDURE obj_GetPhysicalNames
 
 MODULE PROCEDURE obj_GetTotalPhysicalVars
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
-INTEGER(I4B) :: tnames
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
+  INTEGER(I4B) :: tnames
+  LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: aint
+  INTEGER(I4B) :: aint
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-ans = 0
+  ans = 0
 
 #ifdef DEBUG_VER
-isok = ALLOCATED(obj%dof_names_char)
-CALL AssertError1(isok, myName, &
-                  'AbstractNodeField_::obj%dof_names_char is not allocated.')
+  isok = ALLOCATED(obj%dof_names_char)
+  CALL AssertError1(isok, myName, &
+                    'AbstractNodeField_::obj%dof_names_char is not ' // &
+                    'allocated.')
 #endif
 
-aint = obj%dof_tPhysicalVars
+  aint = obj%dof_tPhysicalVars
 
 #ifdef DEBUG_VER
-tnames = SIZE(obj%dof_names_char)
-isok = tnames .EQ. aint
-CALL AssertError1( &
-  isok, myName, 'The size of names ('//ToString(tnames)// &
-  ') is not same as total physical variables = '//ToString(aint))
+  tnames = SIZE(obj%dof_names_char)
+  isok = tnames .EQ. aint
+  CALL AssertError1(isok, myName, &
+                    'The size of names (' // ToString(tnames) // &
+                    ') is not same as total physical variables = ' // &
+                    ToString(aint))
 #endif
 
-ans = aint
+  ans = aint
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTotalPhysicalVars
 
@@ -167,39 +171,40 @@ END PROCEDURE obj_GetTotalPhysicalVars
 
 MODULE PROCEDURE obj_GetSpaceCompo
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
-INTEGER(I4B) :: tnames
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalPhysicalVars()"
+  INTEGER(I4B) :: tnames
+  LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: aint
+  INTEGER(I4B) :: aint
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-isok = ALLOCATED(obj%dof_spaceCompo)
-CALL AssertError1(isok, myName, &
-                  'AbstractNodeField_::obj%spaceCompo not allocated.')
+  isok = ALLOCATED(obj%dof_spaceCompo)
+  CALL AssertError1(isok, myName, &
+                    'AbstractNodeField_::obj%spaceCompo not allocated.')
 #endif
 
-aint = tPhysicalVars
+  aint = tPhysicalVars
 
 #ifdef DEBUG_VER
-tnames = SIZE(obj%dof_spaceCompo)
-isok = tnames .EQ. aint
-CALL AssertError1( &
-  isok, myName, 'The size of spaceCompo ('//ToString(tnames)// &
-  ') is not same as total physical variables = '//ToString(aint))
+  tnames = SIZE(obj%dof_spaceCompo)
+  isok = tnames .EQ. aint
+  CALL AssertError1(isok, myName, &
+                    'The size of spaceCompo (' // ToString(tnames) // &
+                    ') is not same as total physical variables = ' // &
+                    ToString(aint))
 #endif
 
-ans(1:aint) = obj%dof_spaceCompo(1:aint)
+  ans(1:aint) = obj%dof_spaceCompo(1:aint)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetSpaceCompo
 
@@ -209,39 +214,40 @@ END PROCEDURE obj_GetSpaceCompo
 
 MODULE PROCEDURE obj_GetTimeCompo
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo()"
-INTEGER(I4B) :: tnames
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTimeCompo()"
+  INTEGER(I4B) :: tnames
+  LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: aint
+  INTEGER(I4B) :: aint
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-isok = ALLOCATED(obj%dof_timeCompo)
-CALL AssertError1(isok, myName, &
-                  'AbstractNodeField_::obj%timeCompo not allocated.')
+  isok = ALLOCATED(obj%dof_timeCompo)
+  CALL AssertError1(isok, myName, &
+                    'AbstractNodeField_::obj%timeCompo not allocated.')
 #endif
 
-aint = tPhysicalVars
+  aint = tPhysicalVars
 
 #ifdef DEBUG_VER
-tnames = SIZE(obj%dof_timeCompo)
-isok = tnames .EQ. aint
-CALL AssertError1( &
-  isok, myName, 'The size of timeCompo ('//ToString(tnames)// &
-  ') is not same as total physical variables = '//ToString(aint))
+  tnames = SIZE(obj%dof_timeCompo)
+  isok = tnames .EQ. aint
+  CALL AssertError1(isok, myName, &
+                    'The size of timeCompo (' // ToString(tnames) // &
+                    ') is not same as total physical variables = ' // &
+                    ToString(aint))
 #endif
 
-ans(1:aint) = obj%dof_timeCompo(1:aint)
+  ans(1:aint) = obj%dof_timeCompo(1:aint)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetTimeCompo
 
@@ -251,19 +257,19 @@ END PROCEDURE obj_GetTimeCompo
 
 MODULE PROCEDURE obj_GetPointer
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPointer()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetPointer()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-ans => RealVector_GetPointer(obj%realVec)
+  ans => RealVector_GetPointer(obj%realVec)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetPointer
 
@@ -273,19 +279,19 @@ END PROCEDURE obj_GetPointer
 
 MODULE PROCEDURE obj_Size
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Size()"
+  CHARACTER(*), PARAMETER :: myName = "obj_Size()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-ans = obj%tSize
+  ans = obj%tSize
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_Size
 
@@ -295,19 +301,19 @@ END PROCEDURE obj_Size
 
 MODULE PROCEDURE obj_GetSingle
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetSingle()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetSingle()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-VALUE = RealVector_Get(obj=obj%realVec, nodenum=indx, dataType=math%one)
+  VALUE = RealVector_Get(obj=obj%realVec, nodenum=indx, dataType=math%one)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetSingle
 
@@ -317,19 +323,19 @@ END PROCEDURE obj_GetSingle
 
 MODULE PROCEDURE obj_GetMultiple1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple1()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple1()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL GetValue_(obj=obj%realVec, nodenum=indx, VALUE=VALUE, tsize=tsize)
+  CALL GetValue_(obj=obj%realVec, nodenum=indx, VALUE=VALUE, tsize=tsize)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetMultiple1
 
@@ -339,20 +345,20 @@ END PROCEDURE obj_GetMultiple1
 
 MODULE PROCEDURE obj_GetMultiple2
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple2()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple2()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
-               VALUE=VALUE, tsize=tsize)
+  CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+                 VALUE=VALUE, tsize=tsize)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetMultiple2
 
@@ -362,22 +368,21 @@ END PROCEDURE obj_GetMultiple2
 
 MODULE PROCEDURE obj_GetMultiple3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple3()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple3()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL GetValue_( &
-  obj=obj%realVec, istart=istart, iend=iend, stride=stride, VALUE=VALUE, &
-  tsize=tsize, istart_value=istart_value, iend_value=iend_value, &
-  stride_value=stride_value)
+  CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+                 VALUE=VALUE, tsize=tsize, istart_value=istart_value, &
+                 iend_value=iend_value, stride_value=stride_value)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_GetMultiple3
 
