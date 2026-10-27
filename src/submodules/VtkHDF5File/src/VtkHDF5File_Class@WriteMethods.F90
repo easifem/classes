@@ -187,7 +187,7 @@ MODULE PROCEDURE obj_EndStep
 
   obj%nSteps = obj%nSteps + 1
 
-  ! Geometry of the step
+! Geometry of the step
   CALL obj%Append(_STEPS_ // "PartOffsets", [obj%partOffset])
   CALL obj%Append(_STEPS_ // "NumberOfParts", [1_I4B])
   CALL obj%Append(_STEPS_ // "PointOffsets", [obj%pointOffset])
@@ -254,7 +254,7 @@ MODULE PROCEDURE obj_WritePointData1
 #endif
 
   ncomp = 1
-  ntuples = SIZE(vals)
+  ntuples = SIZE(VALUE)
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsInitiated(), myName, &
@@ -273,7 +273,7 @@ MODULE PROCEDURE obj_WritePointData1
                     "number of tuples of " // NAME // " and nPoints")
 #endif
 
-  ! Nothing is written in a step which is skipped by frequency
+! Nothing is written in a step which is skipped by frequency
   IF (obj%isTransient .AND. obj%isSkipped) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -282,7 +282,7 @@ MODULE PROCEDURE obj_WritePointData1
     RETURN
   END IF
 
-  CALL obj%Append(_ROOT_ // "PointData/" // NAME, vals, offset)
+  CALL obj%Append(_ROOT_ // "PointData/" // NAME, VALUE, offset)
   CALL obj%RegisterArray(_LOC_POINT_, NAME, offset, ncomp, ntuples)
 
 #ifdef DEBUG_VER
@@ -306,8 +306,8 @@ MODULE PROCEDURE obj_WritePointData2
                           '[START] ')
 #endif
 
-  ncomp = SIZE(vals, 1)
-  ntuples = SIZE(vals, 2)
+  ncomp = SIZE(VALUE, 1)
+  ntuples = SIZE(VALUE, 2)
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsInitiated(), myName, &
@@ -326,7 +326,7 @@ MODULE PROCEDURE obj_WritePointData2
                     "number of tuples of " // NAME // " and nPoints")
 #endif
 
-  ! Nothing is written in a step which is skipped by frequency
+! Nothing is written in a step which is skipped by frequency
   IF (obj%isTransient .AND. obj%isSkipped) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
@@ -340,7 +340,7 @@ MODULE PROCEDURE obj_WritePointData2
     RETURN
   END IF
 
-  CALL obj%Append(_ROOT_ // "PointData/" // NAME, vals, offset)
+  CALL obj%Append(_ROOT_ // "PointData/" // NAME, VALUE, offset)
   CALL obj%RegisterArray(_LOC_POINT_, NAME, offset, ncomp, ntuples)
 
 #ifdef DEBUG_VER
@@ -384,7 +384,7 @@ MODULE PROCEDURE obj_WriteCellData1
                     "number of tuples of " // NAME // " and nCells")
 #endif
 
-  ! Nothing is written in a step which is skipped by frequency
+! Nothing is written in a step which is skipped by frequency
   IF (obj%isTransient .AND. obj%isSkipped) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -437,7 +437,7 @@ MODULE PROCEDURE obj_WriteCellData2
                     "number of tuples of " // NAME // " and nCells")
 #endif
 
-  ! Nothing is written in a step which is skipped by frequency
+! Nothing is written in a step which is skipped by frequency
   IF (obj%isTransient .AND. obj%isSkipped) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -487,7 +487,7 @@ MODULE PROCEDURE obj_WriteFieldData
   END IF
 #endif
 
-  ! Nothing is written in a step which is skipped by frequency
+! Nothing is written in a step which is skipped by frequency
   IF (obj%isTransient .AND. obj%isSkipped) THEN
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -496,7 +496,7 @@ MODULE PROCEDURE obj_WriteFieldData
     RETURN
   END IF
 
-  ! vals is one tuple with ncomp components
+! vals is one tuple with ncomp components
   CALL obj%Append(_ROOT_ // "FieldData/" // NAME, &
                   RESHAPE(vals, [ncomp, 1]), offset)
   CALL obj%RegisterArray(_LOC_FIELD_, NAME, offset, ncomp, 1)

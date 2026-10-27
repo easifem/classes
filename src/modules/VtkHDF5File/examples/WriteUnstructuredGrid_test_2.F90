@@ -3,8 +3,12 @@
 ! summary: Write a Lagrange grid and a field
 
 PROGRAM main
+  USE AbstractMesh_Class, ONLY: AbstractMesh_
   USE ApproxUtility, ONLY: SoftEq
   USE BaseType, ONLY: math => TypeMathOpt
+  USE BaseType, ONLY: TypeFileOpt
+  USE BaseType, ONLY: TypeFEVariableOpt
+  USE BaseType, ONLY: InterfaceScalarSubroutine
   USE Display_Method, ONLY: Display
   USE ExceptionHandler_Class, ONLY: e
   USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
@@ -16,6 +20,7 @@ PROGRAM main
   USE GlobalData, ONLY: INT8
   USE ScalarField_Class, ONLY: ScalarField_
   USE Test_Method, ONLY: OK
+  USE UserFunction_Class, ONLY: UserFunction_
   USE VtkHDF5File_Class, ONLY: VtkHDF5File_
   IMPLICIT NONE
   CHARACTER(*), PARAMETER :: tomlFileName = "VtkHDF5File_test.toml", &
@@ -24,13 +29,24 @@ PROGRAM main
   TYPE(FEDOF_) :: fedof, geofedof
   TYPE(ScalarField_) :: u
   TYPE(VtkHDF5File_) :: obj
-  REAL(DFP), ALLOCATABLE :: vals(:, :)
+  CLASS(AbstractMesh_), POINTER :: mesh
+  REAL(DFP), ALLOCATABLE :: VALUE(:)
   INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
   INTEGER(INT8), ALLOCATABLE :: types(:)
   REAL(DFP), ALLOCATABLE :: points(:, :)
+  TYPE(UserFunction_) :: func
+  PROCEDURE(InterfaceScalarSubroutine), POINTER :: procptr
 
   CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+
+! make user function
+  CALL func%Initiate(NAME="func1", returnType=TypeFEVariableOpt%scalar, &
+                     argType=TypeFEVariableOpt%space, numArgs=4, &
+                     numReturns=1)
+
+  procptr => scalarFunc2
+  CALL func%SetScalarFunctionPointer(func=procptr)
 
 ! import domain
   CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
@@ -39,7 +55,8 @@ PROGRAM main
   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                         filename=tomlFileName, tomlName="u")
 
-! CALL u%Set(VALUE=2.0_DFP)
+  CALL u%Set(0.0_DFP)
+  CALL u%SetByFunction(func=func)
 
 ! Get grid connectivity
   CALL u%GetVtkUnstructuredGridData(points=points, &
@@ -117,18 +134,26 @@ PROGRAM main
 
   END BLOCK
 
-! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
-!                          vtkType="UnstructuredGrid")
-! CALL obj%WriteMesh(fedof=fedof, geofedof=geofedof)
-! CALL obj%WritePointData(NAME="u", field=u)
-! CALL obj%DEALLOCATE()
-! CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
-!                          vtkType="UnstructuredGrid")
-! CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
-!                   types=types)
-! CALL OK(ALL(types .EQ. 22_INT8), "WriteMesh2: VTK_QUADRATIC_TRIANGLE")
-! CALL obj%ReadPointData(NAME="u", vals=vals)
-! CALL OK(MAXVAL(ABS(vals - 2.0_DFP)) .LT. 1.0E-10_DFP, "WriteMesh2: u")
+  CALL u%GetVtkUnstructuredValue(VALUE=VALUE)
+
+  CALL OK(ALLOCATED(VALUE), "value allocated: ")
+  IF (ALLOCATED(VALUE)) THEN
+    CALL ok(SIZE(VALUE) .EQ. 32, "size of value: ")
+  END IF
+
+  CALL obj%InitiateVTKHDF5(filename=filename, mode=TypeFileOpt%new, &
+                           vtkType="UnstructuredGrid")
+
+  CALL obj%WriteUnstructuredGrid(points, connectivity, offsets, types)
+  CALL obj%WritePointData(NAME="u", VALUE=VALUE)
+
+  BLOCK
+    REAL(DFP) :: found(16)
+
+    found = VALUE(1:16)
+    CALL Display(found, "value for iel=1", full=math%yes)
+
+  END BLOCK
 
 ! clean stuff
   CALL obj%DEALLOCATE()
@@ -136,4 +161,12 @@ PROGRAM main
   CALL fedof%DEALLOCATE()
   CALL geofedof%DEALLOCATE()
   CALL dom%DEALLOCATE()
+
+CONTAINS
+  SUBROUTINE scalarFunc2(args, nargs, ans)
+    REAL(DFP), INTENT(IN) :: args(:)
+    INTEGER(I4B), INTENT(IN) :: nargs
+    REAL(DFP), INTENT(INOUT) :: ans
+    ans = args(1)
+  END SUBROUTINE scalarFunc2
 END PROGRAM main

@@ -45,6 +45,7 @@ USE RealVector_Method, ONLY: GetValue_
 USE RealVector_Method, ONLY: Get
 USE RealVector_Method, ONLY: GetValue
 USE ReferenceElement_Method, ONLY: GetVTKElementTypeFromTopology_
+USE ReferenceElement_Method, ONLY: RefElementGetTotalNodes => GetTotalNodes
 
 IMPLICIT NONE
 
@@ -315,54 +316,28 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue1
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue1()"
 #endif
-  CLASS(AbstractMesh_), POINTER :: mesh
   REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), &
     elemCoord(:, :), nodalValue(:)
   INTEGER(I4B), ALLOCATABLE :: vtkindx(:), fecon(:)
-  INTEGER(I4B) :: tElements, iel, ii, nn, nPoints, &
-    ip0, ic0, maxNNE, maxCon, cellOrder(3), &
-    ipType(3), topo, nrow, ncol, xrow, xcol, crow, ccol, &
-    tsol, tsize
-  INTEGER(INT8) :: vtktype
-  LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: tElements, maxNNE, maxCon, tsize
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
 
-  mesh => obj%fedof%GetMeshPointer()
-  tElements = mesh%GetTotalElements()
+  tElements = obj%fedof%GetTotalCells()
   maxNNE = obj%geofedof%GetMaxTotalConnectivity()
   maxCon = obj%fedof%GetMaxTotalConnectivity()
-  ipType = TypeInterpolationOpt%equidistance
-
-  tsize = 0
-  loop1: DO iel = 1, tElements
-
-    isok = mesh%isElementActive(globalElement=iel, &
-                                islocal=math%yes)
-    IF (.NOT. isok) CYCLE loop1
-
-    ! TODO: Remove the following call
-    !       Get nn from mesh
-    CALL obj%fedof%GetCellOrder(ans=cellOrder, tsize=tsize, &
-                                globalElement=iel, islocal=math%yes)
-    topo = mesh%GetElemTopology(globalElement=iel, islocal=math%yes)
-    CALL GetVTKElementTypeFromTopology_(topoType=topo, &
-                                        order=cellOrder(1), &
-                                        vtk_type=vtktype, &
-                                        nptrs=vtkindx, tsize=nn)
-    tsize = tsize + nn
-  END DO loop1
+  tsize = obj%fedof%GetSumElemTotalDOF()
 
   CALL Reallocate(VALUE, tsize)
   CALL Reallocate(nodalValue, maxCon)
   CALL Reallocate(fecon, maxCon)
+  CALL Reallocate(vtkindx, maxCon)
   CALL Reallocate(xij, 4, maxCon)
   CALL Reallocate(refElemCoord, 3, maxNNE)
   CALL Reallocate(elemCoord, 3, maxNNE)
-  CALL Reallocate(vtkindx, maxNNE)
 
   CALL obj%GetVtkUnstructuredValue(VALUE=VALUE, &
                                    tsize=tsize, &
@@ -372,7 +347,6 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue1
                                    fecon=fecon, &
                                    vtkindx=vtkindx)
 
-  NULLIFY(mesh)
   IF (ALLOCATED(nodalValue)) DEALLOCATE(nodalValue)
   IF (ALLOCATED(fecon)) DEALLOCATE(fecon)
   IF (ALLOCATED(xij)) DEALLOCATE(xij)
@@ -404,7 +378,7 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue2
   INTEGER(I4B) :: tElements, iel, ii, nn, &
     ip0, ic0, maxNNE, maxCon, cellOrder(3), &
     ipType(3), topo, nrow, ncol, xrow, xcol, crow, ccol, &
-    nodalValue_size
+    nodalValue_size, tfecon
   INTEGER(INT8) :: vtktype
   LOGICAL(LGT) :: isok
 
@@ -412,9 +386,6 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue2
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[START] ')
 #endif
-
-! isGrid = PRESENT(points)
-! isValue = PRESENT(field)
 
   fedof => obj%fedof
   geofedof => obj%geofedof
@@ -425,8 +396,8 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue2
   ipType = TypeInterpolationOpt%equidistance
 
 #ifdef DEBUG_VER
-  CALL AssertError3(maxNNE, SIZE(vtkindx), myName, &
-                    "a=maxNNE, b=size(vtkindx)")
+  CALL AssertError3(maxCon, SIZE(vtkindx), myName, &
+                    "a=maxCon, b=size(vtkindx)")
 
   CALL AssertError3(maxCon, SIZE(nodalValue), myName, &
                     "a=maxCon, b=size(nodalValue)")
@@ -457,35 +428,8 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue2
   refElemCoord = math%zero
   elemCoord = math%zero
 
-! First pass: count points and cells
-! TODO: cache the totalActiveElements in mesh
-  tsize = 0
-
-  loop1: DO iel = 1, tElements
-    isok = mesh%isElementActive(globalElement=iel, &
-                                islocal=math%yes)
-    IF (.NOT. isok) CYCLE loop1
-
-    topo = mesh%GetElemTopology(globalElement=iel, islocal=math%yes)
-    CALL fedof%GetCellOrder(ans=cellOrder, tsize=ii, &
-                            globalElement=iel, islocal=math%yes)
-
-    ! TODO: Remove the following call
-    !       Get TotalNodes from topology and order
-    !       This method currently does not exist in
-    !       ReferenceElement_Method
-    CALL GetVTKElementTypeFromTopology_(topoType=topo, &
-                                        order=cellOrder(1), &
-                                        vtk_type=vtktype, &
-                                        nptrs=vtkindx, tsize=nn)
-
-#ifdef DEBUG_VER
-    isok = vtktype .GE. 0_INT8
-    CALL AssertError1(isok, myName, &
-                      "found negative vtktype")
-#endif
-    tsize = tsize + nn
-  END DO loop1
+! lazy compute and cached
+  tsize = obj%fedof%GetSumElemTotalDOF()
 
 !check size of value
 #ifdef DEBUG_VER
@@ -504,7 +448,6 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue2
     IF (.NOT. isok) CYCLE loop2
 
     ! get vtk element info
-    ! CALL GetCellType(iel, vtktype, nn)
     CALL fedof%GetCellOrder(ans=cellOrder, tsize=ii, &
                             globalElement=iel, islocal=math%yes)
     cellOrder(2:3) = cellOrder(1)
@@ -550,18 +493,21 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue2
     CALL feptr%GetGlobalElemShapeData2(elemsd=elemsd, &
                                        geoelemsd=geoelemsd, &
                                        xij=elemCoord(1:crow, 1:ccol), &
-                                       quad=quad, geofeptr=geofeptr)
+                                       quad=quad, geofeptr=geofeptr, &
+                                       doNotInitQuad=math%yes)
 
     ! get the connectivity of obj
-    CALL fedof%GetConnectivity_(ans=fecon, tsize=nodalValue_size, opt="A", &
+    CALL fedof%GetConnectivity_(ans=fecon, tsize=tfecon, opt="A", &
                                 globalElement=iel, islocal=math%yes)
 
     ! TODO: Instead of calling  GetGlobalElemShapeData2 above
     !       we can call GetLocalElemShapeData
     !       then we will fix orientation of fecon
     !
-    CALL obj%Get(VALUE=nodalValue, globalNode=fecon(1:nodalValue_size), &
-                 islocal=math%yes, tsize=ii)
+    CALL obj%Get(VALUE=nodalValue, globalNode=fecon(1:tfecon), &
+                 islocal=math%yes, tsize=nodalValue_size)
+
+    ! check tfecon and nodalValue_size should be same
 
     VALUE(ip0 + 1:ip0 + nn) = MATMUL(nodalValue(1:nodalValue_size), &
                                      elemsd%N(1:nodalValue_size, 1:nn))

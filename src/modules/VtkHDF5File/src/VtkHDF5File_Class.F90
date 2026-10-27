@@ -661,8 +661,8 @@ END INTERFACE
 ! CALL OK(obj%GetTotalPoints() .EQ. nPoints, "GetTotalPoints")
 ! CALL OK(obj%GetTotalCells() .EQ. nCells, "GetTotalCells")
 ! CALL OK(obj%IsOutputStep(), "IsOutputStep: not transient")
-! CALL obj%WritePointData(name="x", vals=points)
-! CALL obj%WritePointData(name="xcoord", vals=points(1, :))
+! CALL obj%WritePointData(name="x", VALUE=points)
+! CALL obj%WritePointData(name="xcoord", VALUE=points(1, :))
 ! CALL obj%WriteCellData(name="id", vals=cellIds)
 ! CALL obj%WriteFieldData(name="energy", vals=[1.5_DFP, 2.5_DFP])
 ! CALL obj%DEALLOCATE()
@@ -789,7 +789,7 @@ END INTERFACE
 !   CALL obj%BeginStep(time=0.1_DFP * istep)
 !   IF (obj%IsOutputStep()) THEN
 !     u = REAL(istep, DFP)
-!     CALL obj%WritePointData(name="u", vals=u)
+!     CALL obj%WritePointData(name="u", VALUE=u)
 !   END IF
 !   CALL obj%EndStep()
 ! END DO
@@ -873,18 +873,18 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - values, SIZE(vals) = GetTotalPoints()
+!   VALUE : REAL(DFP) - values, SIZE(VALUE) = GetTotalPoints()
 !
 ! See also: [[obj_BeginStep]] (contains an example),
 ! [[obj_WritePointData2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_WritePointData1(obj, name, vals)
+  MODULE SUBROUTINE obj_WritePointData1(obj, name, VALUE)
     CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
-    REAL(DFP), INTENT(IN) :: vals(:)
+    REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values at points
   END SUBROUTINE obj_WritePointData1
 END INTERFACE
@@ -912,18 +912,18 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalPoints())
+!   VALUE : REAL(DFP) - SIZE(VALUE) = (nComp, GetTotalPoints())
 !
 ! See also: [[obj_WritePointData1]], [[obj_BeginStep]] (contains an
 ! example)
 
 INTERFACE
-  MODULE SUBROUTINE obj_WritePointData2(obj, name, vals)
+  MODULE SUBROUTINE obj_WritePointData2(obj, name, VALUE)
     CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
-    REAL(DFP), INTENT(IN) :: vals(:, :)
+    REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! values at points, shape (nComp, nPoints)
   END SUBROUTINE obj_WritePointData2
 END INTERFACE

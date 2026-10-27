@@ -66,16 +66,16 @@ CONTAINS
                       quadratureIsOrder=math%yes)
 
     found = obj%GetSumElemTotalDOF()
-    CALL OK(found .EQ. nloc * telems, msg // "nloc * telems")
+    CALL OK(found == nloc * telems, msg // "nloc * telems")
 
     want = 0
     DO iel = 1, telems
       want = want + obj%GetTotalDOF(globalElement=iel, islocal=math%yes)
     END DO
-    CALL OK(found .EQ. want, msg // "sum of GetTotalDOF")
+    CALL OK(found == want, msg // "sum of GetTotalDOF")
 
     found = obj%GetSumElemTotalDOF()
-    CALL OK(found .EQ. want, msg // "cached value")
+    CALL OK(found == want, msg // "cached value")
 
   END SUBROUTINE test
 

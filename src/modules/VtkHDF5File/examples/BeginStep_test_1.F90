@@ -43,7 +43,7 @@ PROGRAM main
     CALL obj%BeginStep(time=0.1_DFP * istep)
     IF (obj%IsOutputStep()) THEN
       u = REAL(istep, DFP)
-      CALL obj%WritePointData(NAME="u", vals=u)
+      CALL obj%WritePointData(NAME="u", VALUE=u)
     END IF
     CALL obj%EndStep()
   END DO

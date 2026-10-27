@@ -44,11 +44,11 @@ PROGRAM main
   CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-  CALL meshfile%Initiate(filename=meshname, mode=TypeFileOpt%read)
+  CALL meshfile%Initiate(filename=meshname, mode=TypeFileOpt%READ)
   CALL meshfile%OPEN()
   CALL amesh%Initiate(hdf5=meshfile, DIM=2)
 
-  ! grid of the mesh
+! grid of the mesh
   CALL amesh%GetVtkUnstructuredGridData(points=points, &
                                         connectivity=conn, &
                                         offsets=offsets, types=types)
@@ -57,7 +57,7 @@ PROGRAM main
   nIds = SIZE(conn)
   cellIds = [(REAL(ii, DFP), ii=1, nCells)]
 
-  ! write a static grid with point, cell and field data
+! write a static grid with point, cell and field data
   CALL obj%InitiateVTKHDF5(filename=filename, mode=TypeFileOpt%new, &
                            vtkType="UnstructuredGrid")
   CALL obj%WriteUnstructuredGrid(points=points, connectivity=conn, &
@@ -65,13 +65,13 @@ PROGRAM main
   CALL OK(obj%GetTotalPoints() .EQ. nPoints, "GetTotalPoints")
   CALL OK(obj%GetTotalCells() .EQ. nCells, "GetTotalCells")
   CALL OK(obj%IsOutputStep(), "IsOutputStep: not transient")
-  CALL obj%WritePointData(NAME="x", vals=points)
-  CALL obj%WritePointData(NAME="xcoord", vals=points(1, :))
+  CALL obj%WritePointData(NAME="x", VALUE=points)
+  CALL obj%WritePointData(NAME="xcoord", VALUE=points(1, :))
   CALL obj%WriteCellData(NAME="id", vals=cellIds)
   CALL obj%WriteFieldData(NAME="energy", vals=[1.5_DFP, 2.5_DFP])
   CALL obj%DEALLOCATE()
 
-  ! read the datasets back
+! read the datasets back
   CALL h5%Initiate(filename=filename, mode="READ")
   CALL h5%OPEN()
 
