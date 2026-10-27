@@ -21,35 +21,35 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 isOpen
+!                                                                     IsOpen
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isOpen
-ans = obj%openStat
-END PROCEDURE aFile_isOpen
+MODULE PROCEDURE obj_IsOpen
+  ans = obj%openStat
+END PROCEDURE obj_IsOpen
 
 !----------------------------------------------------------------------------
-!                                                                 isEOF
+!                                                                      IsEOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isEOF
-ans = obj%eofStat
-END PROCEDURE aFile_isEOF
+MODULE PROCEDURE obj_IsEOF
+  ans = obj%eofStat
+END PROCEDURE obj_IsEOF
 
 !----------------------------------------------------------------------------
-!                                                                 isWrite
+!                                                                    IsWrite
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isWrite
-ans = obj%writeStat
-END PROCEDURE aFile_isWrite
+MODULE PROCEDURE obj_IsWrite
+  ans = obj%writeStat
+END PROCEDURE obj_IsWrite
 
 !----------------------------------------------------------------------------
-!                                                                 isRead
+!                                                                     IsRead
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isRead
-ans = obj%readStat
-END PROCEDURE aFile_isRead
+MODULE PROCEDURE obj_IsRead
+  ans = obj%readStat
+END PROCEDURE obj_IsRead
 
 END SUBMODULE EnquireMethods

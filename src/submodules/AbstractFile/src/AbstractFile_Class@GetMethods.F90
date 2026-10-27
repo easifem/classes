@@ -21,37 +21,37 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                              getFileParts
+!                                                               GetFileParts
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_getFileParts
-path = obj%path
-fileName = obj%fileName
-ext = obj%ext
-END PROCEDURE aFile_getFileParts
+MODULE PROCEDURE obj_GetFileParts
+  path = obj%path
+  fileName = obj%fileName
+  ext = obj%ext
+END PROCEDURE obj_GetFileParts
 
 !----------------------------------------------------------------------------
-!                                                                getFilePath
+!                                                                GetFilePath
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_getFilePath
-path = obj%path
-END PROCEDURE aFile_getFilePath
+MODULE PROCEDURE obj_GetFilePath
+  path = obj%path
+END PROCEDURE obj_GetFilePath
 
 !----------------------------------------------------------------------------
-!                                                                getFileName
+!                                                                GetFileName
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_getFileName
-fileName = obj%fileName
-END PROCEDURE aFile_getFileName
+MODULE PROCEDURE obj_GetFileName
+  fileName = obj%fileName
+END PROCEDURE obj_GetFileName
 
 !----------------------------------------------------------------------------
-!                                                                getFileExt
+!                                                                 GetFileExt
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_getFileExt
-ext = obj%ext
-END PROCEDURE aFile_getFileExt
+MODULE PROCEDURE obj_GetFileExt
+  ext = obj%ext
+END PROCEDURE obj_GetFileExt
 
 END SUBMODULE GetMethods
