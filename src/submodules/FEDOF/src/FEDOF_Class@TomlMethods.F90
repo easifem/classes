@@ -19,12 +19,12 @@
 
 SUBMODULE(FEDOF_Class) TomlMethods
 USE Display_Method, ONLY: Display, ToString
-USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value
-USE String_Class, ONLY: String
 USE FEFactoryUtility, ONLY: FEFactory
-USE ReferenceElement_Method, ONLY: GetElementIndex
 USE ReallocateUtility, ONLY: Reallocate
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE String_Class, ONLY: String
+USE tomlf, ONLY: toml_get => get_value
+USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -109,7 +109,7 @@ SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
   LOGICAL(LGT), INTENT(OUT) :: isFound
 
   ! Internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ImportOrderFromToml()"
@@ -127,7 +127,7 @@ SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
 
   ! islocal
   CALL GetValue(table=table, key="islocal", VALUE=islocal, &
-                default_value=math%no, origin=origin, stat=stat, &
+                default_value=math%no, origin=origin, STAT=STAT, &
                 isFound=isFound)
 
 #ifdef DEBUG_VER
@@ -137,7 +137,7 @@ SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
 
   ! order
   CALL GetValue(table=table, key="order", VALUE=order, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -154,7 +154,7 @@ SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat, scaleForQuadOrder
+  INTEGER(I4B) :: origin, STAT, scaleForQuadOrder
   LOGICAL(LGT) :: isFound
   INTEGER(I4B), PARAMETER :: default_value = 1
 
@@ -169,7 +169,7 @@ SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
 
   CALL GetValue(table=table, key="scaleForQuadOrder", &
                 VALUE=scaleForQuadOrder, default_value=default_value, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
   IF (.NOT. isFound) THEN
@@ -198,7 +198,7 @@ MODULE PROCEDURE obj_ImportFromToml2
 
   TYPE(toml_table), ALLOCATABLE :: table
   TYPE(toml_table), POINTER :: node
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -209,7 +209,7 @@ MODULE PROCEDURE obj_ImportFromToml2
 
   node => NULL()
   CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)

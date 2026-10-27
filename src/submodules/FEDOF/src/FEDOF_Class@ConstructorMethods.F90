@@ -18,9 +18,13 @@
 !
 
 SUBMODULE(FEDOF_Class) ConstructorMethods
-USE InputUtility, ONLY: Input
+USE AbstractFE_Class, ONLY: AbstractFEDeallocate
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE Display_Method, ONLY: ToString
-USE ReallocateUtility, ONLY: Reallocate
+USE Display_Method, ONLY: Display
 USE ElemData_Class, ONLY: ElemData_
 USE ElemData_Class, ONLY: ElemData_GetTotalEntities
 USE ElemData_Class, ONLY: ElemData_GetEdge
@@ -29,15 +33,11 @@ USE ElemData_Class, ONLY: ElemData_GetCell
 USE ElemData_Class, ONLY: ElemData_GetTotalEdgeDOF
 USE ElemData_Class, ONLY: ElemData_GetTotalFaceDOF
 USE ElemData_Class, ONLY: ElemData_GetTotalCellDOF
-USE StringUtility, ONLY: UpperCase
-USE AbstractFE_Class, ONLY: AbstractFEDeallocate
-USE BaseType, ONLY: TypeInterpolationOpt
-USE BaseType, ONLY: TypePolynomialOpt
-USE BaseType, ONLY: math => TypeMathOpt
-USE ReferenceElement_Method, ONLY: GetElementIndex
-USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE FEFactoryUtility, ONLY: FEFactory
-USE Display_Method, ONLY: Display
+USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE StringUtility, ONLY: UpperCase
 
 IMPLICIT NONE
 
@@ -312,10 +312,10 @@ MODULE PROCEDURE obj_SetOrdersFromCellOrder
 
 ! Check it all valid ElemDataPointer are associated
 #ifdef DEBUG_VER
-  DO iel = 1, obj%tCells
+  loop1: DO iel = 1, obj%tCells
 
     isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, &
                                             islocal=math%yes)
@@ -323,7 +323,7 @@ MODULE PROCEDURE obj_SetOrdersFromCellOrder
     isok = ASSOCIATED(elemdata)
     CALL AssertError1(isok, myName, 'elemdata is not allocated')
 
-  END DO
+  END DO loop1
 #endif
 
   cellLoop: DO iel = 1, obj%tCells
@@ -455,6 +455,7 @@ MODULE PROCEDURE obj_Deallocate
   obj%isLagrange = math%no
   obj%isMaxConSet = math%no
   obj%isMaxQuadPointSet = math%no
+  obj%isSumElemTotalDOFSet = math%no
 
   obj%tdof = 0
   obj%tNodes = 0
@@ -463,6 +464,7 @@ MODULE PROCEDURE obj_Deallocate
   obj%tCells = 0
   obj%maxCon = 0
   obj%maxQuadPoint = 0
+  obj%sumElemTotalDOF = 0
 
   obj%baseContinuity = "H1"
   obj%baseInterpolation = "LAGR"
@@ -516,6 +518,7 @@ MODULE PROCEDURE obj_Copy
   obj%isInit = obj2%isInit
   obj%isMaxConSet = obj2%isMaxConSet
   obj%isMaxQuadPointSet = obj2%isMaxQuadPointSet
+  obj%isSumElemTotalDOFSet = obj2%isSumElemTotalDOFSet
 
   obj%tdof = obj2%tdof
   obj%tNodes = obj2%tNodes
@@ -524,6 +527,7 @@ MODULE PROCEDURE obj_Copy
   obj%tCells = obj2%tCells
   obj%maxCon = obj2%maxCon
   obj%maxQuadPoint = obj2%maxQuadPoint
+  obj%sumElemTotalDOF = obj2%sumElemTotalDOF
 
   obj%baseContinuity = obj2%baseContinuity
   obj%baseInterpolation = obj2%baseInterpolation

@@ -77,15 +77,17 @@ REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
 
 TYPE :: FEDOF_
   PRIVATE
-  LOGICAL(LGT) :: isLagrange = .FALSE.
+  LOGICAL(LGT) :: isLagrange = math%no
   !! It is true when baseInterpolation is Lagrange
-  LOGICAL(LGT) :: isinit = .FALSE.
+  LOGICAL(LGT) :: isinit = math%no
   !! It is set to true when FEDOF is initiated
-  LOGICAL(LGT) :: isMaxConSet = .FALSE.
+  LOGICAL(LGT) :: isMaxConSet = math%no
   !! It is set to true when maxCon is set in GetMaxTotalConnectivity
-  LOGICAL(LGT) :: isMaxQuadPointSet = .FALSE.
+  LOGICAL(LGT) :: isMaxQuadPointSet = math%no
   !! It is set to true when maxQuadPoint is set in
   !! GetMaxTotalQuadraturePoints
+  LOGICAL(LGT) :: isSumElemTotalDOFSet = math%no
+  !! It is set to true when we set sumElemTotalDOF, Lazy computing
   INTEGER(I4B) :: tdof = 0
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = 0
@@ -98,6 +100,10 @@ TYPE :: FEDOF_
   !! Total number of cells
   INTEGER(I4B) :: maxCon = 0
   !! maximum number of connectivity
+  INTEGER(I4B) :: sumElemTotalDOF = 0
+  !! sum of total  degrees of freedom for each element.
+  !! this is useful for DGM
+  !! This is cached when we initiate the FEDOF
   INTEGER(I4B) :: maxQuadPoint = 0
   !! maximum number of quadrature points
   CHARACTER(2) :: baseContinuity = "H1"
@@ -284,6 +290,8 @@ CONTAINS
   !! Get the number of quadrature points of the elements
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
   !! Get the finite element of an element
+  PROCEDURE, PUBLIC, PASS(obj) :: GetSumElemTotalDOF => obj_GetSumElemTotalDOF
+  !! Sum of the total DOFs of all active elements (cached)
 
   !@SetSparsityMethods
   PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
@@ -1388,7 +1396,7 @@ END INTERFACE
 !   TYPE(HDF5File_) :: meshfile
 !   INTEGER(I4B) :: found, want
 !
-!   CALL e%setQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%setQuietMode(EXCEPTION_INFORMATION, math%yes)
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
 !   CALL dom%Initiate(meshfile, '')
@@ -1666,7 +1674,7 @@ END INTERFACE
 !   TYPE(HDF5File_) :: meshfile
 !   CHARACTER(6) :: found, want
 !
-!   CALL e%setQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%setQuietMode(EXCEPTION_INFORMATION, math%yes)
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
 !   CALL dom%Initiate(meshfile, '')
@@ -1767,7 +1775,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -1800,17 +1808,18 @@ END INTERFACE
 !                         order=order, dom=dom)
 !
 !     tVertices = &
-!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=.TRUE.)
+!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=math%yes)
 !
-!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=.TRUE.)
+!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=math%yes)
 !
 !     ! Get all connectivity for local element 1
-!     found = fedof%GetConnectivity(opt="A", globalElement=1, islocal=.TRUE.)
+!     found = fedof%GetConnectivity(opt="A", globalElement=1, &
+!             islocal=math%yes)
 !
-!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=.TRUE.)
+!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=math%yes)
 !
 !     want = meshptr%GetLocalNodenumber(globalNode=globalNode(1:tVertices), &
-!                                       islocal=.FALSE.)
+!                                       islocal=math%no)
 !
 !     isok = ALL(found == want)
 !     CALL OK(isok, testname // " GetConnectivity (order= " // &
@@ -1831,15 +1840,16 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetConnectivity(opt="A", globalElement=1, islocal=.TRUE.)
-!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=.TRUE.)
+!     found = fedof%GetConnectivity(opt="A", globalElement=1, &
+!     islocal=math%yes)
+!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=math%yes)
 !     tVertices = &
-!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=.TRUE.)
+!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=math%yes)
 !
 !     want = meshptr%GetLocalNodenumber(globalNode=globalNode(1:tVertices), &
-!                                       islocal=.FALSE.)
+!                                       islocal=math%no)
 !     a = meshptr%GetTotalVertexNodes() + 1
-!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=.TRUE.)
+!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=math%yes)
 !
 !     b = meshptr%GetTotalVertexNodes() + ent(3) * (order - 1)
 !     temp1 = Arange(a, b)
@@ -1866,17 +1876,18 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetConnectivity(opt="A", globalElement=1, islocal=.TRUE.)
+!     found = fedof%GetConnectivity(opt="A", globalElement=1, &
+!             islocal=math%yes)
 !
-!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=.TRUE.)
+!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=math%yes)
 !
 !     tVertices = &
-!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=.TRUE.)
+!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=math%yes)
 !
 !     want = meshptr%GetLocalNodenumber(globalNode=globalNode(1:tVertices), &
-!                                       islocal=.FALSE.)
+!                                       islocal=math%no)
 !
-!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=.TRUE.)
+!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=math%yes)
 !
 !     a = totalVertexNodes + 1
 !     b = a - 1 + ent(3) * (order - 1)
@@ -2106,7 +2117,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -2138,7 +2149,7 @@ END INTERFACE
 !                         order=order, dom=dom)
 !
 !     CALL Reallocate(found, 2, want, 2)
-!     CALL fedof%GetVertexDOF(globalNode=1, islocal=.TRUE., &
+!     CALL fedof%GetVertexDOF(globalNode=1, islocal=math%yes, &
 !                             ans=found, tsize=tsize)
 !
 !     want(1) = 1
@@ -2163,7 +2174,7 @@ END INTERFACE
 !                         order=order, dom=dom)
 !
 !     CALL Reallocate(found, 2, want, 2)
-!     CALL fedof%GetVertexDOF(globalNode=1, islocal=.TRUE., &
+!     CALL fedof%GetVertexDOF(globalNode=1, islocal=math%yes, &
 !                             ans=found, tsize=tsize)
 !
 !     want(1) = 1
@@ -2188,7 +2199,7 @@ END INTERFACE
 !                         order=order, dom=dom)
 !
 !     CALL Reallocate(found, 2, want, 2)
-!     CALL fedof%GetVertexDOF(globalNode=1, islocal=.TRUE., &
+!     CALL fedof%GetVertexDOF(globalNode=1, islocal=math%yes, &
 !                             ans=found, tsize=tsize)
 !
 !     want(1) = 1
@@ -2532,7 +2543,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -2564,15 +2575,15 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     con = fedof%GetConnectivity(globalElement=1, islocal=.TRUE., opt="A")
+!     con = fedof%GetConnectivity(globalElement=1, islocal=math%yes, opt="A")
 !
-!     CALL fedof%GetFaceDOF(globalFace=1, islocal=.TRUE., &
+!     CALL fedof%GetFaceDOF(globalFace=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize)
 !
 !     isok = tsize .EQ. 0
 !     CALL OK(isok, testname // " (order= " // ToString(order) // "): ")
 !
-!     CALL fedof%GetFaceDOF(globalElement=1, islocal=.TRUE., &
+!     CALL fedof%GetFaceDOF(globalElement=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize, localFaceNumber=1)
 !     isok = tsize .EQ. 0
 !     CALL OK(isok, testname // " interface 2 (order= " // &
@@ -2593,14 +2604,14 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetFaceDOF(globalFace=1, islocal=.TRUE., &
+!     CALL fedof%GetFaceDOF(globalFace=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize)
 !
 !     CALL IS(tsize, 1, testname // " (order= " // ToString(order) // "): ")
 !     CALL IS(found(1), 13, &
 !             testname // " (order= " // ToString(order) // "): ")
 !
-!     CALL fedof%GetFaceDOF(globalElement=1, islocal=.TRUE., &
+!     CALL fedof%GetFaceDOF(globalElement=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize, localFaceNumber=1)
 !
 !     CALL IS(tsize, 1, testname // " (order= " // ToString(order) // "): ")
@@ -2622,14 +2633,14 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetFaceDOF(globalFace=1, islocal=.TRUE., &
+!     CALL fedof%GetFaceDOF(globalFace=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize)
 !
 !     CALL IS(tsize, 2, testname // " (order= " // ToString(order) // "): ")
 !     CALL IS(found(1), 13, &
 !             testname // " (order= " // ToString(order) // "): ")
 !
-!     CALL fedof%GetFaceDOF(globalElement=1, islocal=.TRUE., &
+!     CALL fedof%GetFaceDOF(globalElement=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize, localFaceNumber=1)
 !
 !     CALL IS(tsize, 2, testname // " (order= " // ToString(order) // "): ")
@@ -2756,7 +2767,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -2788,7 +2799,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellDOF(globalCell=1, islocal=.TRUE., &
+!     CALL fedof%GetCellDOF(globalCell=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize)
 !
 !     isok = tsize .EQ. 0
@@ -2809,7 +2820,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellDOF(globalCell=1, islocal=.TRUE., &
+!     CALL fedof%GetCellDOF(globalCell=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize)
 !
 !     CALL IS(tsize, 0, testname // " (order= " // ToString(order) // "): ")
@@ -2829,7 +2840,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellDOF(globalCell=1, islocal=.TRUE., &
+!     CALL fedof%GetCellDOF(globalCell=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize)
 !
 !     CALL IS(tsize, 1, testname // " (order= " // ToString(order) // "): ")
@@ -2851,7 +2862,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellDOF(globalCell=1, islocal=.TRUE., &
+!     CALL fedof%GetCellDOF(globalCell=1, islocal=math%yes, &
 !                           ans=found, tsize=tsize)
 !
 !     CALL IS(tsize, 3, testname // " (order= " // ToString(order) // "): ")
@@ -2932,7 +2943,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -2964,7 +2975,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=.TRUE.)
+!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=math%yes)
 !     want = 0
 !
 !     CALL IS(found, want, &
@@ -2985,7 +2996,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=.TRUE.)
+!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=math%yes)
 !     want = 0
 !
 !     CALL IS(found, want, &
@@ -3006,7 +3017,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=.TRUE.)
+!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=math%yes)
 !     want = 1
 !
 !     CALL IS(found, want, &
@@ -3027,7 +3038,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=.TRUE.)
+!     found = fedof%GetTotalCellDOF(globalCell=1, islocal=math%yes)
 !     want = 3
 !
 !     CALL IS(found, want, &
@@ -3103,7 +3114,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -3135,13 +3146,13 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetTotalFaceDOF(globalFace=1, islocal=.TRUE.)
+!     found = fedof%GetTotalFaceDOF(globalFace=1, islocal=math%yes)
 !     want = 0
 !
 !     CALL IS(found, want, &
 !             testname // " (order= " // ToString(order) // "): ")
 !
-!     found = fedof%GetTotalFaceDOF(globalElement=1, islocal=.TRUE., &
+!     found = fedof%GetTotalFaceDOF(globalElement=1, islocal=math%yes, &
 !                                   localFaceNumber=1)
 !
 !     CALL IS(found, want, &
@@ -3161,13 +3172,13 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetTotalFaceDOF(globalFace=1, islocal=.TRUE.)
+!     found = fedof%GetTotalFaceDOF(globalFace=1, islocal=math%yes)
 !     want = 1
 !
 !     CALL IS(found, want, &
 !             testname // " (order= " // ToString(order) // "): ")
 !
-!     found = fedof%GetTotalFaceDOF(globalElement=1, islocal=.TRUE., &
+!     found = fedof%GetTotalFaceDOF(globalElement=1, islocal=math%yes, &
 !                                   localFaceNumber=1)
 !
 !     CALL IS(found, want, &
@@ -3187,13 +3198,13 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     found = fedof%GetTotalFaceDOF(globalFace=1, islocal=.TRUE.)
+!     found = fedof%GetTotalFaceDOF(globalFace=1, islocal=math%yes)
 !     want = 2
 !
 !     CALL IS(found, want, &
 !             testname // " (order= " // ToString(order) // "): ")
 !
-!     found = fedof%GetTotalFaceDOF(globalElement=1, islocal=.TRUE., &
+!     found = fedof%GetTotalFaceDOF(globalElement=1, islocal=math%yes, &
 !                                   localFaceNumber=1)
 !
 !     CALL IS(found, want, &
@@ -3394,7 +3405,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -3429,27 +3440,27 @@ END INTERFACE
 !     CALL IS(found, want, testname // "  interface 1 (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE.)
-!     want = meshptr%GetTotalVertexNodes(globalElement=1, islocal=.TRUE.)
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes)
+!     want = meshptr%GetTotalVertexNodes(globalElement=1, islocal=math%yes)
 !     CALL IS(found, want, testname // " interface 2 (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="A")
-!     want = meshptr%GetTotalVertexNodes(globalElement=1, islocal=.TRUE.)
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="A")
+!     want = meshptr%GetTotalVertexNodes(globalElement=1, islocal=math%yes)
 !     CALL IS(found, want, testname // "  interface 3 a (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="E")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="E")
 !     want = 0
 !     CALL IS(found, want, testname // "  interface 3 e (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="F")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="F")
 !     want = 0
 !     CALL IS(found, want, testname // "  interface 3 f (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="c")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="c")
 !     want = 0
 !     CALL IS(found, want, testname // "  interface 3 c (order= " // &
 !             ToString(order) // "): ")
@@ -3474,27 +3485,27 @@ END INTERFACE
 !     CALL IS(found, want, testname // "  interface 1 (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE.)
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes)
 !     want = 6
 !     CALL IS(found, want, testname // " interface 2 (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="A")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="A")
 !     want = 6
 !     CALL IS(found, want, testname // "  interface 3 a (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="E")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="E")
 !     want = 0
 !     CALL IS(found, want, testname // "  interface 3 e (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="F")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="F")
 !     want = 3
 !     CALL IS(found, want, testname // "  interface 3 f (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="c")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="c")
 !     want = 0
 !     CALL IS(found, want, testname // "  interface 3 c (order= " // &
 !             ToString(order) // "): ")
@@ -3520,27 +3531,27 @@ END INTERFACE
 !     CALL IS(found, want, testname // "  interface 1 (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE.)
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes)
 !     want = 10
 !     CALL IS(found, want, testname // " interface 2 (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="A")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="A")
 !     want = 10
 !     CALL IS(found, want, testname // "  interface 3 a (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="E")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="E")
 !     want = 0
 !     CALL IS(found, want, testname // "  interface 3 e (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="F")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="F")
 !     want = 6
 !     CALL IS(found, want, testname // "  interface 3 f (order= " // &
 !             ToString(order) // "): ")
 !
-!     found = fedof%GetTotalDOF(globalElement=1, islocal=.TRUE., opt="c")
+!     found = fedof%GetTotalDOF(globalElement=1, islocal=math%yes, opt="c")
 !     want = 1
 !     CALL IS(found, want, testname // "  interface 3 c (order= " // &
 !             ToString(order) // "): ")
@@ -4371,7 +4382,7 @@ END INTERFACE
 !   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
@@ -4402,7 +4413,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellOrder(globalElement=1, islocal=.TRUE., &
+!     CALL fedof%GetCellOrder(globalElement=1, islocal=math%yes, &
 !                             ans=found, tsize=tsize)
 !
 !     want(1) = 1
@@ -4422,7 +4433,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellOrder(globalElement=1, islocal=.TRUE., &
+!     CALL fedof%GetCellOrder(globalElement=1, islocal=math%yes, &
 !                             ans=found, tsize=tsize)
 !
 !     want(1) = 2
@@ -4442,7 +4453,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellOrder(globalElement=1, islocal=.TRUE., &
+!     CALL fedof%GetCellOrder(globalElement=1, islocal=math%yes, &
 !                             ans=found, tsize=tsize)
 !
 !     want(1) = 3
@@ -4462,7 +4473,7 @@ END INTERFACE
 !                         baseInterpolation=baseInterpolation, &
 !                         order=order, dom=dom)
 !
-!     CALL fedof%GetCellOrder(globalElement=1, islocal=.TRUE., &
+!     CALL fedof%GetCellOrder(globalElement=1, islocal=math%yes, &
 !                             ans=found, tsize=tsize)
 !
 !     want(1) = 4
@@ -4681,8 +4692,8 @@ END INTERFACE
 ! GetCellOrder, GetFaceOrder and GetEdgeOrder), and their orientation flags
 ! from the mesh. SetFE uses this method.
 !
-! Note: the orientations are read with islocal = .TRUE., so pass a local
-! element number (islocal = .TRUE.).
+! Note: the orientations are read with islocal = math%yes, so pass a local
+! element number (islocal = math%yes).
 !
 ! Arguments:
 !   obj : CLASS(FEDOF_), intent(in) - FEDOF object
@@ -4754,7 +4765,7 @@ END INTERFACE
 !   CALL obj%Initiate(baseContinuity="H1", baseInterpolation="Hierarchical", &
 !                     order=order, dom=dom)
 !
-!   isok = .TRUE.
+!   isok = math%yes
 !   DO iel = 1, meshptr%GetTotalElements()
 !     CALL obj%GetOrders(cellOrder=cellOrder, faceOrder=faceOrder, &
 !                        edgeOrder=edgeOrder, cellOrient=cellOrient, &
@@ -4869,7 +4880,7 @@ END INTERFACE
 !   TYPE(HDF5File_) :: meshfile
 !   LOGICAL(LGT) :: isok
 !
-!   CALL e%setQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+!   CALL e%setQuietMode(EXCEPTION_INFORMATION, math%yes)
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()
 !   CALL dom%Initiate(meshfile, '')
@@ -5538,6 +5549,113 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                              GetSumElemTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-27
+! summary: Sum of the total DOFs of all active elements
+!
+! Returns the sum over all active elements of the number of degrees
+! of freedom of the element (GetTotalDOF with globalElement). Shared
+! DOFs are counted once per element, so the sum is the size of a
+! fully discontinuous (DG) vector. The value is computed at the first
+! call and cached in obj%sumElemTotalDOF; DEALLOCATE (and therefore
+! Initiate) resets the cache.
+!
+! Arguments:
+!   obj : CLASS(FEDOF_) - initiated FEDOF (the cache is set)
+!
+! Returns:
+!   ans : INTEGER(I4B) - sum of the element DOFs
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractMesh_Class, ONLY: AbstractMesh_
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE BaseType, ONLY: quadopt => TypeQuadratureOpt
+!   USE Display_Method, ONLY: ToString
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDOF_Class, ONLY: FEDOF_
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: I4B
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
+!   TYPE(FEDOF_) :: obj
+!   TYPE(FEDomain_) :: dom
+!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
+!   TYPE(HDF5File_) :: meshfile
+!   INTEGER(I4B) :: telems
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!   CALL meshfile%Initiate(filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL dom%Initiate(meshfile, '')
+!   meshptr => dom%GetMeshPointer()
+!   telems = meshptr%GetTotalElements()
+!
+!   CALL test(order=1, nloc=3)
+!   CALL test(order=2, nloc=6)
+!   CALL test(order=3, nloc=10)
+!
+!   CALL obj%DEALLOCATE()
+!   CALL dom%DEALLOCATE()
+!   CALL meshfile%DEALLOCATE()
+!
+! CONTAINS
+!
+! !---------------------------------------------------------------------------
+! !                                                                       test
+! !---------------------------------------------------------------------------
+!
+!   SUBROUTINE test(order, nloc)
+!     INTEGER(I4B), INTENT(IN) :: order, nloc
+!     INTEGER(I4B) :: found, want, iel
+!     CHARACTER(:), ALLOCATABLE :: msg
+!
+!     msg = "order = "//ToString(order)//": "
+!
+!     CALL obj%Initiate(order=order, dom=dom, baseContinuity="H1", &
+!                       baseInterpolation="Hierarchical", &
+!                       quadratureIsHomogeneous=math%yes, &
+!                       quadratureType=[quadopt%GaussLegendre], &
+!                       quadratureOrder=[2 * order], &
+!                       quadratureIsOrder=math%yes)
+!
+!     found = obj%GetSumElemTotalDOF()
+!     CALL OK(found .EQ. nloc * telems, msg//"nloc * telems")
+!
+!     want = 0
+!     DO iel = 1, telems
+!       want = want + obj%GetTotalDOF(globalElement=iel, islocal=math%yes)
+!     END DO
+!     CALL OK(found .EQ. want, msg//"sum of GetTotalDOF")
+!
+!     found = obj%GetSumElemTotalDOF()
+!     CALL OK(found .EQ. want, msg//"cached value")
+!   END SUBROUTINE test
+!
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetTotalDOF2]], [[obj_GetMaxTotalConnectivity]]
+
+INTERFACE
+  MODULE FUNCTION obj_GetSumElemTotalDOF(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF; the cached sum is set at the first call
+    INTEGER(I4B) :: ans
+    !! sum of the total DOFs of all active elements
+  END FUNCTION obj_GetSumElemTotalDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods
 !----------------------------------------------------------------------------
 
@@ -5619,8 +5737,8 @@ END INTERFACE FEDOFImportFromToml
 !   TYPE(HDF5File_) :: meshfile
 !   INTEGER(I4B) :: found, want
 !
-!   CALL e%setQuietMode(EXCEPTION_INFORMATION, .TRUE.)
-!   CALL e%setQuietMode(EXCEPTION_DEBUG, .TRUE.)
+!   CALL e%setQuietMode(EXCEPTION_INFORMATION, math%yes)
+!   CALL e%setQuietMode(EXCEPTION_DEBUG, math%yes)
 !
 !   CALL meshfile%Initiate(filename, mode="READ")
 !   CALL meshfile%OPEN()

@@ -57,6 +57,7 @@ MODULE PROCEDURE obj_Display
   CALL Display(obj%tFaces, "tFaces: ", unitno=unitno)
   CALL Display(obj%tCells, "tCells: ", unitno=unitno)
   CALL Display(obj%maxCon, "maxCon: ", unitno=unitno)
+  CALL Display(obj%sumElemTotalDOF, "sumElemTotalDOF: ", unitno=unitno)
   CALL Display(obj%maxQuadPoint, "maxQuadPoint: ", unitno=unitno)
   CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
   CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)

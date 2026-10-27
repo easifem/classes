@@ -859,6 +859,43 @@ MODULE PROCEDURE obj_GetFEPointer
 END PROCEDURE obj_GetFEPointer
 
 !----------------------------------------------------------------------------
+!                                                         GetSumElemTotalDOF
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSumElemTotalDOF
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetSumElemTotalDOF()"
+#endif
+
+  INTEGER(I4B) :: ii
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+! caching sumElemTotalDOF
+  IF (.NOT. obj%isSumElemTotalDOFSet) THEN
+    obj%isSumElemTotalDOFSet = math%yes
+    obj%sumElemTotalDOF = math%zero_i
+    loop1: DO ii = 1, obj%tCells
+      isok = obj%mesh%IsElementActive(globalElement=ii, islocal=math%yes)
+      IF (.NOT. isok) CYCLE loop1
+      obj%sumElemTotalDOF = obj%sumElemTotalDOF + &
+        obj%GetTotalDOF(globalElement=ii, islocal=math%yes)
+    END DO loop1
+  END IF
+
+  ans = obj%sumElemTotalDOF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_GetSumElemTotalDOF
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
