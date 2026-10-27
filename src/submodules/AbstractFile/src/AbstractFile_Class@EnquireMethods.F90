@@ -17,6 +17,12 @@
 
 SUBMODULE(AbstractFile_Class) EnquireMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "AbstractFile_Class@EnquireMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -24,7 +30,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsOpen
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsOpen()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%openStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_IsOpen
 
 !----------------------------------------------------------------------------
@@ -32,7 +52,21 @@ END PROCEDURE obj_IsOpen
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsEOF
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsEOF()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%eofStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_IsEOF
 
 !----------------------------------------------------------------------------
@@ -40,7 +74,21 @@ END PROCEDURE obj_IsEOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsWrite
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsWrite()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%writeStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_IsWrite
 
 !----------------------------------------------------------------------------
@@ -48,7 +96,27 @@ END PROCEDURE obj_IsWrite
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsRead
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsRead()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ans = obj%readStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_IsRead
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE EnquireMethods

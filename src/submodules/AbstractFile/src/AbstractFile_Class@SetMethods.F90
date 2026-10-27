@@ -17,6 +17,11 @@
 
 SUBMODULE(AbstractFile_Class) SetMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractFile_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -24,15 +29,27 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFilePath
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'obj_SetFilePath()'
+#endif
 
-  IF (obj%openstat) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      'Cannot change path of file while it is open!')
-  ELSE
-    obj%path = path
-    obj%pathlen = path%len_trim()
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. obj%openstat, myName, &
+                    "cannot change path of file while it is open.")
+#endif
+
+  obj%path = path
+  obj%pathlen = path%len_trim()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetFilePath
 
 !----------------------------------------------------------------------------
@@ -40,15 +57,27 @@ END PROCEDURE obj_SetFilePath
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFileName
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'obj_SetFileName()'
+#endif
 
-  IF (obj%openstat) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      'Cannot change Filename of file while it is open!')
-  ELSE
-    obj%fileName = fileName
-    obj%fnamelen = fileName%len_trim()
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. obj%openstat, myName, &
+                    "cannot change filename while it is open.")
+#endif
+
+  obj%fileName = fileName
+  obj%fnamelen = fileName%len_trim()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetFileName
 
 !----------------------------------------------------------------------------
@@ -56,15 +85,27 @@ END PROCEDURE obj_SetFileName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFileExt
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'obj_SetFileExt()'
+#endif
 
-  IF (obj%openstat) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      'Cannot change extension of file while it is open!')
-  ELSE
-    obj%ext = ext
-    obj%extlen = ext%len_trim()
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. obj%openstat, myName, &
+                    "cannot change extension while it is open.")
+#endif
+
+  obj%ext = ext
+  obj%extlen = ext%len_trim()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetFileExt
 
 !----------------------------------------------------------------------------
@@ -72,15 +113,21 @@ END PROCEDURE obj_SetFileExt
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetEOFStat
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'obj_SetEOFStat()'
+#endif
 
-  IF (obj%openstat) THEN
-    obj%EOFstat = STAT
-  ELSE
-    CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
-                      'EOF status cannot be changed on a file that is ' // &
-                      'not open!')
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  obj%EOFstat = STAT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetEOFStat
 
 !----------------------------------------------------------------------------
@@ -88,7 +135,21 @@ END PROCEDURE obj_SetEOFStat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOpenStat
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_SetOpenStat()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   obj%openStat = STAT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetOpenStat
 
 !----------------------------------------------------------------------------
@@ -98,12 +159,22 @@ END PROCEDURE obj_SetOpenStat
 MODULE PROCEDURE obj_SetReadStat
   CHARACTER(*), PARAMETER :: myName = 'obj_SetReadStat()'
 
-  IF (obj%openstat) THEN
-    CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
-                      'Cannot change read status of a file if it is open!')
-  ELSE
-    obj%readstat = STAT
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. obj%openstat, myName, &
+                    'Cannot change read status of a file if it is open!')
+#endif
+
+  obj%readstat = STAT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetReadStat
 
 !----------------------------------------------------------------------------
@@ -111,14 +182,32 @@ END PROCEDURE obj_SetReadStat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetWriteStat
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = 'obj_SetWriteStat()'
+#endif
 
-  IF (obj%openstat) THEN
-    CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
-                      'Cannot change write status of a file if it is open!')
-  ELSE
-    obj%writestat = STAT
-  END IF
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL AssertError1(.NOT. obj%openstat, myName, &
+                    'Cannot change write status of a file if it is open!')
+#endif
+
+  obj%writestat = STAT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_SetWriteStat
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE SetMethods

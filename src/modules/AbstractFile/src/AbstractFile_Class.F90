@@ -46,7 +46,6 @@ USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = 'AbstractFile_Class'
 INTEGER(I4B), PARAMETER :: maxStrLen = 256
 
 PUBLIC :: AbstractFile_

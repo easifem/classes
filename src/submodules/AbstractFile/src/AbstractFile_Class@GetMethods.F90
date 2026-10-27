@@ -17,6 +17,12 @@
 
 SUBMODULE(AbstractFile_Class) GetMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "AbstractFile_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -34,7 +40,21 @@ END PROCEDURE obj_GetFileParts
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFilePath
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFilePath()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   path = obj%path
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetFilePath
 
 !----------------------------------------------------------------------------
@@ -42,7 +62,21 @@ END PROCEDURE obj_GetFilePath
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFileName
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFileName()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   fileName = obj%fileName
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetFileName
 
 !----------------------------------------------------------------------------
@@ -50,7 +84,27 @@ END PROCEDURE obj_GetFileName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFileExt
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFileExt()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   ext = obj%ext
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_GetFileExt
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

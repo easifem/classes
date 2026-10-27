@@ -17,6 +17,12 @@
 
 SUBMODULE(AbstractFile_Class) ConstructorMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "AbstractFile_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -24,6 +30,15 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFileDeallocate
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "AbstractFileDeallocate()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   obj%path = ''
   obj%fileName = ''
   obj%ext = ''
@@ -34,6 +49,17 @@ MODULE PROCEDURE AbstractFileDeallocate
   obj%EOFstat = .FALSE.
   obj%readstat = .FALSE.
   obj%writestat = .FALSE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE AbstractFileDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods
