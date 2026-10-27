@@ -24,18 +24,18 @@
 ! on a domain, FEDOFPointer_, and FEDOFSetSparsity.
 
 MODULE FEDOF_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, INT8
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
-USE ExceptionHandler_Class, ONLY: e
+USE AbstractFE_Class, ONLY: AbstractFE_
+USE AbstractFE_Class, ONLY: AbstractFEPointer_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: CSRMatrix_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemshapeData_
 USE BaseType, ONLY: math => TypeMathOpt
-USE AbstractFE_Class, ONLY: AbstractFE_
-USE AbstractFE_Class, ONLY: AbstractFEPointer_
-USE TxtFile_Class, ONLY: TxtFile_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, INT8, LGT
 USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 
 PRIVATE
@@ -210,6 +210,8 @@ CONTAINS
   !! Initiate the FEDOF from a toml table or file
 
   !@GetMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCells => obj_GetTotalCells
+  !! Get total number of cells
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
   !! Get the name of the basis case
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
@@ -1601,6 +1603,26 @@ INTERFACE
     LOGICAL(LGT) :: ans
     !! true if the FEDOF is initiated
   END FUNCTION obj_IsInitiated
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalCells@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-27
+! summary: Get total number of cells in fedof mesh
+!
+! Sometimes we just need total number of cell elements in mesh.
+! Getting mesh pointer from fedof, just for doing this tasks
+! seems waste of resources. So this method returns total number of
+! cells in fedof.
+!
+INTERFACE
+  MODULE FUNCTION obj_GetTotalCells(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalCells
 END INTERFACE
 
 !----------------------------------------------------------------------------

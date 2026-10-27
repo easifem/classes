@@ -18,16 +18,16 @@
 !
 
 SUBMODULE(FEDOF_Class) GetMethods
+USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
+USE BaseType, ONLY: TypeMeshOpt
+USE Display_Method, ONLY: ToString
+USE Display_Method, ONLY: Display
 USE ElemData_Class, ONLY: ElemData_
 USE ElemData_Class, ONLY: ElemData_GetTotalEntities
 USE ElemData_Class, ONLY: ElemData_GetTotalGlobalVertexNodes
 USE ElemData_Class, ONLY: ElemData_GetEdge
 USE ElemData_Class, ONLY: ElemData_GetFace
 USE ElemData_Class, ONLY: ElemData_GetCell
-USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
-USE BaseType, ONLY: TypeMeshOpt
-USE Display_Method, ONLY: ToString
-USE Display_Method, ONLY: Display
 
 IMPLICIT NONE
 
@@ -36,6 +36,14 @@ CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@GetMethods.F90"
 #endif
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                            GetTotalCells
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalCells
+  ans = obj%tCells
+END PROCEDURE obj_GetTotalCells
 
 !----------------------------------------------------------------------------
 !                                                               GetCaseName
