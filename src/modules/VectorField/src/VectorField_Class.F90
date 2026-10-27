@@ -37,9 +37,9 @@ USE String_Class, ONLY: String
 USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeOpt_Class, ONLY: TimeOpt_
+USE tomlf, ONLY: toml_table
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
-USE tomlf, ONLY: toml_table
 
 IMPLICIT NONE
 
@@ -217,8 +217,8 @@ END TYPE VectorFieldPointer_
 ! summary: Initiate2
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1( &
-    obj, obj2, copyFull, copyStructure, usePointer)
+  MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
+                                  usePointer)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
@@ -245,12 +245,15 @@ END INTERFACE VectorFieldInitiate
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
-    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
-    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
-    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
-    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
-    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
+                                  comm, local_n, global_n, spaceCompo, &
+                                  isSpaceCompo, isSpaceCompoScalar, &
+                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  tPhysicalVarNames, physicalVarNames, &
+                                  isPhysicalVarNames, &
+                                  isPhysicalVarNamesScalar, tNodes, &
+                                  isTNodes, isTNodesScalar, tSize, fedof, &
+                                  geofedof, timefedof)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
@@ -429,7 +432,7 @@ END INTERFACE VectorFieldDisplay
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-    timefedofs, geofedof, geofedofs)
+                               timefedofs, geofedof, geofedofs)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     CHARACTER(*), INTENT(IN) :: group
@@ -482,8 +485,9 @@ END INTERFACE
 ! Export higher order node coord to VTKFile.
 
 INTERFACE
-  MODULE SUBROUTINE obj_ExportHigherOrderNodeCoordToVTK( &
-    obj, vtk, filename, opentag, content, closetag)
+  MODULE SUBROUTINE obj_ExportHigherOrderNodeCoordToVTK(obj, vtk, filename, &
+                                                        opentag, content, &
+                                                        closetag)
     CLASS(VectorField_), INTENT(IN) :: obj
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
     CHARACTER(*), INTENT(IN), OPTIONAL :: filename
@@ -520,8 +524,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set1( &
-    obj, globalNode, islocal, VALUE, scale, addContribution)
+  MODULE SUBROUTINE obj_Set1(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field object
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -763,8 +767,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set7( &
-    obj, VALUE, globalNode, islocal, scale, addContribution)
+  MODULE SUBROUTINE obj_Set7(obj, VALUE, globalNode, islocal, scale, &
+                             addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node number
@@ -803,8 +807,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set8( &
-    obj, globalNode, islocal, VALUE, scale, addContribution, storageFMT)
+  MODULE SUBROUTINE obj_Set8(obj, globalNode, islocal, VALUE, scale, &
+                             addContribution, storageFMT)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
@@ -851,8 +855,8 @@ END INTERFACE
 !```
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set9( &
-    obj, VALUE, globalNode, islocal, spaceCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set9(obj, VALUE, globalNode, islocal, spaceCompo, &
+                             scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be used in obj = value
@@ -883,8 +887,8 @@ END INTERFACE
 ! vector( spaceCompo, globalNode ) = value
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set10( &
-    obj, VALUE, globalNode, islocal, spaceCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set10(obj, VALUE, globalNode, islocal, spaceCompo, &
+                              scale, addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     REAL(DFP), INTENT(IN) :: VALUE
     !! value to be set
@@ -910,8 +914,8 @@ END INTERFACE
 ! summary: Set the values using FEVariable
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set11( &
-    obj, VALUE, globalNode, islocal, scale, addContribution)
+  MODULE SUBROUTINE obj_Set11(obj, VALUE, globalNode, islocal, scale, &
+                              addContribution)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! FEVariable, space-nodal values of vector
@@ -969,8 +973,8 @@ END INTERFACE
 ! summary:  Set by user function
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetByFunction( &
-    obj, func, times, ivar, idof, spaceCompo, timeCompo)
+  MODULE SUBROUTINE obj_SetByFunction(obj, func, times, ivar, idof, &
+                                      spaceCompo, timeCompo)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     CLASS(UserFunction_), INTENT(INOUT) :: func
     !! User function
@@ -1008,11 +1012,19 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2026-10-12
 ! summary: Set Lagrange degree of freedom value
+!
+! The values of obj are set from obj2.
+! obj2 is evaluated at the lagrange interpolation points.
+! obj is a VectorField of Lagrange polynomials.
+! The interpolation points and order of interpolation comes from
+! obj2.
 
 INTERFACE
   MODULE SUBROUTINE obj_SetLagrangeDOF(obj, obj2)
     CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! values of obj will be set.
     CLASS(VectorField_), INTENT(INOUT) :: obj2
+    !! values of obj will be set from obj2
   END SUBROUTINE obj_SetLagrangeDOF
 END INTERFACE
 
@@ -1079,8 +1091,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get3( &
-    obj, VALUE, nrow, ncol, storageFMT, globalNode, islocal, force3D)
+  MODULE SUBROUTINE obj_Get3(obj, VALUE, nrow, ncol, storageFMT, globalNode, &
+                             islocal, force3D)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! The number of columns in value is same as the
@@ -1112,8 +1124,8 @@ END INTERFACE
 ! summary: This routine returns the selected entries
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get4( &
-    obj, VALUE, tsize, globalNode, islocal, spaceCompo)
+  MODULE SUBROUTINE obj_Get4(obj, VALUE, tsize, globalNode, islocal, &
+                             spaceCompo)
     CLASS(VectorField_), INTENT(IN) :: obj
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! the size of value should be same as globalNode
