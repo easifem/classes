@@ -159,22 +159,20 @@ TYPE :: FEDOF_
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
   !! Pointer to domain
   CLASS(AbstractDomain_), POINTER :: dom => NULL()
-CONTAINS
-  PRIVATE
 
-  !CONSTRUCTOR:
+CONTAINS
   !@ConstructorMethods
-  PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
+  PROCEDURE, PRIVATE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate a FEDOF with the same order on all cells
-  PROCEDURE, PASS(obj) :: Initiate2 => obj_Initiate2
+  PROCEDURE, PRIVATE, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate a FEDOF with an order for each cell
-  PROCEDURE, PASS(obj) :: Initiate4 => obj_Initiate4
+  PROCEDURE, PRIVATE, PASS(obj) :: Initiate4 => obj_Initiate4
   !! Initiate a FEDOF from a table of element numbers and orders
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate4
   !! Initiate the FEDOF
-  PROCEDURE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
+  PROCEDURE, PRIVATE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
   !! Allocate the order and degree of freedom arrays
-  PROCEDURE, PASS(obj) :: SetOrdersFromCellOrder => &
+  PROCEDURE, PRIVATE, PASS(obj) :: SetOrdersFromCellOrder => &
     obj_SetOrdersFromCellOrder
   !! Number the degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
@@ -186,61 +184,57 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Return true if the FEDOF is initiated
 
-  !SET:
   !@SetMethods
-  PROCEDURE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
+  PROCEDURE, PRIVATE, PASS(obj) :: SetCellOrder => obj_SetCellOrder
   !! Set the order of the cells
-  PROCEDURE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
+  PROCEDURE, PRIVATE, PASS(obj) :: SetFaceOrder => obj_SetFaceOrder
   !! Set the order of the faces
-  PROCEDURE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
+  PROCEDURE, PRIVATE, PASS(obj) :: SetEdgeOrder => obj_SetEdgeOrder
   !! Set the order of the edges
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates of the finite element
   PROCEDURE, PUBLIC, PASS(obj) :: SetFE => obj_SetFE
   !! Set the finite element of an element
 
-  !IO:
   !@IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the FEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayCellOrder => &
     obj_DisplayCellOrder
   !! Display the order of the cells
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Initiate the FEDOF from a toml table
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Initiate the FEDOF from a toml file
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Initiate the FEDOF from a toml table or file
 
-  !GET:
   !@GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetCaseName => obj_GetCaseName
   !! Get the name of the basis case
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOF => obj_GetVertexDOF
   !! Get the degree of freedom of a vertex node
-  PROCEDURE, PASS(obj) :: GetEdgeDOF1 => obj_GetEdgeDOF1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetEdgeDOF1 => obj_GetEdgeDOF1
   !! Get the degrees of freedom on an edge
-  PROCEDURE, PASS(obj) :: GetEdgeDOF2 => obj_GetEdgeDOF2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetEdgeDOF2 => obj_GetEdgeDOF2
   !! Get the degrees of freedom on an edge of an element
   GENERIC, PUBLIC :: GetEdgeDOF => GetEdgeDOF1, GetEdgeDOF2
   !! Get the degrees of freedom on an edge
-  PROCEDURE, PASS(obj) :: GetTotalEdgeDOF1 => obj_GetTotalEdgeDOF1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalEdgeDOF1 => obj_GetTotalEdgeDOF1
   !! Get the number of degrees of freedom on an edge
-  PROCEDURE, PASS(obj) :: GetTotalEdgeDOF2 => obj_GetTotalEdgeDOF2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalEdgeDOF2 => obj_GetTotalEdgeDOF2
   !! Get the number of degrees of freedom on an edge of an element
   GENERIC, PUBLIC :: GetTotalEdgeDOF => GetTotalEdgeDOF1, GetTotalEdgeDOF2
   !! Get the number of degrees of freedom on an edge
-  PROCEDURE, PASS(obj) :: GetFaceDOF1 => obj_GetFaceDOF1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetFaceDOF1 => obj_GetFaceDOF1
   !! Get the degrees of freedom on a face
-  PROCEDURE, PASS(obj) :: GetFaceDOF2 => obj_GetFaceDOF2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetFaceDOF2 => obj_GetFaceDOF2
   !! Get the degrees of freedom on a face of an element
   GENERIC, PUBLIC :: GetFaceDOF => GetFaceDOF1, GetFaceDOF2
   !! Get the degrees of freedom on a face
-  PROCEDURE, PASS(obj) :: GetTotalFaceDOF1 => obj_GetTotalFaceDOF1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalFaceDOF1 => obj_GetTotalFaceDOF1
   !! Get the number of degrees of freedom on a face
-  PROCEDURE, PASS(obj) :: GetTotalFaceDOF2 => obj_GetTotalFaceDOF2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalFaceDOF2 => obj_GetTotalFaceDOF2
   !! Get the number of degrees of freedom on a face of an element
   GENERIC, PUBLIC :: GetTotalFaceDOF => GetTotalFaceDOF1, GetTotalFaceDOF2
   !! Get the number of degrees of freedom on a face
@@ -250,11 +244,11 @@ CONTAINS
   !! Get the number of degrees of freedom of a cell
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
   !! Get the number of vertex degrees of freedom
-  PROCEDURE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalDOF1 => obj_GetTotalDOF1
   !! Get the total number of degrees of freedom
-  PROCEDURE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalDOF2 => obj_GetTotalDOF2
   !! Get the number of degrees of freedom of an element
-  PROCEDURE, PASS(obj) :: GetTotalDOF3 => obj_GetTotalDOF3
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalDOF3 => obj_GetTotalDOF3
   !! Get the number of degrees of freedom of an element for an entity
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Get the number of degrees of freedom
@@ -289,15 +283,13 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
   !! Get the finite element of an element
 
-  !SET:
   !@SetSparsityMethods
-  PROCEDURE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
   !! Set the sparsity pattern of a matrix
-  PROCEDURE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
   !! Set the sparsity pattern between two FEDOF
   GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
   !! Set the sparsity pattern of a matrix
-
 END TYPE FEDOF_
 
 !----------------------------------------------------------------------------
