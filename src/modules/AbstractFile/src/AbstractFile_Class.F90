@@ -39,7 +39,8 @@
 ! Delete are deferred and implemented by the extended types.
 
 MODULE AbstractFile_Class
-USE GlobalData
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
 USE String_Class, ONLY: String
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE

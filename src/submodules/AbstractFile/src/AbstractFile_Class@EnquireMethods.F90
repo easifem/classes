@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(AbstractFile_Class) EnquireMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 

@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(AbstractFile_Class) GetMethods
-USE BaseMethod
 IMPLICIT NONE
 CONTAINS
 
