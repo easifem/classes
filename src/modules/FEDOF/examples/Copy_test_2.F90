@@ -5,16 +5,16 @@
 ! Copy method is tested for H1 Lagrange on linear triangular mesh.
 
 PROGRAM main
+  USE AbstractMesh_Class, ONLY: AbstractMesh_
   USE FEDOF_Class, ONLY: FEDOF_
   USE FEDomain_Class, ONLY: FEDomain_
-  USE AbstractMesh_Class, ONLY: AbstractMesh_
   USE HDF5File_Class, ONLY: HDF5File_
-
-  USE GlobalData, ONLY: I4B
-  USE Test_Method, ONLY: ok
+  USE BaseType, ONLY: TypeQuadratureOpt
   USE ExceptionHandler_Class, ONLY: e
   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-  USE BaseType, ONLY: TypeQuadratureOpt
+  USE GlobalData, ONLY: I4B
+
+  USE Test_Method, ONLY: ok
 
   IMPLICIT NONE
 
