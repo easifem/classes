@@ -184,7 +184,7 @@ CONTAINS
   !! Number of cells of the current mesh
   PROCEDURE, PUBLIC, PASS(obj) :: WriteUnstructuredGrid => &
     obj_WriteUnstructuredGrid
-  !! Write unstructured grid without allocation
+  !! Write an unstructured grid as a new part
   PROCEDURE, PUBLIC, PASS(obj) :: BeginStep => obj_BeginStep
   !! Start a time step
   PROCEDURE, PUBLIC, PASS(obj) :: EndStep => obj_EndStep
@@ -572,21 +572,158 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-26
-! summary: Write unstructured grid
+! summary: Write an unstructured grid as a new part
 !
-! This method writes the unstructued grid
+! The grid is appended as a new part (piece) to the datasets Points,
+! Connectivity, Offsets and Types of /VTKHDF, and its sizes are
+! appended to NumberOfPoints, NumberOfCells and NumberOfConnectivityIds.
+! The offsets of the new part are stored in obj; point and cell data
+! written after this refer to this grid.
+!
+! The grid data can be obtained, for example, from
+! [[AbstractMesh_:GetVtkUnstructuredGridData]] (linear grid of a mesh)
+! or [[AbstractNodeField_:GetVtkUnstructuredGridData]] (Lagrange grid
+! of a field).
+!
+! If it is called before the first BeginStep (or in a non-transient
+! file), the grid is used for all steps. If it is called in a step
+! (moving or adaptive mesh), the grid is used from the current step;
+! it is written also in a step which is skipped by frequency, and it is
+! then used from the next output step.
+!
+! Arguments:
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
+!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
+!   connectivity : INTEGER(I4B) - zero based point ids of all cells,
+!     SIZE(connectivity) = offsets(nCells + 1)
+!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
+!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
+!
+! Formula:
+!
+! The point ids of cell \(i\) are
+!
+! $$ \text{connectivity}(\text{offsets}(i)+1:\text{offsets}(i+1)) $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEMesh_Class, ONLY: FEMesh_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: INT8
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
+!
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: meshname = &
+!   "./meshdata/very_small_quad4_mesh.h5"
+! CHARACTER(*), PARAMETER :: filename = &
+!   "WriteUnstructuredGrid_test_1.vtkhdf"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(HDF5File_) :: meshfile, h5
+! TYPE(FEMesh_) :: amesh
+! TYPE(VtkHDF5File_) :: obj
+! REAL(DFP), ALLOCATABLE :: points(:, :), cellIds(:), rvals1(:), &
+!   rvals2(:, :)
+! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:), ivals(:)
+! INTEGER(INT8), ALLOCATABLE :: types(:), tvals(:)
+! INTEGER(I4B) :: nPoints, nCells, nIds, ii
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! CALL meshfile%Initiate(filename=meshname, mode="READ")
+! CALL meshfile%OPEN()
+! CALL amesh%Initiate(hdf5=meshfile, DIM=2)
+!
+! ! grid of the mesh
+! CALL amesh%GetVtkUnstructuredGridData(points=points, &
+!                                       connectivity=conn, &
+!                                       offsets=offsets, types=types)
+! nPoints = SIZE(points, 2)
+! nCells = SIZE(types)
+! nIds = SIZE(conn)
+! cellIds = [(REAL(ii, DFP), ii=1, nCells)]
+!
+! ! write a static grid with point, cell and field data
+! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+!                          vtkType="UnstructuredGrid")
+! CALL obj%WriteUnstructuredGrid(points=points, connectivity=conn, &
+!                                offsets=offsets, types=types)
+! CALL OK(obj%GetTotalPoints() .EQ. nPoints, "GetTotalPoints")
+! CALL OK(obj%GetTotalCells() .EQ. nCells, "GetTotalCells")
+! CALL OK(obj%IsOutputStep(), "IsOutputStep: not transient")
+! CALL obj%WritePointData(name="x", vals=points)
+! CALL obj%WritePointData(name="xcoord", vals=points(1, :))
+! CALL obj%WriteCellData(name="id", vals=cellIds)
+! CALL obj%WriteFieldData(name="energy", vals=[1.5_DFP, 2.5_DFP])
+! CALL obj%DEALLOCATE()
+!
+! ! read the datasets back
+! CALL h5%Initiate(filename=filename, mode="READ")
+! CALL h5%OPEN()
+!
+! CALL OK(.NOT. h5%PathExists("/VTKHDF/Steps"), "no Steps group")
+!
+! CALL h5%ReadSlab("/VTKHDF/NumberOfPoints", 0, 1, ivals)
+! CALL OK(ivals(1) .EQ. nPoints, "NumberOfPoints")
+! CALL h5%ReadSlab("/VTKHDF/NumberOfCells", 0, 1, ivals)
+! CALL OK(ivals(1) .EQ. nCells, "NumberOfCells")
+! CALL h5%ReadSlab("/VTKHDF/NumberOfConnectivityIds", 0, 1, ivals)
+! CALL OK(ivals(1) .EQ. nIds, "NumberOfConnectivityIds")
+!
+! CALL h5%ReadSlab("/VTKHDF/Points", 0, nPoints, rvals2)
+! CALL OK(ALL(SHAPE(rvals2) .EQ. [3, nPoints]), "Points: shape")
+! CALL OK(MAXVAL(ABS(rvals2 - points)) .LT. tol, "Points: values")
+! CALL h5%ReadSlab("/VTKHDF/Connectivity", 0, nIds, ivals)
+! CALL OK(ALL(ivals .EQ. conn), "Connectivity")
+! CALL h5%ReadSlab("/VTKHDF/Offsets", 0, nCells + 1, ivals)
+! CALL OK(ALL(ivals .EQ. offsets), "Offsets")
+! CALL h5%ReadSlab("/VTKHDF/Types", 0, nCells, tvals)
+! CALL OK(ALL(tvals .EQ. 9_INT8), "Types: VTK_QUAD")
+!
+! CALL h5%ReadSlab("/VTKHDF/PointData/x", 0, nPoints, rvals2)
+! CALL OK(MAXVAL(ABS(rvals2 - points)) .LT. tol, "PointData rank-2")
+! CALL h5%ReadSlab("/VTKHDF/PointData/xcoord", 0, nPoints, rvals1)
+! CALL OK(MAXVAL(ABS(rvals1 - points(1, :))) .LT. tol, &
+!         "PointData rank-1")
+! CALL h5%ReadSlab("/VTKHDF/CellData/id", 0, nCells, rvals1)
+! CALL OK(MAXVAL(ABS(rvals1 - cellIds)) .LT. tol, "CellData")
+! CALL h5%ReadSlab("/VTKHDF/FieldData/energy", 0, 1, rvals2)
+! CALL OK(ALL(SHAPE(rvals2) .EQ. [2, 1]), "FieldData: shape")
+! CALL OK(MAXVAL(ABS(rvals2(:, 1) - [1.5_DFP, 2.5_DFP])) .LT. tol, &
+!         "FieldData: values")
+!
+! CALL h5%DEALLOCATE()
+! CALL amesh%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_WritePointData1]], [[obj_WriteCellData1]],
+! [[obj_WriteFieldData]], [[obj_BeginStep]]
+
 INTERFACE
   MODULE SUBROUTINE obj_WriteUnstructuredGrid(obj, points, connectivity, &
                                               offsets, types)
     CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
+    !! VTKHDF file
     REAL(DFP), INTENT(IN) :: points(:, :)
-    !! nodal coordinates, it should have three columns
+    !! coordinates of points, shape (3, nPoints)
     INTEGER(I4B), INTENT(IN) :: connectivity(:)
-    !! connectivity
+    !! zero based point ids of all cells
     INTEGER(I4B), INTENT(IN) :: offsets(:)
-    !! offsets
+    !! offsets of cells in connectivity, size nCells + 1
     INTEGER(INT8), INTENT(IN) :: types(:)
-    !! types
+    !! VTK cell types, size nCells
   END SUBROUTINE obj_WriteUnstructuredGrid
 END INTERFACE
 

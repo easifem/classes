@@ -1,7 +1,7 @@
 # Common input file for the VtkHDF5File tests which need FEDOF.
 
 [domain]
-filename = "./meshdata/small_tri3_mesh.h5"
+filename = "./meshdata/square_3x2.h5"
 totalMedium = 1
 
 [u]
@@ -24,7 +24,7 @@ baseContinuity = "H1"
 baseInterpolation = "Lagrange"
 ipType = "Equidistance"
 baseType = "Monomial"
-order = 2
+order = 3
 scaleForQuadOrder = 2
 quadOptName = "quadOpt"
 

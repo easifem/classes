@@ -7,12 +7,17 @@
 
 PROGRAM main
   USE BaseType, ONLY: math => TypeMathOpt
+  USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
   USE Test_Method, ONLY: OK
   USE VtkHDF5File_Class, ONLY: VtkHDF5File_
   IMPLICIT NONE
   CHARACTER(*), PARAMETER :: filename = "InitiateVTKHDF5_test_1.vtkhdf"
   TYPE(VtkHDF5File_) :: obj
   LOGICAL :: isok
+  CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+  CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
   CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
                            vtkType="UnstructuredGrid")
   CALL OK(obj%IsInitiated(), "InitiateVTKHDF5 NEW: initiated")

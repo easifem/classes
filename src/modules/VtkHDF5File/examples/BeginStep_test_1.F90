@@ -5,6 +5,7 @@
 PROGRAM main
   USE BaseType, ONLY: math => TypeMathOpt
   USE ExceptionHandler_Class, ONLY: e
+  USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
   USE FEMesh_Class, ONLY: FEMesh_
   USE GlobalData, ONLY: DFP
@@ -23,6 +24,7 @@ PROGRAM main
   INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
   INTEGER(INT8), ALLOCATABLE :: types(:)
   INTEGER(I4B) :: istep, nPoints, nrow, ncol
+  CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
   CALL meshfile%Initiate(filename="./meshdata/small_tri3_mesh.h5", &
                          MODE="READ")
