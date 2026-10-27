@@ -15,6 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) VTKMethods
+USE AbstractFE_Class, ONLY: AbstractFE_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableVector
 USE BaseType, ONLY: TypeFEVariableSpace
@@ -23,22 +25,20 @@ USE BaseType, ONLY: IntVector_
 USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE String_Class, ONLY: String
 USE FEVariable_Method, ONLY: OPERATOR(.RANK.)
 USE FEVariable_Method, ONLY: OPERATOR(.vartype.)
 USE FEVariable_Method, ONLY: FEVariable_Get => Get
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
 USE IntVector_Method, ONLY: IntVector_Initiate => Initiate
 USE IntVector_Method, ONLY: ASSIGNMENT(=)
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
 USE ReallocateUtility, ONLY: Reallocate
 USE ReferenceElement_Method, ONLY: GetVTKElementTypeFromTopology_
-USE AbstractFE_Class, ONLY: AbstractFE_
-USE BaseType, ONLY: QuadraturePoint_
-USE BaseType, ONLY: ElemShapeData_
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -315,15 +315,16 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
                            islocal=islocal)
 
     name = obj%name%chars() // "_" // dofNames(ivar)
-    var_rank = .RANK.fevar
-    var_vartype = .vartype.fevar
+    var_rank = .RANK. fevar
+    var_vartype = .vartype. fevar
 
     SELECT CASE (var_rank)
     CASE (TypeFEVariableOpt%scalar)
 
       !! ScalarField
       IF (var_vartype .EQ. TypeFEVariableOpt%space) THEN
-        r1 = FEVariable_Get(fevar, TypeFEVariableScalar, TypeFEVariableSpace)
+        r1 = FEVariable_Get(fevar, TypeFEVariableScalar, &
+                            TypeFEVariableSpace)
         CALL vtk%WriteDataArray(name=String(name), x=r1, &
                                 numberOfComponents=spaceCompo(ivar))
       END IF
@@ -344,7 +345,8 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
 
       !! Vector Space
       IF (var_vartype .EQ. TypeFEVariableOpt%space) THEN
-        r2 = FEVariable_Get(fevar, TypeFEVariableVector, TypeFEVariableSpace)
+        r2 = FEVariable_Get(fevar, TypeFEVariableVector, &
+                            TypeFEVariableSpace)
         CALL vtk%WriteDataArray(name=String(name), x=r2, &
                                 numberOfComponents=spaceCompo(ivar))
       END IF
@@ -637,21 +639,27 @@ MODULE PROCEDURE obj_GetVtkUnstructuredGridData
       CYCLE loop2
     END IF
 
-    ! CALL GetCellType(iel, vtktype, nn)
+    ! get cellOrder
     CALL fedof%GetCellOrder(ans=cellOrder, tsize=tsize, &
                             globalElement=iel, islocal=math%yes)
     cellOrder(2:3) = cellOrder(1)
+
+    ! get vtk element type from topology
     topo = mesh%GetElemTopology(globalElement=iel, islocal=math%yes)
     CALL GetVTKElementTypeFromTopology_(topoType=topo, &
                                         order=cellOrder(1), &
                                         vtk_type=vtktype, &
                                         nptrs=vtkindx, tsize=nn)
 
+    ! get feptr
     CALL fedof%SetFE(globalElement=iel, islocal=math%yes)
-    CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
     feptr => fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+    ! get geofeptr
+    CALL geofedof%SetFE(globalElement=iel, islocal=math%yes)
     geofeptr => geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
+    ! get reference element coordinates
     CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=nrow, ncol=ncol)
 
     ! xij = math%zero
@@ -667,9 +675,13 @@ MODULE PROCEDURE obj_GetVtkUnstructuredGridData
                       ') in element ' // ToString(iel))
 #endif
 
+    ! TODO: make the following call allocation free
     CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:nn))
+
+    ! get local element shape data of geometry
     CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
 
+    ! get nodal coordinates of element
     CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
                            nrow=crow, ncol=ccol, islocal=math%yes)
 
