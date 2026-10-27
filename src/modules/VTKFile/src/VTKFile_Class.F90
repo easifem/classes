@@ -17,9 +17,9 @@
 
 MODULE VTKFile_Class
 USE Globaldata, ONLY: I4B, LGT, DFP, INT8, INT16, INT32, INT64, &
-                      REAL32, REAL64, endianL, CHAR_LF, &
-                      CHAR_SPACE, endian, BYInt16, BYInt8, &
-                      ByReal32, ByReal64, BYInt32, BYInt64
+  REAL32, REAL64, endianL, CHAR_LF, &
+  CHAR_SPACE, endian, BYInt16, BYInt8, &
+  ByReal32, ByReal64, BYInt32, BYInt64
 USE String_Class, ONLY: String
 USE XMLFile_Class, ONLY: XMLFile_, XMLTag_
 USE ExceptionHandler_Class, ONLY: e
@@ -44,18 +44,18 @@ INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_STRUCTUREDGRID = 8
 INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_POLYDATA = 9
 INTEGER(I4B), PARAMETER, PUBLIC :: PARALLEL_VTK_UNSTRUCTUREDGRID = 10
 CHARACTER(*), PARAMETER, DIMENSION(10) :: DataStructureName = &
-  & [ &
-  & "ImageData        ", &
-  & "RectilinearGrid  ", &
-  & "StructuredGrid   ", &
-  & "PolyData         ", &
-  & "UnstructuredGrid ", &
-  & "PImageData       ", &
-  & "PRectilinearGrid ", &
-  & "PStructuredGrid  ", &
-  & "PPolyData        ", &
-  & "PUnstructuredGrid"  &
-  & ]
+  [ &
+    "ImageData        ", &
+    "RectilinearGrid  ", &
+    "StructuredGrid   ", &
+    "PolyData         ", &
+    "UnstructuredGrid ", &
+    "PImageData       ", &
+    "PRectilinearGrid ", &
+    "PStructuredGrid  ", &
+    "PPolyData        ", &
+    "PUnstructuredGrid" &
+    ]
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_ASCII = 1
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY = 2
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_APPENDED = 3
@@ -63,6 +63,7 @@ INTEGER(I4B), PARAMETER, PUBLIC :: VTK_RAW_APPENDED = 3
 INTEGER(I4B), PARAMETER, PUBLIC :: VTK_BINARY_APPENDED = 4
 CHARACTER(*), PARAMETER, DIMENSION(3) :: &
   dataFormatName = ["ascii   ", "binary  ", "appended"]
+
 PUBLIC :: VTKFile_
 PUBLIC :: VTKFilePointer_
 
@@ -77,49 +78,49 @@ PUBLIC :: VTKFilePointer_
 TYPE, EXTENDS(XMLFile_) :: VTKFile_
   PRIVATE
   LOGICAL(LGT) :: isStructured = .FALSE.
-    !! Is dataset structured
+  !! Is dataset structured
   INTEGER(I4B) :: dataStructureType = 0
-    !! 1 : VTK_Imagedata
-    !! 2 : VTK_RectilinearGrid
-    !! 3 : VTK_StructuredGrid
-    !! 4 : VTK_Polydata
-    !! 5 : VTK_UnstructuredGrid
-    !! 6 : PARALLEL_VTK_Imagedata
-    !! 7 : PARALLEL_VTK_RectilinearGrid
-    !! 8 : PARALLEL_VTK_StructuredGrid
-    !! 9 : PARALLEL_VTK_Polydata
-    !! 10: PARALLEL_VTK_UnstructuredGrid
-  CHARACTER(MAX_LEN_data_STRUCTURENAME) :: dataStructureName
-    !! Imagedata,
-    !! RectilinearGrid,
-    !! StructuredGrid,
-    !! Polydata,
-    !! UnstructuredGrid
-    !! PImagedata
-    !! PRectilinearGrid
-    !! PStructuredGrid
-    !! PPolydata
-    !! PUnstructuredGrid
+  !! 1 : VTK_Imagedata
+  !! 2 : VTK_RectilinearGrid
+  !! 3 : VTK_StructuredGrid
+  !! 4 : VTK_Polydata
+  !! 5 : VTK_UnstructuredGrid
+  !! 6 : PARALLEL_VTK_Imagedata
+  !! 7 : PARALLEL_VTK_RectilinearGrid
+  !! 8 : PARALLEL_VTK_StructuredGrid
+  !! 9 : PARALLEL_VTK_Polydata
+  !! 10: PARALLEL_VTK_UnstructuredGrid
+  CHARACTER(MAX_LEN_DATA_STRUCTURENAME) :: dataStructureName
+  !! Imagedata,
+  !! RectilinearGrid,
+  !! StructuredGrid,
+  !! Polydata,
+  !! UnstructuredGrid
+  !! PImagedata
+  !! PRectilinearGrid
+  !! PStructuredGrid
+  !! PPolydata
+  !! PUnstructuredGrid
   INTEGER(I4B) :: dataFormat = 0
-    !! VTK_ASCII
-    !! VTK_BINARY
-    !! VTK_APPENDED
-    !! VTK_RAW_APPENDED
-    !! VTK_BINARY_APPENDED
+  !! VTK_ASCII
+  !! VTK_BINARY
+  !! VTK_APPENDED
+  !! VTK_RAW_APPENDED
+  !! VTK_BINARY_APPENDED
   INTEGER(I4B) :: wholeExtent(6) = 0
-    !! Whole extent
+  !! Whole extent
   INTEGER(I4B) :: origin(3) = 0
-    !! x0, y0, z0, Origin needed for Imagedata
+  !! x0, y0, z0, Origin needed for Imagedata
   INTEGER(I4B) :: SPACING(3) = 1
-    !! dx, dy, dz needed for Imagedata
+  !! dx, dy, dz needed for Imagedata
   INTEGER(I4B) :: indent = 0
-    !! Indent
+  !! Indent
   INTEGER(I4B) :: offset = 0
-    !! offset for appended mode
+  !! offset for appended mode
   TYPE(String) :: encoding4Appended
-    !! appended data encoding: "raw" or "base64".
+  !! appended data encoding: "raw" or "base64".
   INTEGER(I4B) :: scratch = 0
-    !! Used for scratch file
+  !! Used for scratch file
   LOGICAL(LGT) :: isVolatile = .FALSE.
   TYPE(String) :: volatileBuffer
 CONTAINS
@@ -408,30 +409,31 @@ END TYPE VTKFilePointer_
 
 INTERFACE
   MODULE SUBROUTINE InitiateVTKFile(obj, filename, mode, dataFormat, &
-    & dataStructureType, WholeExtent, isVolatile, meshdataFormat, &
-    & Spacing, Origin)
+                                    dataStructureType, WholeExtent, &
+                                    isVolatile, meshdataFormat, SPACING, &
+                                    Origin)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: filename
     !! Name of the file, where xml data will be printed
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: mode
+    CHARACTER(*), INTENT(IN), OPTIONAL :: mode
     !! READ, WRITE, NEW, REPLACE
     !! DEFAULT IS NEW
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dataFormat
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dataFormat
     !! VTK_ASCII, VTK_APPENEDED, VTK_BINARY
     !! DEFAULT is VTK_BINARY_APPENDED
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: dataStructureType
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: dataStructureType
     !! VTK_IMAGEdata, VTK_STRUCTUREDGRID, etc.
     !! Default is VTK_UnstructuredGrid
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: WholeExtent(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: WholeExtent(:)
     !! Required for structured data set
     !! [x1, x2, y1, y2, z1, z2]
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isVolatile
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isVolatile
     !! True if volatileBuffer is used to keep the xml file
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: meshdataFormat
+    CHARACTER(*), INTENT(IN), OPTIONAL :: meshdataFormat
     !! Float32, Float64, etc
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: SPACING(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: SPACING(:)
     !! dx, dy, dz, needed in case of Imagedata
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: Origin(:)
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: Origin(:)
     !! x0, y0, z0, needed in case of Imagedata
   END SUBROUTINE InitiateVTKFile
 END INTERFACE
@@ -447,7 +449,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE VTKFile_Deallocate(obj, delete)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: delete
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: delete
   END SUBROUTINE VTKFile_Deallocate
 END INTERFACE
 
@@ -563,7 +565,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE VTKFile_WriteDataStructureTag(obj, meshdataFormat)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: meshdataFormat
+    CHARACTER(*), INTENT(IN), OPTIONAL :: meshdataFormat
     !! Float32, Float64
     !! It should be present for parallel data structure
     !! PARALLEL_VTK_RECTILINEARGRID, PARALLEL_VTK_STRUCTUREDGRID,
@@ -583,8 +585,8 @@ INTERFACE
   MODULE SUBROUTINE VTKFile_WriteStartTag(obj, name, attrNames, attrValues)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
-    TYPE(String), OPTIONAL, INTENT(IN) :: attrNames(:)
-    TYPE(String), OPTIONAL, INTENT(IN) :: attrValues(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: attrNames(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: attrValues(:)
   END SUBROUTINE VTKFile_WriteStartTag
 END INTERFACE
 
@@ -616,8 +618,8 @@ INTERFACE
                                                 attrValues)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
-    TYPE(String), OPTIONAL, INTENT(IN) :: attrNames(:)
-    TYPE(String), OPTIONAL, INTENT(IN) :: attrValues(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: attrNames(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: attrValues(:)
   END SUBROUTINE VTKFile_WriteSelfClosingTag
 END INTERFACE
 
@@ -630,13 +632,13 @@ END INTERFACE
 ! summary: Write Tags and contents
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteTag( &
-    obj, name, attrNames, attrValues, content)
+  MODULE SUBROUTINE VTKFile_WriteTag(obj, name, attrNames, attrValues, &
+                                     content)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
-    TYPE(String), OPTIONAL, INTENT(IN) :: attrNames(:)
-    TYPE(String), OPTIONAL, INTENT(IN) :: attrValues(:)
-    TYPE(String), OPTIONAL, INTENT(IN) :: content
+    TYPE(String), INTENT(IN), OPTIONAL :: attrNames(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: attrValues(:)
+    TYPE(String), INTENT(IN), OPTIONAL :: content
   END SUBROUTINE VTKFile_WriteTag
 END INTERFACE
 
@@ -715,15 +717,16 @@ END INTERFACE
 ! summary: WriteDataArrayTag
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArrayTag( &
-    obj, dataType, name, numberOfComponents, content, isTuples, isOffset)
+  MODULE SUBROUTINE VTKFile_WriteDataArrayTag(obj, dataType, name, &
+                                              numberOfComponents, content, &
+                                              isTuples, isOffset)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: dataType
     TYPE(String), INTENT(IN) :: name
     INTEGER(I4B), INTENT(IN) :: numberOfComponents
-    TYPE(String), OPTIONAL, INTENT(IN) :: content
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isOffset
+    TYPE(String), INTENT(IN), OPTIONAL :: content
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isOffset
   END SUBROUTINE VTKFile_WriteDataArrayTag
 END INTERFACE
 
@@ -740,13 +743,14 @@ END INTERFACE
 ! This routine writes Rank 1 of Real32. This routine calls `WriteDataArrayTag`
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL32), INTENT(IN) :: x(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
     !! number of components in the data, default is 1
   END SUBROUTINE VTKFile_WriteDataArray_Rank1_Real32
 END INTERFACE
@@ -760,13 +764,14 @@ END INTERFACE
 ! summary: This routine writes Rank1 array of Real64
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Real64(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL64), INTENT(IN) :: x(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank1_Real64
 END INTERFACE
 
@@ -779,13 +784,14 @@ END INTERFACE
 ! summary: This routine writes Rank1 array of Int8
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int8( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int8(obj, name, x, &
+                                                      isTuples, &
+                                                      numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT8), INTENT(IN) :: x(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int8
 END INTERFACE
 
@@ -798,13 +804,14 @@ END INTERFACE
 ! summary: This routine writes Rank1 array of Int16
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int16( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int16(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT16), INTENT(IN) :: x(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int16
 END INTERFACE
 
@@ -813,13 +820,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int32(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT32), INTENT(IN) :: x(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int32
 END INTERFACE
 
@@ -828,13 +836,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT64), INTENT(IN) :: x(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank1_Int64
 END INTERFACE
 
@@ -843,13 +852,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Real32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Real32(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL32), INTENT(IN) :: x(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank2_Real32
 END INTERFACE
 
@@ -858,13 +868,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Real64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Real64(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL64), INTENT(IN) :: x(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank2_Real64
 END INTERFACE
 
@@ -873,13 +884,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int8( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int8(obj, name, x, &
+                                                      isTuples, &
+                                                      numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT8), INTENT(IN) :: x(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank2_Int8
 END INTERFACE
 
@@ -888,13 +900,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int16( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int16(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT16), INTENT(IN) :: x(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank2_Int16
 END INTERFACE
 
@@ -903,13 +916,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int32(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT32), INTENT(IN) :: x(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank2_Int32
 END INTERFACE
 
@@ -918,13 +932,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank2_Int64(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT64), INTENT(IN) :: x(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank2_Int64
 END INTERFACE
 
@@ -933,13 +948,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Real32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Real32(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL32), INTENT(IN) :: x(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank3_Real32
 END INTERFACE
 
@@ -948,13 +964,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Real64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Real64(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL64), INTENT(IN) :: x(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank3_Real64
 END INTERFACE
 
@@ -963,13 +980,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int8( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int8(obj, name, x, &
+                                                      isTuples, &
+                                                      numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT8), INTENT(IN) :: x(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank3_Int8
 END INTERFACE
 
@@ -978,13 +996,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int16( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int16(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT16), INTENT(IN) :: x(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank3_Int16
 END INTERFACE
 
@@ -993,13 +1012,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int32(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT32), INTENT(IN) :: x(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank3_Int32
 END INTERFACE
 
@@ -1008,13 +1028,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank3_Int64(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT64), INTENT(IN) :: x(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank3_Int64
 END INTERFACE
 
@@ -1023,13 +1044,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Real32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Real32(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL32), INTENT(IN) :: x(1:, 1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank4_Real32
 END INTERFACE
 
@@ -1038,13 +1060,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Real64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Real64(obj, name, x, &
+                                                        isTuples, &
+                                                        numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL64), INTENT(IN) :: x(1:, 1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank4_Real64
 END INTERFACE
 
@@ -1053,13 +1076,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int8( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int8(obj, name, x, &
+                                                      isTuples, &
+                                                      numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT8), INTENT(IN) :: x(1:, 1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank4_Int8
 END INTERFACE
 
@@ -1068,13 +1092,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int16( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int16(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT16), INTENT(IN) :: x(1:, 1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank4_Int16
 END INTERFACE
 
@@ -1083,13 +1108,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int32( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int32(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT32), INTENT(IN) :: x(1:, 1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank4_Int32
 END INTERFACE
 
@@ -1098,13 +1124,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int64( &
-    obj, name, x, isTuples, numberOfComponents)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_Rank4_Int64(obj, name, x, &
+                                                       isTuples, &
+                                                       numberOfComponents)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT64), INTENT(IN) :: x(1:, 1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: numberOfComponents
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: numberOfComponents
   END SUBROUTINE VTKFile_WriteDataArray_Rank4_Int64
 END INTERFACE
 
@@ -1113,14 +1140,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Real32( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Real32(obj, name, x, y, &
+                                                            z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL32), INTENT(IN) :: x(1:)
     REAL(REAL32), INTENT(IN) :: y(1:)
     REAL(REAL32), INTENT(IN) :: z(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Real32
 END INTERFACE
 
@@ -1129,14 +1156,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Real64( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Real64(obj, name, x, y, &
+                                                            z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL64), INTENT(IN) :: x(1:)
     REAL(REAL64), INTENT(IN) :: y(1:)
     REAL(REAL64), INTENT(IN) :: z(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Real64
 END INTERFACE
 
@@ -1145,14 +1172,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int8( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int8(obj, name, x, y, &
+                                                          z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT8), INTENT(IN) :: x(1:)
     INTEGER(INT8), INTENT(IN) :: y(1:)
     INTEGER(INT8), INTENT(IN) :: z(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int8
 END INTERFACE
 
@@ -1161,14 +1188,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int16( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int16(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT16), INTENT(IN) :: x(1:)
     INTEGER(INT16), INTENT(IN) :: y(1:)
     INTEGER(INT16), INTENT(IN) :: z(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int16
 END INTERFACE
 
@@ -1177,14 +1204,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int32( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int32(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT32), INTENT(IN) :: x(1:)
     INTEGER(INT32), INTENT(IN) :: y(1:)
     INTEGER(INT32), INTENT(IN) :: z(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int32
 END INTERFACE
 
@@ -1193,14 +1220,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int64( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int64(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT64), INTENT(IN) :: x(1:)
     INTEGER(INT64), INTENT(IN) :: y(1:)
     INTEGER(INT64), INTENT(IN) :: z(1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank1_Int64
 END INTERFACE
 
@@ -1209,14 +1236,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Real32( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Real32(obj, name, x, y, &
+                                                            z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL32), INTENT(IN) :: x(1:, 1:)
     REAL(REAL32), INTENT(IN) :: y(1:, 1:)
     REAL(REAL32), INTENT(IN) :: z(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Real32
 END INTERFACE
 
@@ -1225,14 +1252,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Real64( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Real64(obj, name, x, y, &
+                                                            z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL64), INTENT(IN) :: x(1:, 1:)
     REAL(REAL64), INTENT(IN) :: y(1:, 1:)
     REAL(REAL64), INTENT(IN) :: z(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Real64
 END INTERFACE
 
@@ -1241,14 +1268,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int8( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int8(obj, name, x, y, &
+                                                          z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT8), INTENT(IN) :: x(1:, 1:)
     INTEGER(INT8), INTENT(IN) :: y(1:, 1:)
     INTEGER(INT8), INTENT(IN) :: z(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int8
 END INTERFACE
 
@@ -1257,14 +1284,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int16( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int16(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT16), INTENT(IN) :: x(1:, 1:)
     INTEGER(INT16), INTENT(IN) :: y(1:, 1:)
     INTEGER(INT16), INTENT(IN) :: z(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int16
 END INTERFACE
 
@@ -1273,14 +1300,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int32( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int32(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT32), INTENT(IN) :: x(1:, 1:)
     INTEGER(INT32), INTENT(IN) :: y(1:, 1:)
     INTEGER(INT32), INTENT(IN) :: z(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int32
 END INTERFACE
 
@@ -1289,14 +1316,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int64( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int64(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT64), INTENT(IN) :: x(1:, 1:)
     INTEGER(INT64), INTENT(IN) :: y(1:, 1:)
     INTEGER(INT64), INTENT(IN) :: z(1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank2_Int64
 END INTERFACE
 
@@ -1305,14 +1332,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Real32( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Real32(obj, name, x, y, &
+                                                            z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL32), INTENT(IN) :: x(1:, 1:, 1:)
     REAL(REAL32), INTENT(IN) :: y(1:, 1:, 1:)
     REAL(REAL32), INTENT(IN) :: z(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Real32
 END INTERFACE
 
@@ -1321,14 +1348,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Real64( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Real64(obj, name, x, y, &
+                                                            z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     REAL(REAL64), INTENT(IN) :: x(1:, 1:, 1:)
     REAL(REAL64), INTENT(IN) :: y(1:, 1:, 1:)
     REAL(REAL64), INTENT(IN) :: z(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Real64
 END INTERFACE
 
@@ -1337,14 +1364,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int8( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int8(obj, name, x, y, &
+                                                          z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT8), INTENT(IN) :: x(1:, 1:, 1:)
     INTEGER(INT8), INTENT(IN) :: y(1:, 1:, 1:)
     INTEGER(INT8), INTENT(IN) :: z(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int8
 END INTERFACE
 
@@ -1353,14 +1380,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int16( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int16(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT16), INTENT(IN) :: x(1:, 1:, 1:)
     INTEGER(INT16), INTENT(IN) :: y(1:, 1:, 1:)
     INTEGER(INT16), INTENT(IN) :: z(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int16
 END INTERFACE
 
@@ -1369,14 +1396,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int32( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int32(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT32), INTENT(IN) :: x(1:, 1:, 1:)
     INTEGER(INT32), INTENT(IN) :: y(1:, 1:, 1:)
     INTEGER(INT32), INTENT(IN) :: z(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int32
 END INTERFACE
 
@@ -1385,14 +1412,14 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 INTERFACE
-  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int64( &
-    obj, name, x, y, z, isTuples)
+  MODULE SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int64(obj, name, x, y, &
+                                                           z, isTuples)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(IN) :: name
     INTEGER(INT64), INTENT(IN) :: x(1:, 1:, 1:)
     INTEGER(INT64), INTENT(IN) :: y(1:, 1:, 1:)
     INTEGER(INT64), INTENT(IN) :: z(1:, 1:, 1:)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTuples
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTuples
   END SUBROUTINE VTKFile_WriteDataArray_XYZ_Rank3_Int64
 END INTERFACE
 
@@ -1728,7 +1755,7 @@ INTERFACE
   MODULE SUBROUTINE VTKFile_WritePiece_1(obj, extent, srcFileName)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: extent(:)
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: srcFileName
+    CHARACTER(*), INTENT(IN), OPTIONAL :: srcFileName
   END SUBROUTINE VTKFile_WritePiece_1
 END INTERFACE
 
@@ -1758,7 +1785,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE VTKFile_WritePiece_3(obj, nPoints, nVerts, nLines, &
-    & nStrips, nPolys)
+                                         nStrips, nPolys)
     CLASS(VTKFile_), INTENT(INOUT) :: obj
     INTEGER(I4B), INTENT(IN) :: nPoints
     INTEGER(I4B), INTENT(IN) :: nVerts
