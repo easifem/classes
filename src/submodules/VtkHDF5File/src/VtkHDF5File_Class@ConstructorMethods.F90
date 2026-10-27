@@ -66,6 +66,11 @@ MODULE PROCEDURE obj_InitiateVTKHDF5
 
   CALL obj%OPEN()
 
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%IsOpen(), myName, &
+                    "file " // filename // " cannot be opened.")
+#endif
+
   obj%vtkType = vtkType
   IF (PRESENT(isTransient)) obj%isTransient = isTransient
   IF (PRESENT(frequency)) obj%frequency = MAX(frequency, 1)

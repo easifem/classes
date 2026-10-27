@@ -35,7 +35,7 @@ quadratureType = "GaussLegendre"
 # options read by VtkHDF5File_%ImportFromToml
 [vtkhdf]
 isActive = true
-filename = "./VtkHDF5File_test_5.vtkhdf"
+filename = "./ImportFromToml_test_1.vtkhdf"
 isTransient = true
 frequency = 1
 zlib = -1

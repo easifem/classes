@@ -16,7 +16,7 @@ PROGRAM main
   USE VtkHDF5File_Class, ONLY: VtkHDF5File_
   IMPLICIT NONE
   CHARACTER(*), PARAMETER :: tomlFileName = "VtkHDF5File_test.toml", &
-    filename = "VtkHDF5File_test_4.vtkhdf"
+    filename = "WriteUnstructuredGrid_test_2.vtkhdf"
   TYPE(FEDomain_) :: dom
   TYPE(FEDOF_) :: fedof, geofedof
   TYPE(ScalarField_) :: u

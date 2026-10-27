@@ -21,10 +21,6 @@
 
 SUBMODULE(VtkHDF5File_Class) WriteMethods
 USE ExceptionHandler_Class, ONLY: e
-USE VTKMeshUtility, ONLY: VTKGetLagrangeGrid
-USE VTKMeshUtility, ONLY: VTKGetLagrangeValues
-USE VTKMeshUtility, ONLY: VTKGetLinearGrid
-USE VTKMeshUtility, ONLY: VTKGetVertexValues
 IMPLICIT NONE
 
 #ifdef DEBUG_VER

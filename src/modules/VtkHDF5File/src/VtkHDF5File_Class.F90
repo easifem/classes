@@ -27,10 +27,7 @@
 ! used to write additional data in the same file.
 
 MODULE VtkHDF5File_Class
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: math => TypeMathOpt
-USE FEDOF_Class, ONLY: FEDOF_
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: INT8
@@ -285,7 +282,7 @@ END TYPE VtkHDF5FilePointer_
 ! USE Test_Method, ONLY: OK
 ! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
-! CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_1.vtkhdf"
+! CHARACTER(*), PARAMETER :: filename = "InitiateVTKHDF5_test_1.vtkhdf"
 ! TYPE(VtkHDF5File_) :: obj
 ! LOGICAL :: isok
 ! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
@@ -615,7 +612,7 @@ END INTERFACE
 ! USE Test_Method, ONLY: OK
 ! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
-! CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_3.vtkhdf"
+! CHARACTER(*), PARAMETER :: filename = "BeginStep_test_1.vtkhdf"
 ! TYPE(HDF5File_) :: meshfile
 ! TYPE(FEMesh_) :: amesh
 ! TYPE(VtkHDF5File_) :: obj

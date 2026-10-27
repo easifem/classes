@@ -10,7 +10,7 @@ PROGRAM main
   USE Test_Method, ONLY: OK
   USE VtkHDF5File_Class, ONLY: VtkHDF5File_
   IMPLICIT NONE
-  CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_1.vtkhdf"
+  CHARACTER(*), PARAMETER :: filename = "InitiateVTKHDF5_test_1.vtkhdf"
   TYPE(VtkHDF5File_) :: obj
   LOGICAL :: isok
   CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &

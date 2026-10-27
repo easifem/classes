@@ -14,7 +14,7 @@ PROGRAM main
   USE Test_Method, ONLY: OK
   USE VtkHDF5File_Class, ONLY: VtkHDF5File_
   IMPLICIT NONE
-  CHARACTER(*), PARAMETER :: filename = "VtkHDF5File_test_3.vtkhdf"
+  CHARACTER(*), PARAMETER :: filename = "BeginStep_test_1.vtkhdf"
   TYPE(HDF5File_) :: meshfile
   TYPE(FEMesh_) :: amesh
   TYPE(VtkHDF5File_) :: obj
