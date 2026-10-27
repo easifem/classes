@@ -279,12 +279,17 @@ END TYPE VtkHDF5FilePointer_
 !```fortran
 ! PROGRAM main
 ! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 ! USE Test_Method, ONLY: OK
 ! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
 ! IMPLICIT NONE
 ! CHARACTER(*), PARAMETER :: filename = "InitiateVTKHDF5_test_1.vtkhdf"
 ! TYPE(VtkHDF5File_) :: obj
 ! LOGICAL :: isok
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 ! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
 !                          vtkType="UnstructuredGrid")
 ! CALL OK(obj%IsInitiated(), "InitiateVTKHDF5 NEW: initiated")
@@ -370,6 +375,10 @@ END INTERFACE
 !
 !```fortran
 ! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 ! USE Test_Method, ONLY: OK
 ! USE tomlf, ONLY: toml_table
 ! USE tomlf, ONLY: toml_load
@@ -377,6 +386,8 @@ END INTERFACE
 ! IMPLICIT NONE
 ! TYPE(VtkHDF5File_) :: obj
 ! TYPE(toml_table), ALLOCATABLE :: table
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 ! CALL toml_load(table, "VtkHDF5File_test.toml")
 ! CALL obj%ImportFromToml(table)
 ! CALL OK(obj%IsActive(), "ImportFromToml")
@@ -603,6 +614,7 @@ END INTERFACE
 ! PROGRAM main
 ! USE BaseType, ONLY: math => TypeMathOpt
 ! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
 ! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 ! USE FEMesh_Class, ONLY: FEMesh_
 ! USE GlobalData, ONLY: DFP
@@ -621,6 +633,7 @@ END INTERFACE
 ! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
 ! INTEGER(INT8), ALLOCATABLE :: types(:)
 ! INTEGER(I4B) :: istep, nPoints, nrow, ncol
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
 ! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 ! CALL meshfile%Initiate(fileName="./meshdata/small_tri3_mesh.h5", &
 !                        MODE="READ")

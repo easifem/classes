@@ -42,6 +42,7 @@ MODULE PROCEDURE obj_InitiateVTKHDF5
   CHARACTER(*), PARAMETER :: myName = "obj_InitiateVTKHDF5()"
   LOGICAL(LGT) :: isok
 #endif
+  LOGICAL(LGT) :: isNewFile, isReadOnly
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -64,7 +65,15 @@ MODULE PROCEDURE obj_InitiateVTKHDF5
                     libverLow=libverLow, &
                     compactBytes=compactBytes)
 
+  ! NOTE:
+  ! The access mode is taken before OPEN: HDF5File_%Open clears the new
+  ! status after creating the file, and a new file then has the same
+  ! status as a file opened with mode OVERWRITE
+  isNewFile = obj%IsNew()
+  isReadOnly = obj%IsRead() .AND. (.NOT. obj%IsWrite())
+
   CALL obj%OPEN()
+  ! After calling open, IsNew will always return false.
 
 #ifdef DEBUG_VER
   CALL AssertError1(obj%IsOpen(), myName, &
@@ -77,13 +86,13 @@ MODULE PROCEDURE obj_InitiateVTKHDF5
 
   ! Mode NEW sets both the read and the write status, so the mode is
   ! checked in this order: NEW, READ (read only), WRITE/OVERWRITE
-  IF (obj%IsNew()) THEN
+  IF (isNewFile) THEN
     ! New file: write the root group (NEW already allows overwriting)
     CALL obj%Mkdir("/VTKHDF")
     CALL obj%WriteAttribute("/VTKHDF", "Version", _VTKHDF_VERSION_)
     CALL obj%WriteAttribute("/VTKHDF", "Type", obj%vtkType)
 
-  ELSE IF (obj%IsRead() .AND. (.NOT. obj%IsWrite())) THEN
+  ELSE IF (isReadOnly) THEN
     ! Read only file
 
 #ifdef DEBUG_VER
