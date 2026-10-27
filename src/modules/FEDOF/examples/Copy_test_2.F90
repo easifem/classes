@@ -41,7 +41,7 @@ PROGRAM main
 
   CALL obj%Initiate(baseContinuity=baseContinuity, ipType=ipType, &
                     baseInterpolation=baseInterpolation, order=1, dom=dom)
-!CALL fedof%Display("FEDOF:")
+  !CALL fedof%Display("FEDOF:")
   CALL obj2%copy(obj)
 
   found = obj2%GetTotalDOF()
@@ -73,7 +73,7 @@ PROGRAM main
     3 * meshptr%GetTotalCells()
   CALL OK(found == want, "Total DOF (order=4): ")
 
-!CALL dom%Display("domain:")
+  !CALL dom%Display("domain:")
   CALL dom%DEALLOCATE()
   CALL meshfile%DEALLOCATE()
 
