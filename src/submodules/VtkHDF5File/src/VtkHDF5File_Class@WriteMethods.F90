@@ -37,92 +37,47 @@ CHARACTER(*), PARAMETER :: modName = "VtkHDF5File_Class@WriteMethods.F90"
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 WriteMesh
+!                                                                 WriteGrid
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_WriteMesh1
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_WriteMesh1()"
-#endif
-  REAL(DFP), ALLOCATABLE :: points(:, :)
-  INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
-  INTEGER(INT8), ALLOCATABLE :: types(:)
+!> author: Shion Shimizu
+! date: 2026-10-24
+! summary: Append a grid as a new part and update the mesh offsets
 
+MODULE PROCEDURE obj_WriteUnstructuredGrid
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+  CHARACTER(*), PARAMETER :: myName = "obj_WriteUnstructuredGrid()"
 #endif
 
-#ifdef DEBUG_VER
-  CALL AssertError1(obj%IsInitiated(), myName, &
-                    "VtkHDF5File_ is not initiated.")
-  CALL AssertError1(obj%IsWrite(), myName, &
-                    "VtkHDF5File_ should be initiated with mode NEW.")
-#endif
+  INTEGER(I4B) :: nP, nC, nIds, pointOffset, connOffset, cellOffset, &
+    partOffset
 
-  ! The mesh is written also in a skipped step, so that a mesh which
-  ! changes in a skipped step is used from the next output step
-  CALL VTKGetLinearGrid(mesh=mesh, points=points, &
-                        connectivity=connectivity, offsets=offsets, &
-                        types=types)
-  ! TODO
-  ! Call mesh%GetVtkUnstructuredGridData(mesh=mesh, points=points, &
-  ! connectivity=connectivity, offsets=offsets, &
-  ! types=types)
+  nP = SIZE(points, 2)
+  nC = SIZE(types)
+  nIds = SIZE(connectivity)
 
-  CALL obj%WriteUnstructuredGrid(points=points, connectivity=connectivity, &
-                                 offsets=offsets, types=types)
+  CALL obj%Append(_ROOT_ // "Points", points, pointOffset)
+  CALL obj%Append(_ROOT_ // "Connectivity", connectivity, connOffset)
+  CALL obj%Append(_ROOT_ // "Offsets", offsets)
+  CALL obj%Append(_ROOT_ // "Types", types, cellOffset)
+  CALL obj%Append(_ROOT_ // "NumberOfPoints", [nP], partOffset)
+  CALL obj%Append(_ROOT_ // "NumberOfCells", [nC])
+  CALL obj%Append(_ROOT_ // "NumberOfConnectivityIds", [nIds])
 
-  ! WritePointData1 evaluates a field at the vertices of the mesh
-  obj%isLagrange = math%no
+  obj%nPoints = nP
+  obj%nCells = nC
+  obj%nIds = nIds
+  obj%pointOffset = pointOffset
+  obj%connOffset = connOffset
+  obj%cellOffset = cellOffset
+  obj%partOffset = partOffset
+  obj%isMeshWritten = math%yes
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
                           '[END] ')
 #endif
-END PROCEDURE obj_WriteMesh1
-
-!----------------------------------------------------------------------------
-!                                                                 WriteMesh
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_WriteMesh2
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_WriteMesh2()"
-#endif
-  REAL(DFP), ALLOCATABLE :: points(:, :)
-  INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
-  INTEGER(INT8), ALLOCATABLE :: types(:)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  CALL AssertError1(obj%IsInitiated(), myName, &
-                    "VtkHDF5File_ is not initiated.")
-  CALL AssertError1(obj%IsWrite(), myName, &
-                    "VtkHDF5File_ should be initiated with mode NEW.")
-#endif
-
-  ! The mesh is written also in a skipped step, so that a mesh which
-  ! changes in a skipped step is used from the next output step
-  CALL VTKGetLagrangeGrid(fedof=fedof, geofedof=geofedof, points=points, &
-                          connectivity=connectivity, offsets=offsets, &
-                          types=types)
-
-  CALL obj%WriteUnstructuredGrid(points=points, connectivity=connectivity, &
-                                 offsets=offsets, types=types)
-
-  ! WritePointData1 evaluates a field at the points of the Lagrange grid
-  obj%isLagrange = math%yes
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE obj_WriteMesh2
+END PROCEDURE obj_WriteUnstructuredGrid
 
 !----------------------------------------------------------------------------
 !                                                                 BeginStep
@@ -440,49 +395,6 @@ MODULE PROCEDURE obj_WriteFieldData
                           '[END] ')
 #endif
 END PROCEDURE obj_WriteFieldData
-
-!----------------------------------------------------------------------------
-!                                                                 WriteGrid
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2026-10-24
-! summary: Append a grid as a new part and update the mesh offsets
-
-MODULE PROCEDURE obj_WriteUnstructuredGrid
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_WriteUnstructuredGrid()"
-#endif
-
-  INTEGER(I4B) :: nP, nC, nIds, pointOffset, connOffset, cellOffset, &
-    partOffset
-
-  nP = SIZE(points, 2)
-  nC = SIZE(types)
-  nIds = SIZE(connectivity)
-
-  CALL obj%Append(_ROOT_ // "Points", points, pointOffset)
-  CALL obj%Append(_ROOT_ // "Connectivity", connectivity, connOffset)
-  CALL obj%Append(_ROOT_ // "Offsets", offsets)
-  CALL obj%Append(_ROOT_ // "Types", types, cellOffset)
-  CALL obj%Append(_ROOT_ // "NumberOfPoints", [nP], partOffset)
-  CALL obj%Append(_ROOT_ // "NumberOfCells", [nC])
-  CALL obj%Append(_ROOT_ // "NumberOfConnectivityIds", [nIds])
-
-  obj%nPoints = nP
-  obj%nCells = nC
-  obj%nIds = nIds
-  obj%pointOffset = pointOffset
-  obj%connOffset = connOffset
-  obj%cellOffset = cellOffset
-  obj%partOffset = partOffset
-  obj%isMeshWritten = math%yes
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
-#endif
-END PROCEDURE obj_WriteUnstructuredGrid
 
 !----------------------------------------------------------------------------
 !                                                              CanWriteData
