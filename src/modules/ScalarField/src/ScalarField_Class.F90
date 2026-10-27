@@ -19,25 +19,24 @@
 ! summary: Scalar field data type is defined
 
 MODULE ScalarField_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE String_Class, ONLY: String
-USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
-USE VTKFile_Class, ONLY: VTKFile_
+USE BaseType, ONLY: FEVariable_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
-USE UserFunction_Class, ONLY: UserFunction_
+USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE Tomlf, ONLY: toml_table
-USE TimeOpt_Class, ONLY: TimeOpt_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
 USE MeshField_Class, ONLY: MeshField_
 USE NeumannBC_Class, ONLY: NeumannBCPointer_
+USE String_Class, ONLY: String
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE TimeOpt_Class, ONLY: TimeOpt_
+USE Tomlf, ONLY: toml_table
+USE UserFunction_Class, ONLY: UserFunction_
+USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: ScalarField_
@@ -64,31 +63,29 @@ PUBLIC :: ScalarFieldApplyBodySource
 
 TYPE, EXTENDS(AbstractNodeField_) :: ScalarField_
 CONTAINS
-  PRIVATE
-
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate an instance of ScalarField_ by passing arguments
   FINAL :: obj_Final
 
   ! @SetMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set single entry, we call SetSingle method
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set all values to a scalar values
   !! We call SetAll method here
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set all values to a given vector
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set selected values to given scalar
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set selected values to given vector
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! This method is used for ASSIGNMENT operator
   !! WE call copy method
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set selected values using FEVariable
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PRIVATE, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale*obj2
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
@@ -97,15 +94,18 @@ CONTAINS
     Set5, Set6, Set7, Set8
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Set7
   !! Set values to a vector
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLagrangeDOF => obj_SetLagrangeDOF
+  !! Get values of obj2 at lagrange interpolation points and
+  !! assign to obj
 
   ! @GetMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get single entry
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! Get all values in Real vector
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! Get selected values
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! Get selected values in FEVariable
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4
   !! Get the entries of scalar field
@@ -116,28 +116,36 @@ CONTAINS
   !! Get the size of the scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
+  PROCEDURE, PRIVATE, PASS(obj) :: GetVtkUnstructuredValue1 => &
+    obj_GetVtkUnstructuredValue1
+  !! Get data array for Vtk UnstructuredGrid with allocation.
+  PROCEDURE, PRIVATE, PASS(obj) :: GetVtkUnstructuredValue2 => &
+    obj_GetVtkUnstructuredValue2
+  !! Get data array for Vtk UnstructuredGrid without allocation.
+  GENERIC, PUBLIC :: GetVtkUnstructuredValue => GetVtkUnstructuredValue1, &
+    GetVtkUnstructuredValue2
+  !! Generic method for getting data array for writingin vtk files
 
   ! @DBCMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
     obj_ApplyDirichletBC1
   !! Apply Dirichlet Boundary Condition
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
     obj_ApplyDirichletBC2
   !! Apply Dirichlet Boundary Condition
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC3 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC3 => &
     obj_ApplyDirichletBC3
   !! Apply Dirichlet Boundary Condition
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
-
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyZeroDirichletBC1 => &
-    obj_ApplyZeroDirichletBC1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyZeroDirichletBC1 => obj_ApplyZeroDirichletBC1
   !! Apply Zero Dirichlet Boundary Condition
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyZeroDirichletBC2 => &
-    obj_ApplyZeroDirichletBC2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyZeroDirichletBC2 => obj_ApplyZeroDirichletBC2
   !! Apply Zero Dirichlet Boundary Condition
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyZeroDirichletBC3 => &
-    obj_ApplyZeroDirichletBC3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
+    ApplyZeroDirichletBC3 => obj_ApplyZeroDirichletBC3
   !! Apply Zero Dirichlet Boundary Condition
   GENERIC, PUBLIC :: ApplyZeroDirichletBC => ApplyZeroDirichletBC1, &
     ApplyZeroDirichletBC2, ApplyZeroDirichletBC3
@@ -158,11 +166,11 @@ CONTAINS
   !! Generic method for applying surface neumann boundary conditions
 
   ! @BodySourceMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource1 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource1 => &
     obj_ApplyBodySource1
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource2 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource2 => &
     obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
@@ -177,6 +185,7 @@ CONTAINS
 
   ! @VTKMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
+  !! Export data to VTK
 
   ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
@@ -204,10 +213,12 @@ END TYPE ScalarFieldPointer_
 !  instead of parameter list.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, &
+                                  storageFMT, &
                                   comm, local_n, global_n, spaceCompo, &
                                   isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
+                                  timeCompo, isTimeCompo, &
+                                  isTimeCompoScalar, &
                                   tPhysicalVarNames, physicalVarNames, &
                                   isPhysicalVarNames, &
                                   isPhysicalVarNamesScalar, tNodes, &
@@ -542,6 +553,29 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                SetLagrangeDOF@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2026-10-12
+! summary: Set Lagrange degree of freedom value
+!
+! The values of obj are set from obj2.
+! obj2 is evaluated at the lagrange interpolation points.
+! obj is a VectorField of Lagrange polynomials.
+! The interpolation points and order of interpolation comes from
+! obj2.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLagrangeDOF(obj, obj2)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! values of obj will be set.
+    CLASS(ScalarField_), INTENT(INOUT) :: obj2
+    !! values of obj will be set from obj2
+  END SUBROUTINE obj_SetLagrangeDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
@@ -675,6 +709,70 @@ INTERFACE
     CLASS(MeshField_), INTENT(INOUT) :: meshField
     INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
   END SUBROUTINE obj_GetMeshField
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetVtkUnstructuredGridData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-27
+! summary: Get data array for writing UnstructuredGrid in VTK
+!
+! This method will return the data array for point data.
+! The storage in value is elementwise, in DGFEM manner.
+! Note that to plot this data mesh should be according to DGFEM.
+! The mesh is obtained from GetVtkUnstructuredGridData.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVtkUnstructuredValue1(obj, VALUE)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:)
+  END SUBROUTINE obj_GetVtkUnstructuredValue1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                       GetVtkUnstructuredGridData@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-27
+! summary: Get data array for writing UnstructuredGrid in VTK
+!
+! This method will return the data array for point data.
+! The storage in value is elementwise, in DGFEM manner.
+! Note that to plot this data mesh should be according to DGFEM.
+! The mesh is obtained from GetVtkUnstructuredGridData.
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVtkUnstructuredValue2(obj, VALUE, tsize, &
+                                                 refElemCoord, xij, &
+                                                 elemCoord, nodalValue, &
+                                                 fecon, vtkindx)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! size of data written in value
+    REAL(DFP), INTENT(INOUT) :: refElemCoord(:, :)
+    !! temporary storage for nodal coordinate of reference element
+    !! size should be at least (3, maxNNE)
+    REAL(DFP), INTENT(INOUT) :: xij(:, :)
+    !! temporal storage for nodal coordinate of interpolation points
+    !! size should be at least (4, maxCon). This variable
+    !! is used to construct the quadrature points
+    REAL(DFP), INTENT(INOUT) :: elemCoord(:, :)
+    !! temporal storage for nodal coordinate of physical element
+    !! size should be at least (3, maxNNE)
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:)
+    !! temporal storage for element level nodal value of scalarField
+    !! size should be at least maximum connectivity in fedof
+    INTEGER(I4B), INTENT(INOUT) :: fecon(:)
+    !! temporal storage for connectivity of an element
+    !! size should be at least max connectivity in fedof
+    INTEGER(I4B), INTENT(INOUT) :: vtkindx(:)
+    !! temporal storage for connectivity of an element
+    !! size should be at least (maxNNE)
+  END SUBROUTINE obj_GetVtkUnstructuredValue2
 END INTERFACE
 
 !----------------------------------------------------------------------------
