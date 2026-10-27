@@ -47,6 +47,36 @@ PUBLIC :: VtkHDF5File_
 PUBLIC :: VtkHDF5FilePointer_
 
 !----------------------------------------------------------------------------
+!                                                              VtkDataArray_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-27
+! summary: Record of a data array written in a VTKHDF file
+!
+! A data array is identified by its location loc and its name. The
+! record keeps the offset and the size of the latest data of the array
+! (set by [[VtkHDF5File_:RegisterArray]]) and the number of steps
+! written in Steps/<loc>DataOffsets/<name> (set by
+! [[VtkHDF5File_:EndStep]]), so that EndStep does not have to read the
+! extent of the datasets.
+
+TYPE :: VtkDataArray_
+  TYPE(String) :: name
+  !! name of data array
+  INTEGER(I4B) :: loc = 0
+  !! location: 1: PointData, 2: CellData, 3: FieldData
+  INTEGER(I4B) :: offset = 0
+  !! offset (in tuples) of the latest data in the dataset
+  INTEGER(I4B) :: ncomp = 0
+  !! number of components of the latest data
+  INTEGER(I4B) :: ntuples = 0
+  !! number of tuples of the latest data
+  INTEGER(I4B) :: nStepsWritten = 0
+  !! number of steps written in the Steps group for this array
+END TYPE VtkDataArray_
+
+!----------------------------------------------------------------------------
 !                                                               VtkHDF5File_
 !----------------------------------------------------------------------------
 
@@ -114,8 +144,6 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   !! output is requested (ImportFromToml)
   LOGICAL(LGT) :: isTransient = math%no
   !! write time steps (Steps group)
-  LOGICAL(LGT) :: isLagrange = math%no
-  !! the current mesh is a Lagrange grid (WriteMesh(fedof, geofedof))
   LOGICAL(LGT) :: isMeshWritten = math%no
   !! a mesh has been written
   LOGICAL(LGT) :: isStepOpen = math%no
@@ -137,14 +165,9 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   !! name of vtk type
   INTEGER(I4B) :: nArrays = 0
   !! number of data arrays written in the file
-  TYPE(String), ALLOCATABLE :: arrayNames(:)
-  !! names of data arrays
-  INTEGER(I4B), ALLOCATABLE :: arrayLoc(:)
-  !! 1: PointData, 2: CellData, 3: FieldData
-  INTEGER(I4B), ALLOCATABLE :: arrayOffset(:)
-  !! offset (in tuples) of the latest data of arrays
-  INTEGER(I4B), ALLOCATABLE :: arraySize(:, :)
-  !! number of components and tuples of the latest data of arrays
+  TYPE(VtkDataArray_), ALLOCATABLE :: arrays(:)
+  !! data arrays written in the file, arrays(1:nArrays) are used;
+  !! SIZE(arrays) is the capacity (doubled when it is full)
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateVTKHDF5 => obj_InitiateVTKHDF5
   !! Open a VTKHDF file for writing or reading
@@ -170,13 +193,11 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: EndStep => obj_EndStep
   !! Finish a time step
   PROCEDURE, PASS(obj) :: WritePointData1 => obj_WritePointData1
-  !! Write a nodal field as point data
-  PROCEDURE, PASS(obj) :: WritePointData2 => obj_WritePointData2
   !! Write a rank-1 array as point data
-  PROCEDURE, PASS(obj) :: WritePointData3 => obj_WritePointData3
+  PROCEDURE, PASS(obj) :: WritePointData2 => obj_WritePointData2
   !! Write a rank-2 array as point data
   GENERIC, PUBLIC :: WritePointData => WritePointData1, &
-    WritePointData2, WritePointData3
+    WritePointData2
   PROCEDURE, PASS(obj) :: WriteCellData1 => obj_WriteCellData1
   !! Write a rank-1 array as cell data
   PROCEDURE, PASS(obj) :: WriteCellData2 => obj_WriteCellData2
@@ -184,6 +205,8 @@ CONTAINS
   GENERIC, PUBLIC :: WriteCellData => WriteCellData1, WriteCellData2
   PROCEDURE, PUBLIC, PASS(obj) :: WriteFieldData => obj_WriteFieldData
   !! Write a rank-1 array as field data
+  PROCEDURE, PRIVATE, PASS(obj) :: RegisterArray => obj_RegisterArray
+  !! Add a data array (if new) and set its latest offset and size
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalSteps => obj_GetTotalSteps
   !! Number of steps in the file
   PROCEDURE, PUBLIC, PASS(obj) :: GetTimeValues => obj_GetTimeValues
@@ -686,43 +709,19 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! summary: Write a nodal field as point data
-!
-! - Linear grid: the vertex DOFs of the field are written
-!   ([[VTKGetVertexValues]]).
-! - Lagrange grid: the field is evaluated at the points of the grid
-!   ([[VTKGetLagrangeValues]]).
-!
-! ScalarField_ is written with 1 component and VectorField_ with 3
-! components. In a transient file, it should be called between
-! BeginStep and EndStep.
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   name : CHARACTER(*) - name of data array
-!   field : CLASS(AbstractNodeField_) - ScalarField_ or VectorField_
-!
-! See also: [[obj_WriteMesh2]] (contains an example),
-! [[obj_WritePointData2]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_WritePointData1(obj, name, field)
-    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
-    !! VTKHDF file
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of data array
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: field
-    !! nodal field
-  END SUBROUTINE obj_WritePointData1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             WritePointData@WriteMethods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-1 array as point data (one component)
+!
+! vals(j) is the value at the j-th point of the current grid. The data
+! is appended to /VTKHDF/PointData/<name>.
+!
+! In a transient file, it should be called between BeginStep and
+! EndStep; nothing is written in a step which is skipped by frequency.
+! In DEBUG mode, an error is raised if the file is not opened with mode
+! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
+! if it is called outside a step of a transient file, or if the number
+! of tuples is not GetTotalPoints().
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -730,7 +729,46 @@ END INTERFACE
 !   vals : REAL(DFP) - values, SIZE(vals) = GetTotalPoints()
 !
 ! See also: [[obj_BeginStep]] (contains an example),
-! [[obj_WritePointData3]]
+! [[obj_WritePointData2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_WritePointData1(obj, name, vals)
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    REAL(DFP), INTENT(IN) :: vals(:)
+    !! values at points
+  END SUBROUTINE obj_WritePointData1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               WritePointData@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
+! summary: Write a rank-2 array as point data (multiple components)
+!
+! vals(i, j) is the i-th component at the j-th point of the current
+! grid. The data is appended to /VTKHDF/PointData/<name>.
+!
+! In a transient file, it should be called between BeginStep and
+! EndStep; nothing is written in a step which is skipped by frequency.
+! In DEBUG mode, an error is raised if the file is not opened with mode
+! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
+! if it is called outside a step of a transient file, or if the number
+! of tuples is not GetTotalPoints().
+!
+! Arguments:
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
+!   name : CHARACTER(*) - name of data array
+!   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalPoints())
+!
+! See also: [[obj_WritePointData1]], [[obj_BeginStep]] (contains an
+! example)
 
 INTERFACE
   MODULE SUBROUTINE obj_WritePointData2(obj, name, vals)
@@ -738,37 +776,9 @@ INTERFACE
     !! VTKHDF file
     CHARACTER(*), INTENT(IN) :: name
     !! name of data array
-    REAL(DFP), INTENT(IN) :: vals(:)
-    !! values at points
-  END SUBROUTINE obj_WritePointData2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                             WritePointData@WriteMethods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2026-10-24
-! summary: Write a rank-2 array as point data (multiple components)
-!
-! vals(i, j) is the i-th component at the j-th point.
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalPoints())
-!
-! See also: [[obj_WriteMesh1]] (contains an example)
-
-INTERFACE
-  MODULE SUBROUTINE obj_WritePointData3(obj, name, vals)
-    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
-    !! VTKHDF file
-    CHARACTER(*), INTENT(IN) :: name
-    !! name of data array
     REAL(DFP), INTENT(IN) :: vals(:, :)
     !! values at points, shape (nComp, nPoints)
-  END SUBROUTINE obj_WritePointData3
+  END SUBROUTINE obj_WritePointData2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -777,16 +787,27 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-1 array as cell data (one component)
 !
-! The order of cells is the order of active elements of the mesh.
+! vals(j) is the value at the j-th cell of the current grid (the order
+! of cells in the grid). The data is appended to
+! /VTKHDF/CellData/<name>.
+!
+! In a transient file, it should be called between BeginStep and
+! EndStep; nothing is written in a step which is skipped by frequency.
+! In DEBUG mode, an error is raised if the file is not opened with mode
+! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
+! if it is called outside a step of a transient file, or if the number
+! of tuples is not GetTotalCells().
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - values, SIZE(vals) = GetTotalCells()
 !
-! See also: [[obj_WriteMesh1]] (contains an example)
+! See also: [[obj_WriteCellData2]], [[obj_WritePointData1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteCellData1(obj, name, vals)
@@ -805,14 +826,26 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-2 array as cell data (multiple components)
+!
+! vals(i, j) is the i-th component at the j-th cell of the current
+! grid. The data is appended to /VTKHDF/CellData/<name>.
+!
+! In a transient file, it should be called between BeginStep and
+! EndStep; nothing is written in a step which is skipped by frequency.
+! In DEBUG mode, an error is raised if the file is not opened with mode
+! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
+! if it is called outside a step of a transient file, or if the number
+! of tuples is not GetTotalCells().
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !   name : CHARACTER(*) - name of data array
 !   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalCells())
 !
-! See also: [[obj_WriteCellData1]]
+! See also: [[obj_WriteCellData1]], [[obj_WritePointData2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteCellData2(obj, name, vals)
@@ -831,11 +864,21 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-1 array as field data (one tuple)
 !
 ! Field data are global values which are not attached to points or
 ! cells (e.g., energy, number of iterations). vals is written as one
-! tuple with SIZE(vals) components.
+! tuple with SIZE(vals) components, appended to
+! /VTKHDF/FieldData/<name>. The number of components may change from
+! step to step; it is stored in Steps/FieldDataSizes/<name>.
+!
+! In a transient file, it should be called between BeginStep and
+! EndStep; nothing is written in a step which is skipped by frequency.
+! In DEBUG mode, an error is raised if the file is not opened with mode
+! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
+! or if it is called outside a step of a transient file.
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -853,6 +896,60 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: vals(:)
     !! values
   END SUBROUTINE obj_WriteFieldData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               RegisterArray@WriteMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-10-24
+! update:
+!   - 2026-10-27: type-bound procedure (was a private subroutine);
+!     records in VtkDataArray_, capacity doubling
+! summary: Add a data array (if new) and set its latest offset and size
+!
+! The data arrays written in the file are recorded in obj%arrays(1:
+! nArrays) (see VtkDataArray_). An array is identified by its location
+! loc and its name; it is searched linearly.
+!
+! If the array (loc, name) is not recorded yet, a new entry is added.
+! The capacity of obj%arrays starts at 8 and is doubled when it is
+! full, so that adding n arrays costs O(n) copies. Then the offset and
+! the size of the latest data of the array are set.
+! EndStep uses these entries to append the offsets of all data arrays
+! to the Steps group (see [[obj_EndStep]]).
+!
+! It is called by the write methods of point, cell and field data after
+! the data is appended.
+!
+! Arguments:
+!   obj : CLASS(VtkHDF5File_) - VTKHDF file
+!   loc : INTEGER(I4B) - 1: PointData, 2: CellData, 3: FieldData
+!   name : CHARACTER(*) - name of data array
+!   offset : INTEGER(I4B) - offset (in tuples) of the latest data in
+!     the dataset of the array
+!   ncomp : INTEGER(I4B) - number of components of the latest data
+!   ntuples : INTEGER(I4B) - number of tuples of the latest data
+!
+! See also: [[obj_WritePointData1]], [[obj_EndStep]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_RegisterArray(obj, loc, name, offset, ncomp, &
+                                      ntuples)
+    CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
+    !! VTKHDF file
+    INTEGER(I4B), INTENT(IN) :: loc
+    !! location of the array: 1: PointData, 2: CellData, 3: FieldData
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of data array
+    INTEGER(I4B), INTENT(IN) :: offset
+    !! offset (in tuples) of the latest data in the dataset
+    INTEGER(I4B), INTENT(IN) :: ncomp
+    !! number of components of the latest data
+    INTEGER(I4B), INTENT(IN) :: ntuples
+    !! number of tuples of the latest data
+  END SUBROUTINE obj_RegisterArray
 END INTERFACE
 
 !----------------------------------------------------------------------------

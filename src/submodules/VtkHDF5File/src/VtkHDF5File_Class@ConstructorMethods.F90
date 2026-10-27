@@ -181,7 +181,6 @@ MODULE PROCEDURE obj_Display
   CALL Display(obj%IsInitiated(), "isInitiated: ", unitno=unitno)
   CALL Display(obj%isTransient, "isTransient: ", unitno=unitno)
   CALL Display(obj%frequency, "frequency: ", unitno=unitno)
-  CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
   CALL Display(obj%isMeshWritten, "isMeshWritten: ", unitno=unitno)
   CALL Display(obj%nPoints, "nPoints: ", unitno=unitno)
   CALL Display(obj%nCells, "nCells: ", unitno=unitno)
@@ -190,7 +189,7 @@ MODULE PROCEDURE obj_Display
   CALL Display(obj%nSteps, "nSteps: ", unitno=unitno)
   CALL Display(obj%nArrays, "nArrays: ", unitno=unitno)
   DO ii = 1, obj%nArrays
-    CALL Display(obj%arrayNames(ii)%chars(), "array: ", unitno=unitno)
+    CALL Display(obj%arrays(ii)%name%chars(), "array: ", unitno=unitno)
   END DO
 
 #ifdef DEBUG_VER
@@ -314,7 +313,6 @@ SUBROUTINE ResetState(obj)
                           '[START] ')
 #endif
 
-  obj%isLagrange = math%no
   obj%isMeshWritten = math%no
   obj%isStepOpen = math%no
   obj%isSkipped = math%no
@@ -328,10 +326,7 @@ SUBROUTINE ResetState(obj)
   obj%cellOffset = 0
   obj%connOffset = 0
   obj%nArrays = 0
-  IF (ALLOCATED(obj%arrayNames)) DEALLOCATE(obj%arrayNames)
-  IF (ALLOCATED(obj%arrayLoc)) DEALLOCATE(obj%arrayLoc)
-  IF (ALLOCATED(obj%arrayOffset)) DEALLOCATE(obj%arrayOffset)
-  IF (ALLOCATED(obj%arraySize)) DEALLOCATE(obj%arraySize)
+  IF (ALLOCATED(obj%arrays)) DEALLOCATE(obj%arrays)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
