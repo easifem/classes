@@ -632,7 +632,7 @@ MODULE PROCEDURE obj_IsNew
 END PROCEDURE obj_IsNew
 
 !----------------------------------------------------------------------------
-!                                                                 setNewStat
+!                                                                 SetNewStat
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetNewStat
