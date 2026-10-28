@@ -74,6 +74,81 @@ TYPE :: VtkDataArray_
 END TYPE VtkDataArray_
 
 !----------------------------------------------------------------------------
+!                                                        VtkReadDataArray_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Cached information of a data array for reading
+!
+! A data array is identified by its group ("PointData" or "CellData")
+! and its name. The entry is made by the first ReadPointData or
+! ReadCellData of the array: it keeps the rank of the dataset
+! <group>/<name> and the offsets Steps/<group>Offsets/<name> of all the
+! steps, so that the next reads do not open these datasets again.
+
+TYPE :: VtkReadDataArray_
+  TYPE(String) :: group
+  !! "PointData" or "CellData"
+  TYPE(String) :: name
+  !! name of data array
+  INTEGER(I4B) :: RANK = 0
+  !! rank of the dataset <group>/<name> (1 or 2)
+  LOGICAL(LGT) :: hasOffsets = .FALSE.
+  !! Steps/<group>Offsets/<name> exists
+  INTEGER(I4B), ALLOCATABLE :: offsets(:)
+  !! offsets(k): data offset (in tuples) of step k, if hasOffsets
+END TYPE VtkReadDataArray_
+
+!----------------------------------------------------------------------------
+!                                                            VtkReadCache_
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Cache of the Steps group and of the parts for reading
+!
+! The read methods ([[VtkHDF5File_:GetTotalSteps]],
+! [[VtkHDF5File_:GetTimeValues]], [[VtkHDF5File_:ReadMesh]],
+! [[VtkHDF5File_:ReadPointData]], [[VtkHDF5File_:ReadCellData]]) need
+! a few values of the Steps group and of the NumberOf* datasets in each
+! call. These datasets are small (one value per step or per part), so
+! they are read once, at the first read call, and kept here. A read of a
+! step then reads only the slabs of the grid or of the data.
+!
+! The cache is reset (isSet is false) by WriteUnstructuredGrid and
+! EndTimeStep, which change these datasets, and by Deallocate. It is
+! loaded again by the next read call.
+
+TYPE :: VtkReadCache_
+  LOGICAL(LGT) :: isSet = .FALSE.
+  !! the cache is loaded
+  INTEGER(I4B) :: nSteps = 0
+  !! NSteps attribute of the Steps group, 0 if there are no steps
+  REAL(DFP), ALLOCATABLE :: times(:)
+  !! Steps/Values, SIZE(times) = nSteps
+  INTEGER(I4B), ALLOCATABLE :: partOffsets(:)
+  !! Steps/PartOffsets, SIZE = nSteps
+  INTEGER(I4B), ALLOCATABLE :: pointOffsets(:)
+  !! Steps/PointOffsets, SIZE = nSteps
+  INTEGER(I4B), ALLOCATABLE :: cellOffsets(:)
+  !! Steps/CellOffsets, SIZE = nSteps
+  INTEGER(I4B), ALLOCATABLE :: connOffsets(:)
+  !! Steps/ConnectivityIdOffsets, SIZE = nSteps
+  INTEGER(I4B), ALLOCATABLE :: nPoints(:)
+  !! NumberOfPoints, SIZE = number of parts
+  INTEGER(I4B), ALLOCATABLE :: nCells(:)
+  !! NumberOfCells, SIZE = number of parts
+  INTEGER(I4B), ALLOCATABLE :: nIds(:)
+  !! NumberOfConnectivityIds, SIZE = number of parts
+  INTEGER(I4B) :: nArrays = 0
+  !! number of data arrays in the cache
+  TYPE(VtkReadDataArray_), ALLOCATABLE :: arrays(:)
+  !! data arrays read so far, arrays(1:nArrays) are used;
+  !! SIZE(arrays) is the capacity (doubled when it is full)
+END TYPE VtkReadCache_
+
+!----------------------------------------------------------------------------
 !                                                               VtkHDF5File_
 !----------------------------------------------------------------------------
 
@@ -166,6 +241,8 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   TYPE(VtkDataArray_), ALLOCATABLE :: arrays(:)
   !! data arrays written in the file, arrays(1:nArrays) are used;
   !! SIZE(arrays) is the capacity (doubled when it is full)
+  TYPE(VtkReadCache_) :: readCache
+  !! Steps group and parts, read once by the read methods
 CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: InitiateVTKHDF5 => obj_InitiateVTKHDF5
   !! Open a VTKHDF file for writing or reading
@@ -1153,6 +1230,9 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Number of steps in the file
 !
 ! Returns the NSteps attribute of the Steps group, or zero if the file
@@ -1182,6 +1262,9 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Time values of all steps
 !
 ! Arguments:
@@ -1211,6 +1294,7 @@ END INTERFACE
 ! REAL(DFP), ALLOCATABLE :: times(:)
 ! REAL(DFP) :: points(3, 4)
 ! INTEGER(I4B) :: istep
+! LOGICAL :: isok
 !
 ! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
 ! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
@@ -1238,10 +1322,13 @@ END INTERFACE
 !                          vtkType="UnstructuredGrid", &
 !                          isTransient=math%yes)
 ! CALL obj%WriteUnstructuredGrid(points, [0, 1, 2, 3], [0, 4], [9_INT8])
+! isok = .TRUE.
 ! DO istep = 1, 3
 !   CALL obj%BeginTimeStep(time=0.5_DFP * istep)
 !   CALL obj%EndTimeStep()
+!   isok = isok .AND. (obj%GetTotalSteps() .EQ. istep)
 ! END DO
+! CALL OK(isok, "GetTotalSteps: while writing")
 ! CALL obj%DEALLOCATE()
 !
 ! CALL obj%InitiateVTKHDF5(filename=file2, mode=TypeFileOpt%READ, &
@@ -1272,6 +1359,9 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Read the grid of a step
 !
 ! The grid (part) used in the step is read. If step is not present or
@@ -1404,6 +1494,9 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Read point data of a step
 !
 ! vals(i, j) is the i-th component at the j-th point. A one component
@@ -1514,6 +1607,9 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Read cell data of a step
 !
 ! Arguments:

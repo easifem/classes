@@ -341,6 +341,7 @@ SUBROUTINE ResetState(obj)
   obj%connOffset = 0
   obj%nArrays = 0
   IF (ALLOCATED(obj%arrays)) DEALLOCATE (obj%arrays)
+  obj%readCache = VtkReadCache_()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &

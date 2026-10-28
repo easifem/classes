@@ -438,7 +438,21 @@ complete program.)
 
 ### Error Handling
 
-Use the exception handler:
+Error checks are done in DEBUG mode only. The release build does not
+check or report errors and has no fallbacks for wrong input (for
+example, an output array may be left uninitialised). Users run their
+program in DEBUG mode first, and use the release build only when it
+runs without errors. Therefore:
+
+- put every error check inside `#ifdef DEBUG_VER ... #endif`;
+- declare `modName`, `myName`, and the variables used only by the
+  checks (e.g. `isok`) inside `#ifdef DEBUG_VER` as well;
+- do not add release-mode handling of errors, and do not report its
+  absence as a problem in reviews.
+
+Use the exception handler, or `AssertError1/2/3` from
+`src/submodules/include/errors.F90` (included at the end of the
+submodule):
 
 ```fortran
 #ifdef DEBUG_VER
@@ -446,21 +460,54 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
 IF (error_condition) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
                     '[ERROR] :: Error description')
 END IF
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(.NOT. error_condition, myName, 'Error description')
+#endif
 ```
 
 ### Preprocessor Usage
 
 #### Debug Guards
 
+Every procedure (module procedures and internal helper routines) raises
+a `[START]` message at its beginning and an `[END]` message at its end,
+both in DEBUG mode only. If a procedure does not have them yet, add them
+when you edit it. If the procedure returns early (`RETURN`), raise the
+`[END]` message before the `RETURN` as well.
+
 ```fortran
+MODULE PROCEDURE obj_MethodName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SubroutineName"
-CALL e%RaiseInformation(modName//'::'//myName//' - [START]')
+CHARACTER(*), PARAMETER :: myName = "obj_MethodName()"
 #endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (nothing_to_do) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! ... body ...
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_MethodName
 ```
 
 #### External Libraries

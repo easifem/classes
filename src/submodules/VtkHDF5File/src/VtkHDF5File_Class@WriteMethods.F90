@@ -98,6 +98,8 @@ obj%connOffset = connOffset
 obj%cellOffset = cellOffset
 obj%partOffset = partOffset
 obj%isMeshWritten = math%yes
+! the NumberOf* datasets are changed, see VtkReadCache_
+obj%readCache%isSet = math%no
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -106,7 +108,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_WriteUnstructuredGrid
 
 !----------------------------------------------------------------------------
-!                                                                 BeginTimeStep
+!                                                                BeginTimeStep
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_BeginTimeStep
@@ -158,7 +160,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_BeginTimeStep
 
 !----------------------------------------------------------------------------
-!                                                                   EndTimeStep
+!                                                                  EndTimeStep
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_EndTimeStep
@@ -262,6 +264,8 @@ DO ii = 1, obj%nArrays
 END DO
 
 CALL obj%WriteAttribute("/VTKHDF/Steps", "NSteps", obj%nSteps)
+! the Steps group is changed, see VtkReadCache_
+obj%readCache%isSet = math%no
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
