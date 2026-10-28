@@ -84,7 +84,7 @@ fortitude check src/
 
 #### Directory Structure
 
-```
+```text
 src/
 ├── modules/          # Interface definitions (public API)
 │   └── ModuleName/
@@ -129,15 +129,15 @@ MODULE ModuleName_Class
   USE BaseType, ONLY: SpecificTypes_
   USE GlobalData, ONLY: DFP, I4B, LGT
   USE ExceptionHandler_Class, ONLY: e
-  
+
   IMPLICIT NONE
   PRIVATE
-  
+
   PUBLIC :: ModuleName_
   PUBLIC :: ModuleNamePointer_
-  
+
   CHARACTER(*), PARAMETER :: modName = "ModuleName_Class"
-  
+
   TYPE :: ModuleName_
     PRIVATE
     ! Member variables
@@ -145,11 +145,11 @@ MODULE ModuleName_Class
     PRIVATE
     PROCEDURE, PUBLIC, PASS(obj) :: MethodName => obj_MethodName
   END TYPE ModuleName_
-  
+
   TYPE :: ModuleNamePointer_
     CLASS(ModuleName_), POINTER :: ptr => NULL()
   END TYPE ModuleNamePointer_
-  
+
   INTERFACE
     MODULE SUBROUTINE obj_MethodName(obj)
       CLASS(ModuleName_), INTENT(INOUT) :: obj
@@ -370,7 +370,7 @@ questions (including docs or tests that were not updated).
   line), `IMPLICIT NONE`, declarations, the calls, and `CALL OK(...)`
   checks from `Test_Method` so the result can be verified.
 - Fence the program with `` !```fortran `` and `` !``` `` on their own
-  comment lines. Every line in the block starts with `! ` (plain `!`
+  comment lines. Every line in the block starts with `!` (plain `!`
   and one space); never `!>`.
 - The program is normally the same as the matching test in
   `src/modules/<Module>/examples/`, without the `!> author:` docblock

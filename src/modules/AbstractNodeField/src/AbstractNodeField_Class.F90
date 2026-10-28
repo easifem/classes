@@ -22,7 +22,7 @@ USE DirichletBC_Class, ONLY: DirichletBC_
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-USE GlobalData, ONLY: DFP, LGT, I4B
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE GlobalData, ONLY: INT8
 USE HDF5File_Class, ONLY: HDF5File_
 USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_

@@ -1,3 +1,3 @@
 BuildType = "Debug"
-BuildDir = "/tmp/easifem-tests/FEDOF"
+BuildDir = "/tmp/easifemClasses/FEDOF"
 TargetLibs = ["easifemClasses"]

@@ -584,7 +584,7 @@ MODULE PROCEDURE obj_GetVtkUnstructuredGridData
 
   CALL Reallocate(vtkindx, MAX(MAX_VTK_NODES, maxNNE))
 
-  ! First pass: count points and cells
+! First pass: count points and cells
   nPoints = 0
   nCells = 0
   loop1: DO iel = 1, tElements
@@ -628,7 +628,7 @@ MODULE PROCEDURE obj_GetVtkUnstructuredGridData
   CALL Reallocate(elemCoord, 3, maxNNE)
   CALL Reallocate(xij, 4, MAX(MAX_VTK_NODES, maxNNE))
 
-  ! Second pass: points, cells, and values
+! Second pass: points, cells, and values
   icell = 0
   ip0 = 0
   ic0 = 0
