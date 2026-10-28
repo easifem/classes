@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> author: Shion Shimizu
+!> author: Shion Shimizu and Vikas Sharma
 ! date: 2026-10-24
 ! summary: Read methods of VtkHDF5File_
 
@@ -23,8 +23,6 @@ SUBMODULE(VtkHDF5File_Class) ReadMethods
 USE Display_Method, ONLY: ToString
 USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
-
-CHARACTER(*), PARAMETER :: ROOT = "/VTKHDF/", STEPS = "/VTKHDF/Steps/"
 
 !> Location of a step in the datasets
 TYPE :: StepInfo_
@@ -37,6 +35,8 @@ END TYPE StepInfo_
 CHARACTER(*), PARAMETER :: modName = &
                            "VtkHDF5File_Class@ReadMethods.F90"
 #endif
+
+#include "./include/vtkhdf5_definitions.F90"
 
 CONTAINS
 
@@ -85,7 +85,7 @@ IF (n .EQ. 0) THEN
   IF (ALLOCATED(vals)) DEALLOCATE (vals)
   ALLOCATE (vals(0))
 ELSE
-  CALL obj%ReadSlab(STEPS//"Values", 0, n, vals)
+  CALL obj%ReadSlab(_STEPS_//"Values", 0, n, vals)
 END IF
 
 #ifdef DEBUG_VER
@@ -109,14 +109,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-info = GetStepInfo(obj, step, "obj_ReadMesh()")
+info = GetStepInfo(obj, step)
 
-CALL obj%ReadSlab(ROOT//"Points", info%pointOffset, info%nPoints, points)
-CALL obj%ReadSlab(ROOT//"Connectivity", info%connOffset, info%nIds, &
+CALL obj%ReadSlab(_ROOT_//"Points", info%pointOffset, info%nPoints, points)
+CALL obj%ReadSlab(_ROOT_//"Connectivity", info%connOffset, info%nIds, &
                   connectivity)
-CALL obj%ReadSlab(ROOT//"Offsets", info%cellOffset + info%part, &
+CALL obj%ReadSlab(_ROOT_//"Offsets", info%cellOffset + info%part, &
                   info%nCells + 1, offsets)
-CALL obj%ReadSlab(ROOT//"Types", info%cellOffset, info%nCells, types)
+CALL obj%ReadSlab(_ROOT_//"Types", info%cellOffset, info%nCells, types)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -139,7 +139,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-info = GetStepInfo(obj, step, "obj_ReadPointData()")
+info = GetStepInfo(obj, step)
 CALL ReadData(obj, "PointData", NAME, info%pointOffset, info%nPoints, &
               info, step, vals)
 
@@ -164,7 +164,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-info = GetStepInfo(obj, step, "obj_ReadCellData()")
+info = GetStepInfo(obj, step)
 CALL ReadData(obj, "CellData", NAME, info%cellOffset, info%nCells, &
               info, step, vals)
 
@@ -185,46 +185,59 @@ END PROCEDURE obj_ReadCellData
 ! If step is not present, or the file has no steps, the first part is
 ! returned.
 
-FUNCTION GetStepInfo(obj, step, myName) RESULT(ans)
+FUNCTION GetStepInfo(obj, step) RESULT(ans)
   CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
   INTEGER(I4B), INTENT(IN), OPTIONAL :: step
-  CHARACTER(*), INTENT(IN) :: myName
   TYPE(StepInfo_) :: ans
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GetStepInfo()"
+  LOGICAL(LGT) :: isok
+#endif
   INTEGER(I4B) :: nsteps, istep
   INTEGER(I4B), ALLOCATABLE :: temp1(:), temp2(:, :)
 
-  IF (PRESENT(step)) THEN
-    nsteps = obj%GetTotalSteps()
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-    IF (nsteps .GT. 0) THEN
-      IF (step .LT. 1 .OR. step .GT. nsteps) THEN
-        CALL e%RaiseError(modName//'::'//myName//' - '// &
-                          '[ERROR] :: step '//ToString(step)// &
-                          ' is out of range [1, '//ToString(nsteps)//']')
-        RETURN
-      END IF
+  nsteps = 0
+  IF (PRESENT(step)) nsteps = obj%GetTotalSteps()
 
-      istep = step - 1
-      ans%hasStep = .TRUE.
+  IF (nsteps .GT. 0) THEN
 
-      CALL obj%ReadSlab(STEPS//"PartOffsets", istep, 1, temp1)
-      ans%part = temp1(1)
-      CALL obj%ReadSlab(STEPS//"PointOffsets", istep, 1, temp1)
-      ans%pointOffset = temp1(1)
-      CALL obj%ReadSlab(STEPS//"CellOffsets", istep, 1, temp2)
-      ans%cellOffset = temp2(1, 1)
-      CALL obj%ReadSlab(STEPS//"ConnectivityIdOffsets", istep, 1, temp2)
-      ans%connOffset = temp2(1, 1)
-    END IF
+#ifdef DEBUG_VER
+    isok = (step .GE. 1) .AND. (step .LE. nsteps)
+    CALL AssertError1(isok, myName, &
+                      'step '//ToString(step)// &
+                      ' is out of range [1, '//ToString(nsteps)//']')
+#endif
+
+    istep = step - 1
+    ans%hasStep = .TRUE.
+
+    CALL obj%ReadSlab(_STEPS_//"PartOffsets", istep, 1, temp1)
+    ans%part = temp1(1)
+    CALL obj%ReadSlab(_STEPS_//"PointOffsets", istep, 1, temp1)
+    ans%pointOffset = temp1(1)
+    CALL obj%ReadSlab(_STEPS_//"CellOffsets", istep, 1, temp2)
+    ans%cellOffset = temp2(1, 1)
+    CALL obj%ReadSlab(_STEPS_//"ConnectivityIdOffsets", istep, 1, temp2)
+    ans%connOffset = temp2(1, 1)
   END IF
 
-  CALL obj%ReadSlab(ROOT//"NumberOfPoints", ans%part, 1, temp1)
+  CALL obj%ReadSlab(_ROOT_//"NumberOfPoints", ans%part, 1, temp1)
   ans%nPoints = temp1(1)
-  CALL obj%ReadSlab(ROOT//"NumberOfCells", ans%part, 1, temp1)
+  CALL obj%ReadSlab(_ROOT_//"NumberOfCells", ans%part, 1, temp1)
   ans%nCells = temp1(1)
-  CALL obj%ReadSlab(ROOT//"NumberOfConnectivityIds", ans%part, 1, temp1)
+  CALL obj%ReadSlab(_ROOT_//"NumberOfConnectivityIds", ans%part, 1, temp1)
   ans%nIds = temp1(1)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END FUNCTION GetStepInfo
 
 !----------------------------------------------------------------------------
@@ -247,23 +260,31 @@ SUBROUTINE ReadData(obj, group, name, geoOffset, ntuples, info, step, &
   INTEGER(I4B), INTENT(IN), OPTIONAL :: step
   REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: vals(:, :)
 
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadData()"
+  LOGICAL(LGT) :: isok
+#endif
   CHARACTER(:), ALLOCATABLE :: path, offsetPath
   INTEGER(I4B) :: offset
   INTEGER(I4B), ALLOCATABLE :: temp(:)
   REAL(DFP), ALLOCATABLE :: temp1(:)
 
-  path = ROOT//group//"/"//name
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-  IF (.NOT. obj%pathExists(path)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      '[ERROR] :: Data array not found: '//path)
-    RETURN
-  END IF
+  path = _ROOT_//group//"/"//name
+
+#ifdef DEBUG_VER
+  isok = obj%pathExists(path)
+  CALL AssertError1(isok, myName, &
+                    'Data array not found: '//path)
+#endif
 
   offset = 0
   IF (info%hasStep) THEN
-    offsetPath = STEPS//group//"Offsets/"//name
+    offsetPath = _STEPS_//group//"Offsets/"//name
     IF (obj%pathExists(offsetPath)) THEN
       CALL obj%ReadSlab(offsetPath, step - 1, 1, temp)
       offset = temp(1)
@@ -280,6 +301,17 @@ SUBROUTINE ReadData(obj, group, name, geoOffset, ntuples, info, step, &
   ELSE
     CALL obj%ReadSlab(path, offset, ntuples, vals)
   END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ReadData
+
+!----------------------------------------------------------------------------
+!                                                            Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ReadMethods

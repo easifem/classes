@@ -27,9 +27,6 @@
 ! first dimension, i.e., rows are Appended.
 
 SUBMODULE(HDF5File_Class) AppendMethods
-USE ISO_C_BINDING, ONLY: C_PTR
-USE ISO_C_BINDING, ONLY: C_LOC
-USE ISO_C_BINDING, ONLY: C_NULL_PTR
 USE HDF5, ONLY: SIZE_T
 USE HDF5, ONLY: H5DCLOSE_F
 USE HDF5, ONLY: H5DCREATE_F
@@ -56,6 +53,9 @@ USE HDF5, ONLY: H5KIND_TO_TYPE
 USE HDF5, ONLY: H5_INTEGER_KIND
 USE HDF5, ONLY: H5_REAL_KIND
 USE HDF5, ONLY: H5T_STD_U8LE
+USE ISO_C_BINDING, ONLY: C_PTR
+USE ISO_C_BINDING, ONLY: C_LOC
+USE ISO_C_BINDING, ONLY: C_NULL_PTR
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -70,28 +70,28 @@ CONTAINS
 
 MODULE PROCEDURE obj_Append_d1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_Append_d1()"
+CHARACTER(*), PARAMETER :: myName = "obj_Append_d1()"
 #endif
-  INTEGER(HSIZE_T) :: ldims(1)
-  INTEGER(HID_T) :: mem
-  INTEGER(I4B) :: offset0
-  TYPE(C_PTR) :: buf
+INTEGER(HSIZE_T) :: ldims(1)
+INTEGER(HID_T) :: mem
+INTEGER(I4B) :: offset0
+TYPE(C_PTR) :: buf
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  ldims = SHAPE(vals, KIND=HSIZE_T)
-  mem = H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND)
-  buf = C_NULL_PTR
-  IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1))
-  CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
-  IF (PRESENT(offset)) offset = offset0
+ldims = SHAPE(vals, KIND=HSIZE_T)
+mem = H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND)
+buf = C_NULL_PTR
+IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1))
+CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
+IF (PRESENT(offset)) offset = offset0
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_Append_d1
 
@@ -101,28 +101,28 @@ END PROCEDURE obj_Append_d1
 
 MODULE PROCEDURE obj_Append_d2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_Append_d2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Append_d2()"
 #endif
-  INTEGER(HSIZE_T) :: ldims(2)
-  INTEGER(HID_T) :: mem
-  INTEGER(I4B) :: offset0
-  TYPE(C_PTR) :: buf
+INTEGER(HSIZE_T) :: ldims(2)
+INTEGER(HID_T) :: mem
+INTEGER(I4B) :: offset0
+TYPE(C_PTR) :: buf
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  ldims = SHAPE(vals, KIND=HSIZE_T)
-  mem = H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND)
-  buf = C_NULL_PTR
-  IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1, 1))
-  CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
-  IF (PRESENT(offset)) offset = offset0
+ldims = SHAPE(vals, KIND=HSIZE_T)
+mem = H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND)
+buf = C_NULL_PTR
+IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1, 1))
+CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
+IF (PRESENT(offset)) offset = offset0
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_Append_d2
 
@@ -132,28 +132,28 @@ END PROCEDURE obj_Append_d2
 
 MODULE PROCEDURE obj_Append_n1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_Append_n1()"
+CHARACTER(*), PARAMETER :: myName = "obj_Append_n1()"
 #endif
-  INTEGER(HSIZE_T) :: ldims(1)
-  INTEGER(HID_T) :: mem
-  INTEGER(I4B) :: offset0
-  TYPE(C_PTR) :: buf
+INTEGER(HSIZE_T) :: ldims(1)
+INTEGER(HID_T) :: mem
+INTEGER(I4B) :: offset0
+TYPE(C_PTR) :: buf
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  ldims = SHAPE(vals, KIND=HSIZE_T)
-  mem = H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND)
-  buf = C_NULL_PTR
-  IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1))
-  CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
-  IF (PRESENT(offset)) offset = offset0
+ldims = SHAPE(vals, KIND=HSIZE_T)
+mem = H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND)
+buf = C_NULL_PTR
+IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1))
+CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
+IF (PRESENT(offset)) offset = offset0
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_Append_n1
 
@@ -163,28 +163,28 @@ END PROCEDURE obj_Append_n1
 
 MODULE PROCEDURE obj_Append_n2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_Append_n2()"
+CHARACTER(*), PARAMETER :: myName = "obj_Append_n2()"
 #endif
-  INTEGER(HSIZE_T) :: ldims(2)
-  INTEGER(HID_T) :: mem
-  INTEGER(I4B) :: offset0
-  TYPE(C_PTR) :: buf
+INTEGER(HSIZE_T) :: ldims(2)
+INTEGER(HID_T) :: mem
+INTEGER(I4B) :: offset0
+TYPE(C_PTR) :: buf
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  ldims = SHAPE(vals, KIND=HSIZE_T)
-  mem = H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND)
-  buf = C_NULL_PTR
-  IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1, 1))
-  CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
-  IF (PRESENT(offset)) offset = offset0
+ldims = SHAPE(vals, KIND=HSIZE_T)
+mem = H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND)
+buf = C_NULL_PTR
+IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1, 1))
+CALL AppendCore(obj, dsetname, ldims, mem, mem, buf, offset0)
+IF (PRESENT(offset)) offset = offset0
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_Append_n2
 
@@ -194,30 +194,30 @@ END PROCEDURE obj_Append_n2
 
 MODULE PROCEDURE obj_Append_u1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_Append_u1()"
+CHARACTER(*), PARAMETER :: myName = "obj_Append_u1()"
 #endif
-  INTEGER(HSIZE_T) :: ldims(1)
-  INTEGER(HID_T) :: mem
-  INTEGER(I4B) :: offset0
-  TYPE(C_PTR) :: buf
+INTEGER(HSIZE_T) :: ldims(1)
+INTEGER(HID_T) :: mem
+INTEGER(I4B) :: offset0
+TYPE(C_PTR) :: buf
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  ! The file type is unsigned 8-bit (for example VTK cell types); HDF5
-  ! converts from the signed INT8 in memory, so negative values become 0
-  ldims = SHAPE(vals, KIND=HSIZE_T)
-  mem = H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND)
-  buf = C_NULL_PTR
-  IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1))
-  CALL AppendCore(obj, dsetname, ldims, H5T_STD_U8LE, mem, buf, offset0)
-  IF (PRESENT(offset)) offset = offset0
+! The file type is unsigned 8-bit (for example VTK cell types); HDF5
+! converts from the signed INT8 in memory, so negative values become 0
+ldims = SHAPE(vals, KIND=HSIZE_T)
+mem = H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND)
+buf = C_NULL_PTR
+IF (SIZE(vals) .GT. 0) buf = C_LOC(vals(1))
+CALL AppendCore(obj, dsetname, ldims, H5T_STD_U8LE, mem, buf, offset0)
+IF (PRESENT(offset)) offset = offset0
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_Append_u1
 
@@ -225,192 +225,192 @@ END PROCEDURE obj_Append_u1
 !                                                                  ReadSlab
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_readslab_d1
+MODULE PROCEDURE obj_ReadSlab_d1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_readslab_d1()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_d1()"
 #endif
-  INTEGER(HID_T) :: dset_id, fspace_id
-  INTEGER(HSIZE_T) :: cnt(1)
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
-                isok)
-
-  IF (ALLOCATED(vals)) THEN
-    IF (SIZE(vals) .NE. icount) DEALLOCATE(vals)
-  END IF
-  IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(MAX(icount, 0)))
-
-  IF (isok .AND. icount .GT. 0) THEN
-    CALL SlabRead(dset_id, fspace_id, istart, cnt, &
-                  H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND), C_LOC(vals(1)))
-  END IF
-  CALL SlabClose(dset_id, fspace_id)
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(1)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
-END PROCEDURE obj_readslab_d1
+
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+
+IF (ALLOCATED(vals)) THEN
+  IF (SIZE(vals) .NE. icount) DEALLOCATE (vals)
+END IF
+IF (.NOT. ALLOCATED(vals)) ALLOCATE (vals(MAX(icount, 0)))
+
+IF (isok .AND. icount .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND), C_LOC(vals(1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_d1
 
 !----------------------------------------------------------------------------
 !                                                                  ReadSlab
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_readslab_d2
+MODULE PROCEDURE obj_ReadSlab_d2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_readslab_d2()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_d2()"
 #endif
-  INTEGER(HID_T) :: dset_id, fspace_id
-  INTEGER(HSIZE_T) :: cnt(2)
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  ! The first dimension is read whole; cnt(1) is its size in the file
-  CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
-                isok)
-
-  IF (ALLOCATED(vals)) THEN
-    IF (ANY(SHAPE(vals) .NE. cnt)) DEALLOCATE(vals)
-  END IF
-  IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(cnt(1), cnt(2)))
-
-  IF (isok .AND. SIZE(vals) .GT. 0) THEN
-    CALL SlabRead(dset_id, fspace_id, istart, cnt, &
-                  H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND), &
-                  C_LOC(vals(1, 1)))
-  END IF
-  CALL SlabClose(dset_id, fspace_id)
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(2)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
-END PROCEDURE obj_readslab_d2
+
+! The first dimension is read whole; cnt(1) is its size in the file
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+
+IF (ALLOCATED(vals)) THEN
+  IF (ANY(SHAPE(vals) .NE. cnt)) DEALLOCATE (vals)
+END IF
+IF (.NOT. ALLOCATED(vals)) ALLOCATE (vals(cnt(1), cnt(2)))
+
+IF (isok .AND. SIZE(vals) .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND), &
+                C_LOC(vals(1, 1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_d2
 
 !----------------------------------------------------------------------------
 !                                                                  ReadSlab
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_readslab_n1
+MODULE PROCEDURE obj_ReadSlab_n1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_readslab_n1()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_n1()"
 #endif
-  INTEGER(HID_T) :: dset_id, fspace_id
-  INTEGER(HSIZE_T) :: cnt(1)
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
-                isok)
-
-  IF (ALLOCATED(vals)) THEN
-    IF (SIZE(vals) .NE. icount) DEALLOCATE(vals)
-  END IF
-  IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(MAX(icount, 0)))
-
-  IF (isok .AND. icount .GT. 0) THEN
-    CALL SlabRead(dset_id, fspace_id, istart, cnt, &
-                  H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), &
-                  C_LOC(vals(1)))
-  END IF
-  CALL SlabClose(dset_id, fspace_id)
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(1)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
-END PROCEDURE obj_readslab_n1
+
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+
+IF (ALLOCATED(vals)) THEN
+  IF (SIZE(vals) .NE. icount) DEALLOCATE (vals)
+END IF
+IF (.NOT. ALLOCATED(vals)) ALLOCATE (vals(MAX(icount, 0)))
+
+IF (isok .AND. icount .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), &
+                C_LOC(vals(1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_n1
 
 !----------------------------------------------------------------------------
 !                                                                  ReadSlab
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_readslab_n2
+MODULE PROCEDURE obj_ReadSlab_n2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_readslab_n2()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_n2()"
 #endif
-  INTEGER(HID_T) :: dset_id, fspace_id
-  INTEGER(HSIZE_T) :: cnt(2)
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  ! The first dimension is read whole; cnt(1) is its size in the file
-  CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
-                isok)
-
-  IF (ALLOCATED(vals)) THEN
-    IF (ANY(SHAPE(vals) .NE. cnt)) DEALLOCATE(vals)
-  END IF
-  IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(cnt(1), cnt(2)))
-
-  IF (isok .AND. SIZE(vals) .GT. 0) THEN
-    CALL SlabRead(dset_id, fspace_id, istart, cnt, &
-                  H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), &
-                  C_LOC(vals(1, 1)))
-  END IF
-  CALL SlabClose(dset_id, fspace_id)
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(2)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
-END PROCEDURE obj_readslab_n2
+
+! The first dimension is read whole; cnt(1) is its size in the file
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+
+IF (ALLOCATED(vals)) THEN
+  IF (ANY(SHAPE(vals) .NE. cnt)) DEALLOCATE (vals)
+END IF
+IF (.NOT. ALLOCATED(vals)) ALLOCATE (vals(cnt(1), cnt(2)))
+
+IF (isok .AND. SIZE(vals) .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), &
+                C_LOC(vals(1, 1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_n2
 
 !----------------------------------------------------------------------------
 !                                                                  ReadSlab
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_readslab_u1
+MODULE PROCEDURE obj_ReadSlab_u1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_readslab_u1()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_u1()"
 #endif
-  INTEGER(HID_T) :: dset_id, fspace_id
-  INTEGER(HSIZE_T) :: cnt(1)
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
-#endif
-
-  CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
-                isok)
-
-  IF (ALLOCATED(vals)) THEN
-    IF (SIZE(vals) .NE. icount) DEALLOCATE(vals)
-  END IF
-  IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(MAX(icount, 0)))
-
-  IF (isok .AND. icount .GT. 0) THEN
-    CALL SlabRead(dset_id, fspace_id, istart, cnt, &
-                  H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), &
-                  C_LOC(vals(1)))
-  END IF
-  CALL SlabClose(dset_id, fspace_id)
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(1)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
-END PROCEDURE obj_readslab_u1
+
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+
+IF (ALLOCATED(vals)) THEN
+  IF (SIZE(vals) .NE. icount) DEALLOCATE (vals)
+END IF
+IF (.NOT. ALLOCATED(vals)) ALLOCATE (vals(MAX(icount, 0)))
+
+IF (isok .AND. icount .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), &
+                C_LOC(vals(1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_u1
 
 !----------------------------------------------------------------------------
 !                                                                 GetExtent
@@ -418,39 +418,39 @@ END PROCEDURE obj_readslab_u1
 
 MODULE PROCEDURE obj_GetExtent
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetExtent()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetExtent()"
 #endif
-  INTEGER(HID_T) :: dset_id, space_id
-  INTEGER(HSIZE_T) :: dims(7), maxdims(7)
-  INTEGER(I4B) :: ndims, error
-  LOGICAL(LGT) :: isok
+INTEGER(HID_T) :: dset_id, space_id
+INTEGER(HSIZE_T) :: dims(7), maxdims(7)
+INTEGER(I4B) :: ndims, ERROR
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  ans = 0
-  isok = obj%PathExists(dsetname)
+ans = 0
+isok = obj%PathExists(dsetname)
 
-  IF (isok) THEN
-    CALL H5DOPEN_F(obj%file_id, dsetname, dset_id, error)
-    CALL H5DGET_SPACE_F(dset_id, space_id, error)
-    CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(space_id, ndims, error)
-    IF (ndims .GT. 0) THEN
-      CALL H5SGET_SIMPLE_EXTENT_DIMS_F(space_id, dims(1:ndims), &
-                                       maxdims(1:ndims), error)
-      ans = INT(dims(ndims), I4B)
-    ELSE
-      ans = 1
-    END IF
-    CALL H5SCLOSE_F(space_id, error)
-    CALL H5DCLOSE_F(dset_id, error)
+IF (isok) THEN
+  CALL H5DOPEN_F(obj%file_id, dsetname, dset_id, ERROR)
+  CALL H5DGET_SPACE_F(dset_id, space_id, ERROR)
+  CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(space_id, ndims, ERROR)
+  IF (ndims .GT. 0) THEN
+    CALL H5SGET_SIMPLE_EXTENT_DIMS_F(space_id, dims(1:ndims), &
+                                     maxdims(1:ndims), ERROR)
+    ans = INT(dims(ndims), I4B)
+  ELSE
+    ans = 1
   END IF
+  CALL H5SCLOSE_F(space_id, ERROR)
+  CALL H5DCLOSE_F(dset_id, ERROR)
+END IF
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_GetExtent
 
@@ -497,18 +497,18 @@ SUBROUTINE AppendCore(obj, path, ldims, filetype, memtype, buf, offset)
 #endif
   INTEGER(HID_T) :: dset_id, fspace_id, mspace_id, dcpl_id
   INTEGER(HSIZE_T) :: curdims(SIZE(ldims)), maxdims(SIZE(ldims)), &
-    newdims(SIZE(ldims)), chunk(SIZE(ldims)), &
-    start(SIZE(ldims))
+                      newdims(SIZE(ldims)), chunk(SIZE(ldims)), &
+                      start(SIZE(ldims))
   INTEGER(SIZE_T) :: bsize
-  INTEGER(I4B) :: rank, error, ierr, lastslash, ndims
+  INTEGER(I4B) :: RANK, ERROR, ierr, lastslash, ndims
   LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-  rank = SIZE(ldims)
+  RANK = SIZE(ldims)
   offset = 0
 
   isok = obj%IsWrite()
@@ -523,12 +523,12 @@ SUBROUTINE AppendCore(obj, path, ldims, filetype, memtype, buf, offset)
   IF (.NOT. obj%PathExists(path)) THEN
 
     ! The dimensions other than the last one are fixed by the first call
-    isok = .NOT. ANY(ldims(1:rank - 1) .EQ. 0)
+    isok = .NOT. ANY(ldims(1:RANK - 1) .EQ. 0)
 
 #ifdef DEBUG_VER
     CALL AssertError1(isok, myName, &
-                      'Only the last dimension can be zero in the ' // &
-                      'first Append of ' // path)
+                      'Only the last dimension can be zero in the '// &
+                      'first Append of '//path)
 #endif
 
     IF (.NOT. isok) RETURN
@@ -543,88 +543,88 @@ SUBROUTINE AppendCore(obj, path, ldims, filetype, memtype, buf, offset)
 
     ! Create an empty extendable dataset
     curdims = ldims
-    curdims(rank) = 0
+    curdims(RANK) = 0
     maxdims = ldims
-    maxdims(rank) = H5S_UNLIMITED_F
+    maxdims(RANK) = H5S_UNLIMITED_F
 
-    CALL H5TGET_SIZE_F(filetype, bsize, error)
+    CALL H5TGET_SIZE_F(filetype, bsize, ERROR)
     CALL AppendChunkSize(obj%chunkPolicy, ldims, INT(bsize, INT64), &
                          filetype, chunk)
 
-    CALL H5SCREATE_SIMPLE_F(rank, curdims, fspace_id, error, maxdims)
-    CALL H5PCREATE_F(H5P_DATASET_CREATE_F, dcpl_id, error)
-    CALL H5PSET_CHUNK_F(dcpl_id, rank, chunk, error)
+    CALL H5SCREATE_SIMPLE_F(RANK, curdims, fspace_id, ERROR, maxdims)
+    CALL H5PCREATE_F(H5P_DATASET_CREATE_F, dcpl_id, ERROR)
+    CALL H5PSET_CHUNK_F(dcpl_id, RANK, chunk, ERROR)
 
     IF (obj%hasCompression) THEN
       ! Shuffle the bytes before deflate; useless for 1-byte elements
       IF (obj%chunkPolicy%shuffle .AND. bsize .GT. 1) THEN
-        CALL H5PSET_SHUFFLE_F(dcpl_id, error)
+        CALL H5PSET_SHUFFLE_F(dcpl_id, ERROR)
       END IF
-      CALL H5PSET_DEFLATE_F(dcpl_id, obj%chunkPolicy%deflateLevel, error)
+      CALL H5PSET_DEFLATE_F(dcpl_id, obj%chunkPolicy%deflateLevel, ERROR)
     END IF
 
     CALL H5DCREATE_F(obj%file_id, path, filetype, fspace_id, dset_id, &
-                     error, dcpl_id=dcpl_id)
+                     ERROR, dcpl_id=dcpl_id)
     CALL H5PCLOSE_F(dcpl_id, ierr)
     CALL H5SCLOSE_F(fspace_id, ierr)
-    isok = error .EQ. 0
+    isok = ERROR .EQ. 0
 
 #ifdef DEBUG_VER
     CALL AssertError1(isok, myName, &
-                      'Could not create dataset ' // path)
+                      'Could not create dataset '//path)
 #endif
 
     IF (.NOT. isok) RETURN
 
   ELSE
-    CALL H5DOPEN_F(obj%file_id, path, dset_id, error)
-    CALL H5DGET_SPACE_F(dset_id, fspace_id, error)
-    CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(fspace_id, ndims, error)
-    isok = ndims .EQ. rank
+    CALL H5DOPEN_F(obj%file_id, path, dset_id, ERROR)
+    CALL H5DGET_SPACE_F(dset_id, fspace_id, ERROR)
+    CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(fspace_id, ndims, ERROR)
+    isok = ndims .EQ. RANK
     IF (isok) THEN
-      CALL H5SGET_SIMPLE_EXTENT_DIMS_F(fspace_id, curdims, maxdims, error)
-      isok = ALL(curdims(1:rank - 1) .EQ. ldims(1:rank - 1))
+      CALL H5SGET_SIMPLE_EXTENT_DIMS_F(fspace_id, curdims, maxdims, ERROR)
+      isok = ALL(curdims(1:RANK - 1) .EQ. ldims(1:RANK - 1))
     END IF
-    CALL H5SCLOSE_F(fspace_id, error)
+    CALL H5SCLOSE_F(fspace_id, ERROR)
 
 #ifdef DEBUG_VER
     CALL AssertError1(isok, myName, &
-                      'Rank or shape of data does not match the ' // &
-                      'existing dataset ' // path)
+                      'Rank or shape of data does not match the '// &
+                      'existing dataset '//path)
 #endif
 
     IF (.NOT. isok) THEN
-      CALL H5DCLOSE_F(dset_id, error)
+      CALL H5DCLOSE_F(dset_id, ERROR)
       RETURN
     END IF
   END IF
 
-  offset = INT(curdims(rank), I4B)
+  offset = INT(curdims(RANK), I4B)
 
-  IF (ldims(rank) .GT. 0) THEN
+  IF (ldims(RANK) .GT. 0) THEN
     newdims = curdims
-    newdims(rank) = curdims(rank) + ldims(rank)
-    CALL H5DSET_EXTENT_F(dset_id, newdims, error)
-    isok = error .EQ. 0
+    newdims(RANK) = curdims(RANK) + ldims(RANK)
+    CALL H5DSET_EXTENT_F(dset_id, newdims, ERROR)
+    isok = ERROR .EQ. 0
 
 #ifdef DEBUG_VER
     CALL AssertError1(isok, myName, &
-                      'Could not extend dataset ' // path // &
+                      'Could not extend dataset '//path// &
                       ', it should be created by Append.')
 #endif
 
     IF (isok) THEN
-      CALL H5DGET_SPACE_F(dset_id, fspace_id, error)
+      CALL H5DGET_SPACE_F(dset_id, fspace_id, ERROR)
       start = 0
-      start(rank) = curdims(rank)
+      start(RANK) = curdims(RANK)
       CALL H5SSELECT_HYPERSLAB_F(fspace_id, H5S_SELECT_SET_F, start, &
-                                 ldims, error)
-      CALL H5SCREATE_SIMPLE_F(rank, ldims, mspace_id, error)
-      CALL H5DWRITE_F(dset_id, memtype, buf, error, mspace_id, fspace_id)
+                                 ldims, ERROR)
+      CALL H5SCREATE_SIMPLE_F(RANK, ldims, mspace_id, ERROR)
+      CALL H5DWRITE_F(dset_id, memtype, buf, ERROR, mspace_id, fspace_id)
 
 #ifdef DEBUG_VER
-      CALL AssertError1(error .EQ. 0, myName, &
-                        'Could not write to dataset ' // path)
+      CALL AssertError1(ERROR .EQ. 0, myName, &
+                        'Could not write to dataset '//path)
 #endif
 
       CALL H5SCLOSE_F(mspace_id, ierr)
@@ -632,10 +632,10 @@ SUBROUTINE AppendCore(obj, path, ldims, filetype, memtype, buf, offset)
     END IF
   END IF
 
-  CALL H5DCLOSE_F(dset_id, error)
+  CALL H5DCLOSE_F(dset_id, ERROR)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE AppendCore
@@ -677,20 +677,20 @@ SUBROUTINE AppendChunkSize(policy, ldims, bsize, filetype, chunk)
   !! chunk shape
 
   INTEGER(HSIZE_T) :: step(SIZE(ldims)), nother, nlast
-  INTEGER(I4B) :: rank
+  INTEGER(I4B) :: RANK
 
-  rank = SIZE(ldims)
+  RANK = SIZE(ldims)
   step = MAX(ldims, 1_HSIZE_T)
-  step(rank) = step(rank) * INT(MAX(policy%stepsPerChunk, 1), HSIZE_T)
+  step(RANK) = step(RANK) * INT(MAX(policy%stepsPerChunk, 1), HSIZE_T)
 
   ! At least minBytes bytes
-  nother = MAX(PRODUCT(step(1:rank - 1)), 1_HSIZE_T)
-  IF (INT(MAX(bsize, 1_INT64), HSIZE_T) * nother * step(rank) .LT. &
+  nother = MAX(PRODUCT(step(1:RANK - 1)), 1_HSIZE_T)
+  IF (INT(MAX(bsize, 1_INT64), HSIZE_T) * nother * step(RANK) .LT. &
       INT(policy%minBytes, HSIZE_T)) THEN
     nlast = (INT(policy%minBytes, HSIZE_T) + &
              INT(MAX(bsize, 1_INT64), HSIZE_T) * nother - 1) / &
-      (INT(MAX(bsize, 1_INT64), HSIZE_T) * nother)
-    step(rank) = MAX(step(rank), nlast)
+            (INT(MAX(bsize, 1_INT64), HSIZE_T) * nother)
+    step(RANK) = MAX(step(RANK), nlast)
   END IF
 
   ! At most targetBytes bytes
@@ -733,37 +733,37 @@ SUBROUTINE SlabOpen(obj, path, istart, icount, dset_id, fspace_id, cnt, &
   CHARACTER(*), PARAMETER :: myName = "SlabOpen()"
 #endif
   INTEGER(HSIZE_T) :: curdims(SIZE(cnt)), maxdims(SIZE(cnt))
-  INTEGER(I4B) :: rank, error, ndims
+  INTEGER(I4B) :: RANK, ERROR, ndims
 
-  rank = SIZE(cnt)
+  RANK = SIZE(cnt)
   dset_id = -1
   fspace_id = -1
   cnt = 0
-  cnt(rank) = INT(MAX(icount, 0), HSIZE_T)
+  cnt(RANK) = INT(MAX(icount, 0), HSIZE_T)
 
   isok = obj%PathExists(path)
 
 #ifdef DEBUG_VER
-  CALL AssertError1(isok, myName, 'Dataset not found: ' // path)
+  CALL AssertError1(isok, myName, 'Dataset not found: '//path)
 #endif
 
   IF (.NOT. isok) RETURN
 
-  CALL H5DOPEN_F(obj%file_id, path, dset_id, error)
-  CALL H5DGET_SPACE_F(dset_id, fspace_id, error)
-  CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(fspace_id, ndims, error)
-  isok = ndims .EQ. rank
+  CALL H5DOPEN_F(obj%file_id, path, dset_id, ERROR)
+  CALL H5DGET_SPACE_F(dset_id, fspace_id, ERROR)
+  CALL H5SGET_SIMPLE_EXTENT_NDIMS_F(fspace_id, ndims, ERROR)
+  isok = ndims .EQ. RANK
   IF (isok) THEN
-    CALL H5SGET_SIMPLE_EXTENT_DIMS_F(fspace_id, curdims, maxdims, error)
-    cnt(1:rank - 1) = curdims(1:rank - 1)
+    CALL H5SGET_SIMPLE_EXTENT_DIMS_F(fspace_id, curdims, maxdims, ERROR)
+    cnt(1:RANK - 1) = curdims(1:RANK - 1)
     isok = istart .GE. 0 .AND. &
-      INT(istart, HSIZE_T) + cnt(rank) .LE. curdims(rank)
+           INT(istart, HSIZE_T) + cnt(RANK) .LE. curdims(RANK)
   END IF
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, &
-                    'Requested slab is out of bounds or rank does not ' // &
-                    'match: ' // path)
+                    'Requested slab is out of bounds or rank does not '// &
+                    'match: '//path)
 #endif
 END SUBROUTINE SlabOpen
 
@@ -792,21 +792,21 @@ SUBROUTINE SlabRead(dset_id, fspace_id, istart, cnt, memtype, buf)
 #endif
   INTEGER(HID_T) :: mspace_id
   INTEGER(HSIZE_T) :: start(SIZE(cnt))
-  INTEGER(I4B) :: rank, error
+  INTEGER(I4B) :: RANK, ERROR
 
-  rank = SIZE(cnt)
+  RANK = SIZE(cnt)
   start = 0
-  start(rank) = INT(istart, HSIZE_T)
+  start(RANK) = INT(istart, HSIZE_T)
   CALL H5SSELECT_HYPERSLAB_F(fspace_id, H5S_SELECT_SET_F, start, cnt, &
-                             error)
-  CALL H5SCREATE_SIMPLE_F(rank, cnt, mspace_id, error)
-  CALL H5DREAD_F(dset_id, memtype, buf, error, mspace_id, fspace_id)
+                             ERROR)
+  CALL H5SCREATE_SIMPLE_F(RANK, cnt, mspace_id, ERROR)
+  CALL H5DREAD_F(dset_id, memtype, buf, ERROR, mspace_id, fspace_id)
 
 #ifdef DEBUG_VER
-  CALL AssertError1(error .EQ. 0, myName, 'Could not read the slab.')
+  CALL AssertError1(ERROR .EQ. 0, myName, 'Could not read the slab.')
 #endif
 
-  CALL H5SCLOSE_F(mspace_id, error)
+  CALL H5SCLOSE_F(mspace_id, ERROR)
 END SUBROUTINE SlabRead
 
 !----------------------------------------------------------------------------
@@ -820,10 +820,10 @@ END SUBROUTINE SlabRead
 SUBROUTINE SlabClose(dset_id, fspace_id)
   INTEGER(HID_T), INTENT(INOUT) :: dset_id, fspace_id
   !! dataset and dataspace ids; set to -1
-  INTEGER(I4B) :: error
+  INTEGER(I4B) :: ERROR
 
-  IF (fspace_id .GT. 0) CALL H5SCLOSE_F(fspace_id, error)
-  IF (dset_id .GT. 0) CALL H5DCLOSE_F(dset_id, error)
+  IF (fspace_id .GT. 0) CALL H5SCLOSE_F(fspace_id, ERROR)
+  IF (dset_id .GT. 0) CALL H5DCLOSE_F(dset_id, ERROR)
   fspace_id = -1
   dset_id = -1
 END SUBROUTINE SlabClose
