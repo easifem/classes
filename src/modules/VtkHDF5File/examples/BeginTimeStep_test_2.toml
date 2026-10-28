@@ -1,4 +1,4 @@
-# Input file of BeginStep_test_2 (very_small_quad4_mesh: unit square,
+# Input file of BeginTimeStep_test_2 (very_small_quad4_mesh: unit square,
 # four Quadrangle4 elements; u of order 3).
 
 [domain]

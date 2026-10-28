@@ -29,13 +29,13 @@ CHARACTER(*), PARAMETER :: ROOT = "/VTKHDF/", STEPS = "/VTKHDF/Steps/"
 !> Location of a step in the datasets
 TYPE :: StepInfo_
   INTEGER(I4B) :: part = 0, pointOffset = 0, cellOffset = 0, &
-    connOffset = 0, nPoints = 0, nCells = 0, nIds = 0
+                  connOffset = 0, nPoints = 0, nCells = 0, nIds = 0
   LOGICAL(LGT) :: hasStep = .FALSE.
 END TYPE StepInfo_
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-  "VtkHDF5File_Class@ReadMethods.F90"
+                           "VtkHDF5File_Class@ReadMethods.F90"
 #endif
 
 CONTAINS
@@ -46,22 +46,22 @@ CONTAINS
 
 MODULE PROCEDURE obj_GetTotalSteps
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalSteps()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalSteps()"
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  ans = 0
-  IF (obj%pathExists("/VTKHDF/Steps")) THEN
-    CALL obj%ReadAttribute("/VTKHDF/Steps", "NSteps", ans)
-  END IF
+ans = 0
+IF (obj%pathExists("/VTKHDF/Steps")) THEN
+  CALL obj%ReadAttribute("/VTKHDF/Steps", "NSteps", ans)
+END IF
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_GetTotalSteps
 
@@ -71,26 +71,26 @@ END PROCEDURE obj_GetTotalSteps
 
 MODULE PROCEDURE obj_GetTimeValues
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_GetTimeValues()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeValues()"
 #endif
-  INTEGER(I4B) :: n
+INTEGER(I4B) :: n
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  n = obj%GetTotalSteps()
-  IF (n .EQ. 0) THEN
-    IF (ALLOCATED(vals)) DEALLOCATE(vals)
-    ALLOCATE(vals(0))
-  ELSE
-    CALL obj%ReadSlab(STEPS // "Values", 0, n, vals)
-  END IF
+n = obj%GetTotalSteps()
+IF (n .EQ. 0) THEN
+  IF (ALLOCATED(vals)) DEALLOCATE (vals)
+  ALLOCATE (vals(0))
+ELSE
+  CALL obj%ReadSlab(STEPS//"Values", 0, n, vals)
+END IF
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_GetTimeValues
 
@@ -100,27 +100,27 @@ END PROCEDURE obj_GetTimeValues
 
 MODULE PROCEDURE obj_ReadMesh
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ReadMesh()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadMesh()"
 #endif
-  TYPE(StepInfo_) :: info
+TYPE(StepInfo_) :: info
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  info = GetStepInfo(obj, step, "obj_ReadMesh()")
+info = GetStepInfo(obj, step, "obj_ReadMesh()")
 
-  CALL obj%ReadSlab(ROOT // "Points", info%pointOffset, info%nPoints, points)
-  CALL obj%ReadSlab(ROOT // "Connectivity", info%connOffset, info%nIds, &
-                    connectivity)
-  CALL obj%ReadSlab(ROOT // "Offsets", info%cellOffset + info%part, &
-                    info%nCells + 1, offsets)
-  CALL obj%ReadSlab(ROOT // "Types", info%cellOffset, info%nCells, types)
+CALL obj%ReadSlab(ROOT//"Points", info%pointOffset, info%nPoints, points)
+CALL obj%ReadSlab(ROOT//"Connectivity", info%connOffset, info%nIds, &
+                  connectivity)
+CALL obj%ReadSlab(ROOT//"Offsets", info%cellOffset + info%part, &
+                  info%nCells + 1, offsets)
+CALL obj%ReadSlab(ROOT//"Types", info%cellOffset, info%nCells, types)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_ReadMesh
 
@@ -130,22 +130,22 @@ END PROCEDURE obj_ReadMesh
 
 MODULE PROCEDURE obj_ReadPointData
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ReadPointData()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadPointData()"
 #endif
-  TYPE(StepInfo_) :: info
+TYPE(StepInfo_) :: info
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  info = GetStepInfo(obj, step, "obj_ReadPointData()")
-  CALL ReadData(obj, "PointData", NAME, info%pointOffset, info%nPoints, &
-                info, step, vals)
+info = GetStepInfo(obj, step, "obj_ReadPointData()")
+CALL ReadData(obj, "PointData", NAME, info%pointOffset, info%nPoints, &
+              info, step, vals)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_ReadPointData
 
@@ -155,22 +155,22 @@ END PROCEDURE obj_ReadPointData
 
 MODULE PROCEDURE obj_ReadCellData
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ReadCellData()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadCellData()"
 #endif
-  TYPE(StepInfo_) :: info
+TYPE(StepInfo_) :: info
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
-  info = GetStepInfo(obj, step, "obj_ReadCellData()")
-  CALL ReadData(obj, "CellData", NAME, info%cellOffset, info%nCells, &
-                info, step, vals)
+info = GetStepInfo(obj, step, "obj_ReadCellData()")
+CALL ReadData(obj, "CellData", NAME, info%cellOffset, info%nCells, &
+              info, step, vals)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_ReadCellData
 
@@ -199,31 +199,31 @@ FUNCTION GetStepInfo(obj, step, myName) RESULT(ans)
 
     IF (nsteps .GT. 0) THEN
       IF (step .LT. 1 .OR. step .GT. nsteps) THEN
-        CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                          '[ERROR] :: step ' // ToString(step) // &
-                          ' is out of range [1, ' // ToString(nsteps) // ']')
+        CALL e%RaiseError(modName//'::'//myName//' - '// &
+                          '[ERROR] :: step '//ToString(step)// &
+                          ' is out of range [1, '//ToString(nsteps)//']')
         RETURN
       END IF
 
       istep = step - 1
       ans%hasStep = .TRUE.
 
-      CALL obj%ReadSlab(STEPS // "PartOffsets", istep, 1, temp1)
+      CALL obj%ReadSlab(STEPS//"PartOffsets", istep, 1, temp1)
       ans%part = temp1(1)
-      CALL obj%ReadSlab(STEPS // "PointOffsets", istep, 1, temp1)
+      CALL obj%ReadSlab(STEPS//"PointOffsets", istep, 1, temp1)
       ans%pointOffset = temp1(1)
-      CALL obj%ReadSlab(STEPS // "CellOffsets", istep, 1, temp2)
+      CALL obj%ReadSlab(STEPS//"CellOffsets", istep, 1, temp2)
       ans%cellOffset = temp2(1, 1)
-      CALL obj%ReadSlab(STEPS // "ConnectivityIdOffsets", istep, 1, temp2)
+      CALL obj%ReadSlab(STEPS//"ConnectivityIdOffsets", istep, 1, temp2)
       ans%connOffset = temp2(1, 1)
     END IF
   END IF
 
-  CALL obj%ReadSlab(ROOT // "NumberOfPoints", ans%part, 1, temp1)
+  CALL obj%ReadSlab(ROOT//"NumberOfPoints", ans%part, 1, temp1)
   ans%nPoints = temp1(1)
-  CALL obj%ReadSlab(ROOT // "NumberOfCells", ans%part, 1, temp1)
+  CALL obj%ReadSlab(ROOT//"NumberOfCells", ans%part, 1, temp1)
   ans%nCells = temp1(1)
-  CALL obj%ReadSlab(ROOT // "NumberOfConnectivityIds", ans%part, 1, temp1)
+  CALL obj%ReadSlab(ROOT//"NumberOfConnectivityIds", ans%part, 1, temp1)
   ans%nIds = temp1(1)
 END FUNCTION GetStepInfo
 
@@ -253,17 +253,17 @@ SUBROUTINE ReadData(obj, group, name, geoOffset, ntuples, info, step, &
   INTEGER(I4B), ALLOCATABLE :: temp(:)
   REAL(DFP), ALLOCATABLE :: temp1(:)
 
-  path = ROOT // group // "/" // name
+  path = ROOT//group//"/"//name
 
   IF (.NOT. obj%pathExists(path)) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[ERROR] :: Data array not found: ' // path)
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
+                      '[ERROR] :: Data array not found: '//path)
     RETURN
   END IF
 
   offset = 0
   IF (info%hasStep) THEN
-    offsetPath = STEPS // group // "Offsets/" // name
+    offsetPath = STEPS//group//"Offsets/"//name
     IF (obj%pathExists(offsetPath)) THEN
       CALL obj%ReadSlab(offsetPath, step - 1, 1, temp)
       offset = temp(1)
@@ -274,8 +274,8 @@ SUBROUTINE ReadData(obj, group, name, geoOffset, ntuples, info, step, &
 
   IF (SIZE(obj%getDataShape(path)) .EQ. 1) THEN
     CALL obj%ReadSlab(path, offset, ntuples, temp1)
-    IF (ALLOCATED(vals)) DEALLOCATE(vals)
-    ALLOCATE(vals(1, ntuples))
+    IF (ALLOCATED(vals)) DEALLOCATE (vals)
+    ALLOCATE (vals(1, ntuples))
     vals(1, :) = temp1
   ELSE
     CALL obj%ReadSlab(path, offset, ntuples, vals)

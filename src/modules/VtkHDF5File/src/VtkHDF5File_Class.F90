@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> author: Shion Shimizu
+!> author: Shion Shimizu and Vikas Sharma
 ! date: 2026-10-24
 ! summary: Reader and writer of VTKHDF (UnstructuredGrid) files
 !
@@ -55,7 +55,7 @@ PUBLIC :: VtkHDF5FilePointer_
 ! record keeps the offset and the size of the latest data of the array
 ! (set by [[VtkHDF5File_:RegisterArray]]) and the number of steps
 ! written in Steps/<loc>DataOffsets/<name> (set by
-! [[VtkHDF5File_:EndStep]]), so that EndStep does not have to read the
+! [[VtkHDF5File_:EndTimeStep]]), so that EndTimeStep does not have to read the
 ! extent of the datasets.
 
 TYPE :: VtkDataArray_
@@ -77,7 +77,7 @@ END TYPE VtkDataArray_
 !                                                               VtkHDF5File_
 !----------------------------------------------------------------------------
 
-!> author: Shion Shimizu
+!> author: Shion Shimizu and Vikas Sharma
 ! date: 2026-10-24
 ! summary: VTKHDF file for unstructured grids and time series
 !
@@ -126,12 +126,12 @@ END TYPE VtkDataArray_
 !   CALL obj%WriteUnstructuredGrid(points, conn, offsets, types)
 ! END IF
 ! ! every time step
-! CALL obj%BeginStep(time=t)
+! CALL obj%BeginTimeStep(time=t)
 ! IF (obj%IsOutputStep()) THEN
 !   CALL u%GetVtkUnstructuredValue(VALUE=vals)
 !   CALL obj%WritePointData(name="u", VALUE=vals)
 ! END IF
-! CALL obj%EndStep()
+! CALL obj%EndTimeStep()
 ! ! end of simulation
 ! CALL obj%DEALLOCATE()
 !```
@@ -145,19 +145,19 @@ TYPE, EXTENDS(HDF5File_) :: VtkHDF5File_
   LOGICAL(LGT) :: isMeshWritten = math%no
   !! a mesh has been written
   LOGICAL(LGT) :: isStepOpen = math%no
-  !! BeginStep has been called, EndStep is not called yet
+  !! BeginTimeStep has been called, EndTimeStep is not called yet
   LOGICAL(LGT) :: isSkipped = math%no
   !! the current step is skipped (frequency)
   INTEGER(I4B) :: frequency = 1
   !! write every frequency steps
   INTEGER(I4B) :: stepCounter = 0
-  !! number of calls of BeginStep
+  !! number of calls of BeginTimeStep
   INTEGER(I4B) :: nSteps = 0
   !! number of steps written in the file
   INTEGER(I4B) :: nPoints = 0, nCells = 0, nIds = 0
   !! size of the current mesh
   INTEGER(I4B) :: partOffset = 0, pointOffset = 0, cellOffset = 0, &
-    connOffset = 0
+                  connOffset = 0
   !! offsets of the current mesh in the datasets
   TYPE(String) :: vtkType
   !! name of vtk type
@@ -186,9 +186,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: WriteUnstructuredGrid => &
     obj_WriteUnstructuredGrid
   !! Write an unstructured grid as a new part
-  PROCEDURE, PUBLIC, PASS(obj) :: BeginStep => obj_BeginStep
+  PROCEDURE, PUBLIC, PASS(obj) :: BeginTimeStep => obj_BeginTimeStep
   !! Start a time step
-  PROCEDURE, PUBLIC, PASS(obj) :: EndStep => obj_EndStep
+  PROCEDURE, PUBLIC, PASS(obj) :: EndTimeStep => obj_EndTimeStep
   !! Finish a time step
   PROCEDURE, PASS(obj) :: WritePointData1 => obj_WritePointData1
   !! Write a rank-1 array as point data
@@ -196,9 +196,9 @@ CONTAINS
   !! Write a rank-2 array as point data
   GENERIC, PUBLIC :: WritePointData => WritePointData1, &
     WritePointData2
-  PROCEDURE, PASS(obj) :: WriteCellData1 => obj_WriteCellData1
+  PROCEDURE, PRIVATE, PASS(obj) :: WriteCellData1 => obj_WriteCellData1
   !! Write a rank-1 array as cell data
-  PROCEDURE, PASS(obj) :: WriteCellData2 => obj_WriteCellData2
+  PROCEDURE, PRIVATE, PASS(obj) :: WriteCellData2 => obj_WriteCellData2
   !! Write a rank-2 array as cell data
   GENERIC, PUBLIC :: WriteCellData => WriteCellData1, WriteCellData2
   PROCEDURE, PUBLIC, PASS(obj) :: WriteFieldData => obj_WriteFieldData
@@ -229,7 +229,7 @@ END TYPE VtkHDF5FilePointer_
 !                                      InitiateVTKHDF5@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> author: Shion Shimizu
+!> author: Shion Shimizu and Vikas Sharma
 ! date: 2026-10-24
 ! update:
 !   - 2026-10-26: only modes NEW and READ; vtkType is checked by
@@ -310,7 +310,7 @@ END TYPE VtkHDF5FilePointer_
 !```
 !
 ! See also: [[obj_Deallocate]], [[obj_WriteUnstructuredGrid]],
-! [[obj_BeginStep]]
+! [[obj_BeginTimeStep]]
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateVTKHDF5(obj, filename, mode, vtkType, &
@@ -350,7 +350,7 @@ END INTERFACE
 !                                       ImportFromToml@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> author: Shion Shimizu
+!> author: Shion Shimizu and Vikas Sharma
 ! date: 2026-10-24
 ! summary: Import VTKHDF output options from toml
 !
@@ -496,8 +496,8 @@ END INTERFACE
 !
 ! Returns false if the file is not initiated or not opened for writing
 ! (mode READ). For a non-transient file, true is returned otherwise.
-! For a transient file, true is returned only between BeginStep and
-! EndStep of a step which is not skipped by frequency. Use it to avoid
+! For a transient file, true is returned only between BeginTimeStep and
+! EndTimeStep of a step which is not skipped by frequency. Use it to avoid
 ! the computation of output data in the skipped steps.
 !
 ! Arguments:
@@ -506,7 +506,7 @@ END INTERFACE
 ! Returns:
 !   ans : LOGICAL(LGT) - data should be written
 !
-! See also: [[obj_InitiateVTKHDF5]], [[obj_BeginStep]] (both contain
+! See also: [[obj_InitiateVTKHDF5]], [[obj_BeginTimeStep]] (both contain
 ! an example)
 
 INTERFACE
@@ -589,7 +589,7 @@ END INTERFACE
 ! or [[AbstractNodeField_:GetVtkUnstructuredGridData]] (Lagrange grid
 ! of a field).
 !
-! If it is called before the first BeginStep (or in a non-transient
+! If it is called before the first BeginTimeStep (or in a non-transient
 ! file), the grid is used for all steps. If it is called in a step
 ! (moving or adaptive mesh), the grid is used from the current step;
 ! it is written also in a step which is skipped by frequency, and it is
@@ -718,7 +718,7 @@ END INTERFACE
 !```
 !
 ! See also: [[obj_WritePointData1]], [[obj_WriteCellData1]],
-! [[obj_WriteFieldData]], [[obj_BeginStep]]
+! [[obj_WriteFieldData]], [[obj_BeginTimeStep]]
 
 INTERFACE
   MODULE SUBROUTINE obj_WriteUnstructuredGrid(obj, points, connectivity, &
@@ -737,7 +737,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  BeginStep@WriteMethods
+!                                                  BeginTimeStep@WriteMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -748,7 +748,7 @@ END INTERFACE
 !
 ! The step counter is increased. If MOD(counter - 1, frequency) is not
 ! zero, the step is skipped, and all the write methods do nothing
-! until EndStep. Otherwise, time is appended to Steps/Values.
+! until EndTimeStep. Otherwise, time is appended to Steps/Values.
 !
 ! Nothing is done if the file is not initiated or not transient.
 !
@@ -776,7 +776,7 @@ END INTERFACE
 ! IMPLICIT NONE
 !
 ! CHARACTER(*), PARAMETER :: meshname = "./meshdata/small_tri3_mesh.h5"
-! CHARACTER(*), PARAMETER :: filename = "BeginStep_test_1.vtkhdf"
+! CHARACTER(*), PARAMETER :: filename = "BeginTimeStep_test_1.vtkhdf"
 ! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
 ! TYPE(HDF5File_) :: meshfile, h5
 ! TYPE(FEMesh_) :: amesh
@@ -807,14 +807,14 @@ END INTERFACE
 ! CALL obj%WriteUnstructuredGrid(points=points, connectivity=conn, &
 !                                offsets=offsets, types=types)
 ! DO istep = 1, 4
-!   CALL obj%BeginStep(time=0.1_DFP * istep)
+!   CALL obj%BeginTimeStep(time=0.1_DFP * istep)
 !   CALL OK(obj%IsOutputStep() .EQV. (MOD(istep, 2) .EQ. 1), &
 !           "IsOutputStep: step "//CHAR(48 + istep))
 !   IF (obj%IsOutputStep()) THEN
 !     u = REAL(istep, DFP)
 !     CALL obj%WritePointData(NAME="u", VALUE=u)
 !   END IF
-!   CALL obj%EndStep()
+!   CALL obj%EndTimeStep()
 ! END DO
 ! CALL obj%DEALLOCATE()
 !
@@ -858,19 +858,19 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_EndStep]], [[obj_IsOutputStep]]
+! See also: [[obj_EndTimeStep]], [[obj_IsOutputStep]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_BeginStep(obj, time)
+  MODULE SUBROUTINE obj_BeginTimeStep(obj, time)
     CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
     REAL(DFP), INTENT(IN) :: time
     !! time value
-  END SUBROUTINE obj_BeginStep
+  END SUBROUTINE obj_BeginTimeStep
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    EndStep@WriteMethods
+!                                                    EndTimeStep@WriteMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -880,7 +880,7 @@ END INTERFACE
 ! The offsets of the current mesh (PartOffsets, PointOffsets, etc.) and
 ! the offsets of all the data arrays are appended to the Steps group,
 ! and the NSteps attribute is updated. Therefore, the file can be read
-! after each EndStep.
+! after each EndTimeStep.
 !
 ! The data arrays which are not written in the step refer to their
 ! latest data. A data array which is written for the first time has
@@ -889,13 +889,13 @@ END INTERFACE
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
 !
-! See also: [[obj_BeginStep]] (contains an example)
+! See also: [[obj_BeginTimeStep]] (contains an example)
 
 INTERFACE
-  MODULE SUBROUTINE obj_EndStep(obj)
+  MODULE SUBROUTINE obj_EndTimeStep(obj)
     CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
     !! VTKHDF file
-  END SUBROUTINE obj_EndStep
+  END SUBROUTINE obj_EndTimeStep
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -911,8 +911,8 @@ END INTERFACE
 ! vals(j) is the value at the j-th point of the current grid. The data
 ! is appended to /VTKHDF/PointData/<name>.
 !
-! In a transient file, it should be called between BeginStep and
-! EndStep; nothing is written in a step which is skipped by frequency.
+! In a transient file, it should be called between BeginTimeStep and
+! EndTimeStep; nothing is written in a step which is skipped by frequency.
 ! In DEBUG mode, an error is raised if the file is not opened with mode
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
@@ -923,7 +923,7 @@ END INTERFACE
 !   name : CHARACTER(*) - name of data array
 !   VALUE : REAL(DFP) - values, SIZE(VALUE) = GetTotalPoints()
 !
-! See also: [[obj_BeginStep]] (contains an example),
+! See also: [[obj_BeginTimeStep]] (contains an example),
 ! [[obj_WritePointData2]]
 
 INTERFACE
@@ -950,8 +950,8 @@ END INTERFACE
 ! vals(i, j) is the i-th component at the j-th point of the current
 ! grid. The data is appended to /VTKHDF/PointData/<name>.
 !
-! In a transient file, it should be called between BeginStep and
-! EndStep; nothing is written in a step which is skipped by frequency.
+! In a transient file, it should be called between BeginTimeStep and
+! EndTimeStep; nothing is written in a step which is skipped by frequency.
 ! In DEBUG mode, an error is raised if the file is not opened with mode
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
@@ -962,7 +962,7 @@ END INTERFACE
 !   name : CHARACTER(*) - name of data array
 !   VALUE : REAL(DFP) - SIZE(VALUE) = (nComp, GetTotalPoints())
 !
-! See also: [[obj_WritePointData1]], [[obj_BeginStep]] (contains an
+! See also: [[obj_WritePointData1]], [[obj_BeginTimeStep]] (contains an
 ! example)
 
 INTERFACE
@@ -990,8 +990,8 @@ END INTERFACE
 ! of cells in the grid). The data is appended to
 ! /VTKHDF/CellData/<name>.
 !
-! In a transient file, it should be called between BeginStep and
-! EndStep; nothing is written in a step which is skipped by frequency.
+! In a transient file, it should be called between BeginTimeStep and
+! EndTimeStep; nothing is written in a step which is skipped by frequency.
 ! In DEBUG mode, an error is raised if the file is not opened with mode
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
@@ -1028,8 +1028,8 @@ END INTERFACE
 ! vals(i, j) is the i-th component at the j-th cell of the current
 ! grid. The data is appended to /VTKHDF/CellData/<name>.
 !
-! In a transient file, it should be called between BeginStep and
-! EndStep; nothing is written in a step which is skipped by frequency.
+! In a transient file, it should be called between BeginTimeStep and
+! EndTimeStep; nothing is written in a step which is skipped by frequency.
 ! In DEBUG mode, an error is raised if the file is not opened with mode
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
@@ -1069,8 +1069,8 @@ END INTERFACE
 ! /VTKHDF/FieldData/<name>. The number of components may change from
 ! step to step; it is stored in Steps/FieldDataSizes/<name>.
 !
-! In a transient file, it should be called between BeginStep and
-! EndStep; nothing is written in a step which is skipped by frequency.
+! In a transient file, it should be called between BeginTimeStep and
+! EndTimeStep; nothing is written in a step which is skipped by frequency.
 ! In DEBUG mode, an error is raised if the file is not opened with mode
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! or if it is called outside a step of a transient file.
@@ -1112,8 +1112,8 @@ END INTERFACE
 ! The capacity of obj%arrays starts at 8 and is doubled when it is
 ! full, so that adding n arrays costs O(n) copies. Then the offset and
 ! the size of the latest data of the array are set.
-! EndStep uses these entries to append the offsets of all data arrays
-! to the Steps group (see [[obj_EndStep]]).
+! EndTimeStep uses these entries to append the offsets of all data arrays
+! to the Steps group (see [[obj_EndTimeStep]]).
 !
 ! It is called by the write methods of point, cell and field data after
 ! the data is appended.
@@ -1127,7 +1127,7 @@ END INTERFACE
 !   ncomp : INTEGER(I4B) - number of components of the latest data
 !   ntuples : INTEGER(I4B) - number of tuples of the latest data
 !
-! See also: [[obj_WritePointData1]], [[obj_EndStep]]
+! See also: [[obj_WritePointData1]], [[obj_EndTimeStep]]
 
 INTERFACE
   MODULE SUBROUTINE obj_RegisterArray(obj, loc, name, offset, ncomp, &
@@ -1164,7 +1164,7 @@ END INTERFACE
 ! Returns:
 !   ans : INTEGER(I4B) - number of steps
 !
-! See also: [[obj_BeginStep]] (contains an example)
+! See also: [[obj_BeginTimeStep]] (contains an example)
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalSteps(obj) RESULT(ans)
@@ -1187,7 +1187,7 @@ END INTERFACE
 !   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
 !   vals : REAL(DFP) - time values (allocatable), SIZE(vals) = NSteps
 !
-! See also: [[obj_BeginStep]] (contains an example)
+! See also: [[obj_BeginTimeStep]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetTimeValues(obj, vals)
@@ -1255,7 +1255,7 @@ END INTERFACE
 !   vals : REAL(DFP) - values (allocatable), (nComp, nPoints)
 !   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
 !
-! See also: [[obj_BeginStep]] (contains an example)
+! See also: [[obj_BeginTimeStep]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_ReadPointData(obj, name, vals, step)

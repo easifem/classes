@@ -22,8 +22,8 @@
 SUBMODULE(VtkHDF5File_Class) TomlMethods
 USE Display_Method, ONLY: Display
 USE ExceptionHandler_Class, ONLY: e
-USE TomlUtility, ONLY: GetValue
 USE tomlf, ONLY: toml_get => get_value
+USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
 
 #define _VTK_FILENAME_ "./result.vtkhdf"
@@ -40,19 +40,19 @@ CONTAINS
 
 MODULE PROCEDURE obj_ImportFromToml
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml()"
 #endif
-  ! TYPE(toml_table), POINTER :: node
-  ! INTEGER(I4B) :: origin, stat
+! TYPE(toml_table), POINTER :: node
+! INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                    '[WIP ERROR] :: This routine is under development')
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
 #endif
 
 !   CALL obj%DEALLOCATE()
@@ -74,28 +74,28 @@ MODULE PROCEDURE obj_ImportFromToml
 !     RETURN
 !   END IF
 
-  ! CALL GetValue(table=node, key="isActive", VALUE=obj%isRequested, &
-  !               default_value=math%yes, origin=origin, stat=stat)
+! CALL GetValue(table=node, key="isActive", VALUE=obj%isRequested, &
+!               default_value=math%yes, origin=origin, stat=stat)
 
-  ! CALL GetValue(table=node, key="filename", VALUE=obj%outputFile, &
-  !               default_value=_VTK_FILENAME_, origin=origin, stat=stat)
+! CALL GetValue(table=node, key="filename", VALUE=obj%outputFile, &
+!               default_value=_VTK_FILENAME_, origin=origin, stat=stat)
 
-  ! CALL GetValue(table=node, key="isTransient", VALUE=obj%isTransient, &
-  !               default_value=math%yes, origin=origin, stat=stat)
+! CALL GetValue(table=node, key="isTransient", VALUE=obj%isTransient, &
+!               default_value=math%yes, origin=origin, stat=stat)
 
-  ! CALL GetValue(table=node, key="frequency", VALUE=obj%frequency, &
-  !               default_value=math%one_i, origin=origin, stat=stat)
+! CALL GetValue(table=node, key="frequency", VALUE=obj%frequency, &
+!               default_value=math%one_i, origin=origin, stat=stat)
 
-  ! obj%frequency = MAX(obj%frequency, 1)
+! obj%frequency = MAX(obj%frequency, 1)
 
-  ! CALL GetValue(table=node, key="zlib", VALUE=obj%zlib, &
-  !               default_value=-1_I4B, origin=origin, stat=stat)
+! CALL GetValue(table=node, key="zlib", VALUE=obj%zlib, &
+!               default_value=-1_I4B, origin=origin, stat=stat)
 
-  ! node => NULL()
+! node => NULL()
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_ImportFromToml
 
