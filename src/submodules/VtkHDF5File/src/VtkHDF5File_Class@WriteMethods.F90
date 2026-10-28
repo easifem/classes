@@ -42,14 +42,45 @@ CONTAINS
 MODULE PROCEDURE obj_WriteUnstructuredGrid
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "obj_WriteUnstructuredGrid()"
+  LOGICAL(LGT) :: isok
 #endif
 
   INTEGER(I4B) :: nP, nC, nIds, pointOffset, connOffset, cellOffset, &
     partOffset
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
   nP = SIZE(points, 2)
   nC = SIZE(types)
   nIds = SIZE(connectivity)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(obj%IsInitiated(), myName, &
+                    "VtkHDF5File_ is not initiated.")
+  CALL AssertError1(obj%IsWrite(), myName, &
+                    "VtkHDF5File_ should be initiated with mode NEW.")
+  CALL AssertError2(SIZE(points, 1), 3_I4B, myName, &
+                    "SIZE(points, 1) and 3")
+  CALL AssertError2(SIZE(offsets), nC + 1, myName, &
+                    "SIZE(offsets) and SIZE(types) + 1")
+  CALL AssertError1(offsets(1) .EQ. 0, myName, &
+                    "offsets(1) should be 0.")
+  CALL AssertError2(offsets(nC + 1), nIds, myName, &
+                    "offsets(nCells + 1) and SIZE(connectivity)")
+  isok = ALL(offsets(2:) .GE. offsets(1:nC))
+  CALL AssertError1(isok, myName, &
+                    "offsets should be non decreasing.")
+  IF (nIds .GT. 0) THEN
+    isok = (MINVAL(connectivity) .GE. 0) .AND. &
+      (MAXVAL(connectivity) .LT. nP)
+    CALL AssertError1(isok, myName, &
+                      "connectivity should be zero based point ids " // &
+                      "in [0, nPoints - 1].")
+  END IF
+#endif
 
   CALL obj%Append(_ROOT_ // "Points", points, pointOffset)
   CALL obj%Append(_ROOT_ // "Connectivity", connectivity, connOffset)

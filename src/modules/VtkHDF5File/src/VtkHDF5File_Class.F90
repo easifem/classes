@@ -102,18 +102,16 @@ END TYPE VtkDataArray_
 !```
 !
 ! All the datasets are extendable (see [[HDF5File_:Append]]).
-! A mesh is written by WriteMesh. One mesh is one part (piece). If the
-! mesh does not change, it is written only once and all the steps
-! refer to it (the geometry offsets are repeated). If WriteMesh is
-! called in a step, then the new mesh is used from that step.
+! A grid is written by WriteUnstructuredGrid. One grid is one part
+! (piece). If the grid does not change, it is written only once and all
+! the steps refer to it (the geometry offsets are repeated). If
+! WriteUnstructuredGrid is called in a step, then the new grid is used
+! from that step.
 !
-! Two kinds of grids can be written:
-!
-! - Linear grid, WriteMesh(mesh): the nodes and elements of the mesh.
-!   The vertex DOFs of fields are written as point data.
-! - Lagrange grid, WriteMesh(fedof, geofedof): each cell has its own
-!   equidistance points of the order of fedof, and higher order VTK
-!   cells are used. Fields are evaluated at these points.
+! The grid data (points, connectivity, offsets, VTK cell types) are
+! made by the caller, for example by
+! [[AbstractMesh_:GetVtkUnstructuredGridData]]. The point data are
+! given as arrays, for example from GetVtkUnstructuredValue of a field.
 !
 ! Usage in a time dependent simulation:
 !
@@ -123,12 +121,15 @@ END TYPE VtkDataArray_
 !   CALL obj%InitiateVTKHDF5(filename="result.vtkhdf", mode="NEW", &
 !                            vtkType="UnstructuredGrid", &
 !                            isTransient=math%yes)
-!   CALL obj%WriteMesh(mesh)                  ! or WriteMesh(fedof, ...)
+!   CALL mesh%GetVtkUnstructuredGridData(points=points, &
+!     connectivity=conn, offsets=offsets, types=types)
+!   CALL obj%WriteUnstructuredGrid(points, conn, offsets, types)
 ! END IF
 ! ! every time step
 ! CALL obj%BeginStep(time=t)
 ! IF (obj%IsOutputStep()) THEN
-!   CALL obj%WritePointData(name="u", field=u)
+!   CALL u%GetVtkUnstructuredValue(VALUE=vals)
+!   CALL obj%WritePointData(name="u", VALUE=vals)
 ! END IF
 ! CALL obj%EndStep()
 ! ! end of simulation
@@ -308,7 +309,8 @@ END TYPE VtkHDF5FilePointer_
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_Deallocate]], [[obj_WriteMesh1]], [[obj_BeginStep]]
+! See also: [[obj_Deallocate]], [[obj_WriteUnstructuredGrid]],
+! [[obj_BeginStep]]
 
 INTERFACE
   MODULE SUBROUTINE obj_InitiateVTKHDF5(obj, filename, mode, vtkType, &
@@ -530,7 +532,7 @@ END INTERFACE
 ! Returns:
 !   ans : INTEGER(I4B) - number of points (size of point data)
 !
-! See also: [[obj_GetTotalCells]], [[obj_WriteMesh1]]
+! See also: [[obj_GetTotalCells]], [[obj_WriteUnstructuredGrid]]
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalPoints(obj) RESULT(ans)
@@ -555,7 +557,7 @@ END INTERFACE
 ! Returns:
 !   ans : INTEGER(I4B) - number of cells (size of cell data)
 !
-! See also: [[obj_GetTotalPoints]], [[obj_WriteMesh1]]
+! See also: [[obj_GetTotalPoints]], [[obj_WriteUnstructuredGrid]]
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalCells(obj) RESULT(ans)
@@ -572,6 +574,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-26
+! update:
+!   - 2026-10-28: debug checks of the grid data
 ! summary: Write an unstructured grid as a new part
 !
 ! The grid is appended as a new part (piece) to the datasets Points,
@@ -590,6 +594,11 @@ END INTERFACE
 ! (moving or adaptive mesh), the grid is used from the current step;
 ! it is written also in a step which is skipped by frequency, and it is
 ! then used from the next output step.
+!
+! In the debug version it is checked that the file is initiated for
+! writing, SIZE(points, 1) = 3, SIZE(offsets) = SIZE(types) + 1,
+! offsets(1) = 0, offsets is non decreasing, offsets(nCells + 1) =
+! SIZE(connectivity), and the connectivity ids are in [0, nPoints - 1].
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -733,6 +742,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: example uses WriteUnstructuredGrid
 ! summary: Start a time step
 !
 ! The step counter is increased. If MOD(counter - 1, frequency) is not
@@ -750,6 +761,7 @@ END INTERFACE
 !```fortran
 ! PROGRAM main
 ! USE BaseType, ONLY: math => TypeMathOpt
+! USE BaseType, ONLY: TypeFileOpt
 ! USE ExceptionHandler_Class, ONLY: e
 ! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
 ! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
@@ -760,51 +772,87 @@ END INTERFACE
 ! USE HDF5File_Class, ONLY: HDF5File_
 ! USE Test_Method, ONLY: OK
 ! USE VtkHDF5File_Class, ONLY: VtkHDF5File_
+!
 ! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: meshname = "./meshdata/small_tri3_mesh.h5"
 ! CHARACTER(*), PARAMETER :: filename = "BeginStep_test_1.vtkhdf"
-! TYPE(HDF5File_) :: meshfile
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(HDF5File_) :: meshfile, h5
 ! TYPE(FEMesh_) :: amesh
 ! TYPE(VtkHDF5File_) :: obj
-! REAL(DFP), ALLOCATABLE :: u(:), vals(:, :), times(:), xij(:, :), &
-!                           points(:, :)
-! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:)
+! REAL(DFP), ALLOCATABLE :: points(:, :), u(:), rvals1(:)
+! INTEGER(I4B), ALLOCATABLE :: conn(:), offsets(:), ivals(:), &
+!   ivals2(:, :)
 ! INTEGER(INT8), ALLOCATABLE :: types(:)
-! INTEGER(I4B) :: istep, nPoints, nrow, ncol
+! INTEGER(I4B) :: istep, nPoints, nsteps
+!
 ! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
 ! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-! CALL meshfile%Initiate(fileName="./meshdata/small_tri3_mesh.h5", &
-!                        MODE="READ")
+!
+! CALL meshfile%Initiate(filename=meshname, mode=TypeFileOpt%read)
 ! CALL meshfile%OPEN()
-! CALL amesh%Initiate(hdf5=meshfile, dim=2)
-! nPoints = amesh%GetTotalNodes()
-! ALLOCATE (u(nPoints), xij(3, nPoints))
-! xij = 0.0_DFP
-! CALL amesh%GetNodeCoord(nodeCoord=xij, nrow=nrow, ncol=ncol)
+! CALL amesh%Initiate(hdf5=meshfile, DIM=2)
+!
+! CALL amesh%GetVtkUnstructuredGridData(points=points, &
+!                                       connectivity=conn, &
+!                                       offsets=offsets, types=types)
+! nPoints = SIZE(points, 2)
+! ALLOCATE (u(nPoints))
+!
 ! ! 4 steps, every 2 steps are written (steps 1 and 3)
-! CALL obj%InitiateVTKHDF5(filename=filename, mode="NEW", &
+! CALL obj%InitiateVTKHDF5(filename=filename, mode=TypeFileOpt%new, &
 !                          vtkType="UnstructuredGrid", &
 !                          isTransient=math%yes, frequency=2)
-! CALL obj%WriteMesh(amesh)
+! CALL obj%WriteUnstructuredGrid(points=points, connectivity=conn, &
+!                                offsets=offsets, types=types)
 ! DO istep = 1, 4
 !   CALL obj%BeginStep(time=0.1_DFP * istep)
+!   CALL OK(obj%IsOutputStep() .EQV. (MOD(istep, 2) .EQ. 1), &
+!           "IsOutputStep: step "//CHAR(48 + istep))
 !   IF (obj%IsOutputStep()) THEN
 !     u = REAL(istep, DFP)
-!     CALL obj%WritePointData(name="u", VALUE=u)
+!     CALL obj%WritePointData(NAME="u", VALUE=u)
 !   END IF
 !   CALL obj%EndStep()
 ! END DO
 ! CALL obj%DEALLOCATE()
-! CALL obj%InitiateVTKHDF5(filename=filename, mode="READ", &
-!                          vtkType="UnstructuredGrid")
-! CALL OK(obj%GetTotalSteps() .EQ. 2, "GetTotalSteps")
-! CALL obj%GetTimeValues(times)
-! CALL OK(ABS(times(2) - 0.3_DFP) .LT. 1.0E-12_DFP, "GetTimeValues")
-! CALL obj%ReadPointData(name="u", vals=vals, step=2)
-! CALL OK(ALL(ABS(vals - 3.0_DFP) .LT. 1.0E-12_DFP), "ReadPointData step")
-! CALL obj%ReadMesh(points=points, connectivity=conn, offsets=offsets, &
-!                   types=types, step=2)
-! CALL OK(MAXVAL(ABS(points - xij)) .LT. 1.0E-12_DFP, "ReadMesh step")
-! CALL obj%DEALLOCATE()
+!
+! ! read the Steps group back
+! CALL h5%Initiate(filename=filename, mode="READ")
+! CALL h5%OPEN()
+!
+! CALL h5%ReadAttribute("/VTKHDF/Steps", "NSteps", nsteps)
+! CALL OK(nsteps .EQ. 2, "NSteps")
+!
+! CALL h5%ReadSlab("/VTKHDF/Steps/Values", 0, 2, rvals1)
+! CALL OK(MAXVAL(ABS(rvals1 - [0.1_DFP, 0.3_DFP])) .LT. tol, &
+!         "Steps/Values")
+!
+! ! the grid is written once, all steps refer to it
+! CALL h5%ReadSlab("/VTKHDF/NumberOfPoints", 0, 1, ivals)
+! CALL OK(SIZE(ivals) .EQ. 1 .AND. ivals(1) .EQ. nPoints, &
+!         "one part")
+! CALL h5%ReadSlab("/VTKHDF/Steps/PartOffsets", 0, 2, ivals)
+! CALL OK(ALL(ivals .EQ. 0), "Steps/PartOffsets")
+! CALL h5%ReadSlab("/VTKHDF/Steps/NumberOfParts", 0, 2, ivals)
+! CALL OK(ALL(ivals .EQ. 1), "Steps/NumberOfParts")
+! CALL h5%ReadSlab("/VTKHDF/Steps/PointOffsets", 0, 2, ivals)
+! CALL OK(ALL(ivals .EQ. 0), "Steps/PointOffsets")
+! CALL h5%ReadSlab("/VTKHDF/Steps/CellOffsets", 0, 2, ivals2)
+! CALL OK(ALL(SHAPE(ivals2) .EQ. [1, 2]) .AND. ALL(ivals2 .EQ. 0), &
+!         "Steps/CellOffsets")
+!
+! ! u is written in two steps, one after the other
+! CALL h5%ReadSlab("/VTKHDF/Steps/PointDataOffsets/u", 0, 2, ivals)
+! CALL OK(ALL(ivals .EQ. [0, nPoints]), "Steps/PointDataOffsets/u")
+! CALL h5%ReadSlab("/VTKHDF/PointData/u", 0, 2 * nPoints, rvals1)
+! CALL OK(MAXVAL(ABS(rvals1(1:nPoints) - 1.0_DFP)) .LT. tol, &
+!         "PointData/u: step 1")
+! CALL OK(MAXVAL(ABS(rvals1(nPoints + 1:) - 3.0_DFP)) .LT. tol, &
+!         "PointData/u: step 3")
+!
+! CALL h5%DEALLOCATE()
 ! CALL amesh%DEALLOCATE()
 ! CALL meshfile%DEALLOCATE()
 ! END PROGRAM main
@@ -1169,7 +1217,7 @@ END INTERFACE
 !   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
 !   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
 !
-! See also: [[obj_WriteMesh1]] (contains an example)
+! See also: [[obj_WriteUnstructuredGrid]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_ReadMesh(obj, points, connectivity, offsets, &
