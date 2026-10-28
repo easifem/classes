@@ -896,6 +896,42 @@ MODULE PROCEDURE obj_GetSumElemTotalDOF
 END PROCEDURE obj_GetSumElemTotalDOF
 
 !----------------------------------------------------------------------------
+!                                                       GetTotalActiveCells
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTotalActiveCells
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetTotalActiveCells()"
+#endif
+
+  INTEGER(I4B) :: ii
+  LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+! caching tActiveCells
+  IF (.NOT. obj%isTotalActiveCellsSet) THEN
+    obj%isTotalActiveCellsSet = math%yes
+    obj%tActiveCells = math%zero_i
+    loop1: DO ii = 1, obj%tCells
+      isok = obj%mesh%IsElementActive(globalElement=ii, islocal=math%yes)
+      IF (.NOT. isok) CYCLE loop1
+      obj%tActiveCells = obj%tActiveCells + 1
+    END DO loop1
+  END IF
+
+  ans = obj%tActiveCells
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_GetTotalActiveCells
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

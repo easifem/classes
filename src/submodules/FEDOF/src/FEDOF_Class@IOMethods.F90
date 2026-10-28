@@ -50,6 +50,10 @@ MODULE PROCEDURE obj_Display
   CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
   CALL Display(obj%isMaxConSet, "isMaxConSet: ", unitno=unitno)
   CALL Display(obj%isMaxQuadPointSet, "isMaxQuadPointSet: ", unitno=unitno)
+  CALL Display(obj%isSumElemTotalDOFSet, "isSumElemTotalDOFSet: ", &
+               unitno=unitno)
+  CALL Display(obj%isTotalActiveCellsSet, "isTotalActiveCellsSet: ", &
+               unitno=unitno)
 
   CALL Display(obj%tdof, "tdof: ", unitno=unitno)
   CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
@@ -58,6 +62,7 @@ MODULE PROCEDURE obj_Display
   CALL Display(obj%tCells, "tCells: ", unitno=unitno)
   CALL Display(obj%maxCon, "maxCon: ", unitno=unitno)
   CALL Display(obj%sumElemTotalDOF, "sumElemTotalDOF: ", unitno=unitno)
+  CALL Display(obj%tActiveCells, "tActiveCells: ", unitno=unitno)
   CALL Display(obj%maxQuadPoint, "maxQuadPoint: ", unitno=unitno)
   CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
   CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)

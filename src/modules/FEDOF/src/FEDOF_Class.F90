@@ -88,6 +88,9 @@ TYPE :: FEDOF_
   !! GetMaxTotalQuadraturePoints
   LOGICAL(LGT) :: isSumElemTotalDOFSet = math%no
   !! It is set to true when we set sumElemTotalDOF, Lazy computing
+  LOGICAL(LGT) :: isTotalActiveCellsSet = math%no
+  !! It is set tot true when we set tActiveCells, Lazy computing in
+  !! GetTotalActiveCells method.
   INTEGER(I4B) :: tdof = 0
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = 0
@@ -104,6 +107,8 @@ TYPE :: FEDOF_
   !! sum of total  degrees of freedom for each element.
   !! this is useful for DGM
   !! This is cached when we initiate the FEDOF
+  INTEGER(I4B) :: tActiveCells = 0
+  !! total number of active cells in FEDOF and mesh.
   INTEGER(I4B) :: maxQuadPoint = 0
   !! maximum number of quadrature points
   CHARACTER(2) :: baseContinuity = "H1"
@@ -292,6 +297,9 @@ CONTAINS
   !! Get the finite element of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetSumElemTotalDOF => obj_GetSumElemTotalDOF
   !! Sum of the total DOFs of all active elements (cached)
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalActiveCells => &
+    obj_GetTotalActiveCells
+  !! Returns the total number of active cells in the mesh.
 
   !@SetSparsityMethods
   PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity1 => obj_SetSparsity1
@@ -5653,6 +5661,26 @@ INTERFACE
     INTEGER(I4B) :: ans
     !! sum of the total DOFs of all active elements
   END FUNCTION obj_GetSumElemTotalDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTotalActiveCells@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Get total number of active cells in fedof.
+!
+! This method lazy compute the total number of active cells in
+! mesh.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalActiveCells(obj) RESULT(ans)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF; the cached sum is set at the first call
+    INTEGER(I4B) :: ans
+    !! total number of active cells in fedof.
+  END FUNCTION obj_GetTotalActiveCells
 END INTERFACE
 
 !----------------------------------------------------------------------------

@@ -456,6 +456,7 @@ MODULE PROCEDURE obj_Deallocate
   obj%isMaxConSet = math%no
   obj%isMaxQuadPointSet = math%no
   obj%isSumElemTotalDOFSet = math%no
+  obj%isTotalActiveCellsSet = math%no
 
   obj%tdof = 0
   obj%tNodes = 0
@@ -465,6 +466,7 @@ MODULE PROCEDURE obj_Deallocate
   obj%maxCon = 0
   obj%maxQuadPoint = 0
   obj%sumElemTotalDOF = 0
+  obj%tActiveCells = 0
 
   obj%baseContinuity = "H1"
   obj%baseInterpolation = "LAGR"
