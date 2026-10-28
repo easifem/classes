@@ -1,15 +1,27 @@
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! summary: Write a Lagrange grid and a field
+! update:
+!   - 2026-10-28: checks of the grid, the values and the written file
+! summary: Write a Lagrange grid and a scalar field
+!
+! The mesh square_3x2.h5 is the square [0, 10] x [0, 10] with two
+! Quadrangle4 elements. The scalar field u of order 3 (H1 Lagrange,
+! equidistance points) is set by the function
+!
+!   f(x, y) = x (x - 10) y (y - 10)
+!
+! GetVtkUnstructuredGridData of u gives a discontinuous grid of two
+! VTK_LAGRANGE_QUADRILATERAL (70) cells with 16 points each, and
+! GetVtkUnstructuredValue gives the value of u at each point. Since
+! the points are the interpolation points of u, the values are equal
+! to f at the points (zero on the boundary). The grid and the values
+! are written, and the file is read back as an HDF5File_.
 
 PROGRAM main
-  USE AbstractMesh_Class, ONLY: AbstractMesh_
-  USE ApproxUtility, ONLY: SoftEq
   USE BaseType, ONLY: math => TypeMathOpt
   USE BaseType, ONLY: TypeFileOpt
   USE BaseType, ONLY: TypeFEVariableOpt
   USE BaseType, ONLY: InterfaceScalarSubroutine
-  USE Display_Method, ONLY: Display
   USE ExceptionHandler_Class, ONLY: e
   USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
@@ -18,155 +30,116 @@ PROGRAM main
   USE GlobalData, ONLY: DFP
   USE GlobalData, ONLY: I4B
   USE GlobalData, ONLY: INT8
+  USE GlobalData, ONLY: LGT
+  USE HDF5File_Class, ONLY: HDF5File_
   USE ScalarField_Class, ONLY: ScalarField_
   USE Test_Method, ONLY: OK
   USE UserFunction_Class, ONLY: UserFunction_
   USE VtkHDF5File_Class, ONLY: VtkHDF5File_
   IMPLICIT NONE
-  CHARACTER(*), PARAMETER :: tomlFileName = "VtkHDF5File_test.toml", &
+
+  CHARACTER(*), PARAMETER :: tomlFileName = &
+    "WriteUnstructuredGrid_test_2.toml", &
     filename = "WriteUnstructuredGrid_test_2.vtkhdf"
+  INTEGER(I4B), PARAMETER :: nCells = 2, nloc = 16
+  INTEGER(I4B), PARAMETER :: nPoints = nCells * nloc
+  INTEGER(INT8), PARAMETER :: VTK_LAGRANGE_QUADRILATERAL = 70_INT8
+  REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
   TYPE(FEDomain_) :: dom
   TYPE(FEDOF_) :: fedof, geofedof
   TYPE(ScalarField_) :: u
   TYPE(VtkHDF5File_) :: obj
-  CLASS(AbstractMesh_), POINTER :: mesh
-  REAL(DFP), ALLOCATABLE :: VALUE(:)
-  INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
-  INTEGER(INT8), ALLOCATABLE :: types(:)
-  REAL(DFP), ALLOCATABLE :: points(:, :)
+  TYPE(HDF5File_) :: h5
   TYPE(UserFunction_) :: func
   PROCEDURE(InterfaceScalarSubroutine), POINTER :: procptr
+  REAL(DFP), ALLOCATABLE :: points(:, :), VALUE(:), fvals(:), rvals1(:)
+  INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:), ivals(:)
+  INTEGER(INT8), ALLOCATABLE :: types(:), tvals(:)
+  LOGICAL(LGT), ALLOCATABLE :: onBoundary(:)
+  INTEGER(I4B) :: ii
 
   CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
 
-! make user function
+! user function f(x, y)
   CALL func%Initiate(NAME="func1", returnType=TypeFEVariableOpt%scalar, &
                      argType=TypeFEVariableOpt%space, numArgs=4, &
                      numReturns=1)
-
-  procptr => scalarFunc2
+  procptr => scalarFunc
   CALL func%SetScalarFunctionPointer(func=procptr)
 
-! import domain
+! domain and scalar field u = f
   CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
-
-! import u
   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                         filename=tomlFileName, tomlName="u")
-
   CALL u%Set(0.0_DFP)
   CALL u%SetByFunction(func=func)
 
-! Get grid connectivity
+! Lagrange grid and values of u
   CALL u%GetVtkUnstructuredGridData(points=points, &
                                     connectivity=connectivity, &
                                     offsets=offsets, types=types)
-
-  CALL OK(ALLOCATED(points), "points allocated:")
-  CALL OK(ALL(SHAPE(points) .EQ. [3, 32]), "shape of points:")
-  CALL OK(ALLOCATED(connectivity), "connectivity allocated:")
-  CALL OK(SIZE(connectivity) .EQ. 32, "shape of connectivity:")
-  CALL OK(ALLOCATED(offsets), "offsets allocated:")
-  CALL OK(SIZE(offsets) .EQ. 3, "size of offsets:")
-  CALL OK(ALLOCATED(types), "types allocated:")
-  CALL OK(SIZE(types) .EQ. 2, "size of types:")
-
-  BLOCK
-    INTEGER(I4B) :: found(16), want(16)
-
-    IF (ALLOCATED(connectivity)) THEN
-      found = connectivity(1:16)
-      want = [1, 2, 3, 4, 5, 6, 7, 8, 10, 9, 12, 11, 13, 14, 16, 15] &
-        - math%one_i
-      CALL OK(ALL(found .EQ. want), "elem=1, connectivity: ")
-
-      found = connectivity(17:32)
-      want = 16 + [1, 2, 3, 4, 5, 6, 7, 8, 10, 9, 12, 11, 13, 14, 16, 15] &
-        - math%one_i
-      CALL OK(ALL(found .EQ. want), "elem=2, connectivity: ")
-    END IF
-  END BLOCK
-
-  BLOCK
-    REAL(DFP) :: found(3, 16), want(3, 16)
-    REAL(DFP), PARAMETER :: tol = 1.0E-5_DFP
-
-    IF (ALLOCATED(points)) THEN
-      found = points(1:3, 1:16)
-      want(1, :) = [0.0_DFP, 5.0_DFP, 5.0_DFP, 0.0_DFP, &
-                    5.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                    5.0_DFP, 5.0_DFP, &
-                    10.0_DFP / 3.0_DFP, 5.0_DFP / 3.0_DFP, &
-                    0.0_DFP, 0.0_DFP, &
-                    5.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                    10.0_DFP / 3.0_DFP, 5.0_DFP / 3.0_DFP]
-
-      want(2, :) = [0.0_DFP, 0.0_DFP, 10.0_DFP, 10.0_DFP, &
-                    0.0_DFP, 0.0_DFP, &
-                    10.0_DFP / 3.0_DFP, 20.0_DFP / 3.0_DFP, &
-                    10.0_DFP, 10.0_DFP, &
-                    20.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                    10.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                    20.0_DFP / 3.0_DFP, 20.0_DFP / 3.0_DFP]
-      want(3, :) = 0.0_DFP
-      CALL OK(ALL(SoftEq(found, want, tol)), "elem=1, points: ")
-
-      found = points(1:3, 17:32)
-      want(1, :) = 5.0_DFP + [0.0_DFP, 5.0_DFP, 5.0_DFP, 0.0_DFP, &
-                              5.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                              5.0_DFP, 5.0_DFP, &
-                              10.0_DFP / 3.0_DFP, 5.0_DFP / 3.0_DFP, &
-                              0.0_DFP, 0.0_DFP, &
-                              5.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                              10.0_DFP / 3.0_DFP, 5.0_DFP / 3.0_DFP]
-
-      want(2, :) = [0.0_DFP, 0.0_DFP, 10.0_DFP, 10.0_DFP, &
-                    0.0_DFP, 0.0_DFP, &
-                    10.0_DFP / 3.0_DFP, 20.0_DFP / 3.0_DFP, &
-                    10.0_DFP, 10.0_DFP, &
-                    20.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                    10.0_DFP / 3.0_DFP, 10.0_DFP / 3.0_DFP, &
-                    20.0_DFP / 3.0_DFP, 20.0_DFP / 3.0_DFP]
-      want(3, :) = 0.0_DFP
-      CALL OK(ALL(SoftEq(found, want, tol)), "elem=2, points: ")
-    END IF
-
-  END BLOCK
-
   CALL u%GetVtkUnstructuredValue(VALUE=VALUE)
 
-  CALL OK(ALLOCATED(VALUE), "value allocated: ")
-  IF (ALLOCATED(VALUE)) THEN
-    CALL ok(SIZE(VALUE) .EQ. 32, "size of value: ")
-  END IF
+  CALL OK(ALL(SHAPE(points) .EQ. [3, nPoints]), "points: shape")
+  CALL OK(SIZE(types) .EQ. nCells, "types: number of cells")
+  CALL OK(ALL(types .EQ. VTK_LAGRANGE_QUADRILATERAL), &
+          "types: VTK_LAGRANGE_QUADRILATERAL")
+  CALL OK(ALL(offsets .EQ. [0, nloc, 2 * nloc]), "offsets")
+  CALL OK(SIZE(connectivity) .EQ. nPoints, "connectivity: size")
+  CALL OK(ALL([(ANY(connectivity .EQ. ii), ii=0, nPoints - 1)]), &
+          "connectivity: each point is used once")
 
+  CALL OK(SIZE(VALUE) .EQ. nPoints, "value: size")
+  ALLOCATE(fvals(nPoints))
+  DO ii = 1, nPoints
+    CALL scalarFunc(points(:, ii), 2, fvals(ii))
+  END DO
+  CALL OK(MAXVAL(ABS(VALUE - fvals)) .LT. tol, "value: u = f at points")
+  onBoundary = ABS(points(1, :)) .LT. tol &
+    .OR. ABS(points(1, :) - 10.0_DFP) .LT. tol &
+    .OR. ABS(points(2, :)) .LT. tol &
+    .OR. ABS(points(2, :) - 10.0_DFP) .LT. tol
+  CALL OK(ALL(ABS(PACK(VALUE, onBoundary)) .LT. tol), &
+          "value: zero on the boundary")
+
+! write the grid and u
   CALL obj%InitiateVTKHDF5(filename=filename, mode=TypeFileOpt%new, &
                            vtkType="UnstructuredGrid")
-
   CALL obj%WriteUnstructuredGrid(points, connectivity, offsets, types)
+  CALL OK(obj%GetTotalPoints() .EQ. nPoints, "GetTotalPoints")
+  CALL OK(obj%GetTotalCells() .EQ. nCells, "GetTotalCells")
   CALL obj%WritePointData(NAME="u", VALUE=VALUE)
-
-  BLOCK
-    REAL(DFP) :: found(16)
-
-    found = VALUE(1:16)
-    CALL Display(found, "value for iel=1", full=math%yes)
-
-  END BLOCK
-
-! clean stuff
   CALL obj%DEALLOCATE()
+
+! read the file back
+  CALL h5%Initiate(filename=filename, mode="READ")
+  CALL h5%OPEN()
+  CALL h5%ReadSlab("/VTKHDF/NumberOfPoints", 0, 1, ivals)
+  CALL OK(ivals(1) .EQ. nPoints, "file: NumberOfPoints")
+  CALL h5%ReadSlab("/VTKHDF/Types", 0, nCells, tvals)
+  CALL OK(ALL(tvals .EQ. VTK_LAGRANGE_QUADRILATERAL), "file: Types")
+  CALL h5%ReadSlab("/VTKHDF/Offsets", 0, nCells + 1, ivals)
+  CALL OK(ALL(ivals .EQ. offsets), "file: Offsets")
+  CALL h5%ReadSlab("/VTKHDF/Connectivity", 0, nPoints, ivals)
+  CALL OK(ALL(ivals .EQ. connectivity), "file: Connectivity")
+  CALL h5%ReadSlab("/VTKHDF/PointData/u", 0, nPoints, rvals1)
+  CALL OK(MAXVAL(ABS(rvals1 - VALUE)) .LT. tol, "file: PointData/u")
+  CALL h5%DEALLOCATE()
+
+! clean up
   CALL u%DEALLOCATE()
   CALL fedof%DEALLOCATE()
   CALL geofedof%DEALLOCATE()
   CALL dom%DEALLOCATE()
 
 CONTAINS
-  SUBROUTINE scalarFunc2(args, nargs, ans)
+
+  SUBROUTINE scalarFunc(args, nargs, ans)
     REAL(DFP), INTENT(IN) :: args(:)
     INTEGER(I4B), INTENT(IN) :: nargs
     REAL(DFP), INTENT(INOUT) :: ans
-    ans = args(1)
-  END SUBROUTINE scalarFunc2
+    ans = args(1) * (args(1) - 10.0_DFP) * args(2) * (args(2) - 10.0_DFP)
+  END SUBROUTINE scalarFunc
+
 END PROGRAM main
