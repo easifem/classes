@@ -1,7 +1,7 @@
 # Common input file for the VtkHDF5File tests which need FEDOF.
 
 [domain]
-filename = "./meshdata/small_tri3_mesh.h5"
+filename = "./meshdata/square_3x2.h5"
 totalMedium = 1
 
 [u]

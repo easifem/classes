@@ -2807,7 +2807,11 @@ INTERFACE
   MODULE SUBROUTINE obj_GetVtkUnstructuredGridData2(obj, points, &
                                                     connectivity, offsets, &
                                                     types, refElemCoord, &
-                                                    xij, elemCoord, ivar)
+                                                    xij, elemCoord, vtkindx, &
+                                                    points_nrow, &
+                                                    points_ncol, con_tsize, &
+                                                    offsets_tsize, &
+                                                    types_tsize, ivar)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! AbstractNodeField obj
     REAL(DFP), INTENT(INOUT) :: points(:, :)
@@ -2830,6 +2834,15 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: elemCoord(:, :)
     !! temporal storage for nodal coordinate of physical element
     !! size should be at least (3, maxNNE)
+    INTEGER(I4B), INTENT(INOUT) :: vtkindx(:)
+    !! size should be at least maxCon
+    INTEGER(I4B), INTENT(OUT) :: points_nrow, points_ncol, &
+      con_tsize, offsets_tsize, &
+      types_tsize
+    !! points_nrow, points_ncol are shape of points
+    !! con_tsize is tsize of connectivity
+    !! offsets_tsize is size of offsets
+    !! types_tsize is size of types
     INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
     !! physical variables, only needed in case of block node field
   END SUBROUTINE obj_GetVtkUnstructuredGridData2
