@@ -20,6 +20,7 @@
 ! update:
 !   - 2026-10-26: chunk shape and filters from the chunk policy; HDF5
 !     types from the kind of the data; error checks only in DEBUG mode
+!   - 2026-10-28: ReadSlab_, read a slab into a buffer
 ! summary: Append to extendable datasets and read slabs of datasets
 !
 ! The extendable datasets are chunked, and the size of the last
@@ -413,6 +414,208 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ReadSlab_u1
 
 !----------------------------------------------------------------------------
+!                                                                   ReadSlab_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadSlab_d1_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_d1_()"
+#endif
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(1)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+tsize = INT(cnt(1), I4B)
+
+#ifdef DEBUG_VER
+CALL AssertError3(tsize, SIZE(vals), myName, &
+                  "icount should not be larger than SIZE(vals)")
+#endif
+
+IF (isok .AND. tsize .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND), C_LOC(vals(1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_d1_
+
+!----------------------------------------------------------------------------
+!                                                                   ReadSlab_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadSlab_d2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_d2_()"
+#endif
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(2)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! The first dimension is read whole; cnt(1) is its size in the file
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+nrow = INT(cnt(1), I4B)
+ncol = INT(cnt(2), I4B)
+
+#ifdef DEBUG_VER
+CALL AssertError3(nrow, SIZE(vals, 1), myName, &
+                  "rows of the dataset and SIZE(vals, 1)")
+CALL AssertError3(ncol, SIZE(vals, 2), myName, &
+                  "icount and SIZE(vals, 2)")
+#endif
+
+! The slab is placed in vals(1:nrow, 1:ncol) of the whole buffer
+IF (isok .AND. nrow * ncol .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_REAL_KIND), &
+                C_LOC(vals(1, 1)), SHAPE(vals, KIND=HSIZE_T))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_d2_
+
+!----------------------------------------------------------------------------
+!                                                                   ReadSlab_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadSlab_n1_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_n1_()"
+#endif
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(1)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+tsize = INT(cnt(1), I4B)
+
+#ifdef DEBUG_VER
+CALL AssertError3(tsize, SIZE(vals), myName, &
+                  "icount should not be larger than SIZE(vals)")
+#endif
+
+IF (isok .AND. tsize .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), C_LOC(vals(1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_n1_
+
+!----------------------------------------------------------------------------
+!                                                                   ReadSlab_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadSlab_n2_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_n2_()"
+#endif
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(2)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! The first dimension is read whole; cnt(1) is its size in the file
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+nrow = INT(cnt(1), I4B)
+ncol = INT(cnt(2), I4B)
+
+#ifdef DEBUG_VER
+CALL AssertError3(nrow, SIZE(vals, 1), myName, &
+                  "rows of the dataset and SIZE(vals, 1)")
+CALL AssertError3(ncol, SIZE(vals, 2), myName, &
+                  "icount and SIZE(vals, 2)")
+#endif
+
+! The slab is placed in vals(1:nrow, 1:ncol) of the whole buffer
+IF (isok .AND. nrow * ncol .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), &
+                C_LOC(vals(1, 1)), SHAPE(vals, KIND=HSIZE_T))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_n2_
+
+!----------------------------------------------------------------------------
+!                                                                   ReadSlab_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadSlab_u1_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadSlab_u1_()"
+#endif
+INTEGER(HID_T) :: dset_id, fspace_id
+INTEGER(HSIZE_T) :: cnt(1)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL SlabOpen(obj, dsetname, istart, icount, dset_id, fspace_id, cnt, &
+              isok)
+tsize = INT(cnt(1), I4B)
+
+#ifdef DEBUG_VER
+CALL AssertError3(tsize, SIZE(vals), myName, &
+                  "icount should not be larger than SIZE(vals)")
+#endif
+
+IF (isok .AND. tsize .GT. 0) THEN
+  CALL SlabRead(dset_id, fspace_id, istart, cnt, &
+                H5KIND_TO_TYPE(KIND(vals), H5_INTEGER_KIND), C_LOC(vals(1)))
+END IF
+CALL SlabClose(dset_id, fspace_id)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadSlab_u1_
+
+!----------------------------------------------------------------------------
 !                                                                 GetExtent
 !----------------------------------------------------------------------------
 
@@ -773,9 +976,15 @@ END SUBROUTINE SlabOpen
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-26
+! update:
+!   - 2026-10-28: optional mdims, shape of a buffer larger than the slab
 ! summary: Read a slab of an open dataset into buf
+!
+! If mdims is present, buf is a buffer of shape mdims, and the slab is
+! placed in its first cnt entries of each dimension (buf(1:cnt(1),
+! 1:cnt(2), ...)). Otherwise buf has the shape cnt.
 
-SUBROUTINE SlabRead(dset_id, fspace_id, istart, cnt, memtype, buf)
+SUBROUTINE SlabRead(dset_id, fspace_id, istart, cnt, memtype, buf, mdims)
   INTEGER(HID_T), INTENT(IN) :: dset_id, fspace_id
   !! dataset and dataspace ids from SlabOpen
   INTEGER(I4B), INTENT(IN) :: istart
@@ -785,21 +994,38 @@ SUBROUTINE SlabRead(dset_id, fspace_id, istart, cnt, memtype, buf)
   INTEGER(HID_T), INTENT(IN) :: memtype
   !! data type in memory
   TYPE(C_PTR), INTENT(IN) :: buf
-  !! address of the data, PRODUCT(cnt) entries
+  !! address of the data, PRODUCT(cnt) entries (PRODUCT(mdims) entries
+  !! if mdims is present)
+  INTEGER(HSIZE_T), INTENT(IN), OPTIONAL :: mdims(:)
+  !! shape of buf, mdims >= cnt; default is cnt
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "SlabRead()"
 #endif
   INTEGER(HID_T) :: mspace_id
-  INTEGER(HSIZE_T) :: start(SIZE(cnt))
+  INTEGER(HSIZE_T) :: start(SIZE(cnt)), mstart(SIZE(cnt))
   INTEGER(I4B) :: RANK, ERROR
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   RANK = SIZE(cnt)
   start = 0
   start(RANK) = INT(istart, HSIZE_T)
   CALL H5SSELECT_HYPERSLAB_F(fspace_id, H5S_SELECT_SET_F, start, cnt, &
                              ERROR)
-  CALL H5SCREATE_SIMPLE_F(RANK, cnt, mspace_id, ERROR)
+
+  IF (PRESENT(mdims)) THEN
+    CALL H5SCREATE_SIMPLE_F(RANK, mdims, mspace_id, ERROR)
+    mstart = 0
+    CALL H5SSELECT_HYPERSLAB_F(mspace_id, H5S_SELECT_SET_F, mstart, cnt, &
+                               ERROR)
+  ELSE
+    CALL H5SCREATE_SIMPLE_F(RANK, cnt, mspace_id, ERROR)
+  END IF
+
   CALL H5DREAD_F(dset_id, memtype, buf, ERROR, mspace_id, fspace_id)
 
 #ifdef DEBUG_VER
@@ -807,6 +1033,11 @@ SUBROUTINE SlabRead(dset_id, fspace_id, istart, cnt, memtype, buf)
 #endif
 
   CALL H5SCLOSE_F(mspace_id, ERROR)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SlabRead
 
 !----------------------------------------------------------------------------

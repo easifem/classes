@@ -246,7 +246,8 @@ END FUNCTION GetStepInfo
 ! date: 2026-10-24
 ! update:
 !   - 2026-10-28: rank and offsets of the array from obj%readCache (see
-!     GetReadArray)
+!     GetReadArray); one component data is read with ReadSlab_ into
+!     vals(1, :) without a temporary array
 ! summary: Read point or cell data of a step
 !
 ! The offset of the data is taken from Steps/<group>Offsets/<name>.
@@ -275,8 +276,7 @@ SUBROUTINE ReadData(obj, group, name, geoOffset, ntuples, info, step, &
   CHARACTER(*), PARAMETER :: myName = "ReadData()"
 #endif
   CHARACTER(:), ALLOCATABLE :: path
-  INTEGER(I4B) :: offset, indx
-  REAL(DFP), ALLOCATABLE :: temp1(:)
+  INTEGER(I4B) :: offset, indx, tsize
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -296,10 +296,15 @@ SUBROUTINE ReadData(obj, group, name, geoOffset, ntuples, info, step, &
   END IF
 
   IF (obj%readCache%arrays(indx)%RANK .EQ. 1) THEN
-    CALL obj%ReadSlab(path, offset, ntuples, temp1)
-    IF (ALLOCATED(vals)) DEALLOCATE (vals)
-    ALLOCATE (vals(1, ntuples))
-    vals(1, :) = temp1
+    ! one component: read directly in the row vals(1, :), which is
+    ! contiguous since SIZE(vals, 1) = 1
+    IF (ALLOCATED(vals)) THEN
+      IF (SIZE(vals, 1) .NE. 1 .OR. SIZE(vals, 2) .NE. ntuples) THEN
+        DEALLOCATE (vals)
+      END IF
+    END IF
+    IF (.NOT. ALLOCATED(vals)) ALLOCATE (vals(1, ntuples))
+    CALL obj%ReadSlab_(path, offset, ntuples, vals(1, :), tsize)
   ELSE
     CALL obj%ReadSlab(path, offset, ntuples, vals)
   END IF

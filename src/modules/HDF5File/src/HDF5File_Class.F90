@@ -22,16 +22,16 @@
 ! This module defines HDF5File_, which reads and writes HDF5 files.
 
 MODULE HDF5File_Class
-USE GlobalData, ONLY: LGT, DFP, I4B
-USE GlobalData, ONLY: REAL32, REAL64
-USE GlobalData, ONLY: INT8, INT16, INT32, INT64
-USE String_Class, ONLY: String
 USE BaseType, ONLY: math => TypeMathOpt
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE GlobalData, ONLY: REAL32, REAL64
+USE GlobalData, ONLY: INT16, INT32, INT64, INT8
 USE HDF5, ONLY: HID_T, HSIZE_T, HSSIZE_T
+USE String_Class, ONLY: String
 ! USE H5LT
 ! USE H5Fortran
-USE ExceptionHandler_Class, ONLY: e
 USE AbstractFile_Class, ONLY: AbstractFile_
+USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 
 PRIVATE
@@ -477,6 +477,14 @@ CONTAINS
   GENERIC, PUBLIC :: ReadSlab => &
     obj_readslab_d1, obj_readslab_d2, obj_readslab_n1, &
     obj_readslab_n2, obj_readslab_u1
+  !! Read a slab along the last dimension (vals is reallocated)
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    obj_ReadSlab_d1_, obj_ReadSlab_d2_, obj_ReadSlab_n1_, &
+    obj_ReadSlab_n2_, obj_ReadSlab_u1_
+  GENERIC, PUBLIC :: ReadSlab_ => &
+    obj_ReadSlab_d1_, obj_ReadSlab_d2_, obj_ReadSlab_n1_, &
+    obj_ReadSlab_n2_, obj_ReadSlab_u1_
+  !! Read a slab along the last dimension into a buffer (no allocation)
 
 END TYPE HDF5File_
 
@@ -1884,12 +1892,12 @@ END INTERFACE
 ! See also: [[postWrite]], [[compute_chunk_size]]
 
 INTERFACE
-  MODULE SUBROUTINE preWrite(obj, rank, gdims, ldims, path, mem, dset_id, &
-                             dspace_id, gspace_id, plist_id, error, &
+  MODULE SUBROUTINE preWrite(obj, RANK, gdims, ldims, path, mem, dset_id, &
+                             dspace_id, gspace_id, plist_id, ERROR, &
                              cnt, offset)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
-    INTEGER, INTENT(IN) :: rank
+    INTEGER, INTENT(IN) :: RANK
     !! rank of the dataset
     INTEGER(HSIZE_T), INTENT(IN) :: gdims(:)
     !! global dataspace dimensions, i.e. shape
@@ -1907,7 +1915,7 @@ INTERFACE
     !! global dataspace id
     INTEGER(HID_T), INTENT(OUT) :: plist_id
     !! property list id of the write operation
-    INTEGER(I4B), INTENT(OUT) :: error
+    INTEGER(I4B), INTENT(OUT) :: ERROR
     !! error flag, zero on success
     INTEGER(HSIZE_T), INTENT(IN) :: cnt(:)
     !! count; not used at present
@@ -1986,11 +1994,11 @@ END INTERFACE
 ! See also: [[preWrite]]
 
 INTERFACE
-  MODULE SUBROUTINE postWrite(obj, error, dset_id, dspace_id, gspace_id, &
+  MODULE SUBROUTINE postWrite(obj, ERROR, dset_id, dspace_id, gspace_id, &
                               plist_id)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
-    INTEGER(I4B), INTENT(INOUT) :: error
+    INTEGER(I4B), INTENT(INOUT) :: ERROR
     !! error flag of the write operation
     INTEGER(HID_T), INTENT(INOUT) :: dset_id
     !! dataset id
@@ -3973,13 +3981,13 @@ END INTERFACE
 ! See also: [[postRead]]
 
 INTERFACE
-  MODULE SUBROUTINE preRead(obj, path, rank, dset_id, dspace_id, &
-                            dims, error)
+  MODULE SUBROUTINE preRead(obj, path, RANK, dset_id, dspace_id, &
+                            dims, ERROR)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
     !! path of the dataset
-    INTEGER(I4B), INTENT(IN) :: rank
+    INTEGER(I4B), INTENT(IN) :: RANK
     !! expected rank of the dataset
     INTEGER(HID_T), INTENT(INOUT) :: dset_id
     !! dataset id
@@ -3987,7 +3995,7 @@ INTERFACE
     !! dataspace id
     INTEGER(HSIZE_T), INTENT(INOUT) :: dims(:)
     !! dimensions of the dataset
-    INTEGER(I4B), INTENT(OUT) :: error
+    INTEGER(I4B), INTENT(OUT) :: ERROR
     !! error flag, negative on failure
   END SUBROUTINE preRead
 END INTERFACE
@@ -4163,7 +4171,7 @@ END INTERFACE
 ! See also: [[preRead]]
 
 INTERFACE
-  MODULE SUBROUTINE postRead(obj, path, dset_id, dspace_id, error)
+  MODULE SUBROUTINE postRead(obj, path, dset_id, dspace_id, ERROR)
     CLASS(HDF5File_), INTENT(INOUT) :: obj
     !! HDF5 file object
     CHARACTER(LEN=*), INTENT(IN) :: path
@@ -4172,7 +4180,7 @@ INTERFACE
     !! dataset id
     INTEGER(HID_T), INTENT(INOUT) :: dspace_id
     !! dataspace id
-    INTEGER(I4B), INTENT(INOUT) :: error
+    INTEGER(I4B), INTENT(INOUT) :: ERROR
     !! error flag of the read operation
   END SUBROUTINE postRead
 END INTERFACE
@@ -8909,6 +8917,300 @@ INTERFACE
     INTEGER(INT8), ALLOCATABLE, TARGET, INTENT(INOUT) :: vals(:)
     !! values read
   END SUBROUTINE obj_readslab_u1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ReadSlab_@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Read a slab of a rank-1 real dataset into a buffer
+!
+! icount entries are read starting from the zero based index istart
+! into vals(1:icount). vals is not allocated or reallocated, and the
+! other entries of vals are not changed. vals can be a contiguous
+! section of an array, for example the row vals(1, :) of a (1, n)
+! array; a section which is not contiguous is copied in and out by the
+! compiler. In DEBUG mode, an error is raised if SIZE(vals) < icount.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting index
+!   icount : INTEGER(I4B) - number of entries to read
+!   vals : REAL(DFP) - buffer, SIZE(vals) >= icount
+!   tsize : INTEGER(I4B) - number of entries read, vals(1:tsize)
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: INT8
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: filename = "ReadSlab__test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(HDF5File_) :: obj
+! REAL(DFP) :: m(3, 4), rbuf(10), rbuf2(5, 6), row(1, 4)
+! INTEGER(I4B) :: ibuf(10), ibuf2(4, 3), tsize, nrow, ncol
+! INTEGER(INT8) :: tbuf(5)
+!
+! CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+! m = RESHAPE([1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP, &
+!              7.0_DFP, 8.0_DFP, 9.0_DFP, 10.0_DFP, 11.0_DFP, 12.0_DFP], &
+!             [3, 4])
+!
+! CALL obj%Initiate(filename=filename, mode="NEW")
+! CALL obj%OPEN()
+! CALL obj%Append("/u", [0.1_DFP, 0.2_DFP, 0.3_DFP, 0.4_DFP, 0.5_DFP])
+! CALL obj%Append("/m", m)
+! CALL obj%Append("/ids", [10_I4B, 20_I4B, 30_I4B, 40_I4B, 50_I4B])
+! CALL obj%Append("/cells", RESHAPE([1_I4B, 2_I4B, 3_I4B, &
+!                                    2_I4B, 3_I4B, 4_I4B], [3, 2]))
+! CALL obj%Append("/types", [5_INT8, 5_INT8, 9_INT8])
+! CALL obj%DEALLOCATE()
+!
+! CALL obj%Initiate(filename=filename, mode="READ")
+! CALL obj%OPEN()
+!
+! ! rank-1 real into a larger buffer
+! rbuf = -1.0_DFP
+! CALL obj%ReadSlab_("/u", 1, 3, rbuf, tsize)
+! CALL OK(tsize .EQ. 3, "real rank-1: tsize")
+! CALL OK(ALL(ABS(rbuf(1:3) - [0.2_DFP, 0.3_DFP, 0.4_DFP]) .LT. tol), &
+!         "real rank-1: values")
+! CALL OK(ALL(rbuf(4:) .EQ. -1.0_DFP), "real rank-1: rest unchanged")
+!
+! ! rank-1 real into the first row of a (1, n) array
+! CALL obj%ReadSlab_("/u", 0, 4, row(1, :), tsize)
+! CALL OK(tsize .EQ. 4 .AND. ALL(ABS(row(1, :) - [0.1_DFP, 0.2_DFP, &
+!         0.3_DFP, 0.4_DFP]) .LT. tol), "real rank-1: row of an array")
+!
+! ! rank-2 real into a larger buffer: vals(1:nrow, 1:ncol)
+! rbuf2 = -1.0_DFP
+! CALL obj%ReadSlab_("/m", 1, 2, rbuf2, nrow, ncol)
+! CALL OK(nrow .EQ. 3 .AND. ncol .EQ. 2, "real rank-2: nrow, ncol")
+! CALL OK(ALL(ABS(rbuf2(1:3, 1:2) - m(:, 2:3)) .LT. tol), &
+!         "real rank-2: values")
+! CALL OK(ALL(rbuf2(4:, :) .EQ. -1.0_DFP) .AND. &
+!         ALL(rbuf2(:, 3:) .EQ. -1.0_DFP), "real rank-2: rest unchanged")
+!
+! ! rank-1 and rank-2 integer
+! CALL obj%ReadSlab_("/ids", 2, 3, ibuf, tsize)
+! CALL OK(tsize .EQ. 3 .AND. ALL(ibuf(1:3) .EQ. [30, 40, 50]), &
+!         "integer rank-1")
+! ibuf2 = 0
+! CALL obj%ReadSlab_("/cells", 1, 1, ibuf2, nrow, ncol)
+! CALL OK(nrow .EQ. 3 .AND. ncol .EQ. 1 .AND. &
+!         ALL(ibuf2(1:3, 1) .EQ. [2, 3, 4]), "integer rank-2")
+!
+! ! unsigned 8-bit integers
+! CALL obj%ReadSlab_("/types", 0, 3, tbuf, tsize)
+! CALL OK(tsize .EQ. 3 .AND. ALL(tbuf(1:3) .EQ. [5_INT8, 5_INT8, 9_INT8]), &
+!         "8-bit integers")
+!
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_readslab_d1]], [[obj_ReadSlab_d2_]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadSlab_d1_(obj, dsetname, istart, icount, &
+                                     vals, tsize)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting index
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of entries
+    REAL(DFP), CONTIGUOUS, TARGET, INTENT(INOUT) :: vals(:)
+    !! buffer, SIZE(vals) >= icount
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! number of entries read
+  END SUBROUTINE obj_ReadSlab_d1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ReadSlab_@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Read a slab of a rank-2 real dataset into a buffer
+!
+! Columns istart+1 to istart+icount are read; the first dimension is
+! read whole (nrow is its size in the dataset). The slab is placed in
+! vals(1:nrow, 1:ncol); the other entries of vals are not changed, so
+! vals can be larger than the slab in both dimensions. vals is not
+! allocated. In DEBUG mode, an error is raised if SIZE(vals, 1) < nrow
+! or SIZE(vals, 2) < icount.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting column
+!   icount : INTEGER(I4B) - number of columns to read
+!   vals : REAL(DFP) - buffer, SIZE(vals, 2) >= icount
+!   nrow, ncol : INTEGER(I4B) - shape of the slab read
+!
+! See also: [[obj_ReadSlab_d1_]] (contains an example),
+! [[obj_readslab_d2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadSlab_d2_(obj, dsetname, istart, icount, &
+                                     vals, nrow, ncol)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting column
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of columns
+    REAL(DFP), CONTIGUOUS, TARGET, INTENT(INOUT) :: vals(:, :)
+    !! buffer, the slab is placed in vals(1:nrow, 1:ncol)
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows read (size of the first dimension of the dataset)
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns read
+  END SUBROUTINE obj_ReadSlab_d2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ReadSlab_@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Read a slab of a rank-1 integer dataset into a buffer
+!
+! See [[obj_ReadSlab_d1_]].
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting index
+!   icount : INTEGER(I4B) - number of entries to read
+!   vals : INTEGER(I4B) - buffer, SIZE(vals) >= icount
+!   tsize : INTEGER(I4B) - number of entries read, vals(1:tsize)
+!
+! See also: [[obj_ReadSlab_d1_]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadSlab_n1_(obj, dsetname, istart, icount, &
+                                     vals, tsize)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting index
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of entries
+    INTEGER(I4B), CONTIGUOUS, TARGET, INTENT(INOUT) :: vals(:)
+    !! buffer, SIZE(vals) >= icount
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! number of entries read
+  END SUBROUTINE obj_ReadSlab_n1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ReadSlab_@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Read a slab of a rank-2 integer dataset into a buffer
+!
+! Columns istart+1 to istart+icount are read; the first dimension is
+! read whole (nrow is its size in the dataset). The slab is placed in
+! vals(1:nrow, 1:ncol); the other entries of vals are not changed, so
+! vals can be larger than the slab in both dimensions. vals is not
+! allocated. In DEBUG mode, an error is raised if SIZE(vals, 1) < nrow
+! or SIZE(vals, 2) < icount.
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting column
+!   icount : INTEGER(I4B) - number of columns to read
+!   vals : INTEGER(I4B) - buffer, SIZE(vals, 2) >= icount
+!   nrow, ncol : INTEGER(I4B) - shape of the slab read
+!
+! See also: [[obj_ReadSlab_d1_]] (contains an example),
+! [[obj_readslab_d2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadSlab_n2_(obj, dsetname, istart, icount, &
+                                     vals, nrow, ncol)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting column
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of columns
+    INTEGER(I4B), CONTIGUOUS, TARGET, INTENT(INOUT) :: vals(:, :)
+    !! buffer, the slab is placed in vals(1:nrow, 1:ncol)
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows read (size of the first dimension of the dataset)
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns read
+  END SUBROUTINE obj_ReadSlab_n2_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ReadSlab_@AppendMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-28
+! summary: Read a slab of a rank-1 8-bit integer dataset into a buffer
+!
+! The dataset is unsigned 8-bit (see [[obj_Append_u1]]).
+! See [[obj_ReadSlab_d1_]].
+!
+! Arguments:
+!   obj : CLASS(HDF5File_) - opened hdf5 file with read access
+!   dsetname : CHARACTER(*) - path of dataset
+!   istart : INTEGER(I4B) - zero based starting index
+!   icount : INTEGER(I4B) - number of entries to read
+!   vals : INTEGER(INT8) - buffer, SIZE(vals) >= icount
+!   tsize : INTEGER(I4B) - number of entries read, vals(1:tsize)
+!
+! See also: [[obj_ReadSlab_d1_]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_ReadSlab_u1_(obj, dsetname, istart, icount, &
+                                     vals, tsize)
+    CLASS(HDF5File_), INTENT(INOUT) :: obj
+    !! hdf5 file
+    CHARACTER(LEN=*), INTENT(IN) :: dsetname
+    !! path of dataset
+    INTEGER(I4B), INTENT(IN) :: istart
+    !! zero based starting index
+    INTEGER(I4B), INTENT(IN) :: icount
+    !! number of entries
+    INTEGER(INT8), CONTIGUOUS, TARGET, INTENT(INOUT) :: vals(:)
+    !! buffer, SIZE(vals) >= icount
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! number of entries read
+  END SUBROUTINE obj_ReadSlab_u1_
 END INTERFACE
 
 !----------------------------------------------------------------------------
