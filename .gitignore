@@ -17,6 +17,7 @@
 *.h5
 *.gp
 *.msh
+*.vtkhdf
 
 vscode-settings
 media/
