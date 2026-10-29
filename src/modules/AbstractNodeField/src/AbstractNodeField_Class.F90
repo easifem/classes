@@ -2837,8 +2837,8 @@ INTERFACE
     INTEGER(I4B), INTENT(INOUT) :: vtkindx(:)
     !! size should be at least maxCon
     INTEGER(I4B), INTENT(OUT) :: points_nrow, points_ncol, &
-      con_tsize, offsets_tsize, &
-      types_tsize
+                                 con_tsize, offsets_tsize, &
+                                 types_tsize
     !! points_nrow, points_ncol are shape of points
     !! con_tsize is tsize of connectivity
     !! offsets_tsize is size of offsets

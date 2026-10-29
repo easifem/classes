@@ -1516,18 +1516,23 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-27
+! update:
+!   - 2026-10-29: vtkindx removed; the number of points of a cell is the
+!     number of interpolation points of its order
 ! summary: Values at the points of the VTK unstructured grid
 !   (no allocation)
 !
 ! Same as [[obj_GetVtkUnstructuredValue1]], but VALUE and the work
-! arrays are given by the caller, so that nothing is allocated.
+! arrays are given by the caller, so that nothing is allocated. For each
+! active element, the nodal values of obj are interpolated at the VTK
+! points of the cell (the interpolation points of the cell order).
 !
 ! Arguments:
 !   obj : CLASS(ScalarField_) - scalar field
 !   VALUE : REAL(DFP) - values, SIZE(VALUE) >= fedof%GetSumElemTotalDOF()
 !   tsize : INTEGER(I4B) - number of values written in VALUE
-!   refElemCoord, xij, elemCoord, nodalValue, fecon, vtkindx - work
-!     arrays, see the sizes of the dummy arguments
+!   refElemCoord, xij, elemCoord, nodalValue, fecon - work arrays, see
+!     the sizes of the dummy arguments
 !
 ! See also: [[obj_GetVtkUnstructuredValue1]] (contains an example)
 
@@ -1535,7 +1540,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetVtkUnstructuredValue2(obj, VALUE, tsize, &
                                                  refElemCoord, xij, &
                                                  elemCoord, nodalValue, &
-                                                 fecon, vtkindx)
+                                                 fecon)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
@@ -1558,9 +1563,6 @@ INTERFACE
     INTEGER(I4B), INTENT(INOUT) :: fecon(:)
     !! temporal storage for connectivity of an element
     !! size should be at least max connectivity in fedof
-    INTEGER(I4B), INTENT(INOUT) :: vtkindx(:)
-    !! temporal storage for connectivity of an element
-    !! size should be at least (maxNNE)
   END SUBROUTINE obj_GetVtkUnstructuredValue2
 END INTERFACE
 
