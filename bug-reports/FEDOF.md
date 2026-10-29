@@ -14,46 +14,32 @@ the listed test passes. **Open** means not changed.
 
 ## Fixed
 
-None.
+All 57 tests pass (2026-10-29).
+
+- 0a. Labelled CYCLE in inner loops: the last wrong label, `CYCLE loop1`
+  after `colMesh%isEmpty()` in `FEDOFSetSparsity`, is now `CYCLE loop2`.
+  Tests: GetTotalDOF_1-4, GetConnectivity_1-4, SetSparsity_1-2, ...
+- 0b. Edges of a 3D mesh: three causes.
+  - `AllocateSizes` now calls `mesh%InitiateEdgeConnectivity()` when
+    `xidim == 3` (nothing else numbered the edges, `tEdges` was 0).
+  - `Elemdata_GetEdgeConnectivity` (ElemData_Class) returned the local
+    node numbers of the edge (1 to 8) instead of the global ones, so
+    `SetEdgeOrder` found the wrong elements around an edge. It now maps
+    them with `obj%globalNodes`.
+  - `Elemdata_GetTotalEdgeDOF` returned `order - 2`; it now uses
+    `GetTotalInDOF` of a line (`order - 1` for H1), as the face version
+    does.
+  - Also in `SetEdgeOrder`: `n2e2` had `maxFaces` (6) entries but holds
+    the elements around a node; now `maxNodeToElem`.
+  - Tests: GetEdgeDOF_test_1, GetFaceOrder_test_1.
+- 3. `GetMaxTotalQuadraturePoints` starts from 0 and takes the maximum
+  over the elements. Test: GetMaxTotalQuadraturePoints_test_1.
+- Stale caches: `SetOrdersFromCellOrder` resets `isMaxConSet`,
+  `isMaxQuadPointSet` and `isSumElemTotalDOFSet`. The order setters are
+  private and only called after `DEALLOCATE`, so this was not reachable
+  yet; the reset keeps the caches right if that changes.
 
 ## Open
-
-### 0a. Labelled CYCLE in inner loops (regression, uncommitted)
-
-- Where: the uncommitted change that labels the outer loops as `loop1`.
-  An inner `CYCLE` became `CYCLE loop1`, so it now leaves the inner loop
-  and moves to the next element:
-  - `FEDOF_Class@SetMethods.F90:134` (`SetFaceOrder`):
-    `IF (foundFaces(kk)) CYCLE loop1`
-  - `FEDOF_Class@SetMethods.F90:194` (`SetEdgeOrder`):
-    `IF (foundEdges(jj)) CYCLE loop1`
-  - `FEDOF_Class@SetSparsityMethods.F90:249, 252, 253` (inner `jvar`
-    loop of `FEDOFSetSparsity`): `CYCLE loop1` skips the other column
-    variables.
-- Effect: as soon as an element meets a face (edge) that is already
-  numbered, its other faces (edges) are skipped and keep order 0. On
-  small_tri3, 6 of 25 faces get no DOFs: order 2 gives 31 DOFs instead of
-  37, and order 3 gives 64 instead of 76.
-- Fix: use a plain `CYCLE` (or label the inner loop and cycle that one).
-- Tests: GetTotalDOF_1-4, GetConnectivity_1-4, GetCellDOF_1-4, Copy_1-2,
-  Initiate_1,2,3,5,6, ImportFromToml_1-3, Lagrange_2-4, SetSparsity_1,
-  GetOrders_1.
-
-### 0b. Edges of a 3D mesh are not initiated
-
-- Where: `obj_Initiate` (ConstructorMethods) reads
-  `ent = obj%mesh%GetTotalEntities()`, but nothing calls
-  `InitiateEdgeConnectivity` for a 3D mesh. Only face connectivity is
-  built, in `InitiateElementToElements`. So `tEdges = 0` and
-  `ElemData%globalEdges` has size 0.
-- Effect: on a hexahedral mesh, edge DOFs are missing (order 2 gives a
-  wrong `GetTotalDOF`), `GetEdgeOrder` returns 0 edges, and
-  `GetEdgeDOF(localEdgeNumber=...)` crashes in
-  `Elemdata_GetGlobalEdgeNumber` ("Index '1' ... above upper bound of 0").
-- Fix (proposal): in `Initiate`, when `xidim == 3`, call
-  `obj%mesh%InitiateEdgeConnectivity()` if it is not initiated yet. Or do
-  it in `FEDomain_%Initiate`.
-- Tests: GetEdgeDOF_test_1 (crash), GetFaceOrder_test_1 (one check).
 
 ### 1. GetConnectivity_ ignores long opt values
 
@@ -73,13 +59,6 @@ None.
   orientations of another element are returned. `SetFE` passes a local
   number, so it is not affected.
 - Test: `GetOrders_test_1` uses local numbers.
-
-### 3. GetMaxTotalQuadraturePoints returns the value of the last element
-
-- Where: `obj_GetMaxTotalQuadraturePoints` (GetMethods)
-- Cause: `ans = feptr%GetTotalQuadraturePoints()` in the element loop
-  instead of `ans = MAX(ans, ...)`; `ans` is also not set to 0 first.
-- Effect: wrong for meshes with several topologies or orders.
 
 ### 4. Deallocate does not free the finite elements
 
