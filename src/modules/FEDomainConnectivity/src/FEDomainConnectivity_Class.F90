@@ -451,6 +451,7 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Returns the node to node connectivity info
 !
 !# Introduction
@@ -458,9 +459,6 @@ END INTERFACE
 !  This function returns the pointer
 !  to [[FEDomainConnectivity_:nodeToNode]]
 !
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE FUNCTION obj_GetNodeToNodePointer(obj) RESULT(ans)
@@ -600,14 +598,12 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Returns pointer to  cell-to-cell data
 !
 !# Introduction
 !
 ! This function returns the pointer to [[FEDomainConnectivity_:CellToCell]]
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE FUNCTION obj_GetCellToCellPointer(obj) RESULT(ans)
@@ -622,14 +618,12 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Returns pointer to  cell-to-cell data
 !
 !# Introduction
 !
 ! This function returns the pointer to [[FEDomainConnectivity_:CellToCell]]
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE PURE FUNCTION obj_GetDimEntityNum(obj, globalElement) RESULT(ans)

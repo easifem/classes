@@ -342,6 +342,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Generate node to node connectivity
 !
 !# Introduction
@@ -359,9 +360,6 @@ END INTERFACE
 !In this case bounds of [[DomainConnectivity_:nodeToNode]] will be from
 !1 to mesh1%maxNptrs.
 !@endwarn
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE SUBROUTINE dc_InitiateNodeToNodeData1(obj, domain1, domain2, &
@@ -388,6 +386,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Generate node to node connectivity
 !
 !# Introduction
@@ -402,9 +401,6 @@ END INTERFACE
 ! - `obj%nodeToNode` will be initiated
 ! - `domain1` main domain
 ! - `domain2` secondary domain
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE SUBROUTINE dc_InitiateNodeToNodeData2(obj, domain1, domain2)
@@ -425,6 +421,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Returns the node to node connectivity info
 !
 !# Introduction
@@ -432,9 +429,6 @@ END INTERFACE
 !  This function returns the pointer
 !  to [[DomainConnectivity_:nodeToNode]]
 !
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE FUNCTION dc_getNodeToNodePointer(obj) RESULT(ans)
@@ -449,6 +443,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Generate cell to cell connectivity
 !
 !# Introduction
@@ -471,9 +466,6 @@ END INTERFACE
 ! that if the mesh1 is surface mesh then mesh2 should be a surface mesh
 ! - This routine needs [[DomainConnectivity_:nodeToNode]] information, so
 ! make sure it is initiated before calling this routine.
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE SUBROUTINE dc_initiateCellToCellData1(obj, domain1, domain2, &
@@ -500,6 +492,7 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Generate cell to cell connectivity
 !
 !# Introduction
@@ -546,9 +539,6 @@ END INTERFACE
 ! with same/different order. For example, domain of tri3 and domain
 ! of tri6 elements.
 !@endnote
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE SUBROUTINE dc_InitiateCellToCellData2(obj, domain1, domain2)
@@ -569,14 +559,12 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Returns pointer to  cell-to-cell data
 !
 !# Introduction
 !
 ! This function returns the pointer to [[DomainConnectivity_:CellToCell]]
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE FUNCTION dc_getCellToCellPointer(obj) RESULT(ans)
@@ -591,14 +579,12 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-10
+! update: 2021-11-10
 ! summary: Returns pointer to  cell-to-cell data
 !
 !# Introduction
 !
 ! This function returns the pointer to [[DomainConnectivity_:CellToCell]]
-!
-! Changes:
-!   - 2021-11-10
 
 INTERFACE
   MODULE PURE FUNCTION dc_getDimEntityNum(obj, globalElement) RESULT(ans)

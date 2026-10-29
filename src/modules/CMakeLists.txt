@@ -24,9 +24,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 # CPUTime
 include(${CMAKE_CURRENT_LIST_DIR}/CPUTime/CMakeLists.txt)
 
-# CommandLineArg
-include(${CMAKE_CURRENT_LIST_DIR}/CommandLineArg/CMakeLists.txt)
-
 # MarkdownData
 include(${CMAKE_CURRENT_LIST_DIR}/MarkdownData/CMakeLists.txt)
 

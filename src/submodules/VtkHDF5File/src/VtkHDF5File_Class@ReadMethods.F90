@@ -172,13 +172,12 @@ END PROCEDURE obj_ReadCellData
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: values from obj%readCache (see LoadReadCache)
 ! summary: Part, geometry offsets, and sizes of a step
 !
 ! If step is not present, or the file has no steps, the first part is
 ! returned.
-!
-! Changes:
-!   - 2026-10-28: values from obj%readCache (see LoadReadCache)
 
 FUNCTION GetStepInfo(obj, step) RESULT(ans)
   CLASS(VtkHDF5File_), INTENT(INOUT) :: obj
@@ -245,15 +244,14 @@ END FUNCTION GetStepInfo
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: rank and offsets of the array from obj%readCache (see
+!     GetReadArray); one component data is read with ReadSlab_ into
+!     vals(1, :) without a temporary array
 ! summary: Read point or cell data of a step
 !
 ! The offset of the data is taken from Steps/<group>Offsets/<name>.
 ! If it does not exist, the geometry offset is used (VTKHDF rule).
-!
-! Changes:
-!   - 2026-10-28: rank and offsets of the array from obj%readCache (see
-!     GetReadArray); one component data is read with ReadSlab_ into
-!     vals(1, :) without a temporary array
 
 SUBROUTINE ReadData(obj, group, name, geoOffset, ntuples, info, step, &
                     vals)
@@ -445,8 +443,8 @@ FUNCTION GetReadArray(obj, group, name) RESULT(ans)
 
   ans = 0
   loop1: DO ii = 1, obj%readCache%nArrays
-    IF (obj%readCache%arrays(ii)%group == group .AND. &
-        obj%readCache%arrays(ii)%name == name) THEN
+    IF (obj%readCache%arrays(ii)%GROUP.EQ.GROUP .AND. &
+        obj%readCache%arrays(ii)%NAME.EQ.NAME) THEN
       ans = ii
       EXIT loop1
     END IF

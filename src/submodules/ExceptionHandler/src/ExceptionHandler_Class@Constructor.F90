@@ -17,10 +17,8 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 4 April 2021
+! update: 4 Nov 2021
 ! summary: Constructor method for [[ExceptionHandler_]]
-!
-! Changes:
-!   - 4 Nov 2021
 
 SUBMODULE(ExceptionHandler_Class) Constructor
 USE BaseMethod

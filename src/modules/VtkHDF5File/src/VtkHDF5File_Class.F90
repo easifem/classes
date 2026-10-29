@@ -308,6 +308,9 @@ END TYPE VtkHDF5FilePointer_
 
 !> author: Shion Shimizu and Vikas Sharma
 ! date: 2026-10-24
+! update:
+!   - 2026-10-26: only modes NEW and READ; vtkType is checked by
+!     CheckVtkTypeSupport; zlibOpt is passed to HDF5File_%Initiate
 ! summary: Open a VTKHDF file for writing or reading
 !
 ! The object is deallocated first, then the HDF5 file is initiated and
@@ -330,10 +333,6 @@ END TYPE VtkHDF5FilePointer_
 ! .FALSE. and frequency = 1. The layout and compression of the datasets
 ! are set by zlibOpt, chunkPolicy, libverLow and compactBytes, as in
 ! [[HDF5File_:Initiate]]; zlibOpt replaces chunkPolicy%deflateLevel.
-!
-! Changes:
-!   - 2026-10-26: only modes NEW and READ; vtkType is checked by
-!     CheckVtkTypeSupport; zlibOpt is passed to HDF5File_%Initiate
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file
@@ -568,6 +567,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-26: false for a file which is not opened for writing
 ! summary: Returns true if data should be written now
 !
 ! Returns false if the file is not initiated or not opened for writing
@@ -575,9 +576,6 @@ END INTERFACE
 ! For a transient file, true is returned only between BeginTimeStep and
 ! EndTimeStep of a step which is not skipped by frequency. Use it to avoid
 ! the computation of output data in the skipped steps.
-!
-! Changes:
-!   - 2026-10-26: false for a file which is not opened for writing
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file
@@ -653,6 +651,8 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-26
+! update:
+!   - 2026-10-28: debug checks of the grid data
 ! summary: Write an unstructured grid as a new part
 !
 ! The grid is appended as a new part (piece) to the datasets Points,
@@ -676,9 +676,6 @@ END INTERFACE
 ! writing, SIZE(points, 1) = 3, SIZE(offsets) = SIZE(types) + 1,
 ! offsets(1) = 0, offsets is non decreasing, offsets(nCells + 1) =
 ! SIZE(connectivity), and the connectivity ids are in [0, nPoints - 1].
-!
-! Changes:
-!   - 2026-10-28: debug checks of the grid data
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -822,6 +819,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: example uses WriteUnstructuredGrid
 ! summary: Start a time step
 !
 ! The step counter is increased. If MOD(counter - 1, frequency) is not
@@ -829,9 +828,6 @@ END INTERFACE
 ! until EndTimeStep. Otherwise, time is appended to Steps/Values.
 !
 ! Nothing is done if the file is not initiated or not transient.
-!
-! Changes:
-!   - 2026-10-28: example uses WriteUnstructuredGrid
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -985,6 +981,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-1 array as point data (one component)
 !
 ! vals(j) is the value at the j-th point of the current grid. The data
@@ -996,9 +994,6 @@ END INTERFACE
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
 ! of tuples is not GetTotalPoints().
-!
-! Changes:
-!   - 2026-10-27: checks only in DEBUG mode
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -1025,6 +1020,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-2 array as point data (multiple components)
 !
 ! vals(i, j) is the i-th component at the j-th point of the current
@@ -1036,9 +1033,6 @@ END INTERFACE
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
 ! of tuples is not GetTotalPoints().
-!
-! Changes:
-!   - 2026-10-27: checks only in DEBUG mode
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -1065,6 +1059,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-1 array as cell data (one component)
 !
 ! vals(j) is the value at the j-th cell of the current grid (the order
@@ -1077,9 +1073,6 @@ END INTERFACE
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
 ! of tuples is not GetTotalCells().
-!
-! Changes:
-!   - 2026-10-27: checks only in DEBUG mode
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -1105,6 +1098,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-2 array as cell data (multiple components)
 !
 ! vals(i, j) is the i-th component at the j-th cell of the current
@@ -1116,9 +1111,6 @@ END INTERFACE
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! if it is called outside a step of a transient file, or if the number
 ! of tuples is not GetTotalCells().
-!
-! Changes:
-!   - 2026-10-27: checks only in DEBUG mode
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -1144,6 +1136,8 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: checks only in DEBUG mode
 ! summary: Write a rank-1 array as field data (one tuple)
 !
 ! Field data are global values which are not attached to points or
@@ -1157,9 +1151,6 @@ END INTERFACE
 ! In DEBUG mode, an error is raised if the file is not opened with mode
 ! NEW, if no grid has been written (see [[obj_WriteUnstructuredGrid]]),
 ! or if it is called outside a step of a transient file.
-!
-! Changes:
-!   - 2026-10-27: checks only in DEBUG mode
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
@@ -1185,6 +1176,9 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-27: type-bound procedure (was a private subroutine);
+!     records in VtkDataArray_, capacity doubling
 ! summary: Add a data array (if new) and set its latest offset and size
 !
 ! The data arrays written in the file are recorded in obj%arrays(1:
@@ -1200,10 +1194,6 @@ END INTERFACE
 !
 ! It is called by the write methods of point, cell and field data after
 ! the data is appended.
-!
-! Changes:
-!   - 2026-10-27: type-bound procedure (was a private subroutine);
-!     records in VtkDataArray_, capacity doubling
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - VTKHDF file
@@ -1240,14 +1230,13 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Number of steps in the file
 !
 ! Returns the NSteps attribute of the Steps group, or zero if the file
 ! is not transient.
-!
-! Changes:
-!   - 2026-10-28: the Steps group and the part sizes are read once
-!     and cached (see VtkReadCache_)
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
@@ -1273,11 +1262,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! summary: Time values of all steps
-!
-! Changes:
+! update:
 !   - 2026-10-28: the Steps group and the part sizes are read once
 !     and cached (see VtkReadCache_)
+! summary: Time values of all steps
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
@@ -1371,14 +1359,13 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Read the grid of a step
 !
 ! The grid (part) used in the step is read. If step is not present or
 ! the file is not transient, the first part is read.
-!
-! Changes:
-!   - 2026-10-28: the Steps group and the part sizes are read once
-!     and cached (see VtkReadCache_)
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
@@ -1507,15 +1494,14 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
+! update:
+!   - 2026-10-28: the Steps group and the part sizes are read once
+!     and cached (see VtkReadCache_)
 ! summary: Read point data of a step
 !
 ! vals(i, j) is the i-th component at the j-th point. A one component
 ! array gives SIZE(vals, 1) = 1. If step is not present or the file is
 ! not transient, the first data is read.
-!
-! Changes:
-!   - 2026-10-28: the Steps group and the part sizes are read once
-!     and cached (see VtkReadCache_)
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
@@ -1621,11 +1607,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! summary: Read cell data of a step
-!
-! Changes:
+! update:
 !   - 2026-10-28: the Steps group and the part sizes are read once
 !     and cached (see VtkReadCache_)
+! summary: Read cell data of a step
 !
 ! Arguments:
 !   obj : CLASS(VtkHDF5File_) - opened VTKHDF file

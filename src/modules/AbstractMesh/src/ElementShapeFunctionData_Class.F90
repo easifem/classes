@@ -140,15 +140,13 @@ CONTAINS
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
+! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
 !
 !# Introduction
 !
 ! This routine sets the local shape data in space (linSpaceElemSD and
 ! spaceElemSD) for the mesh. It also creates the quadrature points in space.
-!
-! Changes:
-!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD1(obj, &
   & orderSpace,  &
@@ -201,10 +199,8 @@ END SUBROUTINE obj_InitiateElemSD1
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
+! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
-!
-! Changes:
-!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD2(obj, &
   & orderSpace,  &
@@ -270,10 +266,8 @@ END SUBROUTINE obj_InitiateElemSD2
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
+! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
-!
-! Changes:
-!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD3(obj, &
   & orderSpace,  &
@@ -352,10 +346,8 @@ END SUBROUTINE obj_InitiateElemSD3
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
+! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
-!
-! Changes:
-!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD4(obj, tvec)
   CLASS(ElementShapeFunctionData_), INTENT(INOUT) :: obj
@@ -564,10 +556,8 @@ END SUBROUTINE obj_InitiateFacetElemSD2
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
+! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
-!
-! Changes:
-!   - 2021-12-09
 
 SUBROUTINE obj_InitiateFacetElemSD3(obj, tvec)
   CLASS(ElementShapeFunctionData_), INTENT(INOUT) :: obj
