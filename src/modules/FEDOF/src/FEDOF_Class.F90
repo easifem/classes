@@ -44,12 +44,6 @@ PUBLIC :: FEDOF_
 PUBLIC :: FEDOFPointer_
 PUBLIC :: FEDOFSetSparsity
 
-CHARACTER(*), PARAMETER :: DEFAULT_BASETYPE = "Monomial"
-CHARACTER(*), PARAMETER :: DEFAULT_IPTYPE = "Equidistance"
-REAL(DFP), PARAMETER :: DEFAULT_ALPHA = 0.0_DFP
-REAL(DFP), PARAMETER :: DEFAULT_BETA = 0.0_DFP
-REAL(DFP), PARAMETER :: DEFAULT_LAMBDA = 0.5_DFP
-
 !----------------------------------------------------------------------------
 !                                                                   FEDOF_
 !----------------------------------------------------------------------------
@@ -1317,8 +1311,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-06
+! update:
+!   - 2026-10-29: initiate the edge connectivity of a 3D mesh
 ! summary: Allocate the order and degree of freedom arrays
 !
+! For a 3D mesh, first call InitiateEdgeConnectivity of the mesh (it
+! returns at once when the edges are numbered already), because the mesh
+! does not number the edges by itself.
 ! Read the number of vertex nodes, edges, faces and cells of the mesh and
 ! allocate cellOrder, faceOrder, edgeOrder and the index arrays edgeIA, faceIA
 ! and cellIA (one entry more than the number of entities).
@@ -4972,20 +4971,20 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-17
-! summary: Get the number of quadrature points of the elements
+! update:
+!   - 2026-10-29: return the largest value, not the one of the last element
+! summary: Get the largest number of quadrature points of an element
 !
 ! For each element, set the quadrature order of its finite element to
 ! scaleForQuadOrder times its cell order and get the number of quadrature
-! points. The value is computed once and stored.
-!
-! Note: the value of the last element is returned, not the largest one; it is
-! the same when all elements have the same topology and order.
+! points. The largest of these numbers is returned. The value is computed
+! once and stored; it is computed again after the orders change.
 !
 ! Arguments:
 !   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
 !
 ! Returns:
-!   ans : INTEGER(I4B) - number of quadrature points
+!   ans : INTEGER(I4B) - largest number of quadrature points of an element
 !
 ! Examples
 !
@@ -5035,7 +5034,7 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B) :: ans
-    !! number of quadrature points
+    !! largest number of quadrature points of an element
   END FUNCTION obj_GetMaxTotalQuadraturePoints
 END INTERFACE
 
