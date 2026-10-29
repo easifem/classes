@@ -2450,10 +2450,10 @@ END INTERFACE
 ! local shape functions are used; the orientation of the element is
 ! taken into account by FixOrientOfNptrs on the connectivity, so the
 ! node coordinates of the element are not needed. FixOrientOfNptrs is
-! implemented for Lagrange finite elements only. Since the local shape
-! functions at the VTK points depend only on the topology and the cell
-! order, they are computed again only when one of them differs from the
-! previous element.
+! implemented for Lagrange finite elements of quadrangles and triangles
+! only. Since the local shape functions at the VTK points depend only on
+! the topology and the cell order, they are computed again only when one
+! of them differs from the previous element.
 !
 ! Arguments:
 !   obj : CLASS(VectorField_) - vector field
