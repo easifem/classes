@@ -852,7 +852,7 @@ END INTERFACE
 ! vector at several nodes ([[obj_Set7]]), and the matching Get.
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:
@@ -1058,7 +1058,7 @@ END INTERFACE
 ! ([[obj_Get4]]).
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:
@@ -1161,7 +1161,7 @@ END INTERFACE
 ! both formats ([[obj_Get2]], [[obj_Get3]]).
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:
@@ -1285,7 +1285,7 @@ END INTERFACE
 ! number of nodes.
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:
@@ -1400,7 +1400,7 @@ END INTERFACE
 ! checked in debug mode.
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:
@@ -1454,7 +1454,7 @@ END INTERFACE
 ! SIZE(globalNode).
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:

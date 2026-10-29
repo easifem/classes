@@ -33,18 +33,15 @@ the listed test passes. **Open** means not changed.
   facet routines); the second call is removed (2026-10-29). FEDOF,
   ScalarField and VectorField tests pass.
 
+- 4. scale without addContribution is applied now (see
+  AbstractNodeField.md, item 1) (2026-10-29).
+
 ## Open
 
 ### 2. Set6 is under development
 
 - Where: `VectorField_Class@SetMethods.F90:326`; it raises an error.
 - Also `VectorField_Class@TomlMethods.F90:138` raises a WIP error.
-
-### 4. scale is ignored without addContribution
-
-- Set1, Set3, Set4, Set5, Set8, Set9 use SetMultiple, which ignores scale
-  without addContribution (see AbstractNodeField.md, item 1); Set10 and
-  Set12 use it.
 
 ### 5. islocal = .FALSE. is not supported
 

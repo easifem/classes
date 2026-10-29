@@ -1090,8 +1090,12 @@ END INTERFACE
 ! The example shows all of them.
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
+!
+! Changes:
+!   - 2026-10-29: without addContribution, scale is applied (obj = scale *
+!     VALUE), as in SetSingle and SetAll; before, scale was not used
 !
 ! Arguments:
 !   obj : CLASS(AbstractNodeField_) - node field
@@ -1212,8 +1216,12 @@ END INTERFACE
 ! summary: Set multiple values in a range
 !
 ! The values with indices istart:iend:stride are set from VALUE (in
-! order). If addContribution is true, then scale * VALUE is added.
-! Without addContribution, scale is not used.
+! order). If addContribution is true, then scale * VALUE is added;
+! otherwise the values are set to scale * VALUE.
+!
+! Changes:
+!   - 2026-10-29: without addContribution, scale is applied (obj = scale *
+!     VALUE), as in SetSingle and SetAll; before, scale was not used
 !
 ! Arguments:
 !   obj : CLASS(AbstractNodeField_) - node field
@@ -1250,8 +1258,12 @@ END INTERFACE
 !
 ! obj(istart:iend:stride) is set from VALUE(istart_value::stride_value)
 ! (the number of values is given by the range of obj). If
-! addContribution is true, then scale times these values is added.
-! Without addContribution, scale is not used.
+! addContribution is true, then scale times these values is added;
+! otherwise the values are set to scale times these values.
+!
+! Changes:
+!   - 2026-10-29: without addContribution, scale is applied (obj = scale *
+!     VALUE), as in SetSingle and SetAll; before, scale was not used
 !
 ! Arguments:
 !   obj : CLASS(AbstractNodeField_) - node field
@@ -1291,9 +1303,12 @@ END INTERFACE
 ! date: 2023-03-28
 ! summary: Set multiple values in a range to one value
 !
-! The values with indices istart:iend:stride are set to VALUE. If
-! addContribution is true, then scale * VALUE is added. Without
-! addContribution, scale is not used.
+! The values with indices istart:iend:stride are set to scale * VALUE.
+! If addContribution is true, then scale * VALUE is added.
+!
+! Changes:
+!   - 2026-10-29: without addContribution, scale is applied (obj = scale *
+!     VALUE), as in SetSingle and SetAll; before, scale was not used
 !
 ! Arguments:
 !   obj : CLASS(AbstractNodeField_) - node field

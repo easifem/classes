@@ -618,7 +618,7 @@ END INTERFACE
 ! the example shows all three.
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:
@@ -769,7 +769,7 @@ END INTERFACE
 ! must not be less than SIZE(globalNode).
 !
 ! @note
-!   Without addContribution, scale is not used.
+!   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
 ! Arguments:
@@ -996,7 +996,7 @@ END INTERFACE
 ! summary: Set or add another scalar field: obj = obj + scale * VALUE
 !
 ! If addContribution is true, then scale * VALUE is added to obj.
-! Otherwise the values of VALUE are copied into obj (scale is not used).
+! Otherwise obj is set to scale * VALUE.
 ! An error is raised (in debug mode) if obj or VALUE is not initiated.
 ! Both fields must have the same FEDOF.
 !

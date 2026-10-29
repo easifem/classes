@@ -15,12 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) SetMethods
+USE BaseType, ONLY: math => TypeMathOpt
+USE HDF5FileUtility, ONLY: ImportRealVector
 USE InputUtility, ONLY: Input
 USE RealVector_Method, ONLY: RealVectorSet => Set
 USE RealVector_Method, ONLY: RealVectorAdd => Add
-USE BaseType, ONLY: math => TypeMathOpt
 USE String_Class, ONLY: String
-USE HDF5FileUtility, ONLY: ImportRealVector
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -134,9 +134,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+! obj = scale * VALUE without a temporary array: the entries are set
+! to zero, then scale * VALUE is added
+IF ((.NOT. abool) .AND. (areal .NE. math%one)) THEN
+  CALL RealVectorSet(obj%realVec, VALUE=math%zero, nodenum=indx)
+  abool = math%yes
+END IF
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd(obj%realVec, VALUE=VALUE, scale=areal, nodenum=indx)
 ELSE
   CALL RealVectorSet(obj%realVec, VALUE=VALUE, nodenum=indx)
@@ -165,9 +172,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+! obj = scale * VALUE without a temporary array: the entries are set
+! to zero, then scale * VALUE is added
+IF ((.NOT. abool) .AND. (areal .NE. math%one)) THEN
+  CALL RealVectorSet(obj%realVec, VALUE=math%zero, istart=istart, &
+                     iend=iend, stride=stride)
+  abool = math%yes
+END IF
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd( &
     obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
     stride=stride)
@@ -199,9 +214,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+! obj = scale * VALUE without a temporary array: the entries are set
+! to zero, then scale * VALUE is added
+IF ((.NOT. abool) .AND. (areal .NE. math%one)) THEN
+  CALL RealVectorSet(obj%realVec, VALUE=math%zero, istart=istart, &
+                     iend=iend, stride=stride)
+  abool = math%yes
+END IF
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd( &
     obj=obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
     iend=iend, stride=stride, istart_value=istart_value, &
@@ -236,15 +259,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd( &
     obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
     stride=stride)
 ELSE
+  areal = areal * VALUE
   CALL RealVectorSet( &
-    obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
+    obj%realVec, VALUE=areal, istart=istart, iend=iend, stride=stride)
 END IF
 
 #ifdef DEBUG_VER

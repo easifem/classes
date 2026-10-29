@@ -23,13 +23,10 @@ the listed test passes. **Open** means not changed.
   and `%scalar` are defined from `TypeFEVariableOpt` in
   `FieldOpt_Class`, so the values are the same.
 
+- 3. scale without addContribution is applied now (see
+  AbstractNodeField.md, item 1) (2026-10-29).
+
 ## Open
-
-### 3. scale is ignored without addContribution
-
-- Set3, Set5, Set7 and Set8 call SetMultiple, which ignores scale
-  without addContribution (see AbstractNodeField.md, item 1); Set1 and
-  Set2 use it.
 
 ### 5. islocal = .FALSE. is not supported
 
