@@ -40,10 +40,12 @@ PUBLIC :: AbstractRefElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! update: 18 Aug 2022
 ! summary: AbstractRefElement class is defined
 !
 !{!pages/docs-api/AbstractRefElement/AbstractRefElement_.md!}
+!
+! Changes:
+!   - 18 Aug 2022
 
 TYPE, ABSTRACT :: AbstractRefElement_
   PRIVATE

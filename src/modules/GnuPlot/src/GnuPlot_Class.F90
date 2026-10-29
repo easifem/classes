@@ -177,8 +177,10 @@ END TYPE GnuPlotPointer_
 
 !> author: Shion Shimizu
 ! date:   2024-06-06
-! update: 2025-02-21
 ! summary:  Initialize the Gnuplot object
+!
+! Changes:
+!   - 2025-02-21
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj)
@@ -192,8 +194,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2024-06-06
-! update: 2025-02-21
 ! summary: Deallocate the Gnuplot object
+!
+! Changes:
+!   - 2025-02-21
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
@@ -252,8 +256,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-06-08
-! update : 2025-02-18
 ! summary:  Plot 1D data
+!
+! Changes:
+!   - 2025-02-18
 
 INTERFACE
   MODULE SUBROUTINE obj_plot1(obj, x1, y1, ls1, axes1, &
@@ -302,8 +308,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-06-08
-! update: 2025-02-18
 ! summary:  Plot 2D data
+!
+! Changes:
+!   - 2025-02-18
 
 INTERFACE
   MODULE SUBROUTINE obj_plot2(obj, xv, ymat, lspec)
@@ -320,8 +328,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-06-08
-! update : 2025-02-18
 ! summary:  Plot 2D data
+!
+! Changes:
+!   - 2025-02-18
 
 INTERFACE
   MODULE SUBROUTINE obj_plot3(obj, xmat, ymat, lspec)
@@ -433,12 +443,14 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-09-22
-! update: 2025-02-21
 ! summary:  plot line in 3D
 !..............................................................................
 ! lplot3d create a line plot in 3d
 ! datablock is used instead of  gnuplot inline file "-"
 !..............................................................................
+!
+! Changes:
+!   - 2025-02-21
 
 INTERFACE
   MODULE SUBROUTINE obj_plot3d_vvv(obj, x, y, z, lspec, paletteName)
@@ -457,12 +469,14 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date:   2024-09-22
-! update: 2025-02-21
 ! summary:  plot surface
 !..............................................................................
 ! splot create a surface plot
 ! datablock is used instead of  gnuplot inline file "-"
 !..............................................................................
+!
+! Changes:
+!   - 2025-02-21
 
 INTERFACE
   MODULE SUBROUTINE obj_surf1(obj, x, y, z, lspec, paletteName)
@@ -564,13 +578,15 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  process command
 !
 !# Introduction
 !
 !   obj subroutine writes all the data into plot file
 !   to be read by gnuplot
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_WritePlotSetup(obj)
@@ -837,12 +853,14 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set x limit
 !
 !# Introduction
 !
 !Set the x axis limits in form of [xmin, xmax]
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetXLim(obj, lims)
@@ -877,12 +895,14 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set y limit
 !
 !# Introduction
 !
 !Set the y axis limits in form of [ymin, ymax]
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetYLim(obj, lims)
@@ -917,12 +937,14 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set z limit
 !
 !# Introduction
 !
 !Set the z axis limits in form of [zmin, zmax]
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetZLim(obj, lims)
@@ -1078,8 +1100,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set x label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetXLabel(obj, label, color, fontSize, fontName, &
@@ -1100,8 +1124,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set x2 label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetX2Label(obj, label, color, fontSize, fontName, &
@@ -1122,8 +1148,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set y label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetYLabel(obj, label, color, fontSize, fontName, &
@@ -1144,8 +1172,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set y2 label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetY2Label(obj, label, color, fontSize, fontName, &
@@ -1166,8 +1196,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set z label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetZLabel(obj, label, color, fontSize, fontName, &
@@ -1208,7 +1240,9 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
+!
+! Changes:
+!   - 2025-12-22
 
 ! summary:  set label
 !

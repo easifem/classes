@@ -21,21 +21,28 @@ the listed test passes. **Open** means not changed.
 - 3. Get4: engine branches swapped; NATIVE_SERIAL now calls `GetValue_`
   and the other engines use `GetMultiple` (2026-10-29).
 
+- 6. SetByFunction swapped the edge DOF on triangles of order >= 3:
+  `TriangleH1LagFE_GetGlobalFacetElemShapeData` used `n2 = nns` of the
+  geometry facet (2), so the facet shape functions of a reversed edge
+  were never reversed; now `n2 = facetElemsd%nns`, as for quadrangles
+  (2026-10-29). Tests: SetByFunction_test_2 of ScalarField and
+  VectorField.
+
 ## Open
 
-### 6. SetByFunction swaps edge DOF on triangles of order >= 3
+### 7. dNdXi of reversed edge DOF is reversed twice
 
-- Where: `obj_SetByFunction` (VectorField and ScalarField SetMethods),
-  through `feptr%GetDOFValue`.
-- Effect: on small_tri3_mesh.h5 with order 3 Lagrange, the two interior
-  DOF of some edges get each other's value (44 of 140 VTK points wrong
-  for f = x**2 y + 1, which is exact in the space). The VTK path is
-  right: with SetHigherOrderNodeCoord (u = x) all points match.
-  Probably the edge orientation is not applied in GetDOFValue for
-  triangles. Quadrangles (square_3x2, two elements) are not affected.
-- Tests: GetVtkUnstructuredValue_test_2 uses SetHigherOrderNodeCoord
-  for this reason; a SetByFunction test on triangles of order 3 is
-  needed.
+- Where: `BasisOpt_Class@TriangleH1LagrangeFEMethods.F90` and
+  `BasisOpt_Class@QuadrangleH1LagrangeFEMethods.F90`
+  (`*_GetGlobalElemShapeData` and `*_GetGlobalFacetElemShapeData`).
+  For an edge with orientation -1, `Reverse(ans=elemsd%dNdXi, ...)` is
+  called twice, so dNdXi is not reversed (N and dNdXt are).
+- Effect: dNdXi of the edge DOF does not match N for elements of order
+  >= 3 with reversed edges. dNdXt is right, so the usual integrals are
+  not affected; code which uses dNdXi directly is.
+- Fix: remove the second call (or reverse dNdXt in its place if that
+  was meant).
+- Tests: none yet.
 
 ### 2. Set6 is under development
 

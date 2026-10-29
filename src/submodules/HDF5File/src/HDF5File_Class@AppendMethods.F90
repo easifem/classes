@@ -17,15 +17,16 @@
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! update:
-!   - 2026-10-26: chunk shape and filters from the chunk policy; HDF5
-!     types from the kind of the data; error checks only in DEBUG mode
-!   - 2026-10-28: ReadSlab_, read a slab into a buffer
 ! summary: Append to extendable datasets and read slabs of datasets
 !
 ! The extendable datasets are chunked, and the size of the last
 ! (Fortran) dimension is unlimited. In C order (h5py, VTK) this is the
 ! first dimension, i.e., rows are Appended.
+!
+! Changes:
+!   - 2026-10-26: chunk shape and filters from the chunk policy; HDF5
+!     types from the kind of the data; error checks only in DEBUG mode
+!   - 2026-10-28: ReadSlab_, read a slab into a buffer
 
 SUBMODULE(HDF5File_Class) AppendMethods
 USE HDF5, ONLY: SIZE_T
@@ -663,9 +664,6 @@ END PROCEDURE obj_GetExtent
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! update:
-!   - 2026-10-26: chunk shape and filters from obj%chunkPolicy; error
-!     checks only in DEBUG mode
 ! summary: Append data to an extendable dataset (creates if needed)
 !
 ! ldims is the shape of the data (Fortran order). The data is Appended
@@ -680,6 +678,10 @@ END PROCEDURE obj_GetExtent
 ! If a step fails (no write access, wrong rank or shape, the dataset can
 ! not be created or extended), nothing more is done and offset is the
 ! size before the call; DEBUG mode raises an error.
+!
+! Changes:
+!   - 2026-10-26: chunk shape and filters from obj%chunkPolicy; error
+!     checks only in DEBUG mode
 
 SUBROUTINE AppendCore(obj, path, ldims, filetype, memtype, buf, offset)
   CLASS(HDF5File_), INTENT(INOUT) :: obj
@@ -976,13 +978,14 @@ END SUBROUTINE SlabOpen
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-26
-! update:
-!   - 2026-10-28: optional mdims, shape of a buffer larger than the slab
 ! summary: Read a slab of an open dataset into buf
 !
 ! If mdims is present, buf is a buffer of shape mdims, and the slab is
 ! placed in its first cnt entries of each dimension (buf(1:cnt(1),
 ! 1:cnt(2), ...)). Otherwise buf has the shape cnt.
+!
+! Changes:
+!   - 2026-10-28: optional mdims, shape of a buffer larger than the slab
 
 SUBROUTINE SlabRead(dset_id, fspace_id, istart, cnt, memtype, buf, mdims)
   INTEGER(HID_T), INTENT(IN) :: dset_id, fspace_id

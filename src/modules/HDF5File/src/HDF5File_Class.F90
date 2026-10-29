@@ -562,9 +562,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
-! update:
-!   - 2026-10-26: the open status is set only on success
-!   - 2026-10-26: a new file uses the format version libverLow
 ! summary: Open the HDF5 file
 !
 ! Open the file which was set by Initiate. Open does nothing if obj is not
@@ -578,6 +575,10 @@ END INTERFACE
 !   or newer is needed to read it with the default libverLow = 110.
 ! - mode WRITE or OVERWRITE: the file is opened with read-write access.
 ! - mode READ: the file is opened with read-only access.
+!
+! Changes:
+!   - 2026-10-26: the open status is set only on success
+!   - 2026-10-26: a new file uses the format version libverLow
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -630,8 +631,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
-! update:
-!   - 2026-10-26: the open status is kept when H5Fclose fails
 ! summary: Close the HDF5 file
 !
 ! Close the file. The object stays initiated, so the file can be opened again
@@ -640,6 +639,9 @@ END INTERFACE
 ! The file is closed with the close degree H5F_CLOSE_SEMI, so H5Fclose fails
 ! while a dataset, group or attribute of the file is open. Then the file
 ! stays open and IsOpen stays true (an error is raised in DEBUG mode).
+!
+! Changes:
+!   - 2026-10-26: the open status is kept when H5Fclose fails
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -925,8 +927,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-06
-! update:
-!   - 2026-10-26: close the file before deleting it
 ! summary: Deallocate the HDF5 file object
 !
 ! Close the file (or delete it when delete is true) and reset obj to its
@@ -935,6 +935,9 @@ END INTERFACE
 !
 ! The file is always closed first, also when delete is true; then the file
 ! is deleted from disk.
+!
+! Changes:
+!   - 2026-10-26: close the file before deleting it
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -1233,8 +1236,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
-! update:
-!   - 2026-10-26: read the names in native order and sort them once
 ! summary: List the contents of a group
 !
 ! Return the names of the objects (groups and datasets) in the group path, in
@@ -1243,6 +1244,9 @@ END INTERFACE
 !
 ! In DEBUG mode an error is raised if obj is not initiated or the file is not
 ! open.
+!
+! Changes:
+!   - 2026-10-26: read the names in native order and sort them once
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -1315,8 +1319,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-08
-! update:
-!   - 2026-10-26: an existing group is not an error in any mode
 ! summary: Create a group in the HDF5 file
 !
 ! Create the group path. Missing parent groups are created first. If the group
@@ -1324,6 +1326,9 @@ END INTERFACE
 !
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access.
+!
+! Changes:
+!   - 2026-10-26: an existing group is not an error in any mode
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -1577,14 +1582,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-09
-! update:
-!   - 2026-10-26: the root group "/" exists; empty segments are skipped
 ! summary: Returns true if a path exists in the HDF5 file
 !
 ! Every part of path is checked, so a path with a missing parent group does
 ! not exist. The path can be a group or a dataset. The root group "/" always
 ! exists, and empty segments (double slashes) are skipped. Returns false if
 ! the file is not open.
+!
+! Changes:
+!   - 2026-10-26: the root group "/" exists; empty segments are skipped
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -1859,10 +1865,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! update:
-!   - 2026-10-26: error keeps the first failure; ids not created are -1
-!   - 2026-10-26: compact layout for datasets below compactBytes
-!   - 2026-10-26: an existing dataset must have the shape of the new data
 ! summary: Prepare a dataset for writing
 !
 ! Create the dataspaces and the dataset creation property list, create the
@@ -1888,6 +1890,11 @@ END INTERFACE
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open, or it does not have write access. An error is also raised when an
 ! existing dataset is smaller than the new data.
+!
+! Changes:
+!   - 2026-10-26: error keeps the first failure; ids not created are -1
+!   - 2026-10-26: compact layout for datasets below compactBytes
+!   - 2026-10-26: an existing dataset must have the shape of the new data
 !
 ! See also: [[postWrite]], [[compute_chunk_size]]
 
@@ -1930,9 +1937,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-08-08
-! update:
-!   - 2026-10-26: limit the total size of the chunk to targetBytes
-!   - 2026-10-26: chunkMethod 1 (uniform) and 2 (max); policy argument
 ! summary: Compute the chunk size of a compressed dataset
 !
 ! The chunk size controls the memory used by the HDF5 library for compression,
@@ -1961,6 +1965,10 @@ END INTERFACE
 ! | 1000 x 1000 | 1000 x 125 | 1000 x 131 |
 ! | 200000 x 200 | 100000 x 1 | 131072 x 1 |
 !
+! Changes:
+!   - 2026-10-26: limit the total size of the chunk to targetBytes
+!   - 2026-10-26: chunkMethod 1 (uniform) and 2 (max); policy argument
+!
 ! See also: [[preWrite]]
 
 INTERFACE
@@ -1982,14 +1990,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! update:
-!   - 2026-10-26: close only valid ids; error is not changed
 ! summary: Close the objects opened by preWrite
 !
 ! Close the dataset, the dataspaces and the property list; ids equal to -1
 ! are skipped and the closed ids are set to -1. error keeps the status of the
 ! write. In DEBUG mode an error is raised if error is not zero, that is, if
 ! the write failed, or if an object can not be closed.
+!
+! Changes:
+!   - 2026-10-26: close only valid ids; error is not changed
 !
 ! See also: [[preWrite]]
 
@@ -3964,8 +3973,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! update:
-!   - 2026-10-26: error keeps the first failure; ids not opened are -1
 ! summary: Open a dataset for reading
 !
 ! Open the dataset and get its dimensions. For rank 0, dims is set to 1. This
@@ -3977,6 +3984,9 @@ END INTERFACE
 ! In DEBUG mode an error is raised if obj is not initiated, the file is not
 ! open or does not have read access, the dataset can not be opened, or the
 ! rank of the dataset is not rank.
+!
+! Changes:
+!   - 2026-10-26: error keeps the first failure; ids not opened are -1
 !
 ! See also: [[postRead]]
 
@@ -4078,8 +4088,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-08
-! update:
-!   - 2026-10-26: the code gives the class and the precision
 ! summary: Get the data type of a dataset
 !
 ! Returns the class and the precision (bits) of the dataset: 'R32' or 'R64'
@@ -4087,6 +4095,9 @@ END INTERFACE
 ! string, 'BOL' for logical data (the enum {FALSE, TRUE}), and 'N/A' for
 ! a real or integer of another precision. In DEBUG mode an error is raised
 ! for other data types.
+!
+! Changes:
+!   - 2026-10-26: the code gives the class and the precision
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -4159,14 +4170,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-08
-! update:
-!   - 2026-10-26: close only valid ids; error is not changed
 ! summary: Close the objects opened by preRead
 !
 ! Close the dataset and the dataspace; ids equal to -1 are skipped. error
 ! keeps the status of the read. In DEBUG mode, if error is not zero, an error
 ! is raised; for a compressed dataset with large chunks a warning about
 ! memory use is raised first.
+!
+! Changes:
+!   - 2026-10-26: close only valid ids; error is not changed
 !
 ! See also: [[preRead]]
 
@@ -6958,14 +6970,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-09
-! update:
-!   - 2026-10-26: implemented (it was a stub)
 ! summary: Read a rank-3 array of logical
 !
 ! Read a rank-3 array of logical. vals is allocated to the shape of the
 ! dataset. The enum {FALSE, TRUE} written by Write, the characters 'T'/'F'
 ! of older files, and integers (0 is false) are converted to logical
 ! values.
+!
+! Changes:
+!   - 2026-10-26: implemented (it was a stub)
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - HDF5 file object
@@ -8349,8 +8362,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! update:
-!   - 2026-10-26: replace an existing attribute (delete and create)
 ! summary: Create an attribute, replacing an existing one
 !
 ! If the attribute exists and overwriting is allowed, it is deleted and
@@ -8359,6 +8370,9 @@ END INTERFACE
 ! nothing is written (DEBUG mode raises an error). attr_id is also -1 if
 ! the attribute can not be created; the callers write and close it only
 ! when attr_id > 0.
+!
+! Changes:
+!   - 2026-10-26: replace an existing attribute (delete and create)
 !
 ! See also: [[open_attribute]], [[close_attribute]]
 
@@ -8430,8 +8444,6 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! update:
-!   - 2026-10-26: chunk shape and filters from the chunk policy
 ! summary: Append a rank-1 real array to an extendable dataset
 !
 ! If the dataset does not exist, then an extendable (chunked) dataset
@@ -8448,6 +8460,9 @@ END INTERFACE
 ! The parent groups are created if they do not exist.
 ! It is not possible to Append to a dataset created by Write, because
 ! such a dataset is not extendable.
+!
+! Changes:
+!   - 2026-10-26: chunk shape and filters from the chunk policy
 !
 ! Arguments:
 !   obj : CLASS(HDF5File_) - opened hdf5 file with write access

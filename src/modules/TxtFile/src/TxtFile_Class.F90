@@ -317,7 +317,6 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-09
-! update: 2021-11-09
 ! summary: Returns the total number of records in a file
 !
 !
@@ -326,6 +325,9 @@ END INTERFACE
 ! This function returns the total number of records in a file
 ! If `ignoreComment=.TRUE.`, then the comments are ignored
 ! If `ignoreComment` is true, then `commentSymbol` should be given
+!
+! Changes:
+!   - 2021-11-09
 
 INTERFACE
   MODULE FUNCTION txt_GetTotalRecords(obj, ignoreComment, ignoreBlank, &
@@ -1036,8 +1038,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-07
-! update: 2021-11-07
 ! summary: Reads a markdown file and converts it into the source file
+!
+! Changes:
+!   - 2021-11-07
 
 INTERFACE
   MODULE SUBROUTINE txt_ConvertMarkdownToSource(obj, outfile, lang)

@@ -408,12 +408,13 @@ END SUBROUTINE Elemdata_Deallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-04-12
-! update:
-!   - 2026-10-23: Set the number of media to n (it was increased by n)
 ! summary:  Set total number of materials
 !
 ! The size of obj%material becomes n. The material ids of the first
 ! MIN(n, old size) media are kept; the new media get material id 0.
+!
+! Changes:
+!   - 2026-10-23: Set the number of media to n (it was increased by n)
 
 PURE SUBROUTINE Elemdata_SetTotalMedium(obj, n)
   TYPE(Elemdata_), INTENT(INOUT) :: obj
@@ -835,14 +836,15 @@ END FUNCTION Elemdata_GetCell
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-20
-! update:
-!   - 2026-10-29: count the interior DOF of a line (order - 1 for H1), it
-!     returned order - 2
 ! summary: Get the total number of edge dof on the edge of an element
 !
 ! All dofs are internal to the edge, that is, vertex dof are not included.
 ! The number is the one of the interior of a line element of the given
 ! order (GetTotalInDOF), the same rule as Elemdata_GetTotalFaceDOF.
+!
+! Changes:
+!   - 2026-10-29: count the interior DOF of a line (order - 1 for H1), it
+!     returned order - 2
 
 FUNCTION Elemdata_GetTotalEdgeDOF(obj, ii, order, baseContinuity, &
                                   baseInterpolation) RESULT(ans)
@@ -1054,12 +1056,13 @@ END SUBROUTINE Elemdata_GetElementToElements2
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-22
-! update:
-!   - 2026-10-29: return global node numbers (it returned the local ones)
 ! summary: Get the end points of the edge
 !
 ! Get the nodes of the local edge ii from the reference element and map
 ! them to global node numbers with obj%globalNodes.
+!
+! Changes:
+!   - 2026-10-29: return global node numbers (it returned the local ones)
 
 SUBROUTINE Elemdata_GetEdgeConnectivity(obj, ans, tsize, ii)
   TYPE(Elemdata_), INTENT(IN) :: obj

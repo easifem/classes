@@ -814,15 +814,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
-! update:
-!   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
-!     arguments
 ! summary: Get a pointer to a mesh of the domain
 !
 ! Return the mesh of dimension dim, or the mesh of dimension nsd if dim is
 ! absent. In FEDomain_ the mesh of a dimension contains all entities of that
 ! dimension; the entity of an element is its mesh id. The pointer is not
 ! associated if the domain has no mesh of dimension dim.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
+!     arguments
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -964,12 +965,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-11-12
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Returns true if an element is present
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
 ! GetMeshPointer.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -1009,12 +1011,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the vertex connectivity of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
 ! GetMeshPointer. GetNNE returns the number of nodes of the element.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -1096,12 +1099,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of nodes in an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
 ! GetMeshPointer.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -1335,13 +1339,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-28
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the total number of nodes
 !
 ! Without dim, return the number of nodes of the domain. Else
 ! return the number of nodes of the mesh of dimension dim. The operator
 ! .tNodes. calls this method.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2062,14 +2067,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-11-12
-! update:
-!   - 2026-10-23: entityNum is the mesh id of the element
 ! summary: Get the dimension and entity of an element
 !
 ! Return [dim, entityNum] of the element: dim is the dimension of the mesh
 ! which contains the element (dim = 0 to nsd is searched), and entityNum is
 ! the mesh id (entity number) of the element. Zero is returned if the element
 ! is not found.
+!
+! Changes:
+!   - 2026-10-23: entityNum is the mesh id of the element
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2136,10 +2142,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
-!   - 2026-10-24: With dim, nodeCoord has nsd rows (it had three); the
-!     coordinates are copied by GetNodeCoord(nodeCoord, nrow, ncol, dim)
 ! summary: Get node coordinates
 !
 ! GetNodeCoord is a generic method:
@@ -2157,6 +2159,11 @@ END INTERFACE
 ! nsd rows and as many columns as nodes.
 !
 ! GetNodeCoordPointer returns a pointer to the node coordinates.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
+!   - 2026-10-24: With dim, nodeCoord has nsd rows (it had three); the
+!     coordinates are copied by GetNodeCoord(nodeCoord, nrow, ncol, dim)
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2521,14 +2528,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-09-02
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the global node numbers of a mesh
 !
 ! Return the global node numbers of the mesh of dimension dim. GetNptrs_ works
 ! without allocation, and GetInternalNptrs returns the internal nodes of the
 ! mesh. For the nodes of one entity, use GetMeshPointer(dim) and the mesh
 ! method GetNptrs(meshid=entityNum).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2597,11 +2605,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the global node numbers of a mesh
 !
 ! See GetNptrs.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2633,11 +2642,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-09-02
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the internal nodes of a mesh
 !
 ! See GetNptrs.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2782,12 +2792,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the bounding box
 !
 ! Without dim, return the box of all nodes of the domain. Else
 ! return the box of the nodes of the mesh of dimension dim.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -2882,12 +2893,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of media of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
 ! GetMeshPointer.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3289,12 +3301,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the connectivity of an element
 !
 ! This method is implemented by the child class (see FEDomain_).
 ! GetConnectivity_ is a generic method; see the mesh method GetConnectivity_.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3340,11 +3353,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get all connectivities of an element
 !
 ! This method is implemented by the child class (see FEDomain_).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3504,11 +3518,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-05
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of vertex nodes of a list of elements
 !
 ! This method is implemented by the child class (see FEDomain_).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3548,12 +3563,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the orientation flags of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
 ! GetMeshPointer. See the mesh method GetOrientation.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3654,13 +3670,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-23
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the topology index of an element
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
 ! GetMeshPointer. The index is the position of the topology in: Point, Line,
 ! Triangle, Quadrangle, Tetrahedron, Hexahedron, Prism, Pyramid.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3701,12 +3718,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-22
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Returns true if an element is active
 !
 ! The method works on the mesh of dimension dim (default nsd), given by
 ! GetMeshPointer.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(in) - domain object
@@ -3877,14 +3895,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-10-12
-! update:
-!   - 2026-10-24: Works for one domain (the node to node map was empty)
 ! summary: Set the sparsity pattern for several domains
 !
 ! Each domain is a physical variable: the block (ivar, jvar) of mat gets the
 ! pattern between the nodes of domain ivar and domain jvar, found by
 ! FEDomainConnectivity_. For a RECTANGLE matrix two domains are used (rows and
 ! columns). All domains must have the same nsd.
+!
+! Changes:
+!   - 2026-10-24: Works for one domain (the node to node map was empty)
 !
 ! Arguments:
 !   domains(:) : CLASS(AbstractDomainPointer_), intent(inout) - domains, one
@@ -3961,12 +3980,13 @@ END INTERFACE AbstractDomainSetSparsity
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-17
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Set the number of media in the elements of a mesh
 !
 ! Call SetTotalMedium of the mesh of dimension dim; the number of media of
 ! every element is set to n.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractDomain_), intent(inout) - domain object

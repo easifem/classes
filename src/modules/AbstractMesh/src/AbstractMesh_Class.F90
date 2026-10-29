@@ -1066,8 +1066,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-16
-! update:
-!   - 2026-10-23: The mesh objects are freed (they leaked before)
 ! summary: Deallocate an array of mesh pointers
 !
 ! Call Deallocate on every associated mesh of obj, free the mesh object
@@ -1077,6 +1075,9 @@ END INTERFACE
 ! created by ALLOCATE (for example by FEMesh_Pointer), must not point to a
 ! TARGET variable, and no two entries may point to the same mesh. Other
 ! pointers to these meshes are dangling after the call.
+!
+! Changes:
+!   - 2026-10-23: The mesh objects are freed (they leaked before)
 !
 ! Arguments:
 !   obj(:) : TYPE(AbstractMeshPointer_), allocatable, intent(inout) - array of
@@ -5770,8 +5771,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: The node to nodes data is initiated if needed
 ! summary: Get the nodes connected to a node
 !
 ! Return the global node numbers connected to a node through the elements
@@ -5779,6 +5778,9 @@ END INTERFACE
 ! of nodes the result is sorted and has no duplicates. The node to nodes data
 ! is initiated if needed (see [[obj_InitiateNodetoNodes]]). If the extra node
 ! to nodes data is initiated, the extra nodes are included.
+!
+! Changes:
+!   - 2026-10-23: The node to nodes data is initiated if needed
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
@@ -5865,11 +5867,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: The node to nodes data is initiated if needed
 ! summary: Get the nodes connected to a list of nodes
 !
 ! See GetNodeToNodes.
+!
+! Changes:
+!   - 2026-10-23: The node to nodes data is initiated if needed
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
@@ -5909,12 +5912,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-13
-! update:
-!   - 2026-10-23: The node to nodes data is initiated if needed
 ! summary: Get the nodes connected to a node without allocation
 !
 ! GetNodeToNodes_ works like GetNodeToNodes without allocation. The node to
 ! nodes data is initiated if needed.
+!
+! Changes:
+!   - 2026-10-23: The node to nodes data is initiated if needed
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
@@ -5997,11 +6001,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: The node to nodes data is initiated if needed
 ! summary: Get the nodes connected to nodes without allocation
 !
 ! See GetNodeToNodes_.
+!
+! Changes:
+!   - 2026-10-23: The node to nodes data is initiated if needed
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
@@ -6297,8 +6302,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Implemented; the result is stored in the mesh
 ! summary: Get the order of the mesh
 !
 ! Returns the largest order of the elements in the mesh.
@@ -6307,6 +6310,9 @@ END INTERFACE
 ! [[obj_GetOrder2]]), stores it in obj%maxElemOrder and sets
 ! obj%isMaxElemOrderSet to true. The later calls return the stored value.
 ! Deallocate resets both components. A mesh with no elements has order 0.
+!
+! Changes:
+!   - 2026-10-23: Implemented; the result is stored in the mesh
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
@@ -6666,14 +6672,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the master cell of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
 ! (InitiateFacetElements).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused elementType argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
@@ -6702,14 +6709,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the slave cell of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
 ! (InitiateFacetElements).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused elementType argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
@@ -6738,14 +6746,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the master and slave cells of a facet
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
 ! (InitiateFacetElements).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused elementType argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
@@ -6836,14 +6845,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the local facet ID of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
 ! cell. Cell numbers are global element numbers; the local facet ID is the
 ! local facet number in the cell. The facet elements must be initiated
 ! (InitiateFacetElements).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused elementType argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
@@ -7147,8 +7157,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Removed the unused elementType argument
 ! summary: Get the connectivity of a facet element
 !
 ! A facet element has a master cell and, if it is an internal facet, a slave
@@ -7158,6 +7166,9 @@ END INTERFACE
 !
 ! Return the global node numbers of the facet in the master (or slave) cell.
 ! The array has size zero if the cell does not exist.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused elementType argument
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(in) - mesh object
@@ -9032,8 +9043,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Set the number of media to n (it was increased by n)
 ! summary: Set the number of media of an element
 !
 ! SetTotalMedium sets the number of media in the elements to n. The material
@@ -9041,6 +9050,9 @@ END INTERFACE
 ! material id 0. SetMaterial sets the material id of a medium in all
 ! elements, in the elements of an entity, or in one element. GetMaterial and
 ! GetTotalMaterial read them.
+!
+! Changes:
+!   - 2026-10-23: Set the number of media to n (it was increased by n)
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
@@ -9129,8 +9141,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-27
-! update:
-!   - 2026-10-23: Set the number of media to n (it was increased by n)
 ! summary: Set the number of media of all elements
 !
 ! SetTotalMedium sets the number of media in the elements to n. The material
@@ -9138,6 +9148,9 @@ END INTERFACE
 ! material id 0. SetMaterial sets the material id of a medium in all
 ! elements, in the elements of an entity, or in one element. GetMaterial and
 ! GetTotalMaterial read them.
+!
+! Changes:
+!   - 2026-10-23: Set the number of media to n (it was increased by n)
 !
 ! Arguments:
 !   obj : CLASS(AbstractMesh_), intent(inout) - mesh object

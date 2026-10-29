@@ -112,8 +112,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2022-04-27
-! update: 2023-09-10
 ! summary: Get dirichlet boundary conditions to the vector of pointer
+!
+! Changes:
+!   - 2023-09-10
 
 INTERFACE
   MODULE FUNCTION obj_GetNeumannBCPointer(bc, bcNo) RESULT(ans)

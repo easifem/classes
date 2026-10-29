@@ -5,7 +5,10 @@ project_download: https://github.com/easifem/classes
 project_github: https://github.com/easifem/classes
 project_website: https://www.easifem.com
 license: gfdl
-src_dir: ../src/modules/ScalarField
+src_dir: ../src/modules/AbstractField/
+         ../src/modules/AbstractNodeField/
+         ../src/modules/ScalarField/
+         ../src/modules/VectorField/
 media_dir: ../docs/media
 page_dir: ../docs/pages
 output_dir: /tmp/ford/classes

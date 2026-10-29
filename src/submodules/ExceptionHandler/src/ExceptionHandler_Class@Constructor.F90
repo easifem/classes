@@ -17,8 +17,10 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 4 April 2021
-! update: 4 Nov 2021
 ! summary: Constructor method for [[ExceptionHandler_]]
+!
+! Changes:
+!   - 4 Nov 2021
 
 SUBMODULE(ExceptionHandler_Class) Constructor
 USE BaseMethod
@@ -147,7 +149,7 @@ IF (isLogActive) THEN
   WRITE (logUnit, '(a)', IOSTAT=ioerr1) prefix%chars()
   FLUSH (logUnit)
   !Additional error message if problem writing to log file
-  IF (ioerr1 / =0 .OR. ioerr2 / =0) THEN
+  IF (ioerr1 .NE. 0 .OR. ioerr2 .NE. 0) THEN
     IF (isQuiet) THEN
       msg = '[❎ ERROR ⛔]'//CHAR_LF//"Problem writing to logfile"//CHAR_LF// &
             "Original message follows: "//CHAR_LF
