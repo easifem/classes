@@ -267,30 +267,30 @@ END PROCEDURE obj_Get3
 
 MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+INTEGER(I4B) :: indx(SIZE(globalNode))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 #include "./localNodeError.F90"
 
-IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
-
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, ivar=1, &
                  idof=spaceCompo, VALUE=VALUE, tsize=tsize, &
                  nodenum=globalNode)
 
 ELSE
-
-  CALL me_if_not_native
-
-END IF
-
-CONTAINS
-
-SUBROUTINE me_if_not_native
-  INTEGER(I4B) :: indx(SIZE(globalNode))
   CALL GetNodeLoc_(obj=obj%dof, nodenum=globalNode, idof=spaceCompo, &
                    ans=indx, tsize=tsize)
   CALL obj%GetMultiple(indx=indx, VALUE=VALUE, tsize=tsize)
-END SUBROUTINE
+END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
