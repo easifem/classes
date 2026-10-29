@@ -564,9 +564,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue2()"
 INTEGER(I4B) :: maxNNE, maxCon
 #endif
 CLASS(AbstractMesh_), POINTER :: mesh
-CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+CLASS(AbstractFE_), POINTER :: feptr
 TYPE(QuadraturePoint_) :: quad
-TYPE(ElemShapeData_) :: elemsd, geoelemsd
+TYPE(ElemShapeData_) :: elemsd
 INTEGER(I4B) :: tElements, iel, ii, ip0, cellOrder(3), ipType(3), &
                 xij_nrow, xij_ncol, elemCoord_nrow, elemCoord_ncol, &
                 refElemCoord_nrow, refElemCoord_ncol, &
@@ -615,9 +615,9 @@ CALL AssertError3(maxNNE, SIZE(elemCoord, 2), myName, &
                   "a=maxNNE, b=size(elemCoord,2)")
 #endif
 
-xij = math%zero
-refElemCoord = math%zero
-elemCoord = math%zero
+xij(1:4, 1:maxCon) = math%zero
+refElemCoord(1:3, 1:maxNNE) = math%zero
+elemCoord(1:3, maxNNE) = math%zero
 
 ! rows after spaceCompo stay zero
 VALUE(spaceCompo + 1:nrow, 1:ncol) = math%zero
@@ -638,10 +638,6 @@ elemLoop: DO iel = 1, tElements
   CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
   feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, &
-                                        islocal=math%yes)
-
   ! Get nodal coordinates of reference element
   CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
                              ncol=refElemCoord_ncol)
@@ -653,23 +649,17 @@ elemLoop: DO iel = 1, tElements
 
   CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_ncol))
 
-  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
-
   CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
                          nrow=elemCoord_nrow, ncol=elemCoord_ncol, &
                          islocal=math%yes)
 
   ! shape functions with the orientation of the element fixed
-  CALL feptr%GetGlobalElemShapeData2(elemsd=elemsd, &
-                                     geoelemsd=geoelemsd, &
-                                     xij=elemCoord(1:elemCoord_nrow, &
-                                                   1:elemCoord_ncol), &
-                                     quad=quad, geofeptr=geofeptr, &
-                                     doNotInitQuad=math%yes)
+  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
-  ! nodal vectors of the element, nodalValue(spaceCompo, tfecon)
+  ! Get the connectivity and fix the connectivity
   CALL obj%fedof%GetConnectivity_(ans=fecon, tsize=tfecon, opt="A", &
                                   globalElement=iel, islocal=math%yes)
+  CALL feptr%FixOrientOfNptrs(fecon, tfecon)
 
   CALL obj%Get(VALUE=nodalValue, nrow=nodalValue_nrow, ncol=nodalValue_ncol, &
                globalNode=fecon(1:tfecon), &
@@ -689,10 +679,9 @@ elemLoop: DO iel = 1, tElements
   ip0 = ip0 + xij_ncol
 END DO elemLoop
 
-NULLIFY (mesh, feptr, geofeptr)
+NULLIFY (mesh, feptr)
 CALL QuadraturePoint_Deallocate(quad)
 CALL ElemShapeData_Deallocate(elemsd)
-CALL ElemShapeData_Deallocate(geoelemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
