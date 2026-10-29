@@ -566,7 +566,7 @@ TYPE(ElemShapeData_) :: elemsd
 INTEGER(I4B) :: tElements, iel, ii, ip0, cellOrder(3), ipType(3), &
                 xij_nrow, xij_ncol, refElemCoord_nrow, refElemCoord_ncol, &
                 nodalValue_nrow, nodalValue_ncol, tfecon, spaceCompo, &
-                maxNNE, maxCon
+                maxNNE, maxCon, topoIndx, lastTopoIndx, lastOrder
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -613,6 +613,8 @@ refElemCoord(1:3, 1:maxNNE) = math%zero
 VALUE(spaceCompo + 1:nrow, 1:ncol) = math%zero
 
 ip0 = 0
+lastTopoIndx = 0
+lastOrder = -1
 
 elemLoop: DO iel = 1, tElements
 
@@ -623,24 +625,35 @@ elemLoop: DO iel = 1, tElements
   CALL obj%fedof%GetCellOrder(ans=cellOrder, tsize=ii, &
                               globalElement=iel, islocal=math%yes)
   cellOrder(2:3) = cellOrder(1)
+  topoIndx = mesh%GetElemTopologyIndx(globalElement=iel, islocal=math%yes)
 
-  ! finite elements of fedof and geofedof
+  ! finite element of fedof, SetFE also sets the orientation of the
+  ! element, which is used by FixOrientOfNptrs below
   CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
   feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  ! Get nodal coordinates of reference element
-  CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
-                             ncol=refElemCoord_ncol)
+  ! The local shape data at the VTK points depends only on the finite
+  ! element (topology) and the cell order, so it is computed again only
+  ! when one of them changes
+  isok = (topoIndx .NE. lastTopoIndx) .OR. (cellOrder(1) .NE. lastOrder)
+  IF (isok) THEN
+    lastTopoIndx = topoIndx
+    lastOrder = cellOrder(1)
 
-  CALL feptr%GetInterpolationPoints(xij=refElemCoord(1:refElemCoord_nrow, &
-                                                     1:refElemCoord_ncol), &
-                                    ans=xij, nrow=xij_nrow, ncol=xij_ncol, &
-                                    order=cellOrder, ipType=ipType)
+    ! Get nodal coordinates of reference element
+    CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
+                               ncol=refElemCoord_ncol)
 
-  CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_ncol))
+    CALL feptr%GetInterpolationPoints( &
+      xij=refElemCoord(1:refElemCoord_nrow, 1:refElemCoord_ncol), &
+      ans=xij, nrow=xij_nrow, ncol=xij_ncol, order=cellOrder, &
+      ipType=ipType)
 
-  ! shape functions with the orientation of the element fixed
-  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+    CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_ncol))
+
+    ! local shape functions, the orientation is fixed in the connectivity
+    CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+  END IF
 
   ! Get the connectivity and fix the connectivity
   CALL obj%fedof%GetConnectivity_(ans=fecon, tsize=tfecon, opt="A", &
