@@ -277,9 +277,10 @@ END TYPE TypeName_
 
 !> author: Your Name, Ph. D.
 ! date: YYYY-MM-DD
-! update:
-!   - YYYY-MM-DD: Description of update
 ! summary: Module description
+!
+! Changes:
+!   - YYYY-MM-DD: Description of the change
 ```
 
 #### FORD Documentation
@@ -299,13 +300,16 @@ Rules for the docblock above each `INTERFACE` (and above each `TYPE`):
    `author`, not `authors`). Do not add title lines such as
    `!# Initiate`, `!# Introduction`, `!> Subroutine: name`; the name is
    already given by the declaration that follows the block.
-3. Mandatory fields: `date:`, an optional `update:` list
-   (`!   - YYYY-MM-DD: description`), and `summary:`. A summary that
-   needs more than one line continues on an indented `!` line.
+3. Mandatory fields: `date:` and `summary:`. A summary that needs more
+   than one line continues on an indented `!` line. Do not use an
+   `update:` field; FORD does not recognise it. Changes of a routine go
+   in the body, in a `Changes:` list (see item 4).
 4. After the fields, use the following sections in this order (omit a
    section only if it does not apply):
    - Description: one or more paragraphs explaining what the routine
      does, its algorithm steps, and the rules it follows.
+   - `Changes:` (only when the routine was changed after its first
+     version) a list `!   - YYYY-MM-DD: description`, newest last.
    - `Arguments:` short list `name : TYPE - meaning`; give array shapes
      with `SIZE(...)` where relevant.
    - `Returns:` only for functions.
@@ -337,8 +341,8 @@ behaviour (algorithm, modes, checks, errors, return values).
 Update all of the following that are affected:
 
 - the docblock of the `INTERFACE` (description, `Arguments:`,
-  `Returns:`, `Formula:`, `See also:`), and add an `update:` entry
-  (`!   - YYYY-MM-DD: description`);
+  `Returns:`, `Formula:`, `See also:`), and add an entry to its
+  `Changes:` list (`!   - YYYY-MM-DD: description`, no `update:` field);
 - the `!!` inline comments of the dummy arguments;
 - the one-line `!!` comment of the binding in `TYPE ... CONTAINS`;
 - the `TYPE` docblock and the `!!` comments of its components, when
