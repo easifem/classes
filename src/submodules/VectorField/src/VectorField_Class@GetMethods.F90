@@ -586,11 +586,10 @@ ipType = TypeInterpolationOpt%equidistance
 ! lazy compute and cached
 nrow = 3
 ncol = obj%fedof%GetSumElemTotalDOF()
-
-#ifdef DEBUG_VER
 maxNNE = obj%geofedof%GetMaxTotalConnectivity()
 maxCon = obj%fedof%GetMaxTotalConnectivity()
 
+#ifdef DEBUG_VER
 CALL AssertError3(nrow, SIZE(VALUE, 1), myName, &
                   "a=3, b=size(value,1)")
 CALL AssertError3(ncol, SIZE(VALUE, 2), myName, &
