@@ -15,34 +15,18 @@ the listed test passes. **Open** means not changed.
 
 ## Fixed
 
-None.
+- 1. Set2 failed in debug mode: the check is now
+  `obj%fieldType .NE. TypeFieldOpt%constant` (2026-10-29).
+  Test: Set_test_2.
+- 3. Get4: engine branches swapped; NATIVE_SERIAL now calls `GetValue_`
+  and the other engines use `GetMultiple` (2026-10-29).
 
 ## Open
-
-### 1. Set2 (all nodes to one vector) fails in debug mode
-
-- Where: `VectorField_Class@SetMethods.F90:132`:
-  `CALL AssertError1(obj%fieldType .EQ. TypeFieldOpt%constant, ...)`
-  with the message "Not callable for constant VectorField_".
-- Effect: in a debug build `Set(VALUE(:))` raises an error for every
-  normal field:
-  `[INTERNAL ERROR] :: Not callable for constant VectorField_`.
-- Fix: `.NE.` instead of `.EQ.`.
-- Tests: Set_test_2 (crash).
 
 ### 2. Set6 is under development
 
 - Where: `VectorField_Class@SetMethods.F90:326`; it raises an error.
 - Also `VectorField_Class@TomlMethods.F90:138` raises a WIP error.
-
-### 3. Get4: engine branches swapped
-
-- Where: `VectorField_Class@GetMethods.F90:268-282`. For an engine which
-  is not NATIVE_SERIAL it calls `GetValue_` on realVec; for
-  NATIVE_SERIAL it calls `me_if_not_native`.
-- Effect: none for NATIVE_SERIAL (both give the same values), but the
-  test and the name are inverted.
-- Fix: `.EQ.` instead of `.NE.` (or swap the branches).
 
 ### 4. scale is ignored without addContribution
 

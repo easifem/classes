@@ -517,7 +517,7 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue1
 CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue1()"
 #endif
 REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), &
-                          elemCoord(:, :), nodalValue(:, :)
+                          nodalValue(:, :)
 INTEGER(I4B), ALLOCATABLE :: fecon(:)
 INTEGER(I4B) :: maxNNE, maxCon, tsize, nrow, ncol
 
@@ -535,18 +535,15 @@ CALL Reallocate(nodalValue, obj%spaceCompo, maxCon)
 CALL Reallocate(fecon, maxCon)
 CALL Reallocate(xij, 4, maxCon)
 CALL Reallocate(refElemCoord, 3, maxNNE)
-CALL Reallocate(elemCoord, 3, maxNNE)
 
 CALL obj%GetVtkUnstructuredValue(VALUE=VALUE, nrow=nrow, ncol=ncol, &
                                  refElemCoord=refElemCoord, xij=xij, &
-                                 elemCoord=elemCoord, &
                                  nodalValue=nodalValue, fecon=fecon)
 
 IF (ALLOCATED(nodalValue)) DEALLOCATE (nodalValue)
 IF (ALLOCATED(fecon)) DEALLOCATE (fecon)
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(refElemCoord)) DEALLOCATE (refElemCoord)
-IF (ALLOCATED(elemCoord)) DEALLOCATE (elemCoord)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -561,16 +558,15 @@ END PROCEDURE obj_GetVtkUnstructuredValue1
 MODULE PROCEDURE obj_GetVtkUnstructuredValue2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue2()"
-INTEGER(I4B) :: maxNNE, maxCon
 #endif
 CLASS(AbstractMesh_), POINTER :: mesh
 CLASS(AbstractFE_), POINTER :: feptr
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemShapeData_) :: elemsd
 INTEGER(I4B) :: tElements, iel, ii, ip0, cellOrder(3), ipType(3), &
-                xij_nrow, xij_ncol, elemCoord_nrow, elemCoord_ncol, &
-                refElemCoord_nrow, refElemCoord_ncol, &
-                nodalValue_nrow, nodalValue_ncol, tfecon, spaceCompo
+                xij_nrow, xij_ncol, refElemCoord_nrow, refElemCoord_ncol, &
+                nodalValue_nrow, nodalValue_ncol, tfecon, spaceCompo, &
+                maxNNE, maxCon
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -608,15 +604,10 @@ CALL AssertError3(math%three_i, SIZE(refElemCoord, 1), myName, &
                   "a=3, b=size(refElemCoord,1)")
 CALL AssertError3(maxNNE, SIZE(refElemCoord, 2), myName, &
                   "a=maxNNE, b=size(refElemCoord,2)")
-CALL AssertError3(math%three_i, SIZE(elemCoord, 1), myName, &
-                  "a=3, b=size(elemCoord,1)")
-CALL AssertError3(maxNNE, SIZE(elemCoord, 2), myName, &
-                  "a=maxNNE, b=size(elemCoord,2)")
 #endif
 
 xij(1:4, 1:maxCon) = math%zero
 refElemCoord(1:3, 1:maxNNE) = math%zero
-elemCoord(1:3, maxNNE) = math%zero
 
 ! rows after spaceCompo stay zero
 VALUE(spaceCompo + 1:nrow, 1:ncol) = math%zero
@@ -647,10 +638,6 @@ elemLoop: DO iel = 1, tElements
                                     order=cellOrder, ipType=ipType)
 
   CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_ncol))
-
-  CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
-                         nrow=elemCoord_nrow, ncol=elemCoord_ncol, &
-                         islocal=math%yes)
 
   ! shape functions with the orientation of the element fixed
   CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)

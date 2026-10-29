@@ -2446,7 +2446,10 @@ END INTERFACE
 ! Same as [[obj_GetVtkUnstructuredValue1]], but VALUE and the work
 ! arrays are given by the caller, so that nothing is allocated. For each
 ! active element, the nodal vectors of obj are interpolated at the VTK
-! points of the cell (the interpolation points of the cell order).
+! points of the cell (the interpolation points of the cell order). The
+! local shape functions are used; the orientation of the element is
+! taken into account by FixOrientOfNptrs on the connectivity, so the
+! node coordinates of the element are not needed.
 !
 ! Arguments:
 !   obj : CLASS(VectorField_) - vector field
@@ -2454,16 +2457,15 @@ END INTERFACE
 !     SIZE(VALUE, 2) >= fedof%GetSumElemTotalDOF()
 !   nrow : INTEGER(I4B) - number of rows written in VALUE (3)
 !   ncol : INTEGER(I4B) - number of columns written in VALUE
-!   refElemCoord, xij, elemCoord, nodalValue, fecon - work arrays, see
-!     the sizes of the dummy arguments
+!   refElemCoord, xij, nodalValue, fecon - work arrays, see the sizes of
+!     the dummy arguments
 !
 ! See also: [[obj_GetVtkUnstructuredValue1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetVtkUnstructuredValue2(obj, VALUE, nrow, ncol, &
                                                  refElemCoord, xij, &
-                                                 elemCoord, nodalValue, &
-                                                 fecon)
+                                                 nodalValue, fecon)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
@@ -2479,9 +2481,6 @@ INTERFACE
     !! temporary storage for nodal coordinate of interpolation points
     !! size should be at least (4, maxCon). This variable
     !! is used to construct the quadrature points
-    REAL(DFP), INTENT(INOUT) :: elemCoord(:, :)
-    !! temporary storage for nodal coordinate of physical element
-    !! size should be at least (3, maxNNE)
     REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
     !! temporary storage for element level nodal vectors of obj
     !! size should be at least (spaceCompo, maxCon)
