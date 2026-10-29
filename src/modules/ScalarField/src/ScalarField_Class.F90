@@ -1777,7 +1777,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplySurfaceNeumannBC1( &
-                                                obj, nbcField, scale, times)
+    obj, nbcField, scale, times)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! Scalar field
     CLASS(ScalarField_), INTENT(INOUT) :: nbcField
