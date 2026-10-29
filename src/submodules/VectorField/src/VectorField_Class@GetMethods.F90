@@ -22,6 +22,7 @@ USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: TypeFEVariableVector
+USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
@@ -31,12 +32,16 @@ USE DOF_Method, ONLY: GetNodeLoc_
 USE DOF_Method, ONLY: OPERATOR(.tnodes.)
 USE ElemshapeData_Method, ONLY: ElemshapeData_GetInterpolation => &
                                 GetInterpolation
+USE ElemshapeData_Method, ONLY: ElemshapeData_Deallocate => &
+                                DEALLOCATE
 USE FEVariable_Method, ONLY: FEVariable_Set => Set
 USE FEVariable_Method, ONLY: NodalVariable
 USE FEVariable_Method, ONLY: QuadratureVariable
 USE GlobalData, ONLY: NODES_FMT
 USE MeshField_Class, ONLY: VectorMeshFieldInitiate
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => &
+                                  DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Set => Set
 USE ReallocateUtility, ONLY: Reallocate
 USE RealVector_Method, ONLY: GetValue_
@@ -87,7 +92,7 @@ IF (bool1) THEN
 END IF
 
 IF (bool2) THEN
-  isok = SIZE(VALUE) .GE. (obj%dof.tNodes.1_I4B)
+  isok = SIZE(VALUE) .GE. (obj%dof .tNodes. 1_I4B)
   CALL AssertError1(isok, myName, "Size of value is not enough")
 END IF
 
@@ -107,7 +112,7 @@ END IF
 !> Get all values ofspaceCompo
 ! IF (bool2) THEN
 
-tsize = obj%dof.tNodes.1_I4B
+tsize = obj%dof .tNodes. 1_I4B
 
 s = GetNodeLoc(obj=obj%dof, idof=spaceCompo)
 
@@ -136,11 +141,11 @@ CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
 IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%spaceCompo
 
 ELSE
-  ncol = obj%dof.tNodes.1
+  ncol = obj%dof .tNodes. 1
   nrow = obj%spaceCompo
 END IF
 
@@ -159,10 +164,10 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
 END IF
 
 IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%spaceCompo
 
-  !$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
+!$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
   DO jj = 1, ncol
     s = GetNodeLoc(obj=obj%dof, idof=jj)
 
@@ -170,13 +175,13 @@ IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
                          VALUE=VALUE(:, jj), tsize=mynrow)
 
   END DO
-  !$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
   RETURN
 END IF
 
 nrow = obj%spaceCompo
-ncol = obj%dof.tNodes.1
+ncol = obj%dof .tNodes. 1
 
 !$OMP PARALLEL DO PRIVATE(jj, indx, mynrow)
 DO jj = 1, ncol
@@ -234,12 +239,12 @@ IF (storageFMT .EQ. obj%GetStorageFMT()) THEN
   nrow = SIZE(globalNode)
   ncol = obj%spaceCompo
 
-  !$OMP PARALLEL DO PRIVATE(jj, mynrow)
+!$OMP PARALLEL DO PRIVATE(jj, mynrow)
   DO jj = 1, ncol
     CALL obj%Get(globalNode=globalNode, islocal=islocal, VALUE=VALUE(:, jj), &
                  tsize=mynrow, spaceCompo=jj)
   END DO
-  !$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
   RETURN
 END IF
@@ -300,8 +305,8 @@ INTEGER(I4B) :: indx
 CALL AssertError1(obj%isInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 
-CALL AssertError1(spaceCompo .LE. obj%spaceCompo, myName, &
-            'given spaceCompo should be less than or equal to obj%spaceCompo')
+CALL AssertError3(spaceCompo, obj%spaceCompo, myName, &
+                  'a=spaceCompo, b=obj%spaceCompo')
 
 #endif
 
@@ -350,95 +355,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Get7
-
-!----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Get7
-! CALL obj%Get(idof=spaceCompo, ivar=1_I4B, VALUE=VALUE, &
-!              idof_value=spaceCompo, ivar_value=1_I4B)
-! END PROCEDURE obj_Get7
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Get9
-! CHARACTER(*), PARAMETER :: myName = "obj_Get9()"
-!
-! INTEGER(I4B) :: s(3), tsize, p(3)
-! REAL(DFP), POINTER :: realvec(:)
-!
-! #ifdef DEBUG_VER
-!
-! CALL AssertError1(obj%isInitiated(), myName, &
-!                   "STScalarField_:: obj is not initiated")
-!
-! CALL AssertError1(VALUE%isInitiated(), myName, &
-!                   "STScalarField_:: value is not initiated")
-!
-! #endif
-!
-! s = GetNodeLoc(obj=obj%dof, idof=idof)
-!
-! SELECT TYPE (VALUE)
-!
-! TYPE IS (ScalarField_)
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! TYPE IS (STScalarField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => VALUE%GetPointer()
-!
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                       istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! TYPE IS (VectorField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => VALUE%GetPointer()
-!
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                       istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! ! TYPE IS (STVectorField_)
-!
-!   ! p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   ! realvec => VALUE%GetPointer()
-!   !
-!   ! CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!   !                     istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!   !                      tsize=tsize)
-!   ! realvec => NULL()
-!
-! ! TYPE IS (ScalarFieldLis_)
-! !   CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
-!
-! TYPE IS (STScalarFieldLis_)
-!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! TYPE IS (VectorFieldLis_)
-!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! CLASS DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     '[INTENRAL ERROR] :: No case found for the type of value')
-!   RETURN
-! END SELECT
-!
-! END PROCEDURE obj_Get9
 
 !----------------------------------------------------------------------------
 !                                                           GetFEVariable
@@ -528,11 +444,11 @@ CALL Reallocate(xij, 4, maxCon)
 CALL QuadraturePoint_Initiate(obj=quad, txi=math%three_i, tpoints=maxCon)
 
 fevar = QuadratureVariable(nrow=spaceCompo(1), ncol=maxCon, &
-                           rank=TypeFEVariableVector, &
+                           RANK=TypeFEVariableVector, &
                            varType=TypeFEVariableSpace)
 
 sol_fevar = NodalVariable(nrow=spaceCompo(1), ncol=maxFedofCon, &
-                          rank=TypeFEVariableVector, &
+                          RANK=TypeFEVariableVector, &
                           varType=TypeFEVariableSpace)
 
 DO iel = 1, tElements
@@ -576,7 +492,7 @@ DO iel = 1, tElements
 
   ! Due to the above WARN, spaceCompo is used instead of nrow here
   CALL FEVariable_Set(obj=sol_fevar, val=sol(1:spaceCompo(1), 1:ncol), &
-                      rank=TypeFEVariableVector, &
+                      RANK=TypeFEVariableVector, &
                       varType=TypeFEVariableSpace, &
                       scale=math%one, addContribution=math%no)
 
@@ -591,6 +507,198 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetMeshField
+
+!----------------------------------------------------------------------------
+!                                                   GetVtkUnstructuredValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVtkUnstructuredValue1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue1()"
+#endif
+REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), &
+                          elemCoord(:, :), nodalValue(:, :)
+INTEGER(I4B), ALLOCATABLE :: fecon(:)
+INTEGER(I4B) :: maxNNE, maxCon, tsize, nrow, ncol
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+maxNNE = obj%geofedof%GetMaxTotalConnectivity()
+maxCon = obj%fedof%GetMaxTotalConnectivity()
+tsize = obj%fedof%GetSumElemTotalDOF()
+
+CALL Reallocate(VALUE, 3, tsize)
+CALL Reallocate(nodalValue, obj%spaceCompo, maxCon)
+CALL Reallocate(fecon, maxCon)
+CALL Reallocate(xij, 4, maxCon)
+CALL Reallocate(refElemCoord, 3, maxNNE)
+CALL Reallocate(elemCoord, 3, maxNNE)
+
+CALL obj%GetVtkUnstructuredValue(VALUE=VALUE, nrow=nrow, ncol=ncol, &
+                                 refElemCoord=refElemCoord, xij=xij, &
+                                 elemCoord=elemCoord, &
+                                 nodalValue=nodalValue, fecon=fecon)
+
+IF (ALLOCATED(nodalValue)) DEALLOCATE (nodalValue)
+IF (ALLOCATED(fecon)) DEALLOCATE (fecon)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(refElemCoord)) DEALLOCATE (refElemCoord)
+IF (ALLOCATED(elemCoord)) DEALLOCATE (elemCoord)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVtkUnstructuredValue1
+
+!----------------------------------------------------------------------------
+!                                                   GetVtkUnstructuredValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVtkUnstructuredValue2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue2()"
+INTEGER(I4B) :: maxNNE, maxCon
+#endif
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+TYPE(QuadraturePoint_) :: quad
+TYPE(ElemShapeData_) :: elemsd, geoelemsd
+INTEGER(I4B) :: tElements, iel, ii, ip0, cellOrder(3), ipType(3), &
+                xij_nrow, xij_ncol, elemCoord_nrow, elemCoord_ncol, &
+                refElemCoord_nrow, refElemCoord_ncol, &
+                nodalValue_nrow, nodalValue_ncol, tfecon, spaceCompo
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+mesh => obj%fedof%GetMeshPointer()
+tElements = mesh%GetTotalElements()
+spaceCompo = obj%spaceCompo
+ipType = TypeInterpolationOpt%equidistance
+
+! lazy compute and cached
+nrow = 3
+ncol = obj%fedof%GetSumElemTotalDOF()
+
+#ifdef DEBUG_VER
+maxNNE = obj%geofedof%GetMaxTotalConnectivity()
+maxCon = obj%fedof%GetMaxTotalConnectivity()
+
+CALL AssertError3(nrow, SIZE(VALUE, 1), myName, &
+                  "a=3, b=size(value,1)")
+CALL AssertError3(ncol, SIZE(VALUE, 2), myName, &
+                  "a=GetSumElemTotalDOF, b=size(value,2)")
+CALL AssertError3(spaceCompo, SIZE(nodalValue, 1), myName, &
+                  "a=spaceCompo, b=size(nodalValue,1)")
+CALL AssertError3(maxCon, SIZE(nodalValue, 2), myName, &
+                  "a=maxCon, b=size(nodalValue,2)")
+CALL AssertError3(maxCon, SIZE(fecon), myName, &
+                  "a=maxCon, b=size(fecon)")
+CALL AssertError3(math%four_i, SIZE(xij, 1), myName, &
+                  "a=4, b=size(xij,1)")
+CALL AssertError3(maxCon, SIZE(xij, 2), myName, &
+                  "a=maxCon, b=size(xij,2)")
+CALL AssertError3(math%three_i, SIZE(refElemCoord, 1), myName, &
+                  "a=3, b=size(refElemCoord,1)")
+CALL AssertError3(maxNNE, SIZE(refElemCoord, 2), myName, &
+                  "a=maxNNE, b=size(refElemCoord,2)")
+CALL AssertError3(math%three_i, SIZE(elemCoord, 1), myName, &
+                  "a=3, b=size(elemCoord,1)")
+CALL AssertError3(maxNNE, SIZE(elemCoord, 2), myName, &
+                  "a=maxNNE, b=size(elemCoord,2)")
+#endif
+
+xij = math%zero
+refElemCoord = math%zero
+elemCoord = math%zero
+
+! rows after spaceCompo stay zero
+VALUE(spaceCompo + 1:nrow, 1:ncol) = math%zero
+
+ip0 = 0
+
+elemLoop: DO iel = 1, tElements
+
+  isok = mesh%isElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE elemLoop
+
+  ! order of the VTK cell
+  CALL obj%fedof%GetCellOrder(ans=cellOrder, tsize=ii, &
+                              globalElement=iel, islocal=math%yes)
+  cellOrder(2:3) = cellOrder(1)
+
+  ! finite elements of fedof and geofedof
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, &
+                                        islocal=math%yes)
+
+  ! Get nodal coordinates of reference element
+  CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
+                             ncol=refElemCoord_ncol)
+
+  CALL feptr%GetInterpolationPoints(xij=refElemCoord(1:refElemCoord_nrow, &
+                                                     1:refElemCoord_ncol), &
+                                    ans=xij, nrow=xij_nrow, ncol=xij_ncol, &
+                                    order=cellOrder, ipType=ipType)
+
+  CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_ncol))
+
+  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+
+  CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
+                         nrow=elemCoord_nrow, ncol=elemCoord_ncol, &
+                         islocal=math%yes)
+
+  ! shape functions with the orientation of the element fixed
+  CALL feptr%GetGlobalElemShapeData2(elemsd=elemsd, &
+                                     geoelemsd=geoelemsd, &
+                                     xij=elemCoord(1:elemCoord_nrow, &
+                                                   1:elemCoord_ncol), &
+                                     quad=quad, geofeptr=geofeptr, &
+                                     doNotInitQuad=math%yes)
+
+  ! nodal vectors of the element, nodalValue(spaceCompo, tfecon)
+  CALL obj%fedof%GetConnectivity_(ans=fecon, tsize=tfecon, opt="A", &
+                                  globalElement=iel, islocal=math%yes)
+
+  CALL obj%Get(VALUE=nodalValue, nrow=nodalValue_nrow, ncol=nodalValue_ncol, &
+               globalNode=fecon(1:tfecon), &
+               storageFMT=TypeFieldOpt%storageFormatNodes, &
+               islocal=math%yes)
+
+#ifdef DEBUG_VER
+  CALL AssertError3(nodalValue_ncol, elemsd%nns, myName, &
+                    "a=nodalValue_ncol, b=elemsd%nns")
+  CALL AssertError3(xij_ncol, elemsd%nips, myName, &
+                    "a=xij_ncol, b=elemsd%nips")
+#endif
+  VALUE(1:nodalValue_nrow, ip0 + 1:ip0 + xij_ncol) = &
+    MATMUL(nodalValue(1:nodalValue_nrow, 1:nodalValue_ncol), &
+           elemsd%N(1:nodalValue_ncol, 1:xij_ncol))
+
+  ip0 = ip0 + xij_ncol
+END DO elemLoop
+
+NULLIFY (mesh, feptr, geofeptr)
+CALL QuadraturePoint_Deallocate(quad)
+CALL ElemShapeData_Deallocate(elemsd)
+CALL ElemShapeData_Deallocate(geoelemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetVtkUnstructuredValue2
 
 !----------------------------------------------------------------------------
 !

@@ -156,6 +156,15 @@ CONTAINS
   !! Get multiple values in FEVariable
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshField => obj_GetMeshField
   !! Get the mesh field corresponding to abstract field
+  PROCEDURE, PRIVATE, PASS(obj) :: GetVtkUnstructuredValue1 => &
+    obj_GetVtkUnstructuredValue1
+  !! Get data array for Vtk UnstructuredGrid with allocation.
+  PROCEDURE, PRIVATE, PASS(obj) :: GetVtkUnstructuredValue2 => &
+    obj_GetVtkUnstructuredValue2
+  !! Get data array for Vtk UnstructuredGrid without allocation.
+  GENERIC, PUBLIC :: GetVtkUnstructuredValue => GetVtkUnstructuredValue1, &
+    GetVtkUnstructuredValue2
+  !! Values at the points of the VTK unstructured grid
 
   ! @DirichletBCMethods
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
@@ -2301,6 +2310,185 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: order(3), ipType(3)
     !! order and type of interpolation points
   END SUBROUTINE obj_GetMeshField
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetVtkUnstructuredValue@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Vectors at the points of the VTK unstructured grid
+!
+! Returns the vector of obj at each point of the grid given by
+! [[AbstractNodeField_:obj_GetVtkUnstructuredGridData1]], in the same
+! order. The points are not shared between cells (DG like storage), so
+! SIZE(VALUE, 2) is fedof%GetSumElemTotalDOF(). VALUE always has three
+! rows, so that VTK readers (ParaView) treat it as a vector; the rows
+! after spaceCompo are zero. VALUE is reallocated; the work arrays of
+! [[obj_GetVtkUnstructuredValue2]] are allocated here.
+!
+! Arguments:
+!   obj : CLASS(VectorField_) - vector field
+!   VALUE : REAL(DFP) - vectors at the points, reallocated to
+!     (3, fedof%GetSumElemTotalDOF())
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE BaseType, ONLY: TypeFEVariableOpt
+!   USE BaseType, ONLY: InterfaceVectorSubroutine
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_DEBUG
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDOF_Class, ONLY: FEDOF_
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: DFP
+!   USE GlobalData, ONLY: I4B
+!   USE GlobalData, ONLY: INT8
+!   USE Test_Method, ONLY: OK
+!   USE UserFunction_Class, ONLY: UserFunction_
+!   USE VectorField_Class, ONLY: VectorField_
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: tomlFileName = &
+!     "GetVtkUnstructuredValue_test_1.toml"
+!   REAL(DFP), PARAMETER :: tol = 1.0E-8_DFP
+!   TYPE(FEDomain_) :: dom
+!   TYPE(FEDOF_), TARGET :: fedof, geofedof
+!   TYPE(VectorField_) :: u
+!   INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
+!   INTEGER(INT8), ALLOCATABLE :: types(:)
+!   REAL(DFP), ALLOCATABLE :: points(:, :), VALUE(:, :), fvals(:, :)
+!   TYPE(UserFunction_) :: func
+!   PROCEDURE(InterfaceVectorSubroutine), POINTER :: procptr
+!   INTEGER(I4B) :: ii, tsize
+!
+!   CALL e%SetQuietMode(EXCEPTION_DEBUG, math%yes)
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!
+!   ! user function
+!   CALL func%Initiate(NAME="f", returnType=TypeFEVariableOpt%vector, &
+!                      argType=TypeFEVariableOpt%space, numArgs=4, &
+!                      numReturns=2)
+!   procptr => vectorFunc
+!   CALL func%SetVectorFunctionPointer(func=procptr)
+!
+!   ! domain and u = f
+!   CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+!   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                         filename=tomlFileName, tomlName="u")
+!   CALL u%Set(VALUE=math%zero)
+!   CALL u%SetByFunction(func=func)
+!
+!   ! grid and values
+!   CALL u%GetVtkUnstructuredGridData(points=points, &
+!                                     connectivity=connectivity, &
+!                                     offsets=offsets, types=types)
+!   CALL u%GetVtkUnstructuredValue(VALUE=VALUE)
+!
+!   CALL OK(SIZE(VALUE, 1) .EQ. 3, "three rows")
+!   CALL OK(SIZE(VALUE, 2) .EQ. 32, "number of columns")
+!   CALL OK(SIZE(VALUE, 2) .EQ. SIZE(points, 2), "one vector for each point")
+!   CALL OK(ALL(VALUE(3, :) .EQ. math%zero), "third row is zero")
+!
+!   ALLOCATE(fvals(2, SIZE(VALUE, 2)))
+!   DO ii = 1, SIZE(VALUE, 2)
+!     CALL vectorFunc(points(:, ii), 3, fvals(:, ii), tsize)
+!   END DO
+!   CALL OK(MAXVAL(ABS(VALUE(1:2, :) - fvals)) .LT. tol, &
+!           "value = f at points")
+!
+!   CALL u%DEALLOCATE()
+!   CALL fedof%DEALLOCATE()
+!   CALL geofedof%DEALLOCATE()
+!   CALL dom%DEALLOCATE()
+!
+! CONTAINS
+!
+!   SUBROUTINE vectorFunc(args, nargs, ans, tsize)
+!     REAL(DFP), INTENT(IN) :: args(:)
+!     INTEGER(I4B), INTENT(IN) :: nargs
+!     REAL(DFP), INTENT(INOUT) :: ans(:)
+!     INTEGER(I4B), INTENT(OUT) :: tsize
+!     tsize = 2
+!     ans(1) = args(1) * (args(1) - 10.0_DFP) * args(2) * &
+!              (args(2) - 10.0_DFP)
+!     ans(2) = args(1) + 2.0_DFP * args(2)
+!   END SUBROUTINE vectorFunc
+!
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetVtkUnstructuredValue2]],
+! [[VtkHDF5File_:obj_WritePointData2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVtkUnstructuredValue1(obj, VALUE)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! vector field
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: VALUE(:, :)
+    !! vectors at the points of the grid, shape (3, number of points)
+  END SUBROUTINE obj_GetVtkUnstructuredValue1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetVtkUnstructuredValue@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Vectors at the points of the VTK unstructured grid
+!   (no allocation)
+!
+! Same as [[obj_GetVtkUnstructuredValue1]], but VALUE and the work
+! arrays are given by the caller, so that nothing is allocated. For each
+! active element, the nodal vectors of obj are interpolated at the VTK
+! points of the cell (the interpolation points of the cell order).
+!
+! Arguments:
+!   obj : CLASS(VectorField_) - vector field
+!   VALUE : REAL(DFP) - vectors, SIZE(VALUE, 1) >= 3,
+!     SIZE(VALUE, 2) >= fedof%GetSumElemTotalDOF()
+!   nrow : INTEGER(I4B) - number of rows written in VALUE (3)
+!   ncol : INTEGER(I4B) - number of columns written in VALUE
+!   refElemCoord, xij, elemCoord, nodalValue, fecon - work arrays, see
+!     the sizes of the dummy arguments
+!
+! See also: [[obj_GetVtkUnstructuredValue1]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetVtkUnstructuredValue2(obj, VALUE, nrow, ncol, &
+                                                 refElemCoord, xij, &
+                                                 elemCoord, nodalValue, &
+                                                 fecon)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! vector field
+    REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    !! vectors at the points of the grid
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! number of rows written in value, always 3
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! number of columns (points) written in value
+    REAL(DFP), INTENT(INOUT) :: refElemCoord(:, :)
+    !! temporary storage for nodal coordinate of reference element
+    !! size should be at least (3, maxNNE)
+    REAL(DFP), INTENT(INOUT) :: xij(:, :)
+    !! temporary storage for nodal coordinate of interpolation points
+    !! size should be at least (4, maxCon). This variable
+    !! is used to construct the quadrature points
+    REAL(DFP), INTENT(INOUT) :: elemCoord(:, :)
+    !! temporary storage for nodal coordinate of physical element
+    !! size should be at least (3, maxNNE)
+    REAL(DFP), INTENT(INOUT) :: nodalValue(:, :)
+    !! temporary storage for element level nodal vectors of obj
+    !! size should be at least (spaceCompo, maxCon)
+    INTEGER(I4B), INTENT(INOUT) :: fecon(:)
+    !! temporary storage for connectivity of an element
+    !! size should be at least maxCon
+  END SUBROUTINE obj_GetVtkUnstructuredValue2
 END INTERFACE
 
 !----------------------------------------------------------------------------
