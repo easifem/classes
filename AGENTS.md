@@ -48,8 +48,7 @@ easifem run Initiate_test_1.F90
 ### Documentation Generation
 
 ```bash
-ford FORDsetup.md
-# Output: ./docs/ directory
+formal generate --project doc/formal.md --mirror-sources
 ```
 
 ### Linting
@@ -310,15 +309,15 @@ Rules for the docblock above each `INTERFACE` (and above each `TYPE`):
      does, its algorithm steps, and the rules it follows.
    - `Changes:` (only when the routine was changed after its first
      version) a list `!   - YYYY-MM-DD: description`, newest last.
-   - `Arguments:` short list `name : TYPE - meaning`; give array shapes
-     with `SIZE(...)` where relevant.
    - `Returns:` only for functions.
    - `Formula:` only when there is real mathematics (data layout,
      index rules, etc.); use LaTeX display math `$$ ... $$`.
    - `Examples` (see below).
    - `See also:` links to related procedures with `[[ProcName]]`.
-5. Keep the `!!` inline comments on every dummy argument. They are the
-   source of truth for argument meaning; fill in the missing ones.
+5. Document every dummy argument directly below its declaration with
+   `!!` comments, including relevant array sizes and active ranges. Do
+   not duplicate these descriptions in an `Arguments:` docblock section.
+   Fill in any missing argument comments.
 6. For type-bound procedures, the full docblock goes on the
    `INTERFACE` of the specific procedure (`obj_XXX`). Inside
    `TYPE ... CONTAINS`, each binding keeps only a one-line `!!`
@@ -340,8 +339,8 @@ behaviour (algorithm, modes, checks, errors, return values).
 
 Update all of the following that are affected:
 
-- the docblock of the `INTERFACE` (description, `Arguments:`,
-  `Returns:`, `Formula:`, `See also:`), and add an entry to its
+- the docblock of the `INTERFACE` (description, `Returns:`,
+  `Formula:`, `See also:`), and add an entry to its
   `Changes:` list (`!   - YYYY-MM-DD: description`, no `update:` field);
 - the `!!` inline comments of the dummy arguments;
 - the one-line `!!` comment of the binding in `TYPE ... CONTAINS`;
@@ -396,9 +395,6 @@ Example docblock:
 !
 ! Returns the rank (scalar, vector, or matrix) of the data stored in
 ! obj.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
 !
 ! Returns:
 !   ans : INTEGER(I4B) - rank of the field

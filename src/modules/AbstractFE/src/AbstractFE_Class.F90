@@ -14,12 +14,23 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Abstract finite element configuration and projection interfaces
+!
+! Defines AbstractFE_, its pointer wrapper and exported lifecycle helpers.
+! Concrete element classes implement topology-specific operations; shared
+! wrappers coordinate quadrature, shape evaluation and DOF projection.
+
 MODULE AbstractFE_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
-USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_
-USE String_Class, ONLY: String
-USE ExceptionHandler_Class, ONLY: e
+USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: QuadraturePoint_
 USE BasisOpt_Class, ONLY: BasisOpt_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: LGT
+USE String_Class, ONLY: String
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE UserFunction_Class, ONLY: UserFunction_
@@ -38,26 +49,76 @@ PUBLIC :: DEALLOCATE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Abstract class for finite element is defined
+! date: 2026-10-29
+! summary: Shared finite element configuration and polymorphic operations
 !
-!{!pages/docs-api/AbstractFE/AbstractFE_.md!}
+! AbstractFE_ cannot be instantiated directly. A concrete child supplies
+! topology-specific quadrature, interpolation, shape evaluation, orientation
+! and facet projection. The base provides lifecycle operations, option access,
+! all-facet loops and DOF projection workflows. Its public components are
+! isInit (initially false) and opt (BasisOpt_, containing basis, topology,
+! orders, orientations, quadrature and working data). Initialization sets
+! isInit; deallocation clears it. The flag alone does not guarantee that a
+! child implements every operation. Copy and assignment transfer only this
+! shared state. Error checks and placeholder diagnostics run in DEBUG mode.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: other
+! INTEGER(I4B) :: order, nsd
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%isInit, "Initiate sets the initialization flag")
+! CALL obj%GetParam(order=order, nsd=nsd)
+! CALL OK(order == 1_I4B .AND. nsd == 2_I4B, "Read initial options")
+! CALL other%Copy(obj)
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%isInit, "Deallocate resets initialization")
+! CALL OK(other%isInit, "Copy has independent initialization state")
+! obj = other
+! CALL OK(obj%isInit, "Defined assignment copies shared state")
+! CALL obj%SetParam(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "SetParam updates stored options")
+! CALL other%GetParam(order=order)
+! CALL OK(order == 1_I4B, "Copy retains its own options")
+! CALL obj%DEALLOCATE()
+! CALL other%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractFEPointer_]], [[obj_Initiate]]
 
 TYPE, ABSTRACT :: AbstractFE_
   ! PRIVATE
   LOGICAL(LGT) :: isInit = .FALSE.
-  !! It is set to true at the time of constructor
+  !! Initialization flag; set on initiation, cleared by DEALLOCATE.
   TYPE(BasisOpt_) :: opt
-  !! basis options
+  !! Shared basis, topology, order, orientation and quadrature configuration.
 
 CONTAINS
   ! CONSTRUCTOR:
   !@ConstructorMethods
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
-  !! Initiate method from arguments
+  !! Initialize finite element basis options.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
-  !! Initiate by copy
+  !! Copy initialization state and basis options.
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
 
@@ -65,165 +126,160 @@ CONTAINS
   !@IOMethods
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
-  !! Display the content of a finite element
+  !! Display initialization state and basis options.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
-  !! Display the contents
+  !! Encode basis options as Markdown.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => &
     obj_ReactEncode
-  !! Display the contents
+  !! Encode basis options as React markup.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
-  !! Deallocate the data stored in an instance
+  !! Reset initialization state and release basis options.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
-  !! Import the data from toml file
+  !! Initialize basis options from a TOML table.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ImportFromToml2 => &
     obj_ImportFromToml2
-  !! Import the data from toml table
+  !! Initialize basis options from a named TOML table.
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
     ImportFromToml2
+  !! Initialize shared options from a TOML table or named file table.
 
   ! SET:
   ! @SetMethods
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
-  !! Sets the parameters of finite element
+  !! Update selected stored basis parameters.
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
-  !! Set the order and reallocate appropriate data in
-  !! already initiated AbstractFE_
+  !! Set approximation orders through a child implementation.
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
-  !! Set the orientation
+  !! Set cell, face and edge orientations in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
-  !! Set order of quadrature
+  !! Set quadrature accuracy in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
-  !! Set quadrature type
+  !! Set quadrature rules in a child class.
 
   !GET:
   ! @GetMethods
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRefElemCoord => &
     obj_GetRefElemCoord
-  !! Get the coordinates of reference element
+  !! Copy reference element vertex coordinates.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTopologyType => &
     obj_GetTopologyType
-  !! returns the topoType
+  !! Return the reference topology code.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
-  !! Sets the parameters of finite element
+  !! Read selected stored basis parameters.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
-  !! Get the base interpolation
+  !! Return the basis interpolation code.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetBaseContinuity => &
     obj_GetBaseContinuity
-  !! Get the base continuity
+  !! Return the basis continuity code.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetIpType => &
     obj_GetIpType
-  !! Get the base continuity
+  !! Return the interpolation point type code.
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-  !! Get local element shape data for cell element
+  !! Evaluate reference cell shape data in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
-  !! Get global element shape data
+  !! Map cell shape data in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData2 => &
     obj_GetGlobalElemShapeData2
-  !! Get global element shape data
+  !! Prepare and map cell shape data.
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
-  !! Get local element shape data for cell element and
-  !! local face number
+  !! Evaluate reference facet shape data in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetAllLocalFacetElemShapeData => obj_GetAllLocalFacetElemShapeData
-  !! Get local element shape data for cell element and
-  !! all faces
+  !! Evaluate local shape data for every facet.
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
     obj_GetGlobalFacetElemShapeData
-  !! Get global element shape data for cell and facet
+  !! Map facet shape data in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData2 => &
     obj_GetGlobalFacetElemShapeData2
-  !! Get global element shape data for cell and facet
-  !! This is a higher level method
+  !! Prepare and map shape data on one facet.
   PROCEDURE, PUBLIC, PASS(obj) :: GetAllGlobalFacetElemShapeData => &
     obj_GetAllGlobalFacetElemShapeData
-  !! Get global element shape data for cell and facet
+  !! Map prepared shape data for every facet.
 
   ! GET:
   ! @QuadratureMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
-  !! Get quadrature points in cell element
+  !! Construct cell quadrature in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
-  !! Get quadrature points on the face of cell element
+  !! Construct facet quadrature in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetAllFacetQuadraturePoints => obj_GetAllFacetQuadraturePoints
-  !! Get quadrature points on all faces
+  !! Obtain quadrature rules for every facet.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
-  !! Get total number of quadrature points
+  !! Return the configured cell quadrature point count.
 
   ! GET:
   ! @InterpolationMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
-  !! Get Interpolation points in cell element
+  !! Construct physical interpolation points in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
-  !! Get total number of Interpolation points
+  !! Count interpolation points in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
-  !! This subroutine fixes the orientation of connectivity
+  !! Orient connectivity in a child class.
 
   ! GET:
   ! @FacetDOFMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromVertex => obj_GetFacetDOFValueFromVertex
-  !! Get the dof values corresponding to a constant function
+  !! Project geometry nodal values onto a facet basis.
   PROCEDURE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
-  !! Get the dof values corresponding to a constant function
-  !! This method should be implemented by the child class
+  !! Project the unit constant on a facet in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetDOFValueFromSTFunc => &
     obj_GetFacetDOFValueFromSTFunc
-  !! Get the dof values of a space-time user function on a facet
-  !! This method should be implemented by the child class
+  !! Project a user function on a facet in a child class.
   PROCEDURE, PUBLIC, PASS(obj) :: GetSTFacetDOFValueFromSTFunc => &
     obj_GetSTFacetDOFValueFromSTFunc
-  !! Get the space time dof values from space time user function
-  !! This method should be implemented by the child class
+  !! Project a user function on a space-time facet.
   PROCEDURE, PUBLIC, PASS(obj) :: GetSTFacetDOFValueFromConstant => &
     obj_GetSTFacetDOFValueFromConstant
-  !! Get the space time dof values of a space-time user function on a facet
-  !! This method should be implemented by the child class
+  !! Project the unit constant on a space-time facet.
   GENERIC, PUBLIC :: GetFacetDOFValue => &
     GetFacetDOFValueFromSTFunc, &
     GetFacetDOFValueFromVertex, &
     GetFacetDOFValueFromConstant, &
     GetSTFacetDOFValueFromSTFunc, &
     GetSTFacetDOFValueFromConstant
+  !! Project nodal values, a user function or the unit constant on a facet.
 
   ! GET:
   ! @CellDOFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOFValueFromSTUserFunc => &
     obj_GetVertexDOFValueFromSTFunc
-  !! Get the vertex dof values from space-time user functions
+  !! Evaluate a user function at cell vertices.
   GENERIC, PUBLIC :: GetVertexDOFValue => GetVertexDOFValueFromSTUserFunc
   !! Get the vertex dof values
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetInCellDOFValueFromSTUserFunc => &
     obj_GetInCellDOFValueFromSTFunc
-  !! Get the vertex dof values from space-time user functions
+  !! Project the residual onto interior cell degrees of freedom.
   GENERIC, PUBLIC :: GetInCellDOFValue => GetInCellDOFValueFromSTUserFunc
-  !! Get the vertex dof values
+  !! Project the interior residual after the boundary coefficients.
 
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc => &
     obj_GetDOFValueFromSTFunc
-  !! Get the dof values of a space-time user function on a facet
+  !! Compute vertex, facet and interior cell coefficients.
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc2 => &
     obj_GetDOFValueFromSTFunc2
-  !! Get the dof values of a space-time user function on a facet
+  !! Prepare quadrature and shape data before DOF projection.
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromQuadrature => &
     obj_GetDOFValueFromQuadrature
+  !! Project sampled values onto a cell basis.
   GENERIC, PUBLIC :: GetDOFValue => &
     GetDOFValueFromSTFunc, &
     GetDOFValueFromSTFunc2, &
@@ -235,8 +291,19 @@ END TYPE AbstractFE_
 !                                                         AbstractFEPointer_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Polymorphic finite element pointer wrapper
+!
+! Stores a nullable pointer to a concrete extension of AbstractFE_. The
+! wrapper does not establish ownership. Vector cleanup resets and detaches
+! targets without freeing them.
+!
+! See also: [[AbstractFEDeallocate]]
+
 TYPE :: AbstractFEPointer_
   CLASS(AbstractFE_), POINTER :: ptr => NULL()
+  !! Finite element target; initially disassociated.
 END TYPE AbstractFEPointer_
 
 !----------------------------------------------------------------------------
@@ -244,8 +311,55 @@ END TYPE AbstractFEPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Initiates an instance of the finite element
+! date: 2022-08-27
+! summary: Initialize finite element basis options
+!
+! Sets isInit to true and forwards all basis, order, orientation and
+! quadrature arguments to opt%Initiate. This initializes the shared
+! configuration; element-specific operations are provided by the concrete
+! child class.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: other
+! INTEGER(I4B) :: order, nsd
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%isInit, "Initiate sets the initialization flag")
+! CALL obj%GetParam(order=order, nsd=nsd)
+! CALL OK(order == 1_I4B .AND. nsd == 2_I4B, "Read initial options")
+! CALL other%Copy(obj)
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%isInit, "Deallocate resets initialization")
+! CALL OK(other%isInit, "Copy has independent initialization state")
+! obj = other
+! CALL OK(obj%isInit, "Defined assignment copies shared state")
+! CALL obj%SetParam(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "SetParam updates stored options")
+! CALL other%GetParam(order=order)
+! CALL OK(order == 1_I4B, "Copy retains its own options")
+! CALL obj%DEALLOCATE()
+! CALL other%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
@@ -256,115 +370,138 @@ INTERFACE
     quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
     quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Finite element object
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), INTENT(IN) :: elemType
-    !! Type of finite element
-    !! Line, Triangle, Quadrangle, Tetrahedron, Prism, Pyramid,
-    !! Hexahedron
+    !! Element type code from TypeElemNameOpt.
     INTEGER(I4B), INTENT(IN) :: nsd
-    !! Number of spatial dimension
+    !! Number of physical spatial dimensions.
     CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! Continuity or Conformity of basis function.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
-    !! H1* (default), HDiv, HCurl, DG
+    !! Basis continuity or conformity, such as H1, HDiv, HCurl or DG.
     CHARACTER(*), INTENT(IN) :: baseInterpolation
-    !! Basis function family used for interpolation.
-    !! This parameter is used to determine the nodal coordinates of
-    !! reference element, when xij is not present.
-    !! If xij is present then this parameter is ignored
-    !! LagrangeInterpolation, LagrangePolynomial
-    !! SerendipityInterpolation, SerendipityPolynomial
-    !! HierarchyInterpolation, HierarchyPolynomial
-    !! OrthogonalInterpolation, OrthogonalPolynomial
-    !! HermitInterpolation, HermitPolynomial
+    !! Basis family name, such as Lagrange or Hierarchy.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! Interpolation point type, It is required when
-    !! baseInterpol is LagrangePolynomial
-    !! Default ipType is Equidistance
+    !! Interpolation point type code, or directional codes for point
+    !! generation.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Basis type: Legendre, Lobatto, Ultraspherical,
-    !! Jacobi, Monomial
+    !! Polynomial basis type codes by reference direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! Jacobi parameter
+    !! Jacobi alpha parameters by reference direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi parameter
+    !! Jacobi beta parameters by reference direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameters
+    !! Ultraspherical parameters by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
-    !! Finite element type
-    !! Default is Scalar
-    !! For HDiv and Hcurl it should be Vector
+    !! Finite element value type code: scalar, vector or matrix.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
-    !! Degree of freedom type, default is nodal
-    !! The size of dofType is 4
+    !! DOF type codes for vertex, edge, face and cell entities; four entries.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
-    !! transformation type, from reference element to physical element
+    !! Reference-to-physical transformation type code.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! order
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! aniso tropic order, necessary for Lagrange interpolation
+    !! Anisotropic approximation orders by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! cell order, necessary for Hierarchical interpolation
+    !! Cell approximation orders.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! face order, necessary for Hierarchical interpolation
-    !! number of rows in faceOrder is 3
-    !! number of columns in faceOrder is tfaceorder
+    !! Face approximation orders; directions are rows and faces are columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! edge order, necessary for Hierarchical interpolation
-    !! size of edgeorder is tedgeorder
+    !! Approximation orders on the edges.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !! cell orient, necessary for Hierarchical interpolation
+    !! Cell orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! face orient, necessary for Hierarchical interpolation
-    !! number of rows in faceoriient is 3
-    !! number of columns in faceorient is tfaceorient
+    !! Face orientation data, one face per column.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !! edge orient, necessary for Hierarchical interpolation
+    !! Edge orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
-    !! size of cellOrder, necessary for Hierarchical interpolation
+    !! Active size of cell order or orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
-    !! number of columns in faceOrder,
-    !! necessary for Hierarchical interpolation
+    !! Active number of face columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
-    !! size of edgeorder, necessary for Hierarchical interpolation
+    !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! user can ignore this option
-    !! for dev: this option checks the errors in debug mode
+    !! Optional control of validation performed by BasisOpt_ in DEBUG mode.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
-    !! is quadratur homogeneous in all dimensions
+    !! Whether the same quadrature settings apply in all directions.
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(:)
-    !! Quadrature type in x, y, and z directions
+    !! Quadrature rule type codes by reference direction.
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureOrder(:)
-    !! quadrature accuracy in x, y, and z direction
+    !! Quadrature accuracy orders by reference direction.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
-    !! Is quadrature order considered
+    !! Whether quadrature is specified by accuracy order.
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureNips(:)
-    !! Number of interpolation points in x, y, and z directions
+    !! Quadrature point counts by reference direction.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
-    !! Quadrature nips
+    !! Whether quadrature is specified by point count.
     REAL(DFP), INTENT(IN), OPTIONAL :: quadratureAlpha(:)
-    !! Quadrature alpha
+    !! Quadrature Jacobi alpha parameters by direction.
     REAL(DFP), INTENT(IN), OPTIONAL :: quadratureBeta(:)
-    !! Quadrature beta
+    !! Quadrature Jacobi beta parameters by direction.
     REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(:)
-    !! Quadrature lambda
+    !! Quadrature ultraspherical parameters by direction.
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Initiate@Methods
+!                                                                Copy@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-09-22
-! summary: Initiates an instance of the finite element by copying
+! summary: Copy initialization state and basis options
+!
+! Copies isInit and calls opt%Copy on the source options. The assignment
+! binding uses this same procedure. No additional components introduced by a
+! child class are copied here.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: other
+! INTEGER(I4B) :: order, nsd
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%isInit, "Initiate sets the initialization flag")
+! CALL obj%GetParam(order=order, nsd=nsd)
+! CALL OK(order == 1_I4B .AND. nsd == 2_I4B, "Read initial options")
+! CALL other%Copy(obj)
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%isInit, "Deallocate resets initialization")
+! CALL OK(other%isInit, "Copy has independent initialization state")
+! obj = other
+! CALL OK(obj%isInit, "Defined assignment copies shared state")
+! CALL obj%SetParam(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "SetParam updates stored options")
+! CALL other%GetParam(order=order)
+! CALL OK(order == 1_I4B, "Copy retains its own options")
+! CALL obj%DEALLOCATE()
+! CALL other%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Copy(obj, obj2)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     CLASS(AbstractFE_), INTENT(IN) :: obj2
+    !! Source finite element whose shared state is copied.
   END SUBROUTINE obj_Copy
 END INTERFACE
 
@@ -373,12 +510,58 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 29 Aug 2022
-! summary: Deallocate the data
+! date: 2022-08-29
+! summary: Reset initialization state and release basis options
+!
+! Sets isInit to false and calls opt%DEALLOCATE. The object itself remains
+! allocated. This procedure is also exported through AbstractFEDeallocate.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: other
+! INTEGER(I4B) :: order, nsd
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%isInit, "Initiate sets the initialization flag")
+! CALL obj%GetParam(order=order, nsd=nsd)
+! CALL OK(order == 1_I4B .AND. nsd == 2_I4B, "Read initial options")
+! CALL other%Copy(obj)
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%isInit, "Deallocate resets initialization")
+! CALL OK(other%isInit, "Copy has independent initialization state")
+! obj = other
+! CALL OK(obj%isInit, "Defined assignment copies shared state")
+! CALL obj%SetParam(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "SetParam updates stored options")
+! CALL other%GetParam(order=order)
+! CALL OK(order == 1_I4B, "Copy retains its own options")
+! CALL obj%DEALLOCATE()
+! CALL other%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]]
 
 INTERFACE AbstractFEDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
   END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractFEDeallocate
 
@@ -387,14 +570,98 @@ END INTERFACE AbstractFEDeallocate
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-09
-! summary:  Deallocate the vector of NeumannBC_
+! date: 2023-09-09
+! summary: Reset and detach a vector of finite element pointers
+!
+! For each associated pointer, calls its DEALLOCATE binding and nullifies the
+! pointer. Finally deallocates the wrapper array. Pointer targets themselves
+! are not deallocated; retain a separate owning reference when their
+! allocation must be released. An unallocated wrapper array is accepted.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE AbstractFE_Class, ONLY: AbstractFEPointer_
+! USE AbstractFE_Class, ONLY: AbstractFEDeallocate
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(AbstractFEPointer_), ALLOCATABLE :: refs(:)
+! TYPE(TriangleH1LagrangeFE_), TARGET :: target
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL target%Copy(obj)
+! ALLOCATE(refs(2))
+! refs(1)%ptr => target
+! CALL AbstractFEDeallocate(refs)
+! CALL OK(.NOT. ALLOCATED(refs), "Wrapper vector released")
+! CALL OK(.NOT. target%isInit, "Target state reset and still accessible")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE AbstractFEDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(AbstractFEPointer_), ALLOCATABLE :: obj(:)
+    TYPE(AbstractFEPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! Allocatable vector of pointer wrappers; targets are reset and detached.
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE AbstractFEDeallocate
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Reset and detach a vector of finite element pointer wrappers
+!
+! Alias of the pointer-vector overload of AbstractFEDeallocate. It resets
+! each associated target, nullifies the wrappers and releases the wrapper
+! array. Target allocations remain the responsibility of their owner.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE AbstractFE_Class, ONLY: AbstractFEPointer_
+! USE AbstractFE_Class, ONLY: AbstractFEDeallocate
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(AbstractFEPointer_), ALLOCATABLE :: refs(:)
+! TYPE(TriangleH1LagrangeFE_), TARGET :: target
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL target%Copy(obj)
+! ALLOCATE(refs(2))
+! refs(1)%ptr => target
+! CALL AbstractFEDeallocate(refs)
+! CALL OK(.NOT. ALLOCATED(refs), "Wrapper vector released")
+! CALL OK(.NOT. target%isInit, "Target state reset and still accessible")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractFEDeallocate]]
 
 INTERFACE DEALLOCATE
   MODULE PROCEDURE Deallocate_Ptr_Vector
@@ -406,14 +673,62 @@ END INTERFACE DEALLOCATE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-08-14
-! summary: Display the content
+! summary: Display initialization state and basis options
+!
+! Writes msg and isInit to the selected output unit. If initialized, also
+! calls opt%Display. The notFull argument is currently unused. This procedure
+! is also exported through AbstractFEDisplay.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE String_Class, ONLY: String
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(String) :: markdown, react
+! INTEGER, PARAMETER :: unitno = 20
+! INTEGER :: ios
+! CHARACTER(256) :: line, iomsg
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! OPEN(UNIT=unitno, STATUS="scratch", ACTION="readwrite")
+! CALL obj%Display(msg="Finite element", unitno=unitno)
+! REWIND(unitno)
+! READ(unitno, '(A)', IOSTAT=ios, IOMSG=iomsg) line
+! CALL OK(ios == 0, "Display writes output")
+! CLOSE(unitno)
+! markdown = obj%MdEncode()
+! react = obj%ReactEncode()
+! CALL OK(LEN(markdown%chars()) > 0, "Markdown encoding")
+! CALL OK(LEN(react%chars()) > 0, "React encoding")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE AbstractFEDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitno, notFull)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     CHARACTER(*), INTENT(IN) :: msg
+    !! Message printed before the object state.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    !! Optional output unit passed to Display.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: notFull
+    !! Accepted for compatibility; unused in the base implementation.
   END SUBROUTINE obj_Display
 END INTERFACE AbstractFEDisplay
 
@@ -422,13 +737,62 @@ END INTERFACE AbstractFEDisplay
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 20 May 2022
-! summary: Display the contents in mardown format
+! date: 2022-05-20
+! summary: Encode basis options as Markdown
+!
+! Returns opt%MdEncode(). The initialization flag is not included by this
+! wrapper.
+!
+!
+! Returns:
+!   ans : TYPE(String) - Basis options encoded as Markdown.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE String_Class, ONLY: String
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(String) :: markdown, react
+! INTEGER, PARAMETER :: unitno = 20
+! INTEGER :: ios
+! CHARACTER(256) :: line, iomsg
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! OPEN(UNIT=unitno, STATUS="scratch", ACTION="readwrite")
+! CALL obj%Display(msg="Finite element", unitno=unitno)
+! REWIND(unitno)
+! READ(unitno, '(A)', IOSTAT=ios, IOMSG=iomsg) line
+! CALL OK(ios == 0, "Display writes output")
+! CLOSE(unitno)
+! markdown = obj%MdEncode()
+! react = obj%ReactEncode()
+! CALL OK(LEN(markdown%chars()) > 0, "Markdown encoding")
+! CALL OK(LEN(react%chars()) > 0, "React encoding")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_MdEncode(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(String) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_MdEncode
 END INTERFACE
 
@@ -437,13 +801,62 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 20 May 2022
-! summary: Display the reference elements in react components
+! date: 2022-05-20
+! summary: Encode basis options as React markup
+!
+! Returns opt%ReactEncode(). The initialization flag is not included by this
+! wrapper.
+!
+!
+! Returns:
+!   ans : TYPE(String) - Basis options encoded as React markup.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE String_Class, ONLY: String
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(String) :: markdown, react
+! INTEGER, PARAMETER :: unitno = 20
+! INTEGER :: ios
+! CHARACTER(256) :: line, iomsg
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! OPEN(UNIT=unitno, STATUS="scratch", ACTION="readwrite")
+! CALL obj%Display(msg="Finite element", unitno=unitno)
+! REWIND(unitno)
+! READ(unitno, '(A)', IOSTAT=ios, IOMSG=iomsg) line
+! CALL OK(ios == 0, "Display writes output")
+! CLOSE(unitno)
+! markdown = obj%MdEncode()
+! react = obj%ReactEncode()
+! CALL OK(LEN(markdown%chars()) > 0, "Markdown encoding")
+! CALL OK(LEN(react%chars()) > 0, "React encoding")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_ReactEncode(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(String) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_ReactEncode
 END INTERFACE
 
@@ -452,8 +865,54 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Set the parameters
+! date: 2022-08-27
+! summary: Update selected stored basis parameters
+!
+! Forwards the supplied optional arguments to opt%SetParam. It does not set
+! isInit and does not dispatch to the child SetOrder or quadrature setters.
+! Use the child setters when element-specific cached data must be updated.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: other
+! INTEGER(I4B) :: order, nsd
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%isInit, "Initiate sets the initialization flag")
+! CALL obj%GetParam(order=order, nsd=nsd)
+! CALL OK(order == 1_I4B .AND. nsd == 2_I4B, "Read initial options")
+! CALL other%Copy(obj)
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%isInit, "Deallocate resets initialization")
+! CALL OK(other%isInit, "Copy has independent initialization state")
+! obj = other
+! CALL OK(obj%isInit, "Defined assignment copies shared state")
+! CALL obj%SetParam(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "SetParam updates stored options")
+! CALL other%GetParam(order=order)
+! CALL OK(order == 1_I4B, "Copy retains its own options")
+! CALL obj%DEALLOCATE()
+! CALL other%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam( &
@@ -470,108 +929,119 @@ INTERFACE
     quadratureBeta, quadratureBeta1, quadratureBeta2, quadratureBeta3, &
     quadratureLambda, quadratureLambda1, quadratureLambda2, quadratureLambda3)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
-    !! Number of spatial dimension
+    !! Number of physical spatial dimensions.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! order of element (isotropic order)
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! order in x, y, and z directions
+    !! Anisotropic approximation orders by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! order of approximation on the edges of element
+    !! Approximation orders on the edges.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! order of approximation on the faces of element
+    !! Face approximation orders; directions are rows and faces are columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! order of approximation in the cell of element
+    !! Cell approximation orders.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fetype
-    !! finite element type
+    !! Finite element value type code: scalar, vector or matrix.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
-    !! Reference element type
+    !! Element type code from TypeElemNameOpt.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: topoType
-    !! Topology of reference element
+    !! Reference element topology code.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemIndx
-    !! Element index of the reference element
+    !! Reference element index.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
-    !! interpolation point type
+    !! Interpolation point type code, or directional codes for point
+    !! generation.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Basis type in x, y, and z directions
+    !! Polynomial basis type codes by reference direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! Jacobi parameter
+    !! Jacobi alpha parameters by reference direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi parameter
+    !! Jacobi beta parameters by reference direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameter
+    !! Ultraspherical parameters by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType(:)
-    !! degree of freedom type
+    !! DOF type codes for vertex, edge, face and cell entities; four entries.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
-    !! transformation type
+    !! Reference-to-physical transformation type code.
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseContinuity
-    !! String name of type of continuity used for basis functions
+    !! Basis continuity or conformity, such as H1, HDiv, HCurl or DG.
     CHARACTER(*), OPTIONAL, INTENT(IN) :: baseInterpolation
-    !! String name of type of interpolation used for basis functions
+    !! Basis family name, such as Lagrange or Hierarchy.
     CHARACTER(*), OPTIONAL, INTENT(IN) :: refElemDomain
-    !! Domain of reference element
+    !! Reference domain name.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isIsotropicOrder
-    !! True if isotropic order
+    !! Whether isotropic approximation order is active.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isAnisotropicOrder
-    !! True if anisoOrder
+    !! Whether anisotropic approximation orders are active.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isEdgeOrder
-    !! is edge order set
+    !! Whether edge-specific approximation orders are active.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isFaceOrder
-    !! is face order set
+    !! Whether face-specific approximation orders are active.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isCellOrder
-    !! is cell order set
+    !! Whether cell-specific approximation orders are active.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdgeOrder
-    !! total edge order
+    !! Number of active edge orders.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFaceOrder
-    !! total face order
+    !! Number of active face-order columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCellOrder
-    !! total cell order
+    !! Number of active cell orders.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
-    !! is quadratur homogeneous in all dimensions
+    !! Whether the same quadrature settings apply in all directions.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    !! Quadrature type in x, y, and z directions
+    !! Quadrature rule type codes by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
-    !! Quadrature type in x, y, and z directions
+    !! Quadrature rule type codes by reference direction in direction 1.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
-    !! Quadrature type in x, y, and z directions
+    !! Quadrature rule type codes by reference direction in direction 2.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
-    !! Quadrature type in x, y, and z directions
+    !! Quadrature rule type codes by reference direction in direction 3.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
-    !! quadrature accuracy in x, y, and z direction
+    !! Quadrature accuracy orders by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder1
-    !! quadrature accuracy in x, y, and z direction
+    !! Quadrature accuracy orders by reference direction in direction 1.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder2
-    !! quadrature accuracy in x, y, and z direction
+    !! Quadrature accuracy orders by reference direction in direction 2.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder3
-    !! quadrature accuracy in x, y, and z direction
+    !! Quadrature accuracy orders by reference direction in direction 3.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsOrder
-    !! Is quadrature order considered
+    !! Whether quadrature is specified by accuracy order.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips(:)
-    !! Number of interpolation points in x, y, and z directions
+    !! Quadrature point counts by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips1
-    !! Number of interpolation points in x, y, and z directions
+    !! Quadrature point counts by reference direction in direction 1.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips2
-    !! Number of interpolation points in x, y, and z directions
+    !! Quadrature point counts by reference direction in direction 2.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureNips3
-    !! Number of interpolation points in x, y, and z directions
+    !! Quadrature point counts by reference direction in direction 3.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsNips
-    !! Should we consider nips
+    !! Whether quadrature is specified by point count.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
-    !! Jacobi parameters for quadrature
+    !! Quadrature Jacobi alpha parameters by direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha1
-    !! Jacobi parameters for quadrature
+    !! Quadrature Jacobi alpha parameters by direction in direction 1.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha2
-    !! Jacobi parameters for quadrature
+    !! Quadrature Jacobi alpha parameters by direction in direction 2.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha3
-    !! Jacobi parameters for quadrature
+    !! Quadrature Jacobi alpha parameters by direction in direction 3.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
+    !! Quadrature Jacobi beta parameters by direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta1
+    !! Quadrature Jacobi beta parameters by direction in direction 1.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta2
+    !! Quadrature Jacobi beta parameters by direction in direction 2.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta3
+    !! Quadrature Jacobi beta parameters by direction in direction 3.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
+    !! Quadrature ultraspherical parameters by direction.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda1
+    !! Quadrature ultraspherical parameters by direction in direction 1.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda2
+    !! Quadrature ultraspherical parameters by direction in direction 2.
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda3
+    !! Quadrature ultraspherical parameters by direction in direction 3.
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
@@ -580,40 +1050,81 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-07-12
-! summary:  This routine set order in the already initiated AbstractFE_
+! date: 2024-07-12
+! summary: Set approximation orders through a child implementation
 !
-!# Introduction
+! Update approximation orders and any element-specific cached data. The base
+! implementation is a placeholder and reports an error in DEBUG mode. Use a
+! concrete child that overrides this binding.
 !
-! This routine sets order in the already initiated AbstractFE_
-! Make sure the object is initiated by calling correct constructor methods
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: xij(2, 3), points(3, 6)
+! INTEGER(I4B) :: nrow, ncol, count, order
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%SetOrder(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "Child order setter")
+! count = obj%GetTotalInterpolationPoints(order=[2_I4B], &
+!   ipType=[TypeInterpolationOpt%Equidistance])
+! CALL OK(count == 6_I4B, "Quadratic triangle point count")
+! CALL obj%GetInterpolationPoints(xij=xij, ans=points, &
+!   nrow=nrow, ncol=ncol, order=[2_I4B], &
+!   ipType=[TypeInterpolationOpt%Equidistance])
+! CALL OK(ncol == count, "Interpolation output size")
+! CALL OK(ALL(points(1:2, 1:ncol) >= -1.0E-12_DFP), "Points in triangle")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
     obj, order, anisoorder, cellOrder, faceOrder, edgeOrder, tcell, tface, &
     tedge, errCheck)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! abstract finite element
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! order
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoorder(:)
-    !! aniso tropic order
+    !! Anisotropic approximation orders by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! cell order
+    !! Cell approximation orders.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! face order, number of rows in faceOrder is 3
-    !! number of columns in faceOrder is tfaceorder
+    !! Face approximation orders; directions are rows and faces are columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! edge order, size of edgeorder is tedgeorder
+    !! Approximation orders on the edges.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
-    !! size of cellOrder
+    !! Active size of cell order or orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
-    !! number of columns in faceOrder
+    !! Active number of face columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
-    !! size of edgeorder
+    !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! user can ignore this option
-    !! for dev: this option checks the errors in debug mode
+    !! Optional control of validation performed by BasisOpt_ in DEBUG mode.
   END SUBROUTINE obj_SetOrder
 END INTERFACE
 
@@ -622,36 +1133,69 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-07-12
-! summary:  This routine set order in the already initiated AbstractFE_
+! date: 2024-07-12
+! summary: Set cell, face and edge orientations in a child class
 !
-!# Introduction
+! Apply the orientation arrays and their active sizes to the finite element.
+! The base implementation is a placeholder and reports an error in DEBUG mode.
+! Use a concrete child that overrides this binding.
 !
-! This routine sets order in the already initiated AbstractFE_
-! Make sure the object is initiated by calling correct constructor methods
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! INTEGER(I4B) :: nptrs(10), faceOrient(3, 3), ii
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL obj%SetOrder(order=3_I4B)
+! nptrs = [(ii, ii=1,10)]
+! faceOrient = 1_I4B
+! faceOrient(1, 1) = -1_I4B
+! CALL obj%SetOrientation(faceOrient=faceOrient, tface=3_I4B)
+! CALL obj%FixOrientOfNptrs(nptrs=nptrs, tsize=10_I4B)
+! CALL OK(ALL(nptrs(1:3) == [1_I4B, 2_I4B, 3_I4B]), "Vertices retained")
+! CALL OK(ALL(nptrs(4:5) == [5_I4B, 4_I4B]), "First edge DOFs reversed")
+! CALL OK(ALL(nptrs(6:10) == [6_I4B, 7_I4B, 8_I4B, 9_I4B, 10_I4B]), &
+!   "Other DOFs retained")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrientation( &
     obj, cellOrient, faceOrient, edgeOrient, tcell, tface, tedge, errCheck)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! abstract finite element
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
-    !! cell orient
+    !! Cell orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! face orient
-    !! number of rows in faceoriient is 3
-    !! number of columns in faceorient is tfaceorient
+    !! Face orientation data, one face per column.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
-    !! edge orient
+    !! Edge orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tcell
-    !! size of cellOrder
+    !! Active size of cell order or orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tface
-    !! number of columns in faceOrder
+    !! Active number of face columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
-    !! size of edgeorder
+    !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! user can ignore this option
-    !! for dev: this option checks the errors in debug mode
+    !! Optional control of validation performed by BasisOpt_ in DEBUG mode.
   END SUBROUTINE obj_SetOrientation
 END INTERFACE
 
@@ -661,15 +1205,57 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-10-13
-! summary: Get the reference element coordinates
+! summary: Copy reference element vertex coordinates
+!
+! Delegates to opt%GetRefElemCoord. Coordinates occupy ans(1:nrow,1:ncol);
+! nrow is three, including unused coordinate directions, and ncol is the
+! number of reference vertices.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: coords(3, 3)
+! INTEGER(I4B) :: nrow, ncol
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%GetTopologyType() == TypeElemNameOpt%Triangle, "Topology")
+! CALL OK(obj%GetBaseContinuity() == "H1", "Continuity code")
+! CALL OK(LEN_TRIM(obj%GetBaseInterpolation()) > 0, "Interpolation code")
+! CALL OK(obj%GetIpType() == TypeInterpolationOpt%Equidistance, "Point type")
+! CALL obj%GetRefElemCoord(ans=coords, nrow=nrow, ncol=ncol)
+! CALL OK(nrow == 3_I4B .AND. ncol == 3_I4B, "Reference vertex layout")
+! CALL OK(ALL(ABS(coords(3, :)) < 1.0E-12_DFP), "Planar reference vertices")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetRefElemCoord(obj, ans, nrow, ncol)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     REAL(DFP), INTENT(INOUT) :: ans(:, :)
-    !! Reference element coordinates
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! Number of data written in ans
+    !! Coordinate output buffer; active block is ans(1:nrow,1:ncol).
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! Number of active coordinate rows written to ans.
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! Number of active coordinate columns written to ans.
   END SUBROUTINE obj_GetRefElemCoord
 END INTERFACE
 
@@ -678,8 +1264,54 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 27 Aug 2022
-! summary: Get the parameters
+! date: 2022-08-27
+! summary: Read selected stored basis parameters
+!
+! Forwards optional output arguments to opt%GetParam. Only requested values
+! are copied. Caller-owned output arrays must accommodate the active order
+! data.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: other
+! INTEGER(I4B) :: order, nsd
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%isInit, "Initiate sets the initialization flag")
+! CALL obj%GetParam(order=order, nsd=nsd)
+! CALL OK(order == 1_I4B .AND. nsd == 2_I4B, "Read initial options")
+! CALL other%Copy(obj)
+! CALL obj%DEALLOCATE()
+! CALL OK(.NOT. obj%isInit, "Deallocate resets initialization")
+! CALL OK(other%isInit, "Copy has independent initialization state")
+! obj = other
+! CALL OK(obj%isInit, "Defined assignment copies shared state")
+! CALL obj%SetParam(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "SetParam updates stored options")
+! CALL other%GetParam(order=order)
+! CALL OK(order == 1_I4B, "Copy retains its own options")
+! CALL obj%DEALLOCATE()
+! CALL other%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetParam( &
@@ -692,80 +1324,83 @@ INTERFACE
     quadratureNips, quadratureIsOrder, quadratureIsNips, quadratureAlpha, &
     quadratureBeta, quadratureLambda)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
-    !! Number of spatial dimension
+    !! Number of physical spatial dimensions.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: order
-    !! order of element (isotropic order)
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: anisoOrder(3)
-    !! order in x, y, and z directions
+    !! Anisotropic approximation orders by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: edgeOrder(:)
-    !! order of approximation on the edges of element
+    !! Approximation orders on the edges.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: faceOrder(:, :)
-    !! order of approximation on the faces of element
+    !! Face approximation orders; directions are rows and faces are columns.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: cellOrder(:)
-    !! order of approximation in the cell of element
+    !! Cell approximation orders.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: fetype
-    !! finite element type
+    !! Finite element value type code: scalar, vector or matrix.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemType
-    !! Reference element type
+    !! Element type code from TypeElemNameOpt.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: topoType
-    !! Get the topology type
+    !! Reference element topology code.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elemIndx
-    !! Get the index of element
+    !! Reference element index.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: ipType
-    !! interpolation point type
+    !! Interpolation point type code, or directional codes for point
+    !! generation.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: basisType(3)
-    !! Basis type in x, y, and z directions
+    !! Polynomial basis type codes by reference direction.
     REAL(DFP), OPTIONAL, INTENT(OUT) :: alpha(3)
-    !! Jacobi parameter
+    !! Jacobi alpha parameters by reference direction.
     REAL(DFP), OPTIONAL, INTENT(OUT) :: beta(3)
-    !! Jacobi parameter
+    !! Jacobi beta parameters by reference direction.
     REAL(DFP), OPTIONAL, INTENT(OUT) :: lambda(3)
-    !! Ultraspherical parameter
+    !! Ultraspherical parameters by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: dofType(4)
-    !! degree of freedom type
+    !! DOF type codes for vertex, edge, face and cell entities; four entries.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: transformType
-    !! transformation type
+    !! Reference-to-physical transformation type code.
     CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseContinuity
-    !! String name of type of continuity used for basis functions
+    !! Basis continuity or conformity, such as H1, HDiv, HCurl or DG.
     CHARACTER(*), OPTIONAL, INTENT(OUT) :: baseInterpolation
-    !! String name of type of interpolation used for basis functions
+    !! Basis family name, such as Lagrange or Hierarchy.
     CHARACTER(*), OPTIONAL, INTENT(OUT) :: refElemDomain
-    !! Domain of reference element
+    !! Reference domain name.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isIsotropicOrder
-    !! True if isotropic order
+    !! Whether isotropic approximation order is active.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isAnisotropicOrder
-    !! True if anisoOrder
+    !! Whether anisotropic approximation orders are active.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isEdgeOrder
-    !! is edge order set
+    !! Whether edge-specific approximation orders are active.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isFaceOrder
-    !! is face order set
+    !! Whether face-specific approximation orders are active.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isCellOrder
-    !! is cell order set
+    !! Whether cell-specific approximation orders are active.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tEdgeOrder
-    !! total edge order
+    !! Number of active edge orders.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tFaceOrder
-    !! total face order
+    !! Number of active face-order columns.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: tCellOrder
-    !! total cell order
+    !! Number of active cell orders.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsHomogeneous
-    !! see QuadratureOpt_
+    !! Whether the same quadrature settings apply in all directions.
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureType(3)
-    !! see QuadratureOpt_
+    !! Quadrature rule type codes by reference direction.
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureOrder(3)
-    !! See QuadratureOpt_
+    !! Quadrature accuracy orders by reference direction.
     INTEGER(I4B), INTENT(OUT), OPTIONAL :: quadratureNips(3)
-    !! See QuadratureOpt_
+    !! Quadrature point counts by reference direction.
     REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureAlpha(3)
-    !! See QuadratureOpt_
+    !! Quadrature Jacobi alpha parameters by direction.
     REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureBeta(3)
-    !! See QuadratureOpt_
+    !! Quadrature Jacobi beta parameters by direction.
     REAL(DFP), INTENT(OUT), OPTIONAL :: quadratureLambda(3)
-    !! See QuadratureOpt_
+    !! Quadrature ultraspherical parameters by direction.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsOrder
-    !! See QuadratureOpt_
+    !! Whether quadrature is specified by accuracy order.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsNips
-    !! See QuadratureOpt_
+    !! Whether quadrature is specified by point count.
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
@@ -774,14 +1409,73 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local element shape data shape data
+! date: 2023-08-15
+! summary: Evaluate reference cell shape data in a child class
+!
+! Evaluate local basis values and reference derivatives at quad. The base
+! implementation is a placeholder and reports an error in DEBUG mode. Use a
+! concrete child that overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, geoShapes
+! TYPE(QuadraturePoint_) :: quad
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetQuadraturePoints(quad=quad)
+! count = obj%GetTotalQuadraturePoints()
+! CALL obj%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+! CALL geometry%GetLocalElemShapeData(elemsd=geoShapes, quad=quad)
+! CALL OK(shapes%nips == count, "Configured quadrature count")
+! CALL OK(shapes%nns == 3_I4B, "Linear triangle basis size")
+! CALL obj%GetGlobalElemShapeData( &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij)
+! CALL OK(ALL(ABS(SUM(shapes%N(1:3, 1:count), DIM=1) - &
+!   1.0_DFP) < 1.0E-10_DFP), "Partition of unity")
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij, quad=quad)
+! CALL OK(shapes%nips == count, "High-level shape preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! Solution cell shape data, or cell traces indexed by facet.
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
@@ -790,16 +1484,95 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local element shape data shape data in cell and facet
+! date: 2023-08-15
+! summary: Evaluate reference facet shape data in a child class
+!
+! Evaluate cell traces and facet basis data at the supplied cell and facet
+! quadrature points. The base implementation is a placeholder and reports an
+! error in DEBUG mode. Use a concrete child that overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), facets(3), geoShapes(3), geoFacets(3)
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3)
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetFacetQuadraturePoints( &
+!   quad=quad(1), facetQuad=facetQuad(1), localFaceNumber=1_I4B)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "Triangle has three facets")
+! CALL obj%GetLocalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   localFaceNumber=1_I4B)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL geometry%GetAllLocalFacetElemShapeData(elemsd=geoShapes, &
+!   facetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(ALL(facets%nns == 2_I4B), "Linear facet basis sizes")
+! CALL obj%GetGlobalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), xij=xij, localFaceNumber=1_I4B)
+! ! Restore local data before mapping every face.
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, xij=xij, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "All facets mapped")
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes(1), facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL OK(facets(1)%nips > 0_I4B, "High-level facet preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalFacetElemShapeData( &
     obj, elemsd, facetElemsd, quad, facetQuad, localFaceNumber)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! Solution cell shape data, or cell traces indexed by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd
+    !! Solution shape data on the facet, or one dataset per facet.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad
+    !! Facet quadrature, or one quadrature container per facet.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! One-based local face number.
   END SUBROUTINE obj_GetLocalFacetElemShapeData
 END INTERFACE
 
@@ -808,16 +1581,94 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local element shape data shape data in cell and facet
+! date: 2023-08-15
+! summary: Evaluate local shape data for every facet
+!
+! Sets tsize to opt%GetTotalFace and calls GetLocalFacetElemShapeData for each
+! local face. Each array must have at least tsize entries. Quadrature arrays
+! must already contain valid rules.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), facets(3), geoShapes(3), geoFacets(3)
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3)
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetFacetQuadraturePoints( &
+!   quad=quad(1), facetQuad=facetQuad(1), localFaceNumber=1_I4B)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "Triangle has three facets")
+! CALL obj%GetLocalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   localFaceNumber=1_I4B)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL geometry%GetAllLocalFacetElemShapeData(elemsd=geoShapes, &
+!   facetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(ALL(facets%nns == 2_I4B), "Linear facet basis sizes")
+! CALL obj%GetGlobalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), xij=xij, localFaceNumber=1_I4B)
+! ! Restore local data before mapping every face.
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, xij=xij, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "All facets mapped")
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes(1), facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL OK(facets(1)%nips > 0_I4B, "High-level facet preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetAllLocalFacetElemShapeData( &
     obj, elemsd, facetElemsd, quad, facetQuad, tsize)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:), facetElemsd(:)
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:), facetQuad(:)
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:)
+    !! Solution cell shape data, or cell traces indexed by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
+    !! Solution shape data on the facet, or one dataset per facet.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:)
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad(:)
+    !! Facet quadrature, or one quadrature container per facet.
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Number of facet entries populated in the arrays.
   END SUBROUTINE obj_GetAllLocalFacetElemShapeData
 END INTERFACE
 
@@ -826,25 +1677,76 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
+! date: 2023-08-15
+! summary: Map cell shape data in a child class
+!
+! Transform prepared local shape data to physical coordinates using xij and
+! the required geometry shape data geoelemsd. The base implementation is a
+! placeholder and reports an error in DEBUG mode. Use a concrete child that
+! overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, geoShapes
+! TYPE(QuadraturePoint_) :: quad
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetQuadraturePoints(quad=quad)
+! count = obj%GetTotalQuadraturePoints()
+! CALL obj%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+! CALL geometry%GetLocalElemShapeData(elemsd=geoShapes, quad=quad)
+! CALL OK(shapes%nips == count, "Configured quadrature count")
+! CALL OK(shapes%nns == 3_I4B, "Linear triangle basis size")
+! CALL obj%GetGlobalElemShapeData( &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij)
+! CALL OK(ALL(ABS(SUM(shapes%N(1:3, 1:count), DIM=1) - &
+!   1.0_DFP) < 1.0E-10_DFP), "Partition of unity")
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij, quad=quad)
+! CALL OK(shapes%nips == count, "High-level shape preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
+    !! Solution cell shape data, or cell traces indexed by facet.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
+    !! Physical nodal coordinates, with coordinate directions in rows.
     TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
+    !! Required geometry cell shape data, or geometry traces by facet.
   END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 
@@ -853,41 +1755,82 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
+! date: 2023-08-15
+! summary: Prepare and map cell shape data
 !
-!# Introduction
+! Unless doNotInitQuad is true (default false), obtains quadrature from obj.
+! Evaluates local solution and geometry shape data at the same points, then
+! dispatches to obj%GetGlobalElemShapeData. Both finite elements must support
+! those operations.
 !
-! This is a high level routine for getting global shape data of element
-! It needs AbstractFE object for solution, and geometry
 !
-! It will first make quadrature points
-! Then it will make local element shape data for solution and geometry
-! Then it will make global element shape data for solution
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, geoShapes
+! TYPE(QuadraturePoint_) :: quad
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetQuadraturePoints(quad=quad)
+! count = obj%GetTotalQuadraturePoints()
+! CALL obj%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+! CALL geometry%GetLocalElemShapeData(elemsd=geoShapes, quad=quad)
+! CALL OK(shapes%nips == count, "Configured quadrature count")
+! CALL OK(shapes%nns == 3_I4B, "Linear triangle basis size")
+! CALL obj%GetGlobalElemShapeData( &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij)
+! CALL OK(ALL(ABS(SUM(shapes%N(1:3, 1:count), DIM=1) - &
+!   1.0_DFP) < 1.0E-10_DFP), "Partition of unity")
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij, quad=quad)
+! CALL OK(shapes%nips == count, "High-level shape preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData2( &
     obj, geofeptr, elemsd, geoelemsd, xij, quad, doNotInitQuad)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj, geofeptr
-    !! Abstract finite element
-    !! Abstract finite element for geometry
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    CLASS(AbstractFE_), INTENT(INOUT) :: geofeptr
+    !! Concrete finite element describing the geometry basis.
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
+    !! Solution cell shape data, or cell traces indexed by facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
+    !! Required geometry cell shape data, or geometry traces by facet.
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature point
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
+    !! Physical nodal coordinates, with coordinate directions in rows.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: doNotInitQuad
-    !! Default value is false, but if present and true, then
-    !! we do not initiate quadrature points
+    !! If true, reuse quad; default false initializes quadrature.
   END SUBROUTINE obj_GetGlobalElemShapeData2
 END INTERFACE
 
@@ -896,23 +1839,98 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data in cell and facet
+! date: 2023-08-15
+! summary: Map facet shape data in a child class
+!
+! Transform prepared cell traces and facet shapes using physical coordinates
+! and the required geometry datasets. The base implementation is a placeholder
+! and reports an error in DEBUG mode. Use a concrete child that overrides this
+! binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), facets(3), geoShapes(3), geoFacets(3)
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3)
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetFacetQuadraturePoints( &
+!   quad=quad(1), facetQuad=facetQuad(1), localFaceNumber=1_I4B)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "Triangle has three facets")
+! CALL obj%GetLocalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   localFaceNumber=1_I4B)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL geometry%GetAllLocalFacetElemShapeData(elemsd=geoShapes, &
+!   facetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(ALL(facets%nns == 2_I4B), "Linear facet basis sizes")
+! CALL obj%GetGlobalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), xij=xij, localFaceNumber=1_I4B)
+! ! Restore local data before mapping every face.
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, xij=xij, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "All facets mapped")
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes(1), facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL OK(facets(1)%nips > 0_I4B, "High-level facet preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData( &
     obj, elemsd, facetElemsd, localFaceNumber, geoElemsd, geoFacetElemsd, xij)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd
-    !! element shape data in cell and facet
-    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd, geoFacetElemsd
-    !! element shape data for geometry in cell and facet
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! Solution cell shape data, or cell traces indexed by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd
+    !! Solution shape data on the facet, or one dataset per facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd
+    !! Required geometry cell shape data, or geometry traces by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoFacetElemsd
+    !! Required geometry shape data on the facet, or datasets by facet.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of cell element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
+    !! Physical nodal coordinates, with coordinate directions in rows.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! One-based local face number.
   END SUBROUTINE obj_GetGlobalFacetElemShapeData
 END INTERFACE
 
@@ -921,28 +1939,103 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data in cell and facet
+! date: 2023-08-15
+! summary: Prepare and map shape data on one facet
+!
+! Obtains cell and facet quadrature from obj, evaluates local solution and
+! geometry shape data, then dispatches to obj%GetGlobalFacetElemShapeData for
+! the selected local face.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), facets(3), geoShapes(3), geoFacets(3)
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3)
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetFacetQuadraturePoints( &
+!   quad=quad(1), facetQuad=facetQuad(1), localFaceNumber=1_I4B)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "Triangle has three facets")
+! CALL obj%GetLocalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   localFaceNumber=1_I4B)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL geometry%GetAllLocalFacetElemShapeData(elemsd=geoShapes, &
+!   facetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(ALL(facets%nns == 2_I4B), "Linear facet basis sizes")
+! CALL obj%GetGlobalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), xij=xij, localFaceNumber=1_I4B)
+! ! Restore local data before mapping every face.
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, xij=xij, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "All facets mapped")
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes(1), facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL OK(facets(1)%nips > 0_I4B, "High-level facet preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalFacetElemShapeData2( &
     obj, geofeptr, elemsd, facetElemsd, geoElemsd, geoFacetElemsd, &
     localFaceNumber, quad, facetQuad, xij)
-    CLASS(AbstractFE_), INTENT(INOUT) :: obj, geofeptr
-    !! Abstract FE for solution and geometry
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
-                                           geoFacetElemsd
-    !! element shape data in cell and facet
-    !! element shape data for geometry in cell and facet
+    CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    CLASS(AbstractFE_), INTENT(INOUT) :: geofeptr
+    !! Concrete finite element describing the geometry basis.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! Solution cell shape data, or cell traces indexed by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd
+    !! Solution shape data on the facet, or one dataset per facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd
+    !! Required geometry cell shape data, or geometry traces by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoFacetElemsd
+    !! Required geometry shape data on the facet, or datasets by facet.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
-    !! quadrature points for cell and facetQuad
+    !! One-based local face number.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad
+    !! Facet quadrature, or one quadrature container per facet.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of cell element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
+    !! Physical nodal coordinates, with coordinate directions in rows.
   END SUBROUTINE obj_GetGlobalFacetElemShapeData2
 END INTERFACE
 
@@ -951,23 +2044,96 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data in cell and facet
+! date: 2023-08-15
+! summary: Map prepared shape data for every facet
+!
+! Sets tsize to opt%GetTotalFace and calls GetGlobalFacetElemShapeData for
+! each face. Solution and geometry arrays must contain prepared local shape
+! data and have at least tsize entries.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), facets(3), geoShapes(3), geoFacets(3)
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3)
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetFacetQuadraturePoints( &
+!   quad=quad(1), facetQuad=facetQuad(1), localFaceNumber=1_I4B)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "Triangle has three facets")
+! CALL obj%GetLocalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   localFaceNumber=1_I4B)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL geometry%GetAllLocalFacetElemShapeData(elemsd=geoShapes, &
+!   facetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(ALL(facets%nns == 2_I4B), "Linear facet basis sizes")
+! CALL obj%GetGlobalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), xij=xij, localFaceNumber=1_I4B)
+! ! Restore local data before mapping every face.
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, xij=xij, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "All facets mapped")
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes(1), facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL OK(facets(1)%nips > 0_I4B, "High-level facet preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetAllGlobalFacetElemShapeData( &
     obj, elemsd, facetElemsd, tsize, geoElemsd, geoFacetElemsd, xij)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:), facetElemsd(:)
-    !! element shape data in cell and facet
-    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd(:), geoFacetElemsd(:)
-    !! element shape data for geometry in cell and facet
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd(:)
+    !! Solution cell shape data, or cell traces indexed by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: facetElemsd(:)
+    !! Solution shape data on the facet, or one dataset per facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoElemsd(:)
+    !! Required geometry cell shape data, or geometry traces by facet.
+    TYPE(ElemShapedata_), INTENT(INOUT) :: geoFacetElemsd(:)
+    !! Required geometry shape data on the facet, or datasets by facet.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of cell element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
+    !! Physical nodal coordinates, with coordinate directions in rows.
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Number of facet entries populated in the arrays.
   END SUBROUTINE obj_GetAllGlobalFacetElemShapeData
 END INTERFACE
 
@@ -976,17 +2142,71 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points
-
-! obj_Initiate9(obj, elemType, domainName, order, quadratureType,&
-! alpha, beta, lambda, xij)
+! date: 2023-09-05
+! summary: Construct cell quadrature in a child class
+!
+! Populate quad using the configured cell quadrature options. The base
+! implementation is a placeholder and reports an error in DEBUG mode. Use a
+! concrete child that overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, geoShapes
+! TYPE(QuadraturePoint_) :: quad
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetQuadraturePoints(quad=quad)
+! count = obj%GetTotalQuadraturePoints()
+! CALL obj%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+! CALL geometry%GetLocalElemShapeData(elemsd=geoShapes, quad=quad)
+! CALL OK(shapes%nips == count, "Configured quadrature count")
+! CALL OK(shapes%nns == 3_I4B, "Linear triangle basis size")
+! CALL obj%GetGlobalElemShapeData( &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij)
+! CALL OK(ALL(ABS(SUM(shapes%N(1:3, 1:count), DIM=1) - &
+!   1.0_DFP) < 1.0E-10_DFP), "Partition of unity")
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij, quad=quad)
+! CALL OK(shapes%nips == count, "High-level shape preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetQuadraturePoints(obj, quad)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
-    !! Quadrature points
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
   END SUBROUTINE obj_GetQuadraturePoints
 END INTERFACE
 
@@ -995,16 +2215,92 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points on a local face of element
+! date: 2023-09-05
+! summary: Construct facet quadrature in a child class
+!
+! Populate quad with cell reference coordinates on the selected face and
+! facetQuad with the corresponding facet coordinates. The base implementation
+! is a placeholder and reports an error in DEBUG mode. Use a concrete child
+! that overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), facets(3), geoShapes(3), geoFacets(3)
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3)
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetFacetQuadraturePoints( &
+!   quad=quad(1), facetQuad=facetQuad(1), localFaceNumber=1_I4B)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "Triangle has three facets")
+! CALL obj%GetLocalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   localFaceNumber=1_I4B)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL geometry%GetAllLocalFacetElemShapeData(elemsd=geoShapes, &
+!   facetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(ALL(facets%nns == 2_I4B), "Linear facet basis sizes")
+! CALL obj%GetGlobalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), xij=xij, localFaceNumber=1_I4B)
+! ! Restore local data before mapping every face.
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, xij=xij, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "All facets mapped")
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes(1), facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL OK(facets(1)%nips > 0_I4B, "High-level facet preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetQuadraturePoints( &
     obj, quad, facetQuad, localFaceNumber)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
-    !! Quadrature points
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad
+    !! Facet quadrature, or one quadrature container per facet.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
+    !! One-based local face number.
   END SUBROUTINE obj_GetFacetQuadraturePoints
 END INTERFACE
 
@@ -1013,16 +2309,89 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get quadrature points on a local face of element
+! date: 2023-09-05
+! summary: Obtain quadrature rules for every facet
+!
+! Sets tsize to opt%GetTotalFace and calls GetFacetQuadraturePoints for each
+! face. Both caller-owned arrays must have at least tsize entries.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), facets(3), geoShapes(3), geoFacets(3)
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3)
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetFacetQuadraturePoints( &
+!   quad=quad(1), facetQuad=facetQuad(1), localFaceNumber=1_I4B)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "Triangle has three facets")
+! CALL obj%GetLocalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   localFaceNumber=1_I4B)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL geometry%GetAllLocalFacetElemShapeData(elemsd=geoShapes, &
+!   facetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL OK(ALL(facets%nns == 2_I4B), "Linear facet basis sizes")
+! CALL obj%GetGlobalFacetElemShapeData(elemsd=shapes(1), &
+!   facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), xij=xij, localFaceNumber=1_I4B)
+! ! Restore local data before mapping every face.
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, quad=quad, facetQuad=facetQuad, tsize=tsize)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, &
+!   facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, xij=xij, tsize=tsize)
+! CALL OK(tsize == 3_I4B, "All facets mapped")
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes(1), facetElemsd=facets(1), geoElemsd=geoShapes(1), &
+!   geoFacetElemsd=geoFacets(1), quad=quad(1), facetQuad=facetQuad(1), &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL OK(facets(1)%nips > 0_I4B, "High-level facet preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetAllFacetQuadraturePoints( &
     obj, quad, facetQuad, tsize)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:), facetQuad(:)
-    !! Quadrature points
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:)
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
+    TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad(:)
+    !! Facet quadrature, or one quadrature container per facet.
     INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Number of facet entries populated in the arrays.
   END SUBROUTINE obj_GetAllFacetQuadraturePoints
 END INTERFACE
 
@@ -1032,12 +2401,72 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-05
-! summary: Get total number of quadrature points
+! summary: Return the configured cell quadrature point count
+!
+! Delegates to opt%GetTotalQuadraturePoints. This queries the stored
+! quadrature options rather than constructing a quadrature rule.
+!
+!
+! Returns:
+!   ans : INTEGER(I4B) - Number of configured cell quadrature points.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, geoShapes
+! TYPE(QuadraturePoint_) :: quad
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetQuadraturePoints(quad=quad)
+! count = obj%GetTotalQuadraturePoints()
+! CALL obj%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+! CALL geometry%GetLocalElemShapeData(elemsd=geoShapes, quad=quad)
+! CALL OK(shapes%nips == count, "Configured quadrature count")
+! CALL OK(shapes%nns == 3_I4B, "Linear triangle basis size")
+! CALL obj%GetGlobalElemShapeData( &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij)
+! CALL OK(ALL(ABS(SUM(shapes%N(1:3, 1:count), DIM=1) - &
+!   1.0_DFP) < 1.0E-10_DFP), "Partition of unity")
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, geoelemsd=geoShapes, xij=xij, quad=quad)
+! CALL OK(shapes%nips == count, "High-level shape preparation")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalQuadraturePoints(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_GetTotalQuadraturePoints
 END INTERFACE
 
@@ -1047,15 +2476,62 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-17
-! summary: Set the order for quadrature
+! summary: Set quadrature accuracy in a child class
+!
+! Update quadrature accuracy using an order array or directional scalar
+! arguments. Directional precedence is defined by the child implementation.
+! The base implementation is a placeholder and reports an error in DEBUG mode.
+! Use a concrete child that overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! INTEGER(I4B) :: orders(3), types(3)
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL obj%SetQuadratureOrder(order1=6_I4B)
+! CALL obj%GetParam(quadratureOrder=orders, quadratureType=types)
+! CALL OK(orders(1) == 6_I4B, "Quadrature accuracy updated")
+! CALL obj%SetQuadratureType(quadratureType1=types(1))
+! CALL obj%GetParam(quadratureType=orders)
+! CALL OK(orders(1) == types(1), "Quadrature type retained")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadratureOrder(obj, order, order1, order2, order3)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order(:)
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order1
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction in direction 1.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order2
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction in direction 2.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order3
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction in direction 3.
   END SUBROUTINE obj_SetQuadratureOrder
 END INTERFACE
 
@@ -1065,16 +2541,59 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-17
-! summary:  Set the quadrature type
+! summary: Set quadrature rules in a child class
+!
+! Update quadrature type using an array or directional scalar arguments.
+! Supported rules depend on the element topology. The base implementation is a
+! placeholder and reports an error in DEBUG mode. Use a concrete child that
+! overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! INTEGER(I4B) :: orders(3), types(3)
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL obj%SetQuadratureOrder(order1=6_I4B)
+! CALL obj%GetParam(quadratureOrder=orders, quadratureType=types)
+! CALL OK(orders(1) == 6_I4B, "Quadrature accuracy updated")
+! CALL obj%SetQuadratureType(quadratureType1=types(1))
+! CALL obj%GetParam(quadratureType=orders)
+! CALL OK(orders(1) == types(1), "Quadrature type retained")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuadratureType( &
     obj, quadratureType, quadratureType1, quadratureType2, quadratureType3)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
+    !! Quadrature rule type codes by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType1
+    !! Quadrature rule type codes by reference direction in direction 1.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType2
+    !! Quadrature rule type codes by reference direction in direction 2.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType3
+    !! Quadrature rule type codes by reference direction in direction 3.
   END SUBROUTINE obj_SetQuadratureType
 END INTERFACE
 
@@ -1084,12 +2603,55 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary: Returns the topoType
+! summary: Return the reference topology code
+!
+! Returns opt%GetTopologyType().
+!
+!
+! Returns:
+!   ans : INTEGER(I4B) - Reference topology code.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: coords(3, 3)
+! INTEGER(I4B) :: nrow, ncol
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%GetTopologyType() == TypeElemNameOpt%Triangle, "Topology")
+! CALL OK(obj%GetBaseContinuity() == "H1", "Continuity code")
+! CALL OK(LEN_TRIM(obj%GetBaseInterpolation()) > 0, "Interpolation code")
+! CALL OK(obj%GetIpType() == TypeInterpolationOpt%Equidistance, "Point type")
+! CALL obj%GetRefElemCoord(ans=coords, nrow=nrow, ncol=ncol)
+! CALL OK(nrow == 3_I4B .AND. ncol == 3_I4B, "Reference vertex layout")
+! CALL OK(ALL(ABS(coords(3, :)) < 1.0E-12_DFP), "Planar reference vertices")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_GetTopologyType(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_GetTopologyType
 END INTERFACE
 
@@ -1099,15 +2661,51 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-12
-! summary:  Import data from toml table
+! summary: Initialize basis options from a TOML table
+!
+! Sets isInit to true and forwards table and optional element type and spatial
+! dimension overrides to opt%ImportFromToml. This overload is selected by the
+! ImportFromToml generic when table is supplied.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE tomlf, ONLY: toml_table
+! USE tomlf, ONLY: set_value
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(toml_table) :: table
+! INTEGER(I4B) :: nsd
+!
+! CALL set_value(table, "baseContinuity", "H1")
+! CALL set_value(table, "baseInterpolation", "Lagrange")
+! CALL obj%ImportFromToml(table=table, elemType=TypeElemNameOpt%Triangle, &
+!   nsd=2_I4B)
+! CALL obj%GetParam(nsd=nsd)
+! CALL OK(obj%isInit .AND. nsd == 2_I4B, "TOML table initialization")
+! CALL OK(obj%GetBaseContinuity() == "H1", "TOML continuity")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, elemType, nsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(toml_table), INTENT(INOUT) :: table
+    !! TOML table containing basis options.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
-    !! element type of finite element, optional
+    !! Element type code from TypeElemNameOpt.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+    !! Number of physical spatial dimensions.
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
@@ -1116,20 +2714,65 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-11-08
-! summary:  Initiate kernel from the toml file
+! date: 2023-11-08
+! summary: Initialize basis options from a named TOML table
+!
+! Reads a TOML document using GetValue, selects the table named tomlName and
+! dispatches to the table overload. Provide a filename or an appropriate
+! TxtFile_ handle. A missing table is reported in DEBUG mode. printToml is
+! currently unused.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! INTEGER :: unitno
+! INTEGER(I4B) :: nsd
+!
+! OPEN(NEWUNIT=unitno, FILE="abstractfe_example.toml", STATUS="replace", &
+!   ACTION="write")
+! WRITE(unitno, '(A)') '[finite_element]'
+! WRITE(unitno, '(A)') 'baseContinuity = "H1"'
+! WRITE(unitno, '(A)') 'baseInterpolation = "Lagrange"'
+! CLOSE(unitno)
+! CALL obj%ImportFromToml(tomlName="finite_element", &
+!   filename="abstractfe_example.toml", elemType=TypeElemNameOpt%Triangle, &
+!   nsd=2_I4B)
+! CALL obj%GetParam(nsd=nsd)
+! CALL OK(obj%isInit .AND. nsd == 2_I4B, "Named TOML table initialization")
+! CALL obj%DEALLOCATE()
+! OPEN(NEWUNIT=unitno, FILE="abstractfe_example.toml", STATUS="old", &
+!   ACTION="read")
+! CLOSE(unitno, STATUS="delete")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
                                         printToml, elemType, nsd)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     CHARACTER(*), INTENT(IN) :: tomlName
+    !! Name of the finite element table in the TOML document.
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    !! Optional text-file handle passed to the TOML reader.
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    !! Optional TOML input filename.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    !! Accepted for compatibility; unused in this overload.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
-    !! element type
+    !! Element type code from TypeElemNameOpt.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
+    !! Number of physical spatial dimensions.
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
@@ -1139,12 +2782,56 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-16
-! summary:  Get the baseInterpolation
+! summary: Return the basis interpolation code
+!
+! Returns the four-character code from opt%GetBaseInterpolation, rather than
+! the original long family name.
+!
+!
+! Returns:
+!   ans : CHARACTER(4) - Four-character interpolation family code.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: coords(3, 3)
+! INTEGER(I4B) :: nrow, ncol
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%GetTopologyType() == TypeElemNameOpt%Triangle, "Topology")
+! CALL OK(obj%GetBaseContinuity() == "H1", "Continuity code")
+! CALL OK(LEN_TRIM(obj%GetBaseInterpolation()) > 0, "Interpolation code")
+! CALL OK(obj%GetIpType() == TypeInterpolationOpt%Equidistance, "Point type")
+! CALL obj%GetRefElemCoord(ans=coords, nrow=nrow, ncol=ncol)
+! CALL OK(nrow == 3_I4B .AND. ncol == 3_I4B, "Reference vertex layout")
+! CALL OK(ALL(ABS(coords(3, :)) < 1.0E-12_DFP), "Planar reference vertices")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_GetBaseInterpolation(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     CHARACTER(4) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_GetBaseInterpolation
 END INTERFACE
 
@@ -1152,21 +2839,115 @@ END INTERFACE
 !                                                   GetBaseContinuity@Methods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Return the basis continuity code
+!
+! Returns the two-character code from opt%GetBaseContinuity.
+!
+!
+! Returns:
+!   ans : CHARACTER(2) - Two-character continuity code.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: coords(3, 3)
+! INTEGER(I4B) :: nrow, ncol
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%GetTopologyType() == TypeElemNameOpt%Triangle, "Topology")
+! CALL OK(obj%GetBaseContinuity() == "H1", "Continuity code")
+! CALL OK(LEN_TRIM(obj%GetBaseInterpolation()) > 0, "Interpolation code")
+! CALL OK(obj%GetIpType() == TypeInterpolationOpt%Equidistance, "Point type")
+! CALL obj%GetRefElemCoord(ans=coords, nrow=nrow, ncol=ncol)
+! CALL OK(nrow == 3_I4B .AND. ncol == 3_I4B, "Reference vertex layout")
+! CALL OK(ALL(ABS(coords(3, :)) < 1.0E-12_DFP), "Planar reference vertices")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
+
 INTERFACE
   MODULE FUNCTION obj_GetBaseContinuity(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     CHARACTER(2) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_GetBaseContinuity
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetBaseContinuity@Methods
+!                                                          GetIpType@Methods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Return the interpolation point type code
+!
+! Returns opt%GetIpType().
+!
+!
+! Returns:
+!   ans : INTEGER(I4B) - Interpolation point type code.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: coords(3, 3)
+! INTEGER(I4B) :: nrow, ncol
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL OK(obj%GetTopologyType() == TypeElemNameOpt%Triangle, "Topology")
+! CALL OK(obj%GetBaseContinuity() == "H1", "Continuity code")
+! CALL OK(LEN_TRIM(obj%GetBaseInterpolation()) > 0, "Interpolation code")
+! CALL OK(obj%GetIpType() == TypeInterpolationOpt%Equidistance, "Point type")
+! CALL obj%GetRefElemCoord(ans=coords, nrow=nrow, ncol=ncol)
+! CALL OK(nrow == 3_I4B .AND. ncol == 3_I4B, "Reference vertex layout")
+! CALL OK(ALL(ABS(coords(3, :)) < 1.0E-12_DFP), "Planar reference vertices")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE FUNCTION obj_GetIpType(obj) RESULT(ans)
     CLASS(AbstractFE_), INTENT(IN) :: obj
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_GetIpType
 END INTERFACE
 
@@ -1176,18 +2957,73 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-05
-! summary: Get total number of interpolation points
+! summary: Count interpolation points in a child class
+!
+! Return the interpolation point count for the supplied order and point-type
+! arrays. The base implementation is a placeholder and reports an error in
+! DEBUG mode. Use a concrete child that overrides this binding.
+!
+!
+! Returns:
+!   ans : INTEGER(I4B) - Number of interpolation points for the requested
+!   order and type.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: xij(2, 3), points(3, 6)
+! INTEGER(I4B) :: nrow, ncol, count, order
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%SetOrder(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "Child order setter")
+! count = obj%GetTotalInterpolationPoints(order=[2_I4B], &
+!   ipType=[TypeInterpolationOpt%Equidistance])
+! CALL OK(count == 6_I4B, "Quadratic triangle point count")
+! CALL obj%GetInterpolationPoints(xij=xij, ans=points, &
+!   nrow=nrow, ncol=ncol, order=[2_I4B], &
+!   ipType=[TypeInterpolationOpt%Equidistance])
+! CALL OK(ncol == count, "Interpolation output size")
+! CALL OK(ALL(points(1:2, 1:ncol) >= -1.0E-12_DFP), "Points in triangle")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalInterpolationPoints( &
     obj, order, ipType) RESULT(ans)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), INTENT(IN) :: order(:)
-    !! order of interpolation in x, y, and z directions
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction.
     INTEGER(I4B), INTENT(IN) :: ipType(:)
-    !! interpolation point type in x, y, and z directions
+    !! Interpolation point type code, or directional codes for point
+    !! generation.
     INTEGER(I4B) :: ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
   END FUNCTION obj_GetTotalInterpolationPoints
 END INTERFACE
 
@@ -1196,26 +3032,82 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
+! date: 2023-09-05
+! summary: Construct physical interpolation points in a child class
+!
+! Generate interpolation points for the specified orders and point types using
+! the physical vertex coordinates xij. Writes the active coordinate block of
+! ans and its dimensions. The base implementation is a placeholder and reports
+! an error in DEBUG mode. Use a concrete child that overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! REAL(DFP) :: xij(2, 3), points(3, 6)
+! INTEGER(I4B) :: nrow, ncol, count, order
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%SetOrder(order=2_I4B)
+! CALL obj%GetParam(order=order)
+! CALL OK(order == 2_I4B, "Child order setter")
+! count = obj%GetTotalInterpolationPoints(order=[2_I4B], &
+!   ipType=[TypeInterpolationOpt%Equidistance])
+! CALL OK(count == 6_I4B, "Quadratic triangle point count")
+! CALL obj%GetInterpolationPoints(xij=xij, ans=points, &
+!   nrow=nrow, ncol=ncol, order=[2_I4B], &
+!   ipType=[TypeInterpolationOpt%Equidistance])
+! CALL OK(ncol == count, "Interpolation output size")
+! CALL OK(ALL(points(1:2, 1:ncol) >= -1.0E-12_DFP), "Points in triangle")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetInterpolationPoints( &
     obj, xij, ans, nrow, ncol, order, ipType, alpha, beta, lambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of reference element
+    !! Physical nodal coordinates, with coordinate directions in rows.
     REAL(DFP), INTENT(INOUT) :: ans(:, :)
-    !! nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! data written in xij
+    !! Coordinate output buffer; active block is ans(1:nrow,1:ncol).
+    INTEGER(I4B), INTENT(OUT) :: nrow
+    !! Number of active coordinate rows written to ans.
+    INTEGER(I4B), INTENT(OUT) :: ncol
+    !! Number of active coordinate columns written to ans.
     INTEGER(I4B), INTENT(IN) :: order(:)
-    !! order of interpolation
+    !! Isotropic approximation order; for quadrature setters, accuracy by
+    !! direction.
     INTEGER(I4B), INTENT(IN) :: ipType(:)
-    !! interpolation point type
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
-    !! Jacobi and Ultraspherical parameters
+    !! Interpolation point type code, or directional codes for point
+    !! generation.
+    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
+    !! Jacobi alpha parameters by reference direction.
+    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
+    !! Jacobi beta parameters by reference direction.
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
+    !! Ultraspherical parameters by reference direction.
   END SUBROUTINE obj_GetInterpolationPoints
 END INTERFACE
 
@@ -1225,19 +3117,57 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-18
-! summary: Fix the orientation of connectivity
+! summary: Orient connectivity in a child class
 !
-! This subroutine fixes the orientation of connectivity.
-! This is necessary for getting Lagrange DOF for visualization.
+! Reorder the active nptrs entries according to the configured element
+! orientation. The base implementation is a placeholder and reports an error
+! in DEBUG mode. Use a concrete child that overrides this binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! INTEGER(I4B) :: nptrs(10), faceOrient(3, 3), ii
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL obj%SetOrder(order=3_I4B)
+! nptrs = [(ii, ii=1,10)]
+! faceOrient = 1_I4B
+! faceOrient(1, 1) = -1_I4B
+! CALL obj%SetOrientation(faceOrient=faceOrient, tface=3_I4B)
+! CALL obj%FixOrientOfNptrs(nptrs=nptrs, tsize=10_I4B)
+! CALL OK(ALL(nptrs(1:3) == [1_I4B, 2_I4B, 3_I4B]), "Vertices retained")
+! CALL OK(ALL(nptrs(4:5) == [5_I4B, 4_I4B]), "First edge DOFs reversed")
+! CALL OK(ALL(nptrs(6:10) == [6_I4B, 7_I4B, 8_I4B, 9_I4B, 10_I4B]), &
+!   "Other DOFs retained")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_FixOrientOfNptrs(obj, nptrs, tsize)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
-    !! nodal coordinates of reference element
+    !! Node connectivity array; first tsize entries are active.
     INTEGER(I4B), INTENT(IN) :: tsize
-    !! extent of data to be read from xij
+    !! Number of active connectivity entries in nptrs.
   END SUBROUTINE obj_FixOrientOfNptrs
 END INTERFACE
 
@@ -1246,43 +3176,100 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
+! date: 2023-09-05
+! summary: Project the unit constant on a facet in a child class
+!
+! Compute facet coefficients for the function with value one; this overload
+! has no constant-value argument. The base implementation is a placeholder and
+! reports an error in DEBUG mode. Use a concrete child that overrides this
+! binding.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, facets, geoShapes, geoFacets
+! TYPE(QuadraturePoint_) :: quad, facetQuad
+! REAL(DFP) :: xij(2, 3), ans(2), massMat(2, 2), nodal(2)
+! REAL(DFP), ALLOCATABLE :: samples(:)
+! INTEGER(I4B) :: ipiv(2), tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, &
+!   xij=xij, localFaceNumber=1_I4B)
+! ALLOCATE(samples(facets%nips))
+! nodal = 2.0_DFP
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   geoElemsd=geoShapes, geoFacetElemsd=geoFacets, xij=xij, &
+!   localFaceNumber=1_I4B, func=nodal, ans=ans, tsize=tsize, &
+!   massMat=massMat, ipiv=ipiv, funcValue=samples, &
+!   onlyFaceBubble=.FALSE., tVertices=2_I4B)
+! CALL OK(tsize == 2_I4B, "Facet projection size")
+! CALL OK(ALL(ABS(ans - 2.0_DFP) < 1.0E-10_DFP), "Nodal constant projected")
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   xij=xij, localFaceNumber=1_I4B, ans=ans, tsize=tsize, &
+!   massMat=massMat, ipiv=ipiv, funcValue=samples, onlyFaceBubble=.FALSE.)
+! CALL OK(ALL(ABS(ans - 1.0_DFP) < 1.0E-10_DFP), "Unit constant projected")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromConstant( &
     obj, elemsd, facetElemsd, xij, localFaceNumber, ans, tsize, &
     massMat, ipiv, funcValue, onlyFaceBubble, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! element shape function defined inside the cell
-    !! not needed
+    !! Solution cell shape data, or cell traces indexed by facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
-    !! shape function defined on the face of element
+    !! Solution shape data on the facet, or one dataset per facet.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of reference element
-    !! not needed
+    !! Physical nodal coordinates, with coordinate directions in rows.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
-    !! not  needed
+    !! One-based local face number.
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! nodal coordinates of interpolation points
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! data written in xij
+    !! Number of coefficients written to ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
-    !! function values at the quadrature points
-    !! used internally. The should be atleast facetElemsd%nips
+    !! Sample-value workspace; must accommodate the active quadrature points.
     LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
-    !! if true then we include only face bubble, that is,
-    !! only include internal face bubble.
+    !! If true, request only interior spatial facet DOFs.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! Component index for vector valued constant function
-    !! icompo is not used here.
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetFacetDOFValueFromConstant
 END INTERFACE
 
@@ -1291,8 +3278,73 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
+! date: 2023-09-05
+! summary: Project geometry nodal values onto a facet basis
+!
+! Interpolates func with geoFacetElemsd%N at its quadrature points, then calls
+! GetL2ProjectionDOFValueFromQuadrature for facetElemsd. The two shape
+! datasets must use matching quadrature points. elemsd, geoElemsd, xij and
+! localFaceNumber are currently unused by this base implementation.
+!
+!
+! Formula:
+! $$ M_{ij} = \int N_i N_j \, d\Omega, \qquad
+! b_i = \int N_i f \, d\Omega, \qquad M c = b. $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, facets, geoShapes, geoFacets
+! TYPE(QuadraturePoint_) :: quad, facetQuad
+! REAL(DFP) :: xij(2, 3), ans(2), massMat(2, 2), nodal(2)
+! REAL(DFP), ALLOCATABLE :: samples(:)
+! INTEGER(I4B) :: ipiv(2), tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, &
+!   xij=xij, localFaceNumber=1_I4B)
+! ALLOCATE(samples(facets%nips))
+! nodal = 2.0_DFP
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   geoElemsd=geoShapes, geoFacetElemsd=geoFacets, xij=xij, &
+!   localFaceNumber=1_I4B, func=nodal, ans=ans, tsize=tsize, &
+!   massMat=massMat, ipiv=ipiv, funcValue=samples, &
+!   onlyFaceBubble=.FALSE., tVertices=2_I4B)
+! CALL OK(tsize == 2_I4B, "Facet projection size")
+! CALL OK(ALL(ABS(ans - 2.0_DFP) < 1.0E-10_DFP), "Nodal constant projected")
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   xij=xij, localFaceNumber=1_I4B, ans=ans, tsize=tsize, &
+!   massMat=massMat, ipiv=ipiv, funcValue=samples, onlyFaceBubble=.FALSE.)
+! CALL OK(ALL(ABS(ans - 1.0_DFP) < 1.0E-10_DFP), "Unit constant projected")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromVertex( &
@@ -1300,35 +3352,36 @@ INTERFACE
     localFaceNumber, func, ans, tsize, massMat, ipiv, funcValue, &
     onlyFaceBubble, tVertices)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
-    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, geoElemsd
-    !! element shape function defined inside the cell
-    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd, geoFacetElemsd
-    !! shape function defined on the face of element
+    !! Finite element object; use a concrete extension of AbstractFE_.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
+    !! Solution cell shape data, or cell traces indexed by facet.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoElemsd
+    !! Required geometry cell shape data, or geometry traces by facet.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
+    !! Solution shape data on the facet, or one dataset per facet.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoFacetElemsd
+    !! Required geometry shape data on the facet, or datasets by facet.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of physical element cell
+    !! Physical nodal coordinates, with coordinate directions in rows.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
+    !! One-based local face number.
     REAL(DFP), INTENT(INOUT) :: func(:)
-    !! nodal values of function at vertex degree of freedom
+    !! Geometry facet nodal values; SIZE(func) >= geoFacetElemsd%nns.
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! degree of freedom values corresponding to func
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! tota size written in ans
+    !! Number of coefficients written to ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix (formed and used inside the routine)
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
-    !! function values at the quadrature points
-    !! this is formed inside the routine
+    !! Sample-value workspace; must accommodate the active quadrature points.
     LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
-    !! if true then we include only face bubble, that is,
-    !! only include internal face bubble.
+    !! If true, request only interior spatial facet DOFs.
     INTEGER(I4B), INTENT(IN) :: tVertices
-    !! tVertices are needed when onlyFaceBubble is true
-    !! tVertices are total number of vertex degree of
-    !! freedom
+    !! Number of leading DOFs excluded when projecting the interior block.
   END SUBROUTINE obj_GetFacetDOFValueFromVertex
 END INTERFACE
 
@@ -1337,44 +3390,141 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
+! date: 2023-09-05
+! summary: Project a user function on a facet in a child class
 !
-!# Introduction
+! Compute facet coefficients at the supplied scalar time, optionally selecting
+! a vector component and restricting the result to facet bubble DOFs. The base
+! implementation is a placeholder and reports an error in DEBUG mode. Use a
+! concrete child that overrides this binding.
 !
-! The user function should be scalar.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE UserFunction_Class, ONLY: UserFunction_
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(UserFunction_) :: func
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), geoShapes(3), facets(3), geoFacets(3)
+! TYPE(ElemShapeData_) :: cellShapes, geoCellShapes
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3), cellQuad
+! REAL(DFP) :: ans(10), massMat(10, 10), temp(10)
+! REAL(DFP) :: facetAns(10)
+! REAL(DFP), ALLOCATABLE :: samples(:)
+! INTEGER(I4B) :: ipiv(10), count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL func%Initiate(NAME="constant", returnType=TypeFEVariableOpt%scalar, &
+!   argType=TypeFEVariableOpt%space, numArgs=4_I4B, numReturns=1_I4B)
+! CALL func%SetScalarConstantVal(val=2.0_DFP)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! ! Cubic triangle: three vertices, six edge DOFs and one cell DOF.
+! CALL geometry%Copy(obj)
+! CALL obj%SetOrder(order=3_I4B)
+! CALL obj%SetQuadratureOrder(order1=8_I4B)
+! CALL obj%GetQuadraturePoints(quad=cellQuad)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL geometry%GetAllLocalFacetElemShapeData( &
+!   elemsd=geoShapes, facetElemsd=geoFacets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   geoElemsd=geoShapes, geoFacetElemsd=geoFacets, xij=xij, tsize=count)
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, elemsd=cellShapes, &
+!   geoelemsd=geoCellShapes, xij=xij, quad=cellQuad)
+! ALLOCATE(samples(MAX(cellShapes%nips, MAXVAL(facets%nips))))
+! CALL obj%GetFacetDOFValue(elemsd=shapes(1), facetElemsd=facets(1), &
+!   xij=xij, times=0.0_DFP, localFaceNumber=1_I4B, func=func, &
+!   ans=facetAns, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, onlyFaceBubble=.FALSE.)
+! CALL OK(tsize == 4_I4B, "Cubic facet projection size")
+! CALL OK(ALL(ABS(facetAns(1:tsize) - 2.0_DFP) < 1.0E-9_DFP), &
+!   "User function projected on facet")
+! CALL obj%GetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   cellElemsd=cellShapes, xij=xij, times=0.0_DFP, func=func, ans=ans, &
+!   tsize=tsize, massMat=massMat, ipiv=ipiv, funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "Cubic triangle coefficient count")
+! ! Exercise the interior residual step with the boundary values already set.
+! CALL obj%GetInCellDOFValue(cellElemsd=cellShapes, func=func, &
+!   times=0.0_DFP, ans=ans, temp=temp, tsize=tsize, massMat=massMat, &
+!   ipiv=ipiv, funcValue=samples, offset=9_I4B)
+! CALL OK(tsize == 1_I4B, "One interior coefficient")
+! CALL obj%GetDOFValue(geofeptr=geometry, elemsd=shapes, &
+!   geoelemsd=geoShapes, facetElemsd=facets, geoFacetElemsd=geoFacets, &
+!   cellElemsd=cellShapes, geoCellElemsd=geoCellShapes, quad=quad, &
+!   facetQuad=facetQuad, cellQuad=cellQuad, xij=xij, times=0.0_DFP, &
+!   func=func, ans=ans, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "High-level user-function projection")
+! CALL OK(ALL(ABS(MATMUL(TRANSPOSE( &
+!   cellShapes%N(1:10, 1:cellShapes%nips)), ans) - 2.0_DFP) &
+!   < 1.0E-9_DFP), "Projected constant reproduced at quadrature points")
+! CALL OK(ALL(ABS(ans(1:3) - 2.0_DFP) < 1.0E-10_DFP), "Vertex values")
+! CALL func%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, xij, times, localFaceNumber, func, ans, tsize, &
     massMat, ipiv, funcValue, onlyFaceBubble, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! element shape function defined inside the cell
+    !! Solution cell shape data, or cell traces indexed by facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
-    !! shape function defined on the face of element
-    REAL(DFP), INTENT(IN) :: xij(:, :), times
-    !! Nodal coordinates of element
+    !! Solution shape data on the facet, or one dataset per facet.
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Physical nodal coordinates, with coordinate directions in rows.
+    REAL(DFP), INTENT(IN) :: times
+    !! Physical time at which the user function is evaluated.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
+    !! One-based local face number.
     TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! user defined functions quadrature values of function
+    !! Scalar or vector user function accepting spatial coordinates and time.
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! Nodal coordinates of interpolation points
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Data written in xij
+    !! Number of coefficients written to ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
-    !! function values at quadrature points used inside
+    !! Sample-value workspace; must accommodate the active quadrature points.
     LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
-    !! if true then we include only face bubble, that is,
-    !! only include internal face bubble.
+    !! If true, request only interior spatial facet DOFs.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! index of values which are returned from vector user function
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetFacetDOFValueFromSTFunc
 END INTERFACE
 
@@ -1383,12 +3533,100 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
+! date: 2023-09-05
+! summary: Project a user function on a space-time facet
 !
-!# Introduction
+! Compute coefficients on the product of a spatial facet and a time element
+! over times(1:2). Return the active row and column ranges of ans. The base
+! implementation is a placeholder and reports an error in DEBUG mode. Use a
+! concrete child that overrides this binding.
 !
-! The user function should be scalar.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE UserFunction_Class, ONLY: UserFunction_
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! USE LineH1LagrangeFE_Class, ONLY: LineH1LagrangeFE_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(UserFunction_) :: func
+! REAL(DFP) :: xij(2, 3)
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(LineH1LagrangeFE_) :: timeFE, timeGeometry
+! TYPE(ElemShapeData_) :: shapes, facets, geoShapes, geoFacets
+! TYPE(ElemShapeData_) :: timeShapes, geoTimeShapes
+! TYPE(QuadraturePoint_) :: quad, facetQuad, timeQuad
+! REAL(DFP) :: ans(4, 4), massMat(16, 16), samples(100, 100), temp(16)
+! REAL(DFP) :: timeCoords(1, 2)
+! INTEGER(I4B) :: ipiv(16), r1, r2, c1, c2
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL func%Initiate(NAME="constant", returnType=TypeFEVariableOpt%scalar, &
+!   argType=TypeFEVariableOpt%space, numArgs=4_I4B, numReturns=1_I4B)
+! CALL func%SetScalarConstantVal(val=2.0_DFP)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL geometry%Copy(obj)
+! CALL obj%SetOrder(order=3_I4B)
+! CALL obj%SetQuadratureOrder(order1=8_I4B)
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL timeFE%Initiate(elemType=TypeElemNameOpt%Line, nsd=1_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[8_I4B])
+! CALL timeGeometry%Copy(timeFE)
+! CALL timeFE%SetOrder(order=3_I4B)
+! timeCoords(1, :) = [0.0_DFP, 1.0_DFP]
+! CALL timeFE%GetQuadraturePoints(quad=timeQuad)
+! CALL timeFE%GetLocalElemShapeData(elemsd=timeShapes, quad=timeQuad)
+! CALL timeGeometry%GetLocalElemShapeData( &
+!   elemsd=geoTimeShapes, quad=timeQuad)
+! CALL timeFE%GetGlobalElemShapeData( &
+!   elemsd=timeShapes, geoelemsd=geoTimeShapes, xij=timeCoords)
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   timeElemsd=timeShapes, xij=xij, times=[0.0_DFP, 1.0_DFP], &
+!   localFaceNumber=1_I4B, ans=ans, nrowStart=r1, nrowEnd=r2, &
+!   ncolStart=c1, ncolEnd=c2, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, temp=temp, onlyFaceBubble=.TRUE.)
+! CALL OK(r1 == 3_I4B .AND. r2 == 4_I4B, "Spatial bubble rows")
+! CALL OK(c1 == 1_I4B .AND. c2 == 4_I4B, "All temporal columns")
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   timeElemsd=timeShapes, xij=xij, times=[0.0_DFP, 1.0_DFP], &
+!   localFaceNumber=1_I4B, func=func, ans=ans, &
+!   nrowStart=r1, nrowEnd=r2, ncolStart=c1, ncolEnd=c2, &
+!   massMat=massMat, ipiv=ipiv, funcValue=samples, temp=temp, &
+!   onlyFaceBubble=.TRUE.)
+! CALL OK(r1 == 3_I4B .AND. c2 == 4_I4B, "User-function output range")
+! CALL func%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! CALL timeFE%DEALLOCATE()
+! CALL timeGeometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc( &
@@ -1396,40 +3634,44 @@ INTERFACE
     func, ans, nrowStart, nrowEnd, ncolStart, ncolEnd, massMat, ipiv, &
     funcValue, temp, onlyFaceBubble, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! element shape function defined inside the cell
+    !! Solution cell shape data, or cell traces indexed by facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
-    !! shape function defined on the face of element
+    !! Solution shape data on the facet, or one dataset per facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: timeElemsd
-    !! shape function for timeElemsd
-    REAL(DFP), INTENT(IN) :: xij(:, :), times(:)
-    !! Nodal coordinates of element
-    !! Times should have size equal to 2
+    !! Prepared time-element shape data.
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Physical nodal coordinates, with coordinate directions in rows.
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! Time interval endpoints; SIZE(times) = 2.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
+    !! One-based local face number.
     TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! user defined functions quadrature values of function
+    !! Scalar or vector user function accepting spatial coordinates and time.
     REAL(DFP), INTENT(INOUT) :: ans(:, :)
-    !! Nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: nrowStart, nrowEnd, ncolStart, ncolEnd
-    !! Data written in ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
+    INTEGER(I4B), INTENT(OUT) :: nrowStart
+    !! First active spatial coefficient row in ans.
+    INTEGER(I4B), INTENT(OUT) :: nrowEnd
+    !! Last active spatial coefficient row in ans.
+    INTEGER(I4B), INTENT(OUT) :: ncolStart
+    !! First active time coefficient column in ans.
+    INTEGER(I4B), INTENT(OUT) :: ncolEnd
+    !! Last active time coefficient column in ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:, :)
-    !! function values at quadrature points used inside
-    !! The number of rows should be atleast max(nips, nipt)
-    !! The number of columns should be at least nipt
+    !! Sample-value workspace; must accommodate the active quadrature points.
     REAL(DFP), INTENT(INOUT) :: temp(:)
-    !! temporary vector needed internally
-    !! the size should be at nns * nnt
+    !! Coefficient workspace; SIZE(temp) must fit the projected DOF block.
     LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
-    !! if true then we include only face dof of space elements,
-    !! Note that we always include all the dof of time element
+    !! If true, request only interior spatial facet DOFs.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! index of values which are returned from vector user function
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetSTFacetDOFValueFromSTFunc
 END INTERFACE
 
@@ -1438,12 +3680,100 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get Interpolation points
+! date: 2023-09-05
+! summary: Project the unit constant on a space-time facet
 !
-!# Introduction
+! Compute coefficients for the function with value one on a spatial facet and
+! time element. Return the active row and column ranges of ans. The base
+! implementation is a placeholder and reports an error in DEBUG mode. Use a
+! concrete child that overrides this binding.
 !
-! The user function should be scalar.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE UserFunction_Class, ONLY: UserFunction_
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! USE LineH1LagrangeFE_Class, ONLY: LineH1LagrangeFE_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(UserFunction_) :: func
+! REAL(DFP) :: xij(2, 3)
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(LineH1LagrangeFE_) :: timeFE, timeGeometry
+! TYPE(ElemShapeData_) :: shapes, facets, geoShapes, geoFacets
+! TYPE(ElemShapeData_) :: timeShapes, geoTimeShapes
+! TYPE(QuadraturePoint_) :: quad, facetQuad, timeQuad
+! REAL(DFP) :: ans(4, 4), massMat(16, 16), samples(100, 100), temp(16)
+! REAL(DFP) :: timeCoords(1, 2)
+! INTEGER(I4B) :: ipiv(16), r1, r2, c1, c2
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL func%Initiate(NAME="constant", returnType=TypeFEVariableOpt%scalar, &
+!   argType=TypeFEVariableOpt%space, numArgs=4_I4B, numReturns=1_I4B)
+! CALL func%SetScalarConstantVal(val=2.0_DFP)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL geometry%Copy(obj)
+! CALL obj%SetOrder(order=3_I4B)
+! CALL obj%SetQuadratureOrder(order1=8_I4B)
+! CALL obj%GetGlobalFacetElemShapeData2(geofeptr=geometry, &
+!   elemsd=shapes, facetElemsd=facets, geoElemsd=geoShapes, &
+!   geoFacetElemsd=geoFacets, quad=quad, facetQuad=facetQuad, &
+!   xij=xij, localFaceNumber=1_I4B)
+! CALL timeFE%Initiate(elemType=TypeElemNameOpt%Line, nsd=1_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[8_I4B])
+! CALL timeGeometry%Copy(timeFE)
+! CALL timeFE%SetOrder(order=3_I4B)
+! timeCoords(1, :) = [0.0_DFP, 1.0_DFP]
+! CALL timeFE%GetQuadraturePoints(quad=timeQuad)
+! CALL timeFE%GetLocalElemShapeData(elemsd=timeShapes, quad=timeQuad)
+! CALL timeGeometry%GetLocalElemShapeData( &
+!   elemsd=geoTimeShapes, quad=timeQuad)
+! CALL timeFE%GetGlobalElemShapeData( &
+!   elemsd=timeShapes, geoelemsd=geoTimeShapes, xij=timeCoords)
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   timeElemsd=timeShapes, xij=xij, times=[0.0_DFP, 1.0_DFP], &
+!   localFaceNumber=1_I4B, ans=ans, nrowStart=r1, nrowEnd=r2, &
+!   ncolStart=c1, ncolEnd=c2, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, temp=temp, onlyFaceBubble=.TRUE.)
+! CALL OK(r1 == 3_I4B .AND. r2 == 4_I4B, "Spatial bubble rows")
+! CALL OK(c1 == 1_I4B .AND. c2 == 4_I4B, "All temporal columns")
+! CALL obj%GetFacetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   timeElemsd=timeShapes, xij=xij, times=[0.0_DFP, 1.0_DFP], &
+!   localFaceNumber=1_I4B, func=func, ans=ans, &
+!   nrowStart=r1, nrowEnd=r2, ncolStart=c1, ncolEnd=c2, &
+!   massMat=massMat, ipiv=ipiv, funcValue=samples, temp=temp, &
+!   onlyFaceBubble=.TRUE.)
+! CALL OK(r1 == 3_I4B .AND. c2 == 4_I4B, "User-function output range")
+! CALL func%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! CALL timeFE%DEALLOCATE()
+! CALL timeGeometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetGlobalElemShapeData2]],
+! [[obj_GetAllLocalFacetElemShapeData]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetSTFacetDOFValueFromConstant( &
@@ -1451,38 +3781,42 @@ INTERFACE
     ans, nrowStart, nrowEnd, ncolStart, ncolEnd, massMat, ipiv, funcValue, &
     temp, onlyFaceBubble, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! element shape function defined inside the cell
+    !! Solution cell shape data, or cell traces indexed by facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd
-    !! shape function defined on the face of element
+    !! Solution shape data on the facet, or one dataset per facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: timeElemsd
-    !! shape function for timeElemsd
-    REAL(DFP), INTENT(IN) :: xij(:, :), times(:)
-    !! Nodal coordinates of element
-    !! Times should have size equal to 2
+    !! Prepared time-element shape data.
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Physical nodal coordinates, with coordinate directions in rows.
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! Time interval endpoints; SIZE(times) = 2.
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
-    !! local face number
+    !! One-based local face number.
     REAL(DFP), INTENT(INOUT) :: ans(:, :)
-    !! Nodal coordinates of interpolation points
-    INTEGER(I4B), INTENT(OUT) :: nrowStart, nrowEnd, ncolStart, ncolEnd
-    !! Data written in ans
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
+    INTEGER(I4B), INTENT(OUT) :: nrowStart
+    !! First active spatial coefficient row in ans.
+    INTEGER(I4B), INTENT(OUT) :: nrowEnd
+    !! Last active spatial coefficient row in ans.
+    INTEGER(I4B), INTENT(OUT) :: ncolStart
+    !! First active time coefficient column in ans.
+    INTEGER(I4B), INTENT(OUT) :: ncolEnd
+    !! Last active time coefficient column in ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:, :)
-    !! function values at quadrature points used inside
-    !! The number of rows should be atleast max(nips, nipt)
-    !! The number of columns should be at least nipt
+    !! Sample-value workspace; must accommodate the active quadrature points.
     REAL(DFP), INTENT(INOUT) :: temp(:)
-    !! temporary vector needed internally
-    !! the size should be at nns * nnt
+    !! Coefficient workspace; SIZE(temp) must fit the projected DOF block.
     LOGICAL(LGT), INTENT(IN) :: onlyFaceBubble
-    !! if true then we include only face dof of space elements,
-    !! Note that we always include all the dof of time element
+    !! If true, request only interior spatial facet DOFs.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! index of values which are returned from vector user function
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetSTFacetDOFValueFromConstant
 END INTERFACE
 
@@ -1492,9 +3826,105 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-01
-! summary: Get degree of freedom values from space-time user function
-! It is a very high level routine which initiates most of its arguments
-! and call GetDOFValueFromSTFunc
+! summary: Prepare quadrature and shape data before DOF projection
+!
+! Builds all facet and cell quadrature rules, evaluates local geometry and
+! solution shapes, maps them using xij and delegates to GetDOFValueFromSTFunc.
+! Caller supplies the shape-data containers, quadrature containers and numeric
+! workspaces; their contents are populated or overwritten.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE UserFunction_Class, ONLY: UserFunction_
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(UserFunction_) :: func
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), geoShapes(3), facets(3), geoFacets(3)
+! TYPE(ElemShapeData_) :: cellShapes, geoCellShapes
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3), cellQuad
+! REAL(DFP) :: ans(10), massMat(10, 10), temp(10)
+! REAL(DFP) :: facetAns(10)
+! REAL(DFP), ALLOCATABLE :: samples(:)
+! INTEGER(I4B) :: ipiv(10), count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL func%Initiate(NAME="constant", returnType=TypeFEVariableOpt%scalar, &
+!   argType=TypeFEVariableOpt%space, numArgs=4_I4B, numReturns=1_I4B)
+! CALL func%SetScalarConstantVal(val=2.0_DFP)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! ! Cubic triangle: three vertices, six edge DOFs and one cell DOF.
+! CALL geometry%Copy(obj)
+! CALL obj%SetOrder(order=3_I4B)
+! CALL obj%SetQuadratureOrder(order1=8_I4B)
+! CALL obj%GetQuadraturePoints(quad=cellQuad)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL geometry%GetAllLocalFacetElemShapeData( &
+!   elemsd=geoShapes, facetElemsd=geoFacets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   geoElemsd=geoShapes, geoFacetElemsd=geoFacets, xij=xij, tsize=count)
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, elemsd=cellShapes, &
+!   geoelemsd=geoCellShapes, xij=xij, quad=cellQuad)
+! ALLOCATE(samples(MAX(cellShapes%nips, MAXVAL(facets%nips))))
+! CALL obj%GetFacetDOFValue(elemsd=shapes(1), facetElemsd=facets(1), &
+!   xij=xij, times=0.0_DFP, localFaceNumber=1_I4B, func=func, &
+!   ans=facetAns, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, onlyFaceBubble=.FALSE.)
+! CALL OK(tsize == 4_I4B, "Cubic facet projection size")
+! CALL OK(ALL(ABS(facetAns(1:tsize) - 2.0_DFP) < 1.0E-9_DFP), &
+!   "User function projected on facet")
+! CALL obj%GetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   cellElemsd=cellShapes, xij=xij, times=0.0_DFP, func=func, ans=ans, &
+!   tsize=tsize, massMat=massMat, ipiv=ipiv, funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "Cubic triangle coefficient count")
+! ! Exercise the interior residual step with the boundary values already set.
+! CALL obj%GetInCellDOFValue(cellElemsd=cellShapes, func=func, &
+!   times=0.0_DFP, ans=ans, temp=temp, tsize=tsize, massMat=massMat, &
+!   ipiv=ipiv, funcValue=samples, offset=9_I4B)
+! CALL OK(tsize == 1_I4B, "One interior coefficient")
+! CALL obj%GetDOFValue(geofeptr=geometry, elemsd=shapes, &
+!   geoelemsd=geoShapes, facetElemsd=facets, geoFacetElemsd=geoFacets, &
+!   cellElemsd=cellShapes, geoCellElemsd=geoCellShapes, quad=quad, &
+!   facetQuad=facetQuad, cellQuad=cellQuad, xij=xij, times=0.0_DFP, &
+!   func=func, ans=ans, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "High-level user-function projection")
+! CALL OK(ALL(ABS(MATMUL(TRANSPOSE( &
+!   cellShapes%N(1:10, 1:cellShapes%nips)), ans) - 2.0_DFP) &
+!   < 1.0E-9_DFP), "Projected constant reproduced at quadrature points")
+! CALL OK(ALL(ABS(ans(1:3) - 2.0_DFP) < 1.0E-10_DFP), "Vertex values")
+! CALL func%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetDOFValueFromSTFunc2( &
@@ -1503,42 +3933,48 @@ INTERFACE
     func, ans, tsize, massMat, ipiv, funcValue, temp, &
     icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     CLASS(AbstractFE_), INTENT(INOUT) :: geofeptr
-    !! Abstract finite elemenet
-    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:), geoelemsd(:)
-    !! element shape function defined inside the cell
-    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd(:), geoFacetElemsd(:)
-    !! shape function defined on the face of element
-    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd, geoCellElemsd
-    !! shape function defined for computing the inside cell DOF
+    !! Concrete finite element describing the geometry basis.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:)
+    !! Solution cell shape data, or cell traces indexed by facet.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd(:)
+    !! Required geometry cell shape data, or geometry traces by facet.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd(:)
+    !! Solution shape data on the facet, or one dataset per facet.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoFacetElemsd(:)
+    !! Required geometry shape data on the facet, or datasets by facet.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
+    !! Solution cell shape data used for interior DOF projection.
+    TYPE(ElemShapeData_), INTENT(INOUT) :: geoCellElemsd
+    !! Geometry cell shape data used for interior DOF projection.
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad(:)
-    !! Quadrture data corresponding to each facet
+    !! Cell quadrature, or cell quadrature coordinates indexed by facet.
     TYPE(QuadraturePoint_), INTENT(INOUT) :: facetQuad(:)
-  !! Quadrature data for all facet elements for in face dof
+    !! Facet quadrature, or one quadrature container per facet.
     TYPE(QuadraturePoint_), INTENT(INOUT) :: cellQuad
-  !! Quadrature data for in cell dof
-    REAL(DFP), INTENT(IN) :: xij(:, :), times
-    !! Nodal coordinates of element
+    !! Cell quadrature used for interior DOF projection.
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Physical nodal coordinates, with coordinate directions in rows.
+    REAL(DFP), INTENT(IN) :: times
+    !! Physical time at which the user function is evaluated.
     TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! user defined functions quadrature values of function
+    !! Scalar or vector user function accepting spatial coordinates and time.
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! Nodal coordinates of interpolation points
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Data written in xij
+    !! Number of coefficients written to ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
-    !! function values at quadrature points used inside
-    !! the size should be enough that quadrature values can be stored
+    !! Sample-value workspace; must accommodate the active quadrature points.
     REAL(DFP), INTENT(INOUT) :: temp(:)
-    !! temporary array used for getting the degrees of freedom
-    !! The size of temp should be at least equal to maximum number
-    !! of degree of freedom in the element
+    !! Coefficient workspace; SIZE(temp) must fit the projected DOF block.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! index of values which are returned from user function
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetDOFValueFromSTFunc2
 END INTERFACE
 
@@ -1547,46 +3983,141 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-05
-! summary: Get all dof values from a user functions
+! date: 2023-09-05
+! summary: Compute vertex, facet and interior cell coefficients
 !
-!# Introduction
+! Evaluates vertex values, loops over opt%GetTotalFace to project facet bubble
+! residuals, then projects the interior cell residual. Coefficients are
+! ordered as vertices, successive facet blocks, then the cell block. Shape
+! data must already be mapped to physical coordinates. The child must
+! implement facet projection for the chosen basis.
 !
-! The user function should be scalar.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE UserFunction_Class, ONLY: UserFunction_
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(UserFunction_) :: func
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), geoShapes(3), facets(3), geoFacets(3)
+! TYPE(ElemShapeData_) :: cellShapes, geoCellShapes
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3), cellQuad
+! REAL(DFP) :: ans(10), massMat(10, 10), temp(10)
+! REAL(DFP) :: facetAns(10)
+! REAL(DFP), ALLOCATABLE :: samples(:)
+! INTEGER(I4B) :: ipiv(10), count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL func%Initiate(NAME="constant", returnType=TypeFEVariableOpt%scalar, &
+!   argType=TypeFEVariableOpt%space, numArgs=4_I4B, numReturns=1_I4B)
+! CALL func%SetScalarConstantVal(val=2.0_DFP)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! ! Cubic triangle: three vertices, six edge DOFs and one cell DOF.
+! CALL geometry%Copy(obj)
+! CALL obj%SetOrder(order=3_I4B)
+! CALL obj%SetQuadratureOrder(order1=8_I4B)
+! CALL obj%GetQuadraturePoints(quad=cellQuad)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL geometry%GetAllLocalFacetElemShapeData( &
+!   elemsd=geoShapes, facetElemsd=geoFacets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   geoElemsd=geoShapes, geoFacetElemsd=geoFacets, xij=xij, tsize=count)
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, elemsd=cellShapes, &
+!   geoelemsd=geoCellShapes, xij=xij, quad=cellQuad)
+! ALLOCATE(samples(MAX(cellShapes%nips, MAXVAL(facets%nips))))
+! CALL obj%GetFacetDOFValue(elemsd=shapes(1), facetElemsd=facets(1), &
+!   xij=xij, times=0.0_DFP, localFaceNumber=1_I4B, func=func, &
+!   ans=facetAns, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, onlyFaceBubble=.FALSE.)
+! CALL OK(tsize == 4_I4B, "Cubic facet projection size")
+! CALL OK(ALL(ABS(facetAns(1:tsize) - 2.0_DFP) < 1.0E-9_DFP), &
+!   "User function projected on facet")
+! CALL obj%GetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   cellElemsd=cellShapes, xij=xij, times=0.0_DFP, func=func, ans=ans, &
+!   tsize=tsize, massMat=massMat, ipiv=ipiv, funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "Cubic triangle coefficient count")
+! ! Exercise the interior residual step with the boundary values already set.
+! CALL obj%GetInCellDOFValue(cellElemsd=cellShapes, func=func, &
+!   times=0.0_DFP, ans=ans, temp=temp, tsize=tsize, massMat=massMat, &
+!   ipiv=ipiv, funcValue=samples, offset=9_I4B)
+! CALL OK(tsize == 1_I4B, "One interior coefficient")
+! CALL obj%GetDOFValue(geofeptr=geometry, elemsd=shapes, &
+!   geoelemsd=geoShapes, facetElemsd=facets, geoFacetElemsd=geoFacets, &
+!   cellElemsd=cellShapes, geoCellElemsd=geoCellShapes, quad=quad, &
+!   facetQuad=facetQuad, cellQuad=cellQuad, xij=xij, times=0.0_DFP, &
+!   func=func, ans=ans, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "High-level user-function projection")
+! CALL OK(ALL(ABS(MATMUL(TRANSPOSE( &
+!   cellShapes%N(1:10, 1:cellShapes%nips)), ans) - 2.0_DFP) &
+!   < 1.0E-9_DFP), "Projected constant reproduced at quadrature points")
+! CALL OK(ALL(ABS(ans(1:3) - 2.0_DFP) < 1.0E-10_DFP), "Vertex values")
+! CALL func%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetDOFValueFromSTFunc( &
     obj, elemsd, facetElemsd, cellElemsd, xij, times, func, ans, tsize, &
     massMat, ipiv, funcValue, temp, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd(:)
-    !! element shape function defined inside the cell
+    !! Solution cell shape data, or cell traces indexed by facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: facetElemsd(:)
-    !! shape function defined on the face of element
+    !! Solution shape data on the facet, or one dataset per facet.
     TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
-    !! shape function defined for computing the inside cell DOF
-    REAL(DFP), INTENT(IN) :: xij(:, :), times
-    !! Nodal coordinates of element
+    !! Solution cell shape data used for interior DOF projection.
+    REAL(DFP), INTENT(IN) :: xij(:, :)
+    !! Physical nodal coordinates, with coordinate directions in rows.
+    REAL(DFP), INTENT(IN) :: times
+    !! Physical time at which the user function is evaluated.
     TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! user defined functions quadrature values of function
+    !! Scalar or vector user function accepting spatial coordinates and time.
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! Nodal coordinates of interpolation points
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Data written in xij
+    !! Number of coefficients written to ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
-    !! function values at quadrature points used inside
-    !! the size should be enough that quadrature values can be stored
+    !! Sample-value workspace; must accommodate the active quadrature points.
     REAL(DFP), INTENT(INOUT) :: temp(:)
-    !! temporary array used for getting the degrees of freedom
-    !! The size of temp should be at least equal to maximum number
-    !! of degree of freedom in the element
+    !! Coefficient workspace; SIZE(temp) must fit the projected DOF block.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! index of values which are returned from user function
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetDOFValueFromSTFunc
 END INTERFACE
 
@@ -1596,25 +4127,75 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-01
-! summary: Get all the vertex DOF from space-time user function
+! summary: Evaluate a user function at cell vertices
+!
+! Evaluates func at the first opt%GetTotalVertex columns of xij with arguments
+! (x,y,z,t); unused spatial coordinates are zero. Scalar functions return one
+! value. For vector functions icompo defaults to one; the internal return
+! buffer holds ten values. DEBUG mode checks that the function accepts at
+! least four arguments.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE UserFunction_Class, ONLY: UserFunction_
+! USE BaseType, ONLY: TypeFEVariableOpt
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(UserFunction_) :: func
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+! REAL(DFP) :: ans(3)
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL func%Initiate(NAME="constant", returnType=TypeFEVariableOpt%scalar, &
+!   argType=TypeFEVariableOpt%space, numArgs=4_I4B, numReturns=1_I4B)
+! CALL func%SetScalarConstantVal(val=2.0_DFP)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetVertexDOFValue(ans=ans, tsize=tsize, &
+!   func=func, xij=xij, times=0.0_DFP)
+! CALL OK(tsize == 3_I4B, "Three vertex coefficients")
+! CALL OK(ALL(ABS(ans - 2.0_DFP) < 1.0E-10_DFP), "Vertex values")
+! CALL func%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetVertexDOFValueFromSTFunc( &
     obj, ans, tsize, func, xij, times, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
+    !! Finite element object; use a concrete extension of AbstractFE_.
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! Vertex degree of freedom values
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! data written in ans
+    !! Number of coefficients written to ans.
     TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! User function
+    !! Scalar or vector user function accepting spatial coordinates and time.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! Nodal coordinates of the elements
+    !! Physical nodal coordinates, with coordinate directions in rows.
     REAL(DFP), INTENT(IN) :: times
-    !! time
+    !! Physical time at which the user function is evaluated.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! index of values which a vector user function return
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetVertexDOFValueFromSTFunc
 END INTERFACE
 
@@ -1622,73 +4203,230 @@ END INTERFACE
 !                                            GetInCellDOFValue@CellDOFMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Project the residual onto interior cell degrees of freedom
+!
+! Samples func at cellElemsd%coord and subtracts the interpolant formed from
+! ans(1:offset). Projects this residual using GetDOFValueFromQuadrature with
+! onlyInside true and appends tsize coefficients to
+! ans(offset+1:offset+tsize). For a vector function icompo defaults to one;
+! the internal return buffer holds ten values.
+!
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE UserFunction_Class, ONLY: UserFunction_
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(UserFunction_) :: func
+! REAL(DFP) :: xij(2, 3)
+! INTEGER(I4B) :: tsize
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes(3), geoShapes(3), facets(3), geoFacets(3)
+! TYPE(ElemShapeData_) :: cellShapes, geoCellShapes
+! TYPE(QuadraturePoint_) :: quad(3), facetQuad(3), cellQuad
+! REAL(DFP) :: ans(10), massMat(10, 10), temp(10)
+! REAL(DFP) :: facetAns(10)
+! REAL(DFP), ALLOCATABLE :: samples(:)
+! INTEGER(I4B) :: ipiv(10), count
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL func%Initiate(NAME="constant", returnType=TypeFEVariableOpt%scalar, &
+!   argType=TypeFEVariableOpt%space, numArgs=4_I4B, numReturns=1_I4B)
+! CALL func%SetScalarConstantVal(val=2.0_DFP)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! ! Cubic triangle: three vertices, six edge DOFs and one cell DOF.
+! CALL geometry%Copy(obj)
+! CALL obj%SetOrder(order=3_I4B)
+! CALL obj%SetQuadratureOrder(order1=8_I4B)
+! CALL obj%GetQuadraturePoints(quad=cellQuad)
+! CALL obj%GetAllFacetQuadraturePoints( &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllLocalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL geometry%GetAllLocalFacetElemShapeData( &
+!   elemsd=geoShapes, facetElemsd=geoFacets, &
+!   quad=quad, facetQuad=facetQuad, tsize=count)
+! CALL obj%GetAllGlobalFacetElemShapeData(elemsd=shapes, facetElemsd=facets, &
+!   geoElemsd=geoShapes, geoFacetElemsd=geoFacets, xij=xij, tsize=count)
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, elemsd=cellShapes, &
+!   geoelemsd=geoCellShapes, xij=xij, quad=cellQuad)
+! ALLOCATE(samples(MAX(cellShapes%nips, MAXVAL(facets%nips))))
+! CALL obj%GetFacetDOFValue(elemsd=shapes(1), facetElemsd=facets(1), &
+!   xij=xij, times=0.0_DFP, localFaceNumber=1_I4B, func=func, &
+!   ans=facetAns, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, onlyFaceBubble=.FALSE.)
+! CALL OK(tsize == 4_I4B, "Cubic facet projection size")
+! CALL OK(ALL(ABS(facetAns(1:tsize) - 2.0_DFP) < 1.0E-9_DFP), &
+!   "User function projected on facet")
+! CALL obj%GetDOFValue(elemsd=shapes, facetElemsd=facets, &
+!   cellElemsd=cellShapes, xij=xij, times=0.0_DFP, func=func, ans=ans, &
+!   tsize=tsize, massMat=massMat, ipiv=ipiv, funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "Cubic triangle coefficient count")
+! ! Exercise the interior residual step with the boundary values already set.
+! CALL obj%GetInCellDOFValue(cellElemsd=cellShapes, func=func, &
+!   times=0.0_DFP, ans=ans, temp=temp, tsize=tsize, massMat=massMat, &
+!   ipiv=ipiv, funcValue=samples, offset=9_I4B)
+! CALL OK(tsize == 1_I4B, "One interior coefficient")
+! CALL obj%GetDOFValue(geofeptr=geometry, elemsd=shapes, &
+!   geoelemsd=geoShapes, facetElemsd=facets, geoFacetElemsd=geoFacets, &
+!   cellElemsd=cellShapes, geoCellElemsd=geoCellShapes, quad=quad, &
+!   facetQuad=facetQuad, cellQuad=cellQuad, xij=xij, times=0.0_DFP, &
+!   func=func, ans=ans, tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   funcValue=samples, temp=temp)
+! CALL OK(tsize == 10_I4B, "High-level user-function projection")
+! CALL OK(ALL(ABS(MATMUL(TRANSPOSE( &
+!   cellShapes%N(1:10, 1:cellShapes%nips)), ans) - 2.0_DFP) &
+!   < 1.0E-9_DFP), "Projected constant reproduced at quadrature points")
+! CALL OK(ALL(ABS(ans(1:3) - 2.0_DFP) < 1.0E-10_DFP), "Vertex values")
+! CALL func%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
+
 INTERFACE
   MODULE SUBROUTINE obj_GetInCellDOFValueFromSTFunc( &
     obj, cellElemsd, func, times, ans, temp, tsize, massMat, ipiv, &
     funcValue, offset, icompo)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapeData_), INTENT(INOUT) :: cellElemsd
-    !! cell element shape data
+    !! Solution cell shape data used for interior DOF projection.
     TYPE(UserFunction_), INTENT(INOUT) :: func
-    !! user defined functions quadrature values of function
+    !! Scalar or vector user function accepting spatial coordinates and time.
     REAL(DFP), INTENT(IN) :: times
-    !! times
-    REAL(DFP), INTENT(INOUT) :: ans(:), temp(:)
-    !! Nodal coordinates of interpolation points
-    !! Size of temp and ans should be atleast cellElemsd%nns
+    !! Physical time at which the user function is evaluated.
+    REAL(DFP), INTENT(INOUT) :: ans(:)
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
+    REAL(DFP), INTENT(INOUT) :: temp(:)
+    !! Coefficient workspace; SIZE(temp) must fit the projected DOF block.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! Data written in xij
+    !! Number of coefficients written to ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     REAL(DFP), INTENT(INOUT) :: funcValue(:)
-    !! function values at quadrature points used inside
-    !! the size should be enough that quadrature values can be stored
+    !! Sample-value workspace; must accommodate the active quadrature points.
     INTEGER(I4B), INTENT(IN) :: offset
-    !! Starting and ending indices for vertex and face DOFs
+    !! Number of coefficients already stored at the beginning of ans.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: icompo
-    !! index of values which are returned from vector user function
+    !! Optional one-based vector component; default one where implemented.
   END SUBROUTINE obj_GetInCellDOFValueFromSTFunc
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                               GetFacetDOFValueFromQuadrature@CellDOFMethods
+!                                    GetDOFValueFromQuadrature@CellDOFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-01
-! summary: Get all DOF from quadrature values
+! summary: Project sampled values onto a cell basis
+!
+! Assembles the mass matrix and load vector from elemsd and func, factors the
+! selected mass matrix block with LU, then solves for coefficients. With
+! onlyInside true, solves the block starting at tVertices+1 and compacts the
+! resulting coefficients into ans(1:tsize). Otherwise solves for all
+! elemsd%nns coefficients. Input samples should already have any prescribed
+! boundary contribution removed when projecting a residual.
+!
+!
+! Formula:
+! $$ M_{ij} = \int N_i N_j \, d\Omega, \qquad
+! b_i = \int N_i f \, d\Omega, \qquad M c = b. $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE BaseType, ONLY: TypeElemNameOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! IMPLICIT NONE
+! TYPE(TriangleH1LagrangeFE_) :: obj
+! TYPE(TriangleH1LagrangeFE_) :: geometry
+! TYPE(ElemShapeData_) :: shapes, geoShapes
+! TYPE(QuadraturePoint_) :: quad
+! REAL(DFP) :: xij(2, 3), ans(3), massMat(3, 3)
+! REAL(DFP), ALLOCATABLE :: samples(:)
+! INTEGER(I4B) :: ipiv(3), tsize
+!
+! CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+!   baseContinuity="H1", baseInterpolation="Lagrange", order=1_I4B, &
+!   ipType=TypeInterpolationOpt%Equidistance, &
+!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureOrder=[4_I4B])
+!
+! CALL geometry%Copy(obj)
+! xij(:, 1) = [0.0_DFP, 0.0_DFP]
+! xij(:, 2) = [1.0_DFP, 0.0_DFP]
+! xij(:, 3) = [0.0_DFP, 1.0_DFP]
+! CALL obj%GetGlobalElemShapeData2(geofeptr=geometry, elemsd=shapes, &
+!   geoelemsd=geoShapes, xij=xij, quad=quad)
+! ALLOCATE(samples(shapes%nips))
+! samples = 2.0_DFP
+! CALL obj%GetDOFValue(elemsd=shapes, func=samples, ans=ans, &
+!   tsize=tsize, massMat=massMat, ipiv=ipiv, &
+!   onlyInside=.FALSE., tVertices=3_I4B)
+! CALL OK(tsize == 3_I4B, "All coefficients projected")
+! CALL OK(ALL(ABS(ans - 2.0_DFP) < 1.0E-10_DFP), "Constant reproduced")
+! CALL obj%DEALLOCATE()
+! CALL geometry%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate]], [[obj_GetParam]], [[AbstractFEDeallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetDOFValueFromQuadrature( &
     obj, elemsd, func, ans, tsize, massMat, ipiv, onlyInside, tVertices)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
-    !! Abstract finite elemenet
+    !! Finite element object; use a concrete extension of AbstractFE_.
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd
-    !! shape function defined on the face of element
+    !! Solution cell shape data, or cell traces indexed by facet.
     REAL(DFP), INTENT(INOUT) :: func(:)
-    !! quadrature values of function
+    !! Quadrature samples; SIZE(func) >= elemsd%nips.
     REAL(DFP), INTENT(INOUT) :: ans(:)
-    !! nodal coordinates of interpolation points
-    !! The size of nns should be atleast elemsd%nns
+    !! Coefficient buffer; active entries or index ranges are returned
+    !! separately.
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! data written in xij
+    !! Number of coefficients written to ans.
     REAL(DFP), INTENT(INOUT) :: massMat(:, :)
-    !! mass matrix, the size should be atleast elemsd%nns
+    !! Mass-matrix workspace; both dimensions must fit the projected basis.
     INTEGER(I4B), INTENT(INOUT) :: ipiv(:)
-    !! pivot indices for LU decomposition of mass matrix
-    !! The size should be atleast elemsd%nns
+    !! LU pivot workspace; SIZE(ipiv) must fit the projected basis.
     LOGICAL(LGT), INTENT(IN) :: onlyInside
-    !! if true then we include only face bubble, that is,
-    !! only include internal face bubble.
-    !! if onlyInside is true, then we will not use 1:Vertices
-    !! and use tVertices + 1
+    !! If true, solve only DOFs after tVertices and compact the output.
     INTEGER(I4B), INTENT(IN) :: tVertices
-    !! tVertices are needed when onlyFaceBubble is true
-    !! tVertices are total number of vertex degree of
-    !! freedom
+    !! Number of leading DOFs excluded when projecting the interior block.
   END SUBROUTINE obj_GetDOFValueFromQuadrature
 END INTERFACE
 
