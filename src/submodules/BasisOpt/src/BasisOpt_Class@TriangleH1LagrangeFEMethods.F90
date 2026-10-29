@@ -16,26 +16,25 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) TriangleH1LagrangeFEMethods
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: Display, ToString
 
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                Elemsd_Set => Set, &
-                                LagrangeFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE, &
-                                Elemsd_SetNormal => SetNormal
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE, Elemsd_Set => &
+                                Set, Elemsd_SetNormal => SetNormal, &
+                                LagrangeElemShapeData, &
+                                LagrangeFacetElemShapeData
 
-USE TriangleInterpolationUtility, ONLY: LagrangeDOF_Triangle, &
+USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle, &
                                         InterpolationPoint_Triangle_, &
+                                        LagrangeDOF_Triangle, &
                                         LagrangeEvalAll_Triangle_, &
-                                        LagrangeGradientEvalAll_Triangle_, &
-                                        FacetConnectivity_Triangle
+                                        LagrangeGradientEvalAll_Triangle_
 
 USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_, &
                                     LagrangeEvalAll_Line_, &
                                     LagrangeGradientEvalAll_Line_
 
-USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
-                                  GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_, &
+                                  GetTotalQuadraturePoints
 
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -295,7 +294,7 @@ nns = geoFacetElemsd%nns
 #ifdef DEBUG_VER
 isok = nns .EQ. 2_I4B
 CALL AssertError1(isok, myName, &
-        "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
+                  "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
 #endif
 
 nips = geoFacetElemsd%nips
