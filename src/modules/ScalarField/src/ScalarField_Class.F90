@@ -1516,31 +1516,40 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-27
-! update:
-!   - 2026-10-29: vtkindx removed; the number of points of a cell is the
-!     number of interpolation points of its order
 ! summary: Values at the points of the VTK unstructured grid
 !   (no allocation)
 !
 ! Same as [[obj_GetVtkUnstructuredValue1]], but VALUE and the work
 ! arrays are given by the caller, so that nothing is allocated. For each
 ! active element, the nodal values of obj are interpolated at the VTK
-! points of the cell (the interpolation points of the cell order).
+! points of the cell (the interpolation points of the cell order). The
+! local shape functions are used; the orientation of the element is
+! taken into account by FixOrientOfNptrs on the connectivity, so the
+! node coordinates of the element are not needed. FixOrientOfNptrs is
+! implemented for Lagrange finite elements of quadrangles and triangles
+! only. Since the local shape functions at the VTK points depend only on
+! the topology and the cell order, they are computed again only when one
+! of them differs from the previous element.
+!
+! Changes:
+!   - 2026-10-29: vtkindx removed; the number of points of a cell is the
+!     number of interpolation points of its order
+!   - 2026-10-29: local shape functions and FixOrientOfNptrs; elemCoord
+!     removed; shape data reused for the same topology and order
 !
 ! Arguments:
 !   obj : CLASS(ScalarField_) - scalar field
 !   VALUE : REAL(DFP) - values, SIZE(VALUE) >= fedof%GetSumElemTotalDOF()
 !   tsize : INTEGER(I4B) - number of values written in VALUE
-!   refElemCoord, xij, elemCoord, nodalValue, fecon - work arrays, see
-!     the sizes of the dummy arguments
+!   refElemCoord, xij, nodalValue, fecon - work arrays, see the sizes of
+!     the dummy arguments
 !
 ! See also: [[obj_GetVtkUnstructuredValue1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetVtkUnstructuredValue2(obj, VALUE, tsize, &
                                                  refElemCoord, xij, &
-                                                 elemCoord, nodalValue, &
-                                                 fecon)
+                                                 nodalValue, fecon)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
@@ -1554,9 +1563,6 @@ INTERFACE
     !! temporal storage for nodal coordinate of interpolation points
     !! size should be at least (4, maxCon). This variable
     !! is used to construct the quadrature points
-    REAL(DFP), INTENT(INOUT) :: elemCoord(:, :)
-    !! temporal storage for nodal coordinate of physical element
-    !! size should be at least (3, maxNNE)
     REAL(DFP), INTENT(INOUT) :: nodalValue(:)
     !! temporal storage for element level nodal value of scalarField
     !! size should be at least maximum connectivity in fedof

@@ -314,8 +314,7 @@ MODULE PROCEDURE obj_GetVtkUnstructuredValue1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue1()"
 #endif
-REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), &
-                          elemCoord(:, :), nodalValue(:)
+REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), nodalValue(:)
 INTEGER(I4B), ALLOCATABLE :: fecon(:)
 INTEGER(I4B) :: maxNNE, maxCon, tsize
 
@@ -333,18 +332,15 @@ CALL Reallocate(nodalValue, maxCon)
 CALL Reallocate(fecon, maxCon)
 CALL Reallocate(xij, 4, maxCon)
 CALL Reallocate(refElemCoord, 3, maxNNE)
-CALL Reallocate(elemCoord, 3, maxNNE)
 
 CALL obj%GetVtkUnstructuredValue(VALUE=VALUE, tsize=tsize, &
                                  refElemCoord=refElemCoord, xij=xij, &
-                                 elemCoord=elemCoord, &
                                  nodalValue=nodalValue, fecon=fecon)
 
 IF (ALLOCATED(nodalValue)) DEALLOCATE (nodalValue)
 IF (ALLOCATED(fecon)) DEALLOCATE (fecon)
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
 IF (ALLOCATED(refElemCoord)) DEALLOCATE (refElemCoord)
-IF (ALLOCATED(elemCoord)) DEALLOCATE (elemCoord)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -363,12 +359,12 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue2()"
 INTEGER(I4B) :: maxNNE, maxCon
 #endif
 CLASS(AbstractMesh_), POINTER :: mesh
-CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+CLASS(AbstractFE_), POINTER :: feptr
 TYPE(QuadraturePoint_) :: quad
-TYPE(ElemShapeData_) :: elemsd, geoelemsd
+TYPE(ElemShapeData_) :: elemsd
 INTEGER(I4B) :: tElements, iel, ii, ip0, cellOrder(3), ipType(3), &
-                xij_nrow, xij_ncol, elemCoord_nrow, elemCoord_ncol, &
-                refElemCoord_nrow, refElemCoord_ncol, nodalValue_size, tfecon
+                xij_nrow, xij_ncol, refElemCoord_nrow, refElemCoord_ncol, &
+                nodalValue_size, tfecon, topoIndx, lastTopoIndx, lastOrder
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -401,17 +397,14 @@ CALL AssertError3(math%three_i, SIZE(refElemCoord, 1), myName, &
                   "a=3, b=size(refElemCoord,1)")
 CALL AssertError3(maxNNE, SIZE(refElemCoord, 2), myName, &
                   "a=maxNNE, b=size(refElemCoord,2)")
-CALL AssertError3(math%three_i, SIZE(elemCoord, 1), myName, &
-                  "a=3, b=size(elemCoord,1)")
-CALL AssertError3(maxNNE, SIZE(elemCoord, 2), myName, &
-                  "a=maxNNE, b=size(elemCoord,2)")
 #endif
 
 xij = math%zero
 refElemCoord = math%zero
-elemCoord = math%zero
 
 ip0 = 0
+lastTopoIndx = 0
+lastOrder = -1
 
 elemLoop: DO iel = 1, tElements
 
@@ -422,42 +415,40 @@ elemLoop: DO iel = 1, tElements
   CALL obj%fedof%GetCellOrder(ans=cellOrder, tsize=ii, &
                               globalElement=iel, islocal=math%yes)
   cellOrder(2:3) = cellOrder(1)
+  topoIndx = mesh%GetElemTopologyIndx(globalElement=iel, islocal=math%yes)
 
-  ! finite elements of fedof and geofedof
+  ! finite element of fedof, SetFE also sets the orientation of the
+  ! element, which is used by FixOrientOfNptrs below
   CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
   feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, &
-                                        islocal=math%yes)
+  ! The local shape data at the VTK points depends only on the finite
+  ! element (topology) and the cell order, so it is computed again only
+  ! when one of them changes
+  isok = (topoIndx .NE. lastTopoIndx) .OR. (cellOrder(1) .NE. lastOrder)
+  IF (isok) THEN
+    lastTopoIndx = topoIndx
+    lastOrder = cellOrder(1)
 
-  ! VTK points of the cell in the reference element
-  CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
-                             ncol=refElemCoord_ncol)
+    ! VTK points of the cell in the reference element
+    CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
+                               ncol=refElemCoord_ncol)
 
-  CALL feptr%GetInterpolationPoints( &
-    xij=refElemCoord(1:refElemCoord_nrow, 1:refElemCoord_ncol), &
-    ans=xij, nrow=xij_nrow, ncol=xij_ncol, order=cellOrder, &
-    ipType=ipType)
+    CALL feptr%GetInterpolationPoints( &
+      xij=refElemCoord(1:refElemCoord_nrow, 1:refElemCoord_ncol), &
+      ans=xij, nrow=xij_nrow, ncol=xij_ncol, order=cellOrder, &
+      ipType=ipType)
 
-  CALL QuadraturePointInitiate(obj=quad, points=xij(1:4, 1:xij_ncol))
+    CALL QuadraturePointInitiate(obj=quad, points=xij(1:4, 1:xij_ncol))
 
-  CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
+    ! local shape functions, the orientation is fixed in the connectivity
+    CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+  END IF
 
-  CALL mesh%GetNodeCoord(globalElement=iel, nodeCoord=elemCoord, &
-                         nrow=elemCoord_nrow, ncol=elemCoord_ncol, &
-                         islocal=math%yes)
-
-  ! shape functions with the orientation of the element fixed
-  ! TODO: We do not need global data, we just need to fix the orientation
-  CALL feptr%GetGlobalElemShapeData2( &
-    elemsd=elemsd, geoelemsd=geoelemsd, &
-    xij=elemCoord(1:elemCoord_nrow, 1:elemCoord_ncol), &
-    quad=quad, geofeptr=geofeptr, doNotInitQuad=math%yes)
-
-  ! nodal values of the element
+  ! nodal values of the element in the local node order
   CALL obj%fedof%GetConnectivity_(ans=fecon, tsize=tfecon, opt="A", &
                                   globalElement=iel, islocal=math%yes)
+  CALL feptr%FixOrientOfNptrs(fecon, tfecon)
 
   CALL obj%Get(VALUE=nodalValue, globalNode=fecon(1:tfecon), &
                islocal=math%yes, tsize=nodalValue_size)
@@ -476,10 +467,9 @@ elemLoop: DO iel = 1, tElements
   ip0 = ip0 + xij_ncol
 END DO elemLoop
 
-NULLIFY (mesh, feptr, geofeptr)
+NULLIFY (mesh, feptr)
 CALL QuadraturePointDeallocate(quad)
 CALL ElemShapeDataDeallocate(elemsd)
-CALL ElemShapeDataDeallocate(geoelemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
