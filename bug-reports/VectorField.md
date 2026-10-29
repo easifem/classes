@@ -28,21 +28,12 @@ the listed test passes. **Open** means not changed.
   (2026-10-29). Tests: SetByFunction_test_2 of ScalarField and
   VectorField.
 
+- 7. dNdXi of a reversed edge was reversed twice (so not at all) in the
+  Lagrange shape data of lines, triangles and quadrangles (element and
+  facet routines); the second call is removed (2026-10-29). FEDOF,
+  ScalarField and VectorField tests pass.
+
 ## Open
-
-### 7. dNdXi of reversed edge DOF is reversed twice
-
-- Where: `BasisOpt_Class@TriangleH1LagrangeFEMethods.F90` and
-  `BasisOpt_Class@QuadrangleH1LagrangeFEMethods.F90`
-  (`*_GetGlobalElemShapeData` and `*_GetGlobalFacetElemShapeData`).
-  For an edge with orientation -1, `Reverse(ans=elemsd%dNdXi, ...)` is
-  called twice, so dNdXi is not reversed (N and dNdXt are).
-- Effect: dNdXi of the edge DOF does not match N for elements of order
-  >= 3 with reversed edges. dNdXt is right, so the usual integrals are
-  not affected; code which uses dNdXi directly is.
-- Fix: remove the second call (or reverse dNdXt in its place if that
-  was meant).
-- Tests: none yet.
 
 ### 2. Set6 is under development
 

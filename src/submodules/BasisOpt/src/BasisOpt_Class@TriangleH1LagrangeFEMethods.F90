@@ -223,8 +223,6 @@ IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
                d1=1, d2=elemsd%nips, dim=1)
 END IF
@@ -238,8 +236,6 @@ IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
                d1=1, d2=elemsd%nips, dim=1)
 END IF
@@ -251,8 +247,6 @@ n2 = n2 + obj%order - 1
 isok = bool1 .AND. (obj%faceOrient(1, 3) .EQ. -1_I4B)
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
@@ -318,8 +312,6 @@ isok = obj%isFaceOrient &
 IF (isok) THEN
   CALL Reverse(ans=facetElemsd%N, r1=n1, r2=n2, c1=1, c2=facetElemsd%nips, &
                dim=1)
-  CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
-               c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
   CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
                c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
   CALL Reverse(ans=facetElemsd%dNdXt, r1=n1, r2=n2, c1=1, &

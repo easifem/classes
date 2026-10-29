@@ -16,29 +16,27 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) QuadrangleH1LagrangeFEMethods
-USE Display_Method, ONLY: ToString, Display
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                Elemsd_Set => Set, &
-                                LagrangeFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE, &
-                                Elemsd_SetNormal => SetNormal
+USE Display_Method, ONLY: Display, ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE, Elemsd_Set => &
+                                Set, Elemsd_SetNormal => SetNormal, &
+                                LagrangeElemShapeData, &
+                                LagrangeFacetElemShapeData
 
-USE QuadrangleInterpolationUtility, ONLY: LagrangeDOF_Quadrangle, &
+USE QuadrangleInterpolationUtility, ONLY: FacetConnectivity_Quadrangle, &
                                           InterpolationPoint_Quadrangle_, &
+                                          LagrangeDOF_Quadrangle, &
                                           LagrangeEvalAll_Quadrangle_, &
-                                        LagrangeGradientEvalAll_Quadrangle_, &
-                                          FacetConnectivity_Quadrangle
+                                          LagrangeGradientEvalAll_Quadrangle_
 
-USE LineInterpolationUtility, ONLY: LagrangeDOF_Line, &
-                                    InterpolationPoint_Line_, &
-                                    LagrangeEvalAll_Line_, &
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_, &
+                                    LagrangeDOF_Line, LagrangeEvalAll_Line_, &
                                     LagrangeGradientEvalAll_Line_
 
-USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
-                                  GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_, &
+                                  GetTotalQuadraturePoints
 USE ReallocateUtility, ONLY: Reallocate
-USE SwapUtility, ONLY: SWAP_
 USE ReverseUtility, ONLY: Reverse
+USE SwapUtility, ONLY: SWAP_
 
 IMPLICIT NONE
 
@@ -50,7 +48,8 @@ CONTAINS
 
 MODULE PROCEDURE QuadrangleH1LagFE_GetLocalElemShapeData
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "QuadrangleH1LagFE_GetLocalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = &
+                           "QuadrangleH1LagFE_GetLocalElemShapeData()"
 #endif
 
 INTEGER(I4B) :: nips, tdof, indx(10), ii, jj
@@ -162,8 +161,6 @@ IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
                d1=1, d2=elemsd%nips, dim=1)
 END IF
@@ -174,8 +171,6 @@ n2 = n2 + obj%order - 1
 isok = bool1 .AND. (obj%faceOrient(1, 2) .EQ. -1_I4B)
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
@@ -190,8 +185,6 @@ IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
                d1=1, d2=elemsd%nips, dim=1)
 END IF
@@ -202,8 +195,6 @@ n2 = n2 + obj%order - 1
 isok = bool1 .AND. (obj%faceOrient(1, 4) .EQ. -1_I4B)
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
@@ -314,7 +305,7 @@ nns = geoFacetElemsd%nns
 #ifdef DEBUG_VER
 isok = nns .EQ. 2_I4B
 CALL AssertError1(isok, myName, &
-        "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
+                  "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
 #endif
 
 nips = geoFacetElemsd%nips
@@ -339,8 +330,6 @@ isok = obj%isFaceOrient &
 IF (isok) THEN
   CALL Reverse(ans=facetElemsd%N, r1=n1, r2=n2, c1=1, c2=facetElemsd%nips, &
                dim=1)
-  CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
-               c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
   CALL Reverse(ans=facetElemsd%dNdXi, r1=n1, r2=n2, c1=1, &
                c2=facetElemsd%xidim, d1=1, d2=facetElemsd%nips, dim=1)
   CALL Reverse(ans=facetElemsd%dNdXt, r1=n1, r2=n2, c1=1, &

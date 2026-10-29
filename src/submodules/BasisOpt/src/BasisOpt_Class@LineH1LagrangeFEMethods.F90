@@ -16,25 +16,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) LineH1LagrangeFEMethods
-USE Display_Method, ONLY: ToString, Display
+USE Display_Method, ONLY: Display, ToString
 
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                Elemsd_Set => Set, &
-                                LagrangeFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE, Elemsd_Set => &
+                                Set, LagrangeElemShapeData, &
+                                LagrangeFacetElemShapeData
 
-USE LineInterpolationUtility, ONLY: LagrangeDOF_Line, &
-                                    InterpolationPoint_Line_, &
-                                    LagrangeEvalAll_Line_, &
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_, &
+                                    LagrangeDOF_Line, LagrangeEvalAll_Line_, &
                                     LagrangeGradientEvalAll_Line_
 
-USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
-                                  GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_, &
+                                  GetTotalQuadraturePoints
 
 USE ReallocateUtility, ONLY: Reallocate
 
-USE SwapUtility, ONLY: SWAP_, SWAP
 USE ReverseUtility, ONLY: Reverse
+USE SwapUtility, ONLY: SWAP, SWAP_
 
 IMPLICIT NONE
 
@@ -142,8 +140,6 @@ n1 = 3
 n2 = obj%order + 1
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
-  CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
-               d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
                d1=1, d2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXt, r1=n1, r2=n2, c1=1, c2=elemsd%nsd, &
