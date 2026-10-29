@@ -17,16 +17,18 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: CommandLineInterface class
+!
+! Changes:
+!   - 2021-11-08
 
 MODULE CommandLineInterface_Class
-USE FACE, ONLY: colorize
-USE CommandLineArg_Class, ONLY: CommandLineArg_, ACTION_STORE, ERROR_UNKNOWN
-USE CommandLineGroupArg_Class, ONLY: CommandLineGroupArg_, &
-                                     STATUS_PRINT_H, STATUS_PRINT_V
 USE AbstractCommandLine_Class, ONLY: AbstractCommandLineArg_
+USE CommandLineArg_Class, ONLY: ACTION_STORE, CommandLineArg_, ERROR_UNKNOWN
 USE CommandLineArg_Utils
+USE CommandLineGroupArg_Class, ONLY: CommandLineGroupArg_, STATUS_PRINT_H, &
+                                     STATUS_PRINT_V
+USE FACE, ONLY: colorize
 USE PENF
 IMPLICIT NONE
 PRIVATE
@@ -52,8 +54,10 @@ INTEGER(I4P), PARAMETER, PUBLIC :: ERROR_UNKNOWN_CLAS_IGNORED = 1004
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Command line interface class
+!
+! Changes:
+!   - 2021-11-08
 
 TYPE, EXTENDS(AbstractCommandLineArg_) :: CommandLineInterface_
   PRIVATE
@@ -103,10 +107,10 @@ CONTAINS
     get_cla_list
   !! Get CLA value(s) from CLAs list parsed.
   GENERIC, PUBLIC :: get_varying => &
-#if defined USE_Real128
-    get_cla_list_varying_R16P, &
-#endif
-    get_cla_list_varying_R8P, &
+    #IF defined USE_Real128
+  get_cla_list_varying_R16P, &
+    #ENDIF
+  get_cla_list_varying_R8P, &
     get_cla_list_varying_R4P, &
     get_cla_list_varying_I8P, &
     get_cla_list_varying_I4P, &
@@ -266,7 +270,8 @@ SUBROUTINE init(self, progname, version, help, description, license, &
     ! try to set the default progname to the 0th command line entry a-la unix $0
     CALL GET_COMMAND_ARGUMENT(0, length=invocation_length)
     ALLOCATE (CHARACTER(len=invocation_length) :: prog_invocation)
-  CALL GET_COMMAND_ARGUMENT(0, VALUE=prog_invocation, status=retrieval_status)
+    CALL GET_COMMAND_ARGUMENT(0, VALUE=prog_invocation, &
+                              status=retrieval_status)
     IF (retrieval_status == 0) THEN
       self%progname = prog_invocation
     ELSE
@@ -413,7 +418,7 @@ END SUBROUTINE set_mutually_exclusive_groups
 SUBROUTINE add(self, pref, group, group_index, switch, &
      & switch_ab, help, help_markdown, help_color, help_style, &
      & required, positional, position, hidden, act, def, nargs, &
-     & choices, exclude, envvar, error)
+     & choices, exclude, envvar, ERROR)
   CLASS(CommandLineInterface_), INTENT(inout) :: self
   !! CLI data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref
@@ -454,7 +459,7 @@ SUBROUTINE add(self, pref, group, group_index, switch, &
   !! Switch name of the mutually exclusive CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: envvar
   !! Environment variable from which take value.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR
   !! Error trapping flag.
   TYPE(CommandLineArg_) :: cla
   !! CLA data.
@@ -499,56 +504,56 @@ SUBROUTINE add(self, pref, group, group_index, switch, &
   IF (PRESENT(exclude)) cla%m_exclude = exclude
   IF (PRESENT(envvar)) cla%envvar = envvar
   CALL cla%check(pref=pref)
-  self%error = cla%error
-  IF (self%error /= 0) THEN
-    IF (PRESENT(error)) error = self%error
+  self%ERROR = cla%ERROR
+  IF (self%ERROR / =0) THEN
+    IF (PRESENT(ERROR)) ERROR = self%ERROR
     RETURN
   END IF
   ! add CLA to CLI
   IF ((.NOT. PRESENT(group)) .AND. (.NOT. PRESENT(group_index))) THEN
     CALL self%clasg(0)%add(pref=pref, cla=cla)
-    self%error = self%clasg(0)%error
+    self%ERROR = self%clasg(0)%ERROR
   ELSEIF (PRESENT(group)) THEN
     IF (self%is_defined_group(group=group, g=g)) THEN
       CALL self%clasg(g)%add(pref=pref, cla=cla)
-      self%error = self%clasg(g)%error
+      self%ERROR = self%clasg(g)%ERROR
     ELSE
       CALL self%add_group(group=group)
       CALL self%clasg(SIZE(self%clasg, dim=1) - 1)%add(pref=pref, cla=cla)
-      self%error = self%clasg(SIZE(self%clasg, dim=1) - 1)%error
+      self%ERROR = self%clasg(SIZE(self%clasg, dim=1) - 1)%ERROR
     END IF
   ELSEIF (PRESENT(group_index)) THEN
     IF (group_index <= SIZE(self%clasg, dim=1) - 1) THEN
       CALL self%clasg(group_index)%add(pref=pref, cla=cla)
-      self%error = self%clasg(group_index)%error
+      self%ERROR = self%clasg(group_index)%ERROR
     END IF
   END IF
-  IF (PRESENT(error)) error = self%error
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE add
 
 !----------------------------------------------------------------------------
 !                                                                  check
 !----------------------------------------------------------------------------
 
-SUBROUTINE check(self, pref, error)
+SUBROUTINE check(self, pref, ERROR)
   !! Check data consistency.
   CLASS(CommandLineInterface_), INTENT(INOUT) :: self !! CLI data.
   CHARACTER(*), OPTIONAL, INTENT(IN) :: pref !! Prefixing string.
-  INTEGER(I4P), OPTIONAL, INTENT(OUT) :: error !! Error trapping flag.
+  INTEGER(I4P), OPTIONAL, INTENT(OUT) :: ERROR !! Error trapping flag.
   INTEGER(I4P) :: g !! Counter.
   INTEGER(I4P) :: gg !! Counter.
 
   DO g = 0, SIZE(self%clasg, dim=1) - 1
     ! check group consistency
     CALL self%clasg(g)%check(pref=pref)
-    self%error = self%clasg(g)%error
-    IF (PRESENT(error)) error = self%error
-    IF (self%error /= 0) EXIT
+    self%ERROR = self%clasg(g)%ERROR
+    IF (PRESENT(ERROR)) ERROR = self%ERROR
+    IF (self%ERROR / =0) EXIT
     ! check mutually exclusive interaction
     IF (g > 0) THEN
-      IF (self%clasg(g)%m_exclude /= '') THEN
+      IF (self%clasg(g)%m_exclude / = '') THEN
         IF (self%is_defined_group( &
-             & group=self%clasg(g)%m_exclude, g=gg)) &
+             & group = self%clasg(g)%m_exclude, g = gg)) &
              & self%clasg(gg)%m_exclude = self%clasg(g)%group
       END IF
     END IF
@@ -572,11 +577,11 @@ SUBROUTINE check_m_exclusive(self, pref)
   !> main
   DO g = 1, SIZE(self%clasg, dim=1) - 1
     IF (self%clasg(g)%is_called &
-         & .AND. (self%clasg(g)%m_exclude /= '')) THEN
+         & .AND. (self%clasg(g)%m_exclude / = '')) THEN
       IF (self%is_defined_group(group=self%clasg(g)%m_exclude, g=gg)) THEN
         IF (self%clasg(gg)%is_called) THEN
           CALL self%clasg(g)%raise_error_m_exclude(pref=pref)
-          self%error = self%clasg(g)%error
+          self%ERROR = self%clasg(g)%ERROR
           EXIT
         END IF
       END IF
@@ -667,7 +672,8 @@ FUNCTION is_defined(self, switch, group)
   !! Check if a CLA has been defined.
   CLASS(CommandLineInterface_), INTENT(in) :: self !! CLI data.
   CHARACTER(*), INTENT(in) :: switch !! Switch name.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLAs.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLAs.
   LOGICAL :: is_defined !! Check if a CLA has been defined.
   INTEGER(I4P) :: g !! Counter.
 
@@ -675,7 +681,8 @@ FUNCTION is_defined(self, switch, group)
   IF (.NOT. PRESENT(group)) THEN
     is_defined = self%clasg(0)%is_defined(switch=switch)
   ELSE
-    IF (self%is_defined_group(group=group, g=g)) is_defined = self%clasg(g)%is_defined(switch=switch)
+    IF (self%is_defined_group(group=group, g=g)) is_defined = &
+      self%clasg(g)%is_defined(switch=switch)
   END IF
 END FUNCTION is_defined
 
@@ -687,7 +694,7 @@ ELEMENTAL FUNCTION is_parsed(self)
   is_parsed = self%is_parsed_
 END FUNCTION is_parsed
 
-SUBROUTINE parse(self, pref, args, error)
+SUBROUTINE parse(self, pref, args, ERROR)
   !! Parse Command Line Interfaces by means of a previously initialized CLAs groups list.
   !!
   !! @note The leading and trailing white spaces are removed from CLA values.
@@ -696,19 +703,20 @@ SUBROUTINE parse(self, pref, args, error)
   !! invocations.
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
   INTEGER(I4P) :: g !! Counter for CLAs group.
   INTEGER(I4P), ALLOCATABLE :: ai(:, :) !! Counter for CLAs grouped.
 
-  IF (PRESENT(error)) error = 0
+  IF (PRESENT(ERROR)) ERROR = 0
   IF (self%is_parsed_) RETURN
 
   ! add help and version switches if not done by user
   IF (.NOT. self%disable_hv) THEN
     DO g = 0, SIZE(self%clasg, dim=1) - 1
       IF (.NOT. (self%is_defined( &
-           & group=self%clasg(g)%group, switch='--help') .AND. &
+           & group = self%clasg(g)%group, switch = '--help') .AND. &
            & self%is_defined(group=self%clasg(g)%group, switch='-h'))) &
            & CALL self%add(pref=pref, &
                             group_index=g, &
@@ -719,7 +727,7 @@ SUBROUTINE parse(self, pref, args, error)
                             def='', &
                             act='print_help')
       IF (.NOT. (self%is_defined(group=self%clasg(g)%group, &
-           & switch='--version') .AND. &
+           & switch = '--version') .AND. &
            & self%is_defined(group=self%clasg(g)%group, switch='-v'))) &
            CALL self%add(pref=pref, &
            & group_index=g, &
@@ -745,11 +753,11 @@ SUBROUTINE parse(self, pref, args, error)
   END IF
   ! check CLI consistency
   CALL self%check(pref=pref)
-  IF (self%error > 0) THEN
-    IF (((self%error == ERROR_UNKNOWN) &
+  IF (self%ERROR > 0) THEN
+    IF (((self%ERROR == ERROR_UNKNOWN) &
          & .AND. (.NOT. self%ignore_unknown_clas)) &
-         & .OR. (self%error /= ERROR_UNKNOWN)) THEN
-      IF (PRESENT(error)) error = self%error
+         & .OR. (self%ERROR / =ERROR_UNKNOWN)) THEN
+      IF (PRESENT(ERROR)) ERROR = self%ERROR
       RETURN
     ELSE
       self%error_unknown_clas = ERROR_UNKNOWN_CLAS_IGNORED
@@ -759,30 +767,30 @@ SUBROUTINE parse(self, pref, args, error)
   DO g = 0, SIZE(ai, dim=1) - 1
     IF (ai(g, 1) > 0) THEN
       CALL self%clasg(g)%parse( &
-           & args=self%args(ai(g, 1):ai(g, 2)), &
-           & ignore_unknown_clas=self%ignore_unknown_clas, &
-           & pref=pref, error_unknown_clas=self%error_unknown_clas)
+           & args = self%args(ai(g, 1):ai(g, 2)), &
+           & ignore_unknown_clas = self%ignore_unknown_clas, &
+           & pref = pref, error_unknown_clas = self%error_unknown_clas)
     ELSE
       CALL self%clasg(g)%sanitize_defaults
     END IF
-    self%error = self%clasg(g)%error
-    IF (self%error < 0) EXIT
-    IF (self%error > 0) THEN
-      IF (((self%error == ERROR_UNKNOWN) &
+    self%ERROR = self%clasg(g)%ERROR
+    IF (self%ERROR < 0) EXIT
+    IF (self%ERROR > 0) THEN
+      IF (((self%ERROR == ERROR_UNKNOWN) &
            & .AND. (.NOT. self%ignore_unknown_clas)) &
-           & .OR. (self%error /= ERROR_UNKNOWN)) THEN
-        IF (PRESENT(error)) error = self%error
+           & .OR. (self%ERROR / =ERROR_UNKNOWN)) THEN
+        IF (PRESENT(ERROR)) ERROR = self%ERROR
         EXIT
       ELSE
         self%error_unknown_clas = ERROR_UNKNOWN_CLAS_IGNORED
       END IF
     END IF
   END DO
-  IF (self%error > 0) THEN
-    IF (((self%error == ERROR_UNKNOWN) &
+  IF (self%ERROR > 0) THEN
+    IF (((self%ERROR == ERROR_UNKNOWN) &
          & .AND. (.NOT. self%ignore_unknown_clas)) &
-         & .OR. (self%error /= ERROR_UNKNOWN)) THEN
-      IF (PRESENT(error)) error = self%error
+         & .OR. (self%ERROR / =ERROR_UNKNOWN)) THEN
+      IF (PRESENT(ERROR)) ERROR = self%ERROR
       RETURN
     ELSE
       self%error_unknown_clas = ERROR_UNKNOWN_CLAS_IGNORED
@@ -790,12 +798,12 @@ SUBROUTINE parse(self, pref, args, error)
   END IF
 
   ! trap the special cases of version/help printing
-  IF (self%error == STATUS_PRINT_V) THEN
+  IF (self%ERROR == STATUS_PRINT_V) THEN
     CALL self%print_version(pref=pref)
     STOP
-  ELSEIF (self%error == STATUS_PRINT_H) THEN
+  ELSEIF (self%ERROR == STATUS_PRINT_H) THEN
     DO g = 0, SIZE(ai, dim=1) - 1
-      IF (self%clasg(g)%error == STATUS_PRINT_H) THEN
+      IF (self%clasg(g)%ERROR == STATUS_PRINT_H) THEN
         WRITE (self%usage_lun, '(A)') self%usage(pref=pref, g=g)
         STOP
       END IF
@@ -805,23 +813,23 @@ SUBROUTINE parse(self, pref, args, error)
   ! check if all required CLAs have been passed
   DO g = 0, SIZE(ai, dim=1) - 1
     CALL self%clasg(g)%is_required_passed(pref=pref)
-    self%error = self%clasg(g)%error
-    IF (self%error > 0) THEN
-      IF (((self%error == ERROR_UNKNOWN) &
+    self%ERROR = self%clasg(g)%ERROR
+    IF (self%ERROR > 0) THEN
+      IF (((self%ERROR == ERROR_UNKNOWN) &
            & .AND. (.NOT. self%ignore_unknown_clas)) &
-           & .OR. (self%error /= ERROR_UNKNOWN)) THEN
-        IF (PRESENT(error)) error = self%error
+           & .OR. (self%ERROR / =ERROR_UNKNOWN)) THEN
+        IF (PRESENT(ERROR)) ERROR = self%ERROR
         EXIT
       ELSE
         self%error_unknown_clas = ERROR_UNKNOWN_CLAS_IGNORED
       END IF
     END IF
   END DO
-  IF (self%error > 0) THEN
-    IF (((self%error == ERROR_UNKNOWN) &
+  IF (self%ERROR > 0) THEN
+    IF (((self%ERROR == ERROR_UNKNOWN) &
          & .AND. (.NOT. self%ignore_unknown_clas)) &
-         & .OR. (self%error /= ERROR_UNKNOWN)) THEN
-      IF (PRESENT(error)) error = self%error
+         & .OR. (self%ERROR / =ERROR_UNKNOWN)) THEN
+      IF (PRESENT(ERROR)) ERROR = self%ERROR
       RETURN
     ELSE
       self%error_unknown_clas = ERROR_UNKNOWN_CLAS_IGNORED
@@ -832,10 +840,10 @@ SUBROUTINE parse(self, pref, args, error)
   self%is_parsed_ = .TRUE.
   ! check if the only error found is for unknown passed CLAs
   ! and if it is ignored by the user
-  IF (self%error == ERROR_UNKNOWN &
+  IF (self%ERROR == ERROR_UNKNOWN &
        & .AND. self%error_unknown_clas == ERROR_UNKNOWN_CLAS_IGNORED) &
-       & self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+       & self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE parse
 
 !----------------------------------------------------------------------------
@@ -898,9 +906,11 @@ END SUBROUTINE get_clasg_indexes
 SUBROUTINE get_args_from_string(self, args, ai)
   !! Get CLAs from string.
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
-  CHARACTER(*), INTENT(in) :: args !! String containing command line arguments.
+  CHARACTER(*), INTENT(in) :: args
+  !! String containing command line arguments.
   INTEGER(I4P), ALLOCATABLE, INTENT(out) :: ai(:, :) !! CLAs grouped indexes.
-  CHARACTER(len=LEN_TRIM(args)) :: argsd !! Dummy string containing command line arguments.
+  CHARACTER(len=LEN_TRIM(args)) :: argsd
+  !! Dummy string containing command line arguments.
   CHARACTER(len=LEN_TRIM(args)), ALLOCATABLE :: toks(:) !! CLAs tokenized.
   INTEGER(I4P) :: Nt !! Number of tokens.
   INTEGER(I4P) :: Na !! Number of command line arguments passed.
@@ -923,10 +933,10 @@ SUBROUTINE get_args_from_string(self, args, ai)
   END IF
 
   ! tokenize arguments string; the previously sanitized white spaces inside tokens are restored
-  CALL tokenize(strin=argsd, delimiter=' ', toks=toks, Nt=Nt)
+  CALL TOKENIZE(strin=argsd, delimiter=' ', toks=toks, Nt=Nt)
   Na = 0
   find_number_of_valid_arguments: DO t = 1, Nt
-    IF (TRIM(ADJUSTL(toks(t))) /= '') THEN
+    IF (TRIM(ADJUSTL(toks(t))) / = '') THEN
       Na = Na + 1
       DO c = 1, LEN(toks(t))
         IF (toks(t) (c:c) == "'") toks(t) (c:c) = " "
@@ -941,7 +951,8 @@ SUBROUTINE get_args_from_string(self, args, ai)
 #else
     length = 0
     find_longest_arg: DO t = 1, Nt
-      IF (TRIM(ADJUSTL(toks(t)))/='') length = MAX(length,len_TRIM(ADJUSTL(toks(t))))
+      IF (TRIM(ADJUSTL(toks(t))) / ='') length = MAX(length, &
+                                                     LEN_TRIM(ADJUSTL(toks(t))))
     END DO find_longest_arg
     ALLOCATE (CHARACTER(length) :: self%args(1:Na))
 #endif
@@ -949,7 +960,7 @@ SUBROUTINE get_args_from_string(self, args, ai)
     ! construct arguments list
     a = 0
     get_args: DO t = 1, Nt
-      IF (TRIM(ADJUSTL(toks(t))) /= '') THEN
+      IF (TRIM(ADJUSTL(toks(t))) / = '') THEN
         a = a + 1
         self%args(a) = TRIM(ADJUSTL(toks(t)))
       END IF
@@ -967,14 +978,17 @@ CONTAINS
     !!
     !! @note The white spaces are reintroduce later.
     CHARACTER(*), INTENT(in) :: argsin !! Arguments string.
-    CHARACTER(*), INTENT(in) :: delimiter !! Delimiter enclosing string argument.
-    CHARACTER(len=LEN_TRIM(argsin)) :: sanitized !! Arguments string sanitized.
-    CHARACTER(len=LEN_TRIM(argsin)), ALLOCATABLE :: tok(:) !! Arguments string tokens.
+    CHARACTER(*), INTENT(in) :: delimiter
+    !! Delimiter enclosing string argument.
+    CHARACTER(len=LEN_TRIM(argsin)) :: sanitized
+    !! Arguments string sanitized.
+    CHARACTER(len=LEN_TRIM(argsin)), ALLOCATABLE :: tok(:)
+    !! Arguments string tokens.
     INTEGER(I4P) :: Nt !! Number of command line arguments passed.
     INTEGER(I4P) :: t !! Counter.
     INTEGER(I4P) :: tt !! Counter.
 
-    CALL tokenize(strin=TRIM(argsin), delimiter=delimiter, toks=tok, Nt=Nt)
+    CALL TOKENIZE(strin=TRIM(argsin), delimiter=delimiter, toks=tok, Nt=Nt)
     DO t = 2, Nt, 2
       DO tt = 1, LEN_TRIM(ADJUSTL(tok(t)))
         IF (tok(t) (tt:tt) == ' ') tok(t) (tt:tt) = "'"
@@ -1019,87 +1033,102 @@ SUBROUTINE get_args_from_invocation(self, ai)
   CALL self%get_clasg_indexes(ai=ai)
 END SUBROUTINE get_args_from_invocation
 
-SUBROUTINE get_cla(self, val, pref, args, group, switch, position, error)
+SUBROUTINE get_cla(self, val, pref, args, group, switch, position, ERROR)
   !! Get CLA (single) value from CLAs list parsed.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   CLASS(*), INTENT(inout) :: val !! CLA value.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
-  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: position
+  !! Position of positional CLA.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
+  LOGICAL :: found
+  !! Flag for checking if CLA containing switch has been found.
   INTEGER(I4P) :: g !! Group counter.
   INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error>0.AND.self%error_unknown_clas/=ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. self%error_unknown_clas / &
+        =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
   END IF
-IF (self%error==0.OR.self%error_unknown_clas==ERROR_UNKNOWN_CLAS_IGNORED) THEN
+  IF (self%ERROR == 0 .OR. self%error_unknown_clas == &
+      ERROR_UNKNOWN_CLAS_IGNORED) THEN
     IF (PRESENT(switch)) THEN
       ! search for the CLA corresponding to switch
       found = .FALSE.
       DO a = 1, self%clasg(g)%Na
         IF (.NOT. self%clasg(g)%cla(a)%is_positional) THEN
-          IF ((self%clasg(g)%cla(a)%switch==switch).OR.(self%clasg(g)%cla(a)%switch_ab==switch)) THEN
+          IF ((self%clasg(g)%cla(a)%switch == switch) .OR. &
+              (self%clasg(g)%cla(a)%switch_ab == switch)) THEN
             found = .TRUE.
             EXIT
           END IF
         END IF
       END DO
       IF (.NOT. found) THEN
-        CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+        CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
       ELSE
-        CALL self%clasg(g)%cla(a)%get(pref=pref, val=val); self%error = self%clasg(g)%cla(a)%error
+        CALL self%clasg(g)%cla(a)%get(pref=pref, val=val); self%ERROR = &
+ self%clasg(g)%cla(a)%ERROR
       END IF
     ELSEIF (PRESENT(position)) THEN
-      CALL self%clasg(g)%cla(position)%get(pref=pref, val=val); self%error = self%clasg(g)%cla(position)%error
+      CALL self%clasg(g)%cla(position)%get(pref=pref, val=val); self%ERROR = &
+ self%clasg(g)%cla(position)%ERROR
     ELSE
-      CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
     END IF
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error==ERROR_UNKNOWN.AND.self%error_unknown_clas==ERROR_UNKNOWN_CLAS_IGNORED) self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (self%error == 0 .AND. (.NOT. self%clasg(g)%is_called)) THEN
+  IF (self%ERROR == ERROR_UNKNOWN .AND. self%error_unknown_clas == &
+      ERROR_UNKNOWN_CLAS_IGNORED) self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (self%ERROR == 0 .AND. (.NOT. self%clasg(g)%is_called)) THEN
     ! TODO warn (if liked) for non invoked group querying
   END IF
-  IF (PRESENT(error)) error = self%error
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla
 
-SUBROUTINE get_cla_list(self, val, pref, args, group, switch, position, error)
+SUBROUTINE get_cla_list(self, val, pref, args, group, switch, position, ERROR)
   !! Get CLA multiple values from CLAs list parsed.
   !!
   !! @note For logical type CLA the value is directly read without any robust error trapping.
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   CLASS(*), INTENT(inout) :: val(1:) !! CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
-  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: position
+  !! Position of positional CLA.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
+  LOGICAL :: found
+  !! Flag for checking if CLA containing switch has been found.
   INTEGER(I4P) :: g !! Group counter.
   INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error>0.AND.self%error_unknown_clas/=ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. self%error_unknown_clas / &
+        =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1109,30 +1138,34 @@ SUBROUTINE get_cla_list(self, val, pref, args, group, switch, position, error)
     found = .FALSE.
     DO a = 1, self%clasg(g)%Na
       IF (.NOT. self%clasg(g)%cla(a)%is_positional) THEN
-        IF ((self%clasg(g)%cla(a)%switch==switch).OR.(self%clasg(g)%cla(a)%switch_ab==switch)) THEN
+        IF ((self%clasg(g)%cla(a)%switch == switch) .OR. &
+            (self%clasg(g)%cla(a)%switch_ab == switch)) THEN
           found = .TRUE.
           EXIT
         END IF
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
-      CALL self%clasg(g)%cla(a)%get(pref=pref, val=val); self%error = self%clasg(g)%cla(a)%error
+      CALL self%clasg(g)%cla(a)%get(pref=pref, val=val); self%ERROR = &
+ self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
-    CALL self%clasg(g)%cla(position)%get(pref=pref, val=val); self%error = error
+    CALL self%clasg(g)%cla(position)%get(pref=pref, val=val); &
+ self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error==ERROR_UNKNOWN.AND.self%error_unknown_clas==ERROR_UNKNOWN_CLAS_IGNORED) self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+  IF (self%ERROR == ERROR_UNKNOWN .AND. self%error_unknown_clas == &
+      ERROR_UNKNOWN_CLAS_IGNORED) self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list
 
 #if defined USE_Real128
 SUBROUTINE get_cla_list_varying_R16P(self, val, pref, args, group, &
-     & switch, position, error)
+     & switch, position, ERROR)
   !! Get CLA multiple values from CLAs list parsed with varying size list, real(R16P).
   !!
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
@@ -1141,24 +1174,28 @@ SUBROUTINE get_cla_list_varying_R16P(self, val, pref, args, group, &
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   REAL(R16P), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
-  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: position
+  !! Position of positional CLA.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
+  LOGICAL :: found
+  !! Flag for checking if CLA containing switch has been found.
   INTEGER(I4P) :: g !! Group counter.
   INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error > 0 &
-         & .AND. self%error_unknown_clas /= ERROR_UNKNOWN_CLAS_IGNORED) &
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 &
+         & .AND. self%error_unknown_clas / =ERROR_UNKNOWN_CLAS_IGNORED) &
          & RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1176,21 +1213,22 @@ SUBROUTINE get_cla_list_varying_R16P(self, val, pref, args, group, &
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
       CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val)
-      self%error = self%clasg(g)%cla(a)%error
+      self%ERROR = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
-    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); self%error = error
+    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); &
+ self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error == ERROR_UNKNOWN &
+  IF (self%ERROR == ERROR_UNKNOWN &
        & .AND. self%error_unknown_clas == ERROR_UNKNOWN_CLAS_IGNORED) &
-       & self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+       & self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_R16P
 #endif
 
@@ -1209,7 +1247,7 @@ END SUBROUTINE get_cla_list_varying_R16P
 !@endnote
 
 SUBROUTINE get_cla_list_varying_R8P(self, val, pref, args, group, &
-     & switch, position, error)
+     & switch, position, ERROR)
   CLASS(CommandLineInterface_), INTENT(inout) :: self
   !! CLI data.
   REAL(R8P), ALLOCATABLE, INTENT(out) :: val(:)
@@ -1224,7 +1262,7 @@ SUBROUTINE get_cla_list_varying_R8P(self, val, pref, args, group, &
   !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position
   !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR
   !! Error trapping flag.
   LOGICAL :: found
   !! Flag for checking if CLA containing switch has been found.
@@ -1234,14 +1272,14 @@ SUBROUTINE get_cla_list_varying_R8P(self, val, pref, args, group, &
   !! Argument counter.
   !> main
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error > 0 .AND. &
-         & self%error_unknown_clas /= ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. &
+         & self%error_unknown_clas / =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
       CALL self%errored(pref=pref, &
-           & error=ERROR_MISSING_GROUP, group=group)
+           & ERROR = ERROR_MISSING_GROUP, group = group)
     END IF
   ELSE
     g = 0
@@ -1259,24 +1297,24 @@ SUBROUTINE get_cla_list_varying_R8P(self, val, pref, args, group, &
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, &
-           & switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, &
+           & switch = switch)
     ELSE
       CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val)
-      self%error = self%clasg(g)%cla(a)%error
+      self%ERROR = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
     CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val)
-    self%error = error
+    self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   !! check if the only error found is for unknown passed
   !! CLAs and if it is ignored by the user
-  IF (self%error == ERROR_UNKNOWN .AND. &
+  IF (self%ERROR == ERROR_UNKNOWN .AND. &
        & self%error_unknown_clas == ERROR_UNKNOWN_CLAS_IGNORED) &
-       & self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+       & self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_R8P
 
 ! Get CLA multiple values from CLAs list parsed with
@@ -1289,7 +1327,7 @@ END SUBROUTINE get_cla_list_varying_R8P
 ! any robust error trapping.
 
 SUBROUTINE get_cla_list_varying_R4P(self, val, pref, args, group, &
-     & switch, position, error)
+     & switch, position, ERROR)
   CLASS(CommandLineInterface_), INTENT(inout) :: self
   !! CLI data.
   REAL(R4P), ALLOCATABLE, INTENT(out) :: val(:)
@@ -1304,7 +1342,7 @@ SUBROUTINE get_cla_list_varying_R4P(self, val, pref, args, group, &
   !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position
   !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR
   !! Error trapping flag.
   LOGICAL :: found
   !! Flag for checking if CLA containing switch has been found.
@@ -1314,13 +1352,13 @@ SUBROUTINE get_cla_list_varying_R4P(self, val, pref, args, group, &
   !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error > 0 .AND. &
-         & self%error_unknown_clas /= ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. &
+         & self%error_unknown_clas / =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1338,22 +1376,22 @@ SUBROUTINE get_cla_list_varying_R4P(self, val, pref, args, group, &
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
       CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val)
-      self%error = self%clasg(g)%cla(a)%error
+      self%ERROR = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
     CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val)
-    self%error = error
+    self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error == ERROR_UNKNOWN .AND. &
+  IF (self%ERROR == ERROR_UNKNOWN .AND. &
        & self%error_unknown_clas == ERROR_UNKNOWN_CLAS_IGNORED) &
-       & self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+       & self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_R4P
 
 ! Get CLA multiple values from CLAs list parsed with varying size list, integer(I8P).
@@ -1363,7 +1401,7 @@ END SUBROUTINE get_cla_list_varying_R4P
 ! @note For logical type CLA the value is directly read without any robust error trapping.
 
 SUBROUTINE get_cla_list_varying_I8P(self, val, pref, args, &
-     & group, switch, position, error)
+     & group, switch, position, ERROR)
   CLASS(CommandLineInterface_), INTENT(inout) :: self
   !! CLI data.
   INTEGER(I8P), ALLOCATABLE, INTENT(out) :: val(:)
@@ -1378,7 +1416,7 @@ SUBROUTINE get_cla_list_varying_I8P(self, val, pref, args, &
   !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position
   !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR
   !! Error trapping flag.
   LOGICAL :: found
   !! Flag for checking if CLA containing switch has been found.
@@ -1387,14 +1425,14 @@ SUBROUTINE get_cla_list_varying_I8P(self, val, pref, args, &
   INTEGER(I4P) :: a
   !! Argument counter.
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error > 0 &
-         & .AND. self%error_unknown_clas /= ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 &
+         & .AND. self%error_unknown_clas / =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
       CALL self%errored(pref=pref, &
-           & error=ERROR_MISSING_GROUP, group=group)
+           & ERROR = ERROR_MISSING_GROUP, group = group)
     END IF
   ELSE
     g = 0
@@ -1412,22 +1450,22 @@ SUBROUTINE get_cla_list_varying_I8P(self, val, pref, args, &
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
       CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val)
-      self%error = self%clasg(g)%cla(a)%error
+      self%ERROR = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
     CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val)
-    self%error = error
+    self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error == ERROR_UNKNOWN &
+  IF (self%ERROR == ERROR_UNKNOWN &
        & .AND. self%error_unknown_clas == ERROR_UNKNOWN_CLAS_IGNORED) &
-       & self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+       & self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_I8P
 
 ! Get CLA multiple values from CLAs list parsed with varying size
@@ -1440,7 +1478,7 @@ END SUBROUTINE get_cla_list_varying_I8P
 ! any robust error trapping.
 
 SUBROUTINE get_cla_list_varying_I4P(self, val, pref, args, group, &
-     & switch, position, error)
+     & switch, position, ERROR)
   CLASS(CommandLineInterface_), INTENT(inout) :: self
   !! CLI data.
   INTEGER(I4P), ALLOCATABLE, INTENT(out) :: val(:)
@@ -1455,7 +1493,7 @@ SUBROUTINE get_cla_list_varying_I4P(self, val, pref, args, group, &
   !! Switch name.
   INTEGER(I4P), OPTIONAL, INTENT(in) :: position
   !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR
   !! Error trapping flag.
   LOGICAL :: found
   !! Flag for checking if CLA containing switch has been found.
@@ -1465,13 +1503,13 @@ SUBROUTINE get_cla_list_varying_I4P(self, val, pref, args, group, &
   !! Argument counter.
   !> main
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error > 0 .AND. &
-         & self%error_unknown_clas /= ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. &
+         & self%error_unknown_clas / =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1489,22 +1527,22 @@ SUBROUTINE get_cla_list_varying_I4P(self, val, pref, args, group, &
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
       CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val)
-      self%error = self%clasg(g)%cla(a)%error
+      self%ERROR = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
     CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val)
-    self%error = error
+    self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error == ERROR_UNKNOWN .AND. &
+  IF (self%ERROR == ERROR_UNKNOWN .AND. &
        & self%error_unknown_clas == ERROR_UNKNOWN_CLAS_IGNORED) &
-       & self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+       & self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_I4P
 
   !! Get CLA multiple values from CLAs list parsed with varying size list, integer(I2P).
@@ -1514,26 +1552,31 @@ END SUBROUTINE get_cla_list_varying_I4P
   !! @note For logical type CLA the value is directly read without any robust error trapping.
 
 SUBROUTINE get_cla_list_varying_I2P(self, val, pref, args, group, &
-     & switch, position, error)
+     & switch, position, ERROR)
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   INTEGER(I2P), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
-  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: position
+  !! Position of positional CLA.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
+  LOGICAL :: found
+  !! Flag for checking if CLA containing switch has been found.
   INTEGER(I4P) :: g !! Group counter.
   INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error>0.AND.self%error_unknown_clas/=ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. self%error_unknown_clas / &
+        =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1543,28 +1586,33 @@ SUBROUTINE get_cla_list_varying_I2P(self, val, pref, args, group, &
     found = .FALSE.
     DO a = 1, self%clasg(g)%Na
       IF (.NOT. self%clasg(g)%cla(a)%is_positional) THEN
-        IF ((self%clasg(g)%cla(a)%switch==switch).OR.(self%clasg(g)%cla(a)%switch_ab==switch)) THEN
+        IF ((self%clasg(g)%cla(a)%switch == switch) .OR. &
+            (self%clasg(g)%cla(a)%switch_ab == switch)) THEN
           found = .TRUE.
           EXIT
         END IF
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
-      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%error = self%clasg(g)%cla(a)%error
+      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%ERROR &
+ = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
-    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); self%error = error
+    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); &
+ self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error==ERROR_UNKNOWN.AND.self%error_unknown_clas==ERROR_UNKNOWN_CLAS_IGNORED) self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+  IF (self%ERROR == ERROR_UNKNOWN .AND. self%error_unknown_clas == &
+      ERROR_UNKNOWN_CLAS_IGNORED) self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_I2P
 
-  SUBROUTINE get_cla_list_varying_I1P(self, val, pref, args, group, switch, position, error)
+SUBROUTINE get_cla_list_varying_I1P(self, val, pref, args, group, switch, &
+                                    position, ERROR)
   !! Get CLA multiple values from CLAs list parsed with varying size list, integer(I1P).
   !!
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
@@ -1573,22 +1621,27 @@ END SUBROUTINE get_cla_list_varying_I2P
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   INTEGER(I1P), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
-  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: position
+  !! Position of positional CLA.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
+  LOGICAL :: found
+  !! Flag for checking if CLA containing switch has been found.
   INTEGER(I4P) :: g !! Group counter.
   INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error>0.AND.self%error_unknown_clas/=ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. self%error_unknown_clas / &
+        =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1598,28 +1651,33 @@ END SUBROUTINE get_cla_list_varying_I2P
     found = .FALSE.
     DO a = 1, self%clasg(g)%Na
       IF (.NOT. self%clasg(g)%cla(a)%is_positional) THEN
-        IF ((self%clasg(g)%cla(a)%switch==switch).OR.(self%clasg(g)%cla(a)%switch_ab==switch)) THEN
+        IF ((self%clasg(g)%cla(a)%switch == switch) .OR. &
+            (self%clasg(g)%cla(a)%switch_ab == switch)) THEN
           found = .TRUE.
           EXIT
         END IF
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
-      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%error = self%clasg(g)%cla(a)%error
+      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%ERROR &
+ = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
-    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); self%error = error
+    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); &
+ self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error==ERROR_UNKNOWN.AND.self%error_unknown_clas==ERROR_UNKNOWN_CLAS_IGNORED) self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+  IF (self%ERROR == ERROR_UNKNOWN .AND. self%error_unknown_clas == &
+      ERROR_UNKNOWN_CLAS_IGNORED) self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_I1P
 
-  SUBROUTINE get_cla_list_varying_logical(self, val, pref, args, group, switch, position, error)
+SUBROUTINE get_cla_list_varying_logical(self, val, pref, args, group, &
+                                        switch, position, ERROR)
   !! Get CLA multiple values from CLAs list parsed with varying size list, logical.
   !!
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
@@ -1628,22 +1686,27 @@ END SUBROUTINE get_cla_list_varying_I1P
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   LOGICAL, ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
-  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: position
+  !! Position of positional CLA.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
+  LOGICAL :: found
+  !! Flag for checking if CLA containing switch has been found.
   INTEGER(I4P) :: g !! Group counter.
   INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error>0.AND.self%error_unknown_clas/=ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. self%error_unknown_clas / &
+        =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1653,28 +1716,33 @@ END SUBROUTINE get_cla_list_varying_I1P
     found = .FALSE.
     DO a = 1, self%clasg(g)%Na
       IF (.NOT. self%clasg(g)%cla(a)%is_positional) THEN
-        IF ((self%clasg(g)%cla(a)%switch==switch).OR.(self%clasg(g)%cla(a)%switch_ab==switch)) THEN
+        IF ((self%clasg(g)%cla(a)%switch == switch) .OR. &
+            (self%clasg(g)%cla(a)%switch_ab == switch)) THEN
           found = .TRUE.
           EXIT
         END IF
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
-      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%error = self%clasg(g)%cla(a)%error
+      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%ERROR &
+ = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
-    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); self%error = error
+    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); &
+ self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error==ERROR_UNKNOWN.AND.self%error_unknown_clas==ERROR_UNKNOWN_CLAS_IGNORED) self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+  IF (self%ERROR == ERROR_UNKNOWN .AND. self%error_unknown_clas == &
+      ERROR_UNKNOWN_CLAS_IGNORED) self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_logical
 
-  SUBROUTINE get_cla_list_varying_char(self, val, pref, args, group, switch, position, error)
+SUBROUTINE get_cla_list_varying_char(self, val, pref, args, group, switch, &
+                                     position, ERROR)
   !! Get CLA multiple values from CLAs list parsed with varying size list, character.
   !!
   !! @note The CLA list is returned deallocated if values are not correctly gotten.
@@ -1683,22 +1751,27 @@ END SUBROUTINE get_cla_list_varying_logical
   CLASS(CommandLineInterface_), INTENT(inout) :: self !! CLI data.
   CHARACTER(*), ALLOCATABLE, INTENT(out) :: val(:) !! CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: args !! String containing command line arguments.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: group !! Name of group (command) of CLA.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: args
+  !! String containing command line arguments.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: group
+  !! Name of group (command) of CLA.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !! Switch name.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: position !! Position of positional CLA.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !! Error trapping flag.
-  LOGICAL :: found !! Flag for checking if CLA containing switch has been found.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: position
+  !! Position of positional CLA.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !! Error trapping flag.
+  LOGICAL :: found
+  !! Flag for checking if CLA containing switch has been found.
   INTEGER(I4P) :: g !! Group counter.
   INTEGER(I4P) :: a !! Argument counter.
 
   IF (.NOT. self%is_parsed_) THEN
-    CALL self%parse(pref=pref, args=args, error=error)
-    IF (self%error>0.AND.self%error_unknown_clas/=ERROR_UNKNOWN_CLAS_IGNORED) RETURN
+    CALL self%parse(pref=pref, args=args, ERROR=ERROR)
+    IF (self%ERROR > 0 .AND. self%error_unknown_clas / &
+        =ERROR_UNKNOWN_CLAS_IGNORED) RETURN
   END IF
   IF (PRESENT(group)) THEN
     IF (.NOT. self%is_defined_group(group=group, g=g)) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_GROUP, group=group)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_GROUP, group=group)
     END IF
   ELSE
     g = 0
@@ -1708,35 +1781,42 @@ END SUBROUTINE get_cla_list_varying_logical
     found = .FALSE.
     DO a = 1, self%clasg(g)%Na
       IF (.NOT. self%clasg(g)%cla(a)%is_positional) THEN
-        IF ((self%clasg(g)%cla(a)%switch==switch).OR.(self%clasg(g)%cla(a)%switch_ab==switch)) THEN
+        IF ((self%clasg(g)%cla(a)%switch == switch) .OR. &
+            (self%clasg(g)%cla(a)%switch_ab == switch)) THEN
           found = .TRUE.
           EXIT
         END IF
       END IF
     END DO
     IF (.NOT. found) THEN
-      CALL self%errored(pref=pref, error=ERROR_MISSING_CLA, switch=switch)
+      CALL self%errored(pref=pref, ERROR=ERROR_MISSING_CLA, switch=switch)
     ELSE
-      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%error = self%clasg(g)%cla(a)%error
+      CALL self%clasg(g)%cla(a)%get_varying(pref=pref, val=val); self%ERROR &
+ = self%clasg(g)%cla(a)%ERROR
     END IF
   ELSEIF (PRESENT(position)) THEN
-    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); self%error = error
+    CALL self%clasg(g)%cla(position)%get_varying(pref=pref, val=val); &
+ self%ERROR = ERROR
   ELSE
-    CALL self%errored(pref=pref, error=ERROR_MISSING_SELECTION_CLA)
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_SELECTION_CLA)
   END IF
   ! check if the only error found is for unknown passed CLAs and if it is ignored by the user
-  IF (self%error==ERROR_UNKNOWN.AND.self%error_unknown_clas==ERROR_UNKNOWN_CLAS_IGNORED) self%error = ERROR_UNKNOWN_CLAS_IGNORED
-  IF (PRESENT(error)) error = self%error
+  IF (self%ERROR == ERROR_UNKNOWN .AND. self%error_unknown_clas == &
+      ERROR_UNKNOWN_CLAS_IGNORED) self%ERROR = ERROR_UNKNOWN_CLAS_IGNORED
+  IF (PRESENT(ERROR)) ERROR = self%ERROR
 END SUBROUTINE get_cla_list_varying_char
 
-  FUNCTION usage(self, g, pref, no_header, no_examples, no_epilog, markdown) RESULT(usaged)
+FUNCTION usage(self, g, pref, no_header, no_examples, no_epilog, markdown) &
+  RESULT(usaged)
   !! Print correct usage of CLI.
   CLASS(CommandLineInterface_), INTENT(in) :: self !! CLI data.
   INTEGER(I4P), INTENT(in) :: g !! Group index.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !! Prefixing string.
   LOGICAL, OPTIONAL, INTENT(in) :: no_header !! Avoid insert header to usage.
-  LOGICAL, OPTIONAL, INTENT(in) :: no_examples !! Avoid insert examples to usage.
-  LOGICAL, OPTIONAL, INTENT(in) :: no_epilog !! Avoid insert epilogue to usage.
+  LOGICAL, OPTIONAL, INTENT(in) :: no_examples
+  !! Avoid insert examples to usage.
+  LOGICAL, OPTIONAL, INTENT(in) :: no_epilog
+  !! Avoid insert epilogue to usage.
   LOGICAL, OPTIONAL, INTENT(in) :: markdown !! Format things with markdown
   CHARACTER(len=:), ALLOCATABLE :: prefd !! Prefixing string.
   CHARACTER(len=:), ALLOCATABLE :: usaged !! Usage string.
@@ -1754,7 +1834,8 @@ END SUBROUTINE get_cla_list_varying_char
   prefd = ''; IF (PRESENT(pref)) prefd = pref
   grouped_examples = .FALSE.
   IF (g > 0) THEN ! usage of a specific command
-    usaged = self%clasg(g)%usage(pref=prefd,no_header=no_headerd,markdown=markdownd)
+    usaged = self%clasg(g)%usage(pref=prefd, no_header=no_headerd, &
+                                 markdown=markdownd)
     IF (ALLOCATED(self%clasg(g)%examples) .AND. (.NOT. no_examplesd)) THEN
       usaged = usaged//print_examples(prefd, self%clasg(g)%examples)
       grouped_examples = .TRUE.
@@ -1764,25 +1845,32 @@ END SUBROUTINE get_cla_list_varying_char
       usaged = ''
     ELSE
       usaged = prefd//self%help//self%progname//' '//self%signature()
-      IF (self%description/='') usaged = usaged//new_LINE('a')//new_LINE('a')//prefd//self%description
+      IF (self%description / ='') usaged = &
+        usaged//NEW_LINE('a')//NEW_LINE('a')//prefd//self%description
     END IF
-    IF (self%clasg(0)%Na>0) usaged = usaged//new_LINE('a')//self%clasg(0)%usage(pref=prefd,no_header=.TRUE.,markdown=markdownd)
+    IF (self%clasg(0)%Na > 0) usaged = &
+      usaged//NEW_LINE('a')//self%clasg(0)%usage(pref=prefd, &
+                                                 no_header=.TRUE., &
+                                                 markdown=markdownd)
     IF (SIZE(self%clasg, dim=1) > 1) THEN
       usaged = usaged//NEW_LINE('a')//NEW_LINE('a')//prefd//'Commands:'
       DO gi = 1, SIZE(self%clasg, dim=1) - 1
         usaged = usaged//NEW_LINE('a')//prefd//'  '//self%clasg(gi)%group
-        usaged = usaged//new_LINE('a')//prefd//REPEAT(' ',10)//self%clasg(gi)%description
+        usaged = usaged//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                                      10)//self%clasg(gi)%description
       END DO
-      usaged = usaged//new_LINE('a')//new_LINE('a')//prefd//'For more detailed commands help try:'
+      usaged = usaged//NEW_LINE('a')//NEW_LINE('a')//prefd//'For more detailed commands help try:'
       DO gi = 1, SIZE(self%clasg, dim=1) - 1
-        usaged = usaged//new_LINE('a')//prefd//'  '//self%progname//' '//self%clasg(gi)%group//' -h,--help'
+        usaged = usaged//NEW_LINE('a')//prefd//'  '//self%progname//' '//self%clasg(gi)%group//' -h,--help'
       END DO
     END IF
   END IF
-  IF (ALLOCATED(self%examples).AND.(.NOT.no_examplesd).AND.(.NOT.grouped_examples)) THEN
+  IF (ALLOCATED(self%examples) .AND. (.NOT. no_examplesd) .AND. (.NOT. &
+                                                                 grouped_examples)) THEN
     usaged = usaged//print_examples(prefd, self%examples)
   END IF
-  IF (self%epilog/=''.AND.(.NOT.no_epilogd)) usaged = usaged//new_LINE('a')//prefd//self%epilog
+  IF (self%epilog / ='' .AND. (.NOT. no_epilogd)) usaged = &
+    usaged//NEW_LINE('a')//prefd//self%epilog
 
 CONTAINS
   FUNCTION print_examples(prefd, examples) RESULT(exampled)
@@ -1802,20 +1890,24 @@ END FUNCTION usage
 FUNCTION signature(self, bash_completion)
   !! Get signature.
   CLASS(CommandLineInterface_), INTENT(in) :: self !! CLI data.
-  LOGICAL, OPTIONAL, INTENT(in) :: bash_completion !! Return the signature for bash completion.
-  LOGICAL :: bash_completion_ !! Return the signature for bash completion, local variable.
+  LOGICAL, OPTIONAL, INTENT(in) :: bash_completion
+  !! Return the signature for bash completion.
+  LOGICAL :: bash_completion_
+  !! Return the signature for bash completion, local variable.
   CHARACTER(len=:), ALLOCATABLE :: signature !< Signature.
   INTEGER(I4P) :: g !< Counter.
 
-  bash_completion_ = .FALSE.; IF (PRESENT(bash_completion)) bash_completion_ = bash_completion
+  bash_completion_ = .FALSE.; IF (PRESENT(bash_completion)) bash_completion_ &
+ = bash_completion
 
   IF (bash_completion_) THEN
     signature = signature//NEW_LINE('a')//'    COMPREPLY=( )'
-  signature = signature//NEW_LINE('a')//'    COMPREPLY+=( $( compgen -W "'// &
-                self%clasg(0)%signature(bash_completion=bash_completion, plain=.TRUE.)//'" -- $cur ) )'
+    signature = signature//NEW_LINE('a')//'    COMPREPLY+=( $( compgen -W "'// &
+                self%clasg(0)%signature(bash_completion=bash_completion, &
+                                        plain=.TRUE.)//'" -- $cur ) )'
     IF (SIZE(self%clasg, dim=1) > 1) THEN
       DO g = 1, SIZE(self%clasg, dim=1) - 1
-        signature = signature//new_LINE('a')//'    COMPREPLY+=( $( compgen -W "'//self%clasg(g)%group//'" -- $cur ) )'
+        signature = signature//NEW_LINE('a')//'    COMPREPLY+=( $( compgen -W "'//self%clasg(g)%group//'" -- $cur ) )'
       END DO
     END IF
   ELSE
@@ -1838,11 +1930,12 @@ SUBROUTINE print_usage(self, pref)
   WRITE (self%usage_lun, '(A)') self%usage(pref=pref, g=0)
 END SUBROUTINE print_usage
 
-SUBROUTINE save_bash_completion(self, bash_file, error)
+SUBROUTINE save_bash_completion(self, bash_file, ERROR)
   !< Save bash completion script (for named CLAs only).
   CLASS(CommandLineInterface_), INTENT(in) :: self !< CLI data.
-  CHARACTER(*), INTENT(in) :: bash_file !< Output file name of bash completion script.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !< Error trapping flag.
+  CHARACTER(*), INTENT(in) :: bash_file
+  !< Output file name of bash completion script.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !< Error trapping flag.
   CHARACTER(len=:), ALLOCATABLE :: script !< Script text.
   INTEGER(I4P) :: g !< CLAs groups counter.
   INTEGER(I4P) :: u !< Unit file handler.
@@ -1873,10 +1966,11 @@ SUBROUTINE save_bash_completion(self, bash_file, error)
     script = script//NEW_LINE('a')//'    fi'
     script = script//NEW_LINE('a')//'  done'
     ! script = script//new_line('a')//'  fi'
-    script = script//new_LINE('a')//'  if [ "$group" == "'//self%clasg(1)%group//'" ] ; then'
+    script = &
+      script//NEW_LINE('a')//'  if [ "$group" == "'//self%clasg(1)%group//'" ] ; then'
     script = script//self%clasg(1)%signature(bash_completion=.TRUE.)
     DO g = 2, SIZE(self%clasg, dim=1) - 1
-      script = script//new_LINE('a')//'  elif [ "$group" == "'//self%clasg(g)%group//'" ] ; then'
+      script = script//NEW_LINE('a')//'  elif [ "$group" == "'//self%clasg(g)%group//'" ] ; then'
       script = script//self%clasg(g)%signature(bash_completion=.TRUE.)
     END DO
     script = script//NEW_LINE('a')//'  else'
@@ -1884,13 +1978,15 @@ SUBROUTINE save_bash_completion(self, bash_file, error)
     script = script//NEW_LINE('a')//'  fi'
     script = script//NEW_LINE('a')//'  return 0'
     script = script//NEW_LINE('a')//'}'
-      script = script//new_LINE('a')//'complete -F _completion '//basename(self%progname)
+    script = &
+      script//NEW_LINE('a')//'complete -F _completion '//basename(self%progname)
   ELSE
-    script = script//new_LINE('a')//'complete -W "'//self%signature(bash_completion=.TRUE.)//'" '//basename(self%progname)
+    script = &
+      script//NEW_LINE('a')//'complete -W "'//self%signature(bash_completion=.TRUE.)//'" '//basename(self%progname)
   END IF
-  OPEN (newunit=u, file=TRIM(ADJUSTL(bash_file)))
-  IF (PRESENT(error)) THEN
-    WRITE (u, "(A)", iostat=error) script
+  OPEN (NEWUNIT=u, file=TRIM(ADJUSTL(bash_file)))
+  IF (PRESENT(ERROR)) THEN
+    WRITE (u, "(A)", iostat=ERROR) script
   ELSE
     WRITE (u, "(A)") script
   END IF
@@ -1898,7 +1994,8 @@ SUBROUTINE save_bash_completion(self, bash_file, error)
 CONTAINS
   PURE FUNCTION basename(progname)
     CHARACTER(len=*), INTENT(in) :: progname !< Program name.
-    CHARACTER(len=:), ALLOCATABLE :: basename !< Program name without full PATH.
+    CHARACTER(len=:), ALLOCATABLE :: basename
+    !< Program name without full PATH.
     INTEGER(I4P) :: pos !< Counter.
 
     basename = progname
@@ -1912,11 +2009,12 @@ CONTAINS
   END FUNCTION basename
 END SUBROUTINE save_bash_completion
 
-SUBROUTINE save_man_page(self, man_file, error)
+SUBROUTINE save_man_page(self, man_file, ERROR)
   !< Save CLI usage as man page.
   CLASS(CommandLineInterface_), INTENT(in) :: self !< CLI data.
-  CHARACTER(*), INTENT(in) :: man_file !< Output file name for saving man page.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !< Error trapping flag.
+  CHARACTER(*), INTENT(in) :: man_file
+  !< Output file name for saving man page.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !< Error trapping flag.
   CHARACTER(len=:), ALLOCATABLE :: man !< Man page.
   INTEGER(I4P) :: idate(1:8) !< Integer array for handling the date.
   INTEGER(I4P) :: e !< Counter.
@@ -1935,16 +2033,19 @@ SUBROUTINE save_man_page(self, man_file, error)
                                           "Dec"] !< Months list.
 
   CALL DATE_AND_TIME(values=idate)
-  man = '.TH '//self%progname//' "1" "'//month(idate(2))//' '//trim(adjustl(strz(idate(1),4)))//'" "version '//self%version//&
+  man = '.TH '//self%progname//' "1" "'//month(idate(2))//' '//TRIM(ADJUSTL(strz(idate(1), 4)))//'" "version '//self%version// &
         '" "'//self%progname//' Manual"'
   man = man//NEW_LINE('a')//'.SH NAME'
-  man = man//new_line('a')//self%progname//' - manual page for '//self%progname//' version '//self%version
+  man = man//NEW_LINE('a')//self%progname//' - manual page for '//self%progname//' version '//self%version
   man = man//NEW_LINE('a')//'.SH SYNOPSIS'
-  man = man//new_line('a')//'.B '//self%progname//new_line('a')//trim(adjustl(self%signature()))
-  if (self%description /= '') man = man//new_line('a')//'.SH DESCRIPTION'//new_line('a')//self%description
+  man = man//NEW_LINE('a')//'.B '//self%progname//NEW_LINE('a')//TRIM(ADJUSTL(self%signature()))
+  IF (self%description / = '') man = &
+    man//NEW_LINE('a')//'.SH DESCRIPTION'//NEW_LINE('a')//self%description
   IF (self%clasg(0)%Na > 0) THEN
     man = man//NEW_LINE('a')//'.SH OPTIONS'
-    man = man//new_line('a')//self%usage(no_header=.true.,no_examples=.true.,no_epilog=.true.,g=0)
+    man = man//NEW_LINE('a')//self%usage(no_header=.TRUE., &
+                                         no_examples=.TRUE., &
+                                         no_epilog=.TRUE., g=0)
   END IF
   IF (ALLOCATED(self%examples)) THEN
     man = man//NEW_LINE('a')//'.SH EXAMPLES'
@@ -1958,22 +2059,25 @@ SUBROUTINE save_man_page(self, man_file, error)
     man = man//NEW_LINE('a')//'.fi'
     man = man//NEW_LINE('a')//'.PP'
   END IF
-  if (self%authors /= '') man = man//new_line('a')//'.SH AUTHOR'//new_line('a')//self%authors
-  if (self%license /= '') man = man//new_line('a')//'.SH COPYRIGHT'//new_line('a')//self%license
-  OPEN (newunit=u, file=TRIM(ADJUSTL(man_file)))
-  IF (PRESENT(error)) THEN
-    WRITE (u, "(A)", iostat=error) man
+  IF (self%authors / = '') man = &
+    man//NEW_LINE('a')//'.SH AUTHOR'//NEW_LINE('a')//self%authors
+  IF (self%license / = '') man = &
+    man//NEW_LINE('a')//'.SH COPYRIGHT'//NEW_LINE('a')//self%license
+  OPEN (NEWUNIT=u, file=TRIM(ADJUSTL(man_file)))
+  IF (PRESENT(ERROR)) THEN
+    WRITE (u, "(A)", iostat=ERROR) man
   ELSE
     WRITE (u, "(A)") man
   END IF
   CLOSE (u)
 END SUBROUTINE save_man_page
 
-SUBROUTINE save_usage_to_markdown(self, markdown_file, error)
+SUBROUTINE save_usage_to_markdown(self, markdown_file, ERROR)
   !< Save CLI usage as markdown.
   CLASS(CommandLineInterface_), INTENT(in) :: self !< CLI data.
-  CHARACTER(*), INTENT(in) :: markdown_file !< Output file name for saving man page.
-  INTEGER(I4P), OPTIONAL, INTENT(out) :: error !< Error trapping flag.
+  CHARACTER(*), INTENT(in) :: markdown_file
+  !< Output file name for saving man page.
+  INTEGER(I4P), OPTIONAL, INTENT(out) :: ERROR !< Error trapping flag.
   CHARACTER(len=:), ALLOCATABLE :: man !< Man page.
   INTEGER(I4P) :: idate(1:8) !< Integer array for handling the date.
   INTEGER(I4P) :: e !< Counter.
@@ -1993,13 +2097,17 @@ SUBROUTINE save_usage_to_markdown(self, markdown_file, error)
 
   CALL DATE_AND_TIME(values=idate)
   man = '# '//self%progname//NEW_LINE('a')
-  man = man//new_line('a')//'Manual page for `'//self%progname//'` version '//self%version//new_line('a')
-  man = man//new_line('a')//'`'//self%progname//' '//trim(adjustl(self%signature()))//'`'//new_line('a')
-  man = man//new_line('a')//month(idate(2))//' '//trim(adjustl(strz(idate(1),4)))//new_line('a')
-  if (self%description /= '') man = man//new_line('a')//'### Short description'//new_line('a')//new_line('a')//self%description
+  man = man//NEW_LINE('a')//'Manual page for `'//self%progname//'` version '//self%version//NEW_LINE('a')
+  man = man//NEW_LINE('a')//'`'//self%progname//' '//TRIM(ADJUSTL(self%signature()))//'`'//NEW_LINE('a')
+  man = &
+    man//NEW_LINE('a')//month(idate(2))//' '//TRIM(ADJUSTL(strz(idate(1), &
+                                                                4)))//NEW_LINE('a')
+  IF (self%description / = '') man = &
+    man//NEW_LINE('a')//'### Short description'//NEW_LINE('a')//NEW_LINE('a')//self%description
   IF (self%clasg(0)%Na > 0) THEN
     man = man//NEW_LINE('a')//NEW_LINE('a')//'### Command line options:'
-    man = man//self%usage(no_header=.true.,no_examples=.true.,no_epilog=.true.,g=0,markdown=.true.)
+    man = man//self%usage(no_header=.TRUE., no_examples=.TRUE., &
+                          no_epilog=.TRUE., g=0, markdown=.TRUE.)
   END IF
   IF (ALLOCATED(self%examples)) THEN
     man = man//NEW_LINE('a')//NEW_LINE('a')//'### Examples'
@@ -2008,9 +2116,9 @@ SUBROUTINE save_usage_to_markdown(self, markdown_file, error)
       man = man//NEW_LINE('a')//'`'//TRIM(self%examples(e))//'` '
     END DO
   END IF
-  OPEN (newunit=u, file=TRIM(ADJUSTL(markdown_file)))
-  IF (PRESENT(error)) THEN
-    WRITE (u, "(A)", iostat=error) man
+  OPEN (NEWUNIT=u, file=TRIM(ADJUSTL(markdown_file)))
+  IF (PRESENT(ERROR)) THEN
+    WRITE (u, "(A)", iostat=ERROR) man
   ELSE
     WRITE (u, "(A)") man
   END IF
@@ -2018,26 +2126,31 @@ SUBROUTINE save_usage_to_markdown(self, markdown_file, error)
 END SUBROUTINE save_usage_to_markdown
 
 ! private methods
-SUBROUTINE errored(self, error, pref, group, switch)
+SUBROUTINE errored(self, ERROR, pref, group, switch)
   !< Trig error occurrence and print meaningful message.
   CLASS(CommandLineInterface_), INTENT(inout) :: self !< Object data.
-  INTEGER(I4P), INTENT(in) :: error !< Error occurred.
+  INTEGER(I4P), INTENT(in) :: ERROR !< Error occurred.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !< Prefixing string.
   CHARACTER(*), OPTIONAL, INTENT(in) :: group !< Group name.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !< CLA switch name.
   CHARACTER(len=:), ALLOCATABLE :: prefd !< Prefixing string.
 
-  self%error = error
-  IF (self%error /= 0) THEN
+  self%ERROR = ERROR
+  IF (self%ERROR / =0) THEN
     prefd = ''; IF (PRESENT(pref)) prefd = pref
-    prefd = prefd//self%progname//': '//colorize('error', color_fg=self%error_color, style=self%error_style)
-    SELECT CASE (self%error)
+    prefd = prefd//self%progname//': '//colorize('error', &
+                                                 color_fg=self%error_color, &
+                                                 style=self%error_style)
+    SELECT CASE (self%ERROR)
     CASE (ERROR_MISSING_CLA)
-      self%error_message = prefd//': there is no option "'//trim(adjustl(switch))//'"!'
+      self%error_message = &
+        prefd//': there is no option "'//TRIM(ADJUSTL(switch))//'"!'
     CASE (ERROR_MISSING_SELECTION_CLA)
-      self%error_message = prefd//': to get an option value one of switch "name" or "position" must be provided!'
+      self%error_message = &
+        prefd//': to get an option value one of switch "name" or "position" must be provided!'
     CASE (ERROR_MISSING_GROUP)
-      self%error_message = prefd//': ther is no group (command) named "'//TRIM(ADJUSTL(group))//'"!'
+      self%error_message = &
+        prefd//': ther is no group (command) named "'//TRIM(ADJUSTL(group))//'"!'
     CASE (ERROR_TOO_FEW_CLAS)
       ! self%error_message = prefd//': too few arguments ('//trim(str(.true.,Na))//')'//&
       ! ' respect the required ('//trim(str(.true.,self%Na_required))//')'
@@ -2085,4 +2198,4 @@ ELEMENTAL SUBROUTINE finalize(self)
   TYPE(CommandLineInterface_), INTENT(inout) :: self !< CLI data.
   CALL self%DEALLOCATE()
 END SUBROUTINE finalize
-ENDMODULE CommandLineInterface_Class
+END MODULE CommandLineInterface_Class

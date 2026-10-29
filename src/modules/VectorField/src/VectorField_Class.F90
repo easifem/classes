@@ -1771,8 +1771,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-19
-! update:
-!   - 2025-11-12: scalar and vector functions (Shion Shimizu)
 ! summary: Set the vector field by using a user function
 !
 ! If func is a vector function, all components are set from it. If func
@@ -1783,6 +1781,9 @@ END INTERFACE
 !
 ! func has the arguments (x, y, z, time); the time is given by
 ! times(1) (default 0).
+!
+! Changes:
+!   - 2025-11-12: scalar and vector functions (Shion Shimizu)
 !
 ! Arguments:
 !   obj : CLASS(VectorField_) - initiated vector field

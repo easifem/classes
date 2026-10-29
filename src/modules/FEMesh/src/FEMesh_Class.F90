@@ -21,10 +21,10 @@
 ! This module defines FEMesh_, the finite element mesh, and FEMeshPointer_.
 
 MODULE FEMesh_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, stdout, stderr
-USE String_Class, ONLY: String
-USE ExceptionHandler_Class, ONLY: e
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT, stderr, stdout
+USE String_Class, ONLY: String
 
 IMPLICIT NONE
 
@@ -169,8 +169,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-17
-! update:
-!   - 2026-10-23: The mesh objects are freed (they leaked before)
 ! summary: Deallocate an array of FEMesh_ pointers
 !
 ! Call Deallocate on every associated mesh of obj, free the mesh object
@@ -180,6 +178,9 @@ END INTERFACE
 ! created by ALLOCATE (for example by FEMesh_Pointer), must not point to a
 ! TARGET variable, and no two entries may point to the same mesh. Other
 ! pointers to these meshes are dangling after the call.
+!
+! Changes:
+!   - 2026-10-23: The mesh objects are freed (they leaked before)
 !
 ! Arguments:
 !   obj(:) : TYPE(FEMeshPointer_), allocatable, intent(inout) - array of mesh

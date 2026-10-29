@@ -17,8 +17,6 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-02
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Abstract base type for files
 !
 ! The development of this module is inspired from the
@@ -37,12 +35,15 @@
 ! open and whether it is open for reading or writing. Methods to get
 ! and set all these attributes are also provided. Open, Close, and
 ! Delete are deferred and implemented by the extended types.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 
 MODULE AbstractFile_Class
+USE ExceptionHandler_Class, ONLY: e
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: LGT
 USE String_Class, ONLY: String
-USE ExceptionHandler_Class, ONLY: e
 IMPLICIT NONE
 PRIVATE
 
@@ -58,8 +59,6 @@ PUBLIC :: AbstractFileDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-02
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Abstract file type, base of all file types
 !
 ! The full name of the file is made of three parts: path, fileName,
@@ -82,6 +81,9 @@ PUBLIC :: AbstractFileDeallocate
 !
 ! Open, Close, and Delete are deferred bindings, see [[obj_Open]],
 ! [[obj_Close]], and [[obj_Delete]].
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 
 TYPE, ABSTRACT :: AbstractFile_
   PRIVATE
@@ -168,12 +170,13 @@ END TYPE AbstractFile_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-05-02
-! update:
-!   - 2026-10-27: docs
 ! summary: Container of a pointer to AbstractFile_
 !
 ! It is used to store pointers to files of different extended types,
 ! for example in an array.
+!
+! Changes:
+!   - 2026-10-27: docs
 
 TYPE :: AbstractFilePointer_
   CLASS(AbstractFile_), POINTER :: ptr => NULL()
@@ -186,8 +189,6 @@ END TYPE AbstractFilePointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: docs
 ! summary: Reset the path, name, extension, and status of the file
 !
 ! The path, fileName, and ext are set to empty strings, their lengths
@@ -198,6 +199,9 @@ END TYPE AbstractFilePointer_
 ! The extended types override the Deallocate binding, close or delete
 ! the file, and then call AbstractFileDeallocate by name (it is a
 ! public routine of this module).
+!
+! Changes:
+!   - 2026-10-27: docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -258,8 +262,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Set the path of the file
 !
 ! The path and its length (without trailing blanks) are stored in
@@ -270,6 +272,9 @@ END INTERFACE
 !
 ! The path cannot be changed while the file is open; in that case an
 ! error is raised and the path is not changed.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -332,8 +337,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Set the name of the file (without extension)
 !
 ! The file name and its length (without trailing blanks) are stored
@@ -341,6 +344,9 @@ END INTERFACE
 !
 ! The name cannot be changed while the file is open; in that case an
 ! error is raised and the name is not changed.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -364,8 +370,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Set the extension of the file
 !
 ! The extension and its length (without trailing blanks) are stored
@@ -373,6 +377,9 @@ END INTERFACE
 !
 ! The extension cannot be changed while the file is open; in that
 ! case an error is raised and the extension is not changed.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -396,13 +403,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Set the end of file status of the file
 !
 ! The end of file status can be changed only if the file is open. If
 ! the file is not open, a debug message is raised and the status is
 ! not changed.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -447,10 +455,10 @@ END INTERFACE
 ! See also: [[obj_IsEOF]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetEOFStat(obj, stat)
+  MODULE SUBROUTINE obj_SetEOFStat(obj, STAT)
     CLASS(AbstractFile_), INTENT(INOUT) :: obj
     !! file
-    LOGICAL(LGT), INTENT(IN) :: stat
+    LOGICAL(LGT), INTENT(IN) :: STAT
     !! end of file status
   END SUBROUTINE obj_SetEOFStat
 END INTERFACE
@@ -461,13 +469,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Set the open status of the file
 !
 ! Only the flag returned by IsOpen is changed; the file is not opened
 ! or closed. This routine is called by the Open and Close methods of
 ! the extended types.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -507,10 +516,10 @@ END INTERFACE
 ! See also: [[obj_IsOpen]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetOpenStat(obj, stat)
+  MODULE SUBROUTINE obj_SetOpenStat(obj, STAT)
     CLASS(AbstractFile_), INTENT(INOUT) :: obj
     !! file
-    LOGICAL(LGT), INTENT(IN) :: stat
+    LOGICAL(LGT), INTENT(IN) :: STAT
     !! open status
   END SUBROUTINE obj_SetOpenStat
 END INTERFACE
@@ -521,13 +530,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Set the read access status of the file
 !
 ! The read status can be changed only if the file is not open. If the
 ! file is open, a debug message is raised and the status is not
 ! changed.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -568,10 +578,10 @@ END INTERFACE
 ! See also: [[obj_SetWriteStat]], [[obj_IsRead]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetReadStat(obj, stat)
+  MODULE SUBROUTINE obj_SetReadStat(obj, STAT)
     CLASS(AbstractFile_), INTENT(INOUT) :: obj
     !! file
-    LOGICAL(LGT), INTENT(IN) :: stat
+    LOGICAL(LGT), INTENT(IN) :: STAT
     !! read access status
   END SUBROUTINE obj_SetReadStat
 END INTERFACE
@@ -582,13 +592,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Set the write access status of the file
 !
 ! The write status can be changed only if the file is not open. If
 ! the file is open, a debug message is raised and the status is not
 ! changed.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -597,10 +608,10 @@ END INTERFACE
 ! See also: [[obj_SetReadStat]] (contains an example), [[obj_IsWrite]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetWriteStat(obj, stat)
+  MODULE SUBROUTINE obj_SetWriteStat(obj, STAT)
     CLASS(AbstractFile_), INTENT(INOUT) :: obj
     !! file
-    LOGICAL(LGT), INTENT(IN) :: stat
+    LOGICAL(LGT), INTENT(IN) :: STAT
     !! write access status
   END SUBROUTINE obj_SetWriteStat
 END INTERFACE
@@ -611,9 +622,10 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns the path of the file
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -639,9 +651,10 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns the name of the file (without extension)
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -668,9 +681,10 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns the extension of the file
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -696,12 +710,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns the path, name, and extension of the file
 !
 ! These are the three parts stored by the Set methods. How the full
 ! name of the file is built from them depends on the extended type.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -773,12 +788,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns true if the file is open
 !
 ! The open status is set by the Open, Close, and Delete methods of the
 ! extended types (through [[obj_SetOpenStat]]).
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -840,9 +856,10 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns true if the end of the file has been reached
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -867,9 +884,10 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns true if the file has read access
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -925,9 +943,10 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Returns true if the file has write access
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -952,12 +971,13 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Open the file (deferred)
 !
 ! Abstract interface of the deferred binding OPEN. The extended types
 ! open the file and set the open status with [[obj_SetOpenStat]].
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -979,13 +999,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Close the file (deferred)
 !
 ! Abstract interface of the deferred binding CLOSE. The extended types
 ! close the file and set the open status to false with
 ! [[obj_SetOpenStat]].
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file
@@ -1007,13 +1028,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2022-05-08
-! update:
-!   - 2026-10-27: renamed aFile_* to obj_*, docs
 ! summary: Delete the file (deferred)
 !
 ! Abstract interface of the deferred binding Delete. The extended
 ! types delete the file from the disk; the exact rules (for example
 ! whether the file has to be open) depend on the extended type.
+!
+! Changes:
+!   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
 ! Arguments:
 !   obj : CLASS(AbstractFile_) - file

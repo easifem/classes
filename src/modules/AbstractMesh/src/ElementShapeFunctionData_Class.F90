@@ -16,15 +16,15 @@
 !
 
 MODULE ElementShapeFunctionData_Class
-USE GlobalData, ONLY: I4B, LGT, DFP
-USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_, STElemShapeData_, &
-                    ReferenceElement_, ReferenceLine_
-USE String_Class
-USE QuadraturePoint_Method
+USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_, ReferenceElement_, &
+                    ReferenceLine_, STElemShapeData_
 USE ElemshapeData_Method
-USE ReferenceElement_Method
-USE ReallocateUtility
 USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE QuadraturePoint_Method
+USE ReallocateUtility
+USE ReferenceElement_Method
+USE String_Class
 IMPLICIT NONE
 PRIVATE
 
@@ -140,13 +140,15 @@ CONTAINS
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
-! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
 !
 !# Introduction
 !
 ! This routine sets the local shape data in space (linSpaceElemSD and
 ! spaceElemSD) for the mesh. It also creates the quadrature points in space.
+!
+! Changes:
+!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD1(obj, &
   & orderSpace,  &
@@ -176,21 +178,21 @@ SUBROUTINE obj_InitiateElemSD1(obj, &
   obj%orderSpace = orderSpace
 
   CALL Initiate(obj=obj%quadForSpace, &
-    & refelem=spaceElem, &
-    & order=orderSpace, &
-    & QuadratureType=quadTypeForSpace)
+    & refelem = spaceElem, &
+    & order = orderSpace, &
+    & QuadratureType = quadTypeForSpace)
 
   CALL Initiate(obj=obj%linSpaceElemSD, &
-    & quad=obj%quadForSpace, &
-    & refelem=linSpaceElem, &
-    & ContinuityType=continuityTypeForSpace, &
-    & InterpolType=interpolTypeForSpace)
+    & quad = obj%quadForSpace, &
+    & refelem = linSpaceElem, &
+    & ContinuityType = continuityTypeForSpace, &
+    & InterpolType = interpolTypeForSpace)
 
   CALL Initiate(obj=obj%spaceElemSD, &
-    & quad=obj%quadForSpace, &
-    & refelem=spaceElem, &
-    & ContinuityType=continuityTypeForSpace, &
-    & InterpolType=interpolTypeForSpace)
+    & quad = obj%quadForSpace, &
+    & refelem = spaceElem, &
+    & ContinuityType = continuityTypeForSpace, &
+    & InterpolType = interpolTypeForSpace)
 END SUBROUTINE obj_InitiateElemSD1
 
 !----------------------------------------------------------------------------
@@ -199,8 +201,10 @@ END SUBROUTINE obj_InitiateElemSD1
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
-! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Changes:
+!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD2(obj, &
   & orderSpace,  &
@@ -244,18 +248,18 @@ SUBROUTINE obj_InitiateElemSD2(obj, &
   REAL(DFP), INTENT(IN) :: tvec(:)
 
   CALL obj%InitiateElemSD( &
-    & orderSpace=orderSpace, &
-    & linSpaceElem=linSpaceElem, &
-    & spaceElem=spaceElem, &
-    & quadTypeForSpace=quadTypeForSpace, &
-    & continuityTypeForSpace=continuityTypeForSpace, &
-    & interpolTypeForSpace=interpolTypeForSpace, &
-    & orderTime=orderTime, &
-    & linTimeElem=linTimeElem, &
-    & timeElem=timeElem, &
-    & quadTypeForTime=quadTypeForTime, &
-    & continuityTypeForTime=continuityTypeForTime, &
-    & interpolTypeForTime=interpolTypeForTime)
+    & orderSpace = orderSpace, &
+    & linSpaceElem = linSpaceElem, &
+    & spaceElem = spaceElem, &
+    & quadTypeForSpace = quadTypeForSpace, &
+    & continuityTypeForSpace = continuityTypeForSpace, &
+    & interpolTypeForSpace = interpolTypeForSpace, &
+    & orderTime = orderTime, &
+    & linTimeElem = linTimeElem, &
+    & timeElem = timeElem, &
+    & quadTypeForTime = quadTypeForTime, &
+    & continuityTypeForTime = continuityTypeForTime, &
+    & interpolTypeForTime = interpolTypeForTime)
 
   CALL obj%InitiateElemSD(tvec=tvec)
 END SUBROUTINE obj_InitiateElemSD2
@@ -266,8 +270,10 @@ END SUBROUTINE obj_InitiateElemSD2
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
-! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Changes:
+!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD3(obj, &
   & orderSpace,  &
@@ -309,12 +315,12 @@ SUBROUTINE obj_InitiateElemSD3(obj, &
       !! interpolation type of base in time
 
   CALL obj%InitiateElemSD( &
-    & orderSpace=orderSpace, &
-    & linSpaceElem=linSpaceElem, &
-    & spaceElem=spaceElem, &
-    & quadTypeForSpace=quadTypeForSpace, &
-    & continuityTypeForSpace=continuityTypeForSpace, &
-    & interpolTypeForSpace=interpolTypeForSpace)
+    & orderSpace = orderSpace, &
+    & linSpaceElem = linSpaceElem, &
+    & spaceElem = spaceElem, &
+    & quadTypeForSpace = quadTypeForSpace, &
+    & continuityTypeForSpace = continuityTypeForSpace, &
+    & interpolTypeForSpace = interpolTypeForSpace)
 
   obj%quadTypeForTime = quadTypeForTime
   obj%continuityTypeForTime = continuityTypeForTime
@@ -322,21 +328,21 @@ SUBROUTINE obj_InitiateElemSD3(obj, &
   obj%orderTime = orderTime
 
   CALL Initiate(obj=obj%quadForTime, &
-    & refelem=timeElem, &
-    & order=orderTime, &
-    & QuadratureType=quadTypeForTime)
+    & refelem = timeElem, &
+    & order = orderTime, &
+    & QuadratureType = quadTypeForTime)
 
   CALL Initiate(obj=obj%linTimeElemSD, &
-    & quad=obj%quadForTime, &
-    & refelem=linTimeElem, &
-    & ContinuityType=continuityTypeForTime, &
-    & InterpolType=interpolTypeForTime)
+    & quad = obj%quadForTime, &
+    & refelem = linTimeElem, &
+    & ContinuityType = continuityTypeForTime, &
+    & InterpolType = interpolTypeForTime)
 
   CALL Initiate(obj=obj%timeElemSD, &
-    & quad=obj%quadForTime, &
-    & refelem=timeElem, &
-    & ContinuityType=continuityTypeForTime, &
-    & InterpolType=interpolTypeForTime)
+    & quad = obj%quadForTime, &
+    & refelem = timeElem, &
+    & ContinuityType = continuityTypeForTime, &
+    & InterpolType = interpolTypeForTime)
 
 END SUBROUTINE obj_InitiateElemSD3
 
@@ -346,8 +352,10 @@ END SUBROUTINE obj_InitiateElemSD3
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
-! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Changes:
+!   - 2021-12-09
 
 SUBROUTINE obj_InitiateElemSD4(obj, tvec)
   CLASS(ElementShapeFunctionData_), INTENT(INOUT) :: obj
@@ -539,12 +547,12 @@ SUBROUTINE obj_InitiateFacetElemSD2(obj, &
   REAL(DFP), INTENT(IN) :: tvec(:)
 
   CALL obj%InitiateFacetElemSD( &
-    & orderSpace=orderSpace, &
-    & linSpaceElem=linSpaceElem, &
-    & spaceElem=spaceElem, &
-    & quadTypeForSpace=quadTypeForSpace, &
-    & continuityTypeForSpace=continuityTypeForSpace, &
-    & interpolTypeForSpace=interpolTypeForSpace)
+    & orderSpace = orderSpace, &
+    & linSpaceElem = linSpaceElem, &
+    & spaceElem = spaceElem, &
+    & quadTypeForSpace = quadTypeForSpace, &
+    & continuityTypeForSpace = continuityTypeForSpace, &
+    & interpolTypeForSpace = interpolTypeForSpace)
 
   CALL obj%InitiateFacetElemSD(tvec=tvec)
 
@@ -556,8 +564,10 @@ END SUBROUTINE obj_InitiateFacetElemSD2
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
-! update: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Changes:
+!   - 2021-12-09
 
 SUBROUTINE obj_InitiateFacetElemSD3(obj, tvec)
   CLASS(ElementShapeFunctionData_), INTENT(INOUT) :: obj

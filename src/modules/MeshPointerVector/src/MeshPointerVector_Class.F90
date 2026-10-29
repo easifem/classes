@@ -22,12 +22,13 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-23
-! update:
-!   - 2026-10-23: Stores AbstractMeshPointer_ (Mesh_Class was removed)
 ! summary: Vector of mesh pointers
 !
 ! MeshPointerVector_ is a dynamic array of AbstractMeshPointer_. It is
 ! made from the FTL template ftlPointerVector.inc.
+!
+! Changes:
+!   - 2026-10-23: Stores AbstractMeshPointer_ (Mesh_Class was removed)
 
 MODULE MeshPointerVector_Class
 USE AbstractMesh_Class, ONLY: AbstractMeshPointer_

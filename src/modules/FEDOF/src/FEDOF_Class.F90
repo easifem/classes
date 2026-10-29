@@ -1311,8 +1311,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-06
-! update:
-!   - 2026-10-29: initiate the edge connectivity of a 3D mesh
 ! summary: Allocate the order and degree of freedom arrays
 !
 ! For a 3D mesh, first call InitiateEdgeConnectivity of the mesh (it
@@ -1321,6 +1319,9 @@ END INTERFACE
 ! Read the number of vertex nodes, edges, faces and cells of the mesh and
 ! allocate cellOrder, faceOrder, edgeOrder and the index arrays edgeIA, faceIA
 ! and cellIA (one entry more than the number of entities).
+!
+! Changes:
+!   - 2026-10-29: initiate the edge connectivity of a 3D mesh
 !
 ! Arguments:
 !   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
@@ -4971,14 +4972,15 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-17
-! update:
-!   - 2026-10-29: return the largest value, not the one of the last element
 ! summary: Get the largest number of quadrature points of an element
 !
 ! For each element, set the quadrature order of its finite element to
 ! scaleForQuadOrder times its cell order and get the number of quadrature
 ! points. The largest of these numbers is returned. The value is computed
 ! once and stored; it is computed again after the orders change.
+!
+! Changes:
+!   - 2026-10-29: return the largest value, not the one of the last element
 !
 ! Arguments:
 !   obj : CLASS(FEDOF_), intent(inout) - FEDOF object

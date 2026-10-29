@@ -16,8 +16,6 @@
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-02-12
-! update:
-!   - 2026-10-24: Document the current interfaces and runnable examples.
 ! summary: Scalar, vector and matrix user-defined functions
 !
 ! Provides [[UserFunction_]] for boundary conditions, material properties
@@ -32,38 +30,41 @@
 ! SolutionDependent is a recognized argument code but is not dispatched
 ! by the FEVariable_ evaluators. Lua evaluation requires USE_LUA support.
 !
+! Changes:
+!   - 2026-10-24: Document the current interfaces and runnable examples.
+!
 ! See also: [[obj_Initiate]], [[obj_ImportFromToml1]]
 
 MODULE UserFunction_Class
-USE GlobalData, ONLY: DFP, LGT, I4B
 USE BaseType, ONLY: FEVariable_
 USE BaseType, ONLY: InterfaceScalarSubroutine
 USE BaseType, ONLY: InterfaceVectorSubroutine
 USE BaseType, ONLY: InterfaceMatrixSubroutine
 USE BaseType, ONLY: funcopt => TypeUserFunctionOpt
 USE BaseType, ONLY: math => TypeMathOpt
-USE String_Class, ONLY: String
-USE HDF5File_Class, ONLY: HDF5File_
-USE TxtFile_Class, ONLY: TxtFile_
-USE ExceptionHandler_Class, ONLY: e
-USE tomlf, ONLY: toml_table
 USE EquationParser_Class, ONLY: EquationParser_
 USE EquationParser_Class, ONLY: EquationParserPointer_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
 USE ISO_C_BINDING, ONLY: C_PTR
 USE ISO_C_BINDING, ONLY: C_NULL_PTR
+USE String_Class, ONLY: String
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 
 PRIVATE
 
 CHARACTER(*), PARAMETER :: NAME_RETURN_TYPE(3) = &
-  ["Scalar", "Vector", "Matrix"]
+                           ["Scalar", "Vector", "Matrix"]
 
 CHARACTER(*), PARAMETER :: NAME_ARG_TYPE(5) = &
-  ["Constant         ", &
-   "Space            ", &
-   "Time             ", &
-   "SpaceTime        ", &
-   "SolutionDependent"]
+                           ["Constant         ", &
+                            "Space            ", &
+                            "Time             ", &
+                            "SpaceTime        ", &
+                            "SolutionDependent"]
 
 PUBLIC :: UserFunction_
 PUBLIC :: UserFunctionGetReturnType
@@ -79,8 +80,6 @@ PUBLIC :: UserFunctionDisplay
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-20
-! update:
-!   - 2026-10-24: Describe storage, backend selection and evaluation.
 ! summary: Store and evaluate a user-defined function
 !
 ! Stores a fixed-length name, initialization status, return and argument
@@ -101,6 +100,9 @@ PUBLIC :: UserFunctionDisplay
 ! and matrix dimensions must fit TypeUserFunctionOpt storage capacities.
 ! Finalization calls DEALLOCATE. See the cleanup interfaces for pointer
 ! ownership limitations.
+!
+! Changes:
+!   - 2026-10-24: Describe storage, backend selection and evaluation.
 !
 ! See also: [[obj_Initiate]], [[obj_Deallocate]]
 !
@@ -1719,8 +1721,6 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-11-08
-! update:
-!   - 2026-10-24: Document table schema and backend selection.
 ! summary: Configure a user function from a TOML table
 !
 ! Clears obj, marks it initiated and reads name (default UserFunction),
@@ -1735,6 +1735,9 @@ END INTERFACE
 ! so later setters can replace an earlier engine selection. Supply one
 ! backend definition, not conflicting alternatives. Vector expressions
 ! use an array; matrix expressions use a matrix matching returnShape.
+!
+! Changes:
+!   - 2026-10-24: Document table schema and backend selection.
 !
 ! Arguments:
 !   obj : CLASS(UserFunction_) - function to replace

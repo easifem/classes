@@ -17,31 +17,33 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Command Line Arguments
+!
+! Changes:
+!   - 2021-11-08
 
 MODULE CommandLineArg_Class
-USE FACE, ONLY: colorize
 USE AbstractCommandLine_Class, ONLY: AbstractCommandLineArg_
 USE CommandLineArg_Utils
+USE FACE, ONLY: colorize
 USE PENF
 IMPLICIT NONE
 PRIVATE
 SAVE
 ! parameters
-CHARACTER(len=*), Public, PARAMETER :: ACTION_STORE = 'STORE'
+CHARACTER(len=*), PUBLIC, PARAMETER :: ACTION_STORE = 'STORE'
 !! Store value (if invoked a value must be passed).
-CHARACTER(len=*), Public, PARAMETER :: ACTION_STORE_STAR = 'STORE*'
+CHARACTER(len=*), PUBLIC, PARAMETER :: ACTION_STORE_STAR = 'STORE*'
 !! Store value or revert on default if invoked alone.
-CHARACTER(len=*), Public, PARAMETER :: ACTION_STORE_TRUE = 'STORE_TRUE'
+CHARACTER(len=*), PUBLIC, PARAMETER :: ACTION_STORE_TRUE = 'STORE_TRUE'
 !! Store .true. without the necessity of a value.
-CHARACTER(len=*), Public, PARAMETER :: ACTION_STORE_FALSE = 'STORE_FALSE'
+CHARACTER(len=*), PUBLIC, PARAMETER :: ACTION_STORE_FALSE = 'STORE_FALSE'
 !! Store .false. without the necessity of a value.
-CHARACTER(len=*), Public, PARAMETER :: ACTION_PRINT_HELP = 'PRINT_HELP'
+CHARACTER(len=*), PUBLIC, PARAMETER :: ACTION_PRINT_HELP = 'PRINT_HELP'
 !! Print help message.
-CHARACTER(len=*), Public, PARAMETER :: ACTION_PRINT_VERS = 'PRINT_VERSION'
+CHARACTER(len=*), PUBLIC, PARAMETER :: ACTION_PRINT_VERS = 'PRINT_VERSION'
 !! Print version.
-CHARACTER(len=*), Public, PARAMETER :: ARGS_SEP = '||!||'
+CHARACTER(len=*), PUBLIC, PARAMETER :: ARGS_SEP = '||!||'
 !! Arguments separator for multiple valued (list) CLA.
 ! errors codes
 INTEGER(I4P), PARAMETER :: ERROR_OPTIONAL_NO_DEF = 1
@@ -97,11 +99,13 @@ INTEGER(I4P), PARAMETER :: ERROR_DUPLICATED_CLAS = 23
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Command line argument class
 !
 !{!pages/CommandLineArg_.md}
 !
+!
+! Changes:
+!   - 2021-11-08
 TYPE, EXTENDS(AbstractCommandLineArg_) :: CommandLineArg_
   PRIVATE
   CHARACTER(len=:), ALLOCATABLE, PUBLIC :: switch
@@ -153,10 +157,10 @@ CONTAINS
     get_cla_list
   !! Get CLA value(s).
   GENERIC, PUBLIC :: get_varying => &
-#if defined USE_Real128
-    get_cla_list_varying_R16P, &
-#endif
-    get_cla_list_varying_R8P, &
+    #IF defined USE_Real128
+  get_cla_list_varying_R16P, &
+    #ENDIF
+  get_cla_list_varying_R8P, &
     get_cla_list_varying_R4P, &
     get_cla_list_varying_I8P, &
     get_cla_list_varying_I4P, &
@@ -268,14 +272,14 @@ SUBROUTINE check(self, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self  !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
   CALL self%check_envvar_consistency(pref=pref)
-  IF (self%error /= 0) RETURN
+  IF (self%ERROR / =0) RETURN
   CALL self%check_action_consistency(pref=pref)
-  IF (self%error /= 0) RETURN
+  IF (self%ERROR / =0) RETURN
   CALL self%check_optional_consistency(pref=pref)
-  IF (self%error /= 0) RETURN
+  IF (self%ERROR / =0) RETURN
   CALL self%check_m_exclude_consistency(pref=pref)
-  IF (self%error /= 0) RETURN
-  CALL self%check_named_consistency(pref=pref); IF (self%error /= 0) RETURN
+  IF (self%ERROR / =0) RETURN
+  CALL self%check_named_consistency(pref=pref); IF (self%ERROR / =0) RETURN
   CALL self%check_positional_consistency(pref=pref)
 END SUBROUTINE check
 
@@ -289,8 +293,9 @@ FUNCTION is_required_passed(self, pref) RESULT(is_ok)
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
   LOGICAL :: is_ok !< Check result.
   is_ok = .TRUE.
-  IF (((.NOT.self%is_passed).AND.self%is_required).OR.((.NOT.self%is_passed).AND.(.NOT.ALLOCATED(self%def)))) THEN
-    CALL self%errored(pref=pref, error=ERROR_MISSING_REQUIRED)
+  IF (((.NOT. self%is_passed) .AND. self%is_required) .OR. ((.NOT. &
+                                                             self%is_passed) .AND. (.NOT. ALLOCATED(self%def)))) THEN
+    CALL self%errored(pref=pref, ERROR=ERROR_MISSING_REQUIRED)
     is_ok = .FALSE.
   END IF
 END FUNCTION is_required_passed
@@ -304,7 +309,7 @@ SUBROUTINE raise_error_m_exclude(self, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !< Prefixing string.
 
-  CALL self%errored(pref=pref, error=ERROR_M_EXCLUDE)
+  CALL self%errored(pref=pref, ERROR=ERROR_M_EXCLUDE)
 END SUBROUTINE raise_error_m_exclude
 
 SUBROUTINE raise_error_nargs_insufficient(self, pref)
@@ -312,7 +317,7 @@ SUBROUTINE raise_error_nargs_insufficient(self, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !< Prefixing string.
 
-  CALL self%errored(pref=pref, error=ERROR_NARGS_INSUFFICIENT)
+  CALL self%errored(pref=pref, ERROR=ERROR_NARGS_INSUFFICIENT)
 END SUBROUTINE raise_error_nargs_insufficient
 
 SUBROUTINE raise_error_value_missing(self, pref)
@@ -320,7 +325,7 @@ SUBROUTINE raise_error_value_missing(self, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref !< Prefixing string.
 
-  CALL self%errored(pref=pref, error=ERROR_VALUE_MISSING)
+  CALL self%errored(pref=pref, ERROR=ERROR_VALUE_MISSING)
 END SUBROUTINE raise_error_value_missing
 
 SUBROUTINE raise_error_switch_unknown(self, switch, pref)
@@ -329,7 +334,7 @@ SUBROUTINE raise_error_switch_unknown(self, switch, pref)
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !< CLA switch name.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref   !< Prefixing string.
 
-  CALL self%errored(pref=pref, error=ERROR_UNKNOWN, switch=switch)
+  CALL self%errored(pref=pref, ERROR=ERROR_UNKNOWN, switch=switch)
 END SUBROUTINE raise_error_switch_unknown
 
 SUBROUTINE raise_error_duplicated_clas(self, switch, pref)
@@ -338,7 +343,7 @@ SUBROUTINE raise_error_duplicated_clas(self, switch, pref)
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch !< CLA switch name.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref   !< Prefixing string.
 
-  CALL self%errored(pref=pref, error=ERROR_DUPLICATED_CLAS, switch=switch)
+  CALL self%errored(pref=pref, ERROR=ERROR_DUPLICATED_CLAS, switch=switch)
 END SUBROUTINE raise_error_duplicated_clas
 
 SUBROUTINE sanitize_defaults(self)
@@ -354,7 +359,8 @@ SUBROUTINE sanitize_defaults(self)
       IF (ALLOCATED(self%nargs)) THEN
         ! replace white space separator with FLAP ARGS_SEP
         self%def = unique(string=self%def, substring=' ')
-     self%def = replace_all(string=self%def, substring=' ', restring=ARGS_SEP)
+        self%def = replace_all(string=self%def, substring=' ', &
+                               restring=ARGS_SEP)
       END IF
     END IF
   END IF
@@ -368,15 +374,18 @@ FUNCTION usage(self, pref, markdown)
   CHARACTER(len=:), ALLOCATABLE :: usage      !< Usage string.
   CHARACTER(len=:), ALLOCATABLE :: prefd      !< Prefixing string.
   CHARACTER(len=:), ALLOCATABLE :: switch_    !< Switch name, local variable.
-  CHARACTER(len=:), ALLOCATABLE :: switch_ab_ !< Abbreviated switch name, local variable.
+  CHARACTER(len=:), ALLOCATABLE :: switch_ab_
+  !< Abbreviated switch name, local variable.
   INTEGER(I4P) :: a          !< Counter.
   LOGICAL :: markdownd  !< Format for markdown
   INTEGER :: indent     !< how many spaces to indent
 
   markdownd = .FALSE.; IF (PRESENT(markdown)) markdownd = markdown
   indent = 4
-  switch_ = colorize(TRIM(ADJUSTL(self%switch)), color_fg=self%help_color, style=self%help_style)
-  switch_ab_ = colorize(TRIM(ADJUSTL(self%switch_ab)), color_fg=self%help_color, style=self%help_style)
+  switch_ = colorize(TRIM(ADJUSTL(self%switch)), color_fg=self%help_color, &
+                     style=self%help_style)
+  switch_ab_ = colorize(TRIM(ADJUSTL(self%switch_ab)), &
+                        color_fg=self%help_color, style=self%help_style)
   IF (.NOT. self%is_hidden) THEN
     IF (self%act == action_store) THEN
       IF (.NOT. self%is_positional) THEN
@@ -392,29 +401,33 @@ FUNCTION usage(self, pref, markdown)
               usage = usage//' value#'//TRIM(str(a, .TRUE.))
             END DO
           END SELECT
-         IF (TRIM(ADJUSTL(self%switch)) /= TRIM(ADJUSTL(self%switch_ab))) THEN
+          IF (TRIM(ADJUSTL(self%switch)) / &
+              =TRIM(ADJUSTL(self%switch_ab))) THEN
             IF (markdownd) THEN
-              usage = new_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//usage//'`, `'//TRIM(ADJUSTL(self%switch_ab))//usage//'`'
+              usage = NEW_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//usage//'`, `'//TRIM(ADJUSTL(self%switch_ab))//usage//'`'
             ELSE
               usage = '   '//switch_//usage//', '//switch_ab_//usage
             END IF
           ELSE
             IF (markdownd) THEN
-          usage = new_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//usage//'`'
+              usage = &
+                NEW_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//usage//'`'
             ELSE
               usage = '   '//switch_//usage
             END IF
           END IF
         ELSE
-         IF (TRIM(ADJUSTL(self%switch)) /= TRIM(ADJUSTL(self%switch_ab))) THEN
+          IF (TRIM(ADJUSTL(self%switch)) / &
+              =TRIM(ADJUSTL(self%switch_ab))) THEN
             IF (markdownd) THEN
-              usage = new_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//' value`, `'//TRIM(ADJUSTL(self%switch_ab))//' value'//'`'
+              usage = NEW_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//' value`, `'//TRIM(ADJUSTL(self%switch_ab))//' value'//'`'
             ELSE
               usage = '   '//switch_//' value, '//switch_ab_//' value'
             END IF
           ELSE
             IF (markdownd) THEN
-           usage = new_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//' value`'
+              usage = &
+                NEW_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//' value`'
             ELSE
               usage = '   '//switch_//' value'
             END IF
@@ -432,15 +445,15 @@ FUNCTION usage(self, pref, markdown)
         usage = usage//', value in: ('//self%choices//')'
       END IF
     ELSE
-      IF (TRIM(ADJUSTL(self%switch)) /= TRIM(ADJUSTL(self%switch_ab))) THEN
+      IF (TRIM(ADJUSTL(self%switch)) / =TRIM(ADJUSTL(self%switch_ab))) THEN
         IF (markdownd) THEN
-          usage = new_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//'`, `'//TRIM(ADJUSTL(self%switch_ab))//'`'
+          usage = NEW_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//'`, `'//TRIM(ADJUSTL(self%switch_ab))//'`'
         ELSE
           usage = '   '//switch_//', '//switch_ab_
         END IF
       ELSE
         IF (markdownd) THEN
-          usage = new_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//'`'
+          usage = NEW_LINE('a')//'* `'//TRIM(ADJUSTL(self%switch))//'`'
         ELSE
           usage = '   '//switch_
         END IF
@@ -448,31 +461,41 @@ FUNCTION usage(self, pref, markdown)
     END IF
     prefd = ''; IF (PRESENT(pref)) prefd = pref
     usage = prefd//usage
-    IF (self%is_positional) usage = usage//new_LINE('a')//prefd//REPEAT(' ',indent)//TRIM(str(self%position, .TRUE.))//&
+    IF (self%is_positional) usage = usage//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                                                        indent)//TRIM(str(self%position, &
+                                                                                          .TRUE.))// &
                                     '-th argument'
     IF (ALLOCATED(self%envvar)) THEN
-      IF (self%envvar /= '') THEN
-        usage = usage//new_LINE('a')//prefd//REPEAT(' ',10)//'environment variable name "'//TRIM(ADJUSTL(self%envvar))//'"'
+      IF (self%envvar / = '') THEN
+        usage = usage//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                                    10)//'environment variable name "'//TRIM(ADJUSTL(self%envvar))//'"'
       END IF
     END IF
     IF (.NOT. self%is_required) THEN
-      IF (self%def /= '') THEN
+      IF (self%def / = '') THEN
         IF (markdownd) THEN
           ! two spaces make a line break in markdown.
-          usage = usage//'  '//new_LINE('a')//prefd//REPEAT(' ', 4)//'default value '//TRIM(replace_all(self%def,ARGS_SEP,' '))
+          usage = usage//'  '//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                                            4)//'default value '//TRIM(replace_all(self%def, ARGS_SEP, ' '))
         ELSE
-          usage = usage//new_LINE('a')//prefd//REPEAT(' ', indent)//'default value '//TRIM(replace_all(self%def,ARGS_SEP,' '))
+          usage = usage//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                                      indent)//'default value '//TRIM(replace_all(self%def, &
+                                                                                                  ARGS_SEP, ' '))
         END IF
       END IF
     END IF
-    IF (self%m_exclude/='') usage = usage//new_LINE('a')//prefd//REPEAT(' ', indent)//'mutually exclude "'//self%m_exclude//'"'
+    IF (self%m_exclude / ='') usage = &
+      usage//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                          indent)//'mutually exclude "'//self%m_exclude//'"'
     IF (markdownd) THEN
-      usage = usage//'  '//new_LINE('a')//prefd//REPEAT(' ',4)//TRIM(ADJUSTL(self%help))
-      IF (self%help_markdown /= '') THEN
+      usage = usage//'  '//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                                        4)//TRIM(ADJUSTL(self%help))
+      IF (self%help_markdown / = '') THEN
         usage = usage//TRIM(ADJUSTL(self%help_markdown))
       END IF
     ELSE
-      usage = usage//new_LINE('a')//prefd//REPEAT(' ', indent)//TRIM(ADJUSTL(self%help))
+      usage = usage//NEW_LINE('a')//prefd//REPEAT(' ', &
+                                                  indent)//TRIM(ADJUSTL(self%help))
     END IF
   ELSE
     usage = ''
@@ -482,34 +505,41 @@ END FUNCTION usage
 FUNCTION signature(self, bash_completion, plain)
   !< Get signature.
   CLASS(CommandLineArg_), INTENT(in) :: self             !< CLA data.
-  LOGICAL, OPTIONAL, INTENT(in) :: bash_completion  !< Return the signature for bash completion.
-  LOGICAL, OPTIONAL, INTENT(in) :: plain            !< Return the signature as plain switches list.
-  LOGICAL :: plain_           !< Return the signature as plain switches list, local var.
-  LOGICAL :: bash_completion_ !< Return the signature for bash completion, local variable.
+  LOGICAL, OPTIONAL, INTENT(in) :: bash_completion
+  !< Return the signature for bash completion.
+  LOGICAL, OPTIONAL, INTENT(in) :: plain
+  !< Return the signature as plain switches list.
+  LOGICAL :: plain_
+  !< Return the signature as plain switches list, local var.
+  LOGICAL :: bash_completion_
+  !< Return the signature for bash completion, local variable.
   CHARACTER(len=:), ALLOCATABLE :: signature        !< Signature.
   INTEGER(I4P) :: nargs            !< Number of arguments consumed by CLA.
   INTEGER(I4P) :: a                !< Counter.
 
-  bash_completion_ = .FALSE.; IF (PRESENT(bash_completion)) bash_completion_ = bash_completion
+  bash_completion_ = .FALSE.; IF (PRESENT(bash_completion)) bash_completion_ &
+ = bash_completion
   plain_ = .FALSE.; IF (PRESENT(plain)) plain_ = plain
   IF (.NOT. self%is_hidden) THEN
     IF (bash_completion_) THEN
       IF (.NOT. self%is_positional) THEN
         IF (plain_) THEN
-         IF (TRIM(ADJUSTL(self%switch)) /= TRIM(ADJUSTL(self%switch_ab))) THEN
+          IF (TRIM(ADJUSTL(self%switch)) / &
+              =TRIM(ADJUSTL(self%switch_ab))) THEN
             signature = ' '//TRIM(ADJUSTL(self%switch))//' '//TRIM(ADJUSTL(self%switch_ab))
           ELSE
             signature = ' '//TRIM(ADJUSTL(self%switch))
           END IF
         ELSE
-          signature = new_LINE('a')//'    if [ "$prev" == "'//self%switch//'" ] || [ "$prev" == "'//self%switch_ab//'" ] ; then'
+          signature = NEW_LINE('a')//'    if [ "$prev" == "'//self%switch//'" ] || [ "$prev" == "'//self%switch_ab//'" ] ; then'
           IF (self%has_choices()) THEN
-             signature = signature//new_LINE('a')//'       COMPREPLY=( $( compgen -W "'//choices(self%choices)//'" -- $cur ) )'
- ELSEIF ((self%act == action_store) .OR. (self%act == action_store_star)) THEN
-            signature = signature//new_LINE('a')//'       COMPREPLY=( )'
+            signature = signature//NEW_LINE('a')//'       COMPREPLY=( $( compgen -W "'//choices(self%choices)//'" -- $cur ) )'
+          ELSEIF ((self%act == action_store) .OR. (self%act == &
+                                                   action_store_star)) THEN
+            signature = signature//NEW_LINE('a')//'       COMPREPLY=( )'
           END IF
-          signature = signature//new_LINE('a')//'       return 0'
-          signature = signature//new_LINE('a')//'    fi'
+          signature = signature//NEW_LINE('a')//'       return 0'
+          signature = signature//NEW_LINE('a')//'    fi'
         END IF
         ! if (trim(adjustl(self%switch))/=trim(adjustl(self%switch_ab))) then
         ! if (plain_) then
@@ -572,8 +602,10 @@ FUNCTION signature(self, bash_completion, plain)
 CONTAINS
   PURE FUNCTION choices(choices_c)
     !< Return space-separated choices list from a comma-separated one.
-    CHARACTER(len=*), INTENT(in) :: choices_c !< Comma-separated list of choices.
-    CHARACTER(len=LEN(choices_c)) :: choices   !< Space-separated list of choices.
+    CHARACTER(len=*), INTENT(in) :: choices_c
+    !< Comma-separated list of choices.
+    CHARACTER(len=LEN(choices_c)) :: choices
+    !< Space-separated list of choices.
     INTEGER(I4P) :: c         !< Counter.
 
     choices = choices_c
@@ -592,114 +624,137 @@ PURE FUNCTION has_choices(self)
 END FUNCTION has_choices
 
 ! private methods
-SUBROUTINE errored(self, error, pref, switch, val_str, log_value)
+SUBROUTINE errored(self, ERROR, pref, switch, val_str, log_value)
   !< Trig error occurence and print meaningful message.
   CLASS(CommandLineArg_), INTENT(inout) :: self      !< CLA data.
-  INTEGER(I4P), INTENT(in) :: error     !< Error occurred.
+  INTEGER(I4P), INTENT(in) :: ERROR     !< Error occurred.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref      !< Prefixing string.
   CHARACTER(*), OPTIONAL, INTENT(in) :: switch    !< CLA switch name.
   CHARACTER(*), OPTIONAL, INTENT(in) :: val_str   !< Value string.
-  CHARACTER(*), OPTIONAL, INTENT(in) :: log_value !< Logical value to be casted.
+  CHARACTER(*), OPTIONAL, INTENT(in) :: log_value
+  !< Logical value to be casted.
   CHARACTER(len=:), ALLOCATABLE :: prefd     !< Prefixing string.
 
-  self%error = error
-  IF (self%error /= 0) THEN
+  self%ERROR = ERROR
+  IF (self%ERROR / =0) THEN
     prefd = ''; IF (PRESENT(pref)) prefd = pref
-    prefd = prefd//self%progname//': '//colorize('error', color_fg=self%error_color, style=self%error_style)
-    SELECT CASE (self%error)
+    prefd = prefd//self%progname//': '//colorize('error', &
+                                                 color_fg=self%error_color, &
+                                                 style=self%error_style)
+    SELECT CASE (self%ERROR)
     CASE (ERROR_OPTIONAL_NO_DEF)
       IF (self%is_positional) THEN
-        self%error_message = prefd//': "'//TRIM(str(n=self%position))//'-th" positional option has not a default value!'
+        self%error_message = &
+          prefd//': "'//TRIM(str(n=self%position))//'-th" positional option has not a default value!'
       ELSE
-        self%error_message = prefd//': named option "'//self%switch//'" has not a default value!'
+        self%error_message = &
+          prefd//': named option "'//self%switch//'" has not a default value!'
       END IF
     CASE (ERROR_REQUIRED_M_EXCLUDE)
-      self%error_message = prefd//': named option "'//self%switch//'" cannot exclude others'//&
+      self%error_message = prefd//': named option "'//self%switch//'" cannot exclude others'// &
                            ', it being required, only optional ones can!'
     CASE (ERROR_POSITIONAL_M_EXCLUDE)
       self%error_message = prefd//': "'//TRIM(str(n=self%position))// &
                            '-th" positional option cannot exclude others, only optional named options can!'
     CASE (ERROR_NAMED_NO_NAME)
-      self%error_message = prefd//': a non positional optiona must have a switch name!'
+      self%error_message = &
+        prefd//': a non positional optiona must have a switch name!'
     CASE (ERROR_POSITIONAL_NO_POSITION)
-      self%error_message = prefd//': a positional option must have a position number different from 0!'
+      self%error_message = &
+        prefd//': a positional option must have a position number different from 0!'
     CASE (ERROR_POSITIONAL_NO_STORE)
-      self%error_message = prefd//': a positional option must have action set to "'//action_store//'"!'
+      self%error_message = &
+        prefd//': a positional option must have action set to "'//action_store//'"!'
     CASE (ERROR_M_EXCLUDE)
-      self%error_message = prefd//': the options "'//self%switch//'" and "'//self%m_exclude//&
-                        '" are mutually exclusive, but both have been passed!'
+      self%error_message = prefd//': the options "'//self%switch//'" and "'//self%m_exclude// &
+                           '" are mutually exclusive, but both have been passed!'
     CASE (ERROR_NOT_IN_CHOICES)
       IF (self%is_positional) THEN
-    self%error_message = prefd//': value of "'//TRIM(str(n=self%position))// &
+        self%error_message = prefd//': value of "'//TRIM(str(n=self%position))// &
                              '-th" positional option must be chosen in:'
       ELSE
-        self%error_message = prefd//': value of named option "'//self%switch//'" must be chosen in: '
+        self%error_message = &
+          prefd//': value of named option "'//self%switch//'" must be chosen in: '
       END IF
       self%error_message = self%error_message//'('//self%choices//')'
-      self%error_message = self%error_message//' but "'//TRIM(val_str)//'" has been passed!'
+      self%error_message = &
+        self%error_message//' but "'//TRIM(val_str)//'" has been passed!'
     CASE (ERROR_MISSING_REQUIRED)
       IF (.NOT. self%is_positional) THEN
-        self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" is required!'
+        self%error_message = &
+          prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" is required!'
       ELSE
-        self%error_message = prefd//': "'//TRIM(str(self%position, .TRUE.))//'-th" positional option is required!'
+        self%error_message = prefd//': "'//TRIM(str(self%position, &
+                                                    .TRUE.))//'-th" positional option is required!'
       END IF
     CASE (ERROR_CASTING_LOGICAL)
-      self%error_message = prefd//': cannot convert "'//log_value//'" of option "'//self%switch//'" to logical type!'
+      self%error_message = &
+        prefd//': cannot convert "'//log_value//'" of option "'//self%switch//'" to logical type!'
     CASE (ERROR_CHOICES_LOGICAL)
-      self%error_message = prefd//': cannot use "choices" value check for option "'//self%switch//&
+      self%error_message = prefd//': cannot use "choices" value check for option "'//self%switch// &
                            '" it being of logical type! The choices are limited to ".true." or ".false." by definition!'
     CASE (ERROR_NO_LIST)
       IF (.NOT. self%is_positional) THEN
-self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
-       '" has not "nargs" value but an array has been passed to "get" method!'
+        self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
+                             '" has not "nargs" value but an array has been passed to "get" method!'
       ELSE
-        self%error_message = prefd//': "'//TRIM(str(self%position, .TRUE.))//'-th" positional option '//&
-         'has not "nargs" value but an array has been passed to "get" method!'
+        self%error_message = prefd//': "'//TRIM(str(self%position, &
+                                                    .TRUE.))//'-th" positional option '// &
+                             'has not "nargs" value but an array has been passed to "get" method!'
       END IF
     CASE (ERROR_NARGS_INSUFFICIENT)
       IF (.NOT. self%is_positional) THEN
         IF (self%nargs == '+') THEN
-self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
-                          '" requires at least 1 argument but no one remains!'
+          self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
+                               '" requires at least 1 argument but no one remains!'
         ELSE
-          self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" requires '//&
+          self%error_message = &
+            prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" requires '// &
             TRIM(ADJUSTL(self%nargs))//' arguments but no enough ones remain!'
         END IF
       ELSE
         IF (self%nargs == '+') THEN
-       self%error_message = prefd//': "'//TRIM(str(self%position, .TRUE.))// &
-      '-th" positional option requires at least 1 argument but no one remains'
+          self%error_message = prefd//': "'//TRIM(str(self%position, &
+                               .TRUE.))// &
+                               '-th" positional option requires at least 1 argument but no one remains'
         ELSE
-          self%error_message = prefd//': "'//TRIM(str(self%position, .TRUE.))//'-th" positional option requires '//&
-            TRIM(ADJUSTL(self%nargs))//' arguments but no enough ones remain!'
+          self%error_message = prefd//': "'//TRIM(str(self%position, &
+                                                      .TRUE.))//'-th" positional option requires '// &
+                               TRIM(ADJUSTL(self%nargs))//' arguments but no enough ones remain!'
         END IF
       END IF
     CASE (ERROR_VALUE_MISSING)
-      self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" needs a value that is not passed!'
+      self%error_message = &
+        prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" needs a value that is not passed!'
     CASE (ERROR_UNKNOWN)
-      self%error_message = prefd//': switch "'//TRIM(ADJUSTL(switch))//'" is unknown!'
+      self%error_message = &
+        prefd//': switch "'//TRIM(ADJUSTL(switch))//'" is unknown!'
     CASE (ERROR_ENVVAR_POSITIONAL)
-      self%error_message = prefd//': "'//TRIM(str(self%position, .TRUE.))//'-th" positional option '//&
-               'has "envvar" value that is not allowed for positional option!'
+      self%error_message = prefd//': "'//TRIM(str(self%position, &
+                                                  .TRUE.))//'-th" positional option '// &
+                           'has "envvar" value that is not allowed for positional option!'
     CASE (ERROR_ENVVAR_NOT_STORE)
-self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
+      self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
                            '" is an envvar with action different from "'//action_store//'" that is not allowed!'
     CASE (ERROR_ENVVAR_NARGS)
-self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
-                  '" is an envvar that is not allowed for list valued option!'
+      self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
+                           '" is an envvar that is not allowed for list valued option!'
     CASE (ERROR_STORE_STAR_POSITIONAL)
-      self%error_message = prefd//': "'//TRIM(str(self%position, .TRUE.))//'-th" positional option '//&
+      self%error_message = prefd//': "'//TRIM(str(self%position, &
+                                                  .TRUE.))//'-th" positional option '// &
                            'has "'//action_store_star//'" action that is not allowed for positional option!'
     CASE (ERROR_STORE_STAR_NARGS)
-self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
+      self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
                            '" has "'//action_store_star//'" action that is not allowed for list valued option!'
     CASE (ERROR_STORE_STAR_ENVVAR)
-self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
+      self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))// &
                            '" has "'//action_store_star//'" action that is not allowed for environment variable option!'
     CASE (ERROR_ACTION_UNKNOWN)
-      self%error_message = prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" has unknown "'//self%act//'" action!'
+      self%error_message = &
+        prefd//': named option "'//TRIM(ADJUSTL(self%switch))//'" has unknown "'//self%act//'" action!'
     CASE (ERROR_DUPLICATED_CLAS)
-      self%error_message = prefd//': switch "'//TRIM(ADJUSTL(switch))//'" has been passed more than once!'
+      self%error_message = &
+        prefd//': switch "'//TRIM(ADJUSTL(switch))//'" has been passed more than once!'
     END SELECT
     CALL self%print_error_message
   END IF
@@ -712,20 +767,20 @@ SUBROUTINE check_envvar_consistency(self, pref)
 
   IF (ALLOCATED(self%envvar)) THEN
     IF (self%is_positional) THEN
-      CALL self%errored(pref=pref, error=ERROR_ENVVAR_POSITIONAL)
+      CALL self%errored(pref=pref, ERROR=ERROR_ENVVAR_POSITIONAL)
       RETURN
     END IF
     IF (.NOT. ALLOCATED(self%act)) THEN
-      CALL self%errored(pref=pref, error=ERROR_ENVVAR_NOT_STORE)
+      CALL self%errored(pref=pref, ERROR=ERROR_ENVVAR_NOT_STORE)
       RETURN
     ELSE
-      IF (self%act /= action_store) THEN
-        CALL self%errored(pref=pref, error=ERROR_ENVVAR_NOT_STORE)
+      IF (self%act / =action_store) THEN
+        CALL self%errored(pref=pref, ERROR=ERROR_ENVVAR_NOT_STORE)
         RETURN
       END IF
     END IF
     IF (ALLOCATED(self%nargs)) THEN
-      CALL self%errored(pref=pref, error=ERROR_ENVVAR_NARGS)
+      CALL self%errored(pref=pref, ERROR=ERROR_ENVVAR_NARGS)
       RETURN
     END IF
   END IF
@@ -738,24 +793,24 @@ SUBROUTINE check_action_consistency(self, pref)
 
   IF (ALLOCATED(self%act)) THEN
     IF (self%act == ACTION_STORE_STAR .AND. self%is_positional) THEN
-      CALL self%errored(pref=pref, error=ERROR_STORE_STAR_POSITIONAL)
+      CALL self%errored(pref=pref, ERROR=ERROR_STORE_STAR_POSITIONAL)
       RETURN
     END IF
     IF (self%act == ACTION_STORE_STAR .AND. ALLOCATED(self%nargs)) THEN
-      CALL self%errored(pref=pref, error=ERROR_STORE_STAR_NARGS)
+      CALL self%errored(pref=pref, ERROR=ERROR_STORE_STAR_NARGS)
       RETURN
     END IF
     IF (self%act == ACTION_STORE_STAR .AND. ALLOCATED(self%envvar)) THEN
-      CALL self%errored(pref=pref, error=ERROR_STORE_STAR_ENVVAR)
+      CALL self%errored(pref=pref, ERROR=ERROR_STORE_STAR_ENVVAR)
       RETURN
     END IF
-    IF (self%act /= ACTION_STORE .AND. &
-        self%act /= ACTION_STORE_STAR .AND. &
-        self%act /= ACTION_STORE_TRUE .AND. &
-        self%act /= ACTION_STORE_FALSE .AND. &
-        self%act /= ACTION_PRINT_HELP .AND. &
-        self%act /= ACTION_PRINT_VERS) THEN
-      CALL self%errored(pref=pref, error=ERROR_ACTION_UNKNOWN)
+    IF (self%act / =ACTION_STORE .AND. &
+        self%act / =ACTION_STORE_STAR .AND. &
+        self%act / =ACTION_STORE_TRUE .AND. &
+        self%act / =ACTION_STORE_FALSE .AND. &
+        self%act / =ACTION_PRINT_HELP .AND. &
+        self%act / =ACTION_PRINT_VERS) THEN
+      CALL self%errored(pref=pref, ERROR=ERROR_ACTION_UNKNOWN)
       RETURN
     END IF
   END IF
@@ -766,7 +821,8 @@ SUBROUTINE check_optional_consistency(self, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self  !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
 
-  IF ((.NOT.self%is_required).AND.(.NOT.ALLOCATED(self%def))) CALL self%errored(pref=pref, error=ERROR_OPTIONAL_NO_DEF)
+  IF ((.NOT. self%is_required) .AND. (.NOT. ALLOCATED(self%def))) CALL &
+    self%errored(pref=pref, ERROR=ERROR_OPTIONAL_NO_DEF)
 END SUBROUTINE check_optional_consistency
 
 SUBROUTINE check_m_exclude_consistency(self, pref)
@@ -774,12 +830,12 @@ SUBROUTINE check_m_exclude_consistency(self, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self  !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
 
-  IF ((self%is_required) .AND. (self%m_exclude /= '')) THEN
-    CALL self%errored(pref=pref, error=ERROR_REQUIRED_M_EXCLUDE)
+  IF ((self%is_required) .AND. (self%m_exclude / = '')) THEN
+    CALL self%errored(pref=pref, ERROR=ERROR_REQUIRED_M_EXCLUDE)
     RETURN
   END IF
-  IF ((self%is_positional) .AND. (self%m_exclude /= '')) THEN
-    CALL self%errored(pref=pref, error=ERROR_POSITIONAL_M_EXCLUDE)
+  IF ((self%is_positional) .AND. (self%m_exclude / = '')) THEN
+    CALL self%errored(pref=pref, ERROR=ERROR_POSITIONAL_M_EXCLUDE)
     RETURN
   END IF
 END SUBROUTINE check_m_exclude_consistency
@@ -789,7 +845,8 @@ SUBROUTINE check_named_consistency(self, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self  !< CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
 
-  IF ((.NOT.self%is_positional).AND.(.NOT.ALLOCATED(self%switch))) CALL self%errored(pref=pref, error=ERROR_NAMED_NO_NAME)
+  IF ((.NOT. self%is_positional) .AND. (.NOT. ALLOCATED(self%switch))) CALL &
+    self%errored(pref=pref, ERROR=ERROR_NAMED_NO_NAME)
 END SUBROUTINE check_named_consistency
 
 SUBROUTINE check_positional_consistency(self, pref)
@@ -798,10 +855,10 @@ SUBROUTINE check_positional_consistency(self, pref)
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
 
   IF ((self%is_positional) .AND. (self%position == 0_I4P)) THEN
-    CALL self%errored(pref=pref, error=ERROR_POSITIONAL_NO_POSITION)
+    CALL self%errored(pref=pref, ERROR=ERROR_POSITIONAL_NO_POSITION)
     RETURN
-  ELSEIF ((self%is_positional) .AND. (self%act /= action_store)) THEN
-    CALL self%errored(pref=pref, error=ERROR_POSITIONAL_NO_STORE)
+  ELSEIF ((self%is_positional) .AND. (self%act / =action_store)) THEN
+    CALL self%errored(pref=pref, ERROR=ERROR_POSITIONAL_NO_STORE)
   END IF
 END SUBROUTINE check_positional_consistency
 
@@ -812,23 +869,26 @@ SUBROUTINE check_choices(self, val, pref)
   CLASS(CommandLineArg_), INTENT(inout) :: self    !< CLA data.
   CLASS(*), INTENT(in) :: val     !< CLA value.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref    !< Prefixing string.
-  CHARACTER(LEN(self%choices)), ALLOCATABLE :: toks(:) !< Tokens for parsing choices list.
+  CHARACTER(LEN(self%choices)), ALLOCATABLE :: toks(:)
+  !< Tokens for parsing choices list.
   INTEGER(I4P) :: Nc      !< Number of choices.
   LOGICAL :: val_in  !< Flag for checking if val is in the choosen range.
   CHARACTER(len=:), ALLOCATABLE :: val_str !< Value in string form.
-  CHARACTER(len=:), ALLOCATABLE :: tmp     !< Temporary string for avoiding GNU gfrotran bug.
+  CHARACTER(len=:), ALLOCATABLE :: tmp
+  !< Temporary string for avoiding GNU gfrotran bug.
   INTEGER(I4P) :: c       !< Counter.
 
   val_in = .FALSE.
   val_str = ''
   tmp = self%choices
-  CALL tokenize(strin=tmp, delimiter=',', toks=toks, Nt=Nc)
+  CALL TOKENIZE(strin=tmp, delimiter=',', toks=toks, Nt=Nc)
   SELECT TYPE (val)
 #if defined USE_Real128
   TYPE is (REAL(R16P))
     val_str = str(n=val)
     DO c = 1, Nc
-     IF (val == cton(str=TRIM(ADJUSTL(toks(c))), knd=1._R16P)) val_in = .TRUE.
+      IF (val == cton(str=TRIM(ADJUSTL(toks(c))), knd=1._R16P)) &
+        val_in = .TRUE.
     END DO
 #endif
   TYPE is (REAL(R8P))
@@ -867,10 +927,10 @@ SUBROUTINE check_choices(self, val, pref)
       IF (val == toks(c)) val_in = .TRUE.
     END DO
   TYPE is (LOGICAL)
-    CALL self%errored(pref=pref, error=ERROR_CHOICES_LOGICAL)
+    CALL self%errored(pref=pref, ERROR=ERROR_CHOICES_LOGICAL)
   END SELECT
-  IF (.NOT. val_in .AND. (self%error == 0)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NOT_IN_CHOICES, val_str=val_str)
+  IF (.NOT. val_in .AND. (self%ERROR == 0)) THEN
+    CALL self%errored(pref=pref, ERROR=ERROR_NOT_IN_CHOICES, val_str=val_str)
   END IF
 END SUBROUTINE check_choices
 
@@ -888,7 +948,7 @@ FUNCTION check_list_size(self, Nv, val, pref) RESULT(is_ok)
       ! there is no real value, but only for nargs=+ this is a real error
       is_ok = .FALSE.
       IF (self%nargs == '+') THEN
-        CALL self%errored(pref=pref, error=ERROR_NARGS_INSUFFICIENT)
+        CALL self%errored(pref=pref, ERROR=ERROR_NARGS_INSUFFICIENT)
       END IF
     END IF
   END IF
@@ -908,7 +968,8 @@ SUBROUTINE get_cla(self, val, pref)
     ELSEIF (ALLOCATED(self%def)) THEN ! using default value
       CALL self%get_cla_from_buffer(buffer=self%def, val=val, pref=pref)
     END IF
-    IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val, pref=pref)
+    IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+      self%check_choices(val=val, pref=pref)
   ELSEIF (self%act == action_store_true) THEN
     IF (self%is_passed) THEN
       SELECT TYPE (val)
@@ -918,8 +979,10 @@ SUBROUTINE get_cla(self, val, pref)
     ELSEIF (ALLOCATED(self%def)) THEN
       SELECT TYPE (val)
       TYPE is (LOGICAL)
-        READ (self%def, *, iostat=self%error) val
-        IF (self%error/=0) CALL self%errored(pref=pref, error=ERROR_CASTING_LOGICAL, log_value=self%def)
+        READ (self%def, *, iostat=self%ERROR) val
+        IF (self%ERROR / =0) CALL self%errored(pref=pref, &
+                                               ERROR=ERROR_CASTING_LOGICAL, &
+                                               log_value=self%def)
       END SELECT
     END IF
   ELSEIF (self%act == action_store_false) THEN
@@ -931,8 +994,10 @@ SUBROUTINE get_cla(self, val, pref)
     ELSEIF (ALLOCATED(self%def)) THEN
       SELECT TYPE (val)
       TYPE is (LOGICAL)
-        READ (self%def, *, iostat=self%error) val
-        IF (self%error/=0) CALL self%errored(pref=pref, error=ERROR_CASTING_LOGICAL, log_value=self%def)
+        READ (self%def, *, iostat=self%ERROR) val
+        IF (self%ERROR / =0) CALL self%errored(pref=pref, &
+                                               ERROR=ERROR_CASTING_LOGICAL, &
+                                               log_value=self%def)
       END SELECT
     END IF
   END IF
@@ -942,30 +1007,40 @@ SUBROUTINE get_cla_from_buffer(self, buffer, val, pref)
   !< Get CLA (single) value from parsed value.
   IMPLICIT NONE
   CLASS(CommandLineArg_), INTENT(inout) :: self   !< CLA data.
-  CHARACTER(*), INTENT(in) :: buffer !< Buffer containing values (parsed or default CLA value).
+  CHARACTER(*), INTENT(in) :: buffer
+  !< Buffer containing values (parsed or default CLA value).
   CLASS(*), INTENT(inout) :: val    !< CLA value.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref   !< Prefixing string.
 
   SELECT TYPE (val)
 #if defined _R16P
   TYPE is (REAL(R16P))
-    val = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(buffer)), knd=1._R16P)
+    val = cton(pref=pref, ERROR=self%ERROR, str=TRIM(ADJUSTL(buffer)), &
+               knd=1._R16P)
 #endif
   TYPE is (REAL(R8P))
-val = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(buffer)), knd=1._R8P)
+    val = cton(pref=pref, ERROR=self%ERROR, str=TRIM(ADJUSTL(buffer)), &
+               knd=1._R8P)
   TYPE is (REAL(R4P))
-val = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(buffer)), knd=1._R4P)
+    val = cton(pref=pref, ERROR=self%ERROR, str=TRIM(ADJUSTL(buffer)), &
+               knd=1._R4P)
   TYPE is (INTEGER(I8P))
- val = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(buffer)), knd=1_I8P)
+    val = cton(pref=pref, ERROR=self%ERROR, &
+               str=TRIM(ADJUSTL(buffer)), knd=1_I8P)
   TYPE is (INTEGER(I4P))
- val = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(buffer)), knd=1_I4P)
+    val = cton(pref=pref, ERROR=self%ERROR, &
+               str=TRIM(ADJUSTL(buffer)), knd=1_I4P)
   TYPE is (INTEGER(I2P))
- val = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(buffer)), knd=1_I2P)
+    val = cton(pref=pref, ERROR=self%ERROR, &
+               str=TRIM(ADJUSTL(buffer)), knd=1_I2P)
   TYPE is (INTEGER(I1P))
- val = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(buffer)), knd=1_I1P)
+    val = cton(pref=pref, ERROR=self%ERROR, &
+               str=TRIM(ADJUSTL(buffer)), knd=1_I1P)
   TYPE is (LOGICAL)
-    READ (buffer, *, iostat=self%error) val
-    IF (self%error/=0) CALL self%errored(pref=pref, error=ERROR_CASTING_LOGICAL, log_value=buffer)
+    READ (buffer, *, iostat=self%ERROR) val
+    IF (self%ERROR / =0) CALL self%errored(pref=pref, &
+                                           ERROR=ERROR_CASTING_LOGICAL, &
+                                           log_value=buffer)
   TYPE is (CHARACTER(*))
     val = buffer
   END SELECT
@@ -977,12 +1052,13 @@ SUBROUTINE get_cla_list(self, pref, val)
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   CLASS(*), INTENT(inout) :: val(1:)  !< CLA values.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
@@ -998,7 +1074,7 @@ SUBROUTINE get_cla_list(self, pref, val)
         val = .TRUE.
       END SELECT
     ELSE
-      CALL tokenize(strin=self%def, delimiter=' ', toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=' ', toks=valsD, Nt=Nv)
       SELECT TYPE (val)
       TYPE is (LOGICAL)
         DO v = 1, Nv
@@ -1013,7 +1089,7 @@ SUBROUTINE get_cla_list(self, pref, val)
         val = .FALSE.
       END SELECT
     ELSE
-      CALL tokenize(strin=self%def, delimiter=' ', toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=' ', toks=valsD, Nt=Nv)
       SELECT TYPE (val)
       TYPE is (LOGICAL)
         DO v = 1, Nv
@@ -1028,72 +1104,90 @@ SUBROUTINE get_cla_list_from_buffer(self, buffer, val, pref)
   !< Get CLA multiple values from a buffer.
   IMPLICIT NONE
   CLASS(CommandLineArg_), INTENT(inout) :: self    !< CLA data.
-  CHARACTER(*), INTENT(in) :: buffer  !< Buffer containing values (parsed or default CLA value).
+  CHARACTER(*), INTENT(in) :: buffer
+  !< Buffer containing values (parsed or default CLA value).
   CLASS(*), INTENT(inout) :: val(1:) !< CLA value.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref    !< Prefixing string.
   INTEGER(I4P) :: Nv      !< Number of values.
-  CHARACTER(len=LEN(buffer)), ALLOCATABLE :: vals(:) !< String array of values based on buffer value.
+  CHARACTER(len=LEN(buffer)), ALLOCATABLE :: vals(:)
+  !< String array of values based on buffer value.
   INTEGER(I4P) :: v       !< Values counter.
 
-  CALL tokenize(strin=buffer, delimiter=args_sep, toks=vals, Nt=Nv)
+  CALL TOKENIZE(strin=buffer, delimiter=args_sep, toks=vals, Nt=Nv)
   SELECT TYPE (val)
 #if defined _R16P
   TYPE is (REAL(R16P))
     DO v = 1, Nv
-      val(v) = cton(pref=pref,error=self%error,str=TRIM(ADJUSTL(vals(v))),knd=1._R16P)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      val(v) = cton(pref=pref, ERROR=self%ERROR, str=TRIM(ADJUSTL(vals(v))), &
+                    knd=1._R16P)
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
 #endif
   TYPE is (REAL(R8P))
     DO v = 1, Nv
-      val(v) = cton(pref=pref,error=self%error,str=TRIM(ADJUSTL(vals(v))),knd=1._R8P)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      val(v) = cton(pref=pref, ERROR=self%ERROR, str=TRIM(ADJUSTL(vals(v))), &
+                    knd=1._R8P)
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
   TYPE is (REAL(R4P))
     DO v = 1, Nv
-      val(v) = cton(pref=pref,error=self%error,str=TRIM(ADJUSTL(vals(v))),knd=1._R4P)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      val(v) = cton(pref=pref, ERROR=self%ERROR, str=TRIM(ADJUSTL(vals(v))), &
+                    knd=1._R4P)
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
   TYPE is (INTEGER(I8P))
     DO v = 1, Nv
-val(v) = cton(pref=pref,error=self%error,str=TRIM(ADJUSTL(vals(v))),knd=1_I8P)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                    str=TRIM(ADJUSTL(vals(v))), knd=1_I8P)
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
   TYPE is (INTEGER(I4P))
     DO v = 1, Nv
-val(v) = cton(pref=pref,error=self%error,str=TRIM(ADJUSTL(vals(v))),knd=1_I4P)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                    str=TRIM(ADJUSTL(vals(v))), knd=1_I4P)
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
   TYPE is (INTEGER(I2P))
     DO v = 1, Nv
-val(v) = cton(pref=pref,error=self%error,str=TRIM(ADJUSTL(vals(v))),knd=1_I2P)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                    str=TRIM(ADJUSTL(vals(v))), knd=1_I2P)
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
   TYPE is (INTEGER(I1P))
     DO v = 1, Nv
-val(v) = cton(pref=pref,error=self%error,str=TRIM(ADJUSTL(vals(v))),knd=1_I1P)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                    str=TRIM(ADJUSTL(vals(v))), knd=1_I1P)
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
   TYPE is (LOGICAL)
     DO v = 1, Nv
-      READ (vals(v), *, iostat=self%error) val(v)
-      IF (self%error /= 0) THEN
-  CALL self%errored(pref=pref, error=ERROR_CASTING_LOGICAL, log_value=vals(v))
+      READ (vals(v), *, iostat=self%ERROR) val(v)
+      IF (self%ERROR / =0) THEN
+        CALL self%errored(pref=pref, ERROR=ERROR_CASTING_LOGICAL, &
+                          log_value=vals(v))
         EXIT
       END IF
     END DO
   TYPE is (CHARACTER(*))
     DO v = 1, Nv
       val(v) = vals(v)
-      IF (ALLOCATED(self%choices).AND.self%error==0) CALL self%check_choices(val=val(v),pref=pref)
-      IF (self%error /= 0) EXIT
+      IF (ALLOCATED(self%choices) .AND. self%ERROR == 0) CALL &
+        self%check_choices(val=val(v), pref=pref)
+      IF (self%ERROR / =0) EXIT
     END DO
   END SELECT
 END SUBROUTINE get_cla_list_from_buffer
@@ -1104,39 +1198,43 @@ SUBROUTINE get_cla_list_varying_R16P(self, val, pref)
   REAL(R16P), ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (REAL(R16P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsV(v))), knd=1._R16P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsV(v))), knd=1._R16P)
+        IF (self%ERROR / =0) EXIT
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       IF (Nv == 1) THEN
         IF (TRIM(ADJUSTL(valsD(1))) == '') THEN
           IF (self%nargs == '+') THEN
-            CALL self%errored(pref=pref, error=ERROR_NARGS_INSUFFICIENT)
+            CALL self%errored(pref=pref, ERROR=ERROR_NARGS_INSUFFICIENT)
           END IF
           RETURN
         END IF
       END IF
       ALLOCATE (REAL(R16P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsD(v))), knd=1._R16P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsD(v))), knd=1._R16P)
+        IF (self%ERROR / =0) EXIT
       END DO
     END IF
   END IF
@@ -1148,31 +1246,35 @@ SUBROUTINE get_cla_list_varying_R8P(self, val, pref)
   REAL(R8P), ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (REAL(R8P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsV(v))), knd=1._R8P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsV(v))), knd=1._R8P)
+        IF (self%ERROR / =0) EXIT
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (REAL(R8P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsD(v))), knd=1._R8P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsD(v))), knd=1._R8P)
+        IF (self%ERROR / =0) EXIT
       END DO
     END IF
   END IF
@@ -1184,31 +1286,35 @@ SUBROUTINE get_cla_list_varying_R4P(self, val, pref)
   REAL(R4P), ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (REAL(R4P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsV(v))), knd=1._R4P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsV(v))), knd=1._R4P)
+        IF (self%ERROR / =0) EXIT
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (REAL(R4P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsD(v))), knd=1._R4P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsD(v))), knd=1._R4P)
+        IF (self%ERROR / =0) EXIT
       END DO
     END IF
   END IF
@@ -1220,31 +1326,35 @@ SUBROUTINE get_cla_list_varying_I8P(self, val, pref)
   INTEGER(I8P), ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I8P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsV(v))), knd=1_I8P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsV(v))), knd=1_I8P)
+        IF (self%ERROR / =0) EXIT
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I8P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsD(v))), knd=1_I8P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsD(v))), knd=1_I8P)
+        IF (self%ERROR / =0) EXIT
       END DO
     END IF
   END IF
@@ -1256,31 +1366,35 @@ SUBROUTINE get_cla_list_varying_I4P(self, val, pref)
   INTEGER(I4P), ALLOCATABLE, INTENT(OUT) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(IN) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I4P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsV(v))), knd=1_I4P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsV(v))), knd=1_I4P)
+        IF (self%ERROR / =0) EXIT
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I4P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsD(v))), knd=1_I4P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsD(v))), knd=1_I4P)
+        IF (self%ERROR / =0) EXIT
       END DO
     END IF
   END IF
@@ -1292,31 +1406,35 @@ SUBROUTINE get_cla_list_varying_I2P(self, val, pref)
   INTEGER(I2P), ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I2P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsV(v))), knd=1_I2P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsV(v))), knd=1_I2P)
+        IF (self%ERROR / =0) EXIT
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I2P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsD(v))), knd=1_I2P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsD(v))), knd=1_I2P)
+        IF (self%ERROR / =0) EXIT
       END DO
     END IF
   END IF
@@ -1328,31 +1446,35 @@ SUBROUTINE get_cla_list_varying_I1P(self, val, pref)
   INTEGER(I1P), ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I1P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsV(v))), knd=1_I1P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsV(v))), knd=1_I1P)
+        IF (self%ERROR / =0) EXIT
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (INTEGER(I1P) :: val(1:Nv))
       DO v = 1, Nv
-        val(v) = cton(pref=pref, error=self%error, str=TRIM(ADJUSTL(valsD(v))), knd=1_I1P)
-        IF (self%error /= 0) EXIT
+        val(v) = cton(pref=pref, ERROR=self%ERROR, &
+                      str=TRIM(ADJUSTL(valsD(v))), knd=1_I1P)
+        IF (self%ERROR / =0) EXIT
       END DO
     END IF
   END IF
@@ -1364,35 +1486,39 @@ SUBROUTINE get_cla_list_varying_logical(self, val, pref)
   LOGICAL, ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (LOGICAL :: val(1:Nv))
       DO v = 1, Nv
-        READ (valsV(v), *, iostat=self%error) val(v)
-        IF (self%error /= 0) THEN
- CALL self%errored(pref=pref, error=ERROR_CASTING_LOGICAL, log_value=valsD(v))
+        READ (valsV(v), *, iostat=self%ERROR) val(v)
+        IF (self%ERROR / =0) THEN
+          CALL self%errored(pref=pref, ERROR=ERROR_CASTING_LOGICAL, &
+                            log_value=valsD(v))
           EXIT
         END IF
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (LOGICAL :: val(1:Nv))
       DO v = 1, Nv
-        READ (valsD(v), *, iostat=self%error) val(v)
-        IF (self%error /= 0) THEN
- CALL self%errored(pref=pref, error=ERROR_CASTING_LOGICAL, log_value=valsD(v))
+        READ (valsD(v), *, iostat=self%ERROR) val(v)
+        IF (self%ERROR / =0) THEN
+          CALL self%errored(pref=pref, ERROR=ERROR_CASTING_LOGICAL, &
+                            log_value=valsD(v))
           EXIT
         END IF
       END DO
@@ -1406,25 +1532,27 @@ SUBROUTINE get_cla_list_varying_char(self, val, pref)
   CHARACTER(*), ALLOCATABLE, INTENT(out) :: val(:)   !< CLA values.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref     !< Prefixing string.
   INTEGER(I4P) :: Nv       !< Number of values.
-  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:) !< String array of values based on self%val.
-  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:) !< String array of values based on self%def.
+  CHARACTER(len=LEN(self%val)), ALLOCATABLE :: valsV(:)
+  !< String array of values based on self%val.
+  CHARACTER(len=LEN(self%def)), ALLOCATABLE :: valsD(:)
+  !< String array of values based on self%def.
   INTEGER(I4P) :: v        !< Values counter.
 
   IF (.NOT. self%is_required_passed(pref=pref)) RETURN
   IF (.NOT. ALLOCATED(self%nargs)) THEN
-    CALL self%errored(pref=pref, error=ERROR_NO_LIST)
+    CALL self%errored(pref=pref, ERROR=ERROR_NO_LIST)
     RETURN
   END IF
   IF (self%act == action_store) THEN
     IF (self%is_passed) THEN
-      CALL tokenize(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
+      CALL TOKENIZE(strin=self%val, delimiter=ARGS_SEP, toks=valsV, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsV(1), pref=pref)) RETURN
       ALLOCATE (val(1:Nv))
       DO v = 1, Nv
         val(v) = TRIM(ADJUSTL(valsV(v)))
       END DO
     ELSE ! using default value
-      CALL tokenize(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
+      CALL TOKENIZE(strin=self%def, delimiter=ARGS_SEP, toks=valsD, Nt=Nv)
       IF (.NOT. self%check_list_size(Nv=Nv, val=valsD(1), pref=pref)) RETURN
       ALLOCATE (val(1:Nv))
       DO v = 1, Nv
@@ -1463,4 +1591,4 @@ ELEMENTAL SUBROUTINE finalize(self)
 
   CALL self%free
 END SUBROUTINE finalize
-endmodule CommandLineArg_Class
+END MODULE CommandLineArg_Class

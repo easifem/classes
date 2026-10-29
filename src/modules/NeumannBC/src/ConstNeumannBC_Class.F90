@@ -16,10 +16,10 @@
 !
 
 MODULE ConstNeumannBC_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class, ONLY: MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE MeshSelection_Class, ONLY: MeshSelection_
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE NeumannBC_Class, ONLY: NeumannBCPointer_
 USE tomlf, ONLY: toml_table
@@ -115,8 +115,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2022-04-27
-! update: 2023-09-10
 ! summary: Get dirichlet boundary conditions to the vector of pointer
+!
+! Changes:
+!   - 2023-09-10
 
 INTERFACE
   MODULE FUNCTION obj_GetConstNeumannBCPointer(bc, bcNo) RESULT(ans)

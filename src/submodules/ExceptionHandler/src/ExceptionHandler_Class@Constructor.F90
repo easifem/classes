@@ -17,8 +17,10 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 4 April 2021
-! update: 4 Nov 2021
 ! summary: Constructor method for [[ExceptionHandler_]]
+!
+! Changes:
+!   - 4 Nov 2021
 
 SUBMODULE(ExceptionHandler_Class) Constructor
 USE BaseMethod
@@ -58,7 +60,7 @@ INTEGER(I4B) :: ioerr1, ioerr2, prefixLen, ii, nn
 !> main
 prefix = TRIM(mesg); myname = ""; modname = ""; msg = ""
 IF (prefix%nmatchstr(":") .GT. 0) THEN
-  CALL prefix%split(substr, "::")
+  CALL prefix%SPLIT(substr, "::")
   modname = substr(1)
   prefix = ""
   nn = SIZE(substr)
@@ -69,7 +71,7 @@ IF (prefix%nmatchstr(":") .GT. 0) THEN
   DEALLOCATE (substr)
 END IF
 IF (prefix%nmatchstr("-") .GT. 0) THEN
-  CALL prefix%split(substr, "-")
+  CALL prefix%SPLIT(substr, "-")
   nn = SIZE(substr)
   myname = substr(1)
   DO ii = 2, nn - 1
@@ -147,7 +149,7 @@ IF (isLogActive) THEN
   WRITE (logUnit, '(a)', IOSTAT=ioerr1) prefix%chars()
   FLUSH (logUnit)
   !Additional error message if problem writing to log file
-  IF (ioerr1 /= 0 .OR. ioerr2 /= 0) THEN
+  IF (ioerr1 / =0 .OR. ioerr2 / =0) THEN
     IF (isQuiet) THEN
       msg = '[❎ ERROR ⛔]'//CHAR_LF//"Problem writing to logfile"//CHAR_LF// &
             "Original message follows: "//CHAR_LF

@@ -17,12 +17,14 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Utility module for [[CommandLineArg_]] class
 !
 !# Introduction
 !
 ! TODO Merge this module with the [[String_Class]] module
+!
+! Changes:
+!   - 2021-11-08
 
 MODULE CommandLineArg_Utils
 USE PENF
@@ -110,7 +112,6 @@ END FUNCTION replace
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Replace all occurences of substring into a string
 !
 !# Introduction
@@ -118,6 +119,9 @@ END FUNCTION replace
 !@note
 !Leading and trailing white spaces are stripped out.
 !@endnote
+!
+! Changes:
+!   - 2021-11-08
 
 PURE FUNCTION replace_all(string, substring, restring) RESULT(newstring)
   CHARACTER(len=*), INTENT(in) :: string
@@ -133,7 +137,7 @@ PURE FUNCTION replace_all(string, substring, restring) RESULT(newstring)
   DO
     IF (INDEX(newstring, substring) > 0) THEN
       newstring = replace(string=newstring, substring=substring, &
-        & restring=restring)
+        & restring = restring)
     ELSE
       EXIT
     END IF
@@ -153,7 +157,7 @@ END FUNCTION replace_all
 ! the output tokens array is allocated with
 ! only one element set to input string.
 
-PURE SUBROUTINE tokenize(strin, delimiter, toks, Nt)
+PURE SUBROUTINE TOKENIZE(strin, delimiter, toks, Nt)
   CHARACTER(len=*), INTENT(in) :: strin
   !! String to be tokenized.
   CHARACTER(len=*), INTENT(in) :: delimiter
@@ -230,11 +234,13 @@ ELEMENTAL FUNCTION unique(string, substring) RESULT(uniq)
   IF (Lsub > LEN(string)) RETURN
   c1 = 1
   Loop1: DO
-    IF (c1 >= len_TRIM(uniq)) EXIT Loop1
-    IF (uniq(c1:c1+Lsub-1)==substring.AND.uniq(c1+Lsub:c1+2*Lsub-1)==substring) THEN
+    IF (c1 >= LEN_TRIM(uniq)) EXIT Loop1
+    IF (uniq(c1:c1 + Lsub - 1) == substring .AND. uniq(c1 + Lsub:c1 + 2 * &
+                                                       Lsub - 1) == &
+        substring) THEN
       c2 = c1 + Lsub
       Loop2: DO
-        IF (c2 >= len_TRIM(uniq)) EXIT Loop2
+        IF (c2 >= LEN_TRIM(uniq)) EXIT Loop2
         IF (uniq(c2:c2 + Lsub - 1) == substring) THEN
           c2 = c2 + Lsub
         ELSE
@@ -288,6 +294,6 @@ PURE FUNCTION wstrip(string) RESULT(newstring)
   CHARACTER(len=:), ALLOCATABLE :: newstring
   !! New modified string.
 
-  ALLOCATE (newstring, source=TRIM(ADJUSTL(string)))
+  ALLOCATE (newstring, SOURCE=TRIM(ADJUSTL(string)))
 END FUNCTION wstrip
-endmodule CommandLineArg_Utils
+END MODULE CommandLineArg_Utils

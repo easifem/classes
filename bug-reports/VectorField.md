@@ -23,6 +23,20 @@ the listed test passes. **Open** means not changed.
 
 ## Open
 
+### 6. SetByFunction swaps edge DOF on triangles of order >= 3
+
+- Where: `obj_SetByFunction` (VectorField and ScalarField SetMethods),
+  through `feptr%GetDOFValue`.
+- Effect: on small_tri3_mesh.h5 with order 3 Lagrange, the two interior
+  DOF of some edges get each other's value (44 of 140 VTK points wrong
+  for f = x**2 y + 1, which is exact in the space). The VTK path is
+  right: with SetHigherOrderNodeCoord (u = x) all points match.
+  Probably the edge orientation is not applied in GetDOFValue for
+  triangles. Quadrangles (square_3x2, two elements) are not affected.
+- Tests: GetVtkUnstructuredValue_test_2 uses SetHigherOrderNodeCoord
+  for this reason; a SetByFunction test on triangles of order 3 is
+  needed.
+
 ### 2. Set6 is under development
 
 - Where: `VectorField_Class@SetMethods.F90:326`; it raises an error.

@@ -16,12 +16,12 @@
 !
 
 MODULE NitscheBC_Class
-USE GlobalData, ONLY: I4B, LGT, DFP
-USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class, ONLY: MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
-USE NeumannBC_Class, ONLY: NeumannBC_
 USE DomainConnectivity_Class, ONLY: DomainConnectivityPointer_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE MeshSelection_Class, ONLY: MeshSelection_
+USE NeumannBC_Class, ONLY: NeumannBC_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
@@ -238,8 +238,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2022-04-27
-! update: 2023-09-10
 ! summary: Get dirichlet boundary conditions to the vector of pointer
+!
+! Changes:
+!   - 2023-09-10
 
 INTERFACE
   MODULE FUNCTION obj_GetNitscheBCPointer(bc, bcNo) RESULT(ans)

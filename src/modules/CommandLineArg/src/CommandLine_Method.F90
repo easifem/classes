@@ -20,18 +20,20 @@
 !
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Fortran command Line Arguments Parset for poor People
+!
+! Changes:
+!   - 2021-11-08
 
 MODULE CommandLine_Method
 USE CommandLineArg_Class, ONLY: CommandLineArg_
-USE CommandLineGroupArg_Class, only: CommandLineGroupArg_
-USE CommandLineInterface_Class, only: CommandLineInterface_, &
-  & ERROR_UNKNOWN_CLAS_IGNORED
+USE CommandLineGroupArg_Class, ONLY: CommandLineGroupArg_
+USE CommandLineInterface_Class, ONLY: CommandLineInterface_, &
+                                      ERROR_UNKNOWN_CLAS_IGNORED
 IMPLICIT NONE
 PRIVATE
 PUBLIC :: CommandLineArg_
 PUBLIC :: CommandLineGroupArg_
 PUBLIC :: CommandLineInterface_
 PUBLIC :: ERROR_UNKNOWN_CLAS_IGNORED
-ENDMODULE CommandLine_Method
+END MODULE CommandLine_Method

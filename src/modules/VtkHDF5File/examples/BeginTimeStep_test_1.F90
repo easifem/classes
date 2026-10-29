@@ -1,14 +1,15 @@
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! update:
-!   - 2026-10-28: grid from GetVtkUnstructuredGridData; the Steps group
-!     is checked with the methods of HDF5File_
 ! summary: Write time steps of a transient file
 !
 ! Four steps are run with frequency 2, so only the steps 1 and 3 are
 ! written. The grid of small_tri3_mesh.h5 is written once, and the point
 ! data u = step number is written in each output step. The file is then
 ! opened as an HDF5File_ and the Steps group is read back.
+!
+! Changes:
+!   - 2026-10-28: grid from GetVtkUnstructuredGridData; the Steps group
+!     is checked with the methods of HDF5File_
 
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt

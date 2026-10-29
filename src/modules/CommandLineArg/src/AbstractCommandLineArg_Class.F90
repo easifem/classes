@@ -17,11 +17,14 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Abstract command line argument class
+!
+! Changes:
+!   - 2021-11-08
 
 MODULE AbstractCommandLine_Class
-USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : stdout=>output_unit, stderr=>error_unit
+USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: stderr => ERROR_UNIT, stdout => &
+                                         OUTPUT_UNIT
 USE PENF
 IMPLICIT NONE
 PRIVATE
@@ -33,10 +36,12 @@ SAVE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: AbstractCommandLine class
 !
 !{!pages/AbstractCommandLineArg_.md!}
+!
+! Changes:
+!   - 2021-11-08
 
 TYPE, ABSTRACT :: AbstractCommandLineArg_
   CHARACTER(len=:), ALLOCATABLE :: progname
@@ -74,7 +79,7 @@ TYPE, ABSTRACT :: AbstractCommandLineArg_
   CHARACTER(len=:), ALLOCATABLE :: examples(:)
   !! Examples of correct usage.
 #endif
-  INTEGER(I4P) :: error = 0_I4P
+  INTEGER(I4P) :: ERROR = 0_I4P
   !! trapping flag.
   INTEGER(I4P) :: usage_lun = stderr
   !! Output unit to print help/usage messages
@@ -122,7 +127,7 @@ ELEMENTAL SUBROUTINE free_object(self)
   IF (ALLOCATED(self%error_message)) DEALLOCATE (self%error_message)
   IF (ALLOCATED(self%error_color)) DEALLOCATE (self%error_color)
   IF (ALLOCATED(self%error_style)) DEALLOCATE (self%error_style)
-  self%error = 0_I4P
+  self%ERROR = 0_I4P
   self%usage_lun = stderr
   self%version_lun = stdout
   self%error_lun = stderr
@@ -142,11 +147,12 @@ SUBROUTINE print_version(self, pref)
   !! Prefixing string.
 
   prefd = ''; IF (PRESENT(pref)) prefd = pref
-  WRITE(self%version_lun,'(A)')prefd//self%progname//' version '//self%version
-  IF (self%license /= '') THEN
+  WRITE (self%version_lun, '(A)') &
+    prefd//self%progname//' version '//self%version
+  IF (self%license / = '') THEN
     WRITE (self%version_lun, '(A)') prefd//self%license
   END IF
-  IF (self%authors /= '') THEN
+  IF (self%authors / = '') THEN
     WRITE (self%version_lun, '(A)') prefd//self%authors
   END IF
 END SUBROUTINE print_version
@@ -178,7 +184,8 @@ SUBROUTINE set_examples(self, examples)
 #ifdef __GFORTRAN__
     ALLOCATE (self%examples(1:SIZE(examples)))
 #else
- ALLOCATE (CHARACTER(len=LEN(examples(1))) :: self%examples(1:SIZE(examples)))
+    ALLOCATE (CHARACTER(len=LEN(examples(1))) :: &
+              self%examples(1:SIZE(examples)))
 ! does not work with gfortran 4.9.2
 #endif
     self%examples = examples
@@ -210,9 +217,9 @@ ELEMENTAL SUBROUTINE assign_object(lhs, rhs)
   IF (ALLOCATED(rhs%error_message)) lhs%error_message = rhs%error_message
   IF (ALLOCATED(rhs%error_color)) lhs%error_color = rhs%error_color
   IF (ALLOCATED(rhs%error_style)) lhs%error_style = rhs%error_style
-  lhs%error = rhs%error
+  lhs%ERROR = rhs%ERROR
   lhs%usage_lun = rhs%usage_lun
   lhs%version_lun = rhs%version_lun
   lhs%error_lun = rhs%error_lun
 END SUBROUTINE assign_object
-ENDMODULE AbstractCommandLine_Class
+END MODULE AbstractCommandLine_Class

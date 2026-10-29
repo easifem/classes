@@ -1,7 +1,5 @@
 !> author: Shion Shimizu
 ! date: 2026-10-24
-! update:
-!   - 2026-10-28: checks of the grid, the values and the written file
 ! summary: Write a Lagrange grid and a scalar field
 !
 ! The mesh square_3x2.h5 is the square [0, 10] x [0, 10] with two
@@ -16,6 +14,9 @@
 ! the points are the interpolation points of u, the values are equal
 ! to f at the points (zero on the boundary). The grid and the values
 ! are written, and the file is read back as an HDF5File_.
+!
+! Changes:
+!   - 2026-10-28: checks of the grid, the values and the written file
 
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt

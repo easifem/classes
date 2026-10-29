@@ -17,14 +17,17 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Command line arguments group type
+!
+! Changes:
+!   - 2021-11-08
 
 MODULE CommandLineGroupArg_Class
-USE FACE, ONLY: colorize
 USE AbstractCommandLine_Class, ONLY: AbstractCommandLineArg_
-USE CommandLineArg_Class, ONLY: CommandLineArg_, &
-     & ACTION_PRINT_HELP, ACTION_PRINT_VERS, ACTION_STORE, ACTION_STORE_STAR, ARGS_SEP
+USE CommandLineArg_Class, ONLY: ACTION_PRINT_HELP, ACTION_PRINT_VERS, &
+                                ACTION_STORE, ACTION_STORE_STAR, ARGS_SEP, &
+                                CommandLineArg_
+USE FACE, ONLY: colorize
 USE PENF
 IMPLICIT NONE
 PRIVATE
@@ -46,12 +49,14 @@ INTEGER(I4P), PARAMETER :: ERROR_M_EXCLUDE = 101
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Command line arguments group class
 !
 !# Introduction
 !
 ! This class is useful for building nested commands
+!
+! Changes:
+!   - 2021-11-08
 
 TYPE, EXTENDS(AbstractCommandLineArg_) :: CommandLineGroupArg_
   PRIVATE
@@ -148,12 +153,12 @@ SUBROUTINE check(self, pref)
   CLA_UNIQUE: DO a = 1, self%Na
     IF (.NOT. self%cla(a)%is_positional) THEN
       DO aa = 1, self%Na
-        IF ((a /= aa) .AND. (.NOT. self%cla(aa)%is_positional)) THEN
+        IF ((a / =aa) .AND. (.NOT. self%cla(aa)%is_positional)) THEN
           IF ((self%cla(a)%switch == self%cla(aa)%switch) &
                & .OR. (self%cla(a)%switch_ab == self%cla(aa)%switch) &
                & .OR. (self%cla(a)%switch == self%cla(aa)%switch_ab) &
                & .OR. (self%cla(a)%switch_ab == self%cla(aa)%switch_ab)) THEN
-            CALL self%errored(pref=pref, error=ERROR_CONSISTENCY, a1=a, a2=aa)
+            CALL self%errored(pref=pref, ERROR=ERROR_CONSISTENCY, a1=a, a2=aa)
             EXIT CLA_UNIQUE
           END IF
         END IF
@@ -163,7 +168,7 @@ SUBROUTINE check(self, pref)
   ! update mutually exclusive relations
   CLA_EXCLUDE: DO a = 1, self%Na
     IF (.NOT. self%cla(a)%is_positional) THEN
-      IF (self%cla(a)%m_exclude /= '') THEN
+      IF (self%cla(a)%m_exclude / = '') THEN
         IF (self%is_defined(switch=self%cla(a)%m_exclude, pos=aa)) THEN
           self%cla(aa)%m_exclude = self%cla(a)%switch
         END IF
@@ -188,7 +193,7 @@ SUBROUTINE is_required_passed(self, pref)
   IF (self%is_called) THEN
     DO a = 1, self%Na
       IF (.NOT. self%cla(a)%is_required_passed(pref=pref)) THEN
-        self%error = self%cla(a)%error
+        self%ERROR = self%cla(a)%ERROR
         WRITE (self%usage_lun, '(A)') self%usage(pref=pref)
         RETURN
       END IF
@@ -218,7 +223,8 @@ PURE FUNCTION is_passed(self, switch, position)
     IF (PRESENT(switch)) THEN
       DO a = 1, self%Na
         IF (.NOT. self%cla(a)%is_positional) THEN
-     IF ((self%cla(a)%switch==switch).OR.(self%cla(a)%switch_ab==switch)) THEN
+          IF ((self%cla(a)%switch == switch) .OR. (self%cla(a)%switch_ab == &
+                                                   switch)) THEN
             is_passed = self%cla(a)%is_passed
             EXIT
           END IF
@@ -252,7 +258,8 @@ FUNCTION is_defined(self, switch, pos)
   IF (self%Na > 0) THEN
     DO a = 1, self%Na
       IF (.NOT. self%cla(a)%is_positional) THEN
-     IF ((self%cla(a)%switch==switch).OR.(self%cla(a)%switch_ab==switch)) THEN
+        IF ((self%cla(a)%switch == switch) .OR. (self%cla(a)%switch_ab == &
+                                                 switch)) THEN
           is_defined = .TRUE.
           IF (PRESENT(pos)) pos = a
           EXIT
@@ -273,7 +280,7 @@ SUBROUTINE raise_error_m_exclude(self, pref)
   !! CLA data.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref
   !! Prefixing string.
-  CALL self%errored(pref=pref, error=ERROR_M_EXCLUDE)
+  CALL self%errored(pref=pref, ERROR=ERROR_M_EXCLUDE)
 END SUBROUTINE raise_error_m_exclude
 
 !----------------------------------------------------------------------------
@@ -282,7 +289,6 @@ END SUBROUTINE raise_error_m_exclude
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-08
-! update: 2021-11-08
 ! summary: Add
 !
 ! Add CLA to CLAs list.
@@ -292,6 +298,9 @@ END SUBROUTINE raise_error_m_exclude
 !a value that must be passed after the switch name
 !or directly passed in case of positional CLA.
 !@endnote
+!
+! Changes:
+!   - 2021-11-08
 
 SUBROUTINE add(self, pref, cla)
   CLASS(CommandLineGroupArg_), INTENT(inout) :: self
@@ -379,21 +388,24 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
       found = .FALSE.
       DO a = 1, self%Na ! loop over CLAs group clas named options
         IF (.NOT. self%cla(a)%is_positional) THEN
-      IF (TRIM(ADJUSTL(self%cla(a)%switch)) == TRIM(ADJUSTL(args(arg))) .OR. &
-        TRIM(ADJUSTL(self%cla(a)%switch_ab)) == TRIM(ADJUSTL(args(arg)))) THEN
+          IF (TRIM(ADJUSTL(self%cla(a)%switch)) == &
+              TRIM(ADJUSTL(args(arg))) .OR. &
+              TRIM(ADJUSTL(self%cla(a)%switch_ab)) == &
+              TRIM(ADJUSTL(args(arg)))) THEN
             IF (self%cla(a)%is_passed) THEN
               ! current CLA has been already passed, raise an error
               CALL self%cla(arg)%raise_error_duplicated_clas(&
-                   & pref=pref, switch=TRIM(ADJUSTL(args(arg))))
-              self%error = self%cla(arg)%error
+                   & pref = pref, switch = TRIM(ADJUSTL(args(arg))))
+              self%ERROR = self%cla(arg)%ERROR
             END IF
             found_val = .FALSE.
             IF (self%cla(a)%act == action_store) THEN
               IF (ALLOCATED(self%cla(a)%envvar)) THEN
-                IF (arg + 1 <= SIZE(args, dim=1)) THEN ! verify if the value has been passed directly to cli
+                IF (arg + 1 <= SIZE(args, dim=1)) THEN
+                  ! verify if the value has been passed directly to cli
                   ! there are still other arguments to check
                   IF (.NOT. self%is_defined( &
-                       & switch=TRIM(ADJUSTL(args(arg + 1))))) THEN
+                       & switch = TRIM(ADJUSTL(args(arg + 1))))) THEN
                     ! argument seem good...
                     arg = arg + 1
                     self%cla(a)%val = TRIM(ADJUSTL(args(arg)))
@@ -403,8 +415,8 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
                 END IF
                 IF (.NOT. found) THEN
                   ! not found, try to take val from environment
-                  CALL get_environment_VARIABLE(name=self%cla(a)%envvar, &
-                       &  VALUE=envvar, status=aa)
+                  CALL GET_ENVIRONMENT_VARIABLE(name=self%cla(a)%envvar, &
+                       &  VALUE = envvar, status = aa)
                   IF (aa == 0) THEN
                     self%cla(a)%val = TRIM(ADJUSTL(envvar))
                     found_val = .TRUE.
@@ -424,7 +436,7 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
                   aaa = 0
                   DO aa = arg + 1, SIZE(args, dim=1)
                     IF (.NOT. self%is_defined( &
-                         & switch=TRIM(ADJUSTL(args(aa))))) THEN
+                         & switch = TRIM(ADJUSTL(args(aa))))) THEN
                       aaa = aa
                     ELSE
                       EXIT
@@ -440,14 +452,14 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
                     arg = aaa
                   ELSEIF (aaa == 0) THEN
                     CALL self%cla(a)%raise_error_nargs_insufficient(pref=pref)
-                    self%error = self%cla(a)%error
+                    self%ERROR = self%cla(a)%ERROR
                     RETURN
                   END IF
                 CASE ('*')
                   aaa = 0
                   DO aa = arg + 1, SIZE(args, dim=1)
                     IF (.NOT. self%is_defined( &
-                         &  switch=TRIM(ADJUSTL(args(aa))))) THEN
+                         &  switch = TRIM(ADJUSTL(args(aa))))) THEN
                       aaa = aa
                     ELSE
                       EXIT
@@ -463,10 +475,11 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
                     arg = aaa
                   END IF
                 CASE default
-                 nargs = cton(str=TRIM(ADJUSTL(self%cla(a)%nargs)), knd=1_I4P)
+                  nargs = &
+                    cton(str=TRIM(ADJUSTL(self%cla(a)%nargs)), knd=1_I4P)
                   IF (arg + nargs > SIZE(args, dim=1)) THEN
                     CALL self%cla(a)%raise_error_nargs_insufficient(pref=pref)
-                    self%error = self%cla(a)%error
+                    self%ERROR = self%cla(a)%ERROR
                     RETURN
                   END IF
                   DO aa = arg + nargs, arg + 1, -1
@@ -480,7 +493,7 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
               ELSE
                 IF (arg + 1 > SIZE(args)) THEN
                   CALL self%cla(a)%raise_error_value_missing(pref=pref)
-                  self%error = self%cla(a)%error
+                  self%ERROR = self%cla(a)%ERROR
                   RETURN
                 END IF
                 arg = arg + 1
@@ -492,7 +505,7 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
                  !! verify if the value has been passed directly to cli
                  !! there are still other arguments to check
                 IF (.NOT. self%is_defined( &
-                     & switch=TRIM(ADJUSTL(args(arg + 1))))) THEN
+                     & switch = TRIM(ADJUSTL(args(arg + 1))))) THEN
                   ! argument seem good...
                   arg = arg + 1
                   self%cla(a)%val = TRIM(ADJUSTL(args(arg)))
@@ -506,9 +519,9 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
                      & self%cla(a)%val = self%cla(a)%def
               END IF
             ELSEIF (self%cla(a)%act == action_print_help) THEN
-              self%error = STATUS_PRINT_H
+              self%ERROR = STATUS_PRINT_H
             ELSEIF (self%cla(a)%act == action_print_vers) THEN
-              self%error = STATUS_PRINT_V
+              self%ERROR = STATUS_PRINT_V
             END IF
             self%cla(a)%is_passed = .TRUE.
             found = .TRUE.
@@ -526,15 +539,16 @@ SUBROUTINE parse(self, args, ignore_unknown_clas, pref, error_unknown_clas)
           cla%m_exclude = ''
           CALL self%add(pref=pref, cla=cla)
           CALL self%cla(self%Na)%raise_error_switch_unknown( &
-               & pref=pref, switch=TRIM(ADJUSTL(args(arg))))
-          self%error = self%cla(self%Na)%error
+               & pref = pref, switch = TRIM(ADJUSTL(args(arg))))
+          self%ERROR = self%cla(self%Na)%ERROR
           RETURN
         END IF
-        IF (.NOT. self%cla(arg)%is_positional) THEN ! current argument (arg-th) is not positional... there is a problem!
+        IF (.NOT. self%cla(arg)%is_positional) THEN
+          ! current argument (arg-th) is not positional... there is a problem!
           CALL self%cla(arg)%raise_error_switch_unknown( &
-               & pref=pref, switch=TRIM(ADJUSTL(args(arg))))
-          self%error = self%cla(arg)%error
-          error_unknown_clas = self%error
+               & pref = pref, switch = TRIM(ADJUSTL(args(arg))))
+          self%ERROR = self%cla(arg)%ERROR
+          error_unknown_clas = self%ERROR
           IF (.NOT. ignore_unknown_clas) RETURN
         ELSE
           ! positional CLA always stores a value
@@ -573,26 +587,28 @@ FUNCTION usage(self, pref, no_header, markdown)
   !! Markdonw format, local variable.
   markdownd = .FALSE.; IF (PRESENT(markdown)) markdownd = markdown
   prefd = ''; IF (PRESENT(pref)) prefd = pref
-  usage = self%progname; IF (self%group /= '') usage = self%progname//' '//self%group
+  usage = self%progname; IF (self%group / = '') usage = &
+ self%progname//' '//self%group
   usage = prefd//self%help//' '//usage//self%signature()
-  IF (self%description/='') usage = usage//new_LINE('a')//new_LINE('a')//prefd//self%description
+  IF (self%description / ='') usage = &
+    usage//NEW_LINE('a')//NEW_LINE('a')//prefd//self%description
   IF (PRESENT(no_header)) THEN
     IF (no_header) usage = ''
   END IF
   IF (self%Na_required > 0) THEN
-    usage = usage//new_LINE('a')//new_LINE('a')//prefd//'Required switches:'
+    usage = usage//NEW_LINE('a')//NEW_LINE('a')//prefd//'Required switches:'
     DO a = 1, self%Na
       IF (self%cla(a)%is_required .AND. (.NOT. self%cla(a)%is_hidden)) &
-           & usage = usage//new_LINE('a')// &
+           & usage = usage//NEW_LINE('a')// &
            & self%cla(a)%usage(pref=prefd, markdown=markdownd)
     END DO
   END IF
   IF (self%Na_optional > 0) THEN
-    usage = usage//new_LINE('a')//new_LINE('a')//prefd//'Optional switches:'
+    usage = usage//NEW_LINE('a')//NEW_LINE('a')//prefd//'Optional switches:'
     DO a = 1, self%Na
       IF (.NOT. self%cla(a)%is_required &
            & .AND. (.NOT. self%cla(a)%is_hidden)) &
-           & usage = usage//new_LINE('a')// &
+           & usage = usage//NEW_LINE('a')// &
            & self%cla(a)%usage(pref=prefd, markdown=markdownd)
     END DO
   END IF
@@ -627,14 +643,14 @@ FUNCTION signature(self, bash_completion, plain)
   IF (bash_completion_) THEN
     DO a = 1, self%Na
       signature = signature//self%cla(a)%signature( &
-           & bash_completion=bash_completion, plain=.TRUE.)
+           & bash_completion = bash_completion, plain = .TRUE.)
     END DO
-    signature = new_LINE('a')//'    COMPREPLY=( $( compgen -W "' &
+    signature = NEW_LINE('a')//'    COMPREPLY=( $( compgen -W "' &
          & //signature//'" -- $cur ) )'
   END IF
   DO a = 1, self%Na
     signature = signature//self%cla(a)%signature(&
-         & bash_completion=bash_completion, plain=plain)
+         & bash_completion = bash_completion, plain = plain)
   END DO
 END FUNCTION signature
 
@@ -643,23 +659,25 @@ END FUNCTION signature
 !----------------------------------------------------------------------------
 
 ! private methods
-SUBROUTINE errored(self, error, pref, a1, a2)
+SUBROUTINE errored(self, ERROR, pref, a1, a2)
   !< Trig error occurrence and print meaningful message.
   CLASS(CommandLineGroupArg_), INTENT(inout) :: self  !< CLAsG data.
-  INTEGER(I4P), INTENT(in) :: error !< Error occurred.
+  INTEGER(I4P), INTENT(in) :: ERROR !< Error occurred.
   CHARACTER(*), OPTIONAL, INTENT(in) :: pref  !< Prefixing string.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: a1    !< First index CLAs group inconsistent.
-  INTEGER(I4P), OPTIONAL, INTENT(in) :: a2    !< Second index CLAs group inconsistent.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: a1
+  !< First index CLAs group inconsistent.
+  INTEGER(I4P), OPTIONAL, INTENT(in) :: a2
+  !< Second index CLAs group inconsistent.
   CHARACTER(len=:), ALLOCATABLE :: prefd !< Prefixing string.
 
-  self%error = error
-  IF (self%error /= 0) THEN
+  self%ERROR = ERROR
+  IF (self%ERROR / =0) THEN
     prefd = ''; IF (PRESENT(pref)) prefd = pref
     prefd = prefd//self%progname//': '//colorize('error', &
-         & color_fg=self%error_color, style=self%error_style)
-    SELECT CASE (self%error)
+         & color_fg = self%error_color, style = self%error_style)
+    SELECT CASE (self%ERROR)
     CASE (ERROR_CONSISTENCY)
-      IF (self%group /= '') THEN
+      IF (self%group / = '') THEN
         self%error_message = prefd//': group (command) name: "' &
              & //self%group//'" consistency error:'
       ELSE
@@ -700,10 +718,10 @@ SUBROUTINE check_m_exclusive(self, pref)
   IF (self%is_called) THEN
     DO a = 1, self%Na
       IF (self%cla(a)%is_passed) THEN
-        IF (self%cla(a)%m_exclude /= '') THEN
+        IF (self%cla(a)%m_exclude / = '') THEN
           IF (self%is_passed(switch=self%cla(a)%m_exclude)) THEN
             CALL self%cla(a)%raise_error_m_exclude(pref=pref)
-            self%error = self%cla(a)%error
+            self%ERROR = self%cla(a)%ERROR
             RETURN
           END IF
         END IF
@@ -748,7 +766,7 @@ ELEMENTAL SUBROUTINE clasg_assign_clasg(lhs, rhs)
   IF (ALLOCATED(rhs%group)) lhs%group = rhs%group
   IF (ALLOCATED(rhs%cla)) THEN
     IF (ALLOCATED(lhs%cla)) DEALLOCATE (lhs%cla)
-    ALLOCATE (lhs%cla(1:SIZE(rhs%cla, dim=1)), source=rhs%cla)
+    ALLOCATE (lhs%cla(1:SIZE(rhs%cla, dim=1)), SOURCE=rhs%cla)
   END IF
   lhs%Na = rhs%Na
   lhs%Na_required = rhs%Na_required
@@ -770,4 +788,4 @@ END SUBROUTINE finalize
 !                                                                  name
 !----------------------------------------------------------------------------
 
-ENDMODULE CommandLineGroupArg_Class
+END MODULE CommandLineGroupArg_Class

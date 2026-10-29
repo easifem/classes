@@ -23,15 +23,15 @@
 ! FEDomainPointer_.
 
 MODULE FEDomain_Class
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
-USE HDF5File_Class, ONLY: HDF5File_
-USE ExceptionHandler_Class, ONLY: e
-USE GlobalData, ONLY: LGT, I4B, DFP
-USE TxtFile_Class, ONLY: TxtFile_
-USE tomlf, ONLY: toml_table
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: BoundingBox_
 USE ElemData_Class, ONLY: ElemData_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
 
 IMPLICIT NONE
 PRIVATE
@@ -181,14 +181,15 @@ END TYPE FEDomainPointer_
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-03-28
-! update:
-!   - 2026-10-23: The mesh objects are freed (they leaked before)
 ! summary: Deallocate the data of the domain
 !
 ! Deallocate the data of AbstractDomain_, call Deallocate on every mesh of the
 ! domain and free the mesh objects. The domain owns its meshes (they are
 ! created in Import), so pointers to them obtained from GetMeshPointer are
 ! dangling after this call.
+!
+! Changes:
+!   - 2026-10-23: The mesh objects are freed (they leaked before)
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(inout) - domain object
@@ -483,15 +484,16 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-07-23
-! update:
-!   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
-!     arguments
 ! summary: Get a pointer to a mesh of the domain
 !
 ! Return the mesh of dimension dim, or the mesh of dimension nsd if dim is
 ! absent. In FEDomain_ the mesh of a dimension contains all entities of that
 ! dimension; the entity of an element is its mesh id. The pointer is not
 ! associated if the domain has no mesh of dimension dim.
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
+!     arguments
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(in) - domain object
@@ -1041,11 +1043,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-12
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the connectivity of an element
 !
 ! Call GetConnectivity_ of the mesh of dimension dim (default nsd).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(in) - domain object
@@ -1133,11 +1136,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-07-14
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get all connectivities of an element
 !
 ! Call GetConnectivity_ of the mesh of dimension dim (default nsd).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(in) - domain object
@@ -1295,11 +1299,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-05
-! update:
-!   - 2026-10-23: Removed the unused entityNum argument
 ! summary: Get the number of vertex nodes of a list of elements
 !
 ! Use the mesh of dimension dim (default nsd).
+!
+! Changes:
+!   - 2026-10-23: Removed the unused entityNum argument
 !
 ! Arguments:
 !   obj : CLASS(FEDomain_), intent(in) - domain object

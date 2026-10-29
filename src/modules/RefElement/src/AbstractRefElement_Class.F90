@@ -20,11 +20,11 @@
 ! summary: AbstractRefElement Class is implemented
 
 MODULE AbstractRefElement_Class
-USE GlobalData
-USE BaseType, ONLY: BaseInterpolation_, BaseContinuity_, &
-& ReferenceElement_, ReferenceTopology_
-USE String_Class, ONLY: String
+USE BaseType, ONLY: BaseContinuity_, BaseInterpolation_, ReferenceElement_, &
+                    ReferenceTopology_
 USE ExceptionHandler_Class, ONLY: e
+USE GlobalData
+USE String_Class, ONLY: String
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = "AbstractRefElement_Class"
@@ -40,10 +40,12 @@ PUBLIC :: AbstractRefElementDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 9 Aug 2022
-! update: 18 Aug 2022
 ! summary: AbstractRefElement class is defined
 !
 !{!pages/docs-api/AbstractRefElement/AbstractRefElement_.md!}
+!
+! Changes:
+!   - 18 Aug 2022
 
 TYPE, ABSTRACT :: AbstractRefElement_
   PRIVATE
@@ -135,7 +137,8 @@ END TYPE AbstractRefElementPointer_
 ! summary: Return the reference coordiante of linear element
 
 ABSTRACT INTERFACE
- FUNCTION refelem_RefCoord(obj, baseInterpolation, baseContinuity) RESULT(ans)
+  FUNCTION refelem_RefCoord(obj, baseInterpolation, baseContinuity) &
+    RESULT(ans)
     IMPORT AbstractRefElement_, I4B, DFP
     CLASS(AbstractRefElement_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: baseInterpolation
@@ -547,7 +550,8 @@ INTERFACE
       !! string name of element
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
       !! spatial dimension of element
-   TYPE(ReferenceTopology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: topology(:)
+    TYPE(ReferenceTopology_), OPTIONAL, ALLOCATABLE, INTENT(OUT) :: &
+      topology(:)
       !! vector of point topology
     TYPE(String), OPTIONAL, INTENT(OUT) :: baseContinuity
       !! Continuity or Conformity of basis function.

@@ -1804,13 +1804,14 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-06
-! update:
-!   - 2026-10-29: use nbc(ibc)%ptr, not the boundary conditions of obj
 ! summary: Add a list of surface Neumann boundary conditions
 !
 ! Same as [[obj_ApplySurfaceNeumannBC1]], but the Neumann boundary
 ! conditions are given by nbc. Entries of nbc that are not associated
 ! are skipped. Nothing is done if SIZE(nbc) is zero.
+!
+! Changes:
+!   - 2026-10-29: use nbc(ibc)%ptr, not the boundary conditions of obj
 !
 ! Arguments:
 !   obj : CLASS(ScalarField_) - scalar field (right hand side)
