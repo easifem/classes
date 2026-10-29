@@ -23,12 +23,12 @@ USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: interpolOpt => TypeInterpolationOpt
+USE Display_Method, ONLY: ToString
+USE InputUtility, ONLY: Input
+USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
 USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
 USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle
-USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: ToString
-USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -146,7 +146,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 isok = PRESENT(quadratureType) .OR. PRESENT(quadratureType1) .OR. &
        PRESENT(quadratureType2) .OR. PRESENT(quadratureType3)
 CALL AssertError1(isok, myName, &
-                  'quadratureType, quadratureType1, quadratureType2, or &
+  'quadratureType, quadratureType1, quadratureType2, or &
                   &quadratureType3 must be provided')
 #endif
 
@@ -488,7 +488,8 @@ faceCon = FacetConnectivity_Triangle()
 
 ! xijLine contains the x1 and x2 coordinates of the line (end points)
 xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
-                                   faceCon(1:tSpaceVertices, localFaceNumber))
+                                       faceCon(1:tSpaceVertices, &
+                                       localFaceNumber))
 
 ! Now we form space-time vertex values of func
 DO jj = 1, tTimeVertices
@@ -649,7 +650,8 @@ faceCon = FacetConnectivity_Triangle()
 
 ! xijLine contains the x1 and x2 coordinates of the line (end points)
 xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
-                                   faceCon(1:tSpaceVertices, localFaceNumber))
+                                       faceCon(1:tSpaceVertices, &
+                                       localFaceNumber))
 
 ! Now we form space-time vertex values of func
 ans(1:tTimeVertices, 1:tSpaceVertices) = math%one
@@ -759,6 +761,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetSTFacetDOFValueFromConstant
+
+!----------------------------------------------------------------------------
+!                                                           FixOrientOfNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_FixOrientOfNptrs
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_FixOrientOfNptrs()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%opt%Triangle_FixOrientOfNptrs(nptrs=nptrs, tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_FixOrientOfNptrs
 
 !----------------------------------------------------------------------------
 !                                                              include Error

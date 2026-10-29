@@ -17,10 +17,10 @@
 !
 
 MODULE TriangleH1FE_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractFE_Class, ONLY: AbstractFE_
+USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_
 USE ExceptionHandler_Class, ONLY: e
-USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE UserFunction_Class, ONLY: UserFunction_
 
 IMPLICIT NONE
@@ -58,6 +58,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
   !! Get the interpolation points
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  !! Fix the orientation of the connectivity
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   !! Set orientation of the finite element
   PROCEDURE, PUBLIC, PASS(obj) :: &
@@ -279,6 +281,39 @@ INTERFACE
     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:), beta(:), lambda(:)
     !! Jacobi and Ultraspherical parameters
   END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    FixOrientOfNptrs@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Fix the orientation of the connectivity
+!
+! Reverses the interior nodes of each edge of the triangle whose
+! orientation (set by SetOrientation) is -1, so that the connectivity
+! follows the local node order of the reference element. Nothing is done
+! for order 2 or less (at most one node inside an edge). The interior
+! nodes of the cell are not changed. This is necessary for getting the
+! Lagrange DOF for visualization.
+!
+! Arguments:
+!   obj : CLASS(TriangleH1FE_) - triangle finite element
+!   nptrs : INTEGER(I4B) - connectivity of the element, changed in place
+!   tsize : INTEGER(I4B) - number of entries of nptrs
+!
+! See also: [[QuadrangleH1FE_:obj_FixOrientOfNptrs]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_FixOrientOfNptrs(obj, nptrs, tsize)
+    CLASS(TriangleH1FE_), INTENT(INOUT) :: obj
+    !! triangle finite element
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! connectivity of the element, changed in place
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! number of entries of nptrs
+  END SUBROUTINE obj_FixOrientOfNptrs
 END INTERFACE
 
 !----------------------------------------------------------------------------
