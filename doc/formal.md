@@ -9,6 +9,7 @@ src_dir: ../src/modules/H1FE/
          ../src/modules/AbstractOneDimFE/
          ../src/modules/BasisOpt/
          ../src/modules/AbstractFE/
+         ../src/modules/FEDOF/
          ../src/modules/AbstractField/
          ../src/modules/AbstractNodeField/
          ../src/modules/ScalarField/
