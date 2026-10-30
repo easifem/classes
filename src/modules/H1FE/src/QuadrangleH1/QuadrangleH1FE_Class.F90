@@ -484,12 +484,19 @@ END INTERFACE
 ! date: 2023-09-05
 ! summary: Generate physical interpolation coordinates
 !
+! For isotropic degree zero, return one interpolation point: the arithmetic
+! mean of the supplied vertex coordinates. This supports the constant
+! local basis reused by DG on linear geometry.
+!
 ! Generates physical interpolation points using the supplied vertex
 ! coordinates, degrees and point types. Writes the active coordinate block and
 ! returns nrow and ncol. Uses separate p and q degrees and point types when
 ! supplied; otherwise broadcasts the first entry to the second direction.
 ! Polynomial parameter defaults are alpha=0, beta=0 and lambda=0.5. Layout is
 ! VEFC.
+!
+! Changes:
+!   - 2026-10-30: Return the centroid for a constant element.
 !
 ! Examples
 !
