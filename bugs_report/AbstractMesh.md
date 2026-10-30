@@ -204,3 +204,19 @@ stored), `GetOrder_test_3` (Triangle6, order 2, again after Deallocate).
   `GetCellNumber_test_1`.
 - The edge orientation is zero-sized until `InitiateEdgeConnectivity` is
   called; no error is raised (left as is).
+
+### 17. Sparse global node IDs fail during HDF5 mesh import (open)
+
+- Found: 2026-10-30 while preparing the H1 FEDOF regression fixture.
+- Where: `MeshImportDataFromDim` in
+  `src/submodules/AbstractMesh/src/AbstractMesh_Class@HDFMethods.F90`,
+  coordinate lookup `xij(1:jj, kk)` after `kk = GetGlobalNodeNumber(ii)`.
+- `MSHFile_` exports coordinates compactly by node count and writes a
+  `local_nptrs` mapping. The reader indexes the coordinate array with a
+  global node ID instead of using that mapping.
+- Reproducer: a Gmsh 4.1 mesh with six nodes tagged 10, 20, 30, 40, 50,
+  60, exported through `MSHFile_%Export`, then read by `FEDomain_%Initiate`.
+  Debug execution stops with coordinate column 10 outside bounds 1:6.
+- Not changed in the FEDOF batch. The checked-in FEDOF fixture uses dense
+  domain node IDs but a sparse subset in its 2D mesh, allowing the FEDOF
+  local/global mapping regressions to run independently of this issue.
