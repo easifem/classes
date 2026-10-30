@@ -23,10 +23,6 @@
 ! bindings configure and evaluate line, triangle and quadrangle bases.
 !
 MODULE BasisOpt_Class
-USE GlobalData, ONLY: I4B
-USE GlobalData, ONLY: DFP
-USE GlobalData, ONLY: LGT
-USE String_Class, ONLY: String
 USE BaseType, ONLY: ipopt => TypeInterpolationOpt
 USE BaseType, ONLY: polyopt => TypePolynomialOpt
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
@@ -34,10 +30,14 @@ USE BaseType, ONLY: elemnameopt => TypeElemNameOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: eleminfo => TypeRefelemOpt
-USE QuadratureOpt_Class, ONLY: QuadratureOpt_
 USE ExceptionHandler_Class, ONLY: e
-USE TxtFile_Class, ONLY: TxtFile_
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: LGT
+USE QuadratureOpt_Class, ONLY: QuadratureOpt_
+USE String_Class, ONLY: String
 USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
 
 IMPLICIT NONE
 
@@ -461,7 +461,8 @@ CONTAINS
   !! Evaluate local facet shapes for Quadrangle H1 Lagrange.
   PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetGlobalElemShapeData
   !! Map cell shapes to physical coordinates for Quadrangle H1 Lagrange.
- PROCEDURE, PUBLIC, PASS(obj) :: QuadrangleH1LagFE_GetGlobalFacetElemShapeData
+  PROCEDURE, PUBLIC, PASS(obj) :: &
+    QuadrangleH1LagFE_GetGlobalFacetElemShapeData
   !! Map facet shapes and compute normals for Quadrangle H1 Lagrange.
 
   !@ QuadrangleH1HierarchicalFEMethods
@@ -1124,7 +1125,8 @@ INTERFACE
     fetype, elemType, topoType, elemIndx, ipType, basisType, alpha, beta, &
     lambda, dofType, transformType, refElemDomain, refelemCoord, &
     baseContinuity, baseInterpolation, isIsotropicOrder, isAnisotropicOrder, &
-  isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
+    isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, &
+    tCellOrder, &
     quadratureIsHomogeneous, quadratureType, quadratureType1, &
     quadratureType2, quadratureType3, quadratureOrder, quadratureOrder1, &
     quadratureOrder2, quadratureOrder3, quadratureIsOrder, quadratureNips, &
@@ -3222,7 +3224,8 @@ END INTERFACE
 ! See also: [[obj_Initiate]], [[obj_GetTotalQuadraturePoints]]
 
 INTERFACE
- MODULE SUBROUTINE Quadrangle_GetFacetQuadraturePoints(obj, quad, facetQuad, &
+  MODULE SUBROUTINE Quadrangle_GetFacetQuadraturePoints(obj, quad, &
+                                                        facetQuad, &
                                                         localFaceNumber)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Basis options object.
@@ -4359,6 +4362,10 @@ END INTERFACE
 ! date: 2025-10-15
 ! summary: Evaluate local cell shapes for Triangle H1 Lagrange
 !
+! For degree zero, allocate one constant shape with value one and zero
+! reference derivatives. Skip lattice interpolation and private polynomial
+! scratch arrays; this also supports a DG constant cell.
+!
 ! Allocates cell shape storage, copies quadrature weights and evaluates
 ! Lagrange basis values N and reference derivatives dNdXi for the configured
 ! triangle. N is stored as (DOF, quadrature point); dNdXi as (DOF, reference
@@ -4366,6 +4373,9 @@ END INTERFACE
 ! subsequent global mapping. Reuses and may resize private working arrays.
 ! Requires isotropic order and matching interpolation-point and polynomial
 ! basis settings.
+!
+! Changes:
+!   - 2026-10-30: Evaluate degree-zero cells directly.
 !
 ! Formula:
 ! $$ N_{iq} = N_i(\xi_q), \qquad
@@ -4752,6 +4762,10 @@ END INTERFACE
 ! date: 2026-10-29
 ! summary: Evaluate local cell shapes for Quadrangle H1 Lagrange
 !
+! For degree zero, allocate one constant shape with value one and zero
+! reference derivatives. Skip lattice interpolation and private polynomial
+! scratch arrays; this also supports a DG constant cell.
+!
 ! Allocates cell shape storage, copies quadrature weights and evaluates
 ! Lagrange basis values N and reference derivatives dNdXi for the configured
 ! quadrangle. N is stored as (DOF, quadrature point); dNdXi as (DOF, reference
@@ -4759,6 +4773,9 @@ END INTERFACE
 ! subsequent global mapping. Reuses and may resize private working arrays.
 ! Requires isotropic order and matching interpolation-point and polynomial
 ! basis settings.
+!
+! Changes:
+!   - 2026-10-30: Evaluate degree-zero cells directly.
 !
 ! Formula:
 ! $$ N_{iq} = N_i(\xi_q), \qquad
@@ -5026,7 +5043,8 @@ END INTERFACE
 ! See also: [[obj_Initiate]], [[obj_GetParam]], [[obj_Deallocate]]
 
 INTERFACE
-MODULE SUBROUTINE QuadrangleH1LagFE_GetGlobalElemShapeData(obj, xij, elemsd, &
+  MODULE SUBROUTINE QuadrangleH1LagFE_GetGlobalElemShapeData(obj, &
+                                                             xij, elemsd, &
                                                              geoelemsd)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Basis options object.
@@ -6072,7 +6090,8 @@ END INTERFACE
 ! See also: [[obj_Initiate]], [[obj_GetParam]], [[obj_Deallocate]]
 
 INTERFACE
-MODULE SUBROUTINE QuadrangleH1HieFE_GetGlobalElemShapeData(obj, xij, elemsd, &
+  MODULE SUBROUTINE QuadrangleH1HieFE_GetGlobalElemShapeData(obj, &
+                                                             xij, elemsd, &
                                                              geoelemsd)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Basis options object.
