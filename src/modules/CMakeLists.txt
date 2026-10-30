@@ -507,3 +507,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
 
 # IterationData
 include(${CMAKE_CURRENT_LIST_DIR}/IterationData/CMakeLists.txt)
+
+# CatalystAdaptor
+include(${CMAKE_CURRENT_LIST_DIR}/CatalystAdaptor/CMakeLists.txt)
