@@ -1,0 +1,651 @@
+# Bug report: HDF5File_
+
+- Module: `src/modules/HDF5File/src/HDF5File_Class.F90`
+- Submodules: `src/submodules/HDF5File/src/`
+- Tests: `src/modules/HDF5File/examples/` (`run_examples.fish`)
+- Date: 2026-10-26
+
+This report comes from a code review focused on storage and I/O
+efficiency. No library code is changed yet. File names below are short
+for the submodules (`Constructor` is `HDF5File_Class@ConstructorMethods.F90`,
+and so on).
+
+Status: **Fixed** means the source is changed and the library is rebuilt;
+the listed test passes. **Open** means not changed.
+
+## Tests
+
+The 36 tests from 2026-10-22 cover the file lifecycle, groups, the
+queries, Write/Read/Read_ for every type and the attributes. These new
+tests target the items below; the ones marked "expected to fail" document
+a bug and should pass after the fix:
+
+| Test | Checks | Now |
+| --- | --- | --- |
+| Write_test_7 | Real64 rank 4-7, Real32 and integer rank 3 | expected to pass |
+| Write_test_8 | empty String, scalar and rank 1 | passes (A4 fixed) |
+| Overwrite_test_1 | overwrite in place; attributes kept | passes (A3 fixed) |
+| Compression_test_1 | rank-2 data is compressed; file is smaller | passes (B1 fixed) |
+| ChunkPolicy_test_1 | default and custom chunk policy | passes (B1 fixed) |
+| OpenHandles_test_1 | no open HDF5 objects after each method | passes (A1 fixed) |
+| WriteAttribute_test_2 | longer String attribute replaces the old one | passes (A5 fixed) |
+| Write_test_9 | rank-3 String Write, Read, Read_ | passes (A7 fixed) |
+| Write_test_10 | logical and String arrays larger than the stack | passes (C3) |
+| Mkdir_test_2 | Mkdir of an existing group in mode WRITE | passes (A8) |
+| Ls_test_2 | Ls of 300 names created in decreasing order | passes (C4) |
+| LogicalFormat_test_1 | logical enum, old 'T'/'F' data, rank-3 Read | not run yet (B6) |
+| StringPadding_test_1 | String arrays padded with NUL | not run yet (B6) |
+| WriteAttribute_test_3 | shorter value, other type, empty String attribute | passes (A5 fixed) |
+| AttributeExists_test_1 | AttributeExists for groups, datasets, missing names | passes (A5 fixed) |
+| WriteAttribute_test_4 | logical, rank-1 integer and real attributes | passes (B7 step 2) |
+| WriteAttribute_test_5 | String, logical, Real32, Int64 vectors | passes (B7 step 2b) |
+| ReadAttribute_test_1 | scalar and rank-1 integer, real, Real32 attributes | passes |
+| Append_test_1 | Append, GetExtent, chunk shape from the policy | passes (B8) |
+| ReadSlab_test_1 | ReadSlab of integer, 8-bit and Write datasets | passes (B8) |
+| Storage_test_1 | prints file sizes and times (baseline; scalars at depth 1 and 5) | passes |
+| Layout_test_1 | compact/contiguous/chunked layout, format version | passes (B3, B4) |
+| RootGroup_test_1 | root group: PathExists, IsGroup, Ls, attributes | passes (A9 fixed) |
+
+Storage_test_1 prints `#` lines with the file size and the write/read
+times. Run it before and after each change to compare.
+
+Run of 2026-10-26 (after A1 and A2 part 1): 43 tests, 39 pass. Not passing:
+Compression_test_1 (B1), Overwrite_test_1 (A3, stops in `postWrite`:
+"src and dest dataspaces have different number of elements selected"),
+WriteAttribute_test_2 (A5), and Ls_test_1 (A9, not expected). Baseline of
+Storage_test_1 (HDF5 2.2.0, debug build):
+
+| Case | File size | Write | Read |
+| --- | --- | --- | --- |
+| 4 x (1000 x 1000) Real64, no compression | 32002048 B | 0.004 s | 0.010 s |
+| same, zlibOpt=4 | 32002048 B | 0.008 s | 0.009 s |
+| 2000 scalar datasets | 646993 B | 0.087 s | |
+
+The compressed file has the same size as the raw one: the rank-2 fields
+are not compressed (B1). The 2000 scalars take 323 B each for 8 B of
+data (B3, B4).
+
+## Fixed
+
+### A1. Leaked HDF5 handles
+
+- Commit: ed886938 (2026-10-26). Test: OpenHandles_test_1 passes.
+- `obj_GetChunkSize` did not close `dset_id`, `dspace_id` and `dcpl`.
+  The file uses `H5F_CLOSE_SEMI`, so a later `H5Fclose` failed while the
+  dataset was open; the file stayed open, and the error was only seen in
+  DEBUG mode. Now all three are closed.
+- `preWrite` created `gspace_id` with `H5Screate_simple` and then
+  overwrote it with `H5Dget_space`, so one dataspace leaked per Write.
+  The created dataspace is now closed first. The old data type `oldmem`
+  of the overwrite branch is now closed.
+- ReadString: the 12 types from `H5Dget_type` were never closed; now each
+  is closed (`Read_c1` uses the predefined `H5T_NATIVE_CHARACTER`, which
+  must not be closed). The helpers still open each dataset twice (helper
+  and `preRead`); see C3.
+- ReadAttribute: the type of a String attribute is now closed.
+- The checks of the close calls are only in DEBUG mode.
+- Also in this commit: `obj_Delete` uses `ACTION='READ'` and `IOMSG` in
+  `OPEN` and `CLOSE`.
+
+### B1. Compression is almost never applied to arrays of rank >= 2
+
+- Fixed 2026-10-26. New public type `HDF5ChunkPolicy_` (targetBytes =
+  1 MiB, minBytes = 64 KiB, stepsPerChunk = 1 (not used yet), shuffle =
+  true, deflateLevel = 1), passed to `Initiate` as the optional
+  `chunkPolicy`; the defaults are used when it is absent. `zlibOpt` is kept
+  and replaces `deflateLevel`. `compute_chunk_size` limits the total chunk
+  size to `targetBytes` and reduces the last dimension first. Datasets with
+  less than `minBytes` of data stay contiguous.
+- Tests: Compression_test_1, ChunkPolicy_test_1 (new), IsCompressed_test_1
+  (updated), Storage_test_1, all pass.
+- Result (Storage_test_1, debug build, zlibOpt=4):
+
+  | Case | Before | After |
+  | --- | --- | --- |
+  | 4 x (1000 x 1000) Real64 | 32002048 B | 21727414 B (-32 %) |
+  | write / read time | 0.008 s / 0.009 s | 0.349 s / 0.029 s |
+  | Compression_test_1 (400 x 400) | 1294078 B | 10081 B |
+
+  The smooth field compresses by 1.5x; compression costs write time (about
+  0.09 s per 8 MB field at level 4). Level 1, the default, is faster;
+  measure it before choosing the default for large runs.
+- Chunk method (2026-10-26): `chunkMethod` 1 (uniform,
+  default) splits the cut dimension into equal parts, so the last chunk is
+  (almost) full; 2 (max) keeps the largest chunk that fits. HDF5 stores and
+  compresses whole chunks, so the padding of a partly empty last chunk
+  costs CPU (and space when not compressed). Same number of chunks, chunk
+  never larger:
+
+  | Dataset (Real64, 1 MiB) | max | padding | uniform | padding |
+  | --- | --- | --- | --- | --- |
+  | 1000 x 1000 | 1000 x 131 | +4.8 % | 1000 x 125 | 0 |
+  | 200000 | 131072 | +31 % | 100000 | 0 |
+  | 400 x 400 | 400 x 327 | +64 % | 400 x 200 | 0 |
+
+  Measured (Storage_test_1 and Compression_test_1, zlibOpt=4): the
+  1000 x 1000 fields give 21727846 B, write 0.363 s, read 0.030 s with
+  uniform chunks, against 21727414 B, 0.349 s, 0.029 s with max. The
+  difference is within the timing noise: the padding is 5 % of the data
+  and compresses to almost nothing. Compression_test_1 (400 x 400, padding
+  64 % with max) shrinks from 10081 B to 9000 B. Full suite: 44 tests, 41
+  pass; not passing are A3, A5 and A9 (known, open).
+
+- **Change of behaviour:** with the default policy every file is now
+  compressed (gzip level 1); before, compression needed `zlibOpt`. Use
+  `zlibOpt=-1` or `chunkPolicy%deflateLevel = -1` to turn it off.
+- The DEBUG check of the overwrite branch of `preWrite` now compares the
+  number of elements of the old dataspace with the new data, not the
+  storage size (which is the compressed size for a compressed dataset).
+
+Problem (before the fix):
+
+- `compute_chunk_size` (Constructor:1353-1370) caps **each** dimension at
+  1 MB of elements: `cdims(i) = MIN(gdims(i), 1MB/elemsize)`. Compression is
+  used only if `cdims /= gdims`, so a rank-2 array is compressed only when
+  one dimension alone holds more than 1 MB (131072 Real64 values). A
+  1000 x 1000 Real64 field (8 MB) or a 3 x 10^5 coordinate array is stored
+  uncompressed, even with `zlibOpt`.
+- When it does apply, the chunk size is not bounded: for 200000 x 200
+  Real64 the chunk is 131072 x 200 x 8 B = 200 MB. Every read decompresses
+  whole chunks, so one such chunk costs 200 MB of memory. This is the case
+  the warning in `postRead` describes.
+- Proposal: choose the chunk by the **total** size, for example
+  64 KB-1 MB per chunk. Keep the fastest-varying (first, Fortran)
+  dimension whole when possible, and halve the slowest dimensions until the
+  chunk fits. Compress every dataset above a small threshold (for example
+  16 KB), not only those with one dimension over 1 MB.
+- Test: Compression_test_1; Storage_test_1 prints the sizes.
+
+### B2. No shuffle filter
+
+- Fixed 2026-10-26 (with B1). `preWrite` sets `H5Pset_shuffle` before
+  deflate when `chunkPolicy%shuffle` is true and an element has more than
+  one byte.
+
+Problem (before the fix):
+
+- Only deflate is set (Constructor:1234). For floating-point and integer
+  arrays, `H5Pset_shuffle` before deflate usually gives a much better
+  ratio at almost no CPU cost. It is a standard HDF5 setting and needs no
+  extra library.
+- Proposal: `H5Pset_shuffle_f` and then `H5Pset_deflate_f`, for numeric
+  types.
+
+### B3. Old file format
+
+- Fixed 2026-10-26. New private component `libverLow` of `HDF5File_`
+  (optional `Initiate` argument): 110 (HDF5 1.10, default), 18, 112, 114
+  or 200; 0 does not set the bounds, so the default of the HDF5 library is
+  used. `Open` sets `H5Pset_libver_bounds(libverLow, latest)` only when it
+  creates the file (mode NEW); existing files keep their format. Files
+  written with the default need HDF5 >= 1.10 to read.
+- Note: the default lower bound of HDF5 2.2 is already V18 (checked with
+  `H5Pget_libver_bounds`), not the earliest format; so before this change
+  the files used the 1.8 format, not the 1.6 format assumed below.
+- Tests: Layout_test_1 (new) passes.
+- Result: Compression_test_1 (two chunked datasets) 9000 B -> 5002 B; the
+  1000 x 1000 fields 21727846 B -> 21720000 B; 2000 scalars 646993 B ->
+  646607 B (with B4).
+
+Problem (before the fix):
+
+
+
+- The file access list (Constructor:180) sets only the close degree.
+  Without `H5Pset_libver_bounds`, HDF5 writes the earliest format: groups
+  use symbol tables (a B-tree and a local heap per group, about 1 KB or
+  more even for an empty group). Attributes are limited to 64 KB in the object
+  header, and there is no compact or dense link storage.
+- Proposal: `H5Pset_libver_bounds_f(fapl, H5F_LIBVER_V18_F,
+  H5F_LIBVER_LATEST_F)` (or V110). Files then need HDF5 >= 1.8 to read;
+  ParaView, h5py and current HDF5 tools are fine with that.
+
+### A5. A String attribute keeps its old length
+
+- Fixed 2026-10-26.
+  - `createAttribute`: an existing attribute is deleted (`H5Adelete`)
+    and created again when overwriting is allowed, so a value of another
+    length or type replaces it. When overwriting is not allowed (mode
+    WRITE) it is left unchanged, nothing is written (DEBUG error), and
+    `attr_id` is -1; the writers write and close only a valid id. Before,
+    `H5Acreate` failed and the writers used the invalid id.
+  - `obj_WriteAttribute_st0` set the type size from `LEN(valss)` but
+    wrote `TRIM(valss)`, so HDF5 read past the buffer for a String with
+    trailing blanks; now the buffer and the type have the same length. An
+    empty String is stored as one NUL character (size 0 is not allowed),
+    and `obj_ReadAttribute_st0` removes it.
+  - New method `AttributeExists(obj_name, attr_name)`: false, without
+    an error, if the object or the attribute does not exist.
+- Tests: WriteAttribute_test_2, WriteAttribute_test_3 (new),
+  AttributeExists_test_1 (new) pass. Full suite: 47 tests, 45 pass; not
+  passing are A3 (Overwrite_test_1) and A9 (Ls_test_1).
+
+Problem (before the fix):
+
+
+- `createAttribute` (WriteAttribute:121) opens an existing attribute
+  with its old type. A longer value is converted to the old size and cut
+  without any message.
+- Proposal: delete the attribute (`H5Adelete`) and create it again when the
+  size differs.
+- Test: WriteAttribute_test_2.
+
+### A3. Overwrite does not change the shape of a dataset
+
+- Decision (2026-10-26): overwrite stays an in-place operation; the shape
+  must not change. Replacing the dataset (delete and create) is not done:
+  it hides errors (a field of the wrong size silently changes the file),
+  drops the attributes of the dataset, breaks hard links, and needs B5
+  to reuse the space. Data that grows uses Append (B8).
+- Fixed 2026-10-26: `preWrite` compares the shape of the
+  existing dataset with the new data in all builds. If it differs, the
+  dataset is closed, `error` is -1 and nothing is written; DEBUG mode
+  raises an error that suggests Append. Before, `H5Dwrite` failed with
+  "src and dest dataspaces have different number of elements". The debug
+  element-count check is replaced by this shape check; the element-size
+  check stays debug-only. The Write docblocks now say "the same shape".
+- Test: Overwrite_test_1 (rewritten) passes: same shape for a small and a
+  large compressed dataset, integers into a real dataset, attributes kept.
+
+Problem (before the fix):
+
+
+- `preWrite` (Constructor:1257): when the dataset exists it is opened
+  and written with its old dataspace. Data with a different number of
+  elements fails in `H5Dwrite` because the memory space and the file space
+  do not match. A smaller array is documented as allowed, but it fails too.
+- The DEBUG check `oldsize >= newsize*PRODUCT(gdims)` uses
+  `H5Dget_storage_size` (Constructor:1303). For a compressed dataset that
+  is the compressed size, so overwriting compressed data raises a false
+  error.
+- Proposal: if the shape or type differs, delete the link (`H5Ldelete`)
+  and create the dataset again. Note that HDF5 does not reuse freed space
+  unless a file-space strategy is set (see B5). For datasets that are
+  rewritten often (time steps), use chunked datasets with unlimited
+  `maxdims` and `H5Dset_extent`.
+- Test: Overwrite_test_1.
+
+### A9. IsGroup("/") is false, so Ls("/") returns nothing
+
+- Fixed 2026-10-26. `String%split` does not give empty segments for
+  "/", so the prefix built for the root was "//", not a valid link
+  name for `H5Lexists`. `PathExists` now returns true for a path of
+  slashes only (the root group) and skips segments of slashes only (double
+  slashes). `open_object` (used by the attribute routines) checks the path
+  with `PathExists` instead of `H5Lexists`, so attributes of "/" work
+  (B7 step 3).
+- Tests: Ls_test_1 and RootGroup_test_1 (new) pass. Full suite
+  (2026-10-26): 52 tests, all pass.
+
+Problem (before the fix):
+
+
+- `obj_PathExists` (Constructor) splits the path at `/` and calls
+  `H5Lexists` on each prefix. For the root `"/"` the prefixes built from
+  the empty segments are most likely not valid links (not checked yet), so
+  `PathExists("/")` is false; `IsGroup("/")` then returns false, and `Ls`
+  returns `objs` unallocated for the root group. Found by Ls_test_1
+  (`IsGroup("/")` is F while `PathExists("/a")` is T); not caused by A1 or
+  A2, which do not change these routines.
+- Proposal: return true for `"/"` (the root group always exists) before
+  the loop, and skip empty segments.
+
+### A4. Empty strings cannot be written
+
+- Fixed 2026-10-26 (attributes: with A5). `obj_Write_st0` writes an empty
+  String as one NUL character (Read removes it) with a type of size 1;
+  the String arrays use a string length of at least 1. The type size is
+  passed as `SIZE_T` (before `INT(length_max, REAL64)`, see A8).
+- Test: Write_test_8 passes without the HDF5 "size must be positive"
+  messages.
+
+Problem (before the fix):
+
+- `obj_Write_st0` (WriteString:70) sets the type size to `LEN_TRIM`;
+  `obj_Write_st1/2/3` set it to the longest `LEN_TRIM`. For an empty
+  string (or an array of empty strings) the size is 0, and
+  `H5Tset_size(0)` fails. The same happens for an empty String attribute
+  (WriteAttribute:238) and for `Write_c1` with `LEN(vals)=0` (zero-size
+  dataspace).
+- Proposal: use `MAX(1, len)`; Read already removes `C_NULL_CHAR`.
+- Test: Write_test_8. It passes: `H5Tset_size(0)` fails, but the type keeps
+  the size 1 of `H5T_NATIVE_CHARACTER`, so a 1-character value is written
+  and read back as empty. HDF5 prints "size must be positive" for each call,
+  and the stored size is not the one the code meant to set.
+
+### A6. Deallocate(delete=.TRUE.) deletes an open file
+
+- Fixed 2026-10-26. `obj_Deallocate` always calls Close first, then
+  Delete when delete is true.
+- Test: Deallocate_test_1 (now deletes a file that is still open) passes.
+
+Problem (before the fix):
+
+- `obj_Deallocate` (Constructor:491) calls `Delete` without `Close`. The
+  HDF5 file id stays open while the file is removed, and
+  `nhdf5fileinuse` is decremented anyway. The docblock asks the user to
+  call Close first; Deallocate should do it.
+
+### A7. Rank-3 String write is not bound
+
+- Fixed 2026-10-26. `obj_Write_st3`, `obj_Write_st3_helper`,
+  `obj_Read_st3` and `obj_Read_st3_helper` are bound to the WRITE and READ
+  generics.
+- Test: Write_test_9 (new) passes: Write, Read and Read_ of a rank-3
+  String array, with an empty string.
+
+Problem (before the fix):
+
+- `obj_Write_st3` and `obj_Write_st3_helper` are implemented, but they are
+  not in the `WRITE` generic. `Read_st3` and `Read_st3_helper` are also not
+  in `READ`; only `READ_` has rank 3. So a rank-3 String can be read with
+  Read_ but not written.
+
+### C4. Ls is quadratic for large groups
+
+- Fixed 2026-10-26. `Ls` read the i-th name in increasing order
+  (`H5_ITER_INC_F`), for which HDF5 sorts all the names on each call. It
+  now reads the names in native order (`H5_ITER_NATIVE_F`) through the
+  open group and sorts them once (merge sort `ArgSortNames`, O(n log n));
+  the result is still in increasing order.
+- Result (Storage_test_1, 2000 names): 0.64 s -> 0.002 s.
+- Tests: Ls_test_1, Ls_test_2 (new, 300 names created in decreasing
+  order) and RootGroup_test_1 pass. Full suite: 56 tests, all pass.
+
+Problem (before the fix):
+
+
+- `obj_Ls` (Constructor:636) calls `H5Lget_name_by_idx` for each index.
+  For old-format groups (B3) each call walks the group, so listing n
+  members costs O(n^2). `H5Literate` lists in one pass. The name buffer
+  is a fixed `CHARACTER(1024)`.
+
+## Open
+
+### A. Correctness
+
+#### A2. Errors are checked only in DEBUG mode
+
+- Decision (2026-10-26): error checks stay DEBUG-only. Part 1 (correct
+  status bookkeeping) is done in the source, not built yet:
+  - `preWrite` and `preRead` keep the first failure in `error` (each call
+    writes to a local `ierr`), skip the steps that need the dataset, and
+    set the ids that are not created to -1. Before, `preWrite` returned
+    the status of its last call (`H5Pcreate`), so `H5Dwrite` ran on an
+    invalid dataset after a failed `H5Dcreate`.
+  - `postWrite` and `postRead` close only valid ids and do not overwrite
+    `error`.
+  - `Open` sets the open status (and clears the new status) only when
+    `H5Fcreate`/`H5Fopen` succeeds. `Close` keeps the id and the open
+    status when `H5Fclose` fails.
+  - The type-size checks of the overwrite branch of `preWrite` are now
+    only compiled in DEBUG mode, since only DEBUG mode uses them.
+  - The "unrecognized access mode" error of `Open` is now DEBUG-only.
+
+- Almost every `ierr` check is inside `#ifdef DEBUG_VER`. In a release
+  build a failed `H5Fopen` still marks the file as open (Constructor:222),
+  and a failed `H5Dcreate`, `H5Dwrite` or `H5Dread` returns silently with
+  wrong or untouched data.
+- Proposal: keep the checks of `H5Fopen`/`H5Fcreate`, `H5Dcreate`,
+  `H5Dopen`, `H5Dwrite` and `H5Dread` in release builds. They cost
+  nothing next to the I/O.
+
+#### A8. Minor
+
+- Fixed with A4: `INT(length_max, REAL64)` (WriteString): REAL64 is a
+  real kind used as an integer kind; now `SIZE_T`.
+- Fixed with B1: `compute_chunk_size`: for a type larger than 1 MB, `mb = 0`
+  and the chunk size was 0; now the target is at least 1 element.
+- Fixed 2026-10-26: `GetDataType` returned `'Rea'` for both Real32 and
+  Real64, and `'Int'` for all integers; it now returns `'R32'`, `'R64'`,
+  `'I08'`, `'I16'`, `'I32'`, `'I64'`, `'STR'` or `'N/A'`
+  (GetDataType_test_1).
+- Fixed 2026-10-26: `Mkdir` on an existing group failed when overwriting is
+  not allowed (mode WRITE); now an existing group is not an error in any
+  mode (Mkdir_test_2, new).
+- Fixed 2026-10-26: `Initiate` created the directory of the file also in
+  mode READ; now only in mode NEW.
+- Fixed 2026-10-26: debug names of `obj_Write_st3_helper` and
+  `obj_Read_ca0`.
+- Fixed 2026-10-26 (build): the commit hook (forformat) uppercased the
+  preprocessor macro `rank` in `include/write.F90` to `RANK` (an intrinsic
+  name), so commit a0da3e23 did not compile; the macro is now `DATA_RANK`
+  in `include/write.F90` and the four Write submodules.
+
+### B. Storage
+
+#### B4. Many small datasets
+
+- Status (2026-10-26): compact layout done, but **no measurable gain** for
+  scalars. New private component `compactBytes` of `HDF5File_` (optional
+  `Initiate` argument, default 4096, at most 64000); `preWrite` uses the
+  compact layout for a dataset with less data, scalars included, unless it
+  is chunked. Layout_test_1 checks the layouts and passes.
+- Result: 2000 scalar datasets 646993 B -> 646607 B (-0.06 %), still
+  about 323 B per scalar. The compact layout saves only the separate data
+  block (8 B); the cost is the object header of each dataset (dataspace,
+  datatype, layout, fill value and time messages) and its link in the
+  group. Not measured yet, possible next steps:
+  - `H5Pset_obj_track_times(dcpl, .FALSE.)`: no time stamps in headers;
+  - `H5Pset_dset_no_attrs_hint` (HDF5 >= 1.10.5): smaller headers for
+    datasets without attributes;
+  - in the callers, store many scalars as attributes of one group or as
+    one array instead of one dataset each.
+
+- Mesh and field files hold many scalars and small arrays (sizes, flags,
+  names). Each one is a contiguous dataset with its own object header and
+  data block. The `H5D_COMPACT` layout (`H5Pset_layout_f`) stores data under
+  64 KB in the object header: this saves space and one disk access per
+  read.
+- Proposal: use the compact layout for datasets below a threshold (for
+  example 8 KB). Measure with the `small` part of Storage_test_1.
+
+#### B5. Space of overwritten or deleted data is not reused
+
+- Status (2026-10-26): not needed for now. With the A3 decision the class
+  never deletes datasets, so no space is freed. Revisit if a method that
+  deletes datasets is added (then set a persistent file-space strategy).
+
+- Once A3 deletes and recreates datasets, the old space becomes free space
+  that HDF5 does not track by default, so the file only grows (h5repack is
+  needed).
+- Proposal: in mode NEW set `H5Pset_file_space_strategy_f` (HDF5 >= 1.10)
+  with persistent free-space tracking, or document h5repack.
+
+#### B6. Booleans and strings
+
+- Status (2026-10-26): source changed and committed, **not built or
+  tested yet**.
+  - Logical datasets (rank 0-3) and attributes are stored as the HDF5 enum
+    {FALSE=0, TRUE=1} on an 8-bit integer (`BoolEnumType`); h5py reads it
+    as bool. Read and ReadAttribute read the raw 8-bit values
+    (`BoolMemType`, `BoolValue`) and accept the enum, the characters
+    'T'/'F' of older files, and integers (0 is false). `GetDataType`
+    returns 'BOL' for the enum.
+  - `obj_Read_b3` was a stub ("[WIP ERROR]"); it is implemented.
+  - String arrays (datasets rank 1-3 and attributes) are padded with NUL
+    and marked `H5T_STR_NULLPAD` (`SetNulPadded`); scalars are marked
+    NULLPAD too. Read removes the NUL characters, so values come back
+    with their own length.
+  - `open_object` checks the path only in DEBUG mode (B7: attribute
+    reads were 40 % slower than dataset reads).
+  - Limitation: overwriting (mode OVERWRITE) a logical dataset written by
+    an older version ('T'/'F') fails, since HDF5 does not convert the
+    enum to characters; reading such files works.
+- Tests: LogicalFormat_test_1, StringPadding_test_1 (new).
+
+- Logical data is stored as the characters `'T'`/`'F'` (1 byte). The size
+  is fine, but other tools (h5py, ParaView) see characters, not booleans.
+  An 8-bit integer or the h5py-style enum (FALSE=0, TRUE=1) is just as
+  small and easy to read elsewhere. Changing it changes the file format, so
+  Read should accept both.
+- String arrays use fixed length padded to the longest entry, and Fortran
+  pads with blanks, so the padding is stored as blanks, not NULs. Reading
+  returns the blanks; `LEN` of a read value is the maximum length.
+  Fixed-length strings compress well, so this is acceptable for big
+  arrays; set `H5T_STR_SPACEPAD` (or trim on read) so that the stored form
+  matches the data.
+
+#### B7. Attributes for small data
+
+- Plan (2026-10-26): the classes will write small data (sizes, flags,
+  names, short vectors) as attributes instead of datasets. An attribute is
+  stored in the object header of its group or dataset, without an own
+  object header and link (about 323 B per scalar dataset, see B4).
+- Step 1 (fixed with A5): replace attributes on overwrite,
+  `AttributeExists`.
+- Step 2 (2026-10-26, done; tests pass): new specific procedures of the
+  `WriteAttribute`/`ReadAttribute` generics:
+  - logical scalar (`obj_WriteAttribute_b0`, `obj_ReadAttribute_b0`),
+    stored as "T"/"F" like logical datasets;
+  - rank-1 integer and real (`*_i1`, `*_d1`); Read allocates the array to
+    the length of the attribute.
+  - The integer and real attributes (rank 0 and 1) now get the HDF5 type
+    from the kind of `attr_val` (`H5kind_to_type`) and use the typed
+    `h5awrite_f`/`h5aread_f` (they exist for integer kinds 1-16 and real
+    kinds 4-16). Before, `H5T_NATIVE_INTEGER` (4 bytes) was used for
+    `INTEGER(I4B)`, which is wrong when `I4B` is 64-bit. The scalar
+    readers read only from an attribute with one value. Rank-1 readers
+    allocate the array (private helper `GetAttributeSize`).
+  - Test: WriteAttribute_test_4 (new).
+- Step 2b (2026-10-26, done; tests pass): vector attributes:
+  - rank-1 String (`*_st1`): fixed-length strings of the longest length
+    (at least 1); the padding is removed on read, so trailing blanks of a
+    value are not kept;
+  - rank-1 logical (`*_b1`), stored as "T"/"F";
+  - Real32 scalar and rank 1 (`*_s0`, `*_s1`), only when `USE_Real64`;
+    Int64 scalar and rank 1 (`*_l0`, `*_l1`), only when `USE_Int64` is not
+    defined (otherwise they clash with the DFP and I4B versions); they are
+    added with their own `GENERIC` statements inside the `#ifdef`.
+  - Test: WriteAttribute_test_5 (new).
+- Step 3 (2026-10-26, done with A9): attributes of the root group `"/"`;
+  RootGroup_test_1 passes.
+- Step 4 (2026-10-26, measured with Storage_test_1, 3 runs): 2000 Real64
+  scalars
+
+  | Storage | File size | per scalar | Write | Read |
+  | --- | --- | --- | --- | --- |
+  | 2000 datasets in /small | 646607 B | about 323 B | 0.067 s | 0.042 s |
+  | 2000 attributes of /attrs | 175098 B | about 87 B | 0.063 s | 0.059 s |
+
+  Attributes need 73 % less space, and writing is as fast. Reading is
+  about 40 % slower: each ReadAttribute opens the object by path
+  (`open_object` -> `PathExists`, path split and one `H5Lexists` per
+  level), checks the attribute (`H5Aexists`) and opens it. This matters
+  only for many attributes per group; a possible improvement is to check
+  the path only in DEBUG mode in `open_object`.
+
+#### B8. Append and ReadSlab (extendable datasets)
+
+- Added by Shion Shimizu (2026-10-24): `Append` (rank 1 and 2, real,
+  integer, unsigned 8-bit), `ReadSlab`, `GetExtent`
+  (`HDF5File_Class@AppendMethods.F90`). This is the extendable-dataset part
+  of C1.
+- Updated 2026-10-26 (done; Append_test_1 and ReadSlab_test_1 pass):
+  - It used `obj%zlibOpt`, removed by B1, so it did not compile.
+  - The chunk shape now follows the chunk policy (`AppendChunkSize`):
+    `stepsPerChunk` calls of Append, grown to at least `minBytes`,
+    limited to `targetBytes` with `compute_chunk_size`. Before, it used
+    local constants (1 MB, 1024 entries) and limited only the last
+    dimension, so a large first append gave a huge chunk.
+  - Shuffle and deflate from the policy.
+  - Memory types from the kind of the data (`H5kind_to_type`) instead of
+    `H5T_NATIVE_DOUBLE` / `H5T_NATIVE_INTEGER`.
+  - Error messages only in DEBUG mode; the routines still stop on a
+    failed step. Debug [START]/[END] lines.
+  - ReadSlab opens the dataset once (`SlabOpen`, `SlabRead`,
+    `SlabClose`; before, rank 2 opened it twice) and allocates without
+    zero filling.
+  - `Initiate` checks `stepsPerChunk >= 1` in DEBUG mode.
+- Tests: Append_test_1 (14 checks) and ReadSlab_test_1 (7 checks) pass;
+  the chunk shapes match the policy (8192 values for one-value appends,
+  3 x 2731 for points, 3000 x 4 with stepsPerChunk = 4).
+- Full suite (2026-10-26): 51 tests, 50 pass; not passing was A9
+  (Ls_test_1, fixed since).
+
+### C. I/O efficiency
+
+#### C1. No partial I/O
+
+- `gdims_in`, `cnt_in` and `offset_in` are accepted but not used
+  (`preWrite` has no `H5Sselect_hyperslab`). A slice of a dataset cannot be
+  read or written: a time step of a field, a block of nodes, or a parallel
+  write from a part of the mesh all need the whole dataset. Passing
+  `gdims_in` different from `SHAPE(vals)` makes the memory and file spaces
+  disagree.
+- Proposal: add hyperslab selection to `preWrite` and `preRead` (offset
+  and count). Add Read_/Write overloads that take `offset` and `count`, and
+  an append for extendible (chunked, unlimited) datasets.
+
+#### C2. Path checks on every write
+
+- Decision (2026-10-26): not changed. Measured with Storage_test_1 (2000
+  scalar datasets, debug build, 3 runs): write 0.068-0.069 s in a group of
+  depth 1 and 0.078-0.082 s in a group of depth 5, i.e. about 1.3 us per
+  level on about 35 us per write. A cache of the parent group would save
+  at most about 15 % for deep paths and less for depth 1-2, for extra
+  state in the class. Most of the time is HDF5's dataset creation.
+
+- Each Write calls `PathExists(parent)`. That splits the path into a
+  `String` array and calls `H5Lexists` once per level. `Mkdir` then
+  calls `PathExists` again for each level (recursive), and `preWrite`
+  calls `H5Lexists` on the dataset. Writing N datasets of depth d costs
+  O(N d) link lookups plus string allocations, and `Mkalldir` is
+  O(d^2).
+- Proposal: create the dataset with a link creation list that has
+  `H5Pset_create_inter_group_f(lcpl, 1)`; HDF5 then creates the missing
+  groups itself. Then only the dataset path needs one existence check;
+  walk the levels only when that check reports an error (older HDF5
+  versions fail, instead of returning false, when a parent is missing).
+
+#### C3. Extra copies and passes on read and write
+
+- Status (2026-10-26): partly fixed.
+  - Done: Read (Real64, Real32, Int32, all ranks) allocates without zero
+    filling (before `Reallocate`). Storage_test_1: reading 4 x 8 MB raw
+    fields 0.010-0.012 s -> 0.004-0.006 s, compressed 0.030 -> 0.025 s.
+  - Done: the character copies of logical arrays (`include/write.F90`)
+    and String arrays (WriteString) are allocatable, not on the stack.
+    Write_test_10 (new) writes a 16 MB and a 12 MB copy.
+  - Done: `obj_Read_ca0` to `obj_Read_ca3` convert each string in one
+    pass (`convert_char_array_to_str`), not one character at a time.
+  - Not done (low value): `Read__st1` reads into a temporary array and
+    copies it; the String read helpers open the dataset twice.
+
+- `Read` allocates with `Reallocate`, which zero-fills the array before
+  HDF5 overwrites it. That is one extra pass over the data.
+- Write of logical and String data builds a full converted copy in an
+  automatic (stack) array: `charvals` in `include/write.F90` and `valss`
+  in WriteString:93, :215, :313. Large arrays can overflow the stack
+  (8 MB by default on macOS). Use allocatable arrays.
+- `Read__st1` reads into a temporary array and copies it, so it holds
+  twice the memory.
+- The String read helpers (`obj_Read_st*_helper`) open the dataset to get
+  the type size and the rank, close it, and then `preRead` opens it
+  again: two metadata lookups per String read.
+- `obj_Read_ca0` and `obj_Read_ca1` (ReadString:160) build the string
+  one character at a time (`vals = vals // valsc(i)`), which is O(n^2) for
+  long strings. Use one assignment from a `CHARACTER(LEN=n)` buffer, as
+  `convert_char_array_to_str` already does.
+
+#### C5. Smaller items
+
+- Fixed 2026-10-26: `CreateHardLink` opened the source object only to pass
+  its id as the location and declared its own C interface to `H5Oclose`;
+  it now calls `H5Lcreate_hard(file_id, src, file_id, dst)`
+  (CreateHardLink_test_1 passes).
+- Resolved by B1: no raw-data chunk cache tuning (`H5Pset_chunk_cache`).
+  Chunks are now at most `targetBytes` (1 MiB), which fits the default
+  1 MiB chunk cache, also for ReadSlab.
+
+## Suggested order of work
+
+1. A1, A2 (handle leaks, release checks): small and safe changes that
+   make the rest measurable.
+2. B1 + B2 (chunk size by total bytes, shuffle): biggest storage gain;
+   check with Compression_test_1 and Storage_test_1.
+3. B3 (libver bounds), B4 (compact layout): file format; measure with
+   Storage_test_1, check that ParaView and h5py still read the files.
+4. A3 + B5 (overwrite with shape change, free-space reuse).
+5. C2, C3, A4, A5, A6, A7, A8.
+6. C1 (hyperslab and extendible datasets): new API, plan it separately.
