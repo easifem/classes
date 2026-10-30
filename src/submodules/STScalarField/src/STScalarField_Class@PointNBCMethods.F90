@@ -16,7 +16,11 @@
 !
 
 SUBMODULE(STScalarField_Class) PointNBCMethods
+USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
 USE Display_Method, ONLY: ToString
+USE MassMatrix_Method, ONLY: MassMatrix_
 USE ReallocateUtility, ONLY: Reallocate
 USE NeumannBC_Class, ONLY: NeumannBC_
 USE BaseType, ONLY: math => TypeMathOpt
@@ -39,14 +43,29 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyPointNeumannBC1()"
 #endif
 
 INTEGER(I4B), PARAMETER :: expandFactor = 2
-INTEGER(I4B) :: idof, nrow, ncol, tbc, ibc
+INTEGER(I4B) :: idof, nrow, ncol, tbc, ibc, nnt
 CLASS(NeumannBC_), POINTER :: nbcptr
+CLASS(AbstractOneDimFE_), POINTER :: timefeptr
 LOGICAL(LGT) :: isok
+TYPE(QuadraturePoint_) :: timeQuad
+TYPE(ElemShapeData_) :: timeElemsd, timeGeoElemsd
+REAL(DFP), ALLOCATABLE :: ct(:, :)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+tbc = obj%GetTotalPointNBC()
+isok = tbc .GT. 0
+
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] No point Neumann BC found.')
+#endif
+  RETURN
+END IF
 
 ncol = obj%timeCompo
 nrow = obj%GetMaxTotalNodeNumForBC()
@@ -56,7 +75,24 @@ CALL Reallocate(obj%nodalvalue, nrow, ncol, isExpand=math%yes, &
 CALL Reallocate(obj%nodenum, nrow, isExpand=math%yes, &
                 expandFactor=expandFactor)
 
-tbc = SIZE(obj%nbc_point)
+!----------------------------------------------------------------------------
+! The load of the time slab is \int T_a(t) f(t) dt. f is interpolated in
+! time by its values at the time nodes, so the nodal values f_b are
+! multiplied by the time mass matrix ct(a, b) = \int T_a T_b dt.
+!----------------------------------------------------------------------------
+CALL obj%timefedof%SetFE()
+timefeptr => obj%timefedof%GetFEPointer()
+CALL timefeptr%GetGlobalTimeElemShapeData( &
+  elemsd=timeElemsd, geoelemsd=timeGeoElemsd, quad=timeQuad, times=times)
+
+nnt = timeElemsd%nns
+
+CALL Reallocate(ct, nnt, nnt)
+
+! nrow and ncol are overwritten here, they are set again in nbcptr%Get
+CALL MassMatrix_(test=timeElemsd, trial=timeElemsd, ans=ct, &
+                 nrow=nrow, ncol=ncol)
+
 DO ibc = 1, tbc
   nbcptr => obj%nbc_point(ibc)%ptr
   isok = ASSOCIATED(nbcptr)
@@ -67,6 +103,11 @@ DO ibc = 1, tbc
     nrow=nrow, ncol=ncol, fedof=obj%fedof, geofedof=obj%geofedof, &
     timefedof=obj%timefedof)
 
+  DO idof = 1, nrow
+    obj%nodalvalue(idof, 1:ncol) = &
+      MATMUL(ct(1:nnt, 1:nnt), obj%nodalvalue(idof, 1:nnt))
+  END DO
+
   DO idof = 1, ncol
     CALL obj%Set( &
       globalNode=obj%nodenum(1:nrow), VALUE=obj%nodalvalue(1:nrow, idof), &
@@ -76,6 +117,7 @@ DO ibc = 1, tbc
 END DO
 
 nbcptr => NULL()
+timefeptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
