@@ -14,12 +14,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: OneDimHierarchicalFE public interfaces
+!
+! Defines the finite element type, its pointer wrapper and the procedures
+! declared in this module. Implementations reside in the corresponding H1FE
+! submodule.
+!
 MODULE OneDimHierarchicalFE_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapedata_
 USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: LGT
 IMPLICIT NONE
 PRIVATE
 
@@ -33,21 +43,53 @@ PUBLIC :: OneDimHierarchicalFEPointer
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2024-07-11
-! summary: Finite element class
-
+! date: 2026-10-29
+! summary: OneDimHierarchicalFE finite element interfaces
+!
+! Extends AbstractOneDimFE_ without introducing additional data components.
+! Inherits the initialization state and basis options and overrides the
+! operations listed below. Pointer factories transfer ownership to their
+! caller. Reset a target with its DEALLOCATE binding, then free owned
+! allocations with intrinsic DEALLOCATE.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE OneDimHierarchicalFE_Class, ONLY: FE_ => OneDimHierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE OneDimHierarchicalFE_Class, ONLY: NewFE => OneDimHierarchicalFEPointer
+! IMPLICIT NONE
+! TYPE(FE_), POINTER :: ptr
+!
+! ptr => NewFE()
+! CALL OK(ASSOCIATED(ptr), "Empty constructor allocates a target")
+! CALL OK(.NOT. ptr%isInit, "Empty target starts uninitialized")
+! CALL ptr%DEALLOCATE()
+! DEALLOCATE(ptr)
+! END PROGRAM main
+!```
+!
 TYPE, EXTENDS(AbstractOneDimFE_) :: OneDimHierarchicalFE_
 CONTAINS
   PRIVATE
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-  !! Get local element shape data
+  !! Evaluate reference cell shape data.
 END TYPE OneDimHierarchicalFE_
 
 !----------------------------------------------------------------------------
 !                                               OneDimHierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Nullable OneDimHierarchicalFE pointer wrapper
+!
+! Contains a polymorphic ptr initialized to NULL(). The wrapper does not
+! establish ownership of its target; retain an owning reference when target
+! allocations must be deallocated.
+!
 TYPE :: OneDimHierarchicalFEPointer_
   CLASS(OneDimHierarchicalFE_), POINTER :: ptr => NULL()
 END TYPE OneDimHierarchicalFEPointer_
@@ -57,14 +99,49 @@ END TYPE OneDimHierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local element shape data shape data
+! date: 2023-08-15
+! summary: Evaluate reference cell shape data
+!
+! Delegates to obj%opt%Hierarchical_GetLocalElemShapeData. Uses
+! caller-prepared quadrature to evaluate basis values, reference derivatives
+! and weights. The basis options may allocate or resize internal work arrays.
+! Physical mapping is performed separately.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE OneDimHierarchicalFE_Class, ONLY: FE_ => OneDimHierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: QuadraturePoint_
+! USE BaseType, ONLY: ElemShapeData_
+! IMPLICIT NONE
+! TYPE(FE_) :: obj
+! TYPE(ElemShapeData_) :: shapes
+! TYPE(QuadraturePoint_) :: quad
+!
+! CALL obj%Initiate(baseContinuity="H1", &
+!   baseInterpolation="Hierarchical", order=2_I4B, &
+!   quadratureIsOrder=.TRUE., quadratureOrder=6_I4B)
+! CALL obj%GetQuadraturePoints(quad)
+! CALL obj%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+! CALL OK(shapes%nns == 3_I4B, "Quadratic basis size")
+! CALL OK(shapes%nips > 0_I4B, "Nonempty quadrature")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractOneDimFE_]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(OneDimHierarchicalFE_), INTENT(INOUT) :: obj
+    !! Finite element object of the declared class.
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! Cell shape data, or cell traces at a facet quadrature rule.
     TYPE(QuadraturePoint_), INTENT(IN) :: quad
+    !! Cell quadrature, or reference cell points restricted to a facet.
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
@@ -74,11 +151,40 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary: Constructor method
+! summary: Allocate an uninitialized finite element target
+!
+! Allocates a new target of the concrete finite element type without calling
+! Initiate. The caller owns the allocation: call its DEALLOCATE binding to
+! reset state, then use intrinsic DEALLOCATE on the target when finished.
+!
+! Returns:
+! ans : TYPE(OneDimHierarchicalFE_) - Allocated finite element target returned
+! to the caller.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE OneDimHierarchicalFE_Class, ONLY: FE_ => OneDimHierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE OneDimHierarchicalFE_Class, ONLY: NewFE => OneDimHierarchicalFEPointer
+! IMPLICIT NONE
+! TYPE(FE_), POINTER :: ptr
+!
+! ptr => NewFE()
+! CALL OK(ASSOCIATED(ptr), "Empty constructor allocates a target")
+! CALL OK(.NOT. ptr%isInit, "Empty target starts uninitialized")
+! CALL ptr%DEALLOCATE()
+! DEALLOCATE(ptr)
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractOneDimFE_]]
 
 INTERFACE OneDimHierarchicalFEPointer
   MODULE FUNCTION obj_OneDimHierarchicalFEPointer1() RESULT(ans)
     TYPE(OneDimHierarchicalFE_), POINTER :: ans
+    !! Allocated finite element target returned to the caller.
   END FUNCTION obj_OneDimHierarchicalFEPointer1
 END INTERFACE OneDimHierarchicalFEPointer
 
@@ -88,16 +194,47 @@ END INTERFACE OneDimHierarchicalFEPointer
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary: Constructor method
+! summary: Allocate and initialize a finite element target
+!
+! Allocates a new scalar hierarchical finite element and calls its inherited
+! Initiate binding with the supplied configuration. The caller owns the
+! allocation and must reset and deallocate it when finished.
+!
+! Returns:
+! ans : TYPE(OneDimHierarchicalFE_) - Allocated finite element target returned
+! to the caller.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE OneDimHierarchicalFE_Class, ONLY: FE_ => OneDimHierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE OneDimHierarchicalFE_Class, ONLY: NewFE => OneDimHierarchicalFEPointer
+! IMPLICIT NONE
+! TYPE(FE_), POINTER :: ptr
+!
+! ptr => NewFE(baseContinuity="H1", order=2_I4B)
+! CALL OK(ASSOCIATED(ptr), "Configured constructor allocates a target")
+! CALL OK(ptr%isInit, "Target is initialized")
+! CALL OK(ptr%GetOrder() == 2_I4B, "Constructor order")
+! CALL ptr%DEALLOCATE()
+! DEALLOCATE(ptr)
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractOneDimFE_]]
 
 INTERFACE OneDimHierarchicalFEPointer
   MODULE FUNCTION obj_OneDimHierarchicalFEPointer2(baseContinuity, order) &
     RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: order
-    !! Number of spatial dimension
+    !! Polynomial degree; scalar or directional input as declared.
     CHARACTER(*), INTENT(IN) :: baseContinuity
-    !! base continuity of the element
+    !! Continuity family name passed to the one-dimensional basis options.
     TYPE(OneDimHierarchicalFE_), POINTER :: ans
+    !! Allocated finite element target returned to the caller.
   END FUNCTION obj_OneDimHierarchicalFEPointer2
 END INTERFACE OneDimHierarchicalFEPointer
 
@@ -107,11 +244,42 @@ END INTERFACE OneDimHierarchicalFEPointer
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-24
-! summary:  Deallocate a vector of OneDimHierarchicalFE
+! summary: Reset and deallocate a finite element value vector
+!
+! If allocated, calls DEALLOCATE on each element, then deallocates the value
+! array. An unallocated array is accepted.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE OneDimHierarchicalFE_Class, ONLY: FE_ => OneDimHierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE OneDimHierarchicalFE_Class, ONLY: &
+!   Wrapper_ => OneDimHierarchicalFEPointer_
+! USE OneDimHierarchicalFE_Class, ONLY: ReleaseFE => FiniteElementDeallocate
+! IMPLICIT NONE
+! TYPE(FE_), ALLOCATABLE :: values(:)
+! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
+! TYPE(FE_), TARGET :: target
+!
+! ALLOCATE(values(2))
+! CALL ReleaseFE(values)
+! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
+! ALLOCATE(refs(2))
+! refs(1)%ptr => target
+! CALL ReleaseFE(refs)
+! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
+! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractOneDimFE_]]
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Vector(obj)
     TYPE(OneDimHierarchicalFE_), ALLOCATABLE :: obj(:)
+    !! Allocatable finite element value vector to reset and deallocate.
   END SUBROUTINE Deallocate_Vector
 END INTERFACE FiniteElementDeallocate
 
@@ -120,12 +288,44 @@ END INTERFACE FiniteElementDeallocate
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-09-09
-! summary:  Deallocate the vector of OneDimHierarchicalFEPointer_
+! date: 2023-09-09
+! summary: Reset and detach a finite element pointer vector
+!
+! If allocated, resets each associated target, nullifies its wrapper and
+! deallocates the wrapper array. Target allocations are not freed. Keep an
+! owning reference when an allocated target must subsequently be deallocated.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE OneDimHierarchicalFE_Class, ONLY: FE_ => OneDimHierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE OneDimHierarchicalFE_Class, ONLY: &
+!   Wrapper_ => OneDimHierarchicalFEPointer_
+! USE OneDimHierarchicalFE_Class, ONLY: ReleaseFE => FiniteElementDeallocate
+! IMPLICIT NONE
+! TYPE(FE_), ALLOCATABLE :: values(:)
+! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
+! TYPE(FE_), TARGET :: target
+!
+! ALLOCATE(values(2))
+! CALL ReleaseFE(values)
+! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
+! ALLOCATE(refs(2))
+! refs(1)%ptr => target
+! CALL ReleaseFE(refs)
+! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
+! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractOneDimFE_]]
 
 INTERFACE FiniteElementDeallocate
   MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
     TYPE(OneDimHierarchicalFEPointer_), ALLOCATABLE :: obj(:)
+    !! Allocatable pointer-wrapper vector; target allocations are not freed.
   END SUBROUTINE Deallocate_Ptr_Vector
 END INTERFACE FiniteElementDeallocate
 
