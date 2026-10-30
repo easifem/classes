@@ -17,10 +17,10 @@
 !
 
 SUBMODULE(TDGAlgorithm2_Class) TomlMethods
-USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_get => get_value
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: UpperCase
+USE tomlf, ONLY: toml_get => get_value
+USE TomlUtility, ONLY: GetValue
 
 IMPLICIT NONE
 
@@ -30,11 +30,11 @@ CONTAINS
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE LCVMethodImportFromToml(obj, table, astr, origin, stat)
+SUBROUTINE LCVMethodImportFromToml(obj, table, astr, origin, STAT)
   CLASS(TDGAlgorithm2_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
   TYPE(String), INTENT(INOUT) :: astr
-  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+  INTEGER(I4B), INTENT(INOUT) :: origin, STAT
 
   ! Internal variables
 #ifdef DEBUG_VER
@@ -51,14 +51,14 @@ SUBROUTINE LCVMethodImportFromToml(obj, table, astr, origin, stat)
 #endif
 
   CALL toml_get(table, astr%chars(), node, origin=origin, &
-                requested=.FALSE., stat=stat)
+                requested=.FALSE., STAT=STAT)
 
   alpha = defaultAlpha
 
   isok = ASSOCIATED(node)
   IF (isok) THEN
-    CALL GetValue(table=node, key="alpha", VALUE=alpha, &
-                  default_value=defaultAlpha, origin=origin, stat=stat)
+    CALL GetValue(table=node, key="alpha", VALUE=obj%alpha, &
+                  default_value=defaultAlpha, origin=origin, STAT=STAT)
   END IF
 
   node => NULL()
@@ -78,7 +78,7 @@ MODULE PROCEDURE obj_ImportFromToml1
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 LOGICAL(LGT) :: found
 TYPE(String) :: astr
 
@@ -90,7 +90,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 CALL GetValue(table=table, key="methodName", VALUE=astr, &
-              default_value="UV", origin=origin, stat=stat, &
+              default_value="UV", origin=origin, STAT=STAT, &
               isfound=found)
 
 obj%name = UpperCase(astr%slice(1, 1))
@@ -106,7 +106,7 @@ CASE ("V")
 CASE ("L")
   !LCV
   CALL LCVMethodImportFromToml(obj=obj, table=table, astr=astr, &
-                               origin=origin, stat=stat)
+                               origin=origin, STAT=STAT)
 CASE DEFAULT
   obj%alpha = 1.0_DFP
 END SELECT
@@ -129,7 +129,7 @@ LOGICAL(LGT) :: isok
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -140,13 +140,13 @@ CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
-                  'following error occured while reading the toml file :: &
-                  &cannot find ['//tomlName//"] table in config.")
+  'following error occured while reading the toml file :: &
+&cannot find ['//tomlName//"] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node)
