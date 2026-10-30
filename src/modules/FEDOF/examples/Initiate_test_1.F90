@@ -7,6 +7,7 @@ PROGRAM main
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: quadopt => TypeQuadratureOpt
+USE BaseType, ONLY: TypeInterpolationOpt
 USE Display_Method, ONLY: Display
 USE ExceptionHandler_Class, ONLY: e
 USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
@@ -85,5 +86,61 @@ want = meshptr%GetTotalNodes() &
 
 isok = found .EQ. want
 CALL OK(isok, "TotalDOF, H1, Hierarchical, order=4")
+
+CALL obj%Initiate(order=1, dom=dom, baseContinuity= "H1", &
+                  baseInterpolation= "Lagrange", &
+                  ipType=TypeInterpolationOpt%Equidistance, &
+                  quadratureIsHomogeneous=math%yes, &
+                  quadratureType=[quadopt%GaussLegendre], &
+                  quadratureOrder=[2], &
+                  quadratureIsOrder=math%yes)
+found = obj%GetTotalDOF()
+want = meshptr%GetTotalNodes()
+isok = found .EQ. want
+CALL OK(isok, "TotalDOF, H1, Lagrange, order=1")
+
+CALL obj%Initiate(order=2, dom=dom, baseContinuity= "H1", &
+                  baseInterpolation= "Lagrange", &
+                  ipType=TypeInterpolationOpt%Equidistance, &
+                  quadratureIsHomogeneous=math%yes, &
+                  quadratureType=[quadopt%GaussLegendre], &
+                  quadratureOrder=[4], &
+                  quadratureIsOrder=math%yes)
+found = obj%GetTotalDOF()
+want = meshptr%GetTotalNodes() + meshptr%GetTotalFaces()
+isok = found .EQ. want
+CALL OK(isok, "TotalDOF, H1, Lagrange, order=2")
+
+CALL obj%Initiate(order=3, dom=dom, baseContinuity="H1", &
+                  baseInterpolation="Lagrange", &
+                  ipType=TypeInterpolationOpt%Equidistance, &
+                  quadratureIsHomogeneous=math%yes, &
+                  quadratureType=[quadopt%GaussLegendre], &
+                  quadratureOrder=[6], &
+                  quadratureIsOrder=math%yes)
+
+found = obj%GetTotalDOF()
+want = meshptr%GetTotalNodes() &
+       + 2 * meshptr%GetTotalFaces() &
+       + meshptr%GetTotalCells()
+
+isok = found .EQ. want
+CALL OK(isok, "TotalDOF, H1, Lagrange, order=3")
+
+CALL obj%Initiate(order=4, dom=dom, baseContinuity="H1", &
+                  baseInterpolation="Lagrange", &
+                  ipType=TypeInterpolationOpt%Equidistance, &
+                  quadratureIsHomogeneous=math%yes, &
+                  quadratureType=[quadopt%GaussLegendre], &
+                  quadratureOrder=[8], &
+                  quadratureIsOrder=math%yes)
+
+found = obj%GetTotalDOF()
+want = meshptr%GetTotalNodes() &
+       + 3 * meshptr%GetTotalFaces() &
+       + 3 * meshptr%GetTotalCells()
+
+isok = found .EQ. want
+CALL OK(isok, "TotalDOF, H1, Lagrange, order=4")
 
 END PROGRAM main
