@@ -1,4 +1,3 @@
-
 ! Expandable And Scalable Infrastructure for Finite Element Methods
 ! htttps://www.easifem.com
 ! Vikas Sharma, Ph.D., vickysharma0812@gmail.com
@@ -260,12 +259,12 @@ CONTAINS
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Get the number of degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
-  !! Get the degrees of freedom of an element
+  !! Get element DOFs, using the first option letter
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
-  !! Get the degrees of freedom of an element without allocation
+  !! Get element DOFs without allocation, using the first option letter
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity_ => &
     obj_GetFacetConnectivity_
-  !! Get the degrees of freedom of a facet of an element
+  !! Get vertex and face-interior DOFs of a 2D facet
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get a pointer to the mesh of the FEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: GetDomainPointer => obj_GetDomainPointer
@@ -280,7 +279,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeOrder => obj_GetEdgeOrder
   !! Get the order of the edges of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetOrders => obj_GetOrders
-  !! Get the cell, face and edge orders and orientations of an element
+  !! Get orders and orientations using global or local element numbering
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalConnectivity => &
     obj_GetMaxTotalConnectivity
   !! Get the largest number of degrees of freedom of an element
@@ -1649,195 +1648,112 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Get the degrees of freedom of an element
 !
-! Return the degree of freedom numbers of an element. With opt Vertex, Edge,
-! Face or Cell only those degrees of freedom are returned; with All, the
-! vertex, edge, face and cell degrees of freedom, in this order. Use a one
-! letter opt (V, E, F, C or A): GetConnectivity_ selects the case on the whole
-! opt string.
+! Return the degree of freedom numbers of an element. Vertex, Edge, Face
+! or Cell selects that entity; All returns vertex, edge, face and cell
+! DOFs in this order. The first character of opt is used, in either case.
+! Global element identifiers and local element numbers are both supported.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
-!   opt : CHARACTER(*), intent(in) - which degrees of freedom: Vertex, Edge,
-!     Face, Cell or All (the first letter is used)
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! Changes:
+!   - 2026-10-30: Accept long connectivity options consistently.
 !
 ! Returns:
-!   ans(:) : INTEGER(I4B), allocatable - degree of freedom numbers of the
-!     element
+!   ans(:): Allocated array of the selected element DOF numbers.
 !
 ! Examples
 !
 !```fortran
 ! PROGRAM main
-!   USE FEDOF_Class, ONLY: FEDOF_
-!   USE FEDomain_Class, ONLY: FEDomain_
-!   USE AbstractMesh_Class, ONLY: AbstractMesh_
-!   USE HDF5File_Class, ONLY: HDF5File_
-!   USE Display_Method, ONLY: ToString
-!   USE GlobalData, ONLY: I4B
-!   USE GlobalData, ONLY: LGT
-!   USE Test_Method, ONLY: ok
-!   USE ExceptionHandler_Class, ONLY: e
-!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-!   USE AppendUtility, ONLY: Append
-!   USE AppendUtility, ONLY: OPERATOR(.APPEND.)
-!   USE ArangeUtility, ONLY: Arange
-!   IMPLICIT NONE
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE AbstractMesh_Class, ONLY: AbstractMesh_
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE MSHFile_Class, ONLY: MSHFile_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(FEDOF_) :: obj
+! TYPE(FEDomain_), TARGET :: dom
+! TYPE(HDF5File_) :: meshfile
+! TYPE(MSHFile_) :: source
+! CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+! CHARACTER(12), PARAMETER :: families(2) = &
+!   [CHARACTER(12) :: "Lagrange", "Hierarchical"]
+! INTEGER(I4B), PARAMETER :: elements(2) = [101_I4B, 205_I4B]
+! INTEGER(I4B) :: order, family, iel
+! INTEGER :: unitno
+! CHARACTER(6), PARAMETER :: options(5) = &
+!   [CHARACTER(6) :: "Vertex", "Edge", "Face", "Cell", "All"]
+! INTEGER(I4B) :: shortCon(64), longCon(64), nshort, nlong, ii, jj, shared
+! INTEGER(I4B), ALLOCATABLE :: first(:), second(:), allocatedCon(:)
 !
-!   CHARACTER(*), PARAMETER :: &
-!     filename = "./meshdata/small_tri3_mesh.h5", &
-!     baseContinuity = "H1", &
-!     baseInterpolation = "Hierarchical", &
-!     testname = baseContinuity // " " // baseInterpolation
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+! CALL source%Initiate(filename="./fixtures/h1_two_quads.msh.txt", &
+!   STATUS="OLD", ACTION="READ")
+! CALL source%OPEN()
+! CALL source%READ()
+! CALL meshfile%Initiate(filename="H1Connectivity_test_1.h5", mode="NEW")
+! CALL meshfile%SetOverwriteStat(.TRUE.)
+! CALL meshfile%OPEN()
+! CALL source%Export(hdf5=meshfile, group="")
+! CALL source%DEALLOCATE()
+! CALL dom%Initiate(meshfile, "")
+! mesh => dom%GetMeshPointer()
+! CALL OK(mesh%GetTotalElements() == 2_I4B, "Fixture has two cells")
+! CALL OK(mesh%GetTotalVertexNodes() == 6_I4B, "Fixture has six vertices")
+! CALL OK(mesh%GetMaxNodeNumber() > 6_I4B, "Mesh vertex IDs have gaps")
 !
-!   TYPE(FEDOF_) :: fedof
-!   TYPE(FEDomain_) :: dom
-!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
-!   TYPE(HDF5File_) :: meshfile
-!   INTEGER(I4B), ALLOCATABLE :: found(:), want(:)
-!   INTEGER(I4B) :: order, totalVertexNodes, totalFaces
-!   LOGICAL(LGT) :: isok
+! DO family = 1, SIZE(families)
+!   DO order = 1, 3
+!     CALL obj%Initiate(order=order, dom=dom, baseContinuity="H1", &
+!       baseInterpolation=TRIM(families(family)), &
+!       ipType=TypeInterpolationOpt%Equidistance)
+!     CALL OK(obj%GetTotalDOF() == &
+!       6_I4B + 7_I4B * (order - 1_I4B) + &
+!       2_I4B * (order - 1_I4B)**2, "Uniform H1 global DOF count")
+!     DO iel = 1, SIZE(elements)
+!       DO ii = 1, SIZE(options)
+!         CALL obj%GetConnectivity_(ans=shortCon, tsize=nshort, &
+!           opt=options(ii)(1:1), globalElement=elements(iel))
+!         CALL obj%GetConnectivity_(ans=longCon, tsize=nlong, &
+!           opt=TRIM(options(ii)), globalElement=elements(iel))
+!         CALL OK(nlong == nshort, "Long and short option sizes agree")
+!         IF (nlong == nshort) CALL OK( &
+!           ALL(longCon(1:nlong) == shortCon(1:nshort)), &
+!           "Long and short option contents agree")
+!         allocatedCon = obj%GetConnectivity(opt=TRIM(options(ii)), &
+!           globalElement=elements(iel))
+!         CALL OK(SIZE(allocatedCon) == nshort, "Allocated output size")
+!         IF (SIZE(allocatedCon) == nshort) CALL OK( &
+!           ALL(allocatedCon == shortCon(1:nshort)), "Allocated output IDs")
+!       END DO
+!       CALL OK(obj%GetTotalDOF(globalElement=elements(iel)) == &
+!         (order + 1_I4B)**2, "Uniform quadrangle local basis size")
+!     END DO
+!     first = obj%GetConnectivity(opt="All", globalElement=elements(1))
+!     second = obj%GetConnectivity(opt="All", globalElement=elements(2))
+!     shared = 0
+!     DO jj = 1, SIZE(first)
+!       IF (ANY(second == first(jj))) shared = shared + 1
+!     END DO
+!     CALL OK(shared == order + 1_I4B, "Shared H1 trace DOFs counted once")
+!   END DO
+! END DO
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-!
-!   CALL meshfile%Initiate(filename, mode="READ")
-!   CALL meshfile%OPEN()
-!   CALL dom%Initiate(meshfile, '')
-!   meshptr => dom%GetMeshPointer()
-!   totalVertexNodes = meshptr%GetTotalVertexNodes()
-!   totalFaces = meshptr%GetTotalFaces()
-!
-!   CALL test1
-!   CALL test2
-!   CALL test3
-!
-!   CALL dom%DEALLOCATE()
-!   CALL meshfile%DEALLOCATE()
-!
-! CONTAINS
-!
-! !---------------------------------------------------------------------------
-! !                                                                      test1
-! !---------------------------------------------------------------------------
-!
-!   SUBROUTINE test1
-!
-!     INTEGER(I4B), ALLOCATABLE :: globalNode(:)
-!     INTEGER(I4B) :: ent(4), tVertices
-!
-!     order = 1
-!     CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                         baseInterpolation=baseInterpolation, &
-!                         order=order, dom=dom)
-!
-!     tVertices = &
-!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=math%yes)
-!
-!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=math%yes)
-!
-!     ! Get all connectivity for local element 1
-!     found = fedof%GetConnectivity(opt="A", globalElement=1, &
-!             islocal=math%yes)
-!
-!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=math%yes)
-!
-!     want = meshptr%GetLocalNodenumber(globalNode=globalNode(1:tVertices), &
-!                                       islocal=math%no)
-!
-!     isok = ALL(found == want)
-!     CALL OK(isok, testname // " GetConnectivity (order= " // &
-!             ToString(order) // "): ")
-!
-!   END SUBROUTINE test1
-!
-! !---------------------------------------------------------------------------
-! !                                                                      test2
-! !---------------------------------------------------------------------------
-!
-!   SUBROUTINE test2
-!     INTEGER(I4B), ALLOCATABLE :: globalNode(:), temp1(:)
-!     INTEGER(I4B) :: ent(4), a, b, tVertices
-!
-!     order = 2
-!     CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                         baseInterpolation=baseInterpolation, &
-!                         order=order, dom=dom)
-!
-!     found = fedof%GetConnectivity(opt="A", globalElement=1, &
-!     islocal=math%yes)
-!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=math%yes)
-!     tVertices = &
-!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=math%yes)
-!
-!     want = meshptr%GetLocalNodenumber(globalNode=globalNode(1:tVertices), &
-!                                       islocal=math%no)
-!     a = meshptr%GetTotalVertexNodes() + 1
-!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=math%yes)
-!
-!     b = meshptr%GetTotalVertexNodes() + ent(3) * (order - 1)
-!     temp1 = Arange(a, b)
-!
-!     want = want.APPEND.temp1
-!
-!     isok = ALL(found == want)
-!
-!     CALL OK(isok, testname // " GetConnectivity (order= " // &
-!             ToString(order) // "): ")
-!
-!   END SUBROUTINE test2
-!
-! !---------------------------------------------------------------------------
-! !                                                                     test3
-! !---------------------------------------------------------------------------
-!
-!   SUBROUTINE test3
-!     INTEGER(I4B), ALLOCATABLE :: globalNode(:), temp1(:)
-!     INTEGER(I4B) :: ent(4), a, b, tVertices
-!
-!     order = 3
-!     CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                         baseInterpolation=baseInterpolation, &
-!                         order=order, dom=dom)
-!
-!     found = fedof%GetConnectivity(opt="A", globalElement=1, &
-!             islocal=math%yes)
-!
-!     globalNode = meshptr%GetConnectivity(globalElement=1, islocal=math%yes)
-!
-!     tVertices = &
-!       meshptr%GetTotalVertexNodes(globalElement=[1], islocal=math%yes)
-!
-!     want = meshptr%GetLocalNodenumber(globalNode=globalNode(1:tVertices), &
-!                                       islocal=math%no)
-!
-!     ent = meshptr%GetTotalEntities(globalElement=1, islocal=math%yes)
-!
-!     a = totalVertexNodes + 1
-!     b = a - 1 + ent(3) * (order - 1)
-!
-!     temp1 = Arange(a, b)
-!
-!     want = want.APPEND.temp1
-!
-!     a = totalVertexNodes + totalFaces * (order - 1) + 1
-!     b = a - 1 + ent(4) * (order - 2) * (order - 1) * 0.5
-!
-!     temp1 = Arange(a, b)
-!     want = want.APPEND.temp1
-!
-!     isok = ALL(found == want)
-!
-!     CALL OK(isok, testname // " GetConnectivity (order= " // &
-!             ToString(order) // "): ")
-!   END SUBROUTINE test3
-!
+! CALL obj%DEALLOCATE()
+! mesh => NULL()
+! CALL dom%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! OPEN(NEWUNIT=unitno, FILE="H1Connectivity_test_1.h5", &
+!   STATUS="old", ACTION="read")
+! CLOSE(unitno, STATUS="delete")
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_GetConnectivity_]]
+! See also: [[obj_GetConnectivity_]], [[obj_GetTotalDOF3]]
 
 INTERFACE
   MODULE FUNCTION obj_GetConnectivity(obj, opt, globalElement, islocal) &
@@ -1850,8 +1766,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number, or local element number if islocal is true
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    !! if true, the given element, node, edge or face number is a local
-    !! number; default is false
+    !! if true, globalElement is a mesh-local element number; default false
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! degree of freedom numbers of the element
   END FUNCTION obj_GetConnectivity
@@ -1863,25 +1778,110 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
-! summary: Get the degrees of freedom of an element without allocation
+! summary: Get element degrees of freedom without allocation
 !
-! Same as GetConnectivity, but the numbers are written in ans. ans must have
-! at least GetTotalDOF(globalElement, opt) entries. Use a one letter opt (V,
-! E, F, C or A); a longer opt such as Vertex is treated as All.
+! Write the same DOFs as GetConnectivity into ans, using only the first
+! character of opt. The caller provides at least GetTotalDOF for the same
+! element and option entries; only ans(1:tsize) is written.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
-!   ans(:) : INTEGER(I4B), intent(inout) - degree of freedom numbers, size
-!     must be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   opt : CHARACTER(*), intent(in) - which degrees of freedom: Vertex, Edge,
-!     Face, Cell or All (the first letter is used)
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! Changes:
+!   - 2026-10-30: Accept long connectivity options consistently.
 !
-! See also: [[obj_GetConnectivity]], [[obj_GetMaxTotalConnectivity]]
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE AbstractMesh_Class, ONLY: AbstractMesh_
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE MSHFile_Class, ONLY: MSHFile_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(FEDOF_) :: obj
+! TYPE(FEDomain_), TARGET :: dom
+! TYPE(HDF5File_) :: meshfile
+! TYPE(MSHFile_) :: source
+! CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+! CHARACTER(12), PARAMETER :: families(2) = &
+!   [CHARACTER(12) :: "Lagrange", "Hierarchical"]
+! INTEGER(I4B), PARAMETER :: elements(2) = [101_I4B, 205_I4B]
+! INTEGER(I4B) :: order, family, iel
+! INTEGER :: unitno
+! CHARACTER(6), PARAMETER :: options(5) = &
+!   [CHARACTER(6) :: "Vertex", "Edge", "Face", "Cell", "All"]
+! INTEGER(I4B) :: shortCon(64), longCon(64), nshort, nlong, ii, jj, shared
+! INTEGER(I4B), ALLOCATABLE :: first(:), second(:), allocatedCon(:)
+!
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+! CALL source%Initiate(filename="./fixtures/h1_two_quads.msh.txt", &
+!   STATUS="OLD", ACTION="READ")
+! CALL source%OPEN()
+! CALL source%READ()
+! CALL meshfile%Initiate(filename="H1Connectivity_test_1.h5", mode="NEW")
+! CALL meshfile%SetOverwriteStat(.TRUE.)
+! CALL meshfile%OPEN()
+! CALL source%Export(hdf5=meshfile, group="")
+! CALL source%DEALLOCATE()
+! CALL dom%Initiate(meshfile, "")
+! mesh => dom%GetMeshPointer()
+! CALL OK(mesh%GetTotalElements() == 2_I4B, "Fixture has two cells")
+! CALL OK(mesh%GetTotalVertexNodes() == 6_I4B, "Fixture has six vertices")
+! CALL OK(mesh%GetMaxNodeNumber() > 6_I4B, "Mesh vertex IDs have gaps")
+!
+! DO family = 1, SIZE(families)
+!   DO order = 1, 3
+!     CALL obj%Initiate(order=order, dom=dom, baseContinuity="H1", &
+!       baseInterpolation=TRIM(families(family)), &
+!       ipType=TypeInterpolationOpt%Equidistance)
+!     CALL OK(obj%GetTotalDOF() == &
+!       6_I4B + 7_I4B * (order - 1_I4B) + &
+!       2_I4B * (order - 1_I4B)**2, "Uniform H1 global DOF count")
+!     DO iel = 1, SIZE(elements)
+!       DO ii = 1, SIZE(options)
+!         CALL obj%GetConnectivity_(ans=shortCon, tsize=nshort, &
+!           opt=options(ii)(1:1), globalElement=elements(iel))
+!         CALL obj%GetConnectivity_(ans=longCon, tsize=nlong, &
+!           opt=TRIM(options(ii)), globalElement=elements(iel))
+!         CALL OK(nlong == nshort, "Long and short option sizes agree")
+!         IF (nlong == nshort) CALL OK( &
+!           ALL(longCon(1:nlong) == shortCon(1:nshort)), &
+!           "Long and short option contents agree")
+!         allocatedCon = obj%GetConnectivity(opt=TRIM(options(ii)), &
+!           globalElement=elements(iel))
+!         CALL OK(SIZE(allocatedCon) == nshort, "Allocated output size")
+!         IF (SIZE(allocatedCon) == nshort) CALL OK( &
+!           ALL(allocatedCon == shortCon(1:nshort)), "Allocated output IDs")
+!       END DO
+!       CALL OK(obj%GetTotalDOF(globalElement=elements(iel)) == &
+!         (order + 1_I4B)**2, "Uniform quadrangle local basis size")
+!     END DO
+!     first = obj%GetConnectivity(opt="All", globalElement=elements(1))
+!     second = obj%GetConnectivity(opt="All", globalElement=elements(2))
+!     shared = 0
+!     DO jj = 1, SIZE(first)
+!       IF (ANY(second == first(jj))) shared = shared + 1
+!     END DO
+!     CALL OK(shared == order + 1_I4B, "Shared H1 trace DOFs counted once")
+!   END DO
+! END DO
+!
+! CALL obj%DEALLOCATE()
+! mesh => NULL()
+! CALL dom%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! OPEN(NEWUNIT=unitno, FILE="H1Connectivity_test_1.h5", &
+!   STATUS="old", ACTION="read")
+! CLOSE(unitno, STATUS="delete")
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetConnectivity]], [[obj_GetOrders]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetConnectivity_(obj, ans, tsize, opt, &
@@ -1898,78 +1898,115 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number, or local element number if islocal is true
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    !! if true, the given element, node, edge or face number is a local
-    !! number; default is false
+    !! if true, globalElement is a mesh-local element number; default false
   END SUBROUTINE obj_GetConnectivity_
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                GetConnectivity_@GetMethods
+!                                           GetFacetConnectivity_@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-14
-! summary: Get the degrees of freedom of a facet of an element
+! summary: Get the degrees of freedom of a facet
 !
-! Write the vertex connectivity of facet localFaceNumber of an element (from
-! the mesh) followed by the degree of freedom numbers on the face.
+! For a two-dimensional mesh with linear geometry, write the facet's
+! vertex DOF numbers followed by its face-interior DOF numbers. Vertex
+! DOFs use mesh-local node numbers, consistently with GetConnectivity;
+! mesh-global node identifiers are converted before returning them.
+! The example checks uniform H1 spaces of orders one through three.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
-!   ans(:) : INTEGER(I4B), intent(inout) - vertex connectivity of the facet
-!     followed by the face degrees of freedom
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   localFaceNumber : INTEGER(I4B), intent(in) - local face number in the
-!     element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! Changes:
+!   - 2026-10-30: Convert facet mesh node identifiers to vertex DOF numbers.
 !
 ! Examples
 !
 !```fortran
 ! PROGRAM main
-!   USE BaseType, ONLY: math => TypeMathOpt
-!   USE ExceptionHandler_Class, ONLY: e
-!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-!   USE FEDOF_Class, ONLY: FEDOF_
-!   USE FEDomain_Class, ONLY: FEDomain_
-!   USE GlobalData, ONLY: I4B
-!   USE HDF5File_Class, ONLY: HDF5File_
-!   USE Test_Method, ONLY: OK
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE AbstractMesh_Class, ONLY: AbstractMesh_
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE MSHFile_Class, ONLY: MSHFile_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(FEDOF_) :: obj
+! TYPE(FEDomain_), TARGET :: dom
+! TYPE(HDF5File_) :: meshfile
+! TYPE(MSHFile_) :: source
+! CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+! CHARACTER(12), PARAMETER :: families(2) = &
+!   [CHARACTER(12) :: "Lagrange", "Hierarchical"]
+! INTEGER(I4B), PARAMETER :: elements(2) = [101_I4B, 205_I4B]
+! INTEGER(I4B) :: order, family, iel
+! INTEGER :: unitno
+! INTEGER(I4B) :: actual(16), want(16), nodes(8), nactual, nnode, nface
+! INTEGER(I4B) :: iface, left(16), right(16), nleft, nright, ii, shared
 !
-!   IMPLICIT NONE
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+! CALL source%Initiate(filename="./fixtures/h1_two_quads.msh.txt", &
+!   STATUS="OLD", ACTION="READ")
+! CALL source%OPEN()
+! CALL source%READ()
+! CALL meshfile%Initiate(filename="H1FacetConnectivity_test_1.h5", mode="NEW")
+! CALL meshfile%SetOverwriteStat(.TRUE.)
+! CALL meshfile%OPEN()
+! CALL source%Export(hdf5=meshfile, group="")
+! CALL source%DEALLOCATE()
+! CALL dom%Initiate(meshfile, "")
+! mesh => dom%GetMeshPointer()
+! CALL OK(mesh%GetTotalElements() == 2_I4B, "Fixture has two cells")
+! CALL OK(mesh%GetTotalVertexNodes() == 6_I4B, "Fixture has six vertices")
+! CALL OK(mesh%GetMaxNodeNumber() > 6_I4B, "Mesh vertex IDs have gaps")
 !
-!   CHARACTER(*), PARAMETER :: filename = &
-!     "./meshdata/very_small_quad4_mesh.h5"
-!   TYPE(FEDOF_) :: obj
-!   TYPE(FEDomain_) :: dom
-!   TYPE(HDF5File_) :: meshfile
-!   INTEGER(I4B) :: ans(20), tsize, order
-!
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-!
-!   CALL meshfile%Initiate(filename, mode="READ")
-!   CALL meshfile%OPEN()
-!   CALL dom%Initiate(meshfile, "")
-!
-!   DO order = 1, 2
-!     CALL obj%Initiate(baseContinuity="H1", &
-!                       baseInterpolation="Hierarchical", order=order, &
-!                       dom=dom)
-!     CALL obj%GetFacetConnectivity_(ans=ans, tsize=tsize, globalElement=1, &
-!                                    localFaceNumber=1, islocal=math%yes)
-!     CALL OK(tsize .EQ. 2 + order - 1, "GetFacetConnectivity_: tsize")
+! DO family = 1, SIZE(families)
+!   DO order = 1, 3
+!     CALL obj%Initiate(order=order, dom=dom, baseContinuity="H1", &
+!       baseInterpolation=TRIM(families(family)), &
+!       ipType=TypeInterpolationOpt%Equidistance)
+!     DO iel = 1, SIZE(elements)
+!       DO iface = 1, 4
+!         CALL mesh%GetFacetConnectivity_(ans=nodes, tsize=nnode, &
+!           globalElement=elements(iel), iface=iface)
+!         want(1:nnode) = mesh%GetLocalNodeNumber(globalNode=nodes(1:nnode))
+!                 CALL obj%GetFaceDOF(globalElement=elements(iel), &
+!           localFaceNumber=iface, ans=want(nnode + 1:), tsize=nface)
+!         CALL obj%GetFacetConnectivity_(globalElement=elements(iel), &
+!           localFaceNumber=iface, ans=actual, tsize=nactual)
+!         CALL OK(nactual == order + 1_I4B, "H1 facet connectivity size")
+!         CALL OK(nactual == nnode + nface, "Facet block sizes agree")
+!         IF (nactual == nnode + nface) CALL OK( &
+!           ALL(actual(1:nactual) == want(1:nactual)), "Facet DOF IDs")
+!       END DO
+!     END DO
+!     CALL obj%GetFacetConnectivity_(globalElement=elements(1), &
+!       localFaceNumber=2_I4B, ans=left, tsize=nleft)
+!     CALL obj%GetFacetConnectivity_(globalElement=elements(2), &
+!       localFaceNumber=4_I4B, ans=right, tsize=nright)
+!     shared = 0
+!     DO ii = 1, nleft
+!       IF (ANY(right(1:nright) == left(ii))) shared = shared + 1
+!     END DO
+!     CALL OK(shared == order + 1_I4B, "Both cells share the same facet DOFs")
 !   END DO
+! END DO
 !
-!   CALL obj%DEALLOCATE()
-!   CALL dom%DEALLOCATE()
-!   CALL meshfile%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! mesh => NULL()
+! CALL dom%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! OPEN(NEWUNIT=unitno, FILE="H1FacetConnectivity_test_1.h5", &
+!   STATUS="old", ACTION="read")
+! CLOSE(unitno, STATUS="delete")
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_GetFaceDOF2]]
+! See also: [[obj_GetConnectivity]], [[obj_GetOrders]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFacetConnectivity_(obj, ans, tsize, &
@@ -1978,8 +2015,8 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! vertex connectivity of the facet followed by the face degrees of
-    !! freedom
+    !! vertex DOF numbers followed by face-interior DOF numbers; only
+    !! ans(1:tsize) is written (two-dimensional linear geometry)
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -1987,8 +2024,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number in the element
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    !! if true, the given element, node, edge or face number is a local
-    !! number; default is false
+    !! if true, globalElement is a mesh-local element number; default false
   END SUBROUTINE obj_GetFacetConnectivity_
 END INTERFACE
 
@@ -4612,109 +4648,116 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-24
-! summary: Get the cell, face and edge orders and orientations of an element
+! summary: Get element orders and orientations
 !
-! Get the order of the cell, of each face and of each edge of an element (as
-! GetCellOrder, GetFaceOrder and GetEdgeOrder), and their orientation flags
-! from the mesh. SetFE uses this method.
+! Get the cell, face and edge polynomial orders and their mesh
+! orientations. SetFE uses this method. Convert the supplied element
+! identifier once and use the same local element for orders and
+! orientations; both global and local element numbering are supported.
 !
-! Note: the orientations are read with islocal = math%yes, so pass a local
-! element number (islocal = math%yes).
-!
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
-!   cellOrder(:) : INTEGER(I4B), intent(inout) - order of the cell, size at
-!     least 1
-!   faceOrder(:,:) : INTEGER(I4B), intent(inout) - order of each face,
-!     SIZE(faceOrder, 1) >= 3 (the three rows hold the same order)
-!   edgeOrder(:) : INTEGER(I4B), intent(inout) - order of each edge
-!   cellOrient(:) : INTEGER(I4B), intent(inout) - orientation flags of the
-!     cell
-!   faceOrient(:,:) : INTEGER(I4B), intent(inout) - orientation flags of each
-!     face, 3 rows
-!   edgeOrient(:) : INTEGER(I4B), intent(inout) - orientation flag of each
-!     edge
-!   tCellOrder : INTEGER(I4B), intent(out) - number of entries written in
-!     cellOrder (1)
-!   tFaceOrder : INTEGER(I4B), intent(out) - number of faces written in
-!     faceOrder
-!   tEdgeOrder : INTEGER(I4B), intent(out) - number of entries written in
-!     edgeOrder
-!   tCellOrient : INTEGER(I4B), intent(out) - number of entries written in
-!     cellOrient
-!   tFaceOrient(2) : INTEGER(I4B), intent(out) - number of rows and columns
-!     written in faceOrient
-!   tEdgeOrient : INTEGER(I4B), intent(out) - number of entries written in
-!     edgeOrient
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! Changes:
+!   - 2026-10-30: Use the converted local element for orientation lookup.
 !
 ! Examples
 !
 !```fortran
 ! PROGRAM main
-!   USE AbstractMesh_Class, ONLY: AbstractMesh_
-!   USE BaseType, ONLY: math => TypeMathOpt
-!   USE ExceptionHandler_Class, ONLY: e
-!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-!   USE FEDOF_Class, ONLY: FEDOF_
-!   USE FEDomain_Class, ONLY: FEDomain_
-!   USE GlobalData, ONLY: I4B
-!   USE GlobalData, ONLY: LGT
-!   USE HDF5File_Class, ONLY: HDF5File_
-!   USE Test_Method, ONLY: OK
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE AbstractMesh_Class, ONLY: AbstractMesh_
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE MSHFile_Class, ONLY: MSHFile_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(FEDOF_) :: obj
+! TYPE(FEDomain_), TARGET :: dom
+! TYPE(HDF5File_) :: meshfile
+! TYPE(MSHFile_) :: source
+! CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+! CHARACTER(12), PARAMETER :: families(2) = &
+!   [CHARACTER(12) :: "Lagrange", "Hierarchical"]
+! INTEGER(I4B), PARAMETER :: elements(2) = [101_I4B, 205_I4B]
+! INTEGER(I4B) :: order, family, iel
+! INTEGER :: unitno
+! INTEGER(I4B) :: cellOrder(3), faceOrder(3, 6), edgeOrder(12)
+! INTEGER(I4B) :: cellOrient(3), faceOrient(3, 6), edgeOrient(12), sizes(7)
+! INTEGER(I4B) :: cellOrderLocal(3), faceOrderLocal(3, 6), edgeOrderLocal(12)
+! INTEGER(I4B) :: cellOrientLocal(3), faceOrientLocal(3, 6)
+! INTEGER(I4B) :: edgeOrientLocal(12), localSizes(7)
 !
-!   IMPLICIT NONE
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+! CALL source%Initiate(filename="./fixtures/h1_two_quads.msh.txt", &
+!   STATUS="OLD", ACTION="READ")
+! CALL source%OPEN()
+! CALL source%READ()
+! CALL meshfile%Initiate(filename="H1Orders_test_1.h5", mode="NEW")
+! CALL meshfile%SetOverwriteStat(.TRUE.)
+! CALL meshfile%OPEN()
+! CALL source%Export(hdf5=meshfile, group="")
+! CALL source%DEALLOCATE()
+! CALL dom%Initiate(meshfile, "")
+! mesh => dom%GetMeshPointer()
+! CALL OK(mesh%GetTotalElements() == 2_I4B, "Fixture has two cells")
+! CALL OK(mesh%GetTotalVertexNodes() == 6_I4B, "Fixture has six vertices")
+! CALL OK(mesh%GetMaxNodeNumber() > 6_I4B, "Mesh vertex IDs have gaps")
 !
-!   CHARACTER(*), PARAMETER :: filename = &
-!     "./meshdata/very_small_quad4_mesh.h5"
-!   INTEGER(I4B), PARAMETER :: order = 2
-!   TYPE(FEDOF_) :: obj
-!   TYPE(FEDomain_) :: dom
-!   TYPE(HDF5File_) :: meshfile
-!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
-!   INTEGER(I4B) :: cellOrder(3), faceOrder(3, 10), edgeOrder(20), &
-!     cellOrient(3), faceOrient(3, 10), edgeOrient(20), &
-!     tCellOrder, tFaceOrder, tEdgeOrder, tCellOrient, &
-!     tFaceOrient(2), tEdgeOrient, iel
-!   LOGICAL(LGT) :: isok
-!
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-!
-!   CALL meshfile%Initiate(filename, mode="READ")
-!   CALL meshfile%OPEN()
-!   CALL dom%Initiate(meshfile, "")
-!   meshptr => dom%GetMeshPointer()
-!
-!   CALL obj%Initiate(baseContinuity="H1", baseInterpolation="Hierarchical", &
-!                     order=order, dom=dom)
-!
-!   isok = math%yes
-!   DO iel = 1, meshptr%GetTotalElements()
-!     CALL obj%GetOrders(cellOrder=cellOrder, faceOrder=faceOrder, &
-!                        edgeOrder=edgeOrder, cellOrient=cellOrient, &
-!                        faceOrient=faceOrient, edgeOrient=edgeOrient, &
-!                        tCellOrder=tCellOrder, tFaceOrder=tFaceOrder, &
-!                        tEdgeOrder=tEdgeOrder, tCellOrient=tCellOrient, &
-!                        tFaceOrient=tFaceOrient, tEdgeOrient=tEdgeOrient, &
-!                        globalElement=iel, islocal=math%yes)
-!
-!     isok = isok .AND. (tCellOrder .EQ. 1) .AND. (cellOrder(1) .EQ. order)
-!     isok = isok .AND. (tFaceOrder .EQ. 4) &
-!       .AND. ALL(faceOrder(1:3, 1:tFaceOrder) .EQ. order)
+! DO family = 1, SIZE(families)
+!   DO order = 1, 3
+!     CALL obj%Initiate(order=order, dom=dom, baseContinuity="H1", &
+!       baseInterpolation=TRIM(families(family)), &
+!       ipType=TypeInterpolationOpt%Equidistance)
+!     DO iel = 1, SIZE(elements)
+!       CALL obj%GetOrders( &
+!         cellOrder=cellOrderLocal, faceOrder=faceOrderLocal, &
+!         edgeOrder=edgeOrderLocal, cellOrient=cellOrientLocal, &
+!         faceOrient=faceOrientLocal, edgeOrient=edgeOrientLocal, &
+!         tCellOrder=localSizes(1), tFaceOrder=localSizes(2), &
+!         tEdgeOrder=localSizes(3), &
+!         tCellOrient=localSizes(4), tFaceOrient=localSizes(5:6), &
+!         tEdgeOrient=localSizes(7), &
+!         globalElement=iel, islocal=.TRUE.)
+!       CALL obj%GetOrders( &
+!         cellOrder=cellOrder, faceOrder=faceOrder, &
+!         edgeOrder=edgeOrder, cellOrient=cellOrient, &
+!         faceOrient=faceOrient, edgeOrient=edgeOrient, &
+!         tCellOrder=sizes(1), tFaceOrder=sizes(2), tEdgeOrder=sizes(3), &
+!         tCellOrient=sizes(4), tFaceOrient=sizes(5:6), &
+!         tEdgeOrient=sizes(7), &
+!         globalElement=elements(iel), islocal=.FALSE.)
+!       CALL OK(ALL(sizes == localSizes), "Local/global output sizes")
+!       CALL OK(ALL(cellOrder(1:sizes(1)) == &
+!         cellOrderLocal(1:localSizes(1))), "Local/global cell order")
+!       CALL OK(ALL(faceOrder(:, 1:sizes(2)) == &
+!         faceOrderLocal(:, 1:localSizes(2))), "Local/global facet orders")
+!       CALL OK(ALL(edgeOrder(1:sizes(3)) == &
+!         edgeOrderLocal(1:localSizes(3))), "Local/global edge orders")
+!       CALL OK(ALL(cellOrient(1:sizes(4)) == &
+!         cellOrientLocal(1:localSizes(4))), "Local/global cell orientation")
+!       CALL OK(ALL(faceOrient(1:sizes(5), 1:sizes(6)) == &
+!         faceOrientLocal(1:localSizes(5), 1:localSizes(6))), &
+!         "Local/global facet orientations")
+!       CALL OK(ALL(edgeOrient(1:sizes(7)) == &
+!         edgeOrientLocal(1:localSizes(7))), "Local/global edge orientations")
+!     END DO
 !   END DO
-!   CALL OK(isok, "GetOrders: cell and face orders of all elements")
+! END DO
 !
-!   meshptr => NULL()
-!   CALL obj%DEALLOCATE()
-!   CALL dom%DEALLOCATE()
-!   CALL meshfile%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! mesh => NULL()
+! CALL dom%DEALLOCATE()
+! CALL meshfile%DEALLOCATE()
+! OPEN(NEWUNIT=unitno, FILE="H1Orders_test_1.h5", &
+!   STATUS="old", ACTION="read")
+! CLOSE(unitno, STATUS="delete")
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_GetCellOrder]], [[obj_GetFaceOrder]], [[obj_GetEdgeOrder]]
+! See also: [[obj_SetFE]], [[obj_GetCellOrder]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetOrders(obj, cellOrder, faceOrder, edgeOrder, &
@@ -4725,18 +4768,17 @@ INTERFACE
     CLASS(FEDOF_), INTENT(IN) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(INOUT) :: cellOrder(:)
-    !! order of the cell, size at least 1
+    !! cell order in entries 1:tCellOrder; capacity at least one
     INTEGER(I4B), INTENT(INOUT) :: faceOrder(:, :)
-    !! order of each face, SIZE(faceOrder, 1) >= 3 (the three rows hold the
-    !! same order)
+    !! face orders in (1:3, 1:tFaceOrder); three identical order rows
     INTEGER(I4B), INTENT(INOUT) :: edgeOrder(:)
-    !! order of each edge
+    !! edge orders in entries 1:tEdgeOrder
     INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
-    !! orientation flags of the cell
+    !! cell orientations in entries 1:tCellOrient
     INTEGER(I4B), INTENT(INOUT) :: faceOrient(:, :)
-    !! orientation flags of each face, 3 rows
+    !! face orientations in (1:tFaceOrient(1), 1:tFaceOrient(2))
     INTEGER(I4B), INTENT(INOUT) :: edgeOrient(:)
-    !! orientation flag of each edge
+    !! edge orientations in entries 1:tEdgeOrient
     INTEGER(I4B), INTENT(OUT) :: tCellOrder
     !! number of entries written in cellOrder (1)
     INTEGER(I4B), INTENT(OUT) :: tFaceOrder
@@ -4752,8 +4794,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number, or local element number if islocal is true
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
-    !! if true, the given element, node, edge or face number is a local
-    !! number; default is false
+    !! if true, globalElement is a mesh-local element number; default false
   END SUBROUTINE obj_GetOrders
 END INTERFACE
 

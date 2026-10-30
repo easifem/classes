@@ -403,10 +403,10 @@ opt0 = opt(1:1)
 localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                            islocal=islocal)
 CALL obj%mesh%GetConnectivity_(globalElement=localElement, &
-                               islocal=math%yes, opt=opt, tsize=tcon, &
+                               islocal=math%yes, opt=opt0, tsize=tcon, &
                                ans=con)
 
-SELECT CASE (opt)
+SELECT CASE (opt0)
 CASE ('v', 'V')
   tsize = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
                                        islocal=math%yes)
@@ -622,7 +622,7 @@ MODULE PROCEDURE obj_GetOrders
 CHARACTER(*), PARAMETER :: myName = 'obj_GetOrders()'
 #endif
 
-INTEGER(I4B) :: ii, jj, tNodeOrder, cellCon(1), &
+INTEGER(I4B) :: ii, jj, localElement, tNodeOrder, cellCon(1), &
                 faceCon(ReferenceElementInfo%maxEdges), &
                 edgeCon(ReferenceElementInfo%maxEdges), &
                 nodeCon(TypeMeshOpt%maxCon)
@@ -632,17 +632,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-jj = &
+localElement = &
   obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
-CALL obj%mesh%GetConnectivity_(globalElement=jj, islocal=math%yes, &
+CALL obj%mesh%GetConnectivity_(globalElement=localElement, &
+                               islocal=math%yes, &
                                cellCon=cellCon, faceCon=faceCon, &
                                edgeCon=edgeCon, nodeCon=nodeCon, &
                                tCellCon=tCellOrder, tFaceCon=tFaceOrder, &
                                tEdgeCon=tEdgeOrder, tNodeCon=tNodeOrder)
 
 DO ii = 1, tCellOrder
-  cellOrder(ii) = obj%cellOrder(jj)
+  cellOrder(ii) = obj%cellOrder(localElement)
 END DO
 
 DO jj = 1, tFaceOrder
@@ -661,7 +662,7 @@ CALL obj%mesh%GetOrientation(cellOrient=cellOrient, faceOrient=faceOrient, &
                              tCellOrient=tCellOrient, &
                              tFaceOrient=tFaceOrient, &
                              tEdgeOrient=tEdgeOrient, &
-                             globalElement=globalElement, islocal=math%yes)
+                             globalElement=localElement, islocal=math%yes)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -808,6 +809,9 @@ localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
 CALL obj%mesh%GetFacetConnectivity_(ans=ans, tsize=tsize0, &
                                     globalElement=localElement, &
                                     islocal=math%yes, iface=localFaceNumber)
+
+ans(1:tsize0) = obj%mesh%GetLocalNodeNumber( &
+                globalNode=ans(1:tsize0), islocal=math%no)
 
 CALL obj%GetFaceDOF(ans=ans(tsize0 + 1:), tsize=tsize, &
                     globalElement=localElement, islocal=math%yes, &

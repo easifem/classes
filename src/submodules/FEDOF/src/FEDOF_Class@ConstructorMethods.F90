@@ -110,7 +110,7 @@ CALL obj%DEALLOCATE()
 
 obj%isInit = math%yes
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
-IF (obj%baseInterpolation == "LAGR") obj%isLagrange = math%yes
+IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
 
 #ifdef DEBUG_VER
 IF (obj%isLagrange) THEN
