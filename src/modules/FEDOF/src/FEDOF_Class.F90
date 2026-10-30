@@ -63,7 +63,8 @@ PUBLIC :: FEDOFSetSparsity
 !   indices. Entity i owns IA(i):IA(i+1)-1. Equal adjacent offsets denote
 !   an empty entity block. The last cell offset is tdof+1.
 ! - Orders: cellOrder(iel) is the order of local element iel; the order of a
-!   face or an edge is the minimum order of the cells around it.
+!   face or an edge is the minimum order of the cells around it. Hierarchical
+!   H1 in 2D preserves these entity orders when configuring the shared FE.
 ! - fe(ii) is the finite element of element topology ii (FEFactory); SetFE
 !   sets its orders and orientations for one element.
 ! - baseContinuity (H1, HCurl, HDiv, DG) and baseInterpolation (LAGR, HIER,
@@ -71,6 +72,7 @@ PUBLIC :: FEDOFSetSparsity
 !
 ! Changes:
 !   - 2026-10-30: Define entity-ordered cumulative H1 DOF offsets.
+!   - 2026-10-30: Preserve variable hierarchical H1 entity orders in 2D.
 !
 ! See also: [[obj_Initiate1]], [[obj_GetConnectivity]]
 
@@ -196,7 +198,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
   !! Set the node coordinates of the finite element
   PROCEDURE, PUBLIC, PASS(obj) :: SetFE => obj_SetFE
-  !! Set orders and orientations of the shared FE for one mesh element
+  !! Configure the shared FE, preserving hierarchical H1 entity orders in 2D
 
   !@IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
@@ -690,272 +692,268 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Initiate a FEDOF with an order for each cell
 !
-! Initiate sets the base continuity and interpolation, keeps pointers to the
-! domain and to its mesh of dimension nsd, and sets the order of the cells.
-! The order of a face is the minimum order of the cells around it, and the
-! order of an edge is the minimum order of the cells around it. Then the
-! degrees of freedom are numbered: first one per vertex node (the local node
-! number), then edge-, face- and cell-interior DOFs in increasing entity
-! number within each block. Counts are collected before offsets are built.
-! Finally one finite element is made for each element topology of the mesh
-! (FEFactory), with the interpolation and quadrature options.
+! Keep pointers to the domain and its mesh, assign the supplied cell orders,
+! and give each edge or face the minimum order of its neighboring cells.
+! Collect entity DOF counts before building cumulative numbering offsets:
+! vertices, edges, faces, then cell interiors in entity-number order.
+! Create one FE per topology. Call SetFE before evaluating a cell's FE.
 !
-! For Lagrange basis ipType is required. Initiate deallocates obj first.
+! For hierarchical H1 triangles and quadrangles on linear 2D geometry,
+! each shared edge uses the lower neighboring order, while each cell keeps
+! its own interior order. The high-order cell uses a reduced trace space;
+! it retains the higher-order modes on its other edges and in its interior.
+! This is a conforming hierarchical space without additional constraints.
+! This path does not implement constraints for variable-order Lagrange.
 !
-! order(ii) is the order of cell ii. If islocal is true, ii is the local
-! element number; else ii is the global element number (the size of order is
-! then at least the largest global element number). If order has one entry,
-! all cells get that order.
+! order(ii) belongs to local cell ii when islocal is true, and to global
+! element ii otherwise. Global-indexed arrays must cover the largest
+! element ID; entries for absent elements are ignored. A one-entry array
+! assigns the same order to every cell. Initiate deallocates obj first.
+! For Lagrange interpolation, ipType is required.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
-!   order(:) : INTEGER(I4B), intent(in) - order of each cell, see islocal
-!   dom : CLASS(AbstractDomain_), intent(in) - domain; the FEDOF uses its mesh
-!     of dimension nsd
-!   baseContinuity : CHARACTER(*), intent(in) - continuity of the basis: H1,
-!     HCurl, HDiv or DG (the first two letters are used)
-!   baseInterpolation : CHARACTER(*), intent(in) - interpolation of the basis:
-!     Lagrange, Hierarchical, Orthogonal, Hermit or Serendipity (the first
-!     four letters are used)
-!   feType : INTEGER(I4B), optional, intent(in) - finite element type: scalar,
-!     vector or tensor
-!   ipType : INTEGER(I4B), optional, intent(in) - interpolation point type;
-!     needed for Lagrange basis
-!   basisType(:) : INTEGER(I4B), optional, intent(in) - basis used to build
-!     Lagrange polynomials; for Lagrange basis
-!   alpha(:) : REAL(DFP), optional, intent(in) - Jacobi alpha parameter; for
-!     Lagrange basis built on Jacobi polynomials
-!   lambda(:) : REAL(DFP), optional, intent(in) - Ultraspherical lambda
-!     parameter; for Lagrange basis built on Ultraspherical polynomials
-!   beta(:) : REAL(DFP), optional, intent(in) - Jacobi beta parameter; for
-!     Lagrange basis built on Jacobi polynomials
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, order(ii) is the
-!     order of local element ii; else of global element ii; default is false
-!   dofType(:) : INTEGER(I4B), optional, intent(in) - degree of freedom type
-!     (default nodal); size 4
-!   transformType : INTEGER(I4B), optional, intent(in) - transformation from
-!     the reference to the physical element
-!   quadratureIsHomogeneous : LOGICAL(LGT), optional, intent(in) - if true,
-!     the same quadrature is used in all directions
-!   quadratureType(:) : INTEGER(I4B), optional, intent(in) - quadrature type;
-!     see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureOrder(:) : INTEGER(I4B), optional, intent(in) - quadrature
-!     accuracy; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureIsOrder : LOGICAL(LGT), optional, intent(in) - if true,
-!     quadratureOrder is used
-!   quadratureNips(:) : INTEGER(I4B), optional, intent(in) - number of
-!     quadrature points; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureIsNips : LOGICAL(LGT), optional, intent(in) - if true,
-!     quadratureNips is used
-!   quadratureAlpha(:) : REAL(DFP), optional, intent(in) - Jacobi alpha of the
-!     quadrature; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureBeta(:) : REAL(DFP), optional, intent(in) - Jacobi beta of the
-!     quadrature; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureLambda(:) : REAL(DFP), optional, intent(in) - Ultraspherical
-!     lambda of the quadrature; see QuadratureOpt_; size 3 (x, y, z)
+! Changes:
+!   - 2026-10-30: Verify minimum-order hierarchical H1 traces in 2D.
+!
+! Formula:
+!   For neighboring cells K and L sharing edge e:
+!   $$ p_e=\min(p_K,p_L), \qquad n_e=p_e-1. $$
+!   Triangle interior counts are (p_K-1)(p_K-2)/2; quadrangle interior
+!   counts are (p_K-1)^2. Each vertex has one DOF.
 !
 ! Examples
 !
 !```fortran
 ! PROGRAM main
-!   USE FEDOF_Class, ONLY: FEDOF_
-!   USE FEDomain_Class, ONLY: FEDomain_
-!   USE AbstractMesh_Class, ONLY: AbstractMesh_
-!   USE HDF5File_Class, ONLY: HDF5File_
-!   USE Display_Method, ONLY: Display
-!   USE GlobalData, ONLY: DFP
-!   USE GlobalData, ONLY: I4B
-!   USE GlobalData, ONLY: LGT
-!   USE ExceptionHandler_Class, ONLY: e
-!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-!   USE ReallocateUtility, ONLY: Reallocate
-!   USE BaseType, ONLY: math => TypeMathOpt
-!   USE Test_Method, ONLY: OK
-!   IMPLICIT NONE
+! USE AbstractFE_Class, ONLY: AbstractFE_
+! USE AbstractMesh_Class, ONLY: AbstractMesh_
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE MSHFile_Class, ONLY: MSHFile_
+! USE QuadraturePoint_Method, ONLY: Initiate
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(FEDOF_) :: obj, geometry
+! TYPE(FEDomain_), TARGET :: dom
+! TYPE(HDF5File_) :: meshfile
+! TYPE(MSHFile_) :: SOURCE
+! TYPE(ElemShapeData_) :: shapes, geoShapes
+! TYPE(QuadraturePoint_) :: quad
+! CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+! CLASS(AbstractFE_), POINTER :: fe => NULL(), geo => NULL()
+! CHARACTER(32), PARAMETER :: fixtures(2) = &
+!                             [CHARACTER(32) :: "h1_two_triangles.msh.txt", &
+!                             "h1_two_quads.msh.txt"]
+! INTEGER(I4B), PARAMETER :: elements(2) = [101_I4B, 205_I4B]
+! REAL(DFP), PARAMETER :: t(7) = &
+!                         [0.0_DFP, 0.13_DFP, 0.27_DFP, 0.51_DFP, 0.73_DFP, &
+!                         0.89_DFP, 1.0_DFP]
+! REAL(DFP), PARAMETER :: tol = 1.0E-9_DFP
+! REAL(DFP) :: points(3, 7), xij(2, 4), coord(3), direction(2)
+! REAL(DFP) :: refCoord(3, 8)
+! REAL(DFP) :: basis(100, 7, 2), tangent(100, 7, 2), physical(2, 7, 2)
+! INTEGER(I4B) :: shape, inputMode, p, PASS, visit, iel, ii, jj, ip, ndof
+! INTEGER(I4B), PARAMETER :: pairs(2, 9) = RESHAPE( &
+!   [1, 4, 2, 4, 4, 2, 4, 1, 3, 4, 4, 3, 2, 3, 3, 2, 1, 1], [2, 9])
+! INTEGER(I4B) :: orderCase, cellOrders(2), globalOrders(205), minOrder
+! INTEGER(I4B) :: faceOrders(4), ni(2), localSize, expectedTotal, nsharedDOF
+! INTEGER(I4B) :: configuredFaces(3, 4), ncFace, nrFace
+! INTEGER(I4B) :: configuredCell(3), ntCell, usage(100), allCon(64, 2)
+! INTEGER(I4B) :: nall(2), facetCon(8, 2), nfacet(2)
+! INTEGER(I4B) :: nodes(4, 2), faces(4, 2), nv(2), nf(2), sharedNodes(2)
+! INTEGER(I4B) :: nshared, sharedFace, localFace(2), ends(2), orientation(2)
+! INTEGER(I4B) :: ncoord, con(64), ncon
+! INTEGER(I4B) :: cellOrient(3), faceOrient(3, 4), edgeOrient(12)
+! INTEGER(I4B) :: tc, tf(2), te, nrow, ncol
+! INTEGER :: unitno
 !
-!   TYPE(FEDOF_) :: fedof
-!   TYPE(FEDomain_) :: dom
-!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
-!   CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5", &
-!     baseInterpolation = "Hierarchical", &
-!     baseContinuity = "H1"
-!   TYPE(HDF5File_) :: meshfile
-!   INTEGER(I4B) :: found, want
-!   INTEGER(I4B), ALLOCATABLE :: cellOrder(:)
-!   LOGICAL(LGT) :: isok
-!
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-!   CALL meshfile%Initiate(filename, mode="READ")
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+! DO shape = 1, SIZE(fixtures)
+!   CALL SOURCE%Initiate(filename="./fixtures/"//TRIM(fixtures(shape)), &
+!                        STATUS="OLD", ACTION="READ")
+!   CALL SOURCE%OPEN()
+!   CALL SOURCE%READ()
+!   CALL meshfile%Initiate(filename="H1VariableOrder_test_1.h5", mode="NEW")
+!   CALL meshfile%SetOverwriteStat(.TRUE.)
 !   CALL meshfile%OPEN()
-!   CALL dom%Initiate(meshfile, '')
-!   meshptr => dom%GetMeshPointer()
-!   CALL Reallocate(cellOrder, meshptr%GetTotalCells())
-!
-!   CALL test1
-!   CALL test2
-!   CALL test3
-!   CALL test4
-!
+!   CALL SOURCE%Export(hdf5=meshfile, group="")
+!   CALL SOURCE%DEALLOCATE()
+!   CALL dom%Initiate(meshfile, "")
+!   mesh => dom%GetMeshPointer()
+!   DO iel = 1, 2
+!     CALL mesh%GetConnectivity_(globalElement=elements(iel), opt="V", &
+!                                ans=nodes(:, iel), tsize=nv(iel))
+!     CALL mesh%GetConnectivity_(globalElement=elements(iel), opt="F", &
+!                                ans=faces(:, iel), tsize=nf(iel))
+!   END DO
+!   nshared = 0
+!   sharedNodeLoop: DO ii = 1, nv(1)
+!     IF (.NOT. ANY(nodes(1:nv(2), 2) .EQ. nodes(ii, 1))) CYCLE sharedNodeLoop
+!     nshared = nshared + 1
+!     sharedNodes(nshared) = nodes(ii, 1)
+!   END DO sharedNodeLoop
+!   CALL OK(nshared .EQ. 2, "Shared edge has two vertices")
+!   sharedNodes = [MINVAL(sharedNodes), MAXVAL(sharedNodes)]
+!   sharedFace = 0
+!   DO ii = 1, nf(1)
+!     IF (ANY(faces(1:nf(2), 2) .EQ. faces(ii, 1))) THEN
+!       sharedFace = faces(ii, 1)
+!     END IF
+!   END DO
+!   CALL OK(sharedFace .GT. 0, "Cells have a shared facet")
+!   DO iel = 1, 2
+!     DO ii = 1, nf(iel)
+!       IF (faces(ii, iel) .EQ. sharedFace) localFace(iel) = ii
+!     END DO
+!   END DO
+!   CALL geometry%Initiate(order=1_I4B, dom=dom, baseContinuity="H1", &
+!     baseInterpolation="Hierarchical")
+!   DO inputMode = 1, 2
+!     DO orderCase = 1, SIZE(pairs, 2)
+!       cellOrders = pairs(:, orderCase)
+!       minOrder = MINVAL(cellOrders)
+!       IF (shape .EQ. 1) THEN
+!         ni = (cellOrders - 1) * (cellOrders - 2) / 2
+!       ELSE
+!         ni = (cellOrders - 1)**2
+!       END IF
+!       expectedTotal = mesh%GetTotalVertexNodes() + &
+!         (nv(1) - 1) * SUM(cellOrders - 1) + minOrder - 1 + SUM(ni)
+!       IF (inputMode .EQ. 1) THEN
+!         CALL obj%Initiate(order=cellOrders, islocal=.TRUE., dom=dom, &
+!           baseContinuity="H1", baseInterpolation="Hierarchical")
+!       ELSE
+!         globalOrders = 0
+!         globalOrders(elements) = cellOrders
+!         CALL obj%Initiate(order=globalOrders, islocal=.FALSE., dom=dom, &
+!           baseContinuity="H1", baseInterpolation="Hierarchical")
+!       END IF
+!       ndof = obj%GetTotalDOF()
+!       CALL OK(ndof .EQ. expectedTotal, "Variable-order global DOF count")
+!       usage = 0
+!       DO iel = 1, 2
+!         CALL obj%GetConnectivity_(globalElement=elements(iel), opt="All", &
+!           ans=allCon(:, iel), tsize=nall(iel))
+!         CALL obj%GetFacetConnectivity_(globalElement=elements(iel), &
+!           localFaceNumber=localFace(iel), ans=facetCon(:, iel), &
+!           tsize=nfacet(iel))
+!         CALL OK(nfacet(iel) .EQ. minOrder + 1, "Shared facet DOF count")
+!         DO ii = 1, nall(iel)
+!           usage(allCon(ii, iel)) = usage(allCon(ii, iel)) + 1
+!           CALL OK(COUNT(allCon(1:nall(iel), iel) .EQ. &
+!             allCon(ii, iel)) .EQ. 1, "Unique local DOF IDs")
+!         END DO
+!       END DO
+!       nsharedDOF = 0
+!       DO ii = 1, nfacet(1)
+!         IF (ANY(facetCon(1:nfacet(2), 2) .EQ. facetCon(ii, 1))) then
+!           nsharedDOF = nsharedDOF + 1
+!         end if
+!       END DO
+!       CALL OK(nsharedDOF .EQ. minOrder + 1, "Shared facet DOF IDs agree")
+!       CALL OK(COUNT(usage(1:ndof) .EQ. 2) .EQ. minOrder + 1, &
+!         "Only shared trace DOFs are shared")
+!       CALL OK(ALL(usage(1:ndof) .GE. 1), "No holes in numbering")
+!       DO PASS = 1, 2
+!         basis = 0.0_DFP
+!         tangent = 0.0_DFP
+!         DO visit = 1, 2
+!           iel = visit
+!           IF (PASS .EQ. 2) iel = 3 - visit
+!           CALL obj%SetFE(globalElement=elements(iel))
+!           fe => obj%GetFEPointer(globalElement=elements(iel))
+!           p = cellOrders(iel)
+!           faceOrders(1:nf(iel)) = p
+!           faceOrders(localFace(iel)) = minOrder
+!           localSize = nv(iel) + SUM(faceOrders(1:nf(iel)) - 1) + ni(iel)
+!           CALL OK(obj%GetTotalDOF(globalElement=elements(iel)) &
+!             .EQ. localSize, "Variable-order local DOF count")
+!           CALL fe%opt%GetFaceOrder(ans=configuredFaces, &
+!             nrow=nrFace, ncol=ncFace)
+!           CALL OK(ncFace .EQ. nf(iel), "Configured facet count")
+!           CALL OK(ALL(configuredFaces(1, 1:nf(iel)) .EQ. &
+!             faceOrders(1:nf(iel))), "FE preserves minimum facet orders")
+!           CALL fe%opt%GetCellOrder(ans=configuredCell, tsize=ntCell)
+!           CALL OK(configuredCell(1) .EQ. p, "FE preserves cell order")
+!           CALL geometry%SetFE(globalElement=elements(iel))
+!           geo => geometry%GetFEPointer(globalElement=elements(iel))
+!           CALL mesh%GetOrientation(globalElement=elements(iel), &
+!                                    cellOrient=cellOrient, &
+!                                    faceOrient=faceOrient, &
+!                                    edgeOrient=edgeOrient, tCellOrient=tc, &
+!                                    tFaceOrient=tf, &
+!                                    tEdgeOrient=te)
+!           orientation(iel) = faceOrient(1, localFace(iel))
+!           DO ii = 1, nv(iel)
+!             CALL mesh%GetNodeCoord(globalNode=nodes(ii, iel), &
+!                                    nodeCoord=coord, tsize=ncoord)
+!             xij(:, ii) = coord(1:2)
+!             DO jj = 1, 2
+!               IF (nodes(ii, iel) .EQ. sharedNodes(jj)) ends(jj) = ii
+!             END DO
+!           END DO
+!           CALL geo%opt%GetRefElemCoord(ans=refCoord, &
+!                                        nrow=nrow, ncol=ncol)
+!           direction = xij(:, ends(2)) - xij(:, ends(1))
+!           points(3, :) = 1.0_DFP
+!           DO ip = 1, SIZE(t)
+!             points(1:2, ip) = (1.0_DFP - t(ip)) * &
+!                               refCoord(1:2, ends(1)) + &
+!                               t(ip) * refCoord(1:2, ends(2))
+!           END DO
+!           CALL Initiate(quad, points=points)
+!           CALL geo%GetLocalElemShapeData(elemsd=geoShapes, quad=quad)
+!           CALL fe%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+!           CALL fe%GetGlobalElemShapeData(elemsd=shapes, &
+!                                          xij=xij(:, 1:nv(iel)), &
+!                                          geoelemsd=geoShapes)
+!           CALL obj%GetConnectivity_(globalElement=elements(iel), &
+!                                     opt="All", ans=con, tsize=ncon)
+!           CALL OK(ncon .EQ. shapes%nns, "Basis rows match connectivity")
+!           physical(:, :, iel) = shapes%coord(1:2, 1:SIZE(t))
+!           DO ii = 1, ncon
+!             basis(con(ii), :, iel) = shapes%N(ii, 1:SIZE(t))
+!             DO ip = 1, SIZE(t)
+!               tangent(con(ii), ip, iel) = &
+!                 DOT_PRODUCT(shapes%dNdXt(ii, 1:2, ip), direction)
+!             END DO
+!           END DO
+!         END DO
+!         CALL OK(orientation(1) * orientation(2) .EQ. -1, &
+!                 "Shared local edges have opposite orientation")
+!         CALL OK(MAXVAL(ABS(physical(:, :, 1) - physical(:, :, 2))) &
+!                 .LT. tol, "Matching physical sample points")
+!         CALL OK(MAXVAL(ABS(basis(1:ndof, :, 1) - &
+!                            basis(1:ndof, :, 2))) .LT. tol, &
+!                            "Every global basis trace agrees")
+!         CALL OK(MAXVAL(ABS(tangent(1:ndof, :, 1) - &
+!                            tangent(1:ndof, :, 2))) .LT. tol, &
+!                            "Tangential derivatives agree")
+!       END DO
+!     END DO
+!   END DO
+!   fe => NULL()
+!   geo => NULL()
+!   CALL obj%DEALLOCATE()
+!   CALL geometry%DEALLOCATE()
+!   mesh => NULL()
 !   CALL dom%DEALLOCATE()
 !   CALL meshfile%DEALLOCATE()
-!
-! CONTAINS
-!
-! !---------------------------------------------------------------------------
-! !                                                                      test1
-! !---------------------------------------------------------------------------
-!
-!   SUBROUTINE test1
-!     cellOrder = 1
-!     CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                         baseInterpolation=baseInterpolation, &
-!                         order=cellOrder, dom=dom, islocal=math%yes)
-!     found = fedof%GetTotalDOF()
-!     want = meshptr%GetTotalNodes()
-!     isok = found .EQ. want
-!     CALL OK(isok, "TotalDOF matched for order=1:")
-!   END SUBROUTINE test1
-!
-! !---------------------------------------------------------------------------
-! !                                                                      test2
-! !---------------------------------------------------------------------------
-!
-!   SUBROUTINE test2
-!     cellOrder = 2
-!     CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                         baseInterpolation=baseInterpolation, &
-!                         order=cellOrder, dom=dom, islocal=math%yes)
-!
-!     found = fedof%GetTotalDOF()
-!     want = meshptr%GetTotalNodes() + meshptr%GetTotalFaces()
-!     isok = found .EQ. want
-!     CALL OK(isok, "TotalDOF matched for order=2:")
-!   END SUBROUTINE test2
-!
-! !---------------------------------------------------------------------------
-! !                                                                      test3
-! !---------------------------------------------------------------------------
-!
-!   SUBROUTINE test3
-!     cellOrder = 3
-!     CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                         baseInterpolation=baseInterpolation, &
-!                         order=cellOrder, dom=dom, islocal=math%yes)
-!
-!     found = fedof%GetTotalDOF()
-!     want = meshptr%GetTotalNodes() &
-!       + 2 * meshptr%GetTotalFaces() &
-!       + meshptr%GetTotalCells()
-!     isok = found .EQ. want
-!     CALL OK(isok, "TotalDOF matched for order=3:")
-!   END SUBROUTINE test3
-!
-! !---------------------------------------------------------------------------
-! !                                                                      test4
-! !---------------------------------------------------------------------------
-!
-!   SUBROUTINE test4
-!     cellOrder = 4
-!     CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                         baseInterpolation=baseInterpolation, &
-!                         order=cellOrder, dom=dom, islocal=math%yes)
-!
-!     found = fedof%GetTotalDOF()
-!     want = meshptr%GetTotalNodes() &
-!       + 3 * meshptr%GetTotalFaces() &
-!       + 3 * meshptr%GetTotalCells()
-!     isok = found .EQ. want
-!     CALL OK(isok, "TotalDOF matched for order=4:")
-!   END SUBROUTINE test4
-!
-! !---------------------------------------------------------------------------
-! !
-! !---------------------------------------------------------------------------
-!
+!   OPEN (NEWUNIT=unitno, FILE="H1VariableOrder_test_1.h5", &
+!         STATUS="old", ACTION="read")
+!   CLOSE (unitno, STATUS="delete")
+! END DO
 ! END PROGRAM main
 !```
 !
-!```fortran
-! PROGRAM main
-!   USE FEDOF_Class, ONLY: FEDOF_
-!   USE FEDomain_Class, ONLY: FEDomain_
-!   USE AbstractMesh_Class, ONLY: AbstractMesh_
-!   USE HDF5File_Class, ONLY: HDF5File_
-!   USE Display_Method, ONLY: Display
-!   USE GlobalData, ONLY: DFP
-!   USE GlobalData, ONLY: I4B
-!   USE GlobalData, ONLY: LGT
-!   USE ExceptionHandler_Class, ONLY: e
-!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-!   USE ReallocateUtility, ONLY: Reallocate
-!   USE BaseType, ONLY: math => TypeMathOpt
-!   USE Test_Method, ONLY: OK
-!   IMPLICIT NONE
-!
-!   TYPE(FEDOF_) :: fedof
-!   TYPE(FEDomain_) :: dom
-!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
-!   CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5", &
-!     baseInterpolation = "Hierarchical", &
-!     baseContinuity = "H1"
-!   TYPE(HDF5File_) :: meshfile
-!   LOGICAL(LGT) :: isok
-!   INTEGER(I4B) :: found, want, order, ii, iel
-!   INTEGER(I4B), ALLOCATABLE :: cellOrder(:), aintvec(:)
-!
-!   CALL e%setQuietMode(EXCEPTION_INFORMATION, math%yes)
-!   CALL meshfile%Initiate(filename, mode="READ")
-!   CALL meshfile%OPEN()
-!   CALL dom%Initiate(meshfile, '')
-!
-!   meshptr => dom%GetMeshPointer()
-!   CALL Reallocate(cellOrder, meshptr%GetTotalCells())
-!
-!   aintvec = [14, 15, 17, 24, 18]
-!   order = 1
-!   DO iel = 1, SIZE(aintvec)
-!     isok = meshptr%IsElementPresent(aintvec(iel))
-!     IF (.NOT. isok) CYCLE
-!
-!     ii = meshptr%GetLocalElemNumber(aintvec(iel))
-!     cellOrder(ii) = order
-!   END DO
-!
-!   aintvec = [22, 23, 25, 21]
-!   order = 2
-!   DO iel = 1, SIZE(aintvec)
-!     isok = meshptr%IsElementPresent(aintvec(iel))
-!     IF (.NOT. isok) CYCLE
-!
-!     ii = meshptr%GetLocalElemNumber(aintvec(iel))
-!     cellOrder(ii) = order
-!   END DO
-!
-!   aintvec = [19, 20, 26, 16, 13]
-!   order = 3
-!   DO iel = 1, SIZE(aintvec)
-!     isok = meshptr%IsElementPresent(aintvec(iel))
-!     IF (.NOT. isok) CYCLE
-!
-!     ii = meshptr%GetLocalElemNumber(aintvec(iel))
-!     cellOrder(ii) = order
-!   END DO
-!
-!   CALL fedof%Initiate(baseContinuity=baseContinuity, &
-!                       baseInterpolation=baseInterpolation, &
-!                       order=cellOrder, dom=dom, islocal=math%yes)
-!   found = fedof%GetTotalDOF()
-!   want = 39
-!   isok = found == want
-!   CALL OK(isok, "Total DOF: ")
-!   IF (.NOT. isok) CALL Display([found, want], "found, want: ")
-!
-!   CALL dom%DEALLOCATE()
-!   CALL meshfile%DEALLOCATE()
-! END PROGRAM main
-!```
-!
-! See also: [[obj_Initiate1]], [[obj_Initiate4]]
+! See also: [[obj_SetFE]], [[obj_GetConnectivity]], [[obj_Initiate1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, order, dom, baseContinuity, &
@@ -4028,6 +4026,11 @@ END INTERFACE
 ! Elements of one topology share that object: consume its shape data
 ! before calling SetFE for another element of that topology.
 !
+! For hierarchical H1 triangles and quadrangles, pass cell and face orders
+! without the scalar-order shortcut. Shared-face orders remain the minimum
+! of neighboring cell orders, including when the cell has higher order.
+! Variable-order Lagrange constraints are not provided by this path.
+!
 ! For uniform H1 triangles and quadrangles, connectivity stays in canonical
 ! global entity order. Orientation is applied by the basis evaluation:
 ! Lagrange permutes edge-interior rows during physical mapping, whereas
@@ -4038,6 +4041,7 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-30: Verify reversed-edge H1 traces through the shared FE.
+!   - 2026-10-30: Preserve per-face orders for hierarchical H1 in 2D.
 !
 ! Examples
 !
