@@ -291,10 +291,20 @@ IF (indx(1) .EQ. 1) THEN
   indx(1) = 3
 END IF
 
-CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
-                             faceOrder=faceOrder, edgeOrder=edgeOrder, &
-                             errCheck=math%yes, tcell=indx(1), &
-                             tface=indx(2), tedge=indx(3))
+IF (obj%baseContinuity .EQ. "H1" .AND. &
+    obj%baseInterpolation .EQ. "HIER" .AND. &
+    obj%mesh%GetXidimension() .EQ. 2) THEN
+  ! Preserve entity orders: the scalar shortcut makes triangles uniform.
+  CALL obj%fe(ii)%ptr%SetOrder(cellOrder=cellOrder, &
+                               faceOrder=faceOrder, edgeOrder=edgeOrder, &
+                               errCheck=math%yes, tcell=indx(1), &
+                               tface=indx(2), tedge=indx(3))
+ELSE
+  CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
+                               faceOrder=faceOrder, edgeOrder=edgeOrder, &
+                               errCheck=math%yes, tcell=indx(1), &
+                               tface=indx(2), tedge=indx(3))
+END IF
 
 CALL obj%fe(ii)%ptr%SetOrientation(cellOrient=cellOrient, &
                                    faceOrient=faceOrient, &
