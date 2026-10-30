@@ -18,24 +18,24 @@
 
 SUBMODULE(TDGAlgorithm2_Class) Methods
 USE ApproxUtility, ONLY: OPERATOR(.approxeq.)
-USE InputUtility, ONLY: Input
-USE MassMatrix_Method, ONLY: MassMatrix_
-USE ProductUtility, ONLY: OuterProd_
 USE BaseType, ONLY: math => TypeMathOpt
-USE Lapack_Method, ONLY: GetInvMat
-USE FEFactoryUtility, ONLY: OneDimFEFactory
-USE Display_Method, ONLY: Display
 USE BaseType, ONLY: elemOpt => TypeElemNameOpt
 USE BaseType, ONLY: quadOpt => TypeQuadratureOpt
-USE QuadraturePoint_Method, ONLY: QuadPoint_Initiate => Initiate
-USE QuadraturePoint_Method, ONLY: Quad_Size => Size
-USE QuadraturePoint_Method, ONLY: Quad_Display => Display
+USE Display_Method, ONLY: Display
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
 USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
 USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
 USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
 USE ElemshapeData_Method, ONLY: Elemsd_Initiate => Initiate
 USE ElemshapeData_Method, ONLY: OrthogonalElemShapeData
+USE FEFactoryUtility, ONLY: OneDimFEFactory
+USE InputUtility, ONLY: Input
+USE Lapack_Method, ONLY: GetInvMat
+USE MassMatrix_Method, ONLY: MassMatrix_
+USE ProductUtility, ONLY: OuterProd_
+USE QuadraturePoint_Method, ONLY: QuadPoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: Quad_Size => SIZE
+USE QuadraturePoint_Method, ONLY: Quad_Display => Display
 IMPLICIT NONE
 CONTAINS
 
@@ -275,7 +275,7 @@ SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
 
   obj%bt(1:nrow, 1:ncol) = obj%alpha * obj%bt(1:nrow, 1:ncol)
 
-  IF (obj%alpha .EQ. math%one) RETURN
+  IF (obj%alpha .APPROXEQ. math%one) RETURN
 
   ! BT for vst
   tmpBt(1:nrow, 1:ncol) = obj%bt(1:nrow, 1:ncol)
@@ -306,15 +306,16 @@ SUBROUTINE GetBt(obj, elemsd, facetElemsd, fe)
     CALL Elemsd_Set(obj=linearElemsd, val=subsetRefTime, &
                     N=linearElemsd%N, dNdXi=linearElemsd%dNdXi)
     quadPoints(1, 1:subsetNipt) = linearElemsd%coord(1, 1:subsetNipt)
-    ! ja = linearElemsd%jacobian(1, 1, 1)
     CALL QuadPoint_Initiate(obj=subsetQuad, &
                             points=quadPoints(:, 1:subsetNipt))
 
     CALL fe%GetLocalElemShapeData(subsetElemsd, subsetQuad)
 
+    ! linearElemsd%js(1) = (1 + xi_ii) / 2, Jacobian of the map
+    ! from [-1, 1] to [-1, xi_ii]
     DO jj = 1, nrow
       DO kk = 1, subsetNipt
-        scale = subsetElemsd%ws(kk) * elemsd%js(1) * math%half
+        scale = subsetElemsd%ws(kk) * elemsd%js(1) * linearElemsd%js(1)
         obj%bt(jj, ii) = obj%bt(jj, ii) + &
                          scale * subsetElemsd%N(jj, kk)
       END DO
@@ -343,21 +344,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-obj%initialGuess_zero = obj%initialGuess.approxeq.myzero
-obj%jumpDis_zero = obj%jumpDis.approxeq.myzero
-obj%jumpVel_zero = obj%jumpVel.approxeq.myzero
-obj%dis_zero = obj%dis.approxeq.myzero
-obj%vel_zero = obj%vel.approxeq.myzero
-obj%acc_zero = obj%acc.approxeq.myzero
-obj%rhs_m_u1_zero = obj%rhs_m_u1.approxeq.myzero
-obj%rhs_m_v1_zero = obj%rhs_m_v1.approxeq.myzero
-obj%rhs_m_a1_zero = obj%rhs_m_a1.approxeq.myzero
-obj%rhs_c_u1_zero = obj%rhs_c_u1.approxeq.myzero
-obj%rhs_c_v1_zero = obj%rhs_c_v1.approxeq.myzero
-obj%rhs_c_a1_zero = obj%rhs_c_a1.approxeq.myzero
-obj%rhs_k_u1_zero = obj%rhs_k_u1.approxeq.myzero
-obj%rhs_k_v1_zero = obj%rhs_k_v1.approxeq.myzero
-obj%rhs_k_a1_zero = obj%rhs_k_a1.approxeq.myzero
+obj%initialGuess_zero = obj%initialGuess .approxeq. myzero
+obj%jumpDis_zero = obj%jumpDis .approxeq. myzero
+obj%jumpVel_zero = obj%jumpVel .approxeq. myzero
+obj%dis_zero = obj%dis .approxeq. myzero
+obj%vel_zero = obj%vel .approxeq. myzero
+obj%acc_zero = obj%acc .approxeq. myzero
+obj%rhs_m_u1_zero = obj%rhs_m_u1 .approxeq. myzero
+obj%rhs_m_v1_zero = obj%rhs_m_v1 .approxeq. myzero
+obj%rhs_m_a1_zero = obj%rhs_m_a1 .approxeq. myzero
+obj%rhs_c_u1_zero = obj%rhs_c_u1 .approxeq. myzero
+obj%rhs_c_v1_zero = obj%rhs_c_v1 .approxeq. myzero
+obj%rhs_c_a1_zero = obj%rhs_c_a1 .approxeq. myzero
+obj%rhs_k_u1_zero = obj%rhs_k_u1 .approxeq. myzero
+obj%rhs_k_v1_zero = obj%rhs_k_v1 .approxeq. myzero
+obj%rhs_k_a1_zero = obj%rhs_k_a1 .approxeq. myzero
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -479,57 +480,66 @@ nrow = obj%nrow
 ncol = obj%ncol
 
 CALL Display(obj%initialGuess(1:nrow + 3), "initialGuess: ", &
-             unitno=unitno, advance="NO")
+             unitno=unitno, ADVANCE="NO")
 CALL Display(obj%initialGuess_zero(1:nrow + 3), "initialGuess_zero: ", &
              unitno=unitno)
 
 CALL Display(obj%jumpDis(1:nrow + 3), "jumpDis: ", unitno=unitno, &
-             advance="NO")
+             ADVANCE="NO")
 CALL Display(obj%jumpDis_zero(1:nrow + 3), "jumpDis_zero: ", unitno=unitno)
 
 CALL Display(obj%jumpVel(1:nrow + 3), "jumpVel: ", unitno=unitno, &
-             advance="NO")
+             ADVANCE="NO")
 CALL Display(obj%jumpVel_zero(1:nrow + 3), "jumpVel_zero: ", unitno=unitno)
 
 CALL Display(obj%dis(1:nrow + 3), "dis: ", unitno=unitno, &
-             advance="NO")
+             ADVANCE="NO")
 CALL Display(obj%dis_zero(1:nrow + 3), "dis_zero: ", unitno=unitno)
 
-CALL Display(obj%vel(1:nrow + 3), "vel: ", unitno=unitno, advance="NO")
+CALL Display(obj%vel(1:nrow + 3), "vel: ", unitno=unitno, ADVANCE="NO")
 CALL Display(obj%vel_zero(1:nrow + 3), "vel_zero: ", unitno=unitno)
 
-CALL Display(obj%acc(1:nrow + 3), "acc: ", unitno=unitno, advance="NO")
+CALL Display(obj%acc(1:nrow + 3), "acc: ", unitno=unitno, ADVANCE="NO")
 CALL Display(obj%acc_zero(1:nrow + 3), "acc_zero: ", unitno=unitno)
 
 CALL Display(obj%mt(1:nrow, 1:ncol), "mt: ", unitno=unitno)
 CALL Display(obj%ct(1:nrow, 1:ncol), "ct: ", unitno=unitno)
 CALL Display(obj%kt(1:nrow, 1:ncol), "kt: ", unitno=unitno)
 
-CALL Display(obj%rhs_m_u1(1:nrow), "rhs_m_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_u1(1:nrow), "rhs_m_u1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_m_u1_zero(1:nrow), "rhs_m_u1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_m_v1(1:nrow), "rhs_m_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_v1(1:nrow), "rhs_m_v1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_m_v1_zero(1:nrow), "rhs_m_v1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_m_a1(1:nrow), "rhs_m_a1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_m_a1(1:nrow), "rhs_m_a1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_m_a1_zero(1:nrow), "rhs_m_a1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_c_u1(1:nrow), "rhs_c_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_c_u1(1:nrow), "rhs_c_u1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_c_u1_zero(1:nrow), "rhs_c_u1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_c_v1(1:nrow), "rhs_c_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_c_v1(1:nrow), "rhs_c_v1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_c_v1_zero(1:nrow), "rhs_c_v1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_c_a1(1:nrow), "rhs_c_a1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_c_a1(1:nrow), "rhs_c_a1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_c_a1_zero(1:nrow), "rhs_c_a1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_k_u1(1:nrow), "rhs_k_u1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_u1(1:nrow), "rhs_k_u1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_k_u1_zero(1:nrow), "rhs_k_u1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_k_v1(1:nrow), "rhs_k_v1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_v1(1:nrow), "rhs_k_v1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_k_v1_zero(1:nrow), "rhs_k_v1_zero: ", unitno=unitno)
 
-CALL Display(obj%rhs_k_a1(1:nrow), "rhs_k_a1: ", unitno=unitno, advance="NO")
+CALL Display(obj%rhs_k_a1(1:nrow), "rhs_k_a1: ", unitno=unitno, &
+             ADVANCE="NO")
 CALL Display(obj%rhs_k_a1_zero(1:nrow), "rhs_k_a1_zero: ", unitno=unitno)
 
 #ifdef DEBUG_VER
