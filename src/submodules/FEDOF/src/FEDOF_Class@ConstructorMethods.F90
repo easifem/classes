@@ -291,8 +291,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrdersFromCellOrder()"
 #endif
 
 ! Internal variables
-INTEGER(I4B) :: ent(4), tsize, iel, tedgedof, tfacedof, tcelldof, ii, jj, &
-                tdof, myorder
+INTEGER(I4B) :: ent(4), tsize, iel, ii, jj, myorder
 LOGICAL(LGT), ALLOCATABLE :: foundEdges(:), foundFaces(:), foundCells(:)
 TYPE(ElemData_), POINTER :: elemdata
 LOGICAL(LGT) :: isok
@@ -301,20 +300,6 @@ LOGICAL(LGT) :: isok
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
-
-CALL Reallocate(foundEdges, obj%tEdges)
-CALL Reallocate(foundFaces, obj%tFaces)
-CALL Reallocate(foundCells, obj%tCells)
-
-tedgedof = 0
-tfacedof = 0
-tcelldof = 0
-
-tdof = obj%tNodes
-
-obj%edgeIA(1) = 1
-obj%faceIA(1) = 1
-obj%cellIA(1) = 1
 
 ! Check it all valid ElemDataPointer are associated
 #ifdef DEBUG_VER
@@ -331,6 +316,20 @@ loop1: DO iel = 1, obj%tCells
 
 END DO loop1
 #endif
+
+CALL Reallocate(foundEdges, obj%tEdges)
+CALL Reallocate(foundFaces, obj%tFaces)
+CALL Reallocate(foundCells, obj%tCells)
+
+foundEdges = math%no
+foundFaces = math%no
+foundCells = math%no
+
+! Store counts in slots 2:n+1 before building the cumulative offsets.
+! Entities not incident to an active cell have zero interior DOFs.
+obj%edgeIA = 0
+obj%faceIA = 0
+obj%cellIA = 0
 
 cellLoop: DO iel = 1, obj%tCells
 
@@ -355,9 +354,7 @@ cellLoop: DO iel = 1, obj%tCells
                                        baseInterpolation= &
                                        obj%baseInterpolation)
 
-      tdof = tdof + tsize
-      obj%edgeIA(jj + 1) = obj%edgeIA(jj) + tsize
-      tedgedof = tedgedof + tsize
+      obj%edgeIA(jj + 1) = tsize
 
       foundEdges(jj) = math%yes
     END IF
@@ -378,14 +375,10 @@ cellLoop: DO iel = 1, obj%tCells
 
       tsize = ElemData_GetTotalFaceDOF(obj=elemdata, ii=ii, order=myorder, &
                                        baseContinuity=obj%baseContinuity, &
-                                       baseInterpolation= &
-                                       obj%baseInterpolation)
+                                       baseInterpolation=obj%baseInterpolation)
 
-      tdof = tdof + tsize
       foundFaces(jj) = math%yes
-
-      obj%faceIA(jj + 1) = obj%faceIA(jj) + tsize
-      tfacedof = tfacedof + tsize
+      obj%faceIA(jj + 1) = tsize
 
     END IF
 
@@ -400,35 +393,32 @@ cellLoop: DO iel = 1, obj%tCells
     myorder = INT(obj%cellOrder(jj), KIND=INT8)
     tsize = ElemData_GetTotalCellDOF(obj=elemdata, order=myorder, &
                                      baseContinuity=obj%baseContinuity, &
-                                     baseInterpolation= &
-                                     obj%baseInterpolation)
-    tdof = tdof + tsize
+                                     baseInterpolation=obj%baseInterpolation)
     foundCells(jj) = math%yes
-
-    obj%cellIA(jj + 1) = obj%cellIA(jj) + tsize
-
-    tcelldof = tcelldof + tsize
+    obj%cellIA(jj + 1) = tsize
 
   END IF
 
 END DO cellLoop
 
-DO CONCURRENT(ii=1:obj%tEdges + 1)
-  obj%edgeIA(ii) = obj%edgeIA(ii) + obj%tNodes
+! Number entities in ID order, independently of cell traversal order.
+! Each array ends with the first DOF of the following entity block.
+obj%edgeIA(1) = obj%tNodes + 1
+DO ii = 1, obj%tEdges
+  obj%edgeIA(ii + 1) = obj%edgeIA(ii) + obj%edgeIA(ii + 1)
 END DO
 
-jj = obj%tNodes + tedgedof
-
-DO CONCURRENT(ii=1:obj%tFaces + 1)
-  obj%faceIA(ii) = obj%faceIA(ii) + jj
+obj%faceIA(1) = obj%edgeIA(obj%tEdges + 1)
+DO ii = 1, obj%tFaces
+  obj%faceIA(ii + 1) = obj%faceIA(ii) + obj%faceIA(ii + 1)
 END DO
 
-jj = jj + tfacedof
-DO CONCURRENT(ii=1:obj%tCells + 1)
-  obj%cellIA(ii) = obj%cellIA(ii) + jj
+obj%cellIA(1) = obj%faceIA(obj%tFaces + 1)
+DO ii = 1, obj%tCells
+  obj%cellIA(ii + 1) = obj%cellIA(ii) + obj%cellIA(ii + 1)
 END DO
 
-obj%tdof = tdof
+obj%tdof = obj%cellIA(obj%tCells + 1) - 1
 
 ! The DOF layout has changed, so the cached values are stale
 obj%isMaxConSet = math%no
