@@ -5,7 +5,9 @@ project_download: https://github.com/easifem/classes
 project_github: https://github.com/easifem/classes
 project_website: https://www.easifem.com
 license: gfdl
-src_dir: ../src/modules/BasisOpt/
+src_dir: ../src/modules/H1FE/
+         ../src/modules/AbstractOneDimFE/
+         ../src/modules/BasisOpt/
          ../src/modules/AbstractFE/
          ../src/modules/AbstractField/
          ../src/modules/AbstractNodeField/
