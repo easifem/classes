@@ -47,7 +47,7 @@ SUBROUTINE AssertError3(a, b, myName, msg)
   CHARACTER(*), INTENT(IN) :: myName
   CHARACTER(*), INTENT(IN) :: msg
 
-  IF (a > b) THEN
+  IF (a .GT. b) THEN
     CALL e%RaiseError(modName//'::'//myName//" - "// &
                       '[INTERNAL ERROR] :: a > b error, msg: '//msg// &
                       ", a="//ToString(a)//", b = "//ToString(b))
