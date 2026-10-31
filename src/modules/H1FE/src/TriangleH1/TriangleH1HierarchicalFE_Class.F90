@@ -32,18 +32,12 @@ USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
 USE TriangleH1FE_Class, ONLY: TriangleH1FE_
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: TriangleH1HierarchicalFE_
 PUBLIC :: TriangleH1HierarchicalFEPointer_
 PUBLIC :: TriangleH1HierarchicalFEPointer
-
-PUBLIC :: FiniteElementDeallocate
-
-CHARACTER(*), PARAMETER :: modName = "TriangleH1HierarchicalFE_Class"
 
 !----------------------------------------------------------------------------
 !                                                  TriangleH1HierarchicalFE_
@@ -224,104 +218,6 @@ INTERFACE TriangleH1HierarchicalFEPointer
     !! Allocated finite element target returned to the caller.
   END FUNCTION obj_TriangleH1HierarchicalFEPointer2
 END INTERFACE TriangleH1HierarchicalFEPointer
-
-!----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE TriangleH1HierarchicalFE_Class, ONLY: FE_ => TriangleH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE TriangleH1HierarchicalFE_Class, ONLY: &
-!   Wrapper_ => TriangleH1HierarchicalFEPointer_
-! USE TriangleH1HierarchicalFE_Class, ONLY: &
-!   ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(TriangleH1HierarchicalFE_), ALLOCATABLE :: obj(:)
-    !! Allocatable finite element value vector to reset and deallocate.
-  END SUBROUTINE Deallocate_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-09
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE TriangleH1HierarchicalFE_Class, ONLY: FE_ => TriangleH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE TriangleH1HierarchicalFE_Class, ONLY: &
-!   Wrapper_ => TriangleH1HierarchicalFEPointer_
-! USE TriangleH1HierarchicalFE_Class, ONLY: &
-!   ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(TriangleH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
-    !! Allocatable pointer-wrapper vector; target allocations are not freed.
-  END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                           GetLocalElemShapeData@GetMethods

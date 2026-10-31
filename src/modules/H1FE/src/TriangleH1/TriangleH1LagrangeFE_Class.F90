@@ -32,18 +32,12 @@ USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
 USE TriangleH1FE_Class, ONLY: TriangleH1FE_
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: TriangleH1LagrangeFE_
 PUBLIC :: TriangleH1LagrangeFEPointer_
 PUBLIC :: TriangleH1LagrangeFEPointer
-
-PUBLIC :: FiniteElementDeallocate
-
-CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class"
 
 !----------------------------------------------------------------------------
 ! TriangleH1LagrangeFE_
@@ -80,6 +74,11 @@ CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class"
 !
 TYPE, EXTENDS(TriangleH1FE_) :: TriangleH1LagrangeFE_
 CONTAINS
+  ! Deferred methods from TriangleH1FE_
+  !@Methods
+
+  ! Deferred methods from AbstractFE_
+  !@Methods
   PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Evaluate reference cell shape data.
@@ -97,7 +96,7 @@ CONTAINS
 END TYPE TriangleH1LagrangeFE_
 
 !----------------------------------------------------------------------------
-! TriangleH1LagrangeFEPointer_
+!                                               TriangleH1LagrangeFEPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -113,7 +112,7 @@ TYPE :: TriangleH1LagrangeFEPointer_
 END TYPE TriangleH1LagrangeFEPointer_
 
 !----------------------------------------------------------------------------
-! TriangleH1LagrangeFEPointer@Methods
+!                                        TriangleH1LagrangeFEPointer@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -156,171 +155,7 @@ INTERFACE TriangleH1LagrangeFEPointer
 END INTERFACE TriangleH1LagrangeFEPointer
 
 !----------------------------------------------------------------------------
-!                                                       LagrangeFE@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Allocate and initialize a finite element target
-!
-! Allocates a new scalar lagrange finite element and calls its inherited
-! Initiate binding with the supplied configuration. Sets topology to Triangle,
-! continuity to H1 and the basis family to Lagrange. Forwarded quadrature
-! settings use accuracy-order mode. The caller owns the allocation and must
-! reset and deallocate it when finished.
-!
-! Returns:
-! ans : TYPE(TriangleH1LagrangeFE_) - Allocated finite element target returned
-! to the caller.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE GlobalData, ONLY: I4B
-! USE TriangleH1LagrangeFE_Class, ONLY: FE_ => TriangleH1LagrangeFE_
-! USE BaseType, ONLY: TypeInterpolationOpt
-! USE Test_Method, ONLY: OK
-! USE TriangleH1LagrangeFE_Class, ONLY: NewFE => TriangleH1LagrangeFEPointer
-! IMPLICIT NONE
-! TYPE(FE_), POINTER :: ptr
-!
-! ptr => NewFE(order=2_I4B, nsd=2_I4B, &
-!   ipType=TypeInterpolationOpt%Equidistance, quadratureOrder=[6_I4B])
-! CALL OK(ASSOCIATED(ptr), "Configured constructor allocates a target")
-! CALL OK(ptr%isInit, "Target is initialized")
-! CALL OK(ptr%opt%GetTotalDOF() == 6_I4B, &
-!   "Constructor establishes quadratic DOFs")
-! CALL ptr%DEALLOCATE()
-! DEALLOCATE(ptr)
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE TriangleH1LagrangeFEPointer
-  MODULE FUNCTION obj_TriangleH1LagrangeFEPointer2( &
-    order, nsd, ipType, basisType, cellOrient, faceOrient, quadratureType, &
-    quadratureOrder) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Polynomial degree; scalar or directional input as declared.
-    INTEGER(I4B), INTENT(IN) :: nsd
-    !! Physical spatial dimension of the finite element.
-    INTEGER(I4B), INTENT(IN) :: ipType
-    !! Interpolation point type code; use TypeInterpolationOpt constants.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Polynomial basis type code(s); use TypePolynomialOpt constants.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
-    !! Cell orientation data; conventions depend on element topology.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! Facet orientations, normally three rows per facet.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    !! Quadrature rule type codes by reference direction.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
-    !! Quadrature accuracy orders by reference direction.
-    TYPE(TriangleH1LagrangeFE_), POINTER :: ans
-    !! Allocated finite element target returned to the caller.
-  END FUNCTION obj_TriangleH1LagrangeFEPointer2
-END INTERFACE TriangleH1LagrangeFEPointer
-
-!----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE TriangleH1LagrangeFE_Class, ONLY: FE_ => TriangleH1LagrangeFE_
-! USE Test_Method, ONLY: OK
-! USE TriangleH1LagrangeFE_Class, ONLY: &
-!   Wrapper_ => TriangleH1LagrangeFEPointer_
-! USE TriangleH1LagrangeFE_Class, ONLY: ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(TriangleH1LagrangeFE_), ALLOCATABLE :: obj(:)
-    !! Allocatable finite element value vector to reset and deallocate.
-  END SUBROUTINE Deallocate_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-09
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE TriangleH1LagrangeFE_Class, ONLY: FE_ => TriangleH1LagrangeFE_
-! USE Test_Method, ONLY: OK
-! USE TriangleH1LagrangeFE_Class, ONLY: &
-!   Wrapper_ => TriangleH1LagrangeFEPointer_
-! USE TriangleH1LagrangeFE_Class, ONLY: ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(TriangleH1LagrangeFEPointer_), ALLOCATABLE :: obj(:)
-    !! Allocatable pointer-wrapper vector; target allocations are not freed.
-  END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                              GetLocalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -414,7 +249,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       GetLocalFacetElemShapeData@GetMethods
+!                                         GetLocalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -514,7 +349,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                             GetGlobalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -610,7 +445,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      GetGlobalFacetElemShapeData@GetMethods
+!                                        GetGlobalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -713,7 +548,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetOrder@SetMethods
+!                                                            SetOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

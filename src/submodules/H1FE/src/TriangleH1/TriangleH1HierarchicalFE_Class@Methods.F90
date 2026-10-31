@@ -17,16 +17,22 @@
 !
 
 SUBMODULE(TriangleH1HierarchicalFE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
-USE InputUtility, ONLY: Input
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
 USE Display_Method, ONLY: ToString
 USE Display_Method, ONLY: Display
-USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
-                                        InterpolationPoint_Triangle_, &
-                                        GetHierarchicalDOF_Triangle
-
+USE InputUtility, ONLY: Input
+USE TriangleInterpolationUtility, ONLY: GetHierarchicalDOF_Triangle
+USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
+USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "TriangleH1HierarchicalFE_Class@Methods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -51,37 +57,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_TriangleH1HierarchicalFEPointer1
-
-!----------------------------------------------------------------------------
-!                                             TriangleH1HierarchicalFEPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_TriangleH1HierarchicalFEPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_TriangleH1HierarchicalFEPointer2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ALLOCATE (ans)
-
-CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%Triangle, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Hierarchical", fetype=TypeFEVariableOpt%scalar, &
-  cellOrder=cellOrder, faceOrder=faceOrder, cellOrient=cellOrient, &
-  faceOrient=faceOrient, tCell=3_I4B, tFace=3_I4B, &
-  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder, quadratureType=quadratureType)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_TriangleH1HierarchicalFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                                    SetOrder
@@ -149,7 +124,6 @@ CALL obj%opt%SetTotalDOF(tdof)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
@@ -196,7 +170,6 @@ CALL obj%opt%TriangleH1HieFE_GetLocalFacetElemShapeData( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetLocalFacetElemShapeData
 
 !----------------------------------------------------------------------------

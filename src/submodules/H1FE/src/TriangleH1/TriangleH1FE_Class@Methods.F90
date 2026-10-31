@@ -74,8 +74,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%opt%Triangle_GetFacetQuadraturePoints( &
-  quad=quad, facetQuad=facetQuad, &
-  localFaceNumber=localFaceNumber)
+  quad=quad, facetQuad=facetQuad, localFaceNumber=localFaceNumber)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -176,6 +175,8 @@ MODULE PROCEDURE obj_GetTotalInterpolationPoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalInterpolationPoints()"
 #endif
+CHARACTER(2), PARAMETER :: baseContinuity = "H1"
+CHARACTER(4), PARAMETER :: baseInterpolation = "DEFA"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -183,12 +184,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 IF (ipType(1) .EQ. interpolOpt%Center) THEN
-  ans = 1_I4B
+  ans = math%one_i
 ELSE
   ans = GetTotalDOF_Triangle( &
-        order=order(1), &
-        baseContinuity="H1", &
-        baseInterpolation="")
+        order=order(1), baseContinuity=baseContinuity, &
+        baseInterpolation=baseInterpolation)
 END IF
 
 #ifdef DEBUG_VER
@@ -205,7 +205,6 @@ MODULE PROCEDURE obj_GetInterpolationPoints
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
 #endif
-
 REAL(DFP) :: alpha0, beta0, lambda0
 
 #ifdef DEBUG_VER
@@ -213,20 +212,25 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-alpha0 = 0.0_DFP
-beta0 = 0.0_DFP
-lambda0 = 0.5_DFP
+! If order is zero then return coordinate of centroid.
+IF (order(1) .EQ. 0) THEN
+  nrow = SIZE(xij, 1)
+  ncol = 1
+  ans(1:nrow, 1) = SUM(xij, DIM=2) / REAL(SIZE(xij, 2), KIND=DFP)
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - [END] ')
+#endif
+  RETURN
+END IF
+
+alpha0 = math%zero
+beta0 = math%zero
+lambda0 = math%zero
 IF (PRESENT(alpha)) alpha0 = alpha(1)
 IF (PRESENT(beta)) beta0 = beta(1)
 IF (PRESENT(lambda)) lambda0 = lambda(1)
 
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Calling InterpolationPoint_Triangle_()')
-#endif
-
-! order, ipType, ans, nrow, ncol, layout, xij, alpha, beta, lambda)
 CALL InterpolationPoint_Triangle_( &
   order=order(1), ipType=ipType(1), ans=ans, nrow=nrow, ncol=ncol, &
   layout="VEFC", xij=xij, alpha=alpha0, beta=beta0, lambda=lambda0)
@@ -258,7 +262,7 @@ CALL obj%opt%SetFaceOrientation(faceOrient=faceOrient, tFace=tFace, &
                                 errCheck=errCheck)
 
 CALL obj%opt%SetEdgeOrientation(edgeOrient=edgeOrient, tEdge=tEdge, &
-                                errCheck=.FALSE.)
+                                errCheck=math%no)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -489,7 +493,7 @@ faceCon = FacetConnectivity_Triangle()
 ! xijLine contains the x1 and x2 coordinates of the line (end points)
 xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
                                        faceCon(1:tSpaceVertices, &
-                                       localFaceNumber))
+                                               localFaceNumber))
 
 ! Now we form space-time vertex values of func
 DO jj = 1, tTimeVertices
@@ -651,7 +655,7 @@ faceCon = FacetConnectivity_Triangle()
 ! xijLine contains the x1 and x2 coordinates of the line (end points)
 xijLine(1:nsd, 1:tSpaceVertices) = xij(1:nsd, &
                                        faceCon(1:tSpaceVertices, &
-                                       localFaceNumber))
+                                               localFaceNumber))
 
 ! Now we form space-time vertex values of func
 ans(1:tTimeVertices, 1:tSpaceVertices) = math%one

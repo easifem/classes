@@ -17,14 +17,19 @@
 !
 
 SUBMODULE(TriangleH1LagrangeFE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
-USE InputUtility, ONLY: Input
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
 USE Display_Method, ONLY: ToString
-USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
-                                        InterpolationPoint_Triangle_
-
+USE InputUtility, ONLY: Input
+USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
+USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class@Methods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -51,38 +56,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_TriangleH1LagrangeFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                 TriangleH1LagrangeFEPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_TriangleH1LagrangeFEPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_TriangleH1LagrangeFEPointer2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ALLOCATE (ans)
-
-CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%Triangle, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Lagrange", ipType=ipType, basisType=basisType, &
-  fetype=TypeFEVariableOpt%scalar, order=order, cellOrient=cellOrient, &
-  tcell=3_I4B, faceOrient=faceOrient, tFace=3_I4B, &
-  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder, quadratureType=quadratureType)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_TriangleH1LagrangeFEPointer2
-
-!----------------------------------------------------------------------------
-!                                                                    SetOrder
+!                                                                   SetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOrder
@@ -106,9 +80,9 @@ CALL AssertError1(isok, myName, &
 
 IF (PRESENT(order)) THEN
   order0 = order
-ELSEIF (PRESENT(anisoOrder)) THEN
+ELSE IF (PRESENT(anisoOrder)) THEN
   order0 = anisoOrder(1)
-ELSEIF (PRESENT(cellOrder)) THEN
+ELSE IF (PRESENT(cellOrder)) THEN
   order0 = cellOrder(1)
 END IF
 
