@@ -53,6 +53,13 @@ PUBLIC :: QuadrangleH1DGHierarchicalFEPointer
 ! vector helpers currently lack implementations.
 !
 TYPE, EXTENDS(QuadrangleH1HierarchicalFE_) :: QuadrangleH1DGHierarchicalFE_
+CONTAINS
+  ! Deferred methods from TriangleH1DGFE_
+  !@Methods
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
+  ! Deferred methods from AbstractFE_
+  !@Methods
 END TYPE QuadrangleH1DGHierarchicalFE_
 
 !----------------------------------------------------------------------------
