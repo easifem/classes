@@ -33,9 +33,7 @@ USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: LGT
 USE UserFunction_Class, ONLY: UserFunction_
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: TriangleH1FE_
@@ -95,38 +93,40 @@ PUBLIC :: TriangleH1FEPointer_
 !
 TYPE, EXTENDS(AbstractFE_) :: TriangleH1FE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Construct cell quadrature.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
-    obj_GetFacetQuadraturePoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
   !! Construct quadrature on one local facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set quadrature accuracy.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set quadrature rule types.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInterpolationPoints => &
-    obj_GetTotalInterpolationPoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
   !! Count interpolation points.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
   !! Generate physical interpolation coordinates.
-  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => &
+    obj_FixOrientOfNptrs
   !! Reorder connectivity according to facet orientations.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrientation => &
+    obj_SetOrientation
   !! Set topology-specific orientation data.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
   !! Project the unit constant on a spatial facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromSTFunc => obj_GetFacetDOFValueFromSTFunc
   !! Project a user function on a spatial facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetSTFacetDOFValueFromSTFunc => obj_GetSTFacetDOFValueFromSTFunc
   !! Project coefficients on a space-time facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetSTFacetDOFValueFromConstant => obj_GetSTFacetDOFValueFromConstant
   !! Project coefficients on a space-time facet.
 END TYPE TriangleH1FE_
