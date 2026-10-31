@@ -52,10 +52,11 @@ PUBLIC :: TriangleH1DGLagrangeFEPointer
 ! Most of the methods are Inherited from [[TriangleH1LagrangeFE_]]
 !
 TYPE, EXTENDS(TriangleH1LagrangeFE_) :: TriangleH1DGLagrangeFE_
-  ! CONTAINS
+CONTAINS
   ! Deferred methods from TriangleH1DGFE_
   !@Methods
-
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   ! Deferred methods from AbstractFE_
   !@Methods
 END TYPE TriangleH1DGLagrangeFE_

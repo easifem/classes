@@ -111,12 +111,6 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
   !! Generate physical interpolation coordinates.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => &
-    obj_FixOrientOfNptrs
-  !! Reorder connectivity according to facet orientations.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrientation => &
-    obj_SetOrientation
-  !! Set topology-specific orientation data.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
   !! Project the unit constant on a spatial facet.
@@ -129,6 +123,12 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetSTFacetDOFValueFromConstant => obj_GetSTFacetDOFValueFromConstant
   !! Project coefficients on a space-time facet.
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => &
+    obj_FixOrientOfNptrs
+  !! Reorder connectivity according to facet orientations.
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => &
+    obj_SetOrientation
+  !! Set topology-specific orientation data.
 END TYPE TriangleH1FE_
 
 !----------------------------------------------------------------------------

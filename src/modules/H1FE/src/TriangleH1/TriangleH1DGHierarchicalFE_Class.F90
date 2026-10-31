@@ -52,10 +52,11 @@ PUBLIC :: TriangleH1DGHierarchicalFEPointer
 ! Most of the methods are Inherited from [[TriangleH1HierarchicalFE_]]
 !
 TYPE, EXTENDS(TriangleH1HierarchicalFE_) :: TriangleH1DGHierarchicalFE_
-  ! CONTAINS
+CONTAINS
   ! Deferred methods from TriangleH1DGFE_
   !@Methods
-
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   ! Deferred methods from AbstractFE_
   !@Methods
 END TYPE TriangleH1DGHierarchicalFE_
