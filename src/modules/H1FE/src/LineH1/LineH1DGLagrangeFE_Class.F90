@@ -51,6 +51,9 @@ PUBLIC :: LineH1DGLagrangeFEPointer
 ! Everything is inherited from parent. Nothing new is defined.
 !
 TYPE, EXTENDS(LineH1LagrangeFE_) :: LineH1DGLagrangeFE_
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
 END TYPE LineH1DGLagrangeFE_
 
 !----------------------------------------------------------------------------

@@ -109,8 +109,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
   !! Count interpolation points.
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrientation => &
-    obj_SetOrientation
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
   !! Set topology-specific orientation data.
 END TYPE LineH1FE_
 

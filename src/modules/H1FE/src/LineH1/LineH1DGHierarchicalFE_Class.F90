@@ -51,6 +51,9 @@ PUBLIC :: LineH1DGHierarchicalFEPointer
 ! Everything is inherited from parent. Nothing new is defined.
 !
 TYPE, EXTENDS(LineH1HierarchicalFE_) :: LineH1DGHierarchicalFE_
+CONTAINS
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
 END TYPE LineH1DGHierarchicalFE_
 
 !----------------------------------------------------------------------------
