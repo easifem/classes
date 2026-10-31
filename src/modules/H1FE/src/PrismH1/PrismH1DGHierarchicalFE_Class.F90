@@ -75,6 +75,15 @@ PUBLIC :: PrismH1DGHierarchicalFEPointer
 !```
 !
 TYPE, EXTENDS(PrismH1HierarchicalFE_) :: PrismH1DGHierarchicalFE_
+
+CONTAINS
+  ! Deferred methods from TriangleH1DGFE_
+  !@Methods
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
+  ! Deferred methods from AbstractFE_
+  !@Methods
+
 END TYPE PrismH1DGHierarchicalFE_
 
 !----------------------------------------------------------------------------
@@ -137,6 +146,65 @@ INTERFACE PrismH1DGHierarchicalFEPointer
     !! Allocated finite element target returned to the caller.
   END FUNCTION obj_PrismH1DGHierarchicalFEPointer1
 END INTERFACE PrismH1DGHierarchicalFEPointer
+
+!----------------------------------------------------------------------------
+!                                                  FixOrientOfNptrs@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-18
+! summary: Do not reorder connectivity
+!
+! We do not need reodering in case of DG. So we are overloading this method.
+! This method does nothing.
+
+INTERFACE
+  MODULE SUBROUTINE obj_FixOrientOfNptrs(obj, nptrs, tsize)
+    CLASS(PrismH1DGHierarchicalFE_), INTENT(INOUT) :: obj
+    !! Finite element object of the declared class.
+    INTEGER(I4B), INTENT(INOUT) :: nptrs(:)
+    !! Node connectivity; the first tsize entries form the active buffer.
+    INTEGER(I4B), INTENT(IN) :: tsize
+    !! Number of active connectivity entries.
+  END SUBROUTINE obj_FixOrientOfNptrs
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                             SetOrientation
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-31
+! summary: We do not need orientation in DG.
+!
+! This method sets unit orientation, we do not need
+! orientation in case of DG
+! vikaWe do not need orientation in DG.
+!
+! This method sets unit orientation, we do not need
+! orientation in case of DG. That is why this routine
+! overloads this method from [[TetrahedronH1FE_]].
+INTERFACE
+  MODULE SUBROUTINE obj_SetOrientation( &
+    obj, cellOrient, faceOrient, edgeOrient, tCell, tFace, tEdge, errCheck)
+    CLASS(PrismH1DGHierarchicalFE_), INTENT(INOUT) :: obj
+    !! Finite element object of the declared class.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(:)
+    !! Cell orientation data; conventions depend on element topology.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
+    !! Facet orientations, normally three rows per facet.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrient(:)
+    !! Edge orientation data.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
+    !! Active size of cell order or orientation data.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
+    !! Active number of face columns.
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
+    !! Active size of edge data.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
+    !! Optional DEBUG validation control forwarded where supported.
+  END SUBROUTINE obj_SetOrientation
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !
