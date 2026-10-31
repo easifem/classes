@@ -349,7 +349,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     SetQuadratureType@Methods
+!                                                  SetQuadratureType@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -564,7 +564,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      FixOrientOfNptrs@Methods
+!                                                  FixOrientOfNptrs@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

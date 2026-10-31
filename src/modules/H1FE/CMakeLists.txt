@@ -55,6 +55,8 @@ target_sources(
         ${src_path}/QuadrangleH1/QuadrangleH1FE_Class.F90
         ${src_path}/QuadrangleH1/QuadrangleH1LagrangeFE_Class.F90
         ${src_path}/QuadrangleH1/QuadrangleH1HierarchicalFE_Class.F90
+        ${src_path}/QuadrangleH1/QuadrangleH1DGLagrangeFE_Class.F90
+        ${src_path}/QuadrangleH1/QuadrangleH1DGHierarchicalFE_Class.F90
 )
 
 # Tetrahedron
