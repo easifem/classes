@@ -26,7 +26,7 @@ CHARACTER(*), PARAMETER :: modName = "LineH1HierarchicalFE_Class@Methods.F90"
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     LineH1HierarchicalFEPointer
+!                                                LineH1HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_LineH1DGHierarchicalFEPointer1
