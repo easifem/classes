@@ -33,18 +33,12 @@ USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
 USE QuadrangleH1FE_Class, ONLY: QuadrangleH1FE_
 USE UserFunction_Class, ONLY: UserFunction_
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: QuadrangleH1LagrangeFE_
 PUBLIC :: QuadrangleH1LagrangeFEPointer_
 PUBLIC :: QuadrangleH1LagrangeFEPointer
-
-PUBLIC :: FiniteElementDeallocate
-
-CHARACTER(*), PARAMETER :: modName = "QuadrangleH1LagrangeFE_Class"
 
 !----------------------------------------------------------------------------
 !                                                     QuadrangleH1LagrangeFE_
@@ -82,19 +76,19 @@ CHARACTER(*), PARAMETER :: modName = "QuadrangleH1LagrangeFE_Class"
 !
 TYPE, EXTENDS(QuadrangleH1FE_) :: QuadrangleH1LagrangeFE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Evaluate reference cell shape data.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetElemShapeData => &
-    obj_GetLocalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Evaluate reference cell traces and facet shapes.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Map cell shape data to physical coordinates.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
-    obj_GetGlobalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetGlobalFacetElemShapeData => obj_GetGlobalFacetElemShapeData
   !! Map facet shapes and compute normals.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the quadrangle Lagrange polynomial degree.
 END TYPE QuadrangleH1LagrangeFE_
 
@@ -159,188 +153,7 @@ INTERFACE QuadrangleH1LagrangeFEPointer
 END INTERFACE QuadrangleH1LagrangeFEPointer
 
 !----------------------------------------------------------------------------
-!                                                          LagrangeFE@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Allocate and initialize a finite element target
-!
-! Allocates a new scalar lagrange finite element and calls its inherited
-! Initiate binding with the supplied configuration. Sets topology to
-! Quadrangle, continuity to H1 and the basis family to Lagrange. Forwarded
-! quadrature settings use accuracy-order mode. The caller owns the allocation
-! and must reset and deallocate it when finished.
-!
-! Returns:
-! ans : TYPE(QuadrangleH1LagrangeFE_) - Allocated finite element target
-! returned to the caller.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE GlobalData, ONLY: I4B
-! USE QuadrangleH1LagrangeFE_Class, ONLY: FE_ => QuadrangleH1LagrangeFE_
-! USE BaseType, ONLY: TypeInterpolationOpt
-! USE Test_Method, ONLY: OK
-! USE QuadrangleH1LagrangeFE_Class, ONLY: &
-!   NewFE => QuadrangleH1LagrangeFEPointer
-! IMPLICIT NONE
-! TYPE(FE_), POINTER :: ptr
-!
-! ptr => NewFE(order=2_I4B, nsd=2_I4B, &
-!   ipType=TypeInterpolationOpt%Equidistance, quadratureOrder=[6_I4B], &
-!   quadratureIsHomogeneous=.TRUE.)
-! CALL OK(ASSOCIATED(ptr), "Configured constructor allocates a target")
-! CALL OK(ptr%isInit, "Target is initialized")
-! CALL OK(ptr%opt%GetTotalDOF() == 9_I4B, &
-!   "Constructor establishes quadratic DOFs")
-! CALL ptr%DEALLOCATE()
-! DEALLOCATE(ptr)
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE QuadrangleH1LagrangeFEPointer
-  MODULE FUNCTION obj_QuadrangleH1LagrangeFEPointer2( &
-    order, nsd, ipType, basisType, alpha, beta, lambda, cellOrient, &
-    faceOrient, quadratureIsHomogeneous, quadratureType, quadratureOrder, &
-    quadratureAlpha, quadratureBeta, quadratureLambda) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Polynomial degree; scalar or directional input as declared.
-    INTEGER(I4B), INTENT(IN) :: nsd
-    !! Physical spatial dimension of the finite element.
-    INTEGER(I4B), INTENT(IN) :: ipType
-    !! Interpolation point type code; use TypeInterpolationOpt constants.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: basisType(:)
-    !! Polynomial basis type code(s); use TypePolynomialOpt constants.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: alpha(:)
-    !! Jacobi alpha parameters by reference direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: beta(:)
-    !! Jacobi beta parameters by reference direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda(:)
-    !! Ultraspherical parameters by reference direction.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
-    !! Cell orientation data; conventions depend on element topology.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! Facet orientations, normally three rows per facet.
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
-    !! Whether quadrature settings are homogeneous by direction.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    !! Quadrature rule type codes by reference direction.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
-    !! Quadrature accuracy orders by reference direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
-    !! Quadrature Jacobi alpha parameters by direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
-    !! Quadrature Jacobi beta parameters by direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
-    !! Quadrature ultraspherical parameters by direction.
-    TYPE(QuadrangleH1LagrangeFE_), POINTER :: ans
-    !! Allocated finite element target returned to the caller.
-  END FUNCTION obj_QuadrangleH1LagrangeFEPointer2
-END INTERFACE QuadrangleH1LagrangeFEPointer
-
-!----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE QuadrangleH1LagrangeFE_Class, ONLY: FE_ => QuadrangleH1LagrangeFE_
-! USE Test_Method, ONLY: OK
-! USE QuadrangleH1LagrangeFE_Class, ONLY: &
-!   Wrapper_ => QuadrangleH1LagrangeFEPointer_
-! USE QuadrangleH1LagrangeFE_Class, ONLY: ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(QuadrangleH1LagrangeFE_), ALLOCATABLE :: obj(:)
-    !! Allocatable finite element value vector to reset and deallocate.
-  END SUBROUTINE Deallocate_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                         Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-09
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE QuadrangleH1LagrangeFE_Class, ONLY: FE_ => QuadrangleH1LagrangeFE_
-! USE Test_Method, ONLY: OK
-! USE QuadrangleH1LagrangeFE_Class, ONLY: &
-!   Wrapper_ => QuadrangleH1LagrangeFEPointer_
-! USE QuadrangleH1LagrangeFE_Class, ONLY: ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(QuadrangleH1LagrangeFEPointer_), ALLOCATABLE :: obj(:)
-    !! Allocatable pointer-wrapper vector; target allocations are not freed.
-  END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                          GetLocalElemShapeData@GetMethods
+!                                              GetLocalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -435,7 +248,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       GetLocalFacetElemShapeData@GetMethods
+!                                          GetLocalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -536,7 +349,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          GetGlobalElemShapeData@GetMethods
+!                                             GetGlobalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -633,7 +446,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      GetGlobalFacetElemShapeData@GetMethods
+!                                         GetGlobalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -737,7 +550,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetOrder@SetMethods
+!                                                           GetOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

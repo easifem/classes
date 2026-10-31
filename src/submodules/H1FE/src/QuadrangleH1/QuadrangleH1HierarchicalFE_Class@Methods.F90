@@ -17,26 +17,32 @@
 !
 
 SUBMODULE(QuadrangleH1HierarchicalFE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: ToString, Display
-
-USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
-                                          InterpolationPoint_Quadrangle_, &
-                                          GetTotalInDOF_Quadrangle, &
-                                          GetHierarchicalDOF_Quadrangle, &
-                                          FacetConnectivity_Quadrangle
-
-USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    GetTotalInDOF_Line, &
-                                    InterpolationPoint_Line_
-
+USE LineInterpolationUtility, ONLY: GetTotalDOF_Line
+USE LineInterpolationUtility, ONLY: GetTotalInDOF_Line
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE QuadrangleInterpolationUtility, ONLY: FacetConnectivity_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: GetHierarchicalDOF_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: GetTotalInDOF_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: InterpolationPoint_Quadrangle_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "QuadrangleH1HierarchicalFE_Class@Methods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                              QuadrangleH1HierarchicalFEPointer
+!                                           QuadrangleH1HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_QuadrangleH1HierarchicalFEPointer1
@@ -59,7 +65,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_QuadrangleH1HierarchicalFEPointer1
 
 !----------------------------------------------------------------------------
-!                                              QuadrangleH1HierarchicalFEPointer
+!                                          QuadrangleH1HierarchicalFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_QuadrangleH1HierarchicalFEPointer2

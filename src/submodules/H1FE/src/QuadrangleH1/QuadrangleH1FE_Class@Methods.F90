@@ -22,14 +22,14 @@ USE BaseType, ONLY: TypePolynomialOpt
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: Display, ToString
 USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: ToString, Display
 USE LineInterpolationUtility, ONLY: GetTotalDOF_Line
 USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle
 USE QuadrangleInterpolationUtility, ONLY: InterpolationPoint_Quadrangle_
 USE QuadrangleInterpolationUtility, ONLY: FacetConnectivity_Quadrangle
-USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -185,6 +185,16 @@ LOGICAL(LGT) :: isok
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+IF (ALL(order .EQ. 0)) THEN
+  nrow = SIZE(xij, 1)
+  ncol = 1
+  ans(1:nrow, 1) = SUM(xij, DIM=2) / REAL(SIZE(xij, 2), KIND=DFP)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - [END] ')
+#endif
+  RETURN
+END IF
 
 alpha1 = 0.0_DFP
 beta1 = 0.0_DFP

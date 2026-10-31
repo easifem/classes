@@ -33,21 +33,15 @@ USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
 USE QuadrangleH1FE_Class, ONLY: QuadrangleH1FE_
 USE UserFunction_Class, ONLY: UserFunction_
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: QuadrangleH1HierarchicalFE_
 PUBLIC :: QuadrangleH1HierarchicalFEPointer_
 PUBLIC :: QuadrangleH1HierarchicalFEPointer
 
-PUBLIC :: FiniteElementDeallocate
-
-CHARACTER(*), PARAMETER :: modName = "QuadrangleH1HierarchicalFE_Class"
-
 !----------------------------------------------------------------------------
-!                                                 QuadrangleH1HierarchicalFE_
+!                                                QuadrangleH1HierarchicalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -83,19 +77,19 @@ CHARACTER(*), PARAMETER :: modName = "QuadrangleH1HierarchicalFE_Class"
 !
 TYPE, EXTENDS(QuadrangleH1FE_) :: QuadrangleH1HierarchicalFE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Evaluate reference cell shape data.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetElemShapeData => &
-    obj_GetLocalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Evaluate reference cell traces and facet shapes.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Map cell shape data to physical coordinates.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
-    obj_GetGlobalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetGlobalFacetElemShapeData => obj_GetGlobalFacetElemShapeData
   !! Map facet shapes and compute normals.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Update quadrangle hierarchical degrees and DOF count.
 END TYPE QuadrangleH1HierarchicalFE_
 
@@ -240,106 +234,6 @@ INTERFACE QuadrangleH1HierarchicalFEPointer
 END INTERFACE QuadrangleH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------
-!                                                          Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE QuadrangleH1HierarchicalFE_Class, ONLY: &
-!   FE_ => QuadrangleH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE QuadrangleH1HierarchicalFE_Class, ONLY: &
-!   Wrapper_ => QuadrangleH1HierarchicalFEPointer_
-! USE QuadrangleH1HierarchicalFE_Class, ONLY: &
-!   ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(QuadrangleH1HierarchicalFE_), ALLOCATABLE :: obj(:)
-    !! Allocatable finite element value vector to reset and deallocate.
-  END SUBROUTINE Deallocate_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                          Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-09
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE QuadrangleH1HierarchicalFE_Class, ONLY: &
-!   FE_ => QuadrangleH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE QuadrangleH1HierarchicalFE_Class, ONLY: &
-!   Wrapper_ => QuadrangleH1HierarchicalFEPointer_
-! USE QuadrangleH1HierarchicalFE_Class, ONLY: &
-!   ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(QuadrangleH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
-    !! Allocatable pointer-wrapper vector; target allocations are not freed.
-  END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
 !                                            GetLocalElemShapeData@GetMethods
 !----------------------------------------------------------------------------
 
@@ -442,7 +336,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                       GetLocalFacetElemShapeData@GetMethods
+!                                         GetLocalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -550,7 +444,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                           GetGlobalElemShapeData@GetMethods
+!                                             GetGlobalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -654,7 +548,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      GetGlobalFacetElemShapeData@GetMethods
+!                                        GetGlobalFacetElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -765,7 +659,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetOrder@SetMethods
+!                                                           GetOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.

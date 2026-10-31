@@ -17,18 +17,23 @@
 !
 
 SUBMODULE(QuadrangleH1LagrangeFE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
-USE Display_Method, ONLY: ToString, Display
-
-USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle, &
-                                          InterpolationPoint_Quadrangle_
-
-USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    InterpolationPoint_Line_
-
+USE LineInterpolationUtility, ONLY: GetTotalDOF_Line
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: InterpolationPoint_Quadrangle_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "QuadrangleH1LagragngeFE_Class@Methods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -53,39 +58,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_QuadrangleH1LagrangeFEPointer1
-
-!----------------------------------------------------------------------------
-!                                              QuadrangleH1LagrangeFEPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_QuadrangleH1LagrangeFEPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_QuadrangleH1LagrangeFEPointer2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ALLOCATE (ans)
-
-CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%Quadrangle, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Lagrange", fetype=TypeFEVariableOpt%scalar, &
-  ipType=ipType, basisType=basisType, alpha=alpha, beta=beta, lambda=lambda, &
-  order=order, cellOrient=cellOrient, tCell=3_I4B, faceOrient=faceOrient, &
-  tFace=4_I4B, quadratureIsHomogeneous=quadratureIsHomogeneous, &
-  quadratureIsOrder=.TRUE., quadratureOrder=quadratureOrder, &
-  quadratureType=quadratureType, quadratureAlpha=quadratureAlpha, &
-  quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_QuadrangleH1LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                       GetLocalElemShapeData

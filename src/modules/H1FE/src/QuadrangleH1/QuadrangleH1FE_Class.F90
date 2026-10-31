@@ -34,14 +34,13 @@ USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
 USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: QuadrangleH1FE_
 PUBLIC :: QuadrangleH1FEPointer_
 
 !----------------------------------------------------------------------------
-!                                                     QuadrangleH1FE_
+!                                                            QuadrangleH1FE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -74,7 +73,7 @@ PUBLIC :: QuadrangleH1FEPointer_
 !                   order=2_I4B, &
 !                   ipType=TypeInterpolationOpt%Equidistance, &
 !                   quadratureIsHomogeneous=.TRUE., &
-!   quadratureIsOrder=.TRUE., &
+!                   quadratureIsOrder=.TRUE., &
 !                   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetQuadratureOrder(order=[8_I4B, 8_I4B])
@@ -94,41 +93,46 @@ PUBLIC :: QuadrangleH1FEPointer_
 !
 TYPE, ABSTRACT, EXTENDS(AbstractFE_) :: QuadrangleH1FE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+  ! Deferred methods from AbstractFE_
+  !@Methods
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Construct cell quadrature.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetFacetQuadraturePoints => &
-    obj_GetFacetQuadraturePoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
   !! Construct quadrature on one local facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set quadrature accuracy.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set quadrature rule types.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalInterpolationPoints => &
-    obj_GetTotalInterpolationPoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
   !! Count interpolation points.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
   !! Generate physical interpolation coordinates.
-  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
-  !! Reorder connectivity according to facet orientations.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => obj_SetOrientation
-  !! Set topology-specific orientation data.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromConstant => obj_GetFacetDOFValueFromConstant
   !! Project the unit constant on a spatial facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromSTFunc => obj_GetFacetDOFValueFromSTFunc
   !! Project a user function on a spatial facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetSTFacetDOFValueFromSTFunc => obj_GetSTFacetDOFValueFromSTFunc
   !! Project coefficients on a space-time facet.
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetSTFacetDOFValueFromConstant => obj_GetSTFacetDOFValueFromConstant
   !! Project coefficients on a space-time facet.
 
+  ! Overridable methods
+  PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => &
+    obj_FixOrientOfNptrs
+  !! Reorder connectivity according to facet orientations.
+  PROCEDURE, PUBLIC, PASS(obj) :: SetOrientation => &
+    obj_SetOrientation
+  !! Set topology-specific orientation data.
 END TYPE QuadrangleH1FE_
 
 !----------------------------------------------------------------------------
@@ -345,7 +349,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   SetQuadratureType@Methods
+!                                                     SetQuadratureType@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -413,7 +417,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                           GetTotalInterpolationPoints@InterpolationMethods
+!                                          GetTotalInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -477,7 +481,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 GetInterpolationPoints@InterpolationMethods
+!                                               GetInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -560,7 +564,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    FixOrientOfNptrs@Methods
+!                                                      FixOrientOfNptrs@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -619,7 +623,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   SetOrientation@SetMethods
+!                                                     SetOrientation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
