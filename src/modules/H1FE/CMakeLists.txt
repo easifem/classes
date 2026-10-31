@@ -19,56 +19,74 @@ set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 
 # OneDim
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/OneDim/OneDimLagrangeFE_Class.F90
-          ${src_path}/OneDim/OneDimHierarchicalFE_Class.F90
-          ${src_path}/OneDim/OneDimOrthogonalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/OneDim/OneDimLagrangeFE_Class.F90
+        ${src_path}/OneDim/OneDimHierarchicalFE_Class.F90
+        ${src_path}/OneDim/OneDimOrthogonalFE_Class.F90
+)
 
 # Line
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/LineH1/LineH1FE_Class.F90
-          ${src_path}/LineH1/LineH1LagrangeFE_Class.F90
-          ${src_path}/LineH1/LineH1HierarchicalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/LineH1/LineH1FE_Class.F90
+        ${src_path}/LineH1/LineH1LagrangeFE_Class.F90
+        ${src_path}/LineH1/LineH1HierarchicalFE_Class.F90
+        ${src_path}/LineH1/LineH1DGLagrangeFE_Class.F90
+        ${src_path}/LineH1/LineH1DGHierarchicalFE_Class.F90
+)
 
 # Triangle
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/TriangleH1/TriangleH1FE_Class.F90
-          ${src_path}/TriangleH1/TriangleH1LagrangeFE_Class.F90
-          ${src_path}/TriangleH1/TriangleH1HierarchicalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TriangleH1/TriangleH1FE_Class.F90
+        ${src_path}/TriangleH1/TriangleH1LagrangeFE_Class.F90
+        ${src_path}/TriangleH1/TriangleH1HierarchicalFE_Class.F90
+)
 
 # Quadrangle
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/QuadrangleH1/QuadrangleH1FE_Class.F90
-          ${src_path}/QuadrangleH1/QuadrangleH1LagrangeFE_Class.F90
-          ${src_path}/QuadrangleH1/QuadrangleH1HierarchicalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/QuadrangleH1/QuadrangleH1FE_Class.F90
+        ${src_path}/QuadrangleH1/QuadrangleH1LagrangeFE_Class.F90
+        ${src_path}/QuadrangleH1/QuadrangleH1HierarchicalFE_Class.F90
+)
 
 # Tetrahedron
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/TetrahedronH1/TetrahedronH1FE_Class.F90
-          ${src_path}/TetrahedronH1/TetrahedronH1LagrangeFE_Class.F90
-          ${src_path}/TetrahedronH1/TetrahedronH1HierarchicalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TetrahedronH1/TetrahedronH1FE_Class.F90
+        ${src_path}/TetrahedronH1/TetrahedronH1LagrangeFE_Class.F90
+        ${src_path}/TetrahedronH1/TetrahedronH1HierarchicalFE_Class.F90
+)
 
 # Hexahedron
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/HexahedronH1/HexahedronH1FE_Class.F90
-          ${src_path}/HexahedronH1/HexahedronH1LagrangeFE_Class.F90
-          ${src_path}/HexahedronH1/HexahedronH1HierarchicalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/HexahedronH1/HexahedronH1FE_Class.F90
+        ${src_path}/HexahedronH1/HexahedronH1LagrangeFE_Class.F90
+        ${src_path}/HexahedronH1/HexahedronH1HierarchicalFE_Class.F90
+)
 
 # Prism
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/PrismH1/PrismH1FE_Class.F90
-          ${src_path}/PrismH1/PrismH1LagrangeFE_Class.F90
-          ${src_path}/PrismH1/PrismH1HierarchicalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/PrismH1/PrismH1FE_Class.F90
+        ${src_path}/PrismH1/PrismH1LagrangeFE_Class.F90
+        ${src_path}/PrismH1/PrismH1HierarchicalFE_Class.F90
+)
 
 # Pyramid
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/PyramidH1/PyramidH1FE_Class.F90
-          ${src_path}/PyramidH1/PyramidH1LagrangeFE_Class.F90
-          ${src_path}/PyramidH1/PyramidH1HierarchicalFE_Class.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/PyramidH1/PyramidH1FE_Class.F90
+        ${src_path}/PyramidH1/PyramidH1LagrangeFE_Class.F90
+        ${src_path}/PyramidH1/PyramidH1HierarchicalFE_Class.F90
+)
