@@ -17,19 +17,25 @@
 !
 
 SUBMODULE(LineH1FE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
-USE InputUtility, ONLY: Input
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
-
-USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    InterpolationPoint_Line_
-
+USE InputUtility, ONLY: Input
+USE LineInterpolationUtility, ONLY: GetTotalDOF_Line
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "LineH1FE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                         GetQuadraturePoints
+!                                                       GetQuadraturePoints
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetQuadraturePoints
@@ -134,7 +140,7 @@ IF (isok) THEN
 END IF
 
 #ifdef DEBUG_VER
-CALL AssertError1(.FALSE., myName, &
+CALL AssertError1(math%no, myName, &
                   'order, order1, order2, or order3 must be provided')
 #endif
 
@@ -205,8 +211,8 @@ IF (isok) THEN
 END IF
 
 #ifdef DEBUG_VER
-CALL AssertError1(.FALSE., myName, &
-                  'quadratureType, quadratureType1, quadratureType2, or &
+CALL AssertError1(math%no, myName, &
+  'quadratureType, quadratureType1, quadratureType2, or &
                   &quadratureType3 must be provided')
 #endif
 
@@ -255,7 +261,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-alpha0 = 0.0_DFP; beta0 = 0.0_DFP; lambda0 = 0.5_DFP
+alpha0 = math%zero
+beta0 = math%zero
+lambda0 = math%zero
 
 IF (PRESENT(alpha)) alpha0 = alpha(1)
 IF (PRESENT(beta)) beta0 = beta(1)

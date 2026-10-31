@@ -17,15 +17,21 @@
 !
 
 SUBMODULE(LineH1LagrangeFE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
-USE InputUtility, ONLY: Input
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
-
-USE LineInterpolationUtility, ONLY: GetTotalDOF_Line, &
-                                    InterpolationPoint_Line_
-
+USE InputUtility, ONLY: Input
+USE LineInterpolationUtility, ONLY: GetTotalDOF_Line
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "LineH1LagrangeFE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -50,39 +56,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_LineH1LagrangeFEPointer1
-
-!----------------------------------------------------------------------------
-!                                                     LineH1LagrangeFEPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_LineH1LagrangeFEPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_LineH1LagrangeFEPointer2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ALLOCATE (ans)
-
-CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%line, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Lagrange", ipType=ipType, basisType=basisType, &
-  alpha=alpha, beta=beta, lambda=lambda, fetype=TypeFEVariableOpt%scalar, &
-  order=order, cellOrient=cellOrient, tcell=3_I4B, &
-  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder, quadratureType=quadratureType, &
-  quadratureAlpha=quadratureAlpha, quadratureBeta=quadratureBeta, &
-  quadratureLambda=quadratureLambda)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_LineH1LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                       GetLocalElemShapeData
