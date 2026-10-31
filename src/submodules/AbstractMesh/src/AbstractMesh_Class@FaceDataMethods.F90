@@ -72,19 +72,27 @@ END PROCEDURE obj_InitiateFaceConnectivity
 !
 !----------------------------------------------------------------------------
 
+! The faces (edges) are found with buckets keyed by the smaller global node
+! of the face: head(a) is the last face whose smaller node is a, nextFace
+! links the faces of the same bucket, and faceNode2 is the larger node.
+! A node has only a few faces, so a lookup is O(1). A binary tree is not
+! used, because it is not balanced and it becomes a linked list when the
+! faces are inserted in sorted order (structured meshes), O(n^2) in total.
+!
+! The id of a face is the order in which it is found first.
+
 SUBROUTINE InitiateFaceConnectivity2D(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
   ! internal variables
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity2D()"
   INTEGER(I4B) :: tElements, iel, elemType, tFaces, face0(2), &
-    sorted_face(2), tsize1, tsize2, iface, &
+    sorted_face(2), iface, faceId, totalFaces, &
     localFaces(2_I4B, TypeRefelemOpt%maxFaces)
+  INTEGER(I4B), ALLOCATABLE :: head(:), nextFace(:), faceNode2(:)
+  !! buckets of faces, see the comment above
 
   LOGICAL(LGT) :: problem
-  TYPE(FaceDataBinaryTree_) :: faceTree
-  TYPE(FaceData_) :: faceValue
-  TYPE(FaceData_), POINTER :: facePtr
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
@@ -104,7 +112,11 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
   tElements = obj%GetTotalElements()
 
-  CALL faceTree%Initiate()
+  ! every face of every element is a new face in the worst case
+  CALL Reallocate(head, obj%maxNptrs)
+  CALL Reallocate(nextFace, tElements * TypeRefelemOpt%maxFaces)
+  CALL Reallocate(faceNode2, tElements * TypeRefelemOpt%maxFaces)
+  totalFaces = 0
 
   obj%isFaceConnectivityInitiated = .TRUE.
 
@@ -127,35 +139,38 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
       sorted_face = Sort(face0)
 
-      facePtr => FaceData_Pointer(sorted_face)
-
-      tsize1 = faceTree%SIZE()
-      CALL faceTree%Insert(facePtr)
-      tsize2 = faceTree%SIZE()
-
-      obj%tFaces = tsize2
-
       IF (face0(1) .GT. face0(2)) THEN
         obj%elementData(iel)%ptr%faceOrient(1, iface) = -1_INT8
       ELSE
         obj%elementData(iel)%ptr%faceOrient(1, iface) = 1_INT8
       END IF
 
-      IF (tsize1 .NE. tsize2) THEN
-        obj%elementData(iel)%ptr%globalFaces(iface) = tsize2
-        facePtr%id = tsize2
-      ELSE
-        CALL Initiate(faceValue, sorted_face)
-        facePtr => faceTree%GetValuePointer(faceValue)
-        obj%elementData(iel)%ptr%globalFaces(iface) = facePtr%id
+      ! search the bucket of the smaller node
+      faceId = head(sorted_face(1))
+      DO
+        IF (faceId .EQ. 0) EXIT
+        IF (faceNode2(faceId) .EQ. sorted_face(2)) EXIT
+        faceId = nextFace(faceId)
+      END DO
+
+      ! new face
+      IF (faceId .EQ. 0) THEN
+        totalFaces = totalFaces + 1
+        faceId = totalFaces
+        faceNode2(faceId) = sorted_face(2)
+        nextFace(faceId) = head(sorted_face(1))
+        head(sorted_face(1)) = faceId
       END IF
+
+      obj%elementData(iel)%ptr%globalFaces(iface) = faceId
 
     END DO
 
   END DO loop1
 
-  CALL faceTree%DEALLOCATE()
-  facePtr => NULL()
+  obj%tFaces = totalFaces
+
+  DEALLOCATE (head, nextFace, faceNode2)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
