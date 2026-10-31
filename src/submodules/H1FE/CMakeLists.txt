@@ -44,6 +44,8 @@ target_sources(
         ${src_path}/TriangleH1/TriangleH1FE_Class@Methods.F90
         ${src_path}/TriangleH1/TriangleH1LagrangeFE_Class@Methods.F90
         ${src_path}/TriangleH1/TriangleH1HierarchicalFE_Class@Methods.F90
+        ${src_path}/TriangleH1/TriangleH1DGLagrangeFE_Class@Methods.F90
+        ${src_path}/TriangleH1/TriangleH1DGHierarchicalFE_Class@Methods.F90
 )
 
 # Quadrangle
