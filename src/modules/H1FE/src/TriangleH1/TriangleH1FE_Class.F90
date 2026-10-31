@@ -209,7 +209,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  GetFacetQuadraturePoints@QuadratureMethods
+!                                           GetFacetQuadraturePoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -275,7 +275,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         SetOrder@SetMethods
+!                                                           SetOrder@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -416,7 +416,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                           GetTotalInterpolationPoints@InterpolationMethods
+!                                       GetTotalInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -480,7 +480,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                 GetInterpolationPoints@InterpolationMethods
+!                                             GetInterpolationPoints@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1099,7 +1099,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetOrientation@SetMethods
+!                                                     GetOrientation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
