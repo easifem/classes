@@ -79,19 +79,19 @@ CONTAINS
 
   ! Deferred methods from AbstractFE_
   !@Methods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Evaluate reference cell shape data.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetElemShapeData => &
-    obj_GetLocalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Evaluate reference cell traces and facet shapes.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Map cell shape data to physical coordinates.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
-    obj_GetGlobalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetGlobalFacetElemShapeData => obj_GetGlobalFacetElemShapeData
   !! Map facet shapes and compute normals.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set the triangle Lagrange polynomial degree.
 END TYPE TriangleH1LagrangeFE_
 

@@ -75,19 +75,24 @@ PUBLIC :: TriangleH1HierarchicalFEPointer
 !
 TYPE, EXTENDS(TriangleH1FE_) :: TriangleH1HierarchicalFE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  ! Deferred methods from TriangleH1FE_
+  !@Methods
+
+  ! Deferred methods from AbstractFE_
+  !@Methods
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Evaluate reference cell shape data.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalFacetElemShapeData => &
-    obj_GetLocalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetLocalFacetElemShapeData => obj_GetLocalFacetElemShapeData
   !! Evaluate reference cell traces and facet shapes.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Map cell shape data to physical coordinates.
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalFacetElemShapeData => &
-    obj_GetGlobalFacetElemShapeData
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetGlobalFacetElemShapeData => obj_GetGlobalFacetElemShapeData
   !! Map facet shapes and compute normals.
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Update triangle hierarchical degrees and DOF count.
 END TYPE TriangleH1HierarchicalFE_
 
@@ -149,74 +154,6 @@ INTERFACE TriangleH1HierarchicalFEPointer
     TYPE(TriangleH1HierarchicalFE_), POINTER :: ans
     !! Allocated finite element target returned to the caller.
   END FUNCTION obj_TriangleH1HierarchicalFEPointer1
-END INTERFACE TriangleH1HierarchicalFEPointer
-
-!----------------------------------------------------------------------------
-!                                                      HierarchicalFE@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Allocate and initialize a finite element target
-!
-! Allocates a new scalar hierarchical finite element and calls its inherited
-! Initiate binding with the supplied configuration. Sets topology to Triangle,
-! continuity to H1 and the basis family to Hierarchical. Forwarded quadrature
-! settings use accuracy-order mode. The caller owns the allocation and must
-! reset and deallocate it when finished.
-!
-! Returns:
-! ans : TYPE(TriangleH1HierarchicalFE_) - Allocated finite element target
-! returned to the caller.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE GlobalData, ONLY: I4B
-! USE TriangleH1HierarchicalFE_Class, ONLY: FE_ => TriangleH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE TriangleH1HierarchicalFE_Class, ONLY: &
-!   NewFE => TriangleH1HierarchicalFEPointer
-! IMPLICIT NONE
-! TYPE(FE_), POINTER :: ptr
-!
-! ptr => NewFE(cellOrder=[2_I4B], &
-!   faceOrder=RESHAPE([2_I4B], [1, 1]), nsd=2_I4B, &
-!   cellOrient=[1_I4B, 2_I4B, 3_I4B], &
-!   faceOrient=RESHAPE([1_I4B], [1, 1]), quadratureOrder=[6_I4B])
-! CALL OK(ASSOCIATED(ptr), "Configured constructor allocates a target")
-! CALL OK(ptr%isInit, "Target is initialized")
-! CALL OK(ptr%opt%GetTotalDOF() == 6_I4B, &
-!   "Constructor establishes quadratic DOFs")
-! CALL ptr%DEALLOCATE()
-! DEALLOCATE(ptr)
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE TriangleH1HierarchicalFEPointer
-  MODULE FUNCTION obj_TriangleH1HierarchicalFEPointer2( &
-    cellOrder, faceOrder, nsd, cellOrient, faceOrient, quadratureType, &
-    quadratureOrder) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: cellOrder(:)
-    !! Cell approximation degrees; counts and broadcasting follow BasisOpt_.
-    INTEGER(I4B), INTENT(IN) :: faceOrder(:, :)
-    !! Facet approximation degrees; three rows and one column per facet.
-    INTEGER(I4B), INTENT(IN) :: nsd
-    !! Physical spatial dimension of the finite element.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
-    !! Cell orientation data; conventions depend on element topology.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrient(:, :)
-    !! Facet orientations, normally three rows per facet.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    !! Quadrature rule type codes by reference direction.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
-    !! Quadrature accuracy orders by reference direction.
-    TYPE(TriangleH1HierarchicalFE_), POINTER :: ans
-    !! Allocated finite element target returned to the caller.
-  END FUNCTION obj_TriangleH1HierarchicalFEPointer2
 END INTERFACE TriangleH1HierarchicalFEPointer
 
 !----------------------------------------------------------------------------

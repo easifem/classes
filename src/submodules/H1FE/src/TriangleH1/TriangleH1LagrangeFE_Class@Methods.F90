@@ -66,6 +66,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: order0, tdof
+CHARACTER(*), PARAMETER :: baseContinuity = "H1"
+CHARACTER(*), PARAMETER :: baseInterpolation = "LAGR"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -75,7 +77,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 isok = PRESENT(order) .OR. PRESENT(anisoOrder) .OR. PRESENT(cellOrder)
 CALL AssertError1(isok, myName, &
-                  "either order or anisoOrder must be provided")
+                  "either order, cellOrder, or anisoOrder must be provided")
 #endif
 
 IF (PRESENT(order)) THEN
@@ -87,17 +89,15 @@ ELSE IF (PRESENT(cellOrder)) THEN
 END IF
 
 CALL obj%opt%SetIsotropicOrder(order=order0)
-
-tdof = GetTotalDOF_Triangle(order=order0, baseContinuity="H1", &
-                            baseInterpolation="Lagrange")
-
+tdof = GetTotalDOF_Triangle(order=order0, &
+                            baseContinuity=baseContinuity, &
+                            baseInterpolation=baseInterpolation)
 CALL obj%opt%SetTotalDOF(tdof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
