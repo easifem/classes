@@ -18,8 +18,13 @@
 
 SUBMODULE(TetrahedronH1HierarchicalFE_Class) Methods
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "TetrahedronH1HierarchicalFE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -28,7 +33,8 @@ CONTAINS
 
 MODULE PROCEDURE obj_TetrahedronH1HierarchicalFEPointer1
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_TetrahedronH1HierarchicalFEPointer1()"
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_TetrahedronH1HierarchicalFEPointer1()"
 #endif
 
 #ifdef DEBUG_VER
@@ -44,34 +50,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_TetrahedronH1HierarchicalFEPointer1
-
-!----------------------------------------------------------------------------
-!                                          TetrahedronH1HierarchicalFEPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_TetrahedronH1HierarchicalFEPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_TetrahedronH1HierarchicalFEPointer2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ALLOCATE (ans)
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_TetrahedronH1HierarchicalFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                                    SetOrder

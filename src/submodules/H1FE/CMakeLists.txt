@@ -66,6 +66,8 @@ target_sources(
         ${src_path}/TetrahedronH1/TetrahedronH1FE_Class@Methods.F90
         ${src_path}/TetrahedronH1/TetrahedronH1LagrangeFE_Class@Methods.F90
         ${src_path}/TetrahedronH1/TetrahedronH1HierarchicalFE_Class@Methods.F90
+        ${src_path}/TetrahedronH1/TetrahedronH1DGLagrangeFE_Class@Methods.F90
+        ${src_path}/TetrahedronH1/TetrahedronH1DGHierarchicalFE_Class@Methods.F90
 )
 
 # Hexahedron
@@ -75,6 +77,8 @@ target_sources(
         ${src_path}/HexahedronH1/HexahedronH1FE_Class@Methods.F90
         ${src_path}/HexahedronH1/HexahedronH1LagrangeFE_Class@Methods.F90
         ${src_path}/HexahedronH1/HexahedronH1HierarchicalFE_Class@Methods.F90
+        ${src_path}/HexahedronH1/HexahedronH1DGLagrangeFE_Class@Methods.F90
+        ${src_path}/HexahedronH1/HexahedronH1DGHierarchicalFE_Class@Methods.F90
 )
 
 # Prism
@@ -84,6 +88,8 @@ target_sources(
         ${src_path}/PrismH1/PrismH1FE_Class@Methods.F90
         ${src_path}/PrismH1/PrismH1LagrangeFE_Class@Methods.F90
         ${src_path}/PrismH1/PrismH1HierarchicalFE_Class@Methods.F90
+        ${src_path}/PrismH1/PrismH1DGLagrangeFE_Class@Methods.F90
+        ${src_path}/PrismH1/PrismH1DGHierarchicalFE_Class@Methods.F90
 )
 
 # Pyramid
@@ -93,4 +99,6 @@ target_sources(
         ${src_path}/PyramidH1/PyramidH1FE_Class@Methods.F90
         ${src_path}/PyramidH1/PyramidH1LagrangeFE_Class@Methods.F90
         ${src_path}/PyramidH1/PyramidH1HierarchicalFE_Class@Methods.F90
+        ${src_path}/PyramidH1/PyramidH1DGLagrangeFE_Class@Methods.F90
+        ${src_path}/PyramidH1/PyramidH1DGHierarchicalFE_Class@Methods.F90
 )

@@ -31,15 +31,11 @@ USE ExceptionHandler_Class, ONLY: e
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: TetrahedronH1FE_
 PUBLIC :: TetrahedronH1FEPointer_
-
-CHARACTER(*), PARAMETER :: modName = "TetrahedronH1FE_Class"
 
 !----------------------------------------------------------------------------
 !                                                           TetrahedronH1FE_
@@ -77,22 +73,22 @@ CHARACTER(*), PARAMETER :: modName = "TetrahedronH1FE_Class"
 !
 TYPE, ABSTRACT, EXTENDS(AbstractFE_) :: TetrahedronH1FE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get Quadrature Points (WIP).
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetQuadraturePoints => obj_GetFacetQuadraturePoints
   !! Get Facet Quadrature Points (WIP).
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureOrder => &
     obj_SetQuadratureOrder
   !! Set Quadrature Order (WIP).
-  PROCEDURE, PUBLIC, PASS(obj) :: SetQuadratureType => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetQuadratureType => &
     obj_SetQuadratureType
   !! Set Quadrature Type (WIP).
-  PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
   !! Get Interpolation Points (WIP).
-  PROCEDURE, PUBLIC, PASS(obj) :: &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalInterpolationPoints => obj_GetTotalInterpolationPoints
   !! Get Total Interpolation Points (WIP).
 END TYPE TetrahedronH1FE_

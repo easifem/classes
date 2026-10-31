@@ -32,18 +32,12 @@ USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: LGT
 USE TetrahedronH1FE_Class, ONLY: TetrahedronH1FE_
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: TetrahedronH1HierarchicalFE_
 PUBLIC :: TetrahedronH1HierarchicalFEPointer_
 PUBLIC :: TetrahedronH1HierarchicalFEPointer
-
-PUBLIC :: FiniteElementDeallocate
-
-CHARACTER(*), PARAMETER :: modName = "TetrahedronH1HierarchicalFE_Class"
 
 !----------------------------------------------------------------------------
 !                                                TetrahedronH1HierarchicalFE_
@@ -84,13 +78,13 @@ CHARACTER(*), PARAMETER :: modName = "TetrahedronH1HierarchicalFE_Class"
 !
 TYPE, EXTENDS(TetrahedronH1FE_) :: TetrahedronH1HierarchicalFE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
   !! Get Local Elem Shape Data (WIP).
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
   !! Get Global Elem Shape Data (WIP).
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
   !! Set Order (WIP).
 END TYPE TetrahedronH1HierarchicalFE_
 
@@ -154,173 +148,6 @@ INTERFACE TetrahedronH1HierarchicalFEPointer
     !! Allocated finite element target returned to the caller.
   END FUNCTION obj_TetrahedronH1HierarchicalFEPointer1
 END INTERFACE TetrahedronH1HierarchicalFEPointer
-
-!----------------------------------------------------------------------------
-!                                                      HierarchicalFE@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Configured pointer constructor (WIP)
-!
-! This overload is declared but its implementation is a WIP placeholder rather
-! than a configured constructor. The implementation raises an
-! under-development error in DEBUG mode. The example intentionally exposes the
-! unsupported call.
-!
-! Returns:
-! ans : TYPE(TetrahedronH1HierarchicalFE_) - Allocated finite element target
-! returned to the caller.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE GlobalData, ONLY: I4B
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   FE_ => TetrahedronH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   NewFE => TetrahedronH1HierarchicalFEPointer
-! IMPLICIT NONE
-! TYPE(FE_), POINTER :: ptr
-!
-! ptr => NewFE(order=2_I4B, nsd=3_I4B, quadratureOrder=[6_I4B])
-! CALL OK(ASSOCIATED(ptr), "Configured constructor allocates a target")
-! CALL OK(ptr%isInit, "Target is initialized")
-! CALL OK(ptr%opt%GetTotalDOF() == 9_I4B, &
-!   "Constructor establishes quadratic DOFs")
-! CALL ptr%DEALLOCATE()
-! DEALLOCATE(ptr)
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE TetrahedronH1HierarchicalFEPointer
-  MODULE FUNCTION obj_TetrahedronH1HierarchicalFEPointer2( &
-    order, nsd, cellOrient, quadratureType, quadratureOrder, &
-    quadratureAlpha, quadratureBeta, quadratureLambda) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Polynomial degree; scalar or directional input as declared.
-    INTEGER(I4B), INTENT(IN) :: nsd
-    !! Physical spatial dimension of the finite element.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
-    !! Cell orientation data; conventions depend on element topology.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    !! Quadrature rule type codes by reference direction.
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
-    !! Quadrature accuracy orders by reference direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:)
-    !! Quadrature Jacobi alpha parameters by direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureBeta(:)
-    !! Quadrature Jacobi beta parameters by direction.
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
-    !! Quadrature ultraspherical parameters by direction.
-    TYPE(TetrahedronH1HierarchicalFE_), POINTER :: ans
-    !! Allocated finite element target returned to the caller.
-  END FUNCTION obj_TetrahedronH1HierarchicalFEPointer2
-END INTERFACE TetrahedronH1HierarchicalFEPointer
-
-!----------------------------------------------------------------------------
-!                                                          Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   FE_ => TetrahedronH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   Wrapper_ => TetrahedronH1HierarchicalFEPointer_
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(TetrahedronH1HierarchicalFE_), ALLOCATABLE :: obj(:)
-    !! Allocatable finite element value vector to reset and deallocate.
-  END SUBROUTINE Deallocate_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                          Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-09
-! summary: Declared vector cleanup overload without an implementation
-!
-! This public FiniteElementDeallocate overload is declared but has no matching
-! implementation in the active submodule for this class. Calls fail to link
-! against the installed library. The example demonstrates both declared
-! cleanup overloads; it is retained as a regression test for the missing
-! implementation.
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   FE_ => TetrahedronH1HierarchicalFE_
-! USE Test_Method, ONLY: OK
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   Wrapper_ => TetrahedronH1HierarchicalFEPointer_
-! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
-!   ReleaseFE => FiniteElementDeallocate
-! IMPLICIT NONE
-! TYPE(FE_), ALLOCATABLE :: values(:)
-! TYPE(Wrapper_), ALLOCATABLE :: refs(:)
-! TYPE(FE_), TARGET :: target
-!
-! ALLOCATE(values(2))
-! CALL ReleaseFE(values)
-! CALL OK(.NOT. ALLOCATED(values), "Value vector released")
-! ALLOCATE(refs(2))
-! refs(1)%ptr => target
-! CALL ReleaseFE(refs)
-! CALL OK(.NOT. ALLOCATED(refs), "Pointer wrappers released")
-! CALL OK(.NOT. target%isInit, "Target reset and still accessible")
-! END PROGRAM main
-!```
-!
-! See also: [[AbstractFE_]]
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(TetrahedronH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
-    !! Allocatable pointer-wrapper vector; target allocations are not freed.
-  END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                               GetLocalElemShapeData@Methods
