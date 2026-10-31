@@ -17,6 +17,8 @@
 !
 
 SUBMODULE(TetrahedronH1DGLagrangeFE_Class) Methods
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: TypeRefelemOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -47,6 +49,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_TetrahedronH1DGLagrangeFEPointer1
+
+!----------------------------------------------------------------------------
+!                                                           FixOrientOfNptrs
+!----------------------------------------------------------------------------
+
+#include "../../include/Donot_FixOrientOfNptrs.F90"
+
+!----------------------------------------------------------------------------
+!                                                             SetOrientation
+!----------------------------------------------------------------------------
+
+#include "../../include/Donot_SetOrientation.F90"
 
 !----------------------------------------------------------------------------
 !                                                              Include Error
