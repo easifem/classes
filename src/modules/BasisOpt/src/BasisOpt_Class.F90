@@ -42,10 +42,10 @@ USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 PRIVATE
 
-INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
-INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
-INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
-INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
+! INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
+! INTEGER(I4B), PARAMETER :: FE_TRANSFORM_IDENTITY = 1_I4B
+! INTEGER(I4B), PARAMETER :: DEFAULT_TRANSFORM_TYPE = 1_I4B
+#define _DEFAULT_DOF_TYPE_ [1, 1, 1, 1]
 
 PUBLIC :: BasisOpt_
 PUBLIC :: TypeBasisOpt
@@ -58,18 +58,29 @@ PUBLIC :: TypeBasisOpt
 ! date: 2025-07-09
 ! summary: Configuration and workspaces for multidimensional basis functions
 !
-! Stores private flags, geometry/topology metadata, approximation degrees,
-! orientations, polynomial parameters, reference coordinates, quadrature
-! options and reusable allocatable work arrays. TypeBasisOpt supplies default
-! values: uninitialized, zero dimensions and DOFs, scalar H1 Lagrange,
-! equidistant points, Monomial basis, alpha=beta=0 and lambda=0.5. Directional
-! data use three entries. Face arrays use three rows and maxFaces columns;
-! edge arrays use maxEdges entries. Reference vertices use a (3,8) array.
+! BasisOpt stores private flags, geometry/topology metadata,
+! approximation degrees, orientations, polynomial parameters,
+! reference coordinates, quadrature options and reusable allocatable
+! work arrays.
+!
+! TypeBasisOpt supplies default values: uninitialized, zero
+! dimensions and DOFs, scalar H1 Lagrange,
+! equidistant points, Monomial basis, alpha=beta=0 and lambda=0.5.
+!
+! Directional data use three entries.
+!
+! Face arrays use three rows and maxFaces columns;
+! edge arrays use maxEdges entries.
+!
+! Reference vertices use a (3,8) array.
+!
 ! Entity order and orientation methods share the same active size counters.
+!
 ! Use Initiate to establish consistent topology and quadrature metadata;
-! low-level setters do not recompute all derived values. Shape methods may
-! resize internal caches and modify firstCall. Call DEALLOCATE to restore
-! defaults and release work arrays.
+! low-level setters do not recompute all derived values.
+!
+! Shape methods may resize internal caches and modify firstCall.
+! Call DEALLOCATE to restore defaults and release work arrays.
 !
 ! Examples
 !
@@ -90,7 +101,7 @@ PUBLIC :: TypeBasisOpt
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(order=order, basisType=basis, dofType=dofs, &
@@ -112,56 +123,58 @@ PUBLIC :: TypeBasisOpt
 
 TYPE :: BasisOpt_
   PRIVATE
-  LOGICAL(LGT) :: firstCall = .TRUE.
+  LOGICAL(LGT) :: firstCall = math%yes
   !! Whether the next Lagrange evaluation must construct its coefficients.
-  LOGICAL(LGT) :: isInit = .FALSE.
-  !! It is set to true at the time of constructor
-  LOGICAL(LGT) :: isIsotropicOrder = .FALSE.
+  LOGICAL(LGT) :: isInit = math%no
+  !! It is set tomath%yesat the time of constructor
+  LOGICAL(LGT) :: isIsotropicOrder = math%no
   !! flag to check if the order is isotropic or not
   !! see order
-  LOGICAL(LGT) :: isAnisotropicOrder = .FALSE.
+  LOGICAL(LGT) :: isAnisotropicOrder = math%no
   !! flag to check if the order is anisotropic or not
   !! see anisoOrder
-  LOGICAL(LGT) :: isIpType = .FALSE.
+  LOGICAL(LGT) :: isIpType = math%no
   !! Whether an interpolation point type was explicitly supplied.
-  LOGICAL(LGT) :: isEdgeOrder = .FALSE.
-  !! True if we set the edge order
-  LOGICAL(LGT) :: isFaceOrder = .FALSE.
-  !! True if we set the face order
-  LOGICAL(LGT) :: isCellOrder = .FALSE.
-  !! True if we set the cell order
-  LOGICAL(LGT) :: isCellOrient = .FALSE.
-  !! True if we set the cell orientation
-  LOGICAL(LGT) :: isFaceOrient = .FALSE.
-  !! True if we set the face orientation
-  LOGICAL(LGT) :: isEdgeOrient = .FALSE.
-  !! True if we set the edge orientation
-  INTEGER(I4B) :: tdof = 0
+  LOGICAL(LGT) :: isEdgeOrder = math%no
+  !!math%yesif we set the edge order
+  LOGICAL(LGT) :: isFaceOrder = math%no
+  !!math%yesif we set the face order
+  LOGICAL(LGT) :: isCellOrder = math%no
+  !!math%yesif we set the cell order
+  LOGICAL(LGT) :: isCellOrient = math%no
+  !!math%yesif we set the cell orientation
+  LOGICAL(LGT) :: isFaceOrient = math%no
+  !!math%yesif we set the face orientation
+  LOGICAL(LGT) :: isEdgeOrient = math%no
+  !!math%yesif we set the edge orientation
+  LOGICAL(LGT) :: isBrokenSpace = math%no
+  !!math%yesif we are dealing with broken Spaces
+  INTEGER(I4B) :: tdof = math%zero_i
   !! total number of degrees of freedom
-  INTEGER(I4B) :: nsd = 0
+  INTEGER(I4B) :: nsd = math%zero_i
   !! number of spatial dimensions
-  INTEGER(I4B) :: xidim = 0
+  INTEGER(I4B) :: xidim = math%zero_i
   !! Reference coordinate dimension (not the codimension).
-  INTEGER(I4B) :: topoType = 0
+  INTEGER(I4B) :: topoType = math%zero_i
   !! Topology type of element, also see topoType_char
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron,
   !! prism, pyramid
-  INTEGER(I4B) :: elemType = 0
+  INTEGER(I4B) :: elemType = math%zero_i
   !! Topology type of reference element
   !! line, triangle, quadrangle, tetrahedron, hexahedron,
   !! prism, pyramid
-  INTEGER(I4B) :: elemIndx = 0
+  INTEGER(I4B) :: elemIndx = math%zero_i
   !! Element index of topoType
   INTEGER(I4B) :: feType = fevaropt%Scalar
   !! Type of finite element, Scalar, Vector, Matrix
   !! Numeric value type; feType_char is maintained separately.
-  INTEGER(I4B) :: tEdgeOrder = 0
+  INTEGER(I4B) :: tEdgeOrder = math%zero_i
   !! Active size shared by edgeOrder and edgeOrient.
-  INTEGER(I4B) :: tFaceOrder = 0
+  INTEGER(I4B) :: tFaceOrder = math%zero_i
   !! Active column count shared by faceOrder and faceOrient.
-  INTEGER(I4B) :: tCellOrder = 0
+  INTEGER(I4B) :: tCellOrder = math%zero_i
   !! Active size shared by cellOrder and cellOrient.
-  INTEGER(I4B) :: transformType = 0
+  INTEGER(I4B) :: transformType = math%zero_i
   !! Currently it is not used
   !! Type of Tranformation usef for polynomial space
   !! Initiate currently leaves this at its default zero.
@@ -169,23 +182,23 @@ TYPE :: BasisOpt_
   !! Type of lattice point for interpol (i.e., interpolation point type)
   !! Used for constructing Lagrange interpolation points.
   !! ipType_char is separate display metadata.
-  INTEGER(I4B) :: order = 0
+  INTEGER(I4B) :: order = math%zero_i
   !! isotropic order of the basis function
-  INTEGER(I4B) :: anisoOrder(3) = 0
+  INTEGER(I4B) :: anisoOrder(3) = math%zero_i
   !! anisotropic order of the basis function in x, y, z direction
-  INTEGER(I4B) :: edgeOrder(eleminfo%maxEdges) = 0
+  INTEGER(I4B) :: edgeOrder(eleminfo%maxEdges) = math%zero_i
   !! Order on each edge of the element
-  INTEGER(I4B) :: edgeOrient(eleminfo%maxEdges) = 0
+  INTEGER(I4B) :: edgeOrient(eleminfo%maxEdges) = math%one_i
   !! Orientation on each edge of the element
-  INTEGER(I4B) :: faceOrder(3, eleminfo%maxFaces) = 0
+  INTEGER(I4B) :: faceOrder(3, eleminfo%maxFaces) = math%zero_i
   !! Order of approximation on each face of the element
-  INTEGER(I4B) :: faceOrient(3, eleminfo%maxFaces) = 0
+  INTEGER(I4B) :: faceOrient(3, eleminfo%maxFaces) = math%one_i
   !! orientation on each face
-  INTEGER(I4B) :: cellOrder(3) = 0
+  INTEGER(I4B) :: cellOrder(3) = math%zero_i
   !! Order of approximation inside the element
-  INTEGER(I4B) :: cellOrient(3) = 0
+  INTEGER(I4B) :: cellOrient(3) = math%one_i
   !! Orientation of each cell
-  INTEGER(I4B) :: dofType(4) = DEFAULT_DOF_TYPE
+  INTEGER(I4B) :: dofType(4) = _DEFAULT_DOF_TYPE_
   !! Currently it is not used
   !! dofType(1): Type of dof for shape function defined on vertex
   !! dofType(2): Type of dof for shape functions on edge
@@ -198,11 +211,11 @@ TYPE :: BasisOpt_
   !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
   !! Ultraspherical
   !! basisType_char is separate display metadata.
-  REAL(DFP) :: alpha(3) = 0.0_DFP
+  REAL(DFP) :: alpha(3) = math%zero
   !! Jacobi parameters
-  REAL(DFP) :: beta(3) = 0.0_DFP
+  REAL(DFP) :: beta(3) = math%zero
   !! Jacobi parameters
-  REAL(DFP) :: lambda(3) = 0.5_DFP
+  REAL(DFP) :: lambda(3) = math%half
   !! Ultraspherical parameters
   CHARACTER(1) :: refelemDomain = "B"
   !! Reference domain code used for coordinates, basis and quadrature.
@@ -220,7 +233,7 @@ TYPE :: BasisOpt_
   !! OrthogonalInterpolation, Orthogonal
   !! HermitInterpolation, Hermit
   !! SerendipityInterpolation, Serendipity
-  REAL(DFP) :: refelemCoord(3, 8) = 0.0_DFP
+  REAL(DFP) :: refelemCoord(3, 8) = math%zero
   !! Reference vertex coordinates; active columns depend on topology.
   CHARACTER(128) :: basisType_char(3) = "MONOMIAL"
   !! basis type in string format
@@ -249,7 +262,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
   !! Restore default settings and release working arrays.
-  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initialize basis and quadrature options.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy basis options and allocated working arrays.
@@ -267,7 +280,8 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
   !! Import basis and quadrature configuration from a TOML table.
-  PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: ImportFromToml2 => &
+    obj_ImportFromToml2
   !! Import a named basis table from a TOML document.
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Import from toml file
@@ -294,7 +308,7 @@ CONTAINS
   PROCEDURE, PRIVATE, PASS(obj) :: ResetIsotropicOrder => &
     obj_ResetIsotropicOrder
   !! Restore default isotropic degree and activity flag.
-  PROCEDURE, PRIVATE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
   !! Assign the stored DOF count.
   PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureOrder
   !! Set Quadrature Order for a line.
@@ -538,7 +552,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(order=order, basisType=basis, dofType=dofs, &
@@ -579,7 +593,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
@@ -588,7 +602,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -632,7 +646,8 @@ INTERFACE
     anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, faceOrient, &
     edgeOrient, tcell, tface, tedge, errCheck, quadratureIsHomogeneous, &
     quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
-    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
+    isBrokenSpace)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Basis options object.
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -685,7 +700,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
     !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: quadratureIsHomogeneous
     !! Whether the same quadrature settings apply in all directions.
     INTEGER(I4B), INTENT(IN), OPTIONAL :: quadratureType(:)
@@ -704,6 +719,8 @@ INTERFACE
     !! Quadrature Jacobi beta parameters by direction.
     REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda(:)
     !! Quadrature ultraspherical parameters by direction.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
+    !! If true then we are dealing with broken space
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -743,7 +760,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Triangle_GetQuadraturePoints(quad)
@@ -805,7 +822,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(order=order, basisType=basis, dofType=dofs, &
@@ -884,7 +901,7 @@ END INTERFACE DEALLOCATE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Display(msg="Basis options")
@@ -942,7 +959,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! text = obj%MdEncode()
@@ -995,7 +1012,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! text = obj%ReactEncode()
@@ -1050,7 +1067,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetParam(alpha=[0.1_DFP, 0.2_DFP, 0.3_DFP], &
@@ -1083,7 +1100,9 @@ INTERFACE
     quadratureNips1, quadratureNips2, quadratureNips3, quadratureIsNips, &
     quadratureAlpha, quadratureAlpha1, quadratureAlpha2, quadratureAlpha3, &
     quadratureBeta, quadratureBeta1, quadratureBeta2, quadratureBeta3, &
-    quadratureLambda, quadratureLambda1, quadratureLambda2, quadratureLambda3)
+    quadratureLambda, quadratureLambda1, quadratureLambda2, &
+    quadratureLambda3, &
+    isBrokenSpace)
     CLASS(BasisOpt_), INTENT(INOUT) :: obj
     !! Basis options object.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
@@ -1202,6 +1221,8 @@ INTERFACE
     !! Quadrature ultraspherical parameters by direction in direction 2.
     REAL(DFP), INTENT(IN), OPTIONAL :: quadratureLambda3
     !! Quadrature ultraspherical parameters by direction in direction 3.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
+    !! If true then we are dealing with broken space
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
@@ -1237,7 +1258,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetOrder(order=3_I4B)
@@ -1266,7 +1287,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
     !! Active size of cell order or orientation data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetCellOrientation
 END INTERFACE
 
@@ -1302,7 +1323,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetOrder(order=3_I4B)
@@ -1331,7 +1352,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
     !! Active number of face columns.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetFaceOrientation
 END INTERFACE
 
@@ -1367,7 +1388,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetOrder(order=3_I4B)
@@ -1396,7 +1417,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
     !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetEdgeOrientation
 END INTERFACE
 
@@ -1428,7 +1449,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetOrder(order=3_I4B)
@@ -1490,7 +1511,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetOrder(order=3_I4B)
@@ -1552,7 +1573,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetOrder(order=3_I4B)
@@ -1617,7 +1638,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetIsotropicOrder(order=3_I4B)
@@ -1650,7 +1671,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetOrder(cellOrder=[3_I4B], tcell=2_I4B, &
@@ -1698,7 +1719,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tedge
     !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetOrder
 END INTERFACE
 
@@ -1736,7 +1757,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetCellOrder(cellOrder=[3_I4B, 2_I4B], tCell=2_I4B)
@@ -1770,7 +1791,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
     !! Active size of cell order or orientation data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetCellOrder
 END INTERFACE
 
@@ -1808,7 +1829,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetCellOrder(cellOrder=[3_I4B, 2_I4B], tCell=2_I4B)
@@ -1842,7 +1863,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
     !! Active number of face columns.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetFaceOrder
 END INTERFACE
 
@@ -1880,7 +1901,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetCellOrder(cellOrder=[3_I4B, 2_I4B], tCell=2_I4B)
@@ -1914,7 +1935,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
     !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetEdgeOrder
 END INTERFACE
 
@@ -1950,7 +1971,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetIsotropicOrder(order=3_I4B)
@@ -1976,7 +1997,7 @@ INTERFACE
     !! Isotropic polynomial degree, or quadrature accuracy in quadrature
     !! setters.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetIsotropicOrder
 END INTERFACE
 
@@ -2012,7 +2033,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetAnisotropicOrder(anisoOrder=[2_I4B, 3_I4B])
@@ -2037,7 +2058,7 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
     !! Directional polynomial degrees; one entry broadcasts over xidim.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! Optional request for DEBUG validation where implemented; default false.
+    !! Optional request for DEBUG validation where implemented; defaultmath%no
   END SUBROUTINE obj_SetAnisotropicOrder
 END INTERFACE
 
@@ -2073,7 +2094,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Line_SetQuadratureOrder(order=8_I4B)
@@ -2134,7 +2155,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Triangle_SetQuadratureOrder(order=8_I4B)
@@ -2196,7 +2217,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Quadrangle_SetQuadratureOrder(order=[8_I4B, 8_I4B])
@@ -2261,7 +2282,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetAnisotropicOrder(anisoOrder=[2_I4B, 3_I4B])
@@ -2316,7 +2337,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetIsotropicOrder(order=3_I4B)
@@ -2371,7 +2392,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetIsotropicOrder(order=3_I4B)
@@ -2429,7 +2450,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Line_SetQuadratureOrder(order=8_I4B)
@@ -2489,7 +2510,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Triangle_SetQuadratureOrder(order=8_I4B)
@@ -2550,7 +2571,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Quadrangle_SetQuadratureOrder(order=[8_I4B, 8_I4B])
@@ -2618,7 +2639,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -2682,7 +2703,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -2745,7 +2766,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -2807,7 +2828,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -2875,7 +2896,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -3021,7 +3042,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Line_SetQuadratureOrder(order=8_I4B)
@@ -3087,7 +3108,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Triangle_SetQuadratureOrder(order=8_I4B)
@@ -3153,7 +3174,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Quadrangle_SetQuadratureOrder(order=[8_I4B, 8_I4B])
@@ -3222,7 +3243,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Quadrangle_SetQuadratureOrder(order=[8_I4B, 8_I4B])
@@ -3285,7 +3306,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -3349,7 +3370,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -3496,7 +3517,7 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     !! Optional TOML input filename.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-    !! If present, prints the selected table in DEBUG, even when false.
+    !! If present, prints the selected table in DEBUG, even whenmath%no
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemType
     !! Element type code from TypeElemNameOpt.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: nsd
@@ -3538,7 +3559,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -3601,7 +3622,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -3664,7 +3685,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%GetParam(basisType=basis, anisoOrder=orders, alpha=alpha, &
@@ -3724,7 +3745,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetCellOrder(cellOrder=[3_I4B, 2_I4B], tCell=2_I4B)
@@ -3791,7 +3812,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetCellOrder(cellOrder=[3_I4B, 2_I4B], tCell=2_I4B)
@@ -3860,7 +3881,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%SetCellOrder(cellOrder=[3_I4B, 2_I4B], tCell=2_I4B)
@@ -3927,7 +3948,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Line_SetQuadratureOrder(order=8_I4B)
@@ -3987,7 +4008,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Triangle_SetQuadratureOrder(order=8_I4B)
@@ -4047,7 +4068,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%Quadrangle_SetQuadratureOrder(order=[8_I4B, 8_I4B])
@@ -4119,14 +4140,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Line, nsd=1_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(1, :) = [0.0_DFP, 1.0_DFP]
 ! CALL obj%Line_GetQuadraturePoints(quad)
@@ -4191,7 +4212,7 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%LineH1LagFE_GetLocalFacetElemShapeData( &
@@ -4260,14 +4281,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Line, nsd=1_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(1, :) = [0.0_DFP, 1.0_DFP]
 ! CALL obj%Line_GetQuadraturePoints(quad)
@@ -4354,14 +4375,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -4445,14 +4466,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -4545,14 +4566,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -4639,14 +4660,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -4754,14 +4775,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -4846,14 +4867,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -4947,14 +4968,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5043,14 +5064,14 @@ END INTERFACE
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=2_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
 !   baseContinuity="H1", baseInterpolation="Lagrange", &
 !   order=1_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5152,7 +5173,7 @@ END INTERFACE
 !   cellOrder=[2_I4B], tcell=1_I4B, &
 !   cellOrient=[1_I4B], &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Line, nsd=1_I4B, &
@@ -5160,7 +5181,7 @@ END INTERFACE
 !   cellOrder=[1_I4B], tcell=1_I4B, &
 !   cellOrient=[1_I4B], &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(1, :) = [0.0_DFP, 1.0_DFP]
 ! CALL obj%Line_GetQuadraturePoints(quad)
@@ -5226,7 +5247,7 @@ END INTERFACE
 !   cellOrder=[2_I4B], tcell=1_I4B, &
 !   cellOrient=[1_I4B], &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL obj%LineH1HieFE_GetLocalFacetElemShapeData( &
@@ -5294,7 +5315,7 @@ END INTERFACE
 !   cellOrder=[2_I4B], tcell=1_I4B, &
 !   cellOrient=[1_I4B], &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Line, nsd=1_I4B, &
@@ -5302,7 +5323,7 @@ END INTERFACE
 !   cellOrder=[1_I4B], tcell=1_I4B, &
 !   cellOrient=[1_I4B], &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(1, :) = [0.0_DFP, 1.0_DFP]
 ! CALL obj%Line_GetQuadraturePoints(quad)
@@ -5383,7 +5404,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
@@ -5392,7 +5413,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5479,7 +5500,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
@@ -5488,7 +5509,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5582,7 +5603,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
@@ -5591,7 +5612,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5680,7 +5701,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
@@ -5689,7 +5710,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=3_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5792,7 +5813,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
@@ -5801,7 +5822,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5888,7 +5909,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
@@ -5897,7 +5918,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -5992,7 +6013,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
@@ -6001,7 +6022,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
@@ -6092,7 +6113,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([2_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 !
 ! CALL geometry%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
@@ -6101,7 +6122,7 @@ END INTERFACE
 !   cellOrient=[1_I4B, 2_I4B, 3_I4B], faceOrder=RESHAPE([1_I4B], [1, 1]), &
 !   faceOrient=RESHAPE([1_I4B], [1, 1]), tface=4_I4B, &
 !   ipType=TypeInterpolationOpt%Equidistance, &
-!   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+!   quadratureIsHomogeneous=math%yes, quadratureIsOrder=math%yes, &
 !   quadratureOrder=[6_I4B])
 ! xij(:, 1) = [0.0_DFP, 0.0_DFP]
 ! xij(:, 2) = [1.0_DFP, 0.0_DFP]
