@@ -66,6 +66,7 @@ CALL Display(obj%isCellOrder, msg="isCellOrder: ", unitno=unitno)
 CALL Display(obj%isEdgeOrient, msg="isEdgeOrient: ", unitno=unitno)
 CALL Display(obj%isFaceOrient, msg="isFaceOrient: ", unitno=unitno)
 CALL Display(obj%isCellOrient, msg="isCellOrient: ", unitno=unitno)
+CALL Display(obj%isBrokenSpace, msg="isBrokenSpace: ", unitno=unitno)
 
 CALL Display(obj%tdof, msg="tdof: ", unitno=unitno)
 CALL Display(obj%nsd, msg="nsd: ", unitno=unitno)
