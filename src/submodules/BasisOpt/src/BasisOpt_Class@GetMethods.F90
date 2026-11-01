@@ -511,6 +511,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetIpType
 
 !----------------------------------------------------------------------------
+!                                                        GetIsBrokenSpace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIsBrokenSpace
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetIsBrokenSpace()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%isBrokenSpace
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetIsBrokenSpace
+
+!----------------------------------------------------------------------------
 !                                                           Include error
 !----------------------------------------------------------------------------
 
