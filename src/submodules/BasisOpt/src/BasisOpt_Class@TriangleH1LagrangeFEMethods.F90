@@ -16,32 +16,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) TriangleH1LagrangeFEMethods
-USE Display_Method, ONLY: Display, ToString
-
-USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE, Elemsd_Set => &
-                                Set, Elemsd_SetNormal => SetNormal, &
-                                LagrangeElemShapeData, &
-                                LagrangeFacetElemShapeData
-
-USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle, &
-                                        InterpolationPoint_Triangle_, &
-                                        LagrangeDOF_Triangle, &
-                                        LagrangeEvalAll_Triangle_, &
-                                        LagrangeGradientEvalAll_Triangle_
-
-USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_, &
-                                    LagrangeEvalAll_Line_, &
-                                    LagrangeGradientEvalAll_Line_
-
-USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_, &
-                                  GetTotalQuadraturePoints
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: Elemsd_SetNormal => SetNormal
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
+USE ElemshapeData_Method, ONLY: LagrangeFacetElemShapeData
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE LineInterpolationUtility, ONLY: LagrangeEvalAll_Line_
+USE LineInterpolationUtility, ONLY: LagrangeGradientEvalAll_Line_
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
 USE ReallocateUtility, ONLY: Reallocate
-
-USE SwapUtility, ONLY: SWAP_
-
 USE ReverseUtility, ONLY: Reverse
-
+USE SwapUtility, ONLY: SWAP_
+USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle
+USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
+USE TriangleInterpolationUtility, ONLY: LagrangeDOF_Triangle
+USE TriangleInterpolationUtility, ONLY: LagrangeEvalAll_Triangle_
+USE TriangleInterpolationUtility, ONLY: LagrangeGradientEvalAll_Triangle_
 IMPLICIT NONE
 
 CONTAINS
@@ -69,6 +63,16 @@ CALL Elemsd_Allocate(obj=elemsd, nsd=obj%nsd, xidim=obj%xidim, &
                      nns=tdof, nips=nips)
 
 CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
+
+! A degree-zero cell has one constant basis and no lattice vertices.
+IF (obj%order .EQ. 0) THEN
+  elemsd%N(1, 1:nips) = 1.0_DFP
+  elemsd%dNdXi(1, 1:obj%xidim, 1:nips) = 0.0_DFP
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - [END] ')
+#endif
+  RETURN
+END IF
 
 CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
 CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
@@ -218,7 +222,7 @@ n2 = 3
 ! dof starts from 3+1 to 3+obj%order-1
 n1 = n2 + 1
 n2 = n2 + obj%order - 1
-isok = bool1 .AND. (obj%faceOrient(1, 1) .EQ. -1_I4B)
+isok = obj%faceOrient(1, 1) .EQ. -1_I4B
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
@@ -231,7 +235,7 @@ END IF
 ! dof starts from 3+1 to 3+obj%order-1
 n1 = n2 + 1
 n2 = n2 + obj%order - 1
-isok = bool1 .AND. (obj%faceOrient(1, 2) .EQ. -1_I4B)
+isok = obj%faceOrient(1, 2) .EQ. -1_I4B
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
@@ -244,7 +248,7 @@ END IF
 ! dof starts from 3+1 to 3+obj%order-1
 n1 = n2 + 1
 n2 = n2 + obj%order - 1
-isok = bool1 .AND. (obj%faceOrient(1, 3) .EQ. -1_I4B)
+isok = obj%faceOrient(1, 3) .EQ. -1_I4B
 IF (isok) THEN
   CALL Reverse(ans=elemsd%N, r1=n1, r2=n2, c1=1, c2=elemsd%nips, dim=1)
   CALL Reverse(ans=elemsd%dNdXi, r1=n1, r2=n2, c1=1, c2=elemsd%xidim, &
@@ -278,17 +282,18 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%TriangleH1LagFE_GetGlobalElemShapeData( &
-  elemsd=elemsd, geoElemsd=geoElemsd, xij=xij)
+CALL obj%TriangleH1LagFE_GetGlobalElemShapeData(elemsd=elemsd, &
+                                                geoElemsd=geoElemsd, &
+                                                xij=xij)
 
 faceCon = FacetConnectivity_Triangle()
-
 nns = geoFacetElemsd%nns
 
 #ifdef DEBUG_VER
 isok = nns .EQ. 2_I4B
 CALL AssertError1(isok, myName, &
-                  "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
+                  "WIP, this routine currently works for nns .eq. 2 "// &
+                  "for geoFacetElemsd")
 #endif
 
 nips = geoFacetElemsd%nips
@@ -304,7 +309,8 @@ CALL Elemsd_Set(obj=facetElemsd, val=line_xij(1:nsd, 1:nns), &
 
 CALL Elemsd_SetNormal(obj=facetElemsd)
 
-n1 = 3; n2 = facetElemsd%nns
+n1 = 3
+n2 = facetElemsd%nns
 isok = obj%isFaceOrient &
        .AND. (obj%faceOrient(1, localFaceNumber) .EQ. -1_I4B) &
        .AND. n2 .GT. n1
