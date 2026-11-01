@@ -38,4 +38,13 @@ CALL OK(ALL(ABS(lambda - 0.5_DFP) .LT. 1.0E-12_DFP), "Default lambda")
 CALL obj%DEALLOCATE()
 CALL OK(obj%GetNSD() .EQ. 0_I4B, "Deallocate restores default dimension")
 CALL OK(obj%GetTotalDOF() .EQ. 0_I4B, "Deallocate resets DOF count")
+CALL OK(.NOT. obj%GetIsBrokenSpace(), "isBrokenSpace: ")
+
+CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
+                  baseContinuity="H1", baseInterpolation="Lagrange", &
+                  order=2_I4B, isBrokenSpace=math%yes, &
+                  ipType=TypeInterpolationOpt%Equidistance, &
+                  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+                  quadratureOrder=[6_I4B])
+CALL OK(obj%GetIsBrokenSpace(), "isBrokenSpace: ")
 END PROGRAM main
