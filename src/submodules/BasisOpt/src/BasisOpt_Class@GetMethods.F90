@@ -17,13 +17,19 @@
 !
 
 SUBMODULE(BasisOpt_Class) GetMethods
-USE Display_Method, ONLY: ToString, Display
-USE ReferenceElement_Method, ONLY: GetTotalNodes, GetTotalFaces
-USE ElemshapeData_Method, ONLY: Elemsd_Set => Set, &
-                                LagrangeFacetElemShapeData, &
-                                HierarchicalFacetElemShapeData
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: HierarchicalFacetElemShapeData
+USE ElemshapeData_Method, ONLY: LagrangeFacetElemShapeData
+USE ReferenceElement_Method, ONLY: GetTotalFaces
+USE ReferenceElement_Method, ONLY: GetTotalNodes
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "BasisOpt_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

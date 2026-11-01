@@ -16,25 +16,28 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) LineH1LagrangeFEMethods
-USE Display_Method, ONLY: Display, ToString
-
-USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE, Elemsd_Set => &
-                                Set, LagrangeElemShapeData, &
-                                LagrangeFacetElemShapeData
-
-USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_, &
-                                    LagrangeDOF_Line, LagrangeEvalAll_Line_, &
-                                    LagrangeGradientEvalAll_Line_
-
-USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_, &
-                                  GetTotalQuadraturePoints
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
+USE ElemshapeData_Method, ONLY: LagrangeFacetElemShapeData
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE LineInterpolationUtility, ONLY: LagrangeDOF_Line
+USE LineInterpolationUtility, ONLY: LagrangeEvalAll_Line_
+USE LineInterpolationUtility, ONLY: LagrangeGradientEvalAll_Line_
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
 USE ReallocateUtility, ONLY: Reallocate
-
 USE ReverseUtility, ONLY: Reverse
-USE SwapUtility, ONLY: SWAP, SWAP_
-
+USE SwapUtility, ONLY: SWAP
+USE SwapUtility, ONLY: SWAP_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@LineH1LagrangeFEMethods.F90"
+#endif
 
 CONTAINS
 

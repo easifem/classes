@@ -16,17 +16,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) ConstructorMethods
-USE StringUtility, ONLY: UpperCase
+USE BasisOptUtility, ONLY: SetIntegerType
+USE BasisOptUtility, ONLY: SetRealType
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE InterpolationUtility, ONLY: RefElemDomain
-USE ReferenceElement_Method, ONLY: ElementTopology, &
-                                   XiDimension, &
-                                   RefCoord_, &
-                                   GetElementIndex
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Copy => Copy
-USE Display_Method, ONLY: ToString, Display
-USE BasisOptUtility, ONLY: SetIntegerType, SetRealType
-
+USE ReferenceElement_Method, ONLY: ElementTopology
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE ReferenceElement_Method, ONLY: RefCoord_
+USE ReferenceElement_Method, ONLY: XiDimension
+USE StringUtility, ONLY: UpperCase
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 

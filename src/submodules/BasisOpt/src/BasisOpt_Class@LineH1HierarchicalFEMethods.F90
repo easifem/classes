@@ -16,25 +16,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) LineH1HierarchicalFEMethods
-USE Display_Method, ONLY: ToString, Display
-
-USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData, &
-                                Elemsd_Set => Set, &
-                                HierarchicalFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE
-
-USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_, &
-                                    HeirarchicalBasisGradient_Line_
-
-USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
-                                  GetQuadratureWeights_
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
+USE ElemshapeData_Method, ONLY: HierarchicalFacetElemShapeData
+USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_
+USE LineInterpolationUtility, ONLY: HeirarchicalBasisGradient_Line_
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
 USE ReallocateUtility, ONLY: Reallocate
-
-USE SwapUtility, ONLY: SWAP_, SWAP
 USE ReverseUtility, ONLY: Reverse
-
+USE SwapUtility, ONLY: SWAP
+USE SwapUtility, ONLY: SWAP_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@LineH1HierarchicalFEMethods.F90"
+#endif
 
 CONTAINS
 

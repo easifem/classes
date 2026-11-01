@@ -17,25 +17,33 @@
 !
 
 SUBMODULE(BasisOpt_Class) TomlMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
-USE Display_Method, ONLY: Display, ToString
-USE StringUtility, ONLY: UpperCase
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
-USE TomlUtility, ONLY: GetValue, GetValue_
-USE BaseInterpolation_Method, ONLY: BaseType_ToChar, &
-                                    BaseType_ToInteger, &
-                                    InterpolationPoint_ToChar, &
-                                    InterpolationPoint_ToInteger
+USE BaseInterpolation_Method, ONLY: BaseType_ToChar
+USE BaseInterpolation_Method, ONLY: BaseType_ToInteger
+USE BaseInterpolation_Method, ONLY: InterpolationPoint_ToChar
+USE BaseInterpolation_Method, ONLY: InterpolationPoint_ToInteger
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE FEVariable_Method, ONLY: FEVariable_ToInteger
-USE ReferenceElement_Method, ONLY: ElementTopology, &
-                                   ElementType, &
-                                   XiDimension, &
-                                   RefCoord_, &
-                                   GetElementIndex
+USE GlobalData, ONLY: CHAR_LF
+USE GlobalData, ONLY: stdout
 USE InterpolationUtility, ONLY: RefElemDomain
-
+USE ReferenceElement_Method, ONLY: ElementTopology
+USE ReferenceElement_Method, ONLY: ElementType
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE ReferenceElement_Method, ONLY: RefCoord_
+USE ReferenceElement_Method, ONLY: XiDimension
+USE StringUtility, ONLY: UpperCase
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_serialize
+USE TomlUtility, ONLY: GetValue
+USE TomlUtility, ONLY: GetValue_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@TomlMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -104,7 +112,7 @@ SUBROUTINE ElemTypeFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat, ii, jj
+  INTEGER(I4B) :: origin, STAT, ii, jj
   LOGICAL(LGT) :: isFound
   TYPE(String) :: astr
 
@@ -119,7 +127,7 @@ SUBROUTINE ElemTypeFromToml(obj, table)
 
   CALL GetValue(table=table, key="elemType", VALUE=astr, &
                 default_value="NA", &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -160,7 +168,7 @@ SUBROUTINE QuadOptFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, isok
   CHARACTER(*), PARAMETER :: default_quadOptName = "quadOpt"
   TYPE(String) :: astr
@@ -177,7 +185,7 @@ SUBROUTINE QuadOptFromToml(obj, table)
 
   CALL GetValue(table=table, key="quadOptName", VALUE=astr, &
                 default_value=default_quadOptName, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
   IF (.NOT. isFound) THEN
@@ -189,7 +197,7 @@ SUBROUTINE QuadOptFromToml(obj, table)
   !! Get the node from toml table with name quadOptName
   node => NULL()
   CALL toml_get(table, astr%chars(), node, origin=origin, &
-                requested=.FALSE., stat=stat)
+                requested=.FALSE., STAT=STAT)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -228,7 +236,7 @@ SUBROUTINE BaseInterpolationFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
   TYPE(String) :: astr
 
@@ -243,7 +251,7 @@ SUBROUTINE BaseInterpolationFromToml(obj, table)
 
   CALL GetValue(table=table, key="baseInterpolation", VALUE=astr, &
                 default_value=TypeBasisOpt%baseInterpolation, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
   obj%baseInterpolation = UpperCase(astr%slice(1, 4))
 
@@ -264,7 +272,7 @@ SUBROUTINE BaseContinuityFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
   TYPE(String) :: astr
 
@@ -280,7 +288,7 @@ SUBROUTINE BaseContinuityFromToml(obj, table)
   CALL GetValue(table=table, key="baseContinuity", &
                 VALUE=astr, &
                 default_value=TypeBasisOpt%baseContinuity, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
   obj%baseContinuity = UpperCase(astr%slice(1, 2))
 
@@ -301,7 +309,7 @@ SUBROUTINE IpTypeFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
   TYPE(String) :: astr
 
@@ -316,7 +324,7 @@ SUBROUTINE IpTypeFromToml(obj, table)
 
   CALL GetValue(table=table, key="ipType", VALUE=astr, &
                 default_value=TypeBasisOpt%ipType_char, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
   obj%ipType_char = astr%chars()
   obj%ipType = InterpolationPoint_ToInteger(astr%chars())
 
@@ -337,7 +345,7 @@ SUBROUTINE FeTypeFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
   TYPE(String) :: astr
 
@@ -352,7 +360,7 @@ SUBROUTINE FeTypeFromToml(obj, table)
 
   CALL GetValue(table=table, key="feType", VALUE=astr, &
                 default_value=TypeBasisOpt%feType_char, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
   obj%feType_char = astr%chars()
   obj%feType = FEVariable_ToInteger(astr%chars())
 
@@ -373,7 +381,7 @@ SUBROUTINE BasisTypeFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, isBasisTypeScalar
   TYPE(String) :: astr(3)
   INTEGER(I4B) :: tBasisType, ii, tsize
@@ -390,7 +398,7 @@ SUBROUTINE BasisTypeFromToml(obj, table)
   CALL GetValue_(table=table, key="basisType", &
                  VALUE=astr, tsize=tBasisType, &
                  isScalar=isBasisTypeScalar, &
-                 origin=origin, stat=stat, isFound=isFound)
+                 origin=origin, STAT=STAT, isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -429,7 +437,7 @@ SUBROUTINE AlphaFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, isAlphaScalar
   REAL(DFP) :: alpha(3)
   INTEGER(I4B) :: tAlpha, ii, tsize
@@ -444,7 +452,8 @@ SUBROUTINE AlphaFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="alpha", VALUE=alpha, tsize=tAlpha, &
-            isScalar=isAlphaScalar, origin=origin, stat=stat, isFound=isFound)
+                 isScalar=isAlphaScalar, origin=origin, STAT=STAT, &
+                 isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -478,7 +487,7 @@ SUBROUTINE BetaFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, isbetaScalar
   REAL(DFP) :: beta(3)
   INTEGER(I4B) :: tbeta, ii, tsize
@@ -493,7 +502,8 @@ SUBROUTINE BetaFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="beta", VALUE=beta, tsize=tbeta, &
-             isScalar=isbetaScalar, origin=origin, stat=stat, isFound=isFound)
+                 isScalar=isbetaScalar, origin=origin, STAT=STAT, &
+                 isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -527,7 +537,7 @@ SUBROUTINE LambdaFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, islambdaScalar
   REAL(DFP) :: lambda(3)
   INTEGER(I4B) :: tlambda, ii, tsize
@@ -542,7 +552,8 @@ SUBROUTINE LambdaFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="lambda", VALUE=lambda, tsize=tlambda, &
-           isScalar=islambdaScalar, origin=origin, stat=stat, isFound=isFound)
+                 isScalar=islambdaScalar, origin=origin, STAT=STAT, &
+                 isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -579,7 +590,7 @@ LOGICAL(LGT) :: isok
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -590,13 +601,13 @@ CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+                  'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node, elemType=elemType, nsd=nsd)

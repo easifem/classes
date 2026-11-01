@@ -38,6 +38,11 @@ USE TriangleInterpolationUtility, ONLY: LagrangeEvalAll_Triangle_
 USE TriangleInterpolationUtility, ONLY: LagrangeGradientEvalAll_Triangle_
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@TriangleH1LagrangeFEMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
