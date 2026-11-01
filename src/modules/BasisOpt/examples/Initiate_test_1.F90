@@ -1,11 +1,13 @@
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-10-29
-! summary: Exercise Initiate
+! summary: Constructing BasisOpt using Initiate method
 
 PROGRAM main
 USE BaseType, ONLY: TypeElemNameOpt
 USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE BasisOpt_Class, ONLY: BasisOpt_
+USE ExceptionHandler_Class, ONLY: e
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
 USE Test_Method, ONLY: OK
@@ -14,9 +16,11 @@ TYPE(BasisOpt_) :: obj
 INTEGER(I4B) :: order, basis(3), dofs(4), transform
 REAL(DFP) :: alpha(3), beta(3), lambda(3)
 
+CALL e%SetQuietMode(math%yes)
+
 CALL obj%Initiate(elemType=TypeElemNameOpt%Triangle, nsd=2_I4B, &
                   baseContinuity="H1", baseInterpolation="Lagrange", &
-                  order=2_I4B, &
+                  order=2_I4B, isBrokenSpace=math%no, &
                   ipType=TypeInterpolationOpt%Equidistance, &
                   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
                   quadratureOrder=[6_I4B])
