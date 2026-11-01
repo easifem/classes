@@ -324,18 +324,24 @@ CONTAINS
   !! Set Quadrature Type for a quadrangle.
   PROCEDURE, PUBLIC, PASS(obj) :: SetCellOrientation => obj_SetCellOrientation
   !! Set cell orientation data and activity state.
+  !! The method does not set orientation for brokenSpaces
   PROCEDURE, PUBLIC, PASS(obj) :: SetFaceOrientation => &
     obj_SetFaceOrientation
   !! Set face orientation data and activity state.
+  !! The method does not set orientation for brokenSpaces
   PROCEDURE, PUBLIC, PASS(obj) :: SetEdgeOrientation => &
     obj_SetEdgeOrientation
   !! Set edge orientation data and activity state.
+  !! The method does not set orientation for brokenSpaces
   PROCEDURE, PUBLIC, PASS(obj) :: Line_FixOrientOfNptrs
   !! Orient line connectivity.
+  !! The method does not fix orientation for brokenSpaces
   PROCEDURE, PUBLIC, PASS(obj) :: Quadrangle_FixOrientOfNptrs
   !! Orient quadrangle connectivity.
+  !! The method does not fix orientation for brokenSpaces
   PROCEDURE, PUBLIC, PASS(obj) :: Triangle_FixOrientOfNptrs
   !! Orient triangle connectivity.
+  !! The method does not fix orientation for brokenSpaces
 
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFace => obj_GetTotalFace
@@ -1236,12 +1242,21 @@ END INTERFACE
 ! date: 2025-10-13
 ! summary: Set cell orientation data and activity state
 !
-! Sets the corresponding activity flag from PRESENT(cellOrient). If tCell is
-! supplied, updates the shared active order/orientation size for this entity.
+! Sets the corresponding activity flag from PRESENT(cellOrient).
+!
+! If tCell is supplied, updates the shared active order/orientation size
+! for this entity.
+!
 ! Copies supplied values, broadcasting a one-entry input. With no data, clears
-! the activity flag without clearing stored values or active size. Optional
-! errCheck enables DEBUG shape and presence checks where applicable. Does not
-! recompute tdof or reset shape caches.
+! the activity flag without clearing stored values or active size.
+!
+! Optional errCheck enables DEBUG shape and presence checks where applicable.
+! Does not recompute tdof or reset shape caches.
+!
+!@note
+! In case of brokenSpaces, this method will not set the orientation.
+! Also isCellOrder will be set to false.
+!@endnote
 !
 ! Examples
 !
@@ -1301,12 +1316,23 @@ END INTERFACE
 ! date: 2025-10-13
 ! summary: Set face orientation data and activity state
 !
-! Sets the corresponding activity flag from PRESENT(faceOrient). If tFace is
-! supplied, updates the shared active order/orientation size for this entity.
-! Copies supplied values, broadcasting a one-entry input. With no data, clears
-! the activity flag without clearing stored values or active size. Optional
-! errCheck enables DEBUG shape and presence checks where applicable. Does not
-! recompute tdof or reset shape caches.
+! Sets the corresponding activity flag from PRESENT(faceOrient).
+!
+! If tFace is supplied, updates the shared active order/orientation size
+! for this entity.
+!
+! Copies supplied values, broadcasting a one-entry input.
+!
+! With no data, clears the activity flag without clearing stored values
+! or active size.
+!
+! Optional errCheck enables DEBUG shape and presence checks where
+! applicable. Does not recompute tdof or reset shape caches.
+!
+!@note
+! In case of brokenSpace this method does not set orientation.
+! And isEdgeOrder is set to falser.
+!@endnote
 !
 ! Examples
 !
@@ -1366,12 +1392,24 @@ END INTERFACE
 ! date: 2025-10-13
 ! summary: Set edge orientation data and activity state
 !
-! Sets the corresponding activity flag from PRESENT(edgeOrient). If tEdge is
-! supplied, updates the shared active order/orientation size for this entity.
-! Copies supplied values, broadcasting a one-entry input. With no data, clears
-! the activity flag without clearing stored values or active size. Optional
-! errCheck enables DEBUG shape and presence checks where applicable. Does not
-! recompute tdof or reset shape caches.
+! Sets the corresponding activity flag from PRESENT(edgeOrient).
+!
+! If tEdge is supplied, updates the shared active order/orientation size
+! for this entity.
+!
+! Copies supplied values, broadcasting a one-entry input.
+!
+! With no data, clears the activity flag without clearing stored values or
+! active size.
+!
+! Optional errCheck enables DEBUG shape and presence checks where applicable.
+!
+! Does not recompute tdof or reset shape caches.
+!
+!@note
+! In case of brokenSpaces, this method does not set orientation.
+! We set isEdgeOrient to false in case of brokenSpace.
+!@endnote
 !
 ! Examples
 !
@@ -1431,8 +1469,8 @@ END INTERFACE
 ! date: 2026-10-18
 ! summary: Orient line connectivity
 !
-! Currently leaves nptrs unchanged; the line implementation only emits DEBUG
-! messages.
+! This method does nothing, as we do not require fixing nptrs for line
+! elements.
 !
 ! Examples
 !
@@ -1491,10 +1529,17 @@ END INTERFACE
 ! summary: Orient quadrangle connectivity
 !
 ! For isotropic degree greater than two and active face orientations, reverses
-! each edge-interior block whose faceOrient(1,iface) is -1. The first 4 vertex
-! entries and cell-interior entries stay unchanged. The active connectivity
-! layout must match the polynomial degree. tsize is accepted but not used by
-! this implementation.
+! each edge-interior block whose faceOrient(1,iface) is -1.
+!
+! The first 4 vertex entries and cell-interior entries stay unchanged.
+!
+! The active connectivity layout must match the polynomial degree.
+!
+! tsize is accepted but not used by this implementation.
+!
+!@note
+! We do not fix orientation in case for brokenSpace.
+!@endnote
 !
 ! Examples
 !
@@ -1553,10 +1598,19 @@ END INTERFACE
 ! summary: Orient triangle connectivity
 !
 ! For isotropic degree greater than two and active face orientations, reverses
-! each edge-interior block whose faceOrient(1,iface) is -1. The first 3 vertex
-! entries and cell-interior entries stay unchanged. The active connectivity
-! layout must match the polynomial degree. tsize is accepted but not used by
-! this implementation.
+! each edge-interior block whose faceOrient(1,iface) is -1.
+!
+! The first 3 vertex
+! entries and cell-interior entries stay unchanged.
+!
+! The active connectivity
+! layout must match the polynomial degree.
+!
+! tsize is accepted but not used by this implementation.
+!
+!@note
+! We do not fix orientation for brokenSpace
+!@endnote
 !
 ! Examples
 !
@@ -2927,7 +2981,7 @@ INTERFACE
     isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, tCellOrder, &
     quadratureIsHomogeneous, quadratureType, quadratureOrder, &
     quadratureNips, quadratureIsOrder, quadratureIsNips, quadratureAlpha, &
-    quadratureBeta, quadratureLambda)
+    quadratureBeta, quadratureLambda, isBrokenSpace)
     CLASS(BasisOpt_), INTENT(IN) :: obj
     !! Basis options object.
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nsd
@@ -3005,6 +3059,8 @@ INTERFACE
     !! Whether quadrature is specified by accuracy order.
     LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: quadratureIsNips
     !! Whether quadrature is specified by point count.
+    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isBrokenSpace
+    !! Get isBrokenSpace
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
