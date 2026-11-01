@@ -32,11 +32,13 @@ USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemshapeData_
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
-USE GlobalData, ONLY: DFP, I4B, INT8, LGT
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: INT8
+USE GlobalData, ONLY: LGT
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: FEDOF_
@@ -62,8 +64,10 @@ PUBLIC :: FEDOFSetSparsity
 ! - edgeIA, faceIA and cellIA are cumulative offsets, not CSR column
 !   indices. Entity i owns IA(i):IA(i+1)-1. Equal adjacent offsets denote
 !   an empty entity block. The last cell offset is tdof+1.
-! - Orders: cellOrder(iel) is the order of local element iel; the order of a
-!   face or an edge is the minimum order of the cells around it. Hierarchical
+! - DG: Lagrange on 2D triangles and quadrangles uses disjoint cell blocks,
+!   including constant cells. No mesh entity contributes shared unknowns.
+! - Orders: cellOrder(iel) is the order of local element iel. For H1, each
+!   face or edge uses the minimum order of the cells around it. Hierarchical
 !   H1 in 2D preserves these entity orders when configuring the shared FE.
 ! - fe(ii) is the finite element of element topology ii (FEFactory); SetFE
 !   sets its orders and orientations for one element.
@@ -92,25 +96,27 @@ TYPE :: FEDOF_
   LOGICAL(LGT) :: isTotalActiveCellsSet = math%no
   !! It is set tot true when we set tActiveCells, Lazy computing in
   !! GetTotalActiveCells method.
-  INTEGER(I4B) :: tdof = 0
+  LOGICAL(LGT) :: isBrokenSpace = math%no
+  !! If true then we are dealing with broken spaces
+  INTEGER(I4B) :: tdof = math%zero_i
   !! Total number of degrees of freedom
-  INTEGER(I4B) :: tNodes = 0
-  !! Number of mesh vertices; vertex DOFs occupy 1:tNodes
-  INTEGER(I4B) :: tEdges = 0
+  INTEGER(I4B) :: tNodes = math%zero_i
+  !! Shared vertex DOF count: H1 mesh vertices, zero for DG
+  INTEGER(I4B) :: tEdges = math%zero_i
   !! Total number of edges
-  INTEGER(I4B) :: tFaces = 0
+  INTEGER(I4B) :: tFaces = math%zero_i
   !! Total number of faces
-  INTEGER(I4B) :: tCells = 0
+  INTEGER(I4B) :: tCells = math%zero_i
   !! Total number of cells
-  INTEGER(I4B) :: maxCon = 0
+  INTEGER(I4B) :: maxCon = math%zero_i
   !! maximum number of connectivity
-  INTEGER(I4B) :: sumElemTotalDOF = 0
+  INTEGER(I4B) :: sumElemTotalDOF = math%zero_i
   !! sum of total  degrees of freedom for each element.
   !! this is useful for DGM
   !! This is cached when we initiate the FEDOF
-  INTEGER(I4B) :: tActiveCells = 0
+  INTEGER(I4B) :: tActiveCells = math%zero_i
   !! total number of active cells in FEDOF and mesh.
-  INTEGER(I4B) :: maxQuadPoint = 0
+  INTEGER(I4B) :: maxQuadPoint = math%zero_i
   !! maximum number of quadrature points
   CHARACTER(2) :: baseContinuity = "H1"
   !! continuity or conformity of basis defined on reference
@@ -153,9 +159,10 @@ TYPE :: FEDOF_
   !! Face-interior DOF offsets, size tFaces+1; face i owns
   !! faceIA(i):faceIA(i+1)-1. Starts at the last edge offset.
   INTEGER(I4B), ALLOCATABLE :: cellIA(:)
-  !! Cell-interior DOF offsets, size tCells+1; local cell i owns
+  !! Cell DOF offsets, size tCells+1; local cell i owns
   !! cellIA(i):cellIA(i+1)-1. Starts at the last face offset;
   !! cellIA(tCells+1) is tdof+1. Empty ranges have equal offsets.
+  !! DG stores the full local basis here; H1 stores cell interiors.
   TYPE(AbstractFEPointer_) :: fe(8)
   !! pointer to finite element object
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
@@ -176,9 +183,15 @@ CONTAINS
   !! Initiate the FEDOF
   PROCEDURE, PRIVATE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
   !! Allocate the order and degree of freedom arrays
-  PROCEDURE, PRIVATE, PASS(obj) :: SetOrdersFromCellOrder => &
-    obj_SetOrdersFromCellOrder
-  !! Count entity DOFs, then build cumulative offsets in entity-number order
+  PROCEDURE, PRIVATE, PASS(obj) :: Set => obj_Set
+  !! Set degrees of freedom numbering and offsets edgeIA, faceIA, cellIA
+  !!   based on conformity
+  PROCEDURE, PRIVATE, PASS(obj) :: SetFedofForH1 => obj_SetFedofForH1
+  !! Set degrees of freedom numbering and offsets edgeIA, faceIA, cellIA
+  !!   for H1 conformity
+  PROCEDURE, PRIVATE, PASS(obj) :: SetFedofForDG => obj_SetFedofForDG
+  !! Set degrees of freedom numbering and offsets edgeIA, faceIA, cellIA
+  !!   for DG conformity
   PROCEDURE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy a FEDOF
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
@@ -245,7 +258,7 @@ CONTAINS
   GENERIC, PUBLIC :: GetTotalFaceDOF => GetTotalFaceDOF1, GetTotalFaceDOF2
   !! Get the number of degrees of freedom on a face
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellDOF => obj_GetCellDOF
-  !! Get the degrees of freedom inside a cell
+  !! Get cell-interior H1 DOFs or the full DG cell block
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
   !! Get the number of degrees of freedom of a cell
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => obj_GetTotalVertexDOF
@@ -259,12 +272,12 @@ CONTAINS
   GENERIC, PUBLIC :: GetTotalDOF => GetTotalDOF1, GetTotalDOF2, GetTotalDOF3
   !! Get the number of degrees of freedom
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity => obj_GetConnectivity
-  !! Get element DOFs, using the first option letter
+  !! Get element DOFs; DG returns only owning-cell blocks
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
   !! Get element DOFs without allocation, using the first option letter
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity_ => &
     obj_GetFacetConnectivity_
-  !! Get vertex and face-interior DOFs of a 2D facet
+  !! Get H1 facet DOFs or the owning-cell DG trace block
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get a pointer to the mesh of the FEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: GetDomainPointer => obj_GetDomainPointer
@@ -442,10 +455,15 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Initiate a FEDOF with the same order on all cells
 !
+! DG currently supports Lagrange interpolation on 2D triangles and
+! quadrangles, with nonnegative cell orders. Every cell owns all its DOFs;
+! there are no shared vertex, edge or face unknowns. The local polynomial
+! basis is reused from the H1 Lagrange FE. See Initiate2 for a DG example.
+!
 ! Initiate sets the base continuity and interpolation, keeps pointers to the
 ! domain and to its mesh of dimension nsd, and sets the order of the cells.
-! The order of a face is the minimum order of the cells around it, and the
-! order of an edge is the minimum order of the cells around it. Then the
+! For conforming spaces, a face or edge uses the minimum order of its
+! neighboring cells. Then the
 ! degrees of freedom are numbered: first one per vertex node (the local node
 ! number), then edge-, face- and cell-interior DOFs in increasing entity
 ! number within each block. Counts are collected before offsets are built.
@@ -457,99 +475,151 @@ END INTERFACE
 ! This routine is for a homogeneous order: all cells get the order order. It
 ! calls the version with an order vector.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
-!   order : INTEGER(I4B), intent(in) - order of all cells
-!   dom : CLASS(AbstractDomain_), intent(in) - domain; the FEDOF uses its mesh
-!     of dimension nsd
-!   baseContinuity : CHARACTER(*), intent(in) - continuity of the basis: H1,
-!     HCurl, HDiv or DG (the first two letters are used)
-!   baseInterpolation : CHARACTER(*), intent(in) - interpolation of the basis:
-!     Lagrange, Hierarchical, Orthogonal, Hermit or Serendipity (the first
-!     four letters are used)
-!   feType : INTEGER(I4B), optional, intent(in) - finite element type: scalar,
-!     vector or tensor
-!   ipType : INTEGER(I4B), optional, intent(in) - interpolation point type;
-!     needed for Lagrange basis
-!   basisType(:) : INTEGER(I4B), optional, intent(in) - basis used to build
-!     Lagrange polynomials; for Lagrange basis
-!   alpha(:) : REAL(DFP), optional, intent(in) - Jacobi alpha parameter; for
-!     Lagrange basis built on Jacobi polynomials
-!   beta(:) : REAL(DFP), optional, intent(in) - Jacobi beta parameter; for
-!     Lagrange basis built on Jacobi polynomials
-!   lambda(:) : REAL(DFP), optional, intent(in) - Ultraspherical lambda
-!     parameter; for Lagrange basis built on Ultraspherical polynomials
-!   dofType(:) : INTEGER(I4B), optional, intent(in) - degree of freedom type
-!     (default nodal); size 4
-!   transformType : INTEGER(I4B), optional, intent(in) - transformation from
-!     the reference to the physical element
-!   quadratureIsHomogeneous : LOGICAL(LGT), optional, intent(in) - if true,
-!     the same quadrature is used in all directions
-!   quadratureType(:) : INTEGER(I4B), optional, intent(in) - quadrature type;
-!     see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureOrder(:) : INTEGER(I4B), optional, intent(in) - quadrature
-!     accuracy; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureIsOrder : LOGICAL(LGT), optional, intent(in) - if true,
-!     quadratureOrder is used
-!   quadratureNips(:) : INTEGER(I4B), optional, intent(in) - number of
-!     quadrature points; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureIsNips : LOGICAL(LGT), optional, intent(in) - if true,
-!     quadratureNips is used
-!   quadratureAlpha(:) : REAL(DFP), optional, intent(in) - Jacobi alpha of the
-!     quadrature; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureBeta(:) : REAL(DFP), optional, intent(in) - Jacobi beta of the
-!     quadrature; see QuadratureOpt_; size 3 (x, y, z)
-!   quadratureLambda(:) : REAL(DFP), optional, intent(in) - Ultraspherical
-!     lambda of the quadrature; see QuadratureOpt_; size 3 (x, y, z)
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
 !```fortran
 ! PROGRAM main
-!   USE FEDOF_Class, ONLY: FEDOF_
-!   USE FEDomain_Class, ONLY: FEDomain_
-!   USE AbstractMesh_Class, ONLY: AbstractMesh_
-!   USE HDF5File_Class, ONLY: HDF5File_
-!   USE Display_Method, ONLY: Display
-!   USE GlobalData, ONLY: DFP
-!   USE GlobalData, ONLY: I4B
-!   USE GlobalData, ONLY: LGT
-!   USE Test_Method, ONLY: OK
-!   USE Test_Method, ONLY: IS
-!   USE ExceptionHandler_Class, ONLY: e
-!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-!   USE BaseType, ONLY: math => TypeMathOpt
-!   USE BaseType, ONLY: quadopt => TypeQuadratureOpt
-!   IMPLICIT NONE
+! USE AbstractMesh_Class, ONLY: AbstractMesh_
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE BaseType, ONLY: quadopt => TypeQuadratureOpt
+! USE BaseType, ONLY: TypeInterpolationOpt
+! USE Display_Method, ONLY: Display
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: LGT
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! USE Test_Method, ONLY: IS
+! IMPLICIT NONE
 !
-!   CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
-!   TYPE(FEDOF_) :: obj
-!   TYPE(FEDomain_) :: dom
-!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
-!   TYPE(HDF5File_) :: meshfile
-!   INTEGER(I4B) :: found, want
-!   LOGICAL(LGT) :: isok
+! CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
+! TYPE(FEDOF_) :: obj
+! TYPE(FEDomain_) :: dom
+! CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
+! TYPE(HDF5File_) :: meshfile
+! INTEGER(I4B) :: found, want
+! LOGICAL(LGT) :: isok
 !
-!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-!   CALL meshfile%Initiate(filename, mode="READ")
-!   CALL meshfile%OPEN()
-!   CALL dom%Initiate(meshfile, '')
-!   meshptr => dom%GetMeshPointer()
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL meshfile%Initiate(filename, mode="READ")
+! CALL meshfile%OPEN()
+! CALL dom%Initiate(meshfile, '')
+! meshptr => dom%GetMeshPointer()
 !
-!     CALL obj%Initiate( &
-!                        order=1, &
-!                        dom=dom, &
-!                        baseContinuity="H1", &
-!                        baseInterpolation="Hierarchical", &
-!                        quadratureIsHomogeneous=math%yes, &
-!                        quadratureType=[quadopt%GaussLegendre], &
-!                        quadratureOrder=[2], &
-!                        quadratureIsOrder=math%yes)
+! CALL obj%Initiate(order=1, dom=dom, baseContinuity= "H1", &
+!                   baseInterpolation= "Hierarchical", &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[2], &
+!                   quadratureIsOrder=math%yes)
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes()
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Hierarchical, order=1")
 !
-!     found = obj%GetTotalDOF()
-!     want = meshptr%GetTotalNodes()
-!     isok = found .EQ. want
-!     CALL OK(isok, "Total DOF matched for order = 1: ")
+! CALL obj%Initiate(order=2, dom=dom, baseContinuity= "H1", &
+!                   baseInterpolation= "Hierarchical", &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[4], &
+!                   quadratureIsOrder=math%yes)
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes() + meshptr%GetTotalFaces()
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Hierarchical, order=2")
+!
+! CALL obj%Initiate(order=3, dom=dom, baseContinuity="H1", &
+!                   baseInterpolation="Hierarchical", &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[6], &
+!                   quadratureIsOrder=math%yes)
+!
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes() &
+!        + 2 * meshptr%GetTotalFaces() &
+!        + meshptr%GetTotalCells()
+!
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Hierarchical, order=3")
+!
+! CALL obj%Initiate(order=4, dom=dom, baseContinuity="H1", &
+!                   baseInterpolation="Hierarchical", &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[8], &
+!                   quadratureIsOrder=math%yes)
+!
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes() &
+!        + 3 * meshptr%GetTotalFaces() &
+!        + 3 * meshptr%GetTotalCells()
+!
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Hierarchical, order=4")
+!
+! CALL obj%Initiate(order=1, dom=dom, baseContinuity= "H1", &
+!                   baseInterpolation= "Lagrange", &
+!                   ipType=TypeInterpolationOpt%Equidistance, &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[2], &
+!                   quadratureIsOrder=math%yes)
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes()
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Lagrange, order=1")
+!
+! CALL obj%Initiate(order=2, dom=dom, baseContinuity= "H1", &
+!                   baseInterpolation= "Lagrange", &
+!                   ipType=TypeInterpolationOpt%Equidistance, &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[4], &
+!                   quadratureIsOrder=math%yes)
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes() + meshptr%GetTotalFaces()
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Lagrange, order=2")
+!
+! CALL obj%Initiate(order=3, dom=dom, baseContinuity="H1", &
+!                   baseInterpolation="Lagrange", &
+!                   ipType=TypeInterpolationOpt%Equidistance, &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[6], &
+!                   quadratureIsOrder=math%yes)
+!
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes() &
+!        + 2 * meshptr%GetTotalFaces() &
+!        + meshptr%GetTotalCells()
+!
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Lagrange, order=3")
+!
+! CALL obj%Initiate(order=4, dom=dom, baseContinuity="H1", &
+!                   baseInterpolation="Lagrange", &
+!                   ipType=TypeInterpolationOpt%Equidistance, &
+!                   quadratureIsHomogeneous=math%yes, &
+!                   quadratureType=[quadopt%GaussLegendre], &
+!                   quadratureOrder=[8], &
+!                   quadratureIsOrder=math%yes)
+!
+! found = obj%GetTotalDOF()
+! want = meshptr%GetTotalNodes() &
+!        + 3 * meshptr%GetTotalFaces() &
+!        + 3 * meshptr%GetTotalCells()
+!
+! isok = found .EQ. want
+! CALL OK(isok, "TotalDOF, H1, Lagrange, order=4")
 !
 ! END PROGRAM main
 !```
@@ -624,14 +694,13 @@ END INTERFACE
 ! See also: [[obj_Initiate2]], [[obj_Initiate4]], [[obj_ImportFromToml2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, order, dom, baseContinuity, &
-                                  baseInterpolation, feType, ipType, &
-                                  basisType, alpha, beta, lambda, dofType, &
-                                  transformType, quadratureIsHomogeneous, &
-                                  quadratureType, quadratureOrder, &
-                                  quadratureIsOrder, quadratureNips, &
-                                  quadratureIsNips, quadratureAlpha, &
-                                  quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate1( &
+    obj, order, dom, baseContinuity, baseInterpolation, isBrokenSpace, &
+    feType, ipType, &
+    basisType, alpha, beta, lambda, dofType, transformType, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureIsOrder, quadratureNips, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(IN) :: order
@@ -644,6 +713,8 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! interpolation of the basis: Lagrange, Hierarchical, Orthogonal, Hermit
     !! or Serendipity (the first four letters are used)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
+    !! If true then we are dealing with broken spaces
     INTEGER(I4B), INTENT(IN), OPTIONAL :: feType
     !! finite element type: scalar, vector or tensor
     INTEGER(I4B), INTENT(IN), OPTIONAL :: ipType
@@ -692,8 +763,18 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Initiate a FEDOF with an order for each cell
 !
-! Keep pointers to the domain and its mesh, assign the supplied cell orders,
-! and give each edge or face the minimum order of its neighboring cells.
+! For DG, this batch supports 2D Lagrange triangles and quadrangles,
+! including degree zero and independently chosen neighboring orders.
+! The minimum-neighbor rule above applies to conforming spaces, not DG.
+! DG puts the complete local basis in cellIA, starting at DOF one;
+! GetConnectivity with All or Cell returns that owning-cell block.
+! Vertex, Edge and Face options return empty blocks. There is no shared
+! entity order: global edgeOrder and faceOrder arrays are zero.
+! The local FE is an H1 polynomial evaluator; conformity is imposed only
+! by FEDOF numbering, so this reuse does not share DG unknowns.
+!
+! Keep pointers to the domain and its mesh and assign supplied cell orders.
+! For conforming spaces, edges and faces use minimum neighboring orders.
 ! Collect entity DOF counts before building cumulative numbering offsets:
 ! vertices, edges, faces, then cell interiors in entity-number order.
 ! Create one FE per topology. Call SetFE before evaluating a cell's FE.
@@ -713,6 +794,7 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-30: Verify minimum-order hierarchical H1 traces in 2D.
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Formula:
 !   For neighboring cells K and L sharing edge e:
@@ -956,15 +1038,12 @@ END INTERFACE
 ! See also: [[obj_SetFE]], [[obj_GetConnectivity]], [[obj_Initiate1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, order, dom, baseContinuity, &
-                                  baseInterpolation, feType, ipType, &
-                                  basisType, alpha, lambda, beta, islocal, &
-                                  dofType, transformType, &
-                                  quadratureIsHomogeneous, quadratureType, &
-                                  quadratureOrder, quadratureIsOrder, &
-                                  quadratureNips, quadratureIsNips, &
-                                  quadratureAlpha, quadratureBeta, &
-                                  quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, order, dom, baseContinuity, baseInterpolation, isBrokenSpace, &
+    feType, ipType, basisType, alpha, lambda, beta, islocal, dofType, &
+    transformType, quadratureIsHomogeneous, quadratureType, &
+    quadratureOrder, quadratureIsOrder, quadratureNips, quadratureIsNips, &
+    quadratureAlpha, quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(IN) :: order(:)
@@ -977,6 +1056,8 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! interpolation of the basis: Lagrange, Hierarchical, Orthogonal, Hermit
     !! or Serendipity (the first four letters are used)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
+    !! If true then we are dealing with broken spaces
     INTEGER(I4B), INTENT(IN), OPTIONAL :: feType
     !! finite element type: scalar, vector or tensor
     INTEGER(I4B), INTENT(IN), OPTIONAL :: ipType
@@ -1029,8 +1110,8 @@ END INTERFACE
 !
 ! Initiate sets the base continuity and interpolation, keeps pointers to the
 ! domain and to its mesh of dimension nsd, and sets the order of the cells.
-! The order of a face is the minimum order of the cells around it, and the
-! order of an edge is the minimum order of the cells around it. Then the
+! For conforming spaces, a face or edge uses the minimum order of its
+! neighboring cells. Then the
 ! degrees of freedom are numbered: first one per vertex node (the local node
 ! number), then edge-, face- and cell-interior DOFs in increasing entity
 ! number within each block. Counts are collected before offsets are built.
@@ -1161,14 +1242,12 @@ END INTERFACE
 ! See also: [[obj_Initiate2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate4(obj, order, dom, baseContinuity, &
-                                  baseInterpolation, feType, ipType, &
-                                  basisType, alpha, beta, lambda, dofType, &
-                                  transformType, quadratureIsHomogeneous, &
-                                  quadratureType, quadratureOrder, &
-                                  quadratureIsOrder, quadratureNips, &
-                                  quadratureIsNips, quadratureAlpha, &
-                                  quadratureBeta, quadratureLambda)
+  MODULE SUBROUTINE obj_Initiate4( &
+    obj, order, dom, baseContinuity, baseInterpolation, isBrokenSpace, &
+    feType, ipType, basisType, alpha, beta, lambda, dofType, transformType, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureIsOrder, quadratureNips, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(IN) :: order(:, :)
@@ -1179,6 +1258,8 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: baseContinuity
     !! continuity of the basis: H1, HCurl, HDiv or DG (the first two letters
     !! are used)
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
+    !! If true then we are dealing wiht broken spaces
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! interpolation of the basis: Lagrange, Hierarchical, Orthogonal, Hermit
     !! or Serendipity (the first four letters are used)
@@ -1229,6 +1310,10 @@ END INTERFACE
 ! date: 2025-06-06
 ! summary: Allocate the order and degree of freedom arrays
 !
+! In DG, tNodes counts shared vertex DOFs and is zero. Mesh vertex, edge
+! and face topology remains available through the mesh; the offset arrays
+! still have one more entry than their mesh entity counts.
+!
 ! For a 3D mesh, first call InitiateEdgeConnectivity of the mesh (it
 ! returns at once when the edges are numbered already), because the mesh
 ! does not number the edges by itself.
@@ -1238,11 +1323,9 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-29: initiate the edge connectivity of a 3D mesh
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
-!
-! See also: [[obj_SetOrdersFromCellOrder]]
+! See also: [[obj_Set]]
 
 INTERFACE
   MODULE SUBROUTINE obj_AllocateSizes(obj)
@@ -1252,14 +1335,23 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  SetOrdersFromCellOrder@ConstructorMethods
+!                                                     Set@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-06
-! summary: Count entity DOFs and build cumulative numbering offsets
+! summary: Dispatch DOF numbering according to the continuity of the space
 !
-! First visit active cells and store the interior DOF count of each edge,
+! Check active-cell data pointers in DEBUG mode, then delegate numbering
+! to SetFedofForH1 for H1 or SetFedofForDG for DG. Other continuity modes
+! are unsupported. The helpers build offsets and reset layout caches.
+!
+! For 2D Lagrange DG, skip shared entities and count the full cell basis:
+! (p+1)(p+2)/2 on triangles and (p+1)^2 on quadrangles. Cell blocks start
+! at one and follow local cell order. Inactive cells have empty ranges.
+! The vertex, edge and face DOF blocks are empty.
+!
+! For H1, first visit active cells and store the DOF count of each edge,
 ! face and cell once, using its order, continuity and interpolation.
 ! Entities not incident to an active cell have zero interior DOFs.
 ! Then accumulate counts in increasing entity-number order. Offset arrays
@@ -1269,16 +1361,19 @@ END INTERFACE
 ! For H1 on linear 2D geometry, the edge block is empty and each face
 ! (a line) has p-1 interior DOFs. A triangular cell has
 ! (p-1)(p-2)/2 interior DOFs, and a quadrangle has (p-1)^2.
-! All mesh vertices retain a vertex DOF. This procedure does not compact
+! For H1, all mesh vertices retain a vertex DOF. This does not compact
 ! vertices when cells are inactive. It resets the layout-dependent caches.
 !
 ! Changes:
 !   - 2026-10-30: Separate entity counting from cumulative numbering.
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
+!   - 2026-10-30: Rename to Set and delegate H1 and DG numbering to helpers.
 !
 ! Formula:
 !   For entity counts n_i and the first DOF b of a block:
 !   $$ I_1=b, \qquad I_{i+1}=I_i+n_i. $$
-!   Blocks start at N_v+1, the last edge offset, and the last face offset.
+!   In H1, blocks start at N_v+1, then the last edge and face offsets.
+!   DG has N_v=0 shared vertex DOFs, so its cell block starts at one.
 !   The total DOF count is the last cell offset minus one.
 !
 ! Examples
@@ -1415,13 +1510,64 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_AllocateSizes]], [[obj_Initiate1]]
+! See also: [[obj_AllocateSizes]], [[obj_Initiate1]],
+! [[obj_SetFedofForDG]], [[obj_SetFedofForH1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_SetOrdersFromCellOrder(obj)
+  MODULE SUBROUTINE obj_Set(obj)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
-  END SUBROUTINE obj_SetOrdersFromCellOrder
+  END SUBROUTINE obj_Set
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetFedofForH1@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-30
+! summary: Set edgeIA, faceIA, cellIA for H1 conformity
+!
+! Count each active edge, face and cell interior once. Build cumulative
+! offsets in entity-number order after the shared vertex DOFs. Entities
+! without active incident cells have empty ranges. Set tdof from the final
+! cell offset and invalidate the layout-dependent caches.
+!
+! Called by [[obj_Set]] after storage and approximation orders are set.
+!
+! See also: [[obj_SetFedofForDG]], [[obj_AllocateSizes]]
+!
+INTERFACE
+  MODULE SUBROUTINE obj_SetFedofForH1(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF object
+  END SUBROUTINE obj_SetFedofForH1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                           SetFedofForDG@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-30
+! summary: Set edgeIA, faceIA, cellIA for DG conformity
+!
+! Count the complete polynomial basis of each active cell using its element
+! type, cell order and interpolation family. Build disjoint cell blocks in
+! local cell order, starting at one. Inactive cells have empty ranges.
+! Every edge and face offset is one, representing empty shared DOF blocks.
+! Set tdof from the final cell offset and invalidate layout caches.
+!
+! Called by [[obj_Set]] after storage and cell orders are set. AllocateSizes
+! sets tNodes to zero for DG; mesh vertices do not own shared DG unknowns.
+!
+! See also: [[obj_SetFedofForH1]], [[obj_AllocateSizes]]
+!
+INTERFACE
+  MODULE SUBROUTINE obj_SetFedofForDG(obj)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF object
+  END SUBROUTINE obj_SetFedofForDG
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1793,6 +1939,10 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Get the degrees of freedom of an element
 !
+! For DG, All and Cell return the complete, contiguous owning-cell block.
+! Vertex, Edge and Face return empty arrays because these mesh entities
+! own no shared DG unknowns. Local basis rows use this same cell ordering.
+!
 ! Return the degree of freedom numbers of an element. Vertex, Edge, Face
 ! or Cell selects that entity; All returns vertex, edge, face and cell
 ! DOFs in this order. The first character of opt is used, in either case.
@@ -1800,6 +1950,7 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-30: Accept long connectivity options consistently.
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
 !   ans(:): Allocated array of the selected element DOF numbers.
@@ -1808,14 +1959,17 @@ END INTERFACE
 !
 !```fortran
 ! PROGRAM main
-! USE GlobalData, ONLY: I4B
-! USE GlobalData, ONLY: LGT
+! USE AbstractFE_Class, ONLY: AbstractFE_
 ! USE AbstractMesh_Class, ONLY: AbstractMesh_
 ! USE BaseType, ONLY: TypeInterpolationOpt
+! USE BaseType, ONLY: ElemShapeData_
+! USE BaseType, ONLY: QuadraturePoint_
 ! USE ExceptionHandler_Class, ONLY: e
 ! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 ! USE FEDOF_Class, ONLY: FEDOF_
 ! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
 ! USE HDF5File_Class, ONLY: HDF5File_
 ! USE MSHFile_Class, ONLY: MSHFile_
 ! USE Test_Method, ONLY: OK
@@ -1824,77 +1978,136 @@ END INTERFACE
 ! TYPE(FEDomain_), TARGET :: dom
 ! TYPE(HDF5File_) :: meshfile
 ! TYPE(MSHFile_) :: source
+! TYPE(ElemShapeData_) :: shapes
+! TYPE(QuadraturePoint_) :: quad
 ! CLASS(AbstractMesh_), POINTER :: mesh => NULL()
-! CHARACTER(12), PARAMETER :: families(2) = &
-!   [CHARACTER(12) :: "Lagrange", "Hierarchical"]
-! INTEGER(I4B), PARAMETER :: elements(2) = [101_I4B, 205_I4B]
-! INTEGER(I4B) :: order, family, iel
+! CLASS(AbstractFE_), POINTER :: fe => NULL()
+! CHARACTER(32), PARAMETER :: fixtures(2) = &
+!   [CHARACTER(32) :: "h1_two_triangles.msh.txt", "h1_two_quads.msh.txt"]
+! INTEGER(I4B), PARAMETER :: elements(2) = [101, 205]
+! INTEGER(I4B), PARAMETER :: pairs(2, 8) = RESHAPE( &
+!   [0, 0, 1, 1, 2, 2, 3, 3, 1, 3, 3, 1, 0, 2, 2, 0], [2, 8])
+! CHARACTER(6), PARAMETER :: options(3) = &
+!   [CHARACTER(6) :: "Vertex", "Edge", "Face"]
+! INTEGER(I4B) :: shape, icase, inputMode, iel, ii, jj, iface, n, ndof, offset
+! INTEGER(I4B) :: sizes(2), orders(2), globalOrders(205), cell(32), facet(32)
+! INTEGER(I4B) :: first(32), second(32), nfirst, nsecond, nf, vertex(1)
+! INTEGER(I4B), ALLOCATABLE :: con(:)
+! REAL(DFP) :: coords(3, 4), points(3, 32)
+! INTEGER(I4B) :: nr, nc, npointRows, npointCols
 ! INTEGER :: unitno
-! CHARACTER(6), PARAMETER :: options(5) = &
-!   [CHARACTER(6) :: "Vertex", "Edge", "Face", "Cell", "All"]
-! INTEGER(I4B) :: shortCon(64), longCon(64), nshort, nlong, ii, jj, shared
-! INTEGER(I4B), ALLOCATABLE :: first(:), second(:), allocatedCon(:)
 !
 ! CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
-! CALL source%Initiate(filename="./fixtures/h1_two_quads.msh.txt", &
-!   STATUS="OLD", ACTION="READ")
-! CALL source%OPEN()
-! CALL source%READ()
-! CALL meshfile%Initiate(filename="H1Connectivity_test_1.h5", mode="NEW")
-! CALL meshfile%SetOverwriteStat(.TRUE.)
-! CALL meshfile%OPEN()
-! CALL source%Export(hdf5=meshfile, group="")
-! CALL source%DEALLOCATE()
-! CALL dom%Initiate(meshfile, "")
-! mesh => dom%GetMeshPointer()
-! CALL OK(mesh%GetTotalElements() == 2_I4B, "Fixture has two cells")
-! CALL OK(mesh%GetTotalVertexNodes() == 6_I4B, "Fixture has six vertices")
-! CALL OK(mesh%GetMaxNodeNumber() > 6_I4B, "Mesh vertex IDs have gaps")
-!
-! DO family = 1, SIZE(families)
-!   DO order = 1, 3
-!     CALL obj%Initiate(order=order, dom=dom, baseContinuity="H1", &
-!       baseInterpolation=TRIM(families(family)), &
-!       ipType=TypeInterpolationOpt%Equidistance)
-!     CALL OK(obj%GetTotalDOF() == &
-!       6_I4B + 7_I4B * (order - 1_I4B) + &
-!       2_I4B * (order - 1_I4B)**2, "Uniform H1 global DOF count")
-!     DO iel = 1, SIZE(elements)
-!       DO ii = 1, SIZE(options)
-!         CALL obj%GetConnectivity_(ans=shortCon, tsize=nshort, &
-!           opt=options(ii)(1:1), globalElement=elements(iel))
-!         CALL obj%GetConnectivity_(ans=longCon, tsize=nlong, &
-!           opt=TRIM(options(ii)), globalElement=elements(iel))
-!         CALL OK(nlong == nshort, "Long and short option sizes agree")
-!         IF (nlong == nshort) CALL OK( &
-!           ALL(longCon(1:nlong) == shortCon(1:nshort)), &
-!           "Long and short option contents agree")
-!         allocatedCon = obj%GetConnectivity(opt=TRIM(options(ii)), &
-!           globalElement=elements(iel))
-!         CALL OK(SIZE(allocatedCon) == nshort, "Allocated output size")
-!         IF (SIZE(allocatedCon) == nshort) CALL OK( &
-!           ALL(allocatedCon == shortCon(1:nshort)), "Allocated output IDs")
+! DO shape = 1, SIZE(fixtures)
+!   CALL source%Initiate(filename="./fixtures/"//TRIM(fixtures(shape)), &
+!     STATUS="OLD", ACTION="READ")
+!   CALL source%OPEN()
+!   CALL source%READ()
+!   CALL meshfile%Initiate(filename="DGNumbering_test_1.h5", mode="NEW")
+!   CALL meshfile%SetOverwriteStat(.TRUE.)
+!   CALL meshfile%OPEN()
+!   CALL source%Export(hdf5=meshfile, group="")
+!   CALL source%DEALLOCATE()
+!   CALL dom%Initiate(meshfile, "")
+!   mesh => dom%GetMeshPointer()
+!   DO inputMode = 1, 2
+!     DO icase = 1, SIZE(pairs, 2)
+!       orders = pairs(:, icase)
+!       IF (shape .EQ. 1) THEN
+!         sizes = (orders + 1) * (orders + 2) / 2
+!       ELSE
+!         sizes = (orders + 1)**2
+!       END IF
+!       IF (inputMode .EQ. 1) THEN
+!         CALL obj%Initiate(order=orders, islocal=.TRUE., dom=dom, &
+!           baseContinuity="DG", baseInterpolation="Lagrange", &
+!           ipType=TypeInterpolationOpt%Equidistance)
+!       ELSE
+!         globalOrders = 0
+!         globalOrders(elements) = orders
+!         CALL obj%Initiate(order=globalOrders, islocal=.FALSE., dom=dom, &
+!           baseContinuity="DG", baseInterpolation="Lagrange", &
+!           ipType=TypeInterpolationOpt%Equidistance)
+!       END IF
+!       ndof = SUM(sizes)
+!       CALL OK(obj%GetTotalDOF() .EQ. ndof, "DG global count is cell sum")
+!       CALL OK(obj%GetSumElemTotalDOF() .EQ. ndof, "DG sum matches total")
+!       CALL OK(obj%GetTotalVertexDOF() .EQ. 0, "No shared vertex DOFs")
+!       CALL obj%GetVertexDOF(globalNode=1, ans=vertex, tsize=n)
+!       CALL OK(n .EQ. 0, "Mesh vertex owns no DG DOF")
+!       offset = 0
+!       DO iel = 1, 2
+!         con = obj%GetConnectivity(opt="All", globalElement=elements(iel))
+!         CALL OK(SIZE(con) .EQ. sizes(iel), "DG local count")
+!         CALL OK(ALL(con .EQ. [(offset + ii, ii=1,sizes(iel))]), &
+!           "Contiguous cell block in local cell order")
+!         CALL obj%GetConnectivity_(opt="All", globalElement=iel, &
+!           islocal=.TRUE., ans=cell, tsize=n)
+!         CALL OK(n .EQ. SIZE(con), "Local/global connectivity sizes")
+!         CALL OK(ALL(cell(1:n) .EQ. con), "Local/global connectivity IDs")
+!         CALL obj%GetCellDOF(globalCell=elements(iel), ans=cell, tsize=n)
+!         CALL OK(ALL(cell(1:n) .EQ. con), "Cell owns every local DOF")
+!         DO jj = 1, SIZE(options)
+!           CALL obj%GetConnectivity_(opt=TRIM(options(jj)), &
+!             globalElement=elements(iel), ans=cell, tsize=n)
+!           CALL OK(n .EQ. 0, "No globally shared entity block")
+!           CALL OK(obj%GetTotalDOF(opt=TRIM(options(jj)), &
+!             globalElement=elements(iel)) .EQ. 0, "Entity count is zero")
+!         END DO
+!         DO iface = 1, shape + 2
+!           CALL obj%GetFacetConnectivity_(globalElement=elements(iel), &
+!             localFaceNumber=iface, ans=facet, tsize=nf)
+!           CALL OK(nf .EQ. SIZE(con), "Facet uses the cell trace block")
+!           CALL OK(ALL(facet(1:nf) .EQ. con), "Facet trace DOF IDs")
+!         END DO
+!         CALL obj%SetFE(globalElement=elements(iel))
+!         fe => obj%GetFEPointer(globalElement=elements(iel))
+!         CALL OK(fe%opt%GetTotalDOF() .EQ. sizes(iel), "Local FE size")
+!         coords = 0.0_DFP
+!         CALL mesh%GetNodeCoord(globalElement=elements(iel), &
+!           nodeCoord=coords, nrow=nr, ncol=nc)
+!         CALL fe%GetInterpolationPoints(xij=coords(1:nr, 1:nc), &
+!           ans=points, nrow=npointRows, ncol=npointCols, &
+!           order=[orders(iel)], ipType=[TypeInterpolationOpt%Equidistance])
+!         CALL OK(npointCols .EQ. sizes(iel), "One point per local nodal DOF")
+!         IF (orders(iel) .EQ. 0) CALL OK( &
+!           ALL(ABS(points(1:npointRows, 1) - &
+!             SUM(coords(1:nr, 1:nc), DIM=2)/REAL(nc, DFP)) &
+!               .LT. 1.0E-12_DFP), "Constant interpolation point is centroid")
+!         CALL fe%GetQuadraturePoints(quad)
+!         CALL fe%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+!         CALL OK(shapes%nns .EQ. SIZE(con), "Basis rows match DG block")
+!         CALL OK(ALL(ABS(SUM(shapes%N(1:shapes%nns, &
+!           1:shapes%nips), DIM=1) - 1.0_DFP) .LT. 1.0E-10_DFP), &
+!           "Local partition of unity")
+!         IF (orders(iel) .EQ. 0) THEN
+!           CALL OK(ALL(ABS(shapes%N(1, 1:shapes%nips) - 1.0_DFP) &
+!             .LT. 1.0E-10_DFP), "Degree-zero basis is constant")
+!         END IF
+!         IF (orders(iel) .EQ. 0) CALL OK( &
+!           ALL(ABS(shapes%dNdXi(1, 1:2, 1:shapes%nips)) &
+!             .LT. 1.0E-12_DFP), "Constant basis has zero gradients")
+!         offset = offset + sizes(iel)
 !       END DO
-!       CALL OK(obj%GetTotalDOF(globalElement=elements(iel)) == &
-!         (order + 1_I4B)**2, "Uniform quadrangle local basis size")
+!       CALL obj%GetConnectivity_(opt="All", globalElement=elements(1), &
+!         ans=first, tsize=nfirst)
+!       CALL obj%GetConnectivity_(opt="All", globalElement=elements(2), &
+!         ans=second, tsize=nsecond)
+!       DO ii = 1, nfirst
+!         CALL OK(.NOT. ANY(second(1:nsecond) .EQ. first(ii)), &
+!           "Adjacent DG cells share no DOFs")
+!       END DO
 !     END DO
-!     first = obj%GetConnectivity(opt="All", globalElement=elements(1))
-!     second = obj%GetConnectivity(opt="All", globalElement=elements(2))
-!     shared = 0
-!     DO jj = 1, SIZE(first)
-!       IF (ANY(second == first(jj))) shared = shared + 1
-!     END DO
-!     CALL OK(shared == order + 1_I4B, "Shared H1 trace DOFs counted once")
 !   END DO
+!   fe => NULL()
+!   CALL obj%DEALLOCATE()
+!   mesh => NULL()
+!   CALL dom%DEALLOCATE()
+!   CALL meshfile%DEALLOCATE()
+!   OPEN(NEWUNIT=unitno, FILE="DGNumbering_test_1.h5", &
+!     STATUS="old", ACTION="read")
+!   CLOSE(unitno, STATUS="delete")
 ! END DO
-!
-! CALL obj%DEALLOCATE()
-! mesh => NULL()
-! CALL dom%DEALLOCATE()
-! CALL meshfile%DEALLOCATE()
-! OPEN(NEWUNIT=unitno, FILE="H1Connectivity_test_1.h5", &
-!   STATUS="old", ACTION="read")
-! CLOSE(unitno, STATUS="delete")
 ! END PROGRAM main
 !```
 !
@@ -1925,12 +2138,17 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Get element degrees of freedom without allocation
 !
+! For DG, All and Cell write the complete owning-cell block. Vertex,
+! Edge and Face write nothing and set tsize to zero. A DG example is
+! in GetConnectivity; the H1 example below still uses shared entities.
+!
 ! Write the same DOFs as GetConnectivity into ans, using only the first
 ! character of opt. The caller provides at least GetTotalDOF for the same
 ! element and option entries; only ans(1:tsize) is written.
 !
 ! Changes:
 !   - 2026-10-30: Accept long connectivity options consistently.
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
@@ -2034,7 +2252,7 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! degree of freedom numbers, size must be at least tsize
+    !! degree of freedom numbers; capacity at least tsize; DG may write zero
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     CHARACTER(*), INTENT(IN) :: opt
@@ -2055,7 +2273,14 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Get the degrees of freedom of a facet
 !
-! For a two-dimensional mesh with linear geometry, write the facet's
+! For DG, return the complete owning-cell coefficient block, including
+! for degree zero. A facet trace is evaluated from that block using the
+! cell basis at facet points; no common trace unknowns are introduced.
+! The result has GetTotalDOF for the owning element entries, rather than
+! just the nodal points lying on the facet. Opposite sides have disjoint
+! DOF blocks. This is trace connectivity, not numerical-flux assembly.
+!
+! For H1 on two-dimensional linear geometry, write the facet's
 ! vertex DOF numbers followed by its face-interior DOF numbers. Vertex
 ! DOFs use mesh-local node numbers, consistently with GetConnectivity;
 ! mesh-global node identifiers are converted before returning them.
@@ -2063,6 +2288,7 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-30: Convert facet mesh node identifiers to vertex DOF numbers.
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
@@ -2160,8 +2386,8 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! vertex DOF numbers followed by face-interior DOF numbers; only
-    !! ans(1:tsize) is written (two-dimensional linear geometry)
+    !! H1 vertex and face-interior DOFs, or full DG owning-cell block;
+    !! only ans(1:tsize) is written (two-dimensional linear geometry)
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -2181,17 +2407,14 @@ END INTERFACE
 ! date: 2025-06-07
 ! summary: Get the degree of freedom of a vertex node
 !
-! A vertex node has one degree of freedom: its local node number.
+! For DG, a mesh vertex owns no global unknown: tsize is zero and ans
+! is left unchanged. Vertex-position nodal values, when present, belong
+! to the owning cell block instead.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   ans(:) : INTEGER(I4B), intent(inout) - degree of freedom numbers, size
-!     must be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans (1)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! In H1, a vertex has one degree of freedom: its mesh-local node number.
+!
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
@@ -2333,9 +2556,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global node number, or local node number if islocal is true
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! degree of freedom numbers, size must be at least tsize
+    !! degree of freedom numbers; capacity at least tsize; DG may write zero
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! number of entries written in ans (1)
+    !! entries written: one for H1 vertices, zero for DG
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
     !! if true, the given element, node, edge or face number is a local
     !! number; default is false
@@ -2425,7 +2648,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: globalEdge
     !! edge number in the mesh
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! degree of freedom numbers, size must be at least tsize
+    !! degree of freedom numbers; capacity at least tsize; DG may write zero
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -2468,7 +2691,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: localEdgeNumber
     !! local edge number in the element
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! degree of freedom numbers, size must be at least tsize
+    !! degree of freedom numbers; capacity at least tsize; DG may write zero
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -2772,7 +2995,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: globalFace
     !! face number in the mesh
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! degree of freedom numbers, size must be at least tsize
+    !! degree of freedom numbers; capacity at least tsize; DG may write zero
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -2815,7 +3038,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: localFaceNumber
     !! local face number in the element
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! degree of freedom numbers, size must be at least tsize
+    !! degree of freedom numbers; capacity at least tsize; DG may write zero
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -2832,18 +3055,15 @@ END INTERFACE
 ! date: 2025-06-08
 ! summary: Get the degrees of freedom inside a cell
 !
+! For DG, the range is the complete local polynomial basis of the cell,
+! including its vertex-position and boundary-position nodal values; it
+! is not restricted to cell-interior shape functions.
+!
 ! Write the degree of freedom numbers inside a cell, cellIA(iel) to cellIA(iel
 ! + 1) - 1, where iel is the local element number.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
-!   globalCell : INTEGER(I4B), intent(in) - global element number of the cell,
-!     or local element number if islocal is true
-!   ans(:) : INTEGER(I4B), intent(inout) - degree of freedom numbers, size
-!     must be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
@@ -2995,7 +3215,7 @@ INTERFACE
     !! global element number of the cell, or local element number if islocal
     !! is true
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! degree of freedom numbers, size must be at least tsize
+    !! degree of freedom numbers; capacity at least tsize; DG may write zero
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -3012,12 +3232,11 @@ END INTERFACE
 ! date: 2025-06-08
 ! summary: Get the number of degrees of freedom of a cell
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
-!   globalCell : INTEGER(I4B), intent(in) - global element number of the cell,
-!     or local element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! For DG, count the complete owning-cell polynomial basis rather than
+! only the interior modes. Degree-zero cells have one DOF.
+!
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of degrees of freedom inside the cell
@@ -3388,10 +3607,13 @@ END INTERFACE
 ! date: 2024-07-29
 ! summary: Get the number of vertex degrees of freedom
 !
+! DG returns zero: all local nodal values belong to cell blocks, even
+! when their interpolation points coincide with mesh vertices.
+!
 ! This is the number of vertex nodes of the mesh.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of vertex degrees of freedom
@@ -3472,13 +3694,17 @@ END INTERFACE
 ! date: 2024-05-21
 ! summary: Get the total number of degrees of freedom
 !
+! For DG, this is the sum of the active cell basis sizes. No shared
+! mesh vertex, edge or face DOFs are added. See GetConnectivity for a
+! complete DG numbering and basis-evaluation example.
+!
 ! GetTotalDOF is a generic method: without arguments it returns the number of
 ! degrees of freedom of the FEDOF; with globalElement, the number of degrees
 ! of freedom of that element; with globalElement and opt, only those of the
 ! vertices, edges, faces or cell (opt V, E, F or C) or all (A).
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - total number of degrees of freedom
@@ -3691,12 +3917,11 @@ END INTERFACE
 ! date: 2024-05-21
 ! summary: Get the number of degrees of freedom of an element
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! For DG, return the length of the owning-cell block, with no additional
+! shared-vertex contribution.
+!
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of degrees of freedom of the element
@@ -3727,14 +3952,11 @@ END INTERFACE
 ! date: 2024-05-21
 ! summary: Get the number of degrees of freedom of an element for an entity
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   opt : CHARACTER(*), intent(in) - which degrees of freedom: Vertex, Edge,
-!     Face, Cell or All (the first letter is used)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! For DG, All and Cell return the owning-cell basis size; Vertex, Edge
+! and Face return zero.
+!
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of degrees of freedom of the element selected
@@ -4018,6 +4240,12 @@ END INTERFACE
 ! date: 2025-10-22
 ! summary: Configure the shared finite element for one mesh element
 !
+! For DG, use the complete local Lagrange basis at the cell order,
+! including degree zero. Disable shared-edge orientation corrections so
+! the nodal ordering remains local to the cell. The quadrature order is
+! at least one even for constant cells. The returned FE reports its local
+! H1 basis implementation; the FEDOF itself retains DG continuity.
+!
 ! Set the cell, face and edge orders and orientations in the finite element
 ! of the requested topology. Set its quadrature order to scaleForQuadOrder
 ! times the cell order. Both global and local element IDs are accepted.
@@ -4042,6 +4270,7 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-30: Verify reversed-edge H1 traces through the shared FE.
 !   - 2026-10-30: Preserve per-face orders for hierarchical H1 in 2D.
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
@@ -4828,6 +5057,11 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Get element orders and orientations
 !
+! For DG, cellOrder is the owning-cell order and every local face or edge
+! order returned here equals that cell order, independently of neighbors.
+! Orientations still describe the mesh. SetFE disables shared-face and
+! edge orientation corrections for the cell-local DG nodal basis.
+!
 ! Get the cell, face and edge polynomial orders and their mesh
 ! orientations. SetFE uses this method. Convert the supplied element
 ! identifier once and use the same local element for orders and
@@ -4835,6 +5069,7 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-30: Use the converted local element for orientation lookup.
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
@@ -5185,14 +5420,17 @@ END INTERFACE
 ! date: 2024-06-09
 ! summary: Set the sparsity pattern of a matrix
 !
+! For DG, this routine currently inserts volume couplings within each
+! cell block only. Numerical fluxes require additional neighbor-cell
+! couplings; a complete DG flux sparsity pattern is not built here.
+!
 ! Two degrees of freedom are connected if they belong to the same element: for
 ! each element, all its degrees of freedom are connected to each other. Then
 ! the pattern of mat is finished (CSRMatrix SetSparsity).
 ! FEDOFSetSparsity(obj, mat) calls this method too.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(inout) - FEDOF object
-!   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Examples
 !
@@ -5516,16 +5754,17 @@ END INTERFACE FEDOFSetSparsity
 ! date: 2025-10-21
 ! summary: Get the finite element of an element
 !
+! For DG, the pointer refers to the reused local H1 Lagrange evaluator.
+! The DG property comes from cell-owned numbering, not a different local
+! polynomial. Call SetFE before consuming it. Shared-face order reduction
+! and shared-edge orientation corrections are not used by the DG path.
+!
 ! Return the finite element of the topology of the element. Call SetFE for the
 ! element first, so that the orders and orientations of the finite element are
 ! those of the element.
 !
-! Arguments:
-!   obj : CLASS(FEDOF_), intent(in) - FEDOF object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element,
-!     node, edge or face number is a local number; default is false
+! Changes:
+!   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
 !   ans : CLASS(AbstractFE_), pointer - pointer to the finite element
