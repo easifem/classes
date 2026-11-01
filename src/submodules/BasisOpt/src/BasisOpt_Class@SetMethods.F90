@@ -17,18 +17,22 @@
 !
 
 SUBMODULE(BasisOpt_Class) SetMethods
-USE LagrangePolynomialUtility, ONLY: LagrangeDOF
-USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString, Display
-USE InputUtility, ONLY: Input
 USE BasisOptUtility, ONLY: SetIntegerType
+USE Display_Method, ONLY: Display, ToString
 USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
 USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
-USE BaseType, ONLY: math => TypeMathOpt
+USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
+USE InputUtility, ONLY: Input
+USE LagrangePolynomialUtility, ONLY: LagrangeDOF
+USE ReallocateUtility, ONLY: Reallocate
 USE ReverseUtility, ONLY: Reverse
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -209,7 +213,7 @@ IF (errCheck0) THEN
   tsize = SIZE(faceOrient, 1)
   isok = tsize .EQ. 3
   CALL AssertError1(isok, myName, &
-           "rowsize in faceOrient should be 3.  but size(faceOrient,1) = "// &
+                    "rowsize in faceOrient should be 3.  but size(faceOrient,1) = "// &
                     ToString(tsize))
 
   tsize = SIZE(faceOrient, 2)
@@ -367,7 +371,7 @@ IF (errCheck0) THEN
   tsize = SIZE(faceOrder, 1)
   isok = tsize .EQ. 3
   CALL AssertError1(isok, myName, &
-             "rowsize in faceOrder should be 3.  but size(faceOrder,1) = "// &
+                    "rowsize in faceOrder should be 3.  but size(faceOrder,1) = "// &
                     ToString(tsize))
 
   tsize = SIZE(faceOrder, 2)
