@@ -52,9 +52,13 @@ USE QuadrangleH1HierarchicalFE_Class, ONLY: QuadrangleH1HierarchicalFE_
 USE QuadrangleH1LagrangeFE_Class, ONLY: QuadrangleH1LagrangeFE_
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: UpperCase
+USE TetrahedronH1DGHierarchicalFE_Class, ONLY: TetrahedronH1DGHierarchicalFE_
+USE TetrahedronH1DGLagrangeFE_Class, ONLY: TetrahedronH1DGLagrangeFE_
 USE TetrahedronH1HierarchicalFE_Class, ONLY: TetrahedronH1HierarchicalFE_
 USE TetrahedronH1LagrangeFE_Class, ONLY: TetrahedronH1LagrangeFE_
 USE TomlUtility, ONLY: GetValue
+USE TriangleH1DGHierarchicalFE_Class, ONLY: TriangleH1DGHierarchicalFE_
+USE TriangleH1DGLagrangeFE_Class, ONLY: TriangleH1DGLagrangeFE_
 USE TriangleH1HierarchicalFE_Class, ONLY: TriangleH1HierarchicalFE_
 USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
 IMPLICIT NONE
@@ -203,7 +207,7 @@ CALL GetValue(table=table, key="brokenSpace", &
 IF (.NOT. isFound) THEN
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                     'brokenSpace not found in toml, ' &
-                    //"using default valuemath%no)
+                    //"using brokenSpace=false")
 END IF
 #endif
 
