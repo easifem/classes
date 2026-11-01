@@ -43,7 +43,7 @@ CALL OK(shapes%nns .EQ. obj%GetTotalDOF(), "Local basis size")
 CALL OK(shapes%nips .GT. 0_I4B, "Local quadrature size")
 CALL OK(ALL(ABS(SUM(shapes%N(1:2, 1:shapes%nips), &
                     DIM=1) - 1.0_DFP) .LT. 1.0E-10_DFP), &
-                    "Vertex partition of unity")
+        "Vertex partition of unity")
 CALL obj%LineH1HieFE_GetGlobalElemShapeData( &
   elemsd=shapes, xij=xij, geoelemsd=geoShapes)
 CALL OK(ALL(shapes%coord(1:1, 1:shapes%nips) .GE. -1.0E-10_DFP), &
