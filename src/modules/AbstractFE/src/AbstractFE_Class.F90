@@ -363,12 +363,13 @@ END TYPE AbstractFEPointer_
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate( &
-    obj, elemType, nsd, baseContinuity, baseInterpolation, feType, ipType, &
-    basisType, alpha, beta, lambda, dofType, transformType, order, &
-    anisoOrder, cellOrder, faceOrder, edgeOrder, cellOrient, faceOrient, &
-    edgeOrient, tcell, tface, tedge, errCheck, quadratureIsHomogeneous, &
-    quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
-    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    obj, elemType, nsd, baseContinuity, baseInterpolation, isBrokenSpace, &
+    feType, ipType, basisType, alpha, beta, lambda, dofType, &
+    transformType, order, anisoOrder, cellOrder, faceOrder, edgeOrder, &
+    cellOrient, faceOrient, edgeOrient, tcell, tface, tedge, errCheck, &
+    quadratureIsHomogeneous, quadratureType, quadratureOrder, &
+    quadratureIsOrder, quadratureNips, quadratureIsNips, quadratureAlpha, &
+    quadratureBeta, quadratureLambda)
     CLASS(AbstractFE_), INTENT(INOUT) :: obj
     !! Finite element object; use a concrete extension of AbstractFE_.
     INTEGER(I4B), INTENT(IN) :: elemType
@@ -379,6 +380,9 @@ INTERFACE
     !! Basis continuity or conformity, such as H1, HDiv, HCurl or DG.
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     !! Basis family name, such as Lagrange or Hierarchy.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
+    !! If true then we are dealing with broken spaces.
+    !! Default value is false.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ipType
     !! Interpolation point type code, or directional codes for point
     !! generation.
