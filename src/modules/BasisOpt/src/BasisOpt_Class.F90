@@ -30,6 +30,7 @@ USE BaseType, ONLY: elemnameopt => TypeElemNameOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: eleminfo => TypeRefelemOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: DFP
@@ -38,10 +39,9 @@ USE QuadratureOpt_Class, ONLY: QuadratureOpt_
 USE String_Class, ONLY: String
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
-
 IMPLICIT NONE
-
 PRIVATE
+
 CHARACTER(*), PARAMETER :: modName = "BasisOpt_Class"
 INTEGER(I4B), PARAMETER :: FE_DOF_POINT_EVAL = 1_I4B
 INTEGER(I4B), PARAMETER :: DEFAULT_DOF_TYPE(4) = [1, 1, 1, 1]
@@ -115,103 +115,77 @@ TYPE :: BasisOpt_
   PRIVATE
   LOGICAL(LGT) :: firstCall = .TRUE.
   !! Whether the next Lagrange evaluation must construct its coefficients.
-
   LOGICAL(LGT) :: isInit = .FALSE.
   !! It is set to true at the time of constructor
-
   LOGICAL(LGT) :: isIsotropicOrder = .FALSE.
   !! flag to check if the order is isotropic or not
   !! see order
-
   LOGICAL(LGT) :: isAnisotropicOrder = .FALSE.
   !! flag to check if the order is anisotropic or not
   !! see anisoOrder
-
   LOGICAL(LGT) :: isIpType = .FALSE.
   !! Whether an interpolation point type was explicitly supplied.
-
   LOGICAL(LGT) :: isEdgeOrder = .FALSE.
   !! True if we set the edge order
-
   LOGICAL(LGT) :: isFaceOrder = .FALSE.
   !! True if we set the face order
-
   LOGICAL(LGT) :: isCellOrder = .FALSE.
   !! True if we set the cell order
-
   LOGICAL(LGT) :: isCellOrient = .FALSE.
   !! True if we set the cell orientation
-
   LOGICAL(LGT) :: isFaceOrient = .FALSE.
   !! True if we set the face orientation
-
   LOGICAL(LGT) :: isEdgeOrient = .FALSE.
   !! True if we set the edge orientation
-
   INTEGER(I4B) :: tdof = 0
   !! total number of degrees of freedom
-
   INTEGER(I4B) :: nsd = 0
   !! number of spatial dimensions
-
   INTEGER(I4B) :: xidim = 0
   !! Reference coordinate dimension (not the codimension).
-
   INTEGER(I4B) :: topoType = 0
   !! Topology type of element, also see topoType_char
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron,
   !! prism, pyramid
-
   INTEGER(I4B) :: elemType = 0
   !! Topology type of reference element
   !! line, triangle, quadrangle, tetrahedron, hexahedron,
   !! prism, pyramid
-
   INTEGER(I4B) :: elemIndx = 0
   !! Element index of topoType
-
   INTEGER(I4B) :: feType = fevaropt%Scalar
   !! Type of finite element, Scalar, Vector, Matrix
   !! Numeric value type; feType_char is maintained separately.
-
   INTEGER(I4B) :: tEdgeOrder = 0
   !! Active size shared by edgeOrder and edgeOrient.
   INTEGER(I4B) :: tFaceOrder = 0
   !! Active column count shared by faceOrder and faceOrient.
   INTEGER(I4B) :: tCellOrder = 0
   !! Active size shared by cellOrder and cellOrient.
-
   INTEGER(I4B) :: transformType = 0
   !! Currently it is not used
   !! Type of Tranformation usef for polynomial space
   !! Initiate currently leaves this at its default zero.
-
   INTEGER(I4B) :: ipType = ipopt%Equidistance
   !! Type of lattice point for interpol (i.e., interpolation point type)
   !! Used for constructing Lagrange interpolation points.
   !! ipType_char is separate display metadata.
-
   INTEGER(I4B) :: order = 0
   !! isotropic order of the basis function
-
   INTEGER(I4B) :: anisoOrder(3) = 0
   !! anisotropic order of the basis function in x, y, z direction
-
   INTEGER(I4B) :: edgeOrder(eleminfo%maxEdges) = 0
   !! Order on each edge of the element
   INTEGER(I4B) :: edgeOrient(eleminfo%maxEdges) = 0
   !! Orientation on each edge of the element
-
   INTEGER(I4B) :: faceOrder(3, eleminfo%maxFaces) = 0
   !! Order of approximation on each face of the element
   INTEGER(I4B) :: faceOrient(3, eleminfo%maxFaces) = 0
   !! orientation on each face
-
   INTEGER(I4B) :: cellOrder(3) = 0
   !! Order of approximation inside the element
   INTEGER(I4B) :: cellOrient(3) = 0
   !! Orientation of each cell
-
   INTEGER(I4B) :: dofType(4) = DEFAULT_DOF_TYPE
   !! Currently it is not used
   !! dofType(1): Type of dof for shape function defined on vertex
@@ -220,31 +194,25 @@ TYPE :: BasisOpt_
   !! dofType(4): Type of dof for shape functions in cell
   !! These shape functions can take following values:
   !! - FE_DOF_POINT_EVAL
-
   INTEGER(I4B) :: basisType(3) = polyopt%Monomial
   !! Integer code for basis type in x, y, and z direction
   !! Monomial, Jacobi, Legendre, Chebyshev, Lobatto
   !! Ultraspherical
   !! basisType_char is separate display metadata.
-
   REAL(DFP) :: alpha(3) = 0.0_DFP
   !! Jacobi parameters
   REAL(DFP) :: beta(3) = 0.0_DFP
   !! Jacobi parameters
-
   REAL(DFP) :: lambda(3) = 0.5_DFP
   !! Ultraspherical parameters
-
   CHARACTER(1) :: refelemDomain = "B"
   !! Reference domain code used for coordinates, basis and quadrature.
   !! It can take following values:
   !! - UNIT "U"
   !! - BIUNIT "B"
-
   CHARACTER(2) :: baseContinuity = "H1"
   !! Two-character continuity code; initialized from the uppercased prefix.
   !! H1, HC (HCurl), HD (HDiv), or DG.
-
   CHARACTER(4) :: baseInterpolation = "LAGR"
   !! Four-character family code used for interpolation on the reference
   !! element, Following values are allowed
@@ -253,55 +221,43 @@ TYPE :: BasisOpt_
   !! OrthogonalInterpolation, Orthogonal
   !! HermitInterpolation, Hermit
   !! SerendipityInterpolation, Serendipity
-
   REAL(DFP) :: refelemCoord(3, 8) = 0.0_DFP
   !! Reference vertex coordinates; active columns depend on topology.
-
   CHARACTER(128) :: basisType_char(3) = "MONOMIAL"
   !! basis type in string format
-
   CHARACTER(128) :: ipType_char = "EQUIDISTANCE"
   !! interpolation type in string format
-
   CHARACTER(6) :: feType_char = "SCALAR"
   !! finite element type in string format
   !! scalar, vector, matrix
-
   TYPE(QuadratureOpt_) :: quadOpt
   !! Quadrature options
-
   REAL(DFP), ALLOCATABLE :: coeff(:, :), xx(:, :)
   !! coefficient necessary for lagrange Interpolation
   !! coefficient matrix needed for Lagrange interpolation
   !! Coeff helps us in reducing the computation time for Lagrange polynomials
   !! xx is evaluation of basis points
-
   REAL(DFP), ALLOCATABLE :: xij(:, :)
   !! Interpolation points used for Lagrange interpolation
   !! Private scratch storage used during local shape evaluation.
-
   REAL(DFP), ALLOCATABLE :: temp(:, :, :)
   !! temporary array used in case of Lagrange Interpolation
   !! Private scratch storage used during local shape evaluation.
 
 CONTAINS
 
-  ! CONSTRUCTOR:
   !@ConstructorMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: DEALLOCATE => &
     obj_Deallocate
   !! Restore default settings and release working arrays.
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Initiate => obj_Initiate
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: Initiate => obj_Initiate
   !! Initialize basis and quadrature options.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
   !! Copy basis options and allocated working arrays.
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
 
-  !IO:
   !@IOMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display configuration and working-array allocation state.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
@@ -309,7 +265,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: ReactEncode => &
     obj_ReactEncode
   !! Encode selected basis options as React markup.
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml1 => &
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: ImportFromToml1 => &
     obj_ImportFromToml1
   !! Import basis and quadrature configuration from a TOML table.
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -317,9 +273,7 @@ CONTAINS
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2
   !! Import from toml file
 
-  ! SET:
   ! @SetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Assign selected stored configuration values.
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
@@ -335,13 +289,13 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: SetAnisotropicOrder => &
     obj_SetAnisotropicOrder
   !! Set directional degrees and recompute Lagrange DOFs.
-  PROCEDURE, PASS(obj) :: ResetAnisotropicOrder => &
+  PROCEDURE, PRIVATE, PASS(obj) :: ResetAnisotropicOrder => &
     obj_ResetAnisotropicOrder
   !! Restore default directional degrees and activity flag.
-  PROCEDURE, PASS(obj) :: ResetIsotropicOrder => &
+  PROCEDURE, PRIVATE, PASS(obj) :: ResetIsotropicOrder => &
     obj_ResetIsotropicOrder
   !! Restore default isotropic degree and activity flag.
-  PROCEDURE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
+  PROCEDURE, PRIVATE, PASS(obj) :: SetTotalDOF => obj_SetTotalDOF
   !! Assign the stored DOF count.
   PROCEDURE, PUBLIC, PASS(obj) :: Line_SetQuadratureOrder
   !! Set Quadrature Order for a line.
@@ -370,9 +324,7 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Triangle_FixOrientOfNptrs
   !! Orient triangle connectivity.
 
-  !GET:
   ! @GetMethods
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFace => obj_GetTotalFace
   !! Return the number of reference facets.
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertex => obj_GetTotalVertex
@@ -475,7 +427,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: &
     QuadrangleH1HieFE_GetGlobalFacetElemShapeData
   !! Map facet shapes and compute normals for Quadrangle H1 hierarchical.
-
 END TYPE BasisOpt_
 
 !----------------------------------------------------------------------------
@@ -511,6 +462,7 @@ END TYPE BasisOpt_
 !```
 !
 ! See also: [[obj_Copy]], [[obj_Deallocate]]
+!
 TYPE(BasisOpt_), PARAMETER :: TypeBasisOpt = BasisOpt_( &
                               xij=NULL(), temp=NULL(), coeff=NULL())
 
@@ -1126,8 +1078,7 @@ INTERFACE
     lambda, dofType, transformType, refElemDomain, refelemCoord, &
     baseContinuity, baseInterpolation, isIsotropicOrder, isAnisotropicOrder, &
     isEdgeOrder, isFaceOrder, isCellOrder, tEdgeOrder, tFaceOrder, &
-    tCellOrder, &
-    quadratureIsHomogeneous, quadratureType, quadratureType1, &
+    tCellOrder, quadratureIsHomogeneous, quadratureType, quadratureType1, &
     quadratureType2, quadratureType3, quadratureOrder, quadratureOrder1, &
     quadratureOrder2, quadratureOrder3, quadratureIsOrder, quadratureNips, &
     quadratureNips1, quadratureNips2, quadratureNips3, quadratureIsNips, &
