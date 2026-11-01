@@ -5,17 +5,23 @@
 PROGRAM main
 USE BaseType, ONLY: TypeElemNameOpt
 USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
+USE BaseType, ONLY: math => TypeMathOpt
 USE BasisOpt_Class, ONLY: BasisOpt_
+USE ExceptionHandler_Class, ONLY: e
 USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
 USE Test_Method, ONLY: OK
 IMPLICIT NONE
 TYPE(BasisOpt_) :: obj
 INTEGER(I4B) :: nptrs(4), orient(3, 2), ii
 
+CALL e%SetQuietMode(math%yes)
 CALL obj%Initiate(elemType=TypeElemNameOpt%Line, nsd=1_I4B, &
                   baseContinuity="H1", baseInterpolation="Lagrange", &
+                  isBrokenSpace=math%no, &
                   order=2_I4B, &
-                  ipType=TypeInterpolationOpt%Equidistance, &
+                  ipType=TypeInterpolationOpt%equidistance, &
                   quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
                   quadratureOrder=[6_I4B])
 
@@ -29,6 +35,6 @@ CALL obj%SetFaceOrientation(faceOrient=orient, tFace=2_I4B)
 CALL obj%Line_FixOrientOfNptrs(nptrs=nptrs, tsize=4_I4B)
 CALL OK(ALL(nptrs(1:2) .EQ. [(ii, ii=1, 2)]), "Vertices retained")
 CALL OK(ALL(nptrs .EQ. [1_I4B, 2_I4B, 3_I4B, 4_I4B]), &
-        "Line connectivity fixer currently leaves entries unchanged")
+        "Line_FixOrientNptrs should not fix the orientation.")
 CALL obj%DEALLOCATE()
 END PROGRAM main

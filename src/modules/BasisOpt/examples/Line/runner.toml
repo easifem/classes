@@ -1,3 +1,3 @@
 BuildType = "Debug"
-BuildDir = "/tmp/easifemClasses/BasisOpt"
+BuildDir = "/tmp/easifemClasses/BasisOpt/Line"
 TargetLibs = ["easifemClasses"]
