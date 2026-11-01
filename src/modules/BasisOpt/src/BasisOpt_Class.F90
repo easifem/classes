@@ -370,6 +370,8 @@ CONTAINS
   !! Copy active face polynomial orders.
   PROCEDURE, PUBLIC, PASS(obj) :: GetEdgeOrder => obj_GetEdgeOrder
   !! Copy active edge polynomial orders.
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIsBrokenSpace => obj_GetIsBrokenSpace
+  !! Get isBrokenSpace from obj
   PROCEDURE, PUBLIC, PASS(obj) :: Line_GetQuadraturePoints
   !! Get Quadrature Points for a line.
   PROCEDURE, PUBLIC, PASS(obj) :: Triangle_GetQuadraturePoints
@@ -3917,6 +3919,21 @@ INTERFACE
   END SUBROUTINE obj_GetEdgeOrder
 END INTERFACE
 
+!----------------------------------------------------------------------------
+!                                                GetIsBrokenSpace@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-01
+! summary: Get isBrokenSpace from obj
+!
+INTERFACE
+  MODULE FUNCTION obj_GetIsBrokenSpace(obj) RESULT(ans)
+    CLASS(BasisOpt_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_GetIsBrokenSpace
+END INTERFACE
+!
 !----------------------------------------------------------------------------
 !                                          Line_GetQuadraturePoint@GetMethods
 !----------------------------------------------------------------------------
