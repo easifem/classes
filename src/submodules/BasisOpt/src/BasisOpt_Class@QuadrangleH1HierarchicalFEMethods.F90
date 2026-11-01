@@ -16,31 +16,34 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) QuadrangleH1HierarchicalFEMethods
-USE Display_Method, ONLY: ToString, Display
-USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData, &
-                                Elemsd_Set => Set, &
-                                HierarchicalFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE, &
-                                Elemsd_SetNormal => SetNormal
-
-USE QuadrangleInterpolationUtility, ONLY: LagrangeDOF_Quadrangle, &
-                                          InterpolationPoint_Quadrangle_, &
-                                          FacetConnectivity_Quadrangle, &
-                                          HeirarchicalBasis_Quadrangle_, &
-                                         HeirarchicalBasisGradient_Quadrangle_
-
-USE LineInterpolationUtility, ONLY: LagrangeDOF_Line, &
-                                    InterpolationPoint_Line_, &
-                                    HeirarchicalBasis_Line_, &
-                                    HeirarchicalBasisGradient_Line_
-
-USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
-                                  GetQuadratureWeights_
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: Elemsd_SetNormal => SetNormal
+USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
+USE ElemshapeData_Method, ONLY: HierarchicalFacetElemShapeData
+USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_
+USE LineInterpolationUtility, ONLY: HeirarchicalBasisGradient_Line_
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE LineInterpolationUtility, ONLY: LagrangeDOF_Line
+USE QuadrangleInterpolationUtility, ONLY: FacetConnectivity_Quadrangle
+USE QuadrangleInterpolationUtility, ONLY: HeirarchicalBasis_Quadrangle_
+USE QuadrangleInterpolationUtility, ONLY: &
+  HeirarchicalBasisGradient_Quadrangle_
+USE QuadrangleInterpolationUtility, ONLY: InterpolationPoint_Quadrangle_
+USE QuadrangleInterpolationUtility, ONLY: LagrangeDOF_Quadrangle
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
 USE ReallocateUtility, ONLY: Reallocate
-USE SwapUtility, ONLY: SWAP_
 USE ReverseUtility, ONLY: Reverse
-
+USE SwapUtility, ONLY: SWAP_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@QuadrangleH1HierarchicalFEMethods.F90"
+#endif
 
 CONTAINS
 
@@ -50,7 +53,8 @@ CONTAINS
 
 MODULE PROCEDURE QuadrangleH1HieFE_GetLocalElemShapeData
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "QuadrangleH1HieFE_GetLocalElemShapeData()"
+CHARACTER(*), PARAMETER :: myName = &
+                           "QuadrangleH1HieFE_GetLocalElemShapeData()"
 #endif
 
 INTEGER(I4B) :: nips, tdof, indx(10), ii, jj
@@ -221,7 +225,7 @@ nns = geoFacetElemsd%nns
 #ifdef DEBUG_VER
 isok = nns .EQ. 2_I4B
 CALL AssertError1(isok, myName, &
-        "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
+                  "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
 #endif
 
 nips = geoFacetElemsd%nips
