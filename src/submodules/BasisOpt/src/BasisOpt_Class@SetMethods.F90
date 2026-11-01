@@ -99,6 +99,7 @@ IF (PRESENT(isAnisotropicOrder)) obj%isAnisotropicOrder = isAnisotropicOrder
 IF (PRESENT(isEdgeOrder)) obj%isEdgeOrder = isEdgeOrder
 IF (PRESENT(isFaceOrder)) obj%isFaceOrder = isFaceOrder
 IF (PRESENT(isCellOrder)) obj%isCellOrder = isCellOrder
+IF (PRESENT(isBrokenSpace)) obj%isBrokenSpace = isBrokenSpace
 
 IF (PRESENT(tEdgeOrder)) obj%tEdgeOrder = tEdgeOrder
 IF (PRESENT(tFaceOrder)) obj%tFaceOrder = tFaceOrder
