@@ -150,6 +150,7 @@ IF (PRESENT(basisType)) basisType = obj%basisType
 IF (PRESENT(alpha)) alpha = obj%alpha
 IF (PRESENT(beta)) beta = obj%beta
 IF (PRESENT(lambda)) lambda = obj%lambda
+IF (PRESENT(isBrokenSpace)) isBrokenSpace = obj%isBrokenSpace
 
 CALL obj%quadOpt%GetParam( &
   isHomogeneous=quadratureIsHomogeneous, &

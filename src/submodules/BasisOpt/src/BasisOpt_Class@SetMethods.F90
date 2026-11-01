@@ -150,6 +150,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+! We do not fix orientation for broken spaces
+IF (obj%isBrokenSpace) THEN
+  obj%isCellOrient = math%no
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 #ifdef DEBUG_VER
 errCheck0 = Input(option=errCheck, default=.FALSE.)
 
@@ -169,12 +179,13 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isCellOrient = PRESENT(cellOrient)
 isok = PRESENT(tCell)
 IF (isok) obj%tCellOrder = tCell
 
-IF (obj%isCellOrient) CALL SetIntegerType(a=obj%cellOrient, &
-                                          n=obj%tCellOrder, b=cellOrient)
+obj%isCellOrient = PRESENT(cellOrient)
+IF (obj%isCellOrient) THEN
+  CALL SetIntegerType(a=obj%cellOrient, n=obj%tCellOrder, b=cellOrient)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -199,6 +210,15 @@ LOGICAL(LGT) :: isok
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+IF (obj%isBrokenSpace) THEN
+  obj%isFaceOrient = math%no
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
 #ifdef DEBUG_VER
 errCheck0 = Input(option=errCheck, default=.FALSE.)
@@ -257,6 +277,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%isBrokenSpace) THEN
+  obj%isEdgeOrient = math%no
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 #ifdef DEBUG_VER
 errCheck0 = Input(option=errCheck, default=.FALSE.)
 errCheck0 = errCheck0 .AND. (obj%xidim .GE. 3)
@@ -277,12 +306,13 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isEdgeOrient = PRESENT(edgeOrient)
 isok = PRESENT(tEdge)
 IF (isok) obj%tEdgeOrder = tEdge
 
-IF (obj%isEdgeOrient) CALL SetIntegerType(a=obj%edgeOrient, &
-                                          n=obj%tEdgeOrder, b=edgeOrient)
+obj%isEdgeOrient = PRESENT(edgeOrient)
+IF (obj%isEdgeOrient) THEN
+  CALL SetIntegerType(a=obj%edgeOrient, n=obj%tEdgeOrder, b=edgeOrient)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -327,12 +357,13 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isCellOrder = PRESENT(cellOrder)
 isok = PRESENT(tCell)
 IF (isok) obj%tCellOrder = tCell
 
-IF (obj%isCellOrder) CALL SetIntegerType(a=obj%cellOrder, &
-                                         n=obj%tCellOrder, b=cellOrder)
+obj%isCellOrder = PRESENT(cellOrder)
+IF (obj%isCellOrder) THEN
+  CALL SetIntegerType(a=obj%cellOrder, n=obj%tCellOrder, b=cellOrder)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -384,12 +415,14 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isFaceOrder = PRESENT(faceOrder)
 isok = PRESENT(tFace)
 IF (isok) obj%tFaceOrder = tFace
 
-IF (obj%isFaceOrder) CALL SetIntegerType(a=obj%faceOrder, b=faceOrder, &
-                                         nrow=3, ncol=obj%tFaceOrder)
+obj%isFaceOrder = PRESENT(faceOrder)
+IF (obj%isFaceOrder) THEN
+  CALL SetIntegerType(a=obj%faceOrder, b=faceOrder, nrow=3, &
+                      ncol=obj%tFaceOrder)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
