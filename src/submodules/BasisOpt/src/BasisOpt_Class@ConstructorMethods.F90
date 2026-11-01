@@ -56,25 +56,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
-
 obj%elemType = elemType
-
 obj%nsd = nsd
-
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
-
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
-
 obj%topoType = ElementTopology(elemType)
 
 IF (PRESENT(feType)) obj%feType = feType
+IF (PRESENT(isBrokenSpace)) obj%isBrokenSpace = isBrokenSpace
 
 obj%xidim = XiDimension(obj%topoType)
 
 mystr = RefElemDomain(elemType=obj%topoType, &
                       baseContinuity=obj%baseContinuity, &
                       baseInterpol=obj%baseInterpolation)
-
 obj%refelemDomain = mystr%Slice(1, 1)
 mystr = ""
 
@@ -110,7 +105,6 @@ CALL obj%quadOpt%Initiate( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
@@ -142,6 +136,7 @@ obj%isCellOrder = obj2%isCellOrder
 obj%isEdgeOrient = obj2%isEdgeOrient
 obj%isFaceOrient = obj2%isFaceOrient
 obj%isCellOrient = obj2%isCellOrient
+obj%isBrokenSpace = obj2%isBrokenSpace
 obj%tdof = obj2%tdof
 obj%nsd = obj2%nsd
 obj%xidim = obj2%xidim
