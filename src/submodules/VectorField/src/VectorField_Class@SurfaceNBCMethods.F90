@@ -75,17 +75,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 spaceCompo = obj%GetSpaceCompo(1)
@@ -106,6 +95,11 @@ DO ibc = 1, tbc
 
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other components and the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 
   CALL VectorFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &

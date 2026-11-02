@@ -78,16 +78,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-! set the value in nbcField
-CALL nbcField%SetAll(VALUE=math%zero)
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 mesh => obj%fedof%GetMeshPointer()
 CALL obj%timefedof%SetFE()
 timefeptr => obj%timefedof%GetFEPointer()
@@ -111,6 +101,11 @@ DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 
   CALL STScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
