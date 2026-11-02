@@ -14,10 +14,26 @@ src_dir: ../src/modules/H1FE/
          ../src/modules/AbstractNodeField/
          ../src/modules/ScalarField/
          ../src/modules/VectorField/
+         ../src/modules/AbstractFile/
+         ../src/modules/HDF5File/
+         ../src/modules/VtkHDF5File/
+         ../src/modules/UserFunction/
+         ../src/modules/AbstractMesh/
+         ../src/modules/FEMesh/
+         ../src/modules/AbstractDomain/
+         ../src/modules/FEDomain/
+         ../src/modules/VTKMeshUtility/
+         ../src/modules/AbstractMeshField/
+         ../src/modules/MeshField/
+         ../src/modules/ScalarFieldLis/
 media_dir: ../docs/media
 page_dir: ../docs/pages
 output_dir: /tmp/ford/classes
 exclude_dir:  ../src/submodules/
+exclude: **/NodeDataList_Class.F90
+         **/EdgeDataList_Class.F90
+         **/ElemDataList_Class.F90
+         **/FaceDataList_Class.F90
 author: Vikas Sharma
 author_description: Graduate School of Agriculture, Kyoto University, Kyoto, Japan
 email: vickysharma0812@gmail.com
@@ -30,7 +46,6 @@ source: false
 display: public
          protected
          private
-page: false
 sort: alpha
 coloured_edges: true
 extra_filetypes:  inc !
@@ -43,5 +58,5 @@ predocmark: <
 docmark_alt: *
 docmark: !
 fpp_extensions: F90
-preprocesses: true
+preprocess: true
 ---
