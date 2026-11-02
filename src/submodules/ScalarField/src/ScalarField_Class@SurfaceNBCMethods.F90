@@ -77,17 +77,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 
@@ -106,6 +95,11 @@ DO ibc = 1, tbc
 
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 
   CALL ScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
@@ -169,17 +163,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbcptr => nbc(ibc)%ptr
-  isok = ASSOCIATED(nbcptr)
-  IF (.NOT. isok) CYCLE
-
-  CALL nbcField%ApplyDirichletBC(dbc=nbcptr, times=times)
-END DO
-nbcptr => NULL()
-
 maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 
@@ -198,6 +181,11 @@ DO ibc = 1, tbc
 
   isok = ASSOCIATED(nbcptr)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbcptr, times=times)
 
   CALL ScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbcptr, fedof=obj%fedof, geofedof=obj%geofedof, &

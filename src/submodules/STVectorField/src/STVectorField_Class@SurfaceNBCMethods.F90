@@ -89,16 +89,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 mesh => obj%fedof%GetMeshPointer()
 CALL obj%timefedof%SetFE()
 timefeptr => obj%timefedof%GetFEPointer()
@@ -113,7 +103,7 @@ spaceCompo = obj%GetSpaceCompo(1)
 CALL Reallocate(xij, 3, maxNNSGeo)
 CALL Reallocate(facetCon, maxNNS)
 CALL Reallocate(forceVec, spaceCompo(1), maxNNS, maxNNT)
-CALL Reallocate(nbcValue, spaceCompo(1), maxNNT, maxNNS) ! nodes FMT
+CALL Reallocate(nbcValue, spaceCompo(1), maxNNT, maxNNS)  ! nodes FMT
 
 forceVar = NodalVariable( &
            dim1=spaceCompo(1), dim2=maxNNT, dim3=maxNNS, &
@@ -125,6 +115,11 @@ DO ibc = 1, tbc
 
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other components and the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 
   CALL STVectorFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
