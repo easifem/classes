@@ -14,20 +14,20 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-03-22
 ! summary: Scalar field data type with LIS engine is defined
 
 MODULE ScalarFieldLis_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE String_Class, ONLY: String
-USE BaseType, ONLY: FEVariable_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ScalarField_Class, ONLY: ScalarField_
+USE BaseType, ONLY: FEVariable_
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
-USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE FPL, ONLY: ParameterList_
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE ScalarField_Class, ONLY: ScalarField_
+USE String_Class, ONLY: String
 
 IMPLICIT NONE
 PRIVATE
@@ -43,7 +43,7 @@ PUBLIC :: ScalarFieldLis_Pointer
 !                                                              ScalarField_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: LIS Scalar field
 !
@@ -78,7 +78,7 @@ END SUBROUTINE obj_Final
 !                                                         Vector@Constructor
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[ScalarFieldLis_]]
 
@@ -93,7 +93,7 @@ END FUNCTION
 !                                         ScalarFieldLis_Pointer@Constructor
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary:         This function returns an instance of [[ScalarFieldLis_]]
 

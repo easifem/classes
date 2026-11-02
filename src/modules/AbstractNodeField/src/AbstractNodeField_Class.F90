@@ -86,34 +86,34 @@ INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   INTEGER(I4B) :: dof_tPhysicalVars = 0_I4B
   !! Total number of physical variables
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
   INTEGER(I4B) :: dof_storageFMT = MYSTORAGEFORMAT
   !! Storage format
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
   INTEGER(I4B) :: tSize = 0
   !! Total length of the nodal field = tdof * tNodes
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
   INTEGER(I4B), ALLOCATABLE :: dof_spaceCompo(:)
   !! Spatial components
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
   INTEGER(I4B), ALLOCATABLE :: dof_timeCompo(:)
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
   INTEGER(I4B), ALLOCATABLE :: dof_tNodes(:)
   !! Total number of nodes
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
   CHARACTER(1), ALLOCATABLE :: dof_names_char(:)
   !! Single character name of physical variable
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
   TYPE(RealVector_) :: realVec
   !! Vector of reals to contains the nodes
-  !! note: This variable is only for internal use
+  !! note - This variable is only for internal use
 
 CONTAINS
   ! CONSTRUCTOR:
@@ -262,8 +262,6 @@ END TYPE AbstractNodeFieldPointer_
 ! dof_timeCompo, dof_tNodes or dof_names_char is not allocated or its
 ! size is not dof_tPhysicalVars.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
 
 INTERFACE
   MODULE SUBROUTINE AbstractNodeFieldCheckError(obj)
@@ -289,13 +287,6 @@ END INTERFACE
 !
 ! copyFull, copyStructure and usePointer are passed to AbstractField_;
 ! they are not used at present.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field to be initiated
-!   obj2 : CLASS(AbstractField_) - field to be copied, a child of
-!     AbstractNodeField_
-!   copyFull, copyStructure, usePointer : LOGICAL(LGT) - (optional) not
-!     used
 !
 ! Examples
 !
@@ -395,20 +386,6 @@ END INTERFACE AbstractNodeFieldInitiate
 ! child classes (e.g., ScalarField_) compute these arguments and call
 ! this routine.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   name, engine : CHARACTER(*) - name and engine of the field
-!   fieldType, storageFMT, comm, local_n, global_n : INTEGER(I4B) -
-!     field type, storage format, parallel data
-!   spaceCompo, timeCompo, tNodes : INTEGER(I4B) - one value for each
-!     physical variable
-!   tPhysicalVarNames : INTEGER(I4B) - number of physical variables
-!   physicalVarNames : CHARACTER(*) - names of physical variables
-!   tSize : INTEGER(I4B) - total number of values
-!   is* : LOGICAL(LGT) - flags, required but not used
-!   fedof, geofedof : CLASS(FEDOF_) - FEDOFs of the field and geometry
-!   timefedof : CLASS(TimeFEDOF_) - (optional) FEDOF in time
-!
 ! See also: [[ScalarField_:obj_Initiate2]] (contains an example)
 
 INTERFACE
@@ -500,13 +477,6 @@ END INTERFACE AbstractNodeFieldInitiate
 !   This routine is under development; it raises an error.
 ! @endnote
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   fedof, geofedof : TYPE(FEDOFPointer_) - FEDOFs of the physical
-!     variables and of the geometry
-!   timefedof : TYPE(TimeFEDOFPointer_) - (optional) FEDOFs in time
-!   Other arguments: see [[obj_Initiate2]]
-!
 ! See also: [[obj_Initiate2]]
 
 INTERFACE
@@ -585,9 +555,6 @@ END INTERFACE AbstractNodeFieldInitiate
 ! the vector of values; after the call obj%IsInitiated() is false and
 ! obj%Size() is zero.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!
 ! See also: [[obj_Initiate1]] (contains an example)
 
 INTERFACE
@@ -612,11 +579,6 @@ END INTERFACE AbstractNodeFieldDeallocate
 ! Displays the data of AbstractField_, the DOF data (dof_tPhysicalVars,
 ! dof_storageFMT, dof_spaceCompo, dof_timeCompo, dof_tNodes, tSize) and
 ! the values.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   msg : CHARACTER(*) - message printed first
-!   unitNo : INTEGER(I4B) - (optional) unit number, default stdout
 !
 ! Examples
 !
@@ -685,10 +647,6 @@ END INTERFACE AbstractNodeFieldDisplay
 ! should be implemented by the child class; this routine raises an
 ! error.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   vtk : TYPE(VTKFile_) - VTK file
-!
 ! See also: [[ScalarField_:obj_ExportToVTK]]
 
 INTERFACE
@@ -714,10 +672,6 @@ END INTERFACE
 ! 3. The point data section and the piece are closed, and the file is
 !    closed.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   vtk : TYPE(VTKFile_) - VTK file, it is closed on return
-!
 ! See also: [[obj_WriteData_vtk2]], [[obj_ExportToVTK]]
 
 INTERFACE AbstractNodeFieldWriteData
@@ -742,10 +696,6 @@ END INTERFACE AbstractNodeFieldWriteData
 ! last field is written, and then the vertex values of all physical
 ! variables of all fields are written as point data. vtk must be open;
 ! it is not closed on return.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeFieldPointer_) - node fields
-!   vtk : TYPE(VTKFile_) - open VTK file
 !
 ! See also: [[obj_WriteData_vtk1]]
 
@@ -774,9 +724,6 @@ END INTERFACE NodeFieldsWriteData
 ! physical variables and components (DOF format). It is a deferred
 ! method of AbstractField_.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!
 ! Returns:
 !   ans : INTEGER(I4B) - storage format
 !
@@ -802,9 +749,6 @@ END INTERFACE
 ! Returns a pointer to the Fortran vector which stores the values of
 ! obj. It should be used only with the NATIVE_SERIAL engine. obj must
 ! have the TARGET attribute in the caller.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
 !
 ! Returns:
 !   ans : REAL(DFP), POINTER - vector of values, SIZE(ans) = obj%Size()
@@ -881,14 +825,6 @@ END INTERFACE AbstractNodeFieldGetPointer
 ! Each present argument is copied into the matching component of obj;
 ! the DOF object and the vector of values are not changed.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   dof_tPhysicalVars : INTEGER(I4B) - number of physical variables
-!   dof_storageFMT : INTEGER(I4B) - storage format
-!   dof_spaceCompo, dof_timeCompo, dof_tNodes : INTEGER(I4B) - one value
-!     for each physical variable
-!   dof_names_char : CHARACTER(*) - names (first character is used)
-!   tSize : INTEGER(I4B) - total number of values
 
 INTERFACE
   MODULE SUBROUTINE obj_SetParam(obj, dof_tPhysicalVars, dof_storageFMT, &
@@ -931,11 +867,6 @@ END INTERFACE AbstractNodeFieldSetParam
 ! readable, or if the dataset does not exist. The other data of obj
 ! are not changed.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   hdf5 : TYPE(HDF5File_) - HDF5 file opened for reading
-!   group : CHARACTER(*) - group of the field in the file
-!
 ! See also: [[obj_Import]], [[obj_Export]]
 
 INTERFACE
@@ -959,13 +890,6 @@ END INTERFACE
 !
 ! The value with index indx becomes scale * VALUE, or scale * VALUE is
 ! added to it if addContribution is true.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   indx : INTEGER(I4B) - index of the value, 1 to obj%Size()
-!   VALUE : REAL(DFP) - value
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -1052,12 +976,6 @@ END INTERFACE AbstractNodeFieldSetSingle
 ! All values become scale * VALUE, or scale * VALUE is added to them
 ! if addContribution is true.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   VALUE : REAL(DFP) - value
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_SetSingle]] (contains an example)
 
 INTERFACE
@@ -1096,13 +1014,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-29: without addContribution, scale is applied (obj = scale *
 !     VALUE), as in SetSingle and SetAll; before, scale was not used
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   indx : INTEGER(I4B) - indices, SIZE(indx) = SIZE(VALUE)
-!   VALUE : REAL(DFP) - values
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -1198,6 +1109,7 @@ INTERFACE
     !! node field
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! index, size(indx) = size(value) = tsize
+    !! SIZE(indx) = SIZE(VALUE)
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values which will be use din obj=value
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
@@ -1222,13 +1134,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-29: without addContribution, scale is applied (obj = scale *
 !     VALUE), as in SetSingle and SetAll; before, scale was not used
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   istart, iend, stride : INTEGER(I4B) - range of indices
-!   VALUE : REAL(DFP) - values, one for each index of the range
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
@@ -1264,15 +1169,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-29: without addContribution, scale is applied (obj = scale *
 !     VALUE), as in SetSingle and SetAll; before, scale was not used
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   istart, iend, stride : INTEGER(I4B) - range of indices of obj
-!   VALUE : REAL(DFP) - values
-!   istart_value, iend_value, stride_value : INTEGER(I4B) - range of
-!     VALUE
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
@@ -1310,13 +1206,6 @@ END INTERFACE
 !   - 2026-10-29: without addContribution, scale is applied (obj = scale *
 !     VALUE), as in SetSingle and SetAll; before, scale was not used
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   istart, iend, stride : INTEGER(I4B) - range of indices
-!   VALUE : REAL(DFP) - value
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
 INTERFACE
@@ -1345,12 +1234,6 @@ END INTERFACE
 !
 ! VALUE(i) is the value with index indx(i); tsize = SIZE(indx).
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   indx : INTEGER(I4B) - indices
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) >= SIZE(indx)
-!   tsize : INTEGER(I4B) - number of values written in VALUE
-!
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
 INTERFACE
@@ -1361,6 +1244,7 @@ INTERFACE
     !! index, size(indx) = size(value) = tsize
     REAL(DFP), INTENT(OUT) :: VALUE(:)
     !! returned vlaue
+    !! SIZE(VALUE) >= SIZE(indx)
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! total number of data written in value
   END SUBROUTINE obj_GetMultiple1
@@ -1376,12 +1260,6 @@ END INTERFACE
 !
 ! VALUE(1:tsize) = obj(istart:iend:stride), where tsize is the number
 ! of indices of the range.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   istart, iend, stride : INTEGER(I4B) - range of indices
-!   VALUE : REAL(DFP) - values
-!   tsize : INTEGER(I4B) - number of values written in VALUE
 !
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
@@ -1408,14 +1286,6 @@ END INTERFACE
 !
 ! VALUE(istart_value::stride_value) = obj(istart:iend:stride); tsize
 ! is the number of indices of the range of obj.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   istart, iend, stride : INTEGER(I4B) - range of indices of obj
-!   VALUE : REAL(DFP) - values
-!   istart_value, iend_value, stride_value : INTEGER(I4B) - range of
-!     VALUE
-!   tsize : INTEGER(I4B) - number of values written in VALUE
 !
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
@@ -1444,11 +1314,6 @@ END INTERFACE
 ! date: 2023-03-28
 ! summary: Get a single value
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   indx : INTEGER(I4B) - index of the value, 1 to obj%Size()
-!   VALUE : REAL(DFP) - value
-!
 ! See also: [[obj_SetSingle]] (contains an example)
 
 INTERFACE
@@ -1476,13 +1341,6 @@ END INTERFACE AbstractNodeFieldGetSingle
 !
 ! It should be implemented by the child class; this routine raises an
 ! error.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - true if globalNode are local node numbers
-!   VALUE : TYPE(FEVariable_) - values
-!   ivar : INTEGER(I4B) - (optional) physical variable
 !
 ! See also: [[ScalarField_:obj_GetFeVariable]]
 
@@ -1517,10 +1375,6 @@ END INTERFACE AbstractNodeFieldGetFEVariable
 ! must be the number of physical variables (GetTotalPhysicalVars); an
 ! error is raised (in debug mode) otherwise, or if the names are not
 ! allocated.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   ans : CHARACTER(1) - names of physical variables
 !
 ! Examples
 !
@@ -1592,9 +1446,6 @@ END INTERFACE
 ! An error is raised (in debug mode) if the names of the physical
 ! variables are not allocated, or if their number differs.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of physical variables
 !
@@ -1617,10 +1468,8 @@ END INTERFACE
 ! date: 2023-09-22
 ! summary: Returns the space components of the physical variables
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   tPhysicalVars : INTEGER(I4B) - number of physical variables, from
-!     GetTotalPhysicalVars
+! Returns the space components of the physical variables, one entry for each
+! variable (SIZE(ans) = tPhysicalVars).
 !
 ! Returns:
 !   ans : INTEGER(I4B) - space components, SIZE(ans) = tPhysicalVars
@@ -1647,10 +1496,8 @@ END INTERFACE
 ! date: 2023-09-22
 ! summary: Returns the time components of the physical variables
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   tPhysicalVars : INTEGER(I4B) - number of physical variables, from
-!     GetTotalPhysicalVars
+! Returns the time components of the physical variables, one entry for each
+! variable (SIZE(ans) = tPhysicalVars).
 !
 ! Returns:
 !   ans : INTEGER(I4B) - time components, SIZE(ans) = tPhysicalVars
@@ -1677,10 +1524,6 @@ END INTERFACE
 ! summary: Returns the number of values of a node field
 !
 ! Returns tSize, the total number of values.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   dims : INTEGER(I4B) - (optional) not used
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of values
@@ -1710,11 +1553,6 @@ END INTERFACE
 !
 ! AXPY can also add two or three fields ([[obj_AXPY2]],
 ! [[obj_AXPY3]]); the example shows all of them.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field, obj = obj + scale * x
-!   x : CLASS(AbstractNodeField_) - node field
-!   scale : REAL(DFP) - scale
 !
 ! Examples
 !
@@ -1807,11 +1645,6 @@ END INTERFACE
 ! date: 2023-12-29
 ! summary: obj = obj + a1 * x1 + a2 * x2
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   x1, x2 : CLASS(AbstractNodeField_) - node fields
-!   a1, a2 : REAL(DFP) - scales of x1 and x2
-!
 ! See also: [[obj_AXPY1]] (contains an example)
 
 INTERFACE
@@ -1836,11 +1669,6 @@ END INTERFACE
 !> author: Shion Shimizu
 ! date: 2023-12-29
 ! summary: obj = obj + a1 * x1 + a2 * x2 + a3 * x3
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   x1, x2, x3 : CLASS(AbstractNodeField_) - node fields
-!   a1, a2, a3 : REAL(DFP) - scales of x1, x2 and x3
 !
 ! See also: [[obj_AXPY1]] (contains an example)
 
@@ -1870,10 +1698,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-17
 ! summary: obj = scale * obj
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   scale : REAL(DFP) - scale
 !
 ! Examples
 !
@@ -1939,10 +1763,6 @@ END INTERFACE
 !
 ! The values of obj2 are copied into obj by the BLAS1 COPY routine.
 ! Only the values are copied; both fields must have the same size.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field, obj = obj2
-!   obj2 : CLASS(AbstractNodeField_) - node field
 !
 ! Examples
 !
@@ -2021,10 +1841,6 @@ END INTERFACE
 ! Both fields must be initiated and have the same size. In debug mode
 ! an error is raised when obj%Size() and obj2%Size() differ.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - first node field
-!   obj2 : CLASS(AbstractNodeField_) - second node field
-!
 ! Examples
 !
 !```fortran
@@ -2094,8 +1910,7 @@ END INTERFACE
 ! date: 2022-01-24
 ! summary: Returns the Euclidean norm of the values
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
+! Returns SQRT(SUM(obj**2)), taken over all the values of the field.
 !
 ! Returns:
 !   ans : REAL(DFP) - SQRT(SUM(obj**2))
@@ -2119,8 +1934,7 @@ END INTERFACE
 ! date: 2022-01-24
 ! summary: Returns the sum of absolute values
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
+! Returns SUM(ABS(obj)), taken over all the values of the field.
 !
 ! Returns:
 !   ans : REAL(DFP) - SUM(ABS(obj))
@@ -2144,8 +1958,7 @@ END INTERFACE
 ! date: 2022-01-24
 ! summary: Returns the infinity norm of the values
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
+! Returns MAXVAL(ABS(obj)), taken over all the values of the field.
 !
 ! Returns:
 !   ans : REAL(DFP) - MAXVAL(ABS(obj))
@@ -2172,10 +1985,6 @@ END INTERFACE
 ! normType selects the norm: TypeConvergenceOpt%normL1 ([[obj_Norm1]]),
 ! normL2 ([[obj_Norm2]]) or normInfinity ([[obj_Normi]]). An error is
 ! raised (in debug mode) for other values.
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   normType : INTEGER(I4B) - type of norm
 !
 ! Returns:
 !   ans : REAL(DFP) - norm
@@ -2249,8 +2058,7 @@ END INTERFACE
 ! date: 2023-12-27
 ! summary: Returns the dot product of two node fields
 !
-! Arguments:
-!   obj, obj2 : CLASS(AbstractNodeField_) - node fields of the same size
+! Returns SUM(obj * obj2), taken over all the values of the field.
 !
 ! Returns:
 !   ans : REAL(DFP) - SUM(obj * obj2)
@@ -2318,11 +2126,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-27
 ! summary: Pointwise product: obj = obj1 * obj2
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field, obj(i) = obj1(i) *
-!     obj2(i)
-!   obj1, obj2 : CLASS(AbstractNodeField_) - node fields
 !
 ! Examples
 !
@@ -2397,9 +2200,6 @@ END INTERFACE
 ! Each value is replaced by its reciprocal. The values must not be
 ! zero.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!
 ! Examples
 !
 !```fortran
@@ -2466,15 +2266,6 @@ END INTERFACE
 ! StringR1/dof_names_char and RealVectorR0/realVec. An error is raised
 ! (in debug mode) if a dataset is missing.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   hdf5 : TYPE(HDF5File_) - HDF5 file opened for reading
-!   group : CHARACTER(*) - group of the field in the file
-!   fedof, geofedof : CLASS(FEDOF_) - (optional) FEDOFs of the field
-!   fedofs, geofedofs : TYPE(FEDOFPointer_) - (optional) FEDOFs of the
-!     physical variables
-!   timefedof, timefedofs - (optional) FEDOFs in time (not used)
-!
 ! See also: [[obj_Export]] (contains an example), [[obj_SetFromHDF5]]
 
 INTERFACE
@@ -2513,11 +2304,6 @@ END INTERFACE AbstractNodeFieldImport
 ! AbstractField_ are written by Export of AbstractField_, and the DOF
 ! data and the values are written in group (see [[obj_Import]] for the
 ! names of the datasets).
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   hdf5 : TYPE(HDF5File_) - HDF5 file opened for writing
-!   group : CHARACTER(*) - group of the field in the file
 !
 ! Examples
 !
@@ -2625,14 +2411,6 @@ END INTERFACE AbstractNodeFieldExport
 !
 ! An error is raised if a VTK cell type is not available for a
 ! topology and order (e.g., triangle with \(p \ge 3\)).
-!
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
-!   connectivity : INTEGER(I4B) - zero based point ids of all cells
-!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
-!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
-!   ivar : INTEGER(I4B) - (optional) physical variable of a block field
 !
 ! Examples
 !
@@ -2783,12 +2561,15 @@ INTERFACE
     !! AbstractNodeField obj
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
+    !! SIZE(points) = (3, nPoints)
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
     !! zero based point ids of cells
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
     !! offsets of cells in connectivity, size nCells + 1
+    !! SIZE(offsets) = nCells + 1, offsets(1) = 0
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
     !! VTK cell types, size nCells
+    !! SIZE(types) = nCells
     INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
     !! physical variables, only needed in case of block node field
   END SUBROUTINE obj_GetVtkUnstructuredGridData1
@@ -2806,16 +2587,6 @@ END INTERFACE
 ! Same as [[obj_GetVtkUnstructuredGridData1]], but the arrays and the
 ! work arrays are given by the caller, so that nothing is allocated.
 !
-! Arguments:
-!   obj : CLASS(AbstractNodeField_) - node field
-!   points : REAL(DFP) - SIZE(points, 2) >= fedof%GetSumElemTotalDOF()
-!   connectivity : INTEGER(I4B) - SIZE >= fedof%GetSumElemTotalDOF()
-!   offsets : INTEGER(I4B) - SIZE(offsets) >= nCells + 1
-!   types : INTEGER(INT8) - SIZE(types) >= nCells
-!   refElemCoord, xij, elemCoord : REAL(DFP) - work arrays, see the
-!     sizes of the dummy arguments
-!   ivar : INTEGER(I4B) - (optional) physical variable of a block field
-!
 ! See also: [[obj_GetVtkUnstructuredGridData1]] (contains an example)
 
 INTERFACE
@@ -2832,13 +2603,16 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
     !! nPoints is fedof%GetSumElemTotalDOF()
+    !! SIZE(points, 2) >= fedof%GetSumElemTotalDOF()
     INTEGER(I4B), INTENT(INOUT) :: connectivity(:)
     !! zero based point ids of cells, size is obtained by
     !! fedof%GetSumElemTotalDOF()
     INTEGER(I4B), INTENT(INOUT) :: offsets(:)
     !! offsets of cells in connectivity, size nCells + 1
+    !! SIZE(offsets) >= nCells + 1
     INTEGER(INT8), INTENT(INOUT) :: types(:)
     !! VTK cell types, size nCells
+    !! SIZE(types) >= nCells
     REAL(DFP), INTENT(INOUT) :: refElemCoord(:, :)
     !! temporary storage for nodal coordinate of reference element
     !! size should be at least (3, maxNNE)

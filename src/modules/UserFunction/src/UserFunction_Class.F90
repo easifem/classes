@@ -329,9 +329,6 @@ END TYPE UserFunctionPointer_
 ! The input must contain at least one character; full names are not
 ! validated.
 !
-! Arguments:
-!   name : CHARACTER(*) - nonempty return-type name
-!
 ! Returns:
 !   ans : INTEGER(I4B) - return-type code, or -1 for an unknown initial
 !
@@ -372,9 +369,6 @@ END INTERFACE
 ! SP selects Space when LEN_TRIM(name) <= 5, otherwise SpaceTime.
 ! Other prefixes return -1; full names are not validated. Supply at
 ! least two characters.
-!
-! Arguments:
-!   name : CHARACTER(*) - argument-kind name with LEN(name) >= 2
 !
 ! Returns:
 !   ans : INTEGER(I4B) - TypeFEVariableOpt argument code, or -1
@@ -419,9 +413,6 @@ END INTERFACE
 ! parser targets are not deallocated or nullified here. engineID and
 ! isEquationParser are not reset. Select a backend again before reuse.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to clear
-!
 ! Examples
 !
 !```fortran
@@ -458,9 +449,6 @@ END INTERFACE UserFunctionDeallocate
 ! Returns immediately if obj is unallocated. Otherwise calls DEALLOCATE
 ! on each element and releases the array storage.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_)(:) - allocatable array of SIZE(obj) objects
-!
 ! Examples
 !
 !```fortran
@@ -482,6 +470,7 @@ INTERFACE UserFunctionDeallocate
   MODULE SUBROUTINE obj_Deallocate_Vector(obj)
     CLASS(UserFunction_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! vector of UserFunction to be deallocated.
+    !! SIZE(obj) objects
   END SUBROUTINE obj_Deallocate_Vector
 END INTERFACE UserFunctionDeallocate
 
@@ -496,9 +485,6 @@ END INTERFACE UserFunctionDeallocate
 ! For an allocated array, calls each associated target's DEALLOCATE and
 ! nullifies that element's ptr, then deallocates the wrapper array. Does
 ! not deallocate target storage. An unallocated obj is left unchanged.
-!
-! Arguments:
-!   obj : TYPE(UserFunctionPointer_)(:) - allocatable wrapper array
 !
 ! Examples
 !
@@ -541,9 +527,6 @@ END INTERFACE UserFunctionDeallocate
 ! Calls obj%DEALLOCATE when Fortran finalizes the object. This is an
 ! automatic cleanup hook, not a public type-bound call.
 !
-! Arguments:
-!   obj : TYPE(UserFunction_) - object being finalized
-!
 ! See also: [[obj_Deallocate]]
 
 INTERFACE
@@ -571,15 +554,6 @@ END INTERFACE
 ! extent within the corresponding fixed storage capacity. For
 ! SolutionDependent supply numArgs explicitly; there is no default count.
 ! Most consistency checks are enabled only in DEBUG_VER builds.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - object to reset and initialize
-!   name : CHARACTER(*) - function name, stored in fixed-length storage
-!   returnType : INTEGER(I4B) - Scalar, Vector or Matrix option code
-!   argType : INTEGER(I4B) - argument-kind option code
-!   numArgs : INTEGER(I4B), optional - real inputs per evaluation
-!   numReturns : INTEGER(I4B), optional - returned real components
-!   returnShape : INTEGER(I4B)(2), optional - matrix rows and columns
 !
 ! Formula:
 !   For a matrix with shape (r,c),
@@ -646,11 +620,6 @@ END INTERFACE
 ! order; nonconstant backends require the configured inputs. This
 ! specific is available through Get, Get_ and GetScalarValue_.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured scalar function
-!   val : REAL(DFP) - evaluated scalar, overwritten on success
-!   args : REAL(DFP)(:), optional - tuple with SIZE(args) >= numArgs
-!
 ! Examples
 !
 !```fortran
@@ -678,6 +647,7 @@ INTERFACE
     !! Evaluated scalar value
     REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
     !! Input tuple in backend variable order; at least numArgs entries
+    !! SIZE(args) >= numArgs
   END SUBROUTINE obj_GetScalarValue_1
 END INTERFACE
 
@@ -694,12 +664,6 @@ END INTERFACE
 ! and at least numArgs input rows. Non-Lua backends loop over the
 ! single-value evaluator. Lua batches reuse one state and loaded function
 ! for the batch; Lua support is required for that backend.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured scalar function
-!   val : REAL(DFP)(:) - output buffer, SIZE(val) >= SIZE(args,2)
-!   tsize : INTEGER(I4B) - number of values written
-!   args : REAL(DFP)(:,:) - input tuples in columns
 !
 ! Formula:
 !   $$ v_j = f(\mathrm{args}(:,j)). $$
@@ -751,11 +715,6 @@ END INTERFACE
 ! Allocates or resizes val to numReturns and delegates evaluation to
 ! [[obj_GetVectorValue_1]]. Available through Get or GetVectorValue.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured vector function
-!   val : REAL(DFP)(:), allocatable - resized output vector
-!   args : REAL(DFP)(:), optional - at least numArgs ordered inputs
-!
 ! Examples
 !
 !```fortran
@@ -802,12 +761,6 @@ END INTERFACE
 ! variable order; omit it only when the backend requires no inputs.
 ! Available through Get_ and GetVectorValue_.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured vector function
-!   val : REAL(DFP)(:) - output buffer, SIZE(val) >= numReturns
-!   tsize : INTEGER(I4B) - number of valid output components
-!   args : REAL(DFP)(:), optional - at least numArgs ordered inputs
-!
 ! Examples
 !
 !```fortran
@@ -836,6 +789,7 @@ INTERFACE
     !! Configured vector function
     REAL(DFP), INTENT(INOUT) :: val(:)
     !! Output buffer with at least numReturns entries
+    !! SIZE(val) >= numReturns
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! Number of valid components written to val
     REAL(DFP), INTENT(IN), OPTIONAL :: args(:)
@@ -856,13 +810,6 @@ END INTERFACE
 ! performed. ncol=SIZE(args,2); nrow is the last evaluation's component
 ! count and is undefined for an empty batch. Use a nonempty batch when
 ! reading nrow. Call through GetVectorValue_, not the general Get_.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured vector function
-!   val : REAL(DFP)(:,:) - buffer of at least (numReturns,SIZE(args,2))
-!   nrow : INTEGER(I4B) - component count from the last evaluation
-!   ncol : INTEGER(I4B) - number of evaluated argument columns
-!   args : REAL(DFP)(:,:) - tuples, SIZE(args,1) >= numArgs
 !
 ! Formula:
 !   $$ \mathrm{val}(:,j) = f(\mathrm{args}(:,j)). $$
@@ -900,6 +847,7 @@ INTERFACE
     !! nrow: last component count; ncol: SIZE(args,2)
     REAL(DFP), INTENT(IN) :: args(:, :)
     !! Input tuples in columns, with at least numArgs rows
+    !! SIZE(args,1) >= numArgs
   END SUBROUTINE obj_GetVectorValue_2
 END INTERFACE
 
@@ -913,11 +861,6 @@ END INTERFACE
 !
 ! Allocates or resizes val to returnShape, then delegates to
 ! [[obj_GetMatrixValue_1]]. Available through Get or GetMatrixValue.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured matrix function
-!   val : REAL(DFP)(:,:), allocatable - output resized to returnShape
-!   args : REAL(DFP)(:), optional - at least numArgs ordered inputs
 !
 ! Examples
 !
@@ -966,13 +909,6 @@ END INTERFACE
 ! report returnShape; callbacks supply nrow and ncol. Lua returns a flat
 ! sequence that is reshaped in Fortran column-major order. Lua support
 ! is required for Lua evaluation. Available through Get_ and GetMatrixValue_.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured matrix function
-!   val : REAL(DFP)(:,:) - matrix buffer with sufficient row/column capacity
-!   nrow : INTEGER(I4B) - number of valid output rows
-!   ncol : INTEGER(I4B) - number of valid output columns
-!   args : REAL(DFP)(:), optional - at least numArgs ordered inputs
 !
 ! Formula:
 !   Lua component k maps to row i and column j for r output rows:
@@ -1028,14 +964,6 @@ END INTERFACE
 ! are the final evaluation's row and column counts. The latter two are
 ! undefined for an empty batch. Call through GetMatrixValue_.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured matrix function
-!   val : REAL(DFP)(:,:,:) - capacity (rows,columns,SIZE(args,2)) or larger
-!   dim1 : INTEGER(I4B) - last evaluation's row count
-!   dim2 : INTEGER(I4B) - last evaluation's column count
-!   dim3 : INTEGER(I4B) - number of argument tuples
-!   args : REAL(DFP)(:,:) - tuples, SIZE(args,1) >= numArgs
-!
 ! Formula:
 !   $$ \mathrm{val}(:,:,j) = f(\mathrm{args}(:,j)). $$
 !
@@ -1069,10 +997,12 @@ INTERFACE
     !! Configured matrix function
     REAL(DFP), INTENT(INOUT) :: val(:, :, :)
     !! Output matrices in successive third-dimension planes
+    !! SIZE(args,2)) or larger
     INTEGER(I4B), INTENT(OUT) :: dim1, dim2, dim3
     !! Last matrix rows, last matrix columns, and SIZE(args,2)
     REAL(DFP), INTENT(IN) :: args(:, :)
     !! Input tuples in columns, with at least numArgs rows
+    !! SIZE(args,1) >= numArgs
   END SUBROUTINE obj_GetMatrixValue_2
 END INTERFACE
 
@@ -1095,12 +1025,6 @@ END INTERFACE
 ! tuple. The current matrix SpaceTime branch copies numArgs coordinate
 ! rows over that tuple; do not rely on it to preserve a trailing time
 ! argument. Use the rank-specific batch evaluator for explicit tuples.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured function
-!   fevar : TYPE(FEVariable_) - replaced by the constructed nodal variable
-!   xij : REAL(DFP)(:,:), optional - SIZE(xij,2) spatial points
-!   times : REAL(DFP)(:), optional - SIZE(times) sampling times
 !
 ! Examples
 !
@@ -1133,8 +1057,10 @@ INTERFACE
     !! Output nodal variable, constructed from evaluated values
     REAL(DFP), INTENT(IN), OPTIONAL :: xij(:, :)
     !! Spatial coordinates in columns; required for Space and SpaceTime
+    !! SIZE(xij,2) spatial points
     REAL(DFP), INTENT(IN), OPTIONAL :: times(:)
     !! Sampling times; required for Time and SpaceTime
+    !! SIZE(times) sampling times
   END SUBROUTINE obj_GetFEVariable
 END INTERFACE
 
@@ -1156,12 +1082,6 @@ END INTERFACE
 ! requires both and samples all combinations. Scalar SpaceTime uses
 ! a fixed four-entry argument buffer. Matrix SpaceTime has the coordinate
 ! overwrite limitation described in [[obj_GetFEVariable]].
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured function
-!   fevar : TYPE(FEVariable_) - destination for overwritten values
-!   xij : REAL(DFP)(:,:), optional - coordinates at SIZE(xij,2) points
-!   times : REAL(DFP)(:), optional - SIZE(times) sampling times
 !
 ! Examples
 !
@@ -1194,8 +1114,10 @@ INTERFACE
     !! Compatible destination, set with no added contribution
     REAL(DFP), INTENT(IN), OPTIONAL :: xij(:, :)
     !! Spatial coordinates in columns; required for Space and SpaceTime
+    !! SIZE(xij,2) points
     REAL(DFP), INTENT(IN), OPTIONAL :: times(:)
     !! Sampling times; required for Time and SpaceTime
+    !! SIZE(times) sampling times
   END SUBROUTINE obj_GetFEVariable_
 END INTERFACE
 
@@ -1208,9 +1130,6 @@ END INTERFACE
 ! summary: Get the stored argument-kind code
 !
 ! Returns argType without validation or evaluation.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to query
 !
 ! Returns:
 !   ans : INTEGER(I4B) - stored TypeFEVariableOpt argument-kind code
@@ -1250,9 +1169,6 @@ END INTERFACE
 !
 ! Returns returnType without validation or evaluation.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to query
-!
 ! Returns:
 !   ans : INTEGER(I4B) - stored Scalar, Vector or Matrix option code
 !
@@ -1290,9 +1206,6 @@ END INTERFACE
 ! summary: Get the function name without trailing blanks
 !
 ! Copies TRIM(obj%name) into a deferred-length character result.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to query
 !
 ! Returns:
 !   ans : CHARACTER(:), allocatable - trimmed function name
@@ -1333,9 +1246,6 @@ END INTERFACE
 ! A scalar normally returns one component; a matrix uses the product
 ! of its two returnShape entries.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to query
-!
 ! Returns:
 !   ans : INTEGER(I4B) - stored component count
 !
@@ -1373,9 +1283,6 @@ END INTERFACE
 ! summary: Get the configured number of real inputs per evaluation
 !
 ! Returns numArgs without inspecting a backend or evaluating the function.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to query
 !
 ! Returns:
 !   ans : INTEGER(I4B) - stored input count per argument tuple
@@ -1416,9 +1323,6 @@ END INTERFACE
 ! Copies returnShape in row/column order. The shape is meaningful for
 ! matrix functions; it is not inferred for scalar or vector functions.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to query
-!
 ! Returns:
 !   ans : INTEGER(I4B)(2) - stored matrix row and column counts
 !
@@ -1458,9 +1362,6 @@ END INTERFACE
 !
 ! Returns isInit only. A true result does not guarantee that a backend
 ! has been configured or that all evaluation metadata is valid.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - user function to query
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - stored initialization flag
@@ -1504,11 +1405,6 @@ END INTERFACE
 ! Writes msg and the initialization flag. For an initiated object also
 ! writes name, counts, return/argument kinds and backend-specific data.
 ! An omitted unitNo uses the Display_Method default output unit.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - object to display
-!   msg : CHARACTER(*) - heading printed before the object
-!   unitNo : INTEGER(I4B), optional - output unit
 !
 ! Examples
 !
@@ -1557,11 +1453,6 @@ END INTERFACE UserFunctionDisplay
 ! Applies the scalar Display method to each element with an indexed
 ! heading derived from msg. Forwards the optional output unit.
 !
-! Arguments:
-!   obj : TYPE(UserFunction_)(:) - SIZE(obj) objects to display
-!   msg : CHARACTER(*) - base heading
-!   unitNo : INTEGER(I4B), optional - output unit
-!
 ! Examples
 !
 !```fortran
@@ -1588,6 +1479,7 @@ INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display_Vector(obj, msg, unitNo)
     TYPE(UserFunction_), INTENT(INOUT) :: obj(:)
     !! Array of user functions to display
+    !! SIZE(obj) objects to display
     CHARACTER(*), INTENT(IN) :: msg
     !! Base heading for indexed element headings
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
@@ -1606,11 +1498,6 @@ END INTERFACE UserFunctionDisplay
 ! Prints msg and the association status of each wrapper, then displays
 ! each associated target. Uses indexed headings derived from msg and
 ! forwards unitNo. Disassociated entries have no target data to print.
-!
-! Arguments:
-!   obj : TYPE(UserFunctionPointer_)(:) - SIZE(obj) pointer wrappers
-!   msg : CHARACTER(*) - base heading
-!   unitNo : INTEGER(I4B), optional - output unit
 !
 ! Examples
 !
@@ -1641,6 +1528,7 @@ INTERFACE UserFunctionDisplay
   MODULE SUBROUTINE obj_Display_Ptr_Vector(obj, msg, unitNo)
     TYPE(UserFunctionPointer_), INTENT(INOUT) :: obj(:)
     !! Pointer wrappers; disassociated entries are skipped
+    !! SIZE(obj) pointer wrappers
     CHARACTER(*), INTENT(IN) :: msg
     !! Base heading for indexed element headings
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
@@ -1664,11 +1552,6 @@ END INTERFACE UserFunctionDisplay
 ! This is not a complete restore: it does not call Initiate or restore
 ! isInit, engineID, numArgs, numReturns or returnShape. Prepare matching
 ! metadata and a constant backend before importing an evaluable function.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - destination with matching metadata
-!   hdf5 : TYPE(HDF5File_) - open readable file
-!   group : CHARACTER(*) - parent path; empty string selects the root
 !
 ! Examples
 !
@@ -1739,10 +1622,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-24: Document table schema and backend selection.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - function to replace
-!   table : TYPE(toml_table) - function configuration, not a parent table
-!
 ! Examples
 !
 !```fortran
@@ -1790,13 +1669,6 @@ END INTERFACE UserFunctionImportFromToml
 ! named tomlName and delegates to [[obj_ImportFromToml1]]. Supply either
 ! filename or a readable TxtFile_ through afile. The temporary parsed
 ! table is released after import. printToml is currently unused.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - function to replace
-!   tomlName : CHARACTER(*) - key of the function table in the TOML root
-!   afile : TYPE(TxtFile_), optional - input file wrapper
-!   filename : CHARACTER(*), optional - TOML file path
-!   printToml : LOGICAL(LGT), optional - unused compatibility argument
 !
 ! Examples
 !
@@ -1858,11 +1730,6 @@ END INTERFACE
 ! initialization status, counts and returnShape are not serialized.
 ! Consequently this is not a complete evaluation-state checkpoint.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - configured constant function
-!   hdf5 : TYPE(HDF5File_) - open writable file
-!   group : CHARACTER(*) - parent dataset path; empty string for root
-!
 ! Examples
 !
 ! The program creates userfunction_export.h5 in the working directory.
@@ -1912,10 +1779,6 @@ END INTERFACE
 ! characters. Longer names are truncated and shorter names padded. Does
 ! not initialize the object or change its evaluation backend.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - function to rename
-!   name : CHARACTER(*) - replacement name
-!
 ! Examples
 !
 !```fortran
@@ -1954,11 +1817,6 @@ END INTERFACE
 ! the script here; evaluation requires a USE_LUA-enabled library.
 ! Inputs are positional real arguments and outputs are separate numeric
 ! return values. Matrix returns follow Fortran column-major order.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated function
-!   luaScript : CHARACTER(*) - script path, stored in fixed-length storage
-!   luaFunctionName : CHARACTER(*) - global Lua function name
 !
 ! Examples
 !
@@ -2019,10 +1877,6 @@ END INTERFACE
 ! Stores val and selects the constant engine. obj must be initiated
 ! with scalar returnType; use Constant argType for a no-input function.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated scalar function
-!   val : REAL(DFP) - constant scalar value
-!
 ! Examples
 !
 !```fortran
@@ -2064,10 +1918,6 @@ END INTERFACE
 ! the external engine. Initiate obj with scalar returnType first. func
 ! must be associated with a procedure matching InterfaceScalarSubroutine
 ! and remain valid while obj uses it; no procedure or closure is copied.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated scalar function
-!   func : PROCEDURE(InterfaceScalarSubroutine), pointer - callback
 !
 ! Examples
 !
@@ -2121,11 +1971,6 @@ END INTERFACE
 ! engine. Initiate obj as a scalar function first and set numArgs to
 ! SIZE(var). During evaluation args(i) supplies the value of var(i).
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated scalar function
-!   funcStr : CHARACTER(*) - scalar mathematical expression
-!   var : CHARACTER(*)(:) - SIZE(var) ordered variable names
-!
 ! Examples
 !
 !```fortran
@@ -2154,6 +1999,7 @@ INTERFACE
     !! Scalar mathematical expression to parse
     CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: var
     !! Ordered names corresponding to entries in evaluation args
+    !! SIZE(var) ordered variable names
   END SUBROUTINE obj_SetScalarEquationParser
 END INTERFACE
 
@@ -2168,10 +2014,6 @@ END INTERFACE
 ! Copies the first numReturns entries of val to internal vector storage
 ! and selects the constant engine. Initiate obj with vector returnType
 ! first. numReturns must fit the fixed vector capacity.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated vector function
-!   val : REAL(DFP)(:) - constants, SIZE(val) >= numReturns
 !
 ! Examples
 !
@@ -2202,6 +2044,7 @@ INTERFACE
     !! Initiated vector function
     REAL(DFP), INTENT(IN) :: val(:)
     !! Constants; the first numReturns entries are copied
+    !! SIZE(val) >= numReturns
   END SUBROUTINE obj_SetVectorConstantVal
 END INTERFACE
 
@@ -2218,10 +2061,6 @@ END INTERFACE
 ! callback must match InterfaceVectorSubroutine and remain valid while
 ! referenced. It writes ans and sets tsize to the valid component count;
 ! it must not exceed the caller's output capacity.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated vector function
-!   func : PROCEDURE(InterfaceVectorSubroutine), pointer - callback
 !
 ! Examples
 !
@@ -2282,11 +2121,6 @@ END INTERFACE
 ! type, numReturns=SIZE(funcStr) and numArgs=SIZE(var) first. All component
 ! expressions share var ordering. Keep numReturns within vector capacity.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated vector function
-!   funcStr : TYPE(String)(:) - SIZE(funcStr) component expressions
-!   var : CHARACTER(*)(:) - SIZE(var) ordered variable names
-!
 ! Examples
 !
 !```fortran
@@ -2323,6 +2157,7 @@ INTERFACE
     !! One expression per output component; SIZE(funcStr)=numReturns
     CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: var
     !! Ordered names corresponding to entries in evaluation args
+    !! SIZE(var) ordered variable names
   END SUBROUTINE obj_SetVectorEquationParser
 END INTERFACE
 
@@ -2338,10 +2173,6 @@ END INTERFACE
 ! selects the constant engine. Initiate obj with matrix returnType and
 ! matching shape and component count first. Each shape extent must fit
 ! the fixed matrix storage capacity.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated matrix function
-!   val : REAL(DFP)(:,:) - constant matrix; each extent >= returnShape
 !
 ! Examples
 !
@@ -2390,10 +2221,6 @@ END INTERFACE
 ! must match InterfaceMatrixSubroutine and remain valid while referenced.
 ! It writes ans and reports nrow and ncol within the output capacity;
 ! keep these consistent with the configured returnShape.
-!
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated matrix function
-!   func : PROCEDURE(InterfaceMatrixSubroutine), pointer - callback
 !
 ! Examples
 !
@@ -2456,11 +2283,6 @@ END INTERFACE
 ! numArgs=SIZE(var) first. All entries share the same variable ordering.
 ! Each matrix extent must fit the fixed parser-array capacity.
 !
-! Arguments:
-!   obj : CLASS(UserFunction_) - initiated matrix function
-!   funcStr : TYPE(String)(:,:) - expressions with shape returnShape
-!   var : CHARACTER(*)(:) - SIZE(var) ordered variable names
-!
 ! Examples
 !
 !```fortran
@@ -2500,6 +2322,7 @@ INTERFACE
     !! One expression per matrix entry; SHAPE(funcStr)=returnShape
     CHARACTER(LEN=*), DIMENSION(:), INTENT(IN) :: var
     !! Ordered names corresponding to entries in evaluation args
+    !! SIZE(var) ordered variable names
   END SUBROUTINE obj_SetMatrixEquationParser
 END INTERFACE
 

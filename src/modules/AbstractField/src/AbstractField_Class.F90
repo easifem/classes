@@ -15,7 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 16 Jul 2021
 ! summary: Abstract field is designed to handle fields in FEM
 !
@@ -71,7 +71,7 @@ PUBLIC :: AbstractField_
 !                                                           AbstractField_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 16 Jul 2021
 ! summary: Abstract field is designed to handle fields in FEM
 
@@ -363,7 +363,7 @@ END TYPE AbstractField_
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 29 Sept 2021
 ! summary: Initiate by copying other fields, and different options
 
@@ -386,7 +386,7 @@ END INTERFACE AbstractFieldInitiate
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 29 Sept 2021
 ! summary: Initiate the field by reading param and given domain
 !
@@ -471,7 +471,7 @@ END INTERFACE AbstractFieldInitiate
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 29 Sept 2021
 ! summary: Initiate the field by reading param and given domain
 !

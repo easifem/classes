@@ -123,9 +123,9 @@ TYPE, ABSTRACT :: AbstractMeshField_
   !! Number of elements for which data is stored;
   !! 1 if fieldType is constant, else total number of elements
   INTEGER(I4B) :: defineOn = 0
-  !! Nodal: nodal values
-  !! Quadrature: quadrature values
-  INTEGER(I4B) :: rank = 0
+  !! Nodal - nodal values
+  !! Quadrature - quadrature values
+  INTEGER(I4B) :: RANK = 0
   !! Scalar, Vector, Matrix
   INTEGER(I4B) :: varType = 0
   !! Constant, Space, Time, SpaceTime
@@ -304,12 +304,6 @@ END TYPE AbstractMeshField_
 ! indxVal, ss, indxShape) are copied, and the mesh pointer of obj
 ! points to the mesh of obj2.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field to initiate
-!   obj2 : CLASS(AbstractMeshField_) - mesh field to copy from
-!   copyFull, copyStructure, usePointer : LOGICAL(LGT), OPTIONAL -
-!     reserved for future use, they are not used at present
-!
 ! Examples
 !
 !```fortran
@@ -423,15 +417,6 @@ END INTERFACE
 ! user function corresponding to the material name.
 ! Then we call [[obj_Initiate3]] method with this user function.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   material : CLASS(AbstractMaterial_) - material which contains
-!     the user function `name`
-!   name : CHARACTER(*) - name of the material property
-!   engine : CHARACTER(*) - engine of the mesh field
-!   nnt : INTEGER(I4B), OPTIONAL - number of nodes in time
-!
 ! Examples
 !
 ! The usage is the same as [[obj_Initiate3]], but the user function is
@@ -479,15 +464,6 @@ END INTERFACE
 !
 ! The shape of data is obtained from
 ! [[AbstractMeshFieldGetShapeAndSize]].
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the mesh field
-!   engine : CHARACTER(*) - engine of the mesh field
-!   nnt : INTEGER(I4B), OPTIONAL - number of nodes in time, needed
-!     when argType of func is time or spaceTime
 !
 ! Examples
 !
@@ -612,17 +588,6 @@ END INTERFACE
 ! - The correct s for given rank and varType can be obtained from
 !   [[AbstractMeshFieldGetShapeAndSize]].
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   name : CHARACTER(*) - name of the field
-!   fieldType : INTEGER(I4B) - normal or constant (TypeFieldOpt)
-!   engine : CHARACTER(*) - engine, for example NATIVE_SERIAL
-!   defineOn : INTEGER(I4B) - nodal or quadrature
-!   varType : INTEGER(I4B) - constant, space, time, or spaceTime
-!   rank : INTEGER(I4B) - scalar, vector, or matrix
-!   s : INTEGER(I4B)(:) - maximum shape of data in an element
-!   mesh : CLASS(AbstractMesh_) - mesh
-!
 ! Examples
 !
 !```fortran
@@ -708,7 +673,7 @@ END INTERFACE
 
 INTERFACE AbstractMeshFieldInitiate
   MODULE SUBROUTINE obj_Initiate4( &
-    obj, name, fieldType, engine, defineOn, varType, rank, s, mesh)
+    obj, name, fieldType, engine, defineOn, varType, RANK, s, mesh)
     CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
     !! AbstractMeshField
     CHARACTER(*), INTENT(IN) :: name
@@ -723,7 +688,7 @@ INTERFACE AbstractMeshFieldInitiate
     !! variable type
     !! how the field varies inside the element
     !! space, time, spaceTime, constant
-    INTEGER(I4B), INTENT(IN) :: rank
+    INTEGER(I4B), INTENT(IN) :: RANK
     !! rank of the field, scalar, vector, matrix
     INTEGER(I4B), INTENT(IN) :: s(:)
     !! shape of the field
@@ -744,16 +709,6 @@ END INTERFACE AbstractMeshFieldInitiate
 ! If the name is found in the material then we get the pointer to
 ! user function corresponding to the material name.
 ! Then we call [[obj_Initiate6]] method with this user function.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   quadField : CLASS(AbstractMeshField_) - vector mesh field which
-!     contains the quadrature points
-!   material : CLASS(AbstractMaterial_) - material which contains
-!     the user function `name`
-!   name : CHARACTER(*) - name of the material property
-!   engine : CHARACTER(*) - engine of the mesh field
-!   nnt : INTEGER(I4B), OPTIONAL - number of nodes in time
 !
 ! Examples
 !
@@ -802,15 +757,6 @@ END INTERFACE
 ! - defineOn = quadrature
 ! - nns = quadField%GetMaxNNE(), maximum number of quadrature points
 ! - mesh = quadField%GetMeshPointer()
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   quadField : CLASS(AbstractMeshField_) - vector mesh field which
-!     contains the quadrature points, see InitiateQuadraturePoints
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the mesh field
-!   engine : CHARACTER(*) - engine of the mesh field
-!   nnt : INTEGER(I4B), OPTIONAL - number of nodes in time
 !
 ! Examples
 !
@@ -948,9 +894,6 @@ END INTERFACE
 ! values, and nullify the mesh pointer. After this call
 ! obj%IsInitiated() returns false.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!
 ! Examples
 !
 !```fortran
@@ -1052,11 +995,6 @@ END INTERFACE AbstractMeshFieldDeallocate
 !   [spaceCompo, nns, nnt] for spaceTime
 ! - matrix: [dim1, dim2] for constant, [dim1, dim2, nns] for space,
 !   [dim1, dim2, nns, nnt] for spaceTime
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT) - if true globalElement is local
 !
 ! Returns:
 !   ans : INTEGER(I4B), ALLOCATABLE(:) - shape of data in the element
@@ -1190,12 +1128,6 @@ END INTERFACE
 ! fevar%val(1:fevar%len). If fieldType is constant then the data of
 ! the only stored element is returned for every globalElement.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   globalElement : INTEGER(I4B) - global or local element number
-!   fevar : TYPE(FEVariable_) - data of the element
-!   islocal : LOGICAL(LGT) - if true globalElement is local
-!
 ! Examples
 !
 ! See the example of [[obj_Initiate4]].
@@ -1233,12 +1165,6 @@ END INTERFACE
 ! These conditions are checked only in the debug mode. fevar%varType
 ! is set from obj.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   globalElement : INTEGER(I4B) - global or local element number
-!   fevar : TYPE(FEVariable_) - data of the element
-!   islocal : LOGICAL(LGT) - if true globalElement is local
-!
 ! Examples
 !
 ! The usage is the same as [[obj_Get]].
@@ -1268,9 +1194,6 @@ END INTERFACE
 !
 ! Returns true if obj is initiated by one of the Initiate methods.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if obj is initiated
 !
@@ -1295,8 +1218,7 @@ END INTERFACE
 ! date: 2026-02-27
 ! summary:  Returns mesh pointer stored inside the AbstractMeshField
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
+! Returns the mesh of the mesh field.
 !
 ! Returns:
 !   ans : CLASS(AbstractMesh_), POINTER - mesh of the mesh field
@@ -1332,9 +1254,6 @@ END INTERFACE
 ! | vector | 1                | maxShape(2)        |
 ! | matrix | 1                | maxShape(3)        |
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!
 ! Returns:
 !   ans : INTEGER(I4B) - maximum number of spatial nodes in an element
 !
@@ -1364,14 +1283,6 @@ END INTERFACE
 ! represents the space components, and second index represents the
 ! spatial points. Only ans(1:nrow, 1:ncol) is written, so ans should
 ! be large enough, for example ans(spaceCompo, obj%GetMaxNNE()).
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - vector mesh field (varType=space)
-!   globalElement : INTEGER(I4B) - global or local element number
-!   ans : REAL(DFP)(:, :) - element value
-!   nrow, ncol : INTEGER(I4B) - number of rows and columns written in
-!     ans
-!   islocal : LOGICAL(LGT), OPTIONAL - if true globalElement is local
 !
 ! Examples
 !
@@ -1408,13 +1319,6 @@ END INTERFACE
 ! at spatial nodes (or quadrature points). Only ans(1:tsize) is
 ! written, so ans should be large enough, for example
 ! ans(obj%GetMaxNNE()).
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - scalar mesh field (varType=space)
-!   globalElement : INTEGER(I4B) - global or local element number
-!   ans : REAL(DFP)(:) - element value
-!   tsize : INTEGER(I4B) - number of values written in ans
-!   islocal : LOGICAL(LGT), OPTIONAL - if true globalElement is local
 !
 ! Examples
 !
@@ -1534,13 +1438,6 @@ END INTERFACE
 ! Get the value of scalar mesh field which has vartype = constant.
 ! The result will be a scalar.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - scalar mesh field
-!     (varType=constant)
-!   globalElement : INTEGER(I4B) - global or local element number
-!   ans : REAL(DFP) - element value
-!   islocal : LOGICAL(LGT), OPTIONAL - if true globalElement is local
-!
 ! Examples
 !
 ! See the example of [[obj_Initiate4]].
@@ -1572,9 +1469,6 @@ END INTERFACE
 ! Get the rank of data stored in obj; scalar, vector, or matrix
 ! (see TypeFEVariableOpt).
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!
 ! Returns:
 !   ans : INTEGER(I4B) - rank of the field
 !
@@ -1603,9 +1497,6 @@ END INTERFACE
 ! 1 if fieldType is constant, otherwise it is the total number of
 ! elements in the mesh.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!
 ! Returns:
 !   ans : INTEGER(I4B) - tSize
 !
@@ -1632,9 +1523,6 @@ END INTERFACE
 !
 ! Get the varType of obj; constant, space, time, or spaceTime.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!
 ! Returns:
 !   ans : INTEGER(I4B) - varType
 !
@@ -1660,9 +1548,6 @@ END INTERFACE
 ! summary: Get the DefineOn of obj
 !
 ! Get the defineOn of obj; nodal or quadrature.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
 !
 ! Returns:
 !   ans : INTEGER(I4B) - defineOn
@@ -1697,9 +1582,6 @@ END INTERFACE
 ! | vector | 1        | 2             | 3         |
 ! | matrix | 2        | 3             | 4         |
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!
 ! Returns:
 !   ans : INTEGER(I4B) - size of shape vector
 !
@@ -1729,13 +1611,6 @@ END INTERFACE
 ! Get the shape of data in an element without allocation. This method
 ! is like [[obj_Shape]], but the result is written in ans(1:tsize).
 ! The size of ans should not be less than obj%GetTotalShape().
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT) - if true globalElement is local
-!   ans : INTEGER(I4B)(:) - shape of data
-!   tsize : INTEGER(I4B) - number of entries written in ans
 !
 ! Examples
 !
@@ -1773,13 +1648,6 @@ END INTERFACE
 ! - time: s = [nnt]
 ! - spaceTime: s = [nns, nnt]
 !
-! Arguments:
-!   varType : INTEGER(I4B) - constant, space, time, or spaceTime
-!   s : INTEGER(I4B)(4) - shape of data
-!   tsize : INTEGER(I4B) - number of entries written in s
-!   nns : INTEGER(I4B), OPTIONAL - number of spatial nodes
-!   nnt : INTEGER(I4B), OPTIONAL - number of time nodes
-!
 ! Examples
 !
 ! See the example of [[AbstractMeshFieldGetShapeAndSize]].
@@ -1816,14 +1684,6 @@ END INTERFACE
 ! - space: s = [spaceCompo, nns]
 ! - time: s = [spaceCompo, nnt]
 ! - spaceTime: s = [spaceCompo, nns, nnt]
-!
-! Arguments:
-!   varType : INTEGER(I4B) - constant, space, time, or spaceTime
-!   s : INTEGER(I4B)(4) - shape of data
-!   tsize : INTEGER(I4B) - number of entries written in s
-!   spaceCompo : INTEGER(I4B), OPTIONAL - number of space components
-!   nns : INTEGER(I4B), OPTIONAL - number of spatial nodes
-!   nnt : INTEGER(I4B), OPTIONAL - number of time nodes
 !
 ! Examples
 !
@@ -1865,14 +1725,6 @@ END INTERFACE
 ! - time: s = [dim1, dim2, nnt]
 ! - spaceTime: s = [dim1, dim2, nns, nnt]
 !
-! Arguments:
-!   varType : INTEGER(I4B) - constant, space, time, or spaceTime
-!   s : INTEGER(I4B)(4) - shape of data
-!   tsize : INTEGER(I4B) - number of entries written in s
-!   dim1, dim2 : INTEGER(I4B), OPTIONAL - size of the matrix
-!   nns : INTEGER(I4B), OPTIONAL - number of spatial nodes
-!   nnt : INTEGER(I4B), OPTIONAL - number of time nodes
-!
 ! Examples
 !
 ! See the example of [[AbstractMeshFieldGetShapeAndSize]].
@@ -1909,16 +1761,6 @@ END INTERFACE
 ! [[ScalarMeshFieldGetShapeAndSize]],
 ! [[VectorMeshFieldGetShapeAndSize]], or
 ! [[TensorMeshFieldGetShapeAndSize]] depending on the rank.
-!
-! Arguments:
-!   rank : INTEGER(I4B) - scalar, vector, or matrix
-!   varType : INTEGER(I4B) - constant, space, time, or spaceTime
-!   s : INTEGER(I4B)(4) - shape of data
-!   tsize : INTEGER(I4B) - number of entries written in s
-!   spaceCompo : INTEGER(I4B), OPTIONAL - needed for vector
-!   dim1, dim2 : INTEGER(I4B), OPTIONAL - needed for matrix
-!   nns : INTEGER(I4B), OPTIONAL - needed for space and spaceTime
-!   nnt : INTEGER(I4B), OPTIONAL - needed for time and spaceTime
 !
 ! Examples
 !
@@ -1991,8 +1833,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE AbstractMeshFieldGetShapeAndSize( &
-    rank, varType, s, tsize, spaceCompo, dim1, dim2, nns, nnt)
-    INTEGER(I4B), INTENT(IN) :: rank
+    RANK, varType, s, tsize, spaceCompo, dim1, dim2, nns, nnt)
+    INTEGER(I4B), INTENT(IN) :: RANK
     !! scalar, vector, matrix
     INTEGER(I4B), INTENT(IN) :: varType
     !! constant, space, time, spaceTime
@@ -2019,11 +1861,6 @@ END INTERFACE
 !
 ! Display the name, fieldType, engine, tSize, defineOn, rank, varType,
 ! and the internal arrays (val, indxVal, ss, indxShape) of obj.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   msg : CHARACTER(*) - message to print before the content
-!   unitNo : INTEGER(I4B), OPTIONAL - unit number, default is stdout
 !
 ! Examples
 !
@@ -2121,12 +1958,6 @@ END INTERFACE
 ! need the mesh (for example Get with fieldType normal) can not be
 ! used. In the debug mode, if fieldType is not constant then tSize is
 ! checked against mesh%GetTotalElements().
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   hdf5 : TYPE(HDF5File_) - hdf5 file opened for reading
-!   group : CHARACTER(*) - group in hdf5 file
-!   mesh : CLASS(AbstractMesh_), OPTIONAL - mesh
 !
 ! Examples
 !
@@ -2274,11 +2105,6 @@ END INTERFACE
 ! - IntR1/maxShape, IntR1/ss, IntR1/indxShape, IntR1/indxVal
 ! - RealR1/val
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   hdf5 : TYPE(HDF5File_) - hdf5 file opened for writing
-!   group : CHARACTER(*) - group in hdf5 file
-!
 ! Examples
 !
 !```fortran
@@ -2378,11 +2204,6 @@ END INTERFACE
 ! points (see InitiateInterpolationPoints) or the quadrature points
 ! (see InitiateQuadraturePoints).
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   nodeCoordField : CLASS(AbstractMeshField_) - coordinates of points
-!   filename : CHARACTER(*) - name of the vtk file
-!
 ! Examples
 !
 !```fortran
@@ -2465,12 +2286,6 @@ END INTERFACE
 ! This routine sets the values of globalElement in AbstractMeshField_
 ! from FEVariable. The element must be filled before by an Insert
 ! method, and the size of data must not change.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT) - if true globalElement is local
-!   fevar : TYPE(FEVariable_) - new data of the element
 !
 ! Examples
 !
@@ -2603,12 +2418,6 @@ END INTERFACE
 ! - Then we get value from userfunction by using the coordinates
 ! - Then we set the value in AbstractMeshField_ by using [[obj_Set1]]
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   func : CLASS(UserFunction_) - user function
-!   times : REAL(DFP)(:), OPTIONAL - time values, needed when varType
-!     is time or spaceTime
-!
 ! Examples
 !
 ! See the example of [[obj_Initiate3]].
@@ -2639,12 +2448,6 @@ END INTERFACE
 !
 ! 1. First we get the user function from material by using the name
 ! 2. Then we call [[obj_Set2]] method to set the values
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   material : CLASS(AbstractMaterial_) - material
-!   name : CHARACTER(*) - name of the material property
-!   times : REAL(DFP)(:), OPTIONAL - time values
 !
 ! Examples
 !
@@ -2678,10 +2481,6 @@ END INTERFACE
 ! AbstractMeshField_ by calling [[obj_Set1]] for each element. The mesh
 ! field must be filled before by an Insert method.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   fevar : TYPE(FEVariable_) - data for all the elements
-!
 ! Examples
 !
 ! See the example of [[obj_Set1]].
@@ -2709,13 +2508,6 @@ END INTERFACE
 ! from user function. This function is like [[obj_Set2]], but in this
 ! case we set the value of a single element. The element must be
 ! filled before by an Insert method.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   func : CLASS(UserFunction_) - user function
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT), OPTIONAL - if true globalElement is local
-!   times : REAL(DFP)(:), OPTIONAL - time values
 !
 ! Examples
 !
@@ -2885,13 +2677,6 @@ END INTERFACE
 ! 1. From each material(ii) we get the user function by using the name
 ! 2. Then we call [[obj_Set7]] with these user functions
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   medium : INTEGER(I4B) - medium number
-!   material : CLASS(AbstractMaterialPointer_)(:) - materials
-!   name : CHARACTER(*) - name of the material property
-!   times : REAL(DFP)(:), OPTIONAL - time values
-!
 ! Examples
 !
 ! The usage is the same as [[obj_Set7]], but the user functions are
@@ -2935,13 +2720,6 @@ END INTERFACE AbstractMeshFieldSet
 ! 3. Then we set the values in that element by using this function,
 !    see [[obj_Set5]].
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   medium : INTEGER(I4B) - medium number
-!   func : CLASS(UserFunctionPointer_)(:) - user functions, one for
-!     each material
-!   times : REAL(DFP)(:), OPTIONAL - time values
-!
 ! Examples
 !
 ! The usage is like [[obj_Set5]], it needs a mesh with material
@@ -2983,12 +2761,6 @@ END INTERFACE AbstractMeshFieldSet
 ! be inserted in increasing order of local element number, starting
 ! from 1. If fieldType is constant then only element 1 is used.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT) - if true globalElement is local
-!   fevar : TYPE(FEVariable_) - data of the element
-!
 ! Examples
 !
 ! See the example of [[obj_Initiate4]].
@@ -3026,11 +2798,6 @@ END INTERFACE
 !    FEVariable_ from UserFunction at these coordinates, and call
 !    [[obj_Insert1]].
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   func : CLASS(UserFunction_) - user function
-!   times : REAL(DFP)(:), OPTIONAL - time values
-!
 ! Examples
 !
 ! See the example of [[obj_Initiate3]].
@@ -3061,12 +2828,6 @@ END INTERFACE
 !
 ! 1. First we get the user function from material by using the name
 ! 2. Then we call [[obj_Insert2]] method to insert the values
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   material : CLASS(AbstractMaterial_) - material
-!   name : CHARACTER(*) - name of the material property
-!   times : REAL(DFP)(:), OPTIONAL - time values
 !
 ! Examples
 !
@@ -3099,10 +2860,6 @@ END INTERFACE
 ! This routine inserts the same FEVariable in all the elements by
 ! calling [[obj_Insert1]] for each element. If fieldType is constant
 ! then only element 1 is inserted.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   fevar : TYPE(FEVariable_) - data for all the elements
 !
 ! Examples
 !
@@ -3139,13 +2896,6 @@ END INTERFACE
 ! Then we insert this FEVariable by using [[obj_Insert1]]. Elements
 ! must be inserted in increasing order of local element number.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   func : CLASS(UserFunction_) - user function
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT), OPTIONAL - if true globalElement is local
-!   times : REAL(DFP)(:), OPTIONAL - time values
-!
 ! Examples
 !
 ! See the example of [[obj_Set5]].
@@ -3180,13 +2930,6 @@ END INTERFACE
 !
 ! 1. From each material(ii) we get the user function by using the name
 ! 2. Then we call [[obj_Insert7]] with these user functions
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   medium : INTEGER(I4B) - medium number
-!   material : CLASS(AbstractMaterialPointer_)(:) - materials
-!   name : CHARACTER(*) - name of the material property
-!   times : REAL(DFP)(:), OPTIONAL - time values
 !
 ! Examples
 !
@@ -3228,13 +2971,6 @@ END INTERFACE
 ! 3. Then we insert the values in that element by using this function,
 !    see [[obj_Insert5]].
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   medium : INTEGER(I4B) - medium number
-!   func : CLASS(UserFunctionPointer_)(:) - user functions, one for
-!     each material
-!   times : REAL(DFP)(:), OPTIONAL - time values
-!
 ! Examples
 !
 ! The usage is like [[obj_Insert5]], it needs a mesh with material
@@ -3273,15 +3009,6 @@ END INTERFACE
 ! 3. Then we insert the values in that element by using this function
 !    at the quadrature points stored in quadField,
 !    see [[obj_Insert9]].
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   quadField : CLASS(AbstractMeshField_) - vector mesh field which
-!     contains the quadrature points
-!   medium : INTEGER(I4B) - medium number
-!   func : CLASS(UserFunctionPointer_)(:) - user functions, one for
-!     each material
-!   times : REAL(DFP)(:), OPTIONAL - time values
 !
 ! Examples
 !
@@ -3326,15 +3053,6 @@ END INTERFACE
 ! Then we insert this FEVariable by using [[obj_Insert1]]. Elements
 ! must be inserted in increasing order of local element number.
 !
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   quadField : CLASS(AbstractMeshField_) - vector mesh field which
-!     contains the quadrature points
-!   func : CLASS(UserFunction_) - user function
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT), OPTIONAL - if true globalElement is local
-!   times : REAL(DFP)(:), OPTIONAL - time values
-!
 ! Examples
 !
 ! See the example of [[obj_Initiate6]].
@@ -3378,13 +3096,6 @@ END INTERFACE
 !
 ! where \(\mathbf{v}_e\) is the data of element e, \(\alpha\) is scale,
 ! and \(\mathbf{f}\) is fevar%val.
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   globalElement : INTEGER(I4B) - global or local element number
-!   islocal : LOGICAL(LGT) - if true globalElement is local
-!   scale : REAL(DFP) - scale
-!   fevar : TYPE(FEVariable_) - value to add
 !
 ! Examples
 !
@@ -3498,11 +3209,6 @@ END INTERFACE
 !
 ! $$\mathbf{v}_e \leftarrow \mathbf{v}_e + \alpha \, \mathbf{f}
 !   \quad \forall e$$
-!
-! Arguments:
-!   obj : CLASS(AbstractMeshField_) - mesh field
-!   scale : REAL(DFP) - scale
-!   fevar : TYPE(FEVariable_) - value to add
 !
 ! Examples
 !

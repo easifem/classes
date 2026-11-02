@@ -138,7 +138,7 @@ CONTAINS
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! summary: Sets the local shape data for the mesh
 !
@@ -199,9 +199,12 @@ END SUBROUTINE obj_InitiateElemSD1
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Initiates the space-time shape data: the space and time shape data (as in
+! obj_InitiateElemSD3), then the time shape data at the time values tvec.
 !
 ! Changes:
 !   - 2021-12-09
@@ -268,9 +271,12 @@ END SUBROUTINE obj_InitiateElemSD2
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Initiates the space shape data, and the quadrature points and local shape
+! data in time from the time reference elements.
 !
 ! Changes:
 !   - 2021-12-09
@@ -350,9 +356,12 @@ END SUBROUTINE obj_InitiateElemSD3
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Should set the space-time shape data from the time values tvec. It is under
+! development and only raises an error.
 !
 ! Changes:
 !   - 2021-12-09
@@ -388,7 +397,7 @@ END SUBROUTINE obj_InitiateElemSD4
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! summary: Sets the local shape data for the mesh
 
@@ -501,7 +510,7 @@ END SUBROUTINE obj_InitiateFacetElemSD1
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 20 May 2022
 ! summary: Sets the local shape data for the mesh
 
@@ -562,9 +571,12 @@ END SUBROUTINE obj_InitiateFacetElemSD2
 !                                            InitiateElemSD@ShapeDataMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2021-12-09
 ! summary: Sets the local shape data for the mesh
+!
+! Should set the space-time shape data of the facet elements from the time
+! values tvec. It is under development and only raises an error.
 !
 ! Changes:
 !   - 2021-12-09

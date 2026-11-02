@@ -2,6 +2,8 @@
 ! date: 2026-10-24
 ! summary: Initiate a VTKHDF file for writing and reading
 !
+! Tests InitiateVTKHDF5 and IsOutputStep for the modes of a VTKHDF file.
+!
 ! Changes:
 !   - 2026-10-26: InitiateVTKHDF5 with vtkType, more checks
 !   - 2026-10-26: IsOutputStep in modes NEW and READ

@@ -238,13 +238,6 @@ END TYPE VectorFieldPointer_
 ! data and the values). If obj2 is a vector field, spaceCompo and idofs
 ! are copied too.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field to be initiated
-!   obj2 : CLASS(AbstractField_) - field to be copied, a child of
-!     AbstractNodeField_
-!   copyFull, copyStructure, usePointer : LOGICAL(LGT) - (optional) not
-!     used
-!
 ! See also: [[obj_Initiate2]] (contains an example)
 
 INTERFACE
@@ -291,17 +284,6 @@ END INTERFACE VectorFieldInitiate
 !
 ! Initiate(obj2) makes a copy of another vector field
 ! ([[obj_Initiate1]]); the example shows both.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine, e.g., "NATIVE_SERIAL"
-!   fieldType : INTEGER(I4B) - (optional) TypeFieldOpt%normal (default)
-!     or TypeFieldOpt%constant
-!   comm, local_n, global_n : INTEGER(I4B) - (optional) parallel data
-!   spaceCompo : INTEGER(I4B) - number of space components, spaceCompo(1)
-!   fedof, geofedof : CLASS(FEDOF_) - FEDOFs of the field and geometry
-!   timefedof : CLASS(TimeFEDOF_) - (optional) FEDOF in time
 !
 ! Examples
 !
@@ -472,9 +454,6 @@ END INTERFACE VectorFieldInitiate
 ! spaceCompo is set to zero, idofs is deallocated and DEALLOCATE of
 ! AbstractNodeField_ is called.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!
 ! See also: [[obj_Initiate2]] (contains an example)
 
 INTERFACE
@@ -498,9 +477,6 @@ END INTERFACE VectorFieldDeallocate
 !
 ! Each associated pointer is deallocated and nullified, and obj is
 ! deallocated.
-!
-! Arguments:
-!   obj : TYPE(VectorFieldPointer_) - vector of vector field pointers
 !
 ! See also: [[obj_VectorFieldSafeAllocate1]]
 
@@ -526,10 +502,6 @@ END INTERFACE VectorFieldDeallocate
 ! If obj is not allocated, it is allocated with size newsize. If its
 ! size is less than newsize, VectorFieldDeallocate is called and obj is
 ! allocated again with size newsize. Otherwise obj is not changed.
-!
-! Arguments:
-!   obj : TYPE(VectorFieldPointer_) - vector of vector field pointers
-!   newsize : INTEGER(I4B) - required size
 !
 ! See also: [[obj_Deallocate_ptr_vector]]
 
@@ -572,11 +544,6 @@ END INTERFACE
 ! summary: Display the content of a vector field
 !
 ! Calls Display of AbstractNodeField_ and displays spaceCompo.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   msg : CHARACTER(*) - message printed first
-!   unitno : INTEGER(I4B) - (optional) unit number, default stdout
 !
 ! Examples
 !
@@ -642,13 +609,6 @@ END INTERFACE VectorFieldDisplay
 ! (group/IntR0/spaceCompo) and idofs (group/IntR1/idofs). An error is
 ! raised (in debug mode) if these datasets are missing.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   hdf5 : TYPE(HDF5File_) - HDF5 file opened for reading
-!   group : CHARACTER(*) - group of the field in the file
-!   fedof, geofedof : CLASS(FEDOF_) - (optional) FEDOFs of the field
-!   fedofs, geofedofs, timefedof, timefedofs - (optional) other FEDOFs
-!
 ! See also: [[obj_Export]] (contains an example)
 
 INTERFACE
@@ -682,11 +642,6 @@ END INTERFACE
 ! Nothing is done if obj is not initiated. Otherwise Export of
 ! AbstractNodeField_ is called, and spaceCompo and idofs are written
 ! in group/IntR0/spaceCompo and group/IntR1/idofs.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   hdf5 : TYPE(HDF5File_) - HDF5 file opened for writing
-!   group : CHARACTER(*) - group of the field in the file
 !
 ! Examples
 !
@@ -773,10 +728,6 @@ END INTERFACE VectorFieldExport
 ! field) with three components x, y, z; the missing components are
 ! zero. It is called by WriteData_vtk of AbstractNodeField_.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   vtk : TYPE(VTKFile_) - VTK file
-!
 ! See also: [[AbstractNodeField_:obj_WriteData_vtk1]]
 
 INTERFACE
@@ -804,13 +755,6 @@ END INTERFACE
 ! types. If vtk is not initiated, it is initiated with filename
 ! (binary appended, unstructured grid). opentag, content and closetag
 ! select the parts of the piece which are written.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field of node coordinates
-!   vtk : TYPE(VTKFile_) - VTK file
-!   filename : CHARACTER(*) - (optional) file name, needed if vtk is not
-!     initiated
-!   opentag, content, closetag : LOGICAL(LGT) - (optional) default true
 !
 ! See also: [[obj_SetHigherOrderNodeCoord]]
 
@@ -854,15 +798,6 @@ END INTERFACE
 ! @note
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   globalNode : INTEGER(I4B) - node number
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   VALUE : REAL(DFP) - vector, SIZE(VALUE) = spaceCompo
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -950,6 +885,7 @@ INTERFACE
     !! if true then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! vector value, size of value should be obj%spaceCompo
+    !! SIZE(VALUE) = spaceCompo
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
@@ -972,12 +908,6 @@ END INTERFACE
 !   In debug mode the check of the field type is inverted: an error is
 !   raised if the field is not constant.
 ! @endnote
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - vector, SIZE(VALUE) = spaceCompo
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -1034,6 +964,7 @@ INTERFACE
     !! vector field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! vector value, size of value should be obj%spaceCompo
+    !! SIZE(VALUE) = spaceCompo
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
@@ -1060,13 +991,6 @@ END INTERFACE
 ! @note
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - value
-!   spaceCompo : INTEGER(I4B) - space component, 1 to obj%spaceCompo
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -1163,13 +1087,6 @@ END INTERFACE
 ! @note
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - values in the given format
-!   storageFMT : INTEGER(I4B) - storageFormatNodes or storageFormatDOF
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -1288,13 +1205,6 @@ END INTERFACE
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) = tNodes
-!   spaceCompo : INTEGER(I4B) - space component
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
@@ -1303,6 +1213,7 @@ INTERFACE
     !! vector field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! size of value should be tNodes
+    !! SIZE(VALUE) = tNodes
     INTEGER(I4B), INTENT(IN) :: spaceCompo
     !! space component
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
@@ -1324,12 +1235,6 @@ END INTERFACE
 !   This routine is under development; it raises an error.
 ! @endnote
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : CLASS(AbstractNodeField_) - node field
-!   spaceCompo : INTEGER(I4B) - space component
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 
 INTERFACE
   MODULE SUBROUTINE obj_Set6(obj, VALUE, spaceCompo, scale, addContribution)
@@ -1356,15 +1261,6 @@ END INTERFACE
 !
 ! Calls [[obj_Set1]] for each node of globalNode with VALUE.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - vector, SIZE(VALUE) = spaceCompo
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_Set1]] (contains an example)
 
 INTERFACE
@@ -1378,6 +1274,7 @@ INTERFACE
     !! if true then globalNode is local node number
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! vector value, this value will be assigned to all global nodes
+    !! SIZE(VALUE) = spaceCompo
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
@@ -1402,16 +1299,6 @@ END INTERFACE
 ! @note
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   VALUE : REAL(DFP) - values in the given format
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!   storageFMT : INTEGER(I4B) - storageFormatNodes or storageFormatDOF
 !
 ! See also: [[obj_Set4]] (contains an example)
 
@@ -1457,16 +1344,6 @@ END INTERFACE
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) = SIZE(globalNode)
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   spaceCompo : INTEGER(I4B) - space component
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
@@ -1476,6 +1353,7 @@ INTERFACE
     !! vector field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be used in obj = value
+    !! SIZE(VALUE) = SIZE(globalNode)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -1499,16 +1377,6 @@ END INTERFACE
 !
 ! Component spaceCompo of node globalNode becomes scale * VALUE, or
 ! scale * VALUE is added with addContribution.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - value
-!   globalNode : INTEGER(I4B) - node number
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   spaceCompo : INTEGER(I4B) - space component
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! See also: [[obj_Set1]] (contains an example)
 
@@ -1545,15 +1413,6 @@ END INTERFACE
 ! variable, its values (shape (spaceCompo, SIZE(globalNode))) are set
 ! with the nodes format ([[obj_Set8]]). Other variable types raise an
 ! error.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : TYPE(FEVariable_) - vector, nodal FEVariable
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -1658,12 +1517,6 @@ END INTERFACE
 ! scale * VALUE is added with addContribution. It calls SetAll of
 ! AbstractNodeField_.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - value
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_Set1]] (contains an example)
 
 INTERFACE
@@ -1693,10 +1546,6 @@ END INTERFACE
 !
 ! Get(VALUE=w) copies the values of obj into w ([[obj_Get7]]); the
 ! example shows both.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : CLASS(VectorField_) - vector field to be copied
 !
 ! Examples
 !
@@ -1784,13 +1633,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2025-11-12: scalar and vector functions (Shion Shimizu)
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - initiated vector field
-!   func : CLASS(UserFunction_) - scalar or vector user function
-!   times : REAL(DFP) - (optional) time, SIZE(times) = 1
-!   ivar, idof, timeCompo : INTEGER(I4B) - (optional) not used
-!   spaceCompo : INTEGER(I4B) - (optional) component for a scalar func
 !
 ! Examples
 !
@@ -1913,6 +1755,7 @@ INTERFACE
     !! User function
     REAL(DFP), INTENT(IN), OPTIONAL :: times(:)
     !! If present then its size should be 1
+    !! SIZE(times) = 1
     INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
     !! ivar (not used)
     INTEGER(I4B), INTENT(IN), OPTIONAL :: idof
@@ -1940,10 +1783,6 @@ END INTERFACE
 ! the higher order mesh; it is used with
 ! [[obj_ExportHigherOrderNodeCoordToVTK]].
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field with a Lagrange fedof,
-!     spaceCompo is the space dimension
-!
 ! See also: [[obj_ExportHigherOrderNodeCoordToVTK]]
 
 INTERFACE
@@ -1968,10 +1807,6 @@ END INTERFACE
 ! must have the same spaceCompo and meshes with the same number of
 ! elements.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - Lagrange vector field, values are set
-!   obj2 : CLASS(VectorField_) - vector field which is interpolated
-!
 ! See also: [[obj_SetByFunction]]
 
 INTERFACE
@@ -1995,13 +1830,6 @@ END INTERFACE
 ! debug mode). With globalNode, VALUE(1:spaceCompo) is the vector of
 ! the node (tsize = spaceCompo). With spaceCompo, VALUE(1:tNodes) is
 ! the component of all nodes (tsize = tNodes).
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - values
-!   tsize : INTEGER(I4B) - number of values written in VALUE
-!   globalNode : INTEGER(I4B) - (optional) local node number
-!   spaceCompo : INTEGER(I4B) - (optional) space component
 !
 ! See also: [[obj_Set1]] (contains an example)
 
@@ -2035,13 +1863,6 @@ END INTERFACE
 ! VALUE(i, c) is component c of node i (nrow = tNodes, ncol =
 ! spaceCompo). VALUE must be large enough (checked in debug mode).
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - values
-!   nrow, ncol : INTEGER(I4B) - rows and columns written in VALUE
-!   storageFMT : INTEGER(I4B) - storageFormatNodes or storageFormatDOF
-!   force3D : LOGICAL(LGT) - (optional) not used by this routine
-!
 ! See also: [[obj_Set4]] (contains an example)
 
 INTERFACE
@@ -2055,8 +1876,8 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of columns written in value
     INTEGER(I4B), INTENT(IN) :: storageFMT
-    !! NODES_FMT:: nrow is obj%spaceCompo or 3, ncol is tNodes
-    !! DOF_FMT:: nrow is tNodes, ncol is obj%spaceCompo or 3
+    !! NODES_FMT - nrow is obj%spaceCompo or 3, ncol is tNodes
+    !! DOF_FMT - nrow is tNodes, ncol is obj%spaceCompo or 3
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: force3D
     !! not used
   END SUBROUTINE obj_Get2
@@ -2073,16 +1894,6 @@ END INTERFACE
 ! Same as [[obj_Get2]] for the nodes of globalNode: with the nodes
 ! format VALUE(c, j) is component c of node globalNode(j), with the DOF
 ! format VALUE(j, c).
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - values
-!   nrow, ncol : INTEGER(I4B) - rows and columns written in VALUE
-!   storageFMT : INTEGER(I4B) - storageFormatNodes or storageFormatDOF
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   force3D : LOGICAL(LGT) - (optional) not used by this routine
 !
 ! See also: [[obj_Set4]] (contains an example)
 
@@ -2101,8 +1912,8 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! The number of columns in value is same as the
     INTEGER(I4B), INTENT(IN) :: storageFMT
-    !! NODES_FMT:: nrow is obj%spaceCompo or 3, ncol is size(globalNode)
-    !! DOF_FMT:: nrow is size(globalNode), ncol is obj%spaceCompo or 3
+    !! NODES_FMT - nrow is obj%spaceCompo or 3, ncol is size(globalNode)
+    !! DOF_FMT - nrow is size(globalNode), ncol is obj%spaceCompo or 3
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -2123,15 +1934,6 @@ END INTERFACE
 ! VALUE(j) is component spaceCompo of node globalNode(j); tsize =
 ! SIZE(globalNode).
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) >= SIZE(globalNode)
-!   tsize : INTEGER(I4B) - number of values written in VALUE
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   spaceCompo : INTEGER(I4B) - space component
-!
 ! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
@@ -2141,6 +1943,7 @@ INTERFACE
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! the size of value should be same as globalNode
+    !! SIZE(VALUE) >= SIZE(globalNode)
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! total size of data written in value
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -2159,14 +1962,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-25
 ! summary: Get one component of one node
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - value
-!   globalNode : INTEGER(I4B) - node number
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   spaceCompo : INTEGER(I4B) - space component
 !
 ! See also: [[obj_Set1]] (contains an example)
 
@@ -2195,12 +1990,6 @@ END INTERFACE
 !
 ! Calls [[obj_GetFeVariable]].
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : TYPE(FEVariable_) - vector, nodal, space FEVariable
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - true if globalNode are local node numbers
-!
 ! See also: [[obj_Set11]] (contains an example)
 
 INTERFACE
@@ -2228,10 +2017,6 @@ END INTERFACE
 ! fields must be initiated (checked in debug mode) and have the same
 ! size.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : CLASS(VectorField_) - initiated vector field, VALUE = obj
-!
 ! See also: [[obj_Set13]] (contains an example)
 
 INTERFACE
@@ -2254,13 +2039,6 @@ END INTERFACE
 ! VALUE becomes a vector, nodal, space FEVariable with shape
 ! (spaceCompo, SIZE(globalNode)); column j is the vector of node
 ! globalNode(j). ivar is not used.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - true if globalNode are local node numbers
-!   VALUE : TYPE(FEVariable_) - values
-!   ivar : INTEGER(I4B) - (optional) not used
 !
 ! See also: [[obj_Set11]] (contains an example)
 
@@ -2296,11 +2074,6 @@ END INTERFACE VectorFieldGetFEVariable
 ! inserted in meshField (vector, nodal, space). If meshField is not
 ! initiated, it is initiated from obj.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   meshField : CLASS(MeshField_) - mesh field, values are inserted
-!   order : INTEGER(I4B) - order of interpolation points in x, y, z
-!   ipType : INTEGER(I4B) - interpolation point type in x, y, z
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMeshField(obj, meshField, order, ipType)
@@ -2328,11 +2101,6 @@ END INTERFACE
 ! rows, so that VTK readers (ParaView) treat it as a vector; the rows
 ! after spaceCompo are zero. VALUE is reallocated; the work arrays of
 ! [[obj_GetVtkUnstructuredValue2]] are allocated here.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - vectors at the points, reallocated to
-!     (3, fedof%GetSumElemTotalDOF())
 !
 ! Examples
 !
@@ -2456,15 +2224,6 @@ END INTERFACE
 ! the topology and the cell order, they are computed again only when one
 ! of them differs from the previous element.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   VALUE : REAL(DFP) - vectors, SIZE(VALUE, 1) >= 3,
-!     SIZE(VALUE, 2) >= fedof%GetSumElemTotalDOF()
-!   nrow : INTEGER(I4B) - number of rows written in VALUE (3)
-!   ncol : INTEGER(I4B) - number of columns written in VALUE
-!   refElemCoord, xij, nodalValue, fecon - work arrays, see the sizes of
-!     the dummy arguments
-!
 ! See also: [[obj_GetVtkUnstructuredValue1]] (contains an example)
 
 INTERFACE
@@ -2475,6 +2234,7 @@ INTERFACE
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! vectors at the points of the grid
+    !! SIZE(VALUE, 1) >= 3, SIZE(VALUE, 2) >= fedof%GetSumElemTotalDOF()
     INTEGER(I4B), INTENT(OUT) :: nrow
     !! number of rows written in value, always 3
     INTEGER(I4B), INTENT(OUT) :: ncol
@@ -2508,11 +2268,6 @@ END INTERFACE
 ! the values. The component must not be larger than spaceCompo
 ! (checked in debug mode).
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   dbc : CLASS(DirichletBC_) - Dirichlet boundary condition
-!   times : REAL(DFP) - (optional) time
-!
 ! See also: [[obj_ApplyDirichletBC2]]
 
 INTERFACE
@@ -2535,11 +2290,6 @@ END INTERFACE
 ! summary: Apply a list of Dirichlet boundary conditions
 !
 ! Same as [[obj_ApplyDirichletBC1]] for each associated pointer of dbc.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   dbc : TYPE(DirichletBCPointer_) - Dirichlet boundary conditions
-!   times : REAL(DFP) - (optional) time
 !
 ! See also: [[obj_ApplyDirichletBC1]], [[obj_ApplyDirichletBC3]]
 
@@ -2564,10 +2314,6 @@ END INTERFACE
 !
 ! Calls [[obj_ApplyDirichletBC2]] with obj%dbc.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   times : REAL(DFP) - (optional) time
-!
 ! See also: [[obj_ApplyDirichletBC2]]
 
 INTERFACE
@@ -2591,11 +2337,6 @@ END INTERFACE
 ! (obj%nbc_point), the node numbers and the values (at time times) are
 ! obtained, and scale * value is added to component nbc%GetDOFNo() of
 ! these nodes.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field
-!   scale : REAL(DFP) - scale
-!   times : REAL(DFP) - (optional) time
 !
 ! See also: [[obj_ApplySurfaceNeumannBC]]
 
@@ -2623,12 +2364,6 @@ END INTERFACE
 ! boundary data to the domain). Then, for each boundary condition, the
 ! integral of the test functions times nbcField over the boundary
 ! facets is computed, and scale times this integral is added to obj.
-!
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field (right hand side)
-!   nbcField : CLASS(VectorField_) - work field for the boundary data
-!   scale : REAL(DFP) - scale
-!   times : REAL(DFP) - (optional) time
 !
 ! See also: [[obj_ApplyPointNeumannBC]]
 
@@ -2660,12 +2395,6 @@ END INTERFACE
 !
 ! $$ u_{cI} = u_{cI} + s \int_{\Omega} N_I f_c(x, y, z, t) \, d\Omega $$
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field (right hand side)
-!   bodySource : CLASS(UserFunction_) - vector function of (x, y, z, t)
-!   scale : REAL(DFP) - scale
-!   times : REAL(DFP) - (optional) time passed to bodySource
-!
 ! See also: [[obj_ApplyBodySource2]]
 
 INTERFACE
@@ -2695,11 +2424,6 @@ END INTERFACE
 ! Same as [[obj_ApplyBodySource1]], but the body source is the vector
 ! field bodySource, which is interpolated at the quadrature points.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - vector field (right hand side)
-!   bodySource : CLASS(VectorField_) - body source
-!   scale : REAL(DFP) - scale
-!
 ! See also: [[obj_ApplyBodySource1]]
 
 INTERFACE
@@ -2727,9 +2451,6 @@ END INTERFACE
 ! Otherwise the type of the nodal value is read from the table, and the
 ! field is set to a constant vector or to the given space values.
 !
-! Arguments:
-!   obj : CLASS(VectorField_) - initiated vector field
-!   table : TYPE(toml_table) - toml table with the values
 
 INTERFACE
   MODULE SUBROUTINE obj_SetFromToml(obj, table)

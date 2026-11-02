@@ -41,12 +41,12 @@
 ! `src/modules/MeshField/examples/`.
 
 MODULE MeshField_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
-USE ExceptionHandler_Class, ONLY: e
-USE UserFunction_Class, ONLY: UserFunction_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractMeshField_Class, ONLY: AbstractMeshField_
+USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
 
 PRIVATE
@@ -116,9 +116,6 @@ END TYPE MeshFieldPointer_
 !
 ! Deallocate every mesh field in the vector, and then deallocate the
 ! vector itself. If obj is not allocated then nothing is done.
-!
-! Arguments:
-!   obj : TYPE(MeshField_), ALLOCATABLE(:) - vector of mesh fields
 !
 ! Examples
 !
@@ -197,9 +194,6 @@ END INTERFACE MeshFieldDeallocate
 ! by ptr is deallocated (ptr%DEALLOCATE()) and ptr is nullified. The
 ! target of ptr itself is not freed. Then the vector is deallocated.
 !
-! Arguments:
-!   obj : TYPE(MeshFieldPointer_), ALLOCATABLE(:) - vector of pointers
-!
 ! Examples
 !
 ! The usage is the same as [[obj_Deallocate_Vector]].
@@ -229,17 +223,6 @@ END INTERFACE MeshFieldDeallocate
 !
 ! For varType time or spaceTime use [[STScalarMeshFieldInitiate]].
 ! Only the memory is allocated, use Insert to fill the values.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   name : CHARACTER(*) - name of the field
-!   fieldType : INTEGER(I4B) - normal or constant (TypeFieldOpt)
-!   varType : INTEGER(I4B) - constant or space
-!   engine : CHARACTER(*) - engine, for example NATIVE_SERIAL
-!   defineOn : INTEGER(I4B) - nodal or quadrature
-!   nns : INTEGER(I4B) - maximum number of nodes (or quadrature
-!     points) in an element, not used when varType is constant
-!   mesh : CLASS(AbstractMesh_) - mesh
 !
 ! Examples
 !
@@ -419,17 +402,6 @@ END INTERFACE
 !
 ! Only the memory is allocated, use Insert to fill the values.
 !
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   name : CHARACTER(*) - name of the field
-!   fieldType : INTEGER(I4B) - normal or constant (TypeFieldOpt)
-!   varType : INTEGER(I4B) - constant, time, or spaceTime
-!   engine : CHARACTER(*) - engine, for example NATIVE_SERIAL
-!   defineOn : INTEGER(I4B) - nodal or quadrature
-!   nns : INTEGER(I4B) - maximum number of nodes in space
-!   nnt : INTEGER(I4B) - number of nodes in time
-!   mesh : CLASS(AbstractMesh_) - mesh
-!
 ! Examples
 !
 !```fortran
@@ -568,18 +540,6 @@ END INTERFACE
 !
 ! For varType spaceTime use [[STVectorMeshFieldInitiate]].
 ! Only the memory is allocated, use Insert to fill the values.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   name : CHARACTER(*) - name of the field
-!   fieldType : INTEGER(I4B) - normal or constant (TypeFieldOpt)
-!   varType : INTEGER(I4B) - constant or space
-!   engine : CHARACTER(*) - engine, for example NATIVE_SERIAL
-!   defineOn : INTEGER(I4B) - nodal or quadrature
-!   spaceCompo : INTEGER(I4B) - number of space components
-!   nns : INTEGER(I4B) - maximum number of nodes (or quadrature
-!     points) in an element, not used when varType is constant
-!   mesh : CLASS(AbstractMesh_) - mesh
 !
 ! Examples
 !
@@ -723,18 +683,6 @@ END INTERFACE
 !
 ! Only the memory is allocated, use Insert to fill the values.
 !
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   name : CHARACTER(*) - name of the field
-!   fieldType : INTEGER(I4B) - normal or constant (TypeFieldOpt)
-!   varType : INTEGER(I4B) - constant or spaceTime
-!   engine : CHARACTER(*) - engine, for example NATIVE_SERIAL
-!   defineOn : INTEGER(I4B) - nodal or quadrature
-!   spaceCompo : INTEGER(I4B) - number of space components
-!   nns : INTEGER(I4B) - maximum number of nodes in space
-!   nnt : INTEGER(I4B) - number of nodes in time
-!   mesh : CLASS(AbstractMesh_) - mesh
-!
 ! Examples
 !
 !```fortran
@@ -869,18 +817,6 @@ END INTERFACE
 !
 ! For varType spaceTime use [[STTensorMeshFieldInitiate]].
 ! Only the memory is allocated, use Insert to fill the values.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   name : CHARACTER(*) - name of the field
-!   fieldType : INTEGER(I4B) - normal or constant (TypeFieldOpt)
-!   varType : INTEGER(I4B) - constant or space
-!   engine : CHARACTER(*) - engine, for example NATIVE_SERIAL
-!   defineOn : INTEGER(I4B) - nodal or quadrature
-!   dim1, dim2 : INTEGER(I4B) - number of rows and columns of matrix
-!   nns : INTEGER(I4B) - maximum number of nodes (or quadrature
-!     points) in an element, not used when varType is constant
-!   mesh : CLASS(AbstractMesh_) - mesh
 !
 ! Examples
 !
@@ -1021,18 +957,6 @@ END INTERFACE
 !
 ! Only the memory is allocated, use Insert to fill the values.
 !
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   name : CHARACTER(*) - name of the field
-!   fieldType : INTEGER(I4B) - normal or constant (TypeFieldOpt)
-!   varType : INTEGER(I4B) - constant or spaceTime
-!   engine : CHARACTER(*) - engine, for example NATIVE_SERIAL
-!   defineOn : INTEGER(I4B) - nodal or quadrature
-!   dim1, dim2 : INTEGER(I4B) - number of rows and columns of matrix
-!   nns : INTEGER(I4B) - maximum number of nodes in space
-!   nnt : INTEGER(I4B) - number of nodes in time
-!   mesh : CLASS(AbstractMesh_) - mesh
-!
 ! Examples
 !
 !```fortran
@@ -1151,14 +1075,6 @@ END INTERFACE
 !
 ! Note: this routine is not public at present.
 !
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine of the field
-!   nnt : INTEGER(I4B), OPTIONAL - not used
-!
 ! See also: [[ScalarMeshFieldInitiate]], [[obj_Initiate3]]
 
 INTERFACE
@@ -1199,14 +1115,6 @@ END INTERFACE
 ! The return type of func must be scalar, and nnt must be present.
 !
 ! Note: this routine is not public at present.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine of the field
-!   nnt : INTEGER(I4B), OPTIONAL - number of nodes in time (required)
 !
 ! See also: [[STScalarMeshFieldInitiate]], [[obj_Initiate3]]
 
@@ -1250,14 +1158,6 @@ END INTERFACE
 !
 ! Note: this routine is not public at present.
 !
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine of the field
-!   nnt : INTEGER(I4B), OPTIONAL - not used
-!
 ! See also: [[VectorMeshFieldInitiate]], [[obj_Initiate3]]
 
 INTERFACE
@@ -1299,14 +1199,6 @@ END INTERFACE
 ! The return type of func must be vector, and nnt must be present.
 !
 ! Note: this routine is not public at present.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine of the field
-!   nnt : INTEGER(I4B), OPTIONAL - number of nodes in time (required)
 !
 ! See also: [[STVectorMeshFieldInitiate]], [[obj_Initiate3]]
 
@@ -1350,14 +1242,6 @@ END INTERFACE
 !
 ! Note: this routine is not public at present.
 !
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine of the field
-!   nnt : INTEGER(I4B), OPTIONAL - not used
-!
 ! See also: [[TensorMeshFieldInitiate]], [[obj_Initiate3]]
 
 INTERFACE
@@ -1399,14 +1283,6 @@ END INTERFACE
 ! The return type of func must be matrix, and nnt must be present.
 !
 ! Note: this routine is not public at present.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   func : CLASS(UserFunction_) - user function
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine of the field
-!   nnt : INTEGER(I4B), OPTIONAL - number of nodes in time (required)
 !
 ! See also: [[STTensorMeshFieldInitiate]], [[obj_Initiate3]]
 
@@ -1450,15 +1326,6 @@ END INTERFACE
 ! The data of an element is a matrix of shape (3, n), where n is the
 ! number of interpolation points in the element. This field can be
 ! used as nodeCoordField in WriteData.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   order : INTEGER(I4B)(3) - order of interpolation in x, y, z
-!   ipType : INTEGER(I4B)(3) - interpolation point type in x, y, z
-!     (TypeInterpolationOpt)
-!   fedof : TYPE(FEDOF_) - finite element degree of freedom
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   engine : CHARACTER(*) - engine of the field
 !
 ! Examples
 !
@@ -1579,13 +1446,6 @@ END INTERFACE
 ! obj must be a vector mesh field with spaceCompo = 3,
 ! varType = space, and nns not less than the maximum number of
 ! interpolation points in an element.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - vector mesh field
-!   order : INTEGER(I4B)(3) - order of interpolation in x, y, z
-!   ipType : INTEGER(I4B)(3) - interpolation point type in x, y, z
-!   fedof : TYPE(FEDOF_) - finite element degree of freedom
-!   mesh : CLASS(AbstractMesh_) - mesh
 !
 ! Examples
 !
@@ -1720,15 +1580,6 @@ END INTERFACE
 ! This field can be used as quadField in Initiate and Insert of
 ! [[AbstractMeshField_]], and as nodeCoordField in WriteData.
 !
-! Arguments:
-!   obj : CLASS(MeshField_) - mesh field
-!   fedof : TYPE(FEDOF_) - finite element degree of freedom, it
-!     gives the quadrature points
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   geofedof : TYPE(FEDOF_) - finite element degree of freedom for
-!     geometry, it maps the quadrature points to the physical element
-!   engine : CHARACTER(*) - engine of the field
-!
 ! Examples
 !
 !```fortran
@@ -1855,13 +1706,6 @@ END INTERFACE
 !
 ! where \(N_a\) are the shape functions of geofedof, \(\mathbf{x}_a\)
 ! are the nodal coordinates, and \(\xi_q\) are the quadrature points.
-!
-! Arguments:
-!   obj : CLASS(MeshField_) - vector mesh field
-!   fedof : TYPE(FEDOF_) - finite element degree of freedom
-!   geofedof : TYPE(FEDOF_) - finite element degree of freedom for
-!     geometry
-!   mesh : CLASS(AbstractMesh_) - mesh
 !
 ! Examples
 !

@@ -151,9 +151,6 @@ END INTERFACE FEMesh_Pointer
 !
 ! Call Deallocate.
 !
-! Arguments:
-!   obj : TYPE(FEMesh_), intent(inout) - mesh object
-!
 ! See also: [[AbstractMesh_:Deallocate]]
 
 INTERFACE
@@ -181,10 +178,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: The mesh objects are freed (they leaked before)
-!
-! Arguments:
-!   obj(:) : TYPE(FEMeshPointer_), allocatable, intent(inout) - array of mesh
-!     pointers
 !
 ! See also: [[obj_Constructor_1]]
 

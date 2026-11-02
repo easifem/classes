@@ -789,15 +789,6 @@ END TYPE AbstractMeshPointer_
 ! element to elements data (see InitiateElementToElements), which marks the
 ! boundary elements and boundary nodes.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   hdf5 : TYPE(HDF5File_), intent(inout) - mesh file, open with read access
-!   group : CHARACTER(*), optional, intent(in) - group in the mesh file
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the entities: 0
-!     points, 1 curves, 2 surfaces, 3 volumes
-!   entities(:) : INTEGER(I4B), optional, intent(in) - entity numbers of
-!     dimension dim
-!
 ! Examples
 !
 !```fortran
@@ -904,9 +895,6 @@ END INTERFACE
 !
 ! Free all data of obj. After Deallocate, IsEmpty is true and IsInit is false.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!
 ! Examples
 !
 !```fortran
@@ -965,9 +953,6 @@ END INTERFACE AbstractMeshDeallocate
 !
 ! The mesh is empty when it has no elements or no nodes.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the mesh has no elements or no nodes
 !
@@ -992,9 +977,6 @@ END INTERFACE
 !
 ! Put the element data and node data of the mesh in linked lists and binary
 ! trees. The mesh must be initiated first; the static data is not changed.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Examples
 !
@@ -1048,9 +1030,6 @@ END INTERFACE
 ! Free the kdtree and the search results. Methods which need the kdtree
 ! initiate it again.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!
 ! See also: [[obj_InitiateKdtree]], [[obj_GetNearestNode1]]
 
 INTERFACE
@@ -1078,10 +1057,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: The mesh objects are freed (they leaked before)
-!
-! Arguments:
-!   obj(:) : TYPE(AbstractMeshPointer_), allocatable, intent(inout) - array of
-!     mesh pointers
 !
 ! Examples
 !
@@ -1141,16 +1116,6 @@ END INTERFACE
 ! Read the mesh data (see Initiate for the meaning of group, dim and entities)
 ! and initiate the element to elements data. Import does not mark the mesh as
 ! initiated; use Initiate for that.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   hdf5 : TYPE(HDF5File_), intent(inout) - mesh file, open with read access
-!   group : CHARACTER(*), optional, intent(in) - group in the mesh file;
-!     default is the root
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the entities: 0
-!     points, 1 curves, 2 surfaces, 3 volumes
-!   entities(:) : INTEGER(I4B), optional, intent(in) - entity numbers of
-!     dimension dim
 !
 ! Examples
 !
@@ -1225,13 +1190,6 @@ END INTERFACE AbstractMeshImport
 ! This routine reads nodeCoord from the mesh file. nodeCoord is reallocated to
 ! (3, number of nodes); column i is local node i. The dataset is searched in
 ! group, group/nodeCoord, and the parent group of group.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   nodeCoord(:,:) : REAL(DFP), allocatable, intent(inout) - node coordinates
-!     in xiJ format, it is reallocated
-!   hdf5 : TYPE(HDF5File_), intent(inout) - mesh file, open with read access
-!   group : CHARACTER(*), intent(in) - group in the mesh file
 !
 ! Examples
 !
@@ -1311,14 +1269,10 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Export the mesh to a HDF5 file
 !
-! TODO: This routine needs to be implemented. At present it only raises
+! TODO - This routine needs to be implemented. At present it only raises
 ! an error. When implemented, it should write the mesh to the group of
 ! the HDF5 file in the format that [[obj_Import]] reads.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   hdf5 : TYPE(HDF5File_), intent(inout) - HDF5 file, open with write access
-!   group : CHARACTER(*), intent(in) - group in the HDF5 file
 
 INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
@@ -1348,20 +1302,6 @@ END INTERFACE
 !   coordinates of the mesh.
 ! - If content is true (default), the Cells are written.
 ! - If closetag is true (default), the Piece tag is closed.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   vtk : TYPE(VTKFile_), intent(inout) - VTK file
-!   nodeCoord(:,:) : REAL(DFP), optional, intent(in) - node coordinates in xiJ
-!     format, SIZE(nodeCoord) = [3, number of nodes]
-!   filename : CHARACTER(*), optional, intent(in) - name of the VTK file,
-!     needed if vtk is not initiated
-!   opentag : LOGICAL(LGT), optional, intent(in) - if true (default), write
-!     the Piece tag
-!   content : LOGICAL(LGT), optional, intent(in) - if true (default), write
-!     the cells
-!   closetag : LOGICAL(LGT), optional, intent(in) - if true (default), close
-!     the Piece tag
 !
 ! Examples
 !
@@ -1455,10 +1395,6 @@ END INTERFACE
 !   data with SIZE(DATA, 1) components;
 ! - DATA(:, :, :): DATA(i, :, :) is data i with SIZE(DATA, 2) components.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   filename : CHARACTER(*), optional, intent(in) - name of the VTK file
-!
 ! Examples
 !
 !```fortran
@@ -1534,12 +1470,6 @@ END INTERFACE
 !
 ! See WriteData_vtk.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   filename : CHARACTER(*), optional, intent(in) - name of the VTK file
-!   DATA(:) : REAL(DFP), intent(in) - nodal data, SIZE(DATA) = number of nodes
-!   dataName : TYPE(String), intent(in) - name of the data
-!
 ! See also: [[obj_WriteData_vtk]]
 
 INTERFACE
@@ -1564,15 +1494,6 @@ END INTERFACE
 ! summary: Write the mesh and nodal data
 !
 ! See WriteData_vtk.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   filename : CHARACTER(*), optional, intent(in) - name of the VTK file
-!   DATA(:,:) : REAL(DFP), intent(in) - nodal data, rows are data (or
-!     components), columns are nodes
-!   dataNames(:) : TYPE(String), intent(in) - names of the data
-!   isSingleData : LOGICAL(LGT), optional, intent(in) - if true, DATA is one
-!     data with SIZE(DATA, 1) components; default is false
 !
 ! See also: [[obj_WriteData_vtk]]
 
@@ -1605,13 +1526,6 @@ END INTERFACE
 !
 ! See WriteData_vtk.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   filename : CHARACTER(*), optional, intent(in) - name of the VTK file
-!   DATA(:,:,:) : REAL(DFP), intent(in) - nodal data, DATA(i, :, :) is data i
-!     with SIZE(DATA, 2) components
-!   dataNames(:) : TYPE(String), intent(in) - names of the data
-!
 ! See also: [[obj_WriteData_vtk]]
 
 INTERFACE
@@ -1639,12 +1553,6 @@ END INTERFACE
 ! summary: Display the content of the mesh
 !
 ! Display the status flags and parameters of the mesh.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
 !
 ! Examples
 !
@@ -1710,12 +1618,6 @@ END INTERFACE AbstractMeshDisplay
 !
 ! Display the data of every node.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
-!
 ! See also: [[obj_Display]]
 
 INTERFACE
@@ -1739,16 +1641,6 @@ END INTERFACE
 !
 ! Display the data of one element, or of all elements if globalElement is
 ! absent.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
-!   globalElement : INTEGER(I4B), optional, intent(in) - global element number
-!     (local if islocal is true); if absent, all elements are displayed
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! See also: [[obj_Display]]
 
@@ -1780,12 +1672,6 @@ END INTERFACE
 !
 ! Display the facet data of the internal facets.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
-!
 ! See also: [[obj_Display]]
 
 INTERFACE
@@ -1808,12 +1694,6 @@ END INTERFACE
 ! summary: Display the facet data
 !
 ! Display the data of every facet element.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
 !
 ! See also: [[obj_Display]]
 
@@ -1838,12 +1718,6 @@ END INTERFACE
 !
 ! Display the facet data of the boundary facets.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
-!
 ! See also: [[obj_Display]]
 
 INTERFACE
@@ -1867,12 +1741,6 @@ END INTERFACE
 !
 ! Display the number of nodes, elements and other statistics.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
-!
 ! See also: [[obj_Display]]
 
 INTERFACE
@@ -1895,13 +1763,6 @@ END INTERFACE
 ! summary: Get the coordinates of all nodes
 !
 ! Column i of nodeCoord is local node i. See GetNodeCoord.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   nodeCoord(:,:) : REAL(DFP), intent(inout) - node coordinates in xiJ
-!     format, SIZE(nodeCoord, 2) must be at least the number of nodes
-!   nrow : INTEGER(I4B), intent(out) - number of rows written
-!   ncol : INTEGER(I4B), intent(out) - number of columns written
 !
 ! See also: [[obj_GetNodeCoord1]]
 
@@ -1930,16 +1791,6 @@ END INTERFACE
 ! Column i of nodeCoord is node i of the element connectivity. See
 ! GetNodeCoord.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   nodeCoord(:,:) : REAL(DFP), intent(inout) - node coordinates in xiJ format
-!   nrow : INTEGER(I4B), intent(out) - number of rows written
-!   ncol : INTEGER(I4B), intent(out) - number of columns written
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetNodeCoord1]]
 
 INTERFACE
@@ -1950,8 +1801,8 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! node coordinates in xiJ format
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! nrow: number of rows written
-    !! ncol: number of columns written
+    !! nrow - number of rows written
+    !! ncol - number of columns written
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number, or local element number if islocal is true
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -1970,16 +1821,6 @@ END INTERFACE
 !
 ! Column i of nodeCoord is node globalNode(i). See GetNodeCoord.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   nodeCoord(:,:) : REAL(DFP), intent(inout) - node coordinates in xiJ format
-!   nrow : INTEGER(I4B), intent(out) - number of rows written
-!   ncol : INTEGER(I4B), intent(out) - number of columns written
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetNodeCoord1]]
 
 INTERFACE
@@ -1990,8 +1831,8 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: nodeCoord(:, :)
     !! node coordinates in xiJ format
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! nrow: number of rows written
-    !! ncol: number of columns written
+    !! nrow - number of rows written
+    !! ncol - number of columns written
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node numbers (local if islocal is true)
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -2009,15 +1850,6 @@ END INTERFACE
 ! summary: Get the coordinates of a node
 !
 ! See GetNodeCoord.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   nodeCoord(:) : REAL(DFP), intent(inout) - coordinates of the node
-!   tsize : INTEGER(I4B), intent(out) - number of coordinates written
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! See also: [[obj_GetNodeCoord1]]
 
@@ -2050,15 +1882,6 @@ END INTERFACE
 ! node nearest to qv. The kdtree is initiated if needed. With nn, the nn
 ! nearest nodes are returned; the kdtree is not sorted, so their order is not
 ! fixed.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   qv(:) : REAL(DFP), intent(in) - coordinates of the query point, SIZE(qv)
-!     >= nsd
-!   x(:) : REAL(DFP), intent(inout) - coordinates of the nearest node, SIZE(x)
-!     >= 3
-!   globalNode : INTEGER(I4B), intent(out) - global node number of the nearest
-!     node
 !
 ! Examples
 !
@@ -2134,16 +1957,6 @@ END INTERFACE
 !
 ! See GetNearestNode.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   qv(:) : REAL(DFP), intent(in) - coordinates of the query point, SIZE(qv)
-!     >= nsd
-!   x(:,:) : REAL(DFP), intent(inout) - coordinates of the nearest nodes,
-!     SIZE(x, 2) >= nn
-!   globalNode(:) : INTEGER(I4B), intent(inout) - global node numbers,
-!     SIZE(globalNode) >= nn
-!   nn : INTEGER(I4B), intent(in) - number of nearest nodes
-!
 ! See also: [[obj_GetNearestNode1]]
 
 INTERFACE
@@ -2172,9 +1985,6 @@ END INTERFACE
 ! The topologies are, in this order: Point, Line, Triangle, Quadrangle,
 ! Tetrahedron, Hexahedron, Prism, Pyramid.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans(8) : INTEGER(I4B) - number of elements of each topology
 !
@@ -2197,8 +2007,7 @@ END INTERFACE
 ! date: 2024-07-12
 ! summary: Get the number of topologies in the mesh
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the number of different element topologies.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of different element topologies
@@ -2224,9 +2033,6 @@ END INTERFACE
 !
 ! Entries after GetTotalTopology() are zero.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans(8) : INTEGER(I4B) - element topologies (for example Quadrangle)
 !     present in the mesh
@@ -2250,12 +2056,7 @@ END INTERFACE
 ! date: 2024-07-12
 ! summary: Get the topology of an element
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns the element topology, for example Quadrangle.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - element topology, for example Quadrangle
@@ -2288,13 +2089,6 @@ END INTERFACE
 ! The index is the position of the topology in: Point, Line, Triangle,
 ! Quadrangle, Tetrahedron, Hexahedron, Prism, Pyramid.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - index of the topology of the element
 !
@@ -2325,13 +2119,6 @@ END INTERFACE
 !
 ! Return the element name, for example Quadrangle4. GetElemTopology returns
 ! the topology (Quadrangle), and GetElemTopologyIndx its index.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - element name, for example Quadrangle4
@@ -2410,14 +2197,6 @@ END INTERFACE
 !
 ! Copy the element data of an element in elemdata.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   elemdata : TYPE(ElemData_), intent(inout) - copy of the element data
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Examples
 !
 !```fortran
@@ -2487,12 +2266,7 @@ END INTERFACE
 ! date: 2024-04-18
 ! summary: Get a pointer to the element data
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns the pointer to the element data of the element.
 !
 ! Returns:
 !   ans : TYPE(ElemData_), pointer - pointer to the element data of the
@@ -2523,12 +2297,7 @@ END INTERFACE
 ! date: 2024-01-25
 ! summary: Get the number of nodes in an element
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns the number of nodes of the element.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes of the element
@@ -2592,8 +2361,7 @@ END INTERFACE
 ! date: 2024-01-25
 ! summary: Get the maximum number of nodes in an element
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the largest number of nodes of an element of the mesh.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest number of nodes of an element of the mesh
@@ -2620,9 +2388,6 @@ END INTERFACE
 ! GetTotalElements is a generic method: without arguments it returns the
 ! number of elements of the mesh (also Size and GetTotalCells); with meshid it
 ! returns the number of active elements of these mesh ids.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of elements of the mesh
@@ -2684,10 +2449,7 @@ END INTERFACE
 ! date: 2024-07-17
 ! summary: Get the number of elements of a mesh id
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid : INTEGER(I4B), intent(in) - mesh id (entity number) of the
-!     elements
+! Returns the number of active elements with mesh id meshid.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of active elements with mesh id meshid
@@ -2713,9 +2475,7 @@ END INTERFACE
 ! date: 2024-07-20
 ! summary: Get the number of elements of mesh ids
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid(:) : INTEGER(I4B), intent(in) - mesh ids (entity numbers)
+! Returns the number of active elements with a mesh id in meshid.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of active elements with a mesh id in meshid
@@ -2744,11 +2504,6 @@ END INTERFACE
 ! GetElemNum returns the global (or local) element numbers of all elements, or
 ! of the elements of a mesh id. GetElemNum_ does the same without allocation
 ! (also for a list of mesh ids).
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, local element
-!     numbers are returned; default is false
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - element numbers
@@ -2823,12 +2578,7 @@ END INTERFACE
 ! date: 2024-07-17
 ! summary: Get the element numbers of a mesh id
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid : INTEGER(I4B), intent(in) - mesh id (entity number) of the
-!     elements
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, local element
-!     numbers are returned; default is false
+! Returns the element numbers.
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - element numbers
@@ -2858,14 +2608,6 @@ END INTERFACE
 !
 ! See GetElemNum.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   islocal : LOGICAL(LGT), intent(in) - if true, local element numbers are
-!     returned
-!   ans(:) : INTEGER(I4B), intent(inout) - element numbers, size must be at
-!     least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!
 ! See also: [[obj_GetElemNum1]]
 
 INTERFACE
@@ -2890,15 +2632,6 @@ END INTERFACE
 ! summary: Get the element numbers of a mesh id
 !
 ! See GetElemNum.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid : INTEGER(I4B), intent(in) - mesh id (entity number)
-!   islocal : LOGICAL(LGT), intent(in) - if true, local element numbers are
-!     returned
-!   ans(:) : INTEGER(I4B), intent(inout) - element numbers, size must be at
-!     least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
 !
 ! See also: [[obj_GetElemNum1]]
 
@@ -2927,15 +2660,6 @@ END INTERFACE
 !
 ! See GetElemNum.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid(:) : INTEGER(I4B), intent(in) - mesh ids (entity numbers)
-!   islocal : LOGICAL(LGT), intent(in) - if true, local element numbers are
-!     returned
-!   ans(:) : INTEGER(I4B), intent(inout) - element numbers, size must be at
-!     least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!
 ! See also: [[obj_GetElemNum1]]
 
 INTERFACE
@@ -2963,9 +2687,6 @@ END INTERFACE
 !
 ! Return the entities of dimension xidim - 1 which bound the entities of the
 ! mesh, sorted by entity number. The sign gives the orientation.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - bounding entity numbers
@@ -3026,9 +2747,6 @@ END INTERFACE
 ! connectivity). GetNptrs_ does the same without allocation, and can also
 ! return the nodes of a list of elements (in the order of the connectivity,
 ! without duplicates).
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !
 ! Returns:
 !   ans(obj%tNodes) : INTEGER(I4B) - global node numbers, SIZE(ans) = number
@@ -3100,10 +2818,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the global node numbers of a mesh id
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid : INTEGER(I4B), intent(in) - mesh id (entity number) of the
-!     elements
+! Returns the global node numbers.
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers
@@ -3131,12 +2846,6 @@ END INTERFACE
 !
 ! See GetNptrs.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   ans(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
-!     at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!
 ! See also: [[obj_GetNptrs1]]
 
 INTERFACE
@@ -3159,14 +2868,6 @@ END INTERFACE
 ! summary: Get the global node numbers of a mesh id
 !
 ! See GetNptrs.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid : INTEGER(I4B), intent(in) - mesh id (entity number) of the
-!     elements
-!   ans(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
-!     at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
 !
 ! See also: [[obj_GetNptrs1]]
 
@@ -3192,16 +2893,6 @@ END INTERFACE
 ! summary: Get the global node numbers of a list of elements
 !
 ! See GetNptrs.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement(:) : INTEGER(I4B), intent(in) - global element numbers
-!     (local if islocal is true)
-!   ans(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
-!     at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! See also: [[obj_GetNptrs1]]
 
@@ -3233,14 +2924,6 @@ END INTERFACE
 ! (from its center) are found first. If isStrict is true (default) only the
 ! nodes inside or on the box are kept. GetElemNumberInBox returns the elements
 ! around the nodes in the box.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   box : TYPE(BoundingBox_), intent(in) - bounding box
-!   nptrs(:) : INTEGER(I4B), allocatable, intent(inout) - global node numbers
-!     in the box, it is reallocated
-!   isStrict : LOGICAL(LGT), optional, intent(in) - if true (default), only
-!     nodes inside or on the box are returned
 !
 ! Examples
 !
@@ -3322,15 +3005,6 @@ END INTERFACE
 !
 ! See GetNptrsInBox.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   box : TYPE(BoundingBox_), intent(in) - bounding box
-!   nptrs(:) : INTEGER(I4B), intent(inout) - global node numbers in the box,
-!     size must be at least the number of nodes of the mesh
-!   tnodes : INTEGER(I4B), intent(inout) - number of nodes found
-!   isStrict : LOGICAL(LGT), optional, intent(in) - if true (default), only
-!     nodes inside or on the box are returned
-!
 ! See also: [[obj_GetNptrsInBox]]
 
 INTERFACE
@@ -3360,12 +3034,6 @@ END INTERFACE
 ! Return the global elements around the nodes in the box (sorted, without
 ! duplicates). See GetNptrsInBox.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   box : TYPE(BoundingBox_), intent(in) - bounding box
-!   elemNumber(:) : INTEGER(I4B), allocatable, intent(inout) - global element
-!     numbers, it is reallocated
-!
 ! See also: [[obj_GetNptrsInBox]]
 
 INTERFACE
@@ -3388,16 +3056,6 @@ END INTERFACE
 ! summary: Get the elements around nodes in a box without allocation
 !
 ! See GetElemNumberInBox.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   box : TYPE(BoundingBox_), intent(in) - bounding box
-!   elemNumber(:) : INTEGER(I4B), intent(inout) - global element numbers, size
-!     must be at least tElements
-!   tElements : INTEGER(I4B), intent(out) - number of elements found
-!   nptrs(:) : INTEGER(I4B), intent(inout) - global node numbers in the box,
-!     size must be at least the number of nodes of the mesh
-!   tNodes : INTEGER(I4B), intent(out) - number of nodes found
 !
 ! See also: [[obj_GetNptrsInBox]]
 
@@ -3430,9 +3088,6 @@ END INTERFACE
 !
 ! Internal nodes are nodes which are not boundary nodes.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global numbers of the internal nodes
 !
@@ -3457,11 +3112,6 @@ END INTERFACE
 !
 ! See GetInternalNptrs.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   nptrs(:) : INTEGER(I4B), intent(inout) - global numbers of internal nodes,
-!     size must be at least GetTotalInternalNodes()
-!
 ! See also: [[obj_GetInternalNptrs]]
 
 INTERFACE
@@ -3483,9 +3133,6 @@ END INTERFACE
 ! summary: Get the global numbers of boundary nodes
 !
 ! Boundary nodes are all nodes which are not internal nodes.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global numbers of the boundary nodes
@@ -3512,13 +3159,6 @@ END INTERFACE
 ! The nodes of the boundary facets are boundary nodes. They are marked when
 ! the element to elements data is initiated (by Initiate). All other nodes are
 ! internal nodes.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the node is not an internal node
@@ -3596,13 +3236,6 @@ END INTERFACE
 ! IsNodePresent checks one node or a list of nodes. GetNodeMask,
 ! IsAnyNodePresent and IsAllNodePresent also check the presence of nodes.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the node is present
 !
@@ -3674,12 +3307,8 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Returns true for each node present in the mesh
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns a logical array; ans(i) is true if globalNode(i) is present in the
+! mesh.
 !
 ! Returns:
 !   ans(SIZE(globalNode)) : LOGICAL(LGT) - ans(i) is true if globalNode(i) is
@@ -3712,13 +3341,6 @@ END INTERFACE
 ! Set mask(i) to true for every global node i of the mesh, and false
 ! otherwise. With local_nptrs, mask(local_nptrs(i)) is set instead.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   mask(:) : LOGICAL(LGT), intent(inout) - mask, SIZE(mask) must be at least
-!     GetMaxNodeNumber()
-!   local_nptrs(:) : INTEGER(I4B), optional, intent(in) - map from a global
-!     node number to a mask entry
-!
 ! See also: [[obj_isNodePresent1]]
 
 INTERFACE
@@ -3740,12 +3362,8 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Returns true if any of the nodes is present
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns true if at least one node of globalNode is present, and false
+! otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if at least one node of globalNode is present
@@ -3774,12 +3392,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Returns true if all the nodes are present
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns true if every node of globalNode is present, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if every node of globalNode is present
@@ -3809,13 +3422,6 @@ END INTERFACE
 ! summary: Returns true if an element is present
 !
 ! A local element number is present if it is in 1 to the number of elements.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the element is present
@@ -3886,13 +3492,6 @@ END INTERFACE
 ! A boundary element has a facet on the boundary of the mesh. Boundary
 ! elements are marked when the element to elements data is initiated.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the element is a boundary or domain boundary
 !     element
@@ -3962,13 +3561,6 @@ END INTERFACE
 ! another mesh. In a single mesh every boundary element is a domain boundary
 ! element.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the element type is DOMAIN_BOUNDARY_ELEMENT
 !
@@ -3999,10 +3591,6 @@ END INTERFACE
 !
 ! The facet elements must be initiated (InitiateFacetElements).
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the facet element type is
 !     DOMAIN_BOUNDARY_ELEMENT
@@ -4029,8 +3617,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the number of internal nodes
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the number of internal nodes.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of internal nodes
@@ -4057,9 +3644,6 @@ END INTERFACE
 ! Vertex nodes are the nodes of the linear element (the corners). For a linear
 ! mesh all nodes are vertex nodes. GetTotalVertexNodes works for the whole
 ! mesh, a mesh id, a list of elements, or one element.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of vertex nodes of the mesh
@@ -4159,10 +3743,7 @@ END INTERFACE
 ! date: 2025-06-05
 ! summary: Get the number of vertex nodes of a mesh id
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid : INTEGER(I4B), intent(in) - mesh id (entity number) of the
-!     elements
+! Returns the number of vertex nodes in the elements of the mesh id.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of vertex nodes in the elements of the mesh id
@@ -4189,13 +3770,6 @@ END INTERFACE
 ! summary: Get the number of vertex nodes of a list of elements
 !
 ! Shared nodes are counted once.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement(:) : INTEGER(I4B), intent(in) - global element numbers
-!     (local if islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of vertex nodes of the elements
@@ -4225,12 +3799,7 @@ END INTERFACE
 ! date: 2025-06-05
 ! summary: Get the number of vertex nodes of an element
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), intent(in) - if true, globalElement is a local
-!     element number
+! Returns the number of vertex nodes of the element.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of vertex nodes of the element
@@ -4261,9 +3830,6 @@ END INTERFACE
 !
 ! GetTotalNodes returns the number of nodes of the mesh, of the elements of a
 ! mesh id, or of a list of elements. Shared nodes are counted once.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes of the mesh
@@ -4328,10 +3894,7 @@ END INTERFACE
 ! date: 2024-07-17
 ! summary: Get the number of nodes of a mesh id
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   meshid : INTEGER(I4B), intent(in) - mesh id (entity number) of the
-!     elements
+! Returns the number of nodes in the active elements of the mesh id.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes in the active elements of the mesh id
@@ -4357,12 +3920,7 @@ END INTERFACE
 ! date: 2024-07-17
 ! summary: Get the number of nodes of a list of elements
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement(:) : INTEGER(I4B), intent(in) - global element numbers
-!     (local if islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns the number of nodes of the active elements.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes of the active elements
@@ -4394,9 +3952,6 @@ END INTERFACE
 ! The faces are numbered by Initiate (volume and surface meshes) or
 ! InitiateFaceConnectivity.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of faces
 !
@@ -4422,9 +3977,6 @@ END INTERFACE
 ! The edges are numbered by InitiateEdgeConnectivity; before that the number
 ! of edges is zero.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of edges
 !
@@ -4447,8 +3999,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the number of boundary nodes
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the number of nodes which are not internal nodes.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes which are not internal nodes
@@ -4472,8 +4023,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the number of boundary elements
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the number of boundary and domain boundary elements.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of boundary and domain boundary elements
@@ -4500,9 +4050,6 @@ END INTERFACE
 ! GetBoundingBox returns the smallest box which contains all nodes of the
 ! mesh. With nodes, the box of the given node coordinates (only the columns of
 ! the nodes of the mesh) is returned.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
 !
 ! Returns:
 !   ans : TYPE(BoundingBox_) - bounding box of the nodes of the mesh
@@ -4580,13 +4127,6 @@ END INTERFACE
 !
 ! See GetBoundingBox.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   nodes(:,:) : REAL(DFP), intent(in) - node coordinates in xiJ format,
-!     column i is global node i (or local_nptrs(i))
-!   local_nptrs(:) : INTEGER(I4B), optional, intent(in) - map from a global
-!     node number to a column of nodes
-!
 ! Returns:
 !   ans : TYPE(BoundingBox_) - bounding box of the nodes of the mesh
 !
@@ -4619,15 +4159,6 @@ END INTERFACE
 ! the connectivity can be the edges (E), faces (F), cell (C), or all of them
 ! (A, in the order V, E, F, C). Edges are numbered by
 ! InitiateEdgeConnectivity, faces by Initiate.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!   opt : CHARACTER(*), optional, intent(in) - connectivity: V vertex
-!     (default), E edges, F faces, C cell, A all
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - connectivity of the element
@@ -4705,18 +4236,6 @@ END INTERFACE
 ! GetConnectivity_ is a generic method. With ans and tsize it works like
 ! GetConnectivity without allocation. With cellCon, faceCon, edgeCon and
 ! nodeCon it returns all connectivities in separate vectors.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   ans(:) : INTEGER(I4B), intent(inout) - connectivity, size must be at least
-!     tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!   opt : CHARACTER(*), optional, intent(in) - connectivity: V vertex
-!     (default), E edges, F faces, C cell, A all
 !
 ! Examples
 !
@@ -4808,28 +4327,6 @@ END INTERFACE
 !
 ! See GetConnectivity_.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   cellCon(:) : INTEGER(I4B), intent(inout) - cell number of the element
-!   faceCon(:) : INTEGER(I4B), intent(inout) - global face numbers of the
-!     element
-!   edgeCon(:) : INTEGER(I4B), intent(inout) - global edge numbers of the
-!     element
-!   nodeCon(:) : INTEGER(I4B), intent(inout) - global node numbers of the
-!     element
-!   tCellCon : INTEGER(I4B), intent(out) - number of entries written in
-!     cellCon
-!   tFaceCon : INTEGER(I4B), intent(out) - number of entries written in
-!     faceCon
-!   tEdgeCon : INTEGER(I4B), intent(out) - number of entries written in
-!     edgeCon
-!   tnodeCon : INTEGER(I4B), intent(out) - number of entries written in
-!     nodeCon
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetConnectivity1_]]
 
 INTERFACE
@@ -4876,23 +4373,6 @@ END INTERFACE
 ! The orientation of an edge is 1 when its first node has the lower global
 ! node number, else -1. The edge orientation needs the edge connectivity
 ! (InitiateEdgeConnectivity).
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   cellOrient(:) : INTEGER(I4B), intent(inout) - cell orientation
-!   faceOrient(:,:) : INTEGER(I4B), intent(inout) - face orientation, one
-!     column per face
-!   edgeOrient(:) : INTEGER(I4B), intent(inout) - edge orientation
-!   tCellOrient : INTEGER(I4B), intent(out) - number of entries written in
-!     cellOrient
-!   tFaceOrient(2) : INTEGER(I4B), intent(out) - number of rows and columns
-!     written in faceOrient
-!   tEdgeOrient : INTEGER(I4B), intent(out) - number of entries written in
-!     edgeOrient
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -4987,15 +4467,6 @@ END INTERFACE
 !
 ! See GetOrientation.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   ans(:) : INTEGER(I4B), intent(inout) - cell orientation
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetOrientation]]
 
 INTERFACE
@@ -5025,17 +4496,6 @@ END INTERFACE
 !
 ! See GetOrientation.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   ans(:,:) : INTEGER(I4B), intent(inout) - face orientation, one column per
-!     face
-!   nrow : INTEGER(I4B), intent(out) - number of rows written
-!   ncol : INTEGER(I4B), intent(out) - number of columns written
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetOrientation]]
 
 INTERFACE
@@ -5046,8 +4506,8 @@ INTERFACE
     INTEGER(I4B), INTENT(INOUT) :: ans(:, :)
     !! face orientation, one column per face
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! nrow: number of rows written
-    !! ncol: number of columns written
+    !! nrow - number of rows written
+    !! ncol - number of columns written
     INTEGER(I4B), INTENT(IN) :: globalElement
     !! global element number, or local element number if islocal is true
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -5067,15 +4527,6 @@ END INTERFACE
 ! The orientation of an edge is 1 when its first node has the lower global
 ! node number, else -1. The edge orientation needs the edge connectivity
 ! (InitiateEdgeConnectivity).
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   ans(:) : INTEGER(I4B), intent(inout) - edge orientation
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! See also: [[obj_GetOrientation]]
 
@@ -5105,11 +4556,6 @@ END INTERFACE
 ! summary: Get the vertex connectivity of all elements
 !
 ! Column i of VALUE is the vertex connectivity of local element i.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   VALUE(:,:) : INTEGER(I4B), intent(inout) - connectivity, SIZE(VALUE) =
-!     [GetMaxNNE(), number of elements]
 !
 ! Examples
 !
@@ -5170,13 +4616,6 @@ END INTERFACE
 !
 ! GetLocalNodeNumber, GetGlobalNodeNumber, GetLocalElemNumber and
 ! GetGlobalElemNumber convert one number or a list of numbers.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(SIZE(globalNode)) : INTEGER(I4B) - local node numbers
@@ -5261,15 +4700,6 @@ END INTERFACE
 !
 ! See GetLocalNodeNumber.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   ans(:) : INTEGER(I4B), intent(inout) - local node numbers, SIZE(ans) >=
-!     SIZE(globalNode)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetLocalNodeNumber1]]
 
 INTERFACE
@@ -5295,13 +4725,6 @@ END INTERFACE
 ! summary: Get the local number of a global node
 !
 ! See GetLocalNodeNumber.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - local node number
@@ -5333,10 +4756,6 @@ END INTERFACE
 !
 ! See GetLocalNodeNumber.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   localNode(:) : INTEGER(I4B), intent(in) - local node numbers
-!
 ! Returns:
 !   ans(SIZE(localNode)) : INTEGER(I4B) - global node numbers
 !
@@ -5363,10 +4782,6 @@ END INTERFACE
 !
 ! See GetLocalNodeNumber.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   localNode : INTEGER(I4B), intent(in) - local node number
-!
 ! Returns:
 !   ans : INTEGER(I4B) - global node number
 !
@@ -5392,10 +4807,6 @@ END INTERFACE
 ! summary: Get the global numbers of local elements
 !
 ! See GetLocalNodeNumber.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   LocalElement(:) : INTEGER(I4B), intent(in) - local element numbers
 !
 ! Returns:
 !   ans(SIZE(LocalElement)) : INTEGER(I4B) - global element numbers
@@ -5424,10 +4835,6 @@ END INTERFACE
 !
 ! See GetLocalNodeNumber.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   LocalElement : INTEGER(I4B), intent(in) - local element number
-!
 ! Returns:
 !   ans : INTEGER(I4B) - global element number
 !
@@ -5453,13 +4860,6 @@ END INTERFACE
 ! summary: Get the local numbers of global elements
 !
 ! See GetLocalNodeNumber.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement(:) : INTEGER(I4B), intent(in) - global element numbers
-!     (local if islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(SIZE(globalElement)) : INTEGER(I4B) - local element numbers
@@ -5490,13 +4890,6 @@ END INTERFACE
 ! summary: Get the local number of a global element
 !
 ! See GetLocalNodeNumber.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - local element number
@@ -5530,13 +4923,6 @@ END INTERFACE
 ! node to elements data is initiated if needed. For a list of nodes the result
 ! is sorted and has no duplicates. If the node is not present, an error is
 ! raised in debug mode.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global element numbers around the
@@ -5619,13 +5005,6 @@ END INTERFACE
 !
 ! See GetNodeToElements.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global element numbers, sorted and
 !     without duplicates
@@ -5656,16 +5035,6 @@ END INTERFACE
 ! summary: Get the elements around a node without allocation
 !
 ! GetNodeToElements_ works like GetNodeToElements without allocation.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   ans(:) : INTEGER(I4B), intent(inout) - global element numbers, size must
-!     be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -5736,16 +5105,6 @@ END INTERFACE
 !
 ! See GetNodeToElements_.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   ans(:) : INTEGER(I4B), intent(inout) - global element numbers, size must
-!     be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetNodeToElements1_]]
 
 INTERFACE
@@ -5781,15 +5140,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: The node to nodes data is initiated if needed
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   includeSelf : LOGICAL(LGT), intent(in) - if true, globalNode itself is the
-!     first entry
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers connected to the
@@ -5874,15 +5224,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: The node to nodes data is initiated if needed
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   includeSelf : LOGICAL(LGT), intent(in) - if true, the nodes of globalNode
-!     are included
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers, sorted and
 !     without duplicates
@@ -5919,18 +5260,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: The node to nodes data is initiated if needed
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   includeSelf : LOGICAL(LGT), intent(in) - if true, globalNode itself is the
-!     first entry
-!   ans(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
-!     at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -6008,18 +5337,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: The node to nodes data is initiated if needed
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   includeSelf : LOGICAL(LGT), intent(in) - if true, the nodes of globalNode
-!     are included
-!   ans(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
-!     at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetNodeToNodes1_]]
 
 INTERFACE
@@ -6054,15 +5371,6 @@ END INTERFACE
 ! element, and column 3 the local facet number in the neighbour.
 !
 ! If onlyElements is true, only the first column is returned.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   onlyElements : LOGICAL(LGT), optional, intent(in) - if true, only the
-!     neighbour element numbers are returned; default is false
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(:,:) : INTEGER(I4B), allocatable - neighbours of the element,
@@ -6145,16 +5453,6 @@ END INTERFACE
 ! element numbers of the neighbours, with ans(:, :) the full information (see
 ! GetElementToElements).
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   ans(:) : INTEGER(I4B), intent(inout) - neighbour element numbers, size
-!     must be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Examples
 !
 !```fortran
@@ -6226,17 +5524,6 @@ END INTERFACE
 ! element number of the neighbour, column 2 the local facet number in the
 ! element, and column 3 the local facet number in the neighbour.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   ans(:,:) : INTEGER(I4B), intent(inout) - neighbours, rows are neighbours,
-!     SIZE(ans, 2) >= 3
-!   nrow : INTEGER(I4B), intent(out) - number of rows written
-!   ncol : INTEGER(I4B), intent(out) - number of columns written
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetElementToElements1_]]
 
 INTERFACE
@@ -6268,13 +5555,6 @@ END INTERFACE
 !
 ! Return the local facet numbers of an element which are on the boundary of
 ! the mesh. The array has size zero for an internal element.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - local facet numbers on the boundary
@@ -6313,9 +5593,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Implemented; the result is stored in the mesh
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest order of the elements
@@ -6373,13 +5650,6 @@ END INTERFACE
 ! summary: Get the order of an element
 !
 ! GetOrder_ returns the order of all elements.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - order of the element
@@ -6445,12 +5715,6 @@ END INTERFACE
 !
 ! Order of element i is written in order(i).
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   order(:) : INTEGER(I4B), intent(inout) - order of the elements, size must
-!     be at least the number of elements
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in order
-!
 ! See also: [[obj_GetOrder2]]
 
 INTERFACE
@@ -6472,8 +5736,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the number of spatial dimensions
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the number of spatial dimensions of the mesh.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of spatial dimensions of the mesh
@@ -6497,8 +5760,8 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the dimension of the elements
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the xidimension of the elements (0 point, 1 curve, 2 surface, 3
+! volume).
 !
 ! Returns:
 !   ans : INTEGER(I4B) - xidimension of the elements: 0 point, 1 curve, 2
@@ -6523,13 +5786,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the material id of a medium of an element
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   medium : INTEGER(I4B), intent(in) - medium number
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns the material id of the medium.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - material id of the medium
@@ -6561,12 +5818,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the number of media of an element
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns the number of media of the element (zero if none).
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of media of the element (zero if none)
@@ -6599,9 +5851,6 @@ END INTERFACE
 ! The facet elements are internal facets and boundary facets. They are made by
 ! InitiateFacetElements.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of facet elements
 !
@@ -6624,8 +5873,7 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Get the number of internal facet elements
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the number of internal facet elements.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of internal facet elements
@@ -6649,8 +5897,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Get the number of boundary facet elements
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the number of boundary and domain boundary facet elements.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of boundary and domain boundary facet elements
@@ -6681,10 +5928,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused elementType argument
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
 !
 ! Returns:
 !   ans : INTEGER(I4B) - global element number of the master cell
@@ -6719,10 +5962,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused elementType argument
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
-!
 ! Returns:
 !   ans : INTEGER(I4B) - global element number of the slave cell, zero if none
 !
@@ -6755,10 +5994,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused elementType argument
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
 !
 ! Returns:
 !   ans(2) : INTEGER(I4B) - ans(1) master cell, ans(2) slave cell (zero if
@@ -6855,12 +6090,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused elementType argument
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   isMaster : LOGICAL(LGT), intent(in) - if true, the master cell is used,
-!     else the slave cell
-!
 ! Returns:
 !   ans : INTEGER(I4B) - local facet number in the master (or slave) cell
 !
@@ -6889,15 +6118,6 @@ END INTERFACE
 ! summary: Get the global face number of a local face
 !
 ! The faces are numbered by Initiate (volume and surface meshes).
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   localFaceNumber : INTEGER(I4B), intent(in) - local face number in the
-!     element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - global face number
@@ -6932,15 +6152,6 @@ END INTERFACE
 !
 ! The edges are numbered by InitiateEdgeConnectivity.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   localEdgeNumber : INTEGER(I4B), intent(in) - local edge number in the
-!     element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - global edge number
 !
@@ -6974,21 +6185,6 @@ END INTERFACE
 !
 ! Check if faceCon (the vertex nodes of a face, in any order) is a face of an
 ! element, and return its local face number.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   faceCon(:) : INTEGER(I4B), intent(in) - global vertex node numbers of the
-!     face
-!   isFace : LOGICAL(LGT), intent(out) - true if faceCon is a face of the
-!     element
-!   localFaceNumber : INTEGER(I4B), intent(out) - local face number, zero if
-!     not found
-!   onlyBoundaryElement : LOGICAL(LGT), intent(in) - if true, the element is
-!     searched only if it is a boundary element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -7070,20 +6266,6 @@ END INTERFACE
 !
 ! Check if edgeCon (the nodes of an edge, in any order) is an edge of an
 ! element, and return its local edge number. Use it only for volume meshes.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   edgeCon(:) : INTEGER(I4B), intent(in) - global node numbers of the edge
-!   isEdge : LOGICAL(LGT), intent(out) - true if edgeCon is an edge of the
-!     element
-!   localEdgeNumber : INTEGER(I4B), intent(out) - local edge number, zero if
-!     not found
-!   onlyBoundaryElement : LOGICAL(LGT), intent(in) - if true, the element is
-!     searched only if it is a boundary element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -7170,12 +6352,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused elementType argument
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   isMaster : LOGICAL(LGT), intent(in) - if true, the master cell is used,
-!     else the slave cell
-!
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers of the facet
 !
@@ -7206,14 +6382,6 @@ END INTERFACE
 ! Return the global node numbers of the local facet iface of an element.
 ! GetFacetConnectivity_ does the same without allocation, and
 ! GetTotalFacetConnectivity returns the number of nodes of the facet.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   iface : INTEGER(I4B), intent(in) - local facet number in the element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers of the facet
@@ -7290,17 +6458,6 @@ END INTERFACE
 !
 ! See GetFacetConnectivity.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   iface : INTEGER(I4B), intent(in) - local facet number in the element
-!   ans(:) : INTEGER(I4B), intent(inout) - global node numbers of the facet,
-!     size must be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written in ans
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetFacetConnectivity]]
 
 INTERFACE
@@ -7331,14 +6488,6 @@ END INTERFACE
 ! summary: Get the number of nodes of a facet
 !
 ! See GetFacetConnectivity.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   iface : INTEGER(I4B), intent(in) - local facet number in the element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes of the facet
@@ -7373,20 +6522,6 @@ END INTERFACE
 ! Each present argument returns the component of the same name (see
 ! AbstractMesh_). SetParam sets them, and SetBoundingBox sets the bounding box
 ! parameters.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_) - mesh object
-!   isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated,
-!     isExtraNodeToNodesInitiated, isElementToElementsInitiated,
-!     isBoundaryDataInitiated, isFacetDataInitiated : LOGICAL(LGT), optional -
-!     status flags
-!   uid, xidim, elemType, nsd, maxNptrs, minNptrs, maxElemNum, minElemNum,
-!     tNodes, tElements, tElemTopologies : INTEGER(I4B), optional - scalar
-!     parameters
-!   tElements_topology_wise(8), elemTopologies(8) : INTEGER(I4B), optional -
-!     elements and names of each topology
-!   minX, minY, minZ, maxX, maxY, maxZ, x, y, z : REAL(DFP), optional -
-!     bounding box and centroid
 !
 ! Examples
 !
@@ -7496,8 +6631,7 @@ END INTERFACE AbstractMeshGetParam
 ! date: 2026-10-22
 ! summary: Get the minimum element number
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the smallest global element number.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - smallest global element number
@@ -7521,8 +6655,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Get the maximum element number
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the largest global element number.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest global element number
@@ -7546,8 +6679,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Get the minimum node number
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the smallest global node number.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - smallest global node number
@@ -7571,8 +6703,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Get the maximum node number
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns the largest global node number.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest global node number
@@ -7596,8 +6727,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if the mesh is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if the mesh is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7621,8 +6751,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if node to elements data is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if node to elements data is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7646,8 +6775,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if node to nodes data is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if node to nodes data is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7671,8 +6799,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if extra node to nodes data is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if extra node to nodes data is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7696,8 +6823,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if element to elements data is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if element to elements data is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7721,8 +6847,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if the edge connectivity is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if the edge connectivity is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7746,8 +6871,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if the face connectivity is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if the face connectivity is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7771,8 +6895,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if the boundary data is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if the boundary data is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7796,8 +6919,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if the facet data is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
+! Returns true if the facet data is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - status flag
@@ -7821,12 +6943,7 @@ END INTERFACE
 ! date: 2026-10-22
 ! summary: Returns true if an element is active
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns true if the element is active, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the element is active
@@ -7859,11 +6976,6 @@ END INTERFACE
 ! Return the facet element type (INTERNAL_ELEMENT, BOUNDARY_ELEMENT or
 ! DOMAIN_BOUNDARY_ELEMENT).
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   elementType : INTEGER(I4B), optional, intent(out) - facet element type
-!
 ! See also: [[obj_SetFacetParam]], [[obj_GetCellNumber]]
 
 INTERFACE
@@ -7890,13 +7002,6 @@ END INTERFACE
 ! faces and cells of the mesh. In a surface mesh the faces are the edges. The
 ! number of edges of the mesh is zero until InitiateEdgeConnectivity is
 ! called.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(4) : INTEGER(I4B) - nodes, edges, faces, 1
@@ -7965,9 +7070,6 @@ END INTERFACE
 !
 ! See GetTotalEntities.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(in) - mesh object
-!
 ! Returns:
 !   ans(4) : INTEGER(I4B) - nodes, edges, faces, cells
 !
@@ -7992,9 +7094,6 @@ END INTERFACE
 ! summary: Get the maximum number of elements around a node
 !
 ! The node to elements data is initiated if needed.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest number of elements around a node
@@ -8021,9 +7120,6 @@ END INTERFACE
 ! The node to nodes data is initiated if needed. The node itself is not
 ! counted.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!
 ! Returns:
 !   ans : INTEGER(I4B) - largest number of nodes connected to a node
 !
@@ -8047,9 +7143,6 @@ END INTERFACE
 ! summary: Get the maximum number of elements around an element
 !
 ! The element to elements data is initiated if needed.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest number of neighbours of an element
@@ -8076,9 +7169,6 @@ END INTERFACE
 ! Make a kdtree of the node coordinates (the first nsd coordinates). It is
 ! used by GetNearestNode and GetNptrsInBox, which initiate it when needed. The
 ! tree is not sorted.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Examples
 !
@@ -8142,9 +7232,6 @@ END INTERFACE
 ! For every node, store the global element numbers around it. Nothing is done
 ! if the data is already initiated. Use GetNodeToElements to read it.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!
 ! Examples
 !
 !```fortran
@@ -8202,9 +7289,6 @@ END INTERFACE
 ! For every node, store the nodes of the elements around it (without the node
 ! itself). The node to elements data is initiated if needed. Use
 ! GetNodeToNodes to read it.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Examples
 !
@@ -8266,9 +7350,6 @@ END INTERFACE
 ! The node to nodes, node to elements and element to elements data are
 ! initiated if needed.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!
 ! Examples
 !
 !```fortran
@@ -8323,9 +7404,6 @@ END INTERFACE
 ! mark the boundary elements and the boundary nodes. In surface and volume
 ! meshes the faces are numbered too. Initiate calls this method; nothing is
 ! done if the data is already initiated.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Examples
 !
@@ -8382,9 +7460,6 @@ END INTERFACE
 !
 ! For every boundary element, store the local facets which are on the boundary
 ! of the mesh. The element to elements data is needed.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Examples
 !
@@ -8446,9 +7521,6 @@ END INTERFACE
 !
 ! Number the edges of the mesh. An edge shared by elements has the same global
 ! edge number in all of them. GetTotalEdges returns the number of edges.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
 !
 ! Examples
 !
@@ -8518,9 +7590,6 @@ END INTERFACE
 ! shared face has the same global face number in both elements. For other
 ! meshes an error is raised.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!
 ! Examples
 !
 !```fortran
@@ -8587,9 +7656,6 @@ END INTERFACE
 ! the neighbouring meshes. Point and curve meshes (xidim <= 1) have no facet
 ! elements; nothing is done for them.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!
 ! Examples
 !
 !```fortran
@@ -8650,10 +7716,6 @@ END INTERFACE
 !
 ! If showTime is true, the time taken by mesh operations is printed on stdout.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   VALUE : LOGICAL(LGT), intent(in) - value of showTime
-!
 ! Examples
 !
 !```fortran
@@ -8708,10 +7770,6 @@ END INTERFACE
 ! Set minX, maxX, minY, maxY, minZ and maxZ from box (or from node
 ! coordinates, see GetBoundingBox).
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   box : TYPE(BoundingBox_), intent(in) - bounding box
-!
 ! See also: [[obj_SetBoundingBox2]], [[obj_GetParam]], [[obj_GetBoundingBox1]]
 
 INTERFACE
@@ -8732,13 +7790,6 @@ END INTERFACE
 ! summary: Set the bounding box parameters from node coordinates
 !
 ! See SetBoundingBox.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   nodes(:,:) : REAL(DFP), intent(in) - node coordinates in xiJ format,
-!     column i is global node i (or local_nptrs(i))
-!   local_nptrs(:) : INTEGER(I4B), optional, intent(in) - map from a global
-!     node number to a column of nodes
 !
 ! See also: [[obj_SetBoundingBox1]]
 
@@ -8769,14 +7820,6 @@ END INTERFACE
 !
 ! Row and column numbers are localNodeNumber(global node); nodes with
 ! localNodeNumber zero are skipped.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
-!   localNodeNumber(lbound:ubound) : INTEGER(I4B), intent(in) - map from
-!     global node number to row number
-!   lbound : INTEGER(I4B), intent(in) - lower bound of localNodeNumber
-!   ubound : INTEGER(I4B), intent(in) - upper bound of localNodeNumber
 !
 ! Examples
 !
@@ -8862,10 +7905,6 @@ END INTERFACE
 ! needed. After all calls, call SetSparsity(mat) of the matrix to finish the
 ! pattern. Row and column numbers are global node numbers.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
-!
 ! Examples
 !
 !```fortran
@@ -8939,15 +7978,6 @@ END INTERFACE
 ! the nodes nodeToNode(j) of colMesh (j connected to i) are added in the block
 ! (ivar, jvar) of mat.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   colMesh : CLASS(AbstractMesh_), intent(inout) - mesh of the columns
-!   nodeToNode(:) : INTEGER(I4B), intent(in) - map from a node of obj to a
-!     node of colMesh, SIZE(nodeToNode) = GetMaxNodeNumber()
-!   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
-!   ivar : INTEGER(I4B), intent(in) - physical variable of the rows
-!   jvar : INTEGER(I4B), intent(in) - physical variable of the columns
-!
 ! See also: [[obj_SetSparsity4]]
 
 INTERFACE
@@ -8979,27 +8009,6 @@ END INTERFACE
 !
 ! Like SetSparsity3; rows and columns are mapped by rowGlobalToLocalNodeNum
 ! and colGlobalToLocalNodeNum.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   colMesh : CLASS(AbstractMesh_), intent(inout) - mesh of the columns
-!   nodeToNode(:) : INTEGER(I4B), intent(in) - map from a node of obj to a
-!     node of colMesh
-!   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
-!   rowGlobalToLocalNodeNum(rowLBOUND:rowUBOUND) : INTEGER(I4B), intent(in) -
-!     map from global node to row number
-!   rowLBOUND : INTEGER(I4B), intent(in) - lower bound of
-!     rowGlobalToLocalNodeNum
-!   rowUBOUND : INTEGER(I4B), intent(in) - upper bound of
-!     rowGlobalToLocalNodeNum
-!   colGlobalToLocalNodeNum(colLBOUND:colUBOUND) : INTEGER(I4B), intent(in) -
-!     map from global node to column number
-!   colLBOUND : INTEGER(I4B), intent(in) - lower bound of
-!     colGlobalToLocalNodeNum
-!   colUBOUND : INTEGER(I4B), intent(in) - upper bound of
-!     colGlobalToLocalNodeNum
-!   ivar : INTEGER(I4B), intent(in) - physical variable of the rows
-!   jvar : INTEGER(I4B), intent(in) - physical variable of the columns
 !
 ! See also: [[obj_SetSparsity3]]
 
@@ -9053,14 +8062,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Set the number of media to n (it was increased by n)
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   n : INTEGER(I4B), intent(in) - number of media
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -9152,10 +8153,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Set the number of media to n (it was increased by n)
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   n : INTEGER(I4B), intent(in) - number of media
-!
 ! See also: [[obj_SetTotalMedium1]], [[obj_SetMaterial1]]
 
 INTERFACE
@@ -9181,14 +8178,6 @@ END INTERFACE
 ! elements, in the elements of an entity, or in one element. GetMaterial and
 ! GetTotalMaterial read them. This routine sets the material in the elements
 ! of entityNum.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   entityNum : INTEGER(I4B), intent(in) - entity number (mesh id) of the
-!     elements
-!   medium : INTEGER(I4B), intent(in) - medium number (for example soil,
-!     water)
-!   material : INTEGER(I4B), intent(in) - material id of the medium
 !
 ! Examples
 !
@@ -9265,11 +8254,6 @@ END INTERFACE
 !
 ! See SetMaterial.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   medium : INTEGER(I4B), intent(in) - medium number
-!   material : INTEGER(I4B), intent(in) - material id
-!
 ! See also: [[obj_SetMaterial1]]
 
 INTERFACE
@@ -9292,15 +8276,6 @@ END INTERFACE
 ! summary: Set the material of a medium in an element
 !
 ! See SetMaterial.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   medium : INTEGER(I4B), intent(in) - medium number
-!   material : INTEGER(I4B), intent(in) - material id
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), intent(in) - if true, globalElement is a local
-!     element number
 !
 ! See also: [[obj_SetMaterial1]]
 
@@ -9333,16 +8308,6 @@ END INTERFACE
 ! IsDomainBoundaryElement and GetTotalBoundaryElements read it. After Initiate
 ! every boundary element is a DOMAIN_BOUNDARY_ELEMENT. iface is kept for
 ! compatibility; it is not used.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   iface : INTEGER(I4B), intent(in) - local facet number; not used
-!   facetElementType : INTEGER(I4B), intent(in) - element type:
-!     INTERNAL_ELEMENT, BOUNDARY_ELEMENT or DOMAIN_BOUNDARY_ELEMENT
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -9419,18 +8384,10 @@ END INTERFACE
 ! date: 2024-01-27
 ! summary: Set the quality of the mesh
 !
-! TODO: This routine needs to be implemented. At present it raises an
+! TODO - This routine needs to be implemented. At present it raises an
 ! error in debug builds (DEBUG_VER) and does nothing otherwise; the output
 ! arguments are not set.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   measures(:) : INTEGER(I4B), intent(in) - quality measures
-!   max_measures(:) : REAL(DFP), intent(out) - maximum value of each measure
-!   min_measures(:) : REAL(DFP), intent(out) - minimum value of each measure
-!   nodeCoord(:,:) : REAL(DFP), intent(in) - node coordinates in xiJ format
-!   local_nptrs(:) : INTEGER(I4B), intent(in) - map from global node number to
-!     a column of nodeCoord
 
 INTERFACE
   MODULE SUBROUTINE obj_SetQuality(obj, measures, max_measures, &
@@ -9459,20 +8416,6 @@ END INTERFACE
 ! summary: Set the parameters of the mesh
 !
 ! Each present argument sets the component of the same name. See GetParam.
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_) - mesh object
-!   isInitiated, isNodeToElementsInitiated, isNodeToNodesInitiated,
-!     isExtraNodeToNodesInitiated, isElementToElementsInitiated,
-!     isBoundaryDataInitiated, isFacetDataInitiated : LOGICAL(LGT), optional -
-!     status flags
-!   uid, xidim, elemType, nsd, maxNptrs, minNptrs, maxElemNum, minElemNum,
-!     tNodes, tElements, tElemTopologies : INTEGER(I4B), optional - scalar
-!     parameters
-!   tElements_topology_wise(8), elemTopologies(8) : INTEGER(I4B), optional -
-!     elements and names of each topology
-!   minX, minY, minZ, maxX, maxY, maxZ, x, y, z : REAL(DFP), optional -
-!     bounding box and centroid
 !
 ! See also: [[obj_GetParam]]
 
@@ -9522,11 +8465,6 @@ END INTERFACE
 !
 ! Set the facet element type of a facet element.
 !
-! Arguments:
-!   obj : CLASS(AbstractMesh_), intent(inout) - mesh object
-!   facetElement : INTEGER(I4B), intent(in) - facet element number
-!   elementType : INTEGER(I4B), optional, intent(in) - facet element type
-!
 ! See also: [[obj_GetFacetParam]]
 
 INTERFACE
@@ -9565,16 +8503,6 @@ END INTERFACE
 !
 ! The allocatable arguments are reallocated to their exact sizes.
 ! The implementation follows VTKGetLinearGrid (VTKMeshUtility).
-!
-! Arguments:
-!   obj : CLASS(AbstractMesh_) - mesh
-!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints),
-!     nPoints = GetTotalNodes()
-!   connectivity : INTEGER(I4B) - zero based point ids of all cells,
-!     SIZE(connectivity) = offsets(nCells + 1)
-!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
-!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells,
-!     nCells = number of active elements
 !
 ! Formula:
 !
@@ -9647,12 +8575,16 @@ INTERFACE
     !! mesh
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
+    !! SIZE(points) = (3, nPoints), nPoints = GetTotalNodes()
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
     !! zero based point ids of cells
+    !! SIZE(connectivity) = offsets(nCells + 1)
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
     !! offsets of cells in connectivity, size nCells + 1
+    !! SIZE(offsets) = nCells + 1, offsets(1) = 0
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
     !! VTK cell types, size nCells
+    !! SIZE(types) = nCells, nCells = number of active elements
   END SUBROUTINE obj_GetVtkUnstructuredGridData
 END INTERFACE
 

@@ -227,17 +227,6 @@ END TYPE ScalarFieldPointer_
 ! are not used; they are kept so that the interface is the same as in
 ! AbstractNodeField_.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   name : CHARACTER(*) - name of the field
-!   engine : CHARACTER(*) - engine, e.g., "NATIVE_SERIAL"
-!   fieldType : INTEGER(I4B) - (optional) TypeFieldOpt%normal (default)
-!     or TypeFieldOpt%constant
-!   comm, local_n, global_n : INTEGER(I4B) - (optional) parallel data
-!   fedof : CLASS(FEDOF_) - FEDOF of the field (pointer is stored)
-!   geofedof : CLASS(FEDOF_) - FEDOF of the geometry (pointer is stored)
-!   timefedof : CLASS(TimeFEDOF_) - (optional) FEDOF in time
-!
 ! Examples
 !
 !```fortran
@@ -412,9 +401,6 @@ END INTERFACE
 !   The body of this routine is empty: obj is not deallocated.
 ! @endnote
 !
-! Arguments:
-!   obj : TYPE(ScalarFieldPointer_) - vector of scalar field pointers
-!
 ! See also: [[obj_ScalarFieldSafeAllocate1]]
 
 INTERFACE
@@ -439,10 +425,6 @@ END INTERFACE ScalarFieldDeallocate
 ! If obj is not allocated, it is allocated with size newsize. If its
 ! size is less than newsize, ScalarFieldDeallocate is called and obj is
 ! allocated again with size newsize. Otherwise obj is not changed.
-!
-! Arguments:
-!   obj : TYPE(ScalarFieldPointer_) - vector of scalar field pointers
-!   newsize : INTEGER(I4B) - required size
 !
 ! See also: [[obj_Deallocate_ptr_vector]]
 
@@ -474,15 +456,6 @@ END INTERFACE ScalarFieldSafeAllocate
 !
 ! Set(VALUE) without globalNode sets all the entries (see
 ! [[obj_Set2]]); the example shows both.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   globalNode : INTEGER(I4B) - node number (DOF number)
-!   islocal : LOGICAL(LGT) - must be true: globalNode is a local node
-!     number (global numbers are not supported, checked in debug mode)
-!   VALUE : REAL(DFP) - value
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -579,12 +552,6 @@ END INTERFACE
 ! All entries become scale * VALUE, or scale * VALUE is added to them
 ! if addContribution is true. It calls SetAll of AbstractNodeField_.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : REAL(DFP) - value
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_Set1]] (contains an example)
 
 INTERFACE
@@ -620,12 +587,6 @@ END INTERFACE
 ! @note
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) >= obj%Size()
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -707,6 +668,7 @@ INTERFACE
     !! scalar field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values of all entries
+    !! SIZE(VALUE) >= obj%Size()
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
@@ -726,15 +688,6 @@ END INTERFACE
 ! scale * VALUE is added to them if addContribution is true. An error
 ! is raised (in debug mode) if obj is not initiated or if it is a
 ! constant field.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   VALUE : REAL(DFP) - value
-!   scale : REAL(DFP) - (optional) scale, default 1
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! See also: [[obj_Set3]] (contains an example)
 
@@ -772,15 +725,6 @@ END INTERFACE
 !   Without addContribution, the values are set to scale * VALUE.
 ! @endnote
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) >= SIZE(globalNode)
-!   scale : REAL(DFP) - (optional) scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
-!
 ! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
@@ -794,6 +738,7 @@ INTERFACE
     !! if true, then globalNodes are local nodes
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! value to be assigned on globalNode
+    !! SIZE(VALUE) >= SIZE(globalNode)
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
     !! scale (if we are adding)
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
@@ -813,16 +758,6 @@ END INTERFACE
 ! selected entries are set to its value ([[obj_Set4]]). If it is a
 ! space variable, the entry of node globalNode(i) is set from its i-th
 ! value ([[obj_Set5]]). Other variable types raise an error.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   VALUE : TYPE(FEVariable_) - scalar, nodal FEVariable (constant or
-!     space)
-!   scale : REAL(DFP) - (optional) scale
-!   addContribution : LOGICAL(LGT) - (optional) add or set, default set
 !
 ! Examples
 !
@@ -922,10 +857,6 @@ END INTERFACE
 ! obj = VALUE: the values of VALUE are copied into obj. It is used for
 ! the assignment operator. Both fields must have the same FEDOF.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : CLASS(ScalarField_) - scalar field to be copied
-!
 ! Examples
 !
 !```fortran
@@ -1000,12 +931,6 @@ END INTERFACE
 ! An error is raised (in debug mode) if obj or VALUE is not initiated.
 ! Both fields must have the same FEDOF.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : CLASS(ScalarField_) - other scalar field
-!   scale : REAL(DFP) - scale, used with addContribution
-!   addContribution : LOGICAL(LGT) - add or set
-!
 ! See also: [[obj_Set7]] (contains an example)
 
 INTERFACE
@@ -1040,11 +965,6 @@ END INTERFACE
 ! @note
 !   This routine is valid only for the Lagrange polynomials.
 ! @endnote
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - initiated scalar field
-!   func : CLASS(UserFunction_) - scalar user function
-!   times : REAL(DFP) - (optional) time, default 0
 !
 ! Examples
 !
@@ -1155,10 +1075,6 @@ END INTERFACE
 ! obj must use Lagrange polynomials; obj2 can use any basis. Both
 ! fields must be defined on meshes with the same number of elements.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - Lagrange scalar field, values are set
-!   obj2 : CLASS(ScalarField_) - scalar field which is interpolated
-!
 ! See also: [[obj_SetByFunction]]
 
 INTERFACE
@@ -1177,13 +1093,6 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-25
 ! summary: Get a single entry of the scalar field
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : REAL(DFP) - value of node globalNode
-!   globalNode : INTEGER(I4B) - node number (DOF number)
-!   islocal : LOGICAL(LGT) - must be true: globalNode is a local node
-!     number (global numbers are not supported, checked in debug mode)
 !
 ! See also: [[obj_Set1]] (contains an example)
 
@@ -1210,11 +1119,6 @@ END INTERFACE
 !
 ! The values of all entries are written in VALUE(1:tsize).
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) >= obj%Size()
-!   tsize : INTEGER(I4B) - number of values written in VALUE
-!
 ! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
@@ -1223,6 +1127,7 @@ INTERFACE
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! real vector which contains the values stored in scalar field
+    !! SIZE(VALUE) >= obj%Size()
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! total size written in Value
   END SUBROUTINE obj_Get2
@@ -1239,14 +1144,6 @@ END INTERFACE
 ! The value of node globalNode(i) is written in VALUE(i), and tsize is
 ! SIZE(globalNode).
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) >= SIZE(globalNode)
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   tsize : INTEGER(I4B) - number of values written in VALUE
-!
 ! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
@@ -1255,6 +1152,7 @@ INTERFACE
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values to be returned
+    !! SIZE(VALUE) >= SIZE(globalNode)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local nodes
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -1276,13 +1174,6 @@ END INTERFACE
 ! a scalar, nodal, space FEVariable of length SIZE(globalNode). VALUE
 ! must be initiated before the call (e.g., by NodalVariable(tsize,
 ! TypeFEVariableScalar, TypeFEVariableSpace)) with enough capacity.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : TYPE(FEVariable_) - initiated FEVariable, values are written
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
 !
 ! See also: [[obj_Set6]] (contains an example)
 
@@ -1308,14 +1199,6 @@ END INTERFACE
 ! summary: Get the selected entries in an FEVariable
 !
 ! Same as [[obj_Get4]]; ivar is not used for a scalar field.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   globalNode : INTEGER(I4B) - node numbers
-!   islocal : LOGICAL(LGT) - must be true: globalNode are local node
-!     numbers (global numbers are not supported, checked in debug mode)
-!   VALUE : TYPE(FEVariable_) - initiated FEVariable, values are written
-!   ivar : INTEGER(I4B) - (optional) physical variable, not used
 !
 ! See also: [[obj_Set6]] (contains an example)
 
@@ -1344,10 +1227,6 @@ END INTERFACE ScalarFieldGetFEVariable
 !
 ! Returns local_n, the number of values stored on this process. For a
 ! serial field it is the total number of DOFs of fedof.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   dims : INTEGER(I4B) - (optional) not used
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of values
@@ -1379,11 +1258,6 @@ END INTERFACE
 ! initiated, it is initiated with the name and engine of obj, and the
 ! maximum number of interpolation points over the elements.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   meshField : CLASS(MeshField_) - mesh field, values are inserted
-!   order : INTEGER(I4B) - order of interpolation points in x, y, z
-!   ipType : INTEGER(I4B) - interpolation point type in x, y, z
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMeshField(obj, meshField, order, ipType)
@@ -1409,10 +1283,6 @@ END INTERFACE
 ! order. The points are not shared between cells (DG like storage), so
 ! SIZE(VALUE) is fedof%GetSumElemTotalDOF(). VALUE is reallocated; the
 ! work arrays of [[obj_GetVtkUnstructuredValue2]] are allocated here.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : REAL(DFP) - values at the points, reallocated
 !
 ! Examples
 !
@@ -1537,13 +1407,6 @@ END INTERFACE
 !   - 2026-10-29: local shape functions and FixOrientOfNptrs; elemCoord
 !     removed; shape data reused for the same topology and order
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) >= fedof%GetSumElemTotalDOF()
-!   tsize : INTEGER(I4B) - number of values written in VALUE
-!   refElemCoord, xij, nodalValue, fecon - work arrays, see the sizes of
-!     the dummy arguments
-!
 ! See also: [[obj_GetVtkUnstructuredValue1]] (contains an example)
 
 INTERFACE
@@ -1554,6 +1417,7 @@ INTERFACE
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values at the points of the grid
+    !! SIZE(VALUE) >= fedof%GetSumElemTotalDOF()
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! size of data written in value
     REAL(DFP), INTENT(INOUT) :: refElemCoord(:, :)
@@ -1583,11 +1447,6 @@ END INTERFACE
 ! The node numbers and the values of dbc (at time times) are obtained
 ! from dbc%Get, and the entries of these nodes are set to the values.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   dbc : CLASS(DirichletBC_) - Dirichlet boundary condition
-!   times : REAL(DFP) - (optional) time
-!
 ! See also: [[obj_ApplyDirichletBC2]], [[obj_ApplyZeroDirichletBC1]]
 
 INTERFACE
@@ -1612,11 +1471,6 @@ END INTERFACE
 ! Same as [[obj_ApplyDirichletBC1]] for each associated pointer of dbc,
 ! in order.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   dbc : TYPE(DirichletBCPointer_) - Dirichlet boundary conditions
-!   times : REAL(DFP) - (optional) time
-!
 ! See also: [[obj_ApplyDirichletBC1]], [[obj_ApplyDirichletBC3]]
 
 INTERFACE
@@ -1640,10 +1494,6 @@ END INTERFACE
 !
 ! Calls [[obj_ApplyDirichletBC2]] with obj%dbc.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   times : REAL(DFP) - (optional) time
-!
 ! See also: [[obj_ApplyDirichletBC2]]
 
 INTERFACE
@@ -1665,10 +1515,6 @@ END INTERFACE
 !
 ! The entries of the nodes of dbc (dbc%GetNodeNumber) are set to zero;
 ! the values of dbc are not used.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   dbc : CLASS(DirichletBC_) - Dirichlet boundary condition
 !
 ! See also: [[obj_ApplyZeroDirichletBC2]], [[obj_ApplyDirichletBC1]]
 
@@ -1692,10 +1538,6 @@ END INTERFACE
 ! Same as [[obj_ApplyZeroDirichletBC1]] for each associated pointer of
 ! dbc.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   dbc : TYPE(DirichletBCPointer_) - Dirichlet boundary conditions
-!
 ! See also: [[obj_ApplyZeroDirichletBC1]], [[obj_ApplyZeroDirichletBC3]]
 
 INTERFACE
@@ -1717,9 +1559,6 @@ END INTERFACE
 !
 ! Calls [[obj_ApplyZeroDirichletBC2]] with obj%dbc.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!
 ! See also: [[obj_ApplyZeroDirichletBC2]]
 
 INTERFACE
@@ -1740,11 +1579,6 @@ END INTERFACE
 ! For each point Neumann boundary condition of the field
 ! (obj%nbc_point), the node numbers and the values (at time times) are
 ! obtained, and scale * value is added to the entries of these nodes.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   scale : REAL(DFP) - scale
-!   times : REAL(DFP) - (optional) time
 !
 ! See also: [[obj_ApplySurfaceNeumannBC1]]
 
@@ -1774,12 +1608,6 @@ END INTERFACE
 ! boundary facets is computed, and scale times this integral is added
 ! to obj. Nothing is done if the field has no Neumann boundary
 ! condition.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field (right hand side)
-!   nbcField : CLASS(ScalarField_) - work field for the boundary data
-!   scale : REAL(DFP) - scale
-!   times : REAL(DFP) - (optional) time
 !
 ! See also: [[obj_ApplySurfaceNeumannBC2]], [[obj_ApplyPointNeumannBC]]
 
@@ -1813,13 +1641,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-29: use nbc(ibc)%ptr, not the boundary conditions of obj
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field (right hand side)
-!   nbc : TYPE(NeumannBCPointer_) - Neumann boundary conditions
-!   nbcField : CLASS(ScalarField_) - work field for the boundary data
-!   scale : REAL(DFP) - scale
-!   times : REAL(DFP) - (optional) time
-!
 ! See also: [[obj_ApplySurfaceNeumannBC1]]
 
 INTERFACE
@@ -1852,12 +1673,6 @@ END INTERFACE
 ! this integral is added to obj:
 !
 ! $$ u_I = u_I + s \int_{\Omega} N_I f(x, y, z, t) \, d\Omega $$
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field (right hand side)
-!   bodySource : CLASS(UserFunction_) - scalar function of (x, y, z, t)
-!   scale : REAL(DFP) - scale
-!   times : REAL(DFP) - (optional) time passed to bodySource
 !
 ! See also: [[obj_ApplyBodySource2]]
 
@@ -1894,11 +1709,6 @@ END INTERFACE ScalarFieldApplyBodySource
 !
 ! $$ u_I = u_I + s \int_{\Omega} N_I f_h \, d\Omega $$
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field (right hand side)
-!   bodySource : CLASS(ScalarField_) - body source
-!   scale : REAL(DFP) - scale
-!
 ! See also: [[obj_ApplyBodySource1]]
 
 INTERFACE
@@ -1930,9 +1740,6 @@ END INTERFACE ScalarFieldApplyBodySource
 ! Otherwise the type of the nodal value is read from the table, and the
 ! field is set to a constant value or to the given space values.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - initiated scalar field
-!   table : TYPE(toml_table) - toml table with the values
 
 INTERFACE
   MODULE SUBROUTINE obj_SetFromToml(obj, table)
@@ -1952,13 +1759,6 @@ END INTERFACE
 ! summary: Import the scalar field from an HDF5 file
 !
 ! Calls Import of AbstractNodeField_.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   hdf5 : TYPE(HDF5File_) - HDF5 file opened for reading
-!   group : CHARACTER(*) - group of the field in the file
-!   fedof, geofedof : CLASS(FEDOF_) - (optional) FEDOFs of the field
-!   fedofs, geofedofs, timefedof, timefedofs - (optional) other FEDOFs
 !
 ! See also: [[AbstractNodeField_:obj_Export]] (contains an example)
 
@@ -1996,11 +1796,6 @@ END INTERFACE ScalarFieldImport
 !
 ! Calls Export of AbstractNodeField_.
 !
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   hdf5 : TYPE(HDF5File_) - HDF5 file opened for writing
-!   group : CHARACTER(*) - group of the field in the file
-!
 ! See also: [[AbstractNodeField_:obj_Export]] (contains an example)
 
 INTERFACE
@@ -2030,10 +1825,6 @@ END INTERFACE ScalarFieldExport
 ! values) are written as a data array with one component. The name of
 ! the array is the name of the field joined with the physical variable
 ! name by "_". It is called by WriteData_vtk of AbstractNodeField_.
-!
-! Arguments:
-!   obj : CLASS(ScalarField_) - scalar field
-!   vtk : TYPE(VTKFile_) - VTK file
 !
 ! See also: [[AbstractNodeField_:obj_WriteData_vtk1]]
 

@@ -203,11 +203,6 @@ END TYPE AbstractFilePointer_
 ! Changes:
 !   - 2026-10-27: docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   Delete : LOGICAL(LGT) - (optional) not used here; used by the
-!     extended types to delete the file
-!
 ! Examples
 !
 !```fortran
@@ -275,10 +270,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   path : TYPE(String) - path of the file
 !
 ! Examples
 !
@@ -348,10 +339,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   fileName : TYPE(String) - name of the file without extension
-!
 ! See also: [[obj_SetFilePath]] (contains an example),
 ! [[obj_GetFileName]]
 
@@ -381,10 +368,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   Ext : TYPE(String) - extension of the file
-!
 ! See also: [[obj_SetFilePath]] (contains an example),
 ! [[obj_GetFileExt]]
 
@@ -411,10 +394,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   stat : LOGICAL(LGT) - end of file status
 !
 ! Examples
 !
@@ -478,10 +457,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   stat : LOGICAL(LGT) - open status
-!
 ! Examples
 !
 !```fortran
@@ -538,10 +513,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   stat : LOGICAL(LGT) - read access status
 !
 ! Examples
 !
@@ -601,10 +572,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   stat : LOGICAL(LGT) - write access status
-!
 ! See also: [[obj_SetReadStat]] (contains an example), [[obj_IsWrite]]
 
 INTERFACE
@@ -624,11 +591,10 @@ END INTERFACE
 ! date: 2022-05-08
 ! summary: Returns the path of the file
 !
+! Returns the path of the file.
+!
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
 !
 ! Returns:
 !   path : TYPE(String) - path of the file
@@ -653,11 +619,10 @@ END INTERFACE
 ! date: 2022-05-08
 ! summary: Returns the name of the file (without extension)
 !
+! Returns the name of the file without path and extension.
+!
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
 !
 ! Returns:
 !   fileName : TYPE(String) - name of the file without path and
@@ -683,11 +648,10 @@ END INTERFACE
 ! date: 2022-05-08
 ! summary: Returns the extension of the file
 !
+! Returns the extension of the file, including the dot.
+!
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
 !
 ! Returns:
 !   Ext : TYPE(String) - extension of the file, including the dot
@@ -717,12 +681,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!   path : TYPE(String) - path of the file
-!   fileName : TYPE(String) - name of the file without extension
-!   ext : TYPE(String) - extension of the file, including the dot
 !
 ! Examples
 !
@@ -796,9 +754,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the file is open
 !
@@ -858,11 +813,10 @@ END INTERFACE
 ! date: 2022-05-08
 ! summary: Returns true if the end of the file has been reached
 !
+! Returns true if the end of file has been reached, and false otherwise.
+!
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the end of file has been reached
@@ -886,11 +840,10 @@ END INTERFACE
 ! date: 2022-05-08
 ! summary: Returns true if the file has read access
 !
+! Returns true if the file has read access, and false otherwise.
+!
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the file has read access
@@ -945,11 +898,10 @@ END INTERFACE
 ! date: 2022-05-08
 ! summary: Returns true if the file has write access
 !
+! Returns true if the file has write access, and false otherwise.
+!
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the file has write access
@@ -979,9 +931,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!
 ! See also: [[obj_IsOpen]] (contains an example), [[obj_Close]],
 ! [[obj_Delete]]
 
@@ -1008,9 +957,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
 !
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
-!
 ! See also: [[obj_IsOpen]] (contains an example), [[obj_Open]],
 ! [[obj_Delete]]
 
@@ -1036,9 +982,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-27: renamed aFile_* to obj_*, docs
-!
-! Arguments:
-!   obj : CLASS(AbstractFile_) - file
 !
 ! See also: [[obj_IsOpen]] (contains an example), [[obj_Open]],
 ! [[obj_Close]]

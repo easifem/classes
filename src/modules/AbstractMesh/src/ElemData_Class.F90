@@ -126,7 +126,7 @@ END INTERFACE
 !                                                                 Elemdata_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-26
 ! summary: Data type for storing element data
 
@@ -139,11 +139,11 @@ TYPE :: Elemdata_
   INTEGER(I4B) :: localElemNum = 0_I4B
   !! local element number
   INTEGER(I4B) :: elementType = INTERNAL_ELEMENT
-  !! BOUNDARY_ELEMENT: If the element contqains the boundary node
+  !! BOUNDARY_ELEMENT - If the element contqains the boundary node
   !! it will be called the boundary element
   !! INTERNAL_ELEMENT: If the element does not contain the boundary node
   !! then it will be called the internal element
-  !! TODO: Change elementType to Int8
+  !! TODO - Change elementType to Int8
   INTEGER(I4B) :: name = 0
   !! This is name of the element
   !! It can be Triangle, Triangle3, Triangle6, etc.
@@ -155,7 +155,7 @@ TYPE :: Elemdata_
   INTEGER(I4B) :: meshID = 0
   !! ID of mesh to which the element belong
   !! This is a gmsh concept
-  !! TODO: Change elementType to Int8
+  !! TODO - Change elementType to Int8
   INTEGER(INT8), ALLOCATABLE :: material(:)
   !! materials mapped to the mesh
   !! material(1) is the material-id (type of material) of medium 1
@@ -167,7 +167,7 @@ TYPE :: Elemdata_
   !! fluid is a medium with n =2
   !! then material(1) denotes the type of soil => clay, sand, silt
   !! and material(2) denotes the type of fluid => water, oil, air
-  !! TODO: Change material to Int8
+  !! TODO - Change material to Int8
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
   !! nodes contained in the element, connectivity
   !! Vertex connectivity
@@ -271,7 +271,7 @@ END SUBROUTINE Elemdata_Copy
 !
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-26
 ! summary: Display a single instance of element data
 

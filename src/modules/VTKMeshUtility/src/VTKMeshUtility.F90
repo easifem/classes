@@ -69,13 +69,6 @@ PUBLIC :: VTKGetFieldCompo
 ! Inactive elements are skipped. Meshes with different element types
 ! are supported.
 !
-! Arguments:
-!   mesh : CLASS(AbstractMesh_) - mesh
-!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
-!   connectivity : INTEGER(I4B) - zero based point ids of all cells
-!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
-!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
-!
 ! Formula:
 !
 ! The point ids of cell \(i\) are
@@ -128,12 +121,15 @@ INTERFACE
     !! mesh
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
+    !! SIZE(points) = (3, nPoints)
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
     !! zero based point ids of cells
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
     !! offsets of cells in connectivity, size nCells + 1
+    !! SIZE(offsets) = nCells + 1, offsets(1) = 0
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
     !! VTK cell types, size nCells
+    !! SIZE(types) = nCells
   END SUBROUTINE VTKGetLinearGrid
 END INTERFACE
 
@@ -162,14 +158,6 @@ END INTERFACE
 !
 ! An error is raised if a VTK cell type is not available for a
 ! topology and order (e.g., triangle with \(p \ge 3\)).
-!
-! Arguments:
-!   fedof : CLASS(FEDOF_) - FEDOF of the field
-!   geofedof : CLASS(FEDOF_) - FEDOF of the geometry
-!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
-!   connectivity : INTEGER(I4B) - zero based point ids of all cells
-!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
-!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
 !
 ! Examples
 !
@@ -222,12 +210,15 @@ INTERFACE
     !! FEDOF of the geometry
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
+    !! SIZE(points) = (3, nPoints)
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
     !! zero based point ids of cells
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
     !! offsets of cells in connectivity, size nCells + 1
+    !! SIZE(offsets) = nCells + 1, offsets(1) = 0
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
     !! VTK cell types, size nCells
+    !! SIZE(types) = nCells
   END SUBROUTINE VTKGetLagrangeGrid
 END INTERFACE
 
@@ -248,11 +239,6 @@ END INTERFACE
 !
 ! An error is raised for other field types.
 !
-! Arguments:
-!   field : CLASS(AbstractNodeField_) - ScalarField_ or VectorField_
-!   nPoints : INTEGER(I4B) - number of points of the linear grid
-!   values : REAL(DFP) - SIZE(values) = (ncomp, nPoints)
-!
 ! See also: [[VTKGetLinearGrid]], [[VTKGetFieldCompo]]
 ! (an example is given in VtkHDF5File_Class, WritePointData)
 
@@ -264,6 +250,7 @@ INTERFACE
     !! number of points
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: values(:, :)
     !! values, shape (ncomp, nPoints)
+    !! SIZE(values) = (ncomp, nPoints)
   END SUBROUTINE VTKGetVertexValues
 END INTERFACE
 
@@ -284,10 +271,6 @@ END INTERFACE
 ! - ScalarField_: values(1, nPoints)
 ! - VectorField_: values(3, nPoints), missing components are zero
 !
-! Arguments:
-!   field : CLASS(AbstractNodeField_) - ScalarField_ or VectorField_
-!   values : REAL(DFP) - SIZE(values) = (ncomp, nPoints)
-!
 ! See also: [[VTKGetLagrangeGrid]], [[VTKGetFieldCompo]]
 ! (an example is given in VtkHDF5File_Class, WritePointData)
 
@@ -297,6 +280,7 @@ INTERFACE
     !! nodal field (ScalarField_ or VectorField_)
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: values(:, :)
     !! values, shape (ncomp, nPoints)
+    !! SIZE(values) = (ncomp, nPoints)
   END SUBROUTINE VTKGetLagrangeValues
 END INTERFACE
 
@@ -310,9 +294,6 @@ END INTERFACE
 !
 ! Returns 1 for ScalarField_, 3 for VectorField_, and 0 for the field
 ! types which are not supported by VTK writers.
-!
-! Arguments:
-!   field : CLASS(AbstractNodeField_) - nodal field
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of components (0, 1, or 3)

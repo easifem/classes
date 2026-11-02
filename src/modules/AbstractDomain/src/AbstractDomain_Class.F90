@@ -390,11 +390,6 @@ END TYPE AbstractDomainPointer_
 ! (points, curves, surfaces, volumes). The mesh of a dimension contains the
 ! elements of all entities of that dimension.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   hdf5 : TYPE(HDF5File_), intent(inout) - mesh file, open with read access
-!   group : CHARACTER(*), intent(in) - group in the mesh file
-!
 ! Examples
 !
 !```fortran
@@ -499,9 +494,6 @@ END INTERFACE AbstractDomainInitiate
 !
 ! Reset the meta data, free the node coordinates and the kdtree.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!
 ! Examples
 !
 !```fortran
@@ -556,9 +548,6 @@ END INTERFACE AbstractDomainDeallocate
 !
 ! Methods which need the kdtree initiate it again.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!
 ! See also: [[obj_InitiateKdtree]], [[obj_GetNearestNode1]]
 
 INTERFACE
@@ -580,11 +569,6 @@ END INTERFACE
 ! of entities) and the node coordinates of the domain from the mesh file. The
 ! domain must not be initiated, and the file must be open with read access.
 ! FEDomain_ also reads the meshes.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   hdf5 : TYPE(HDF5File_), intent(inout) - mesh file, open with read access
-!   group : CHARACTER(*), intent(in) - group in the mesh file
 !
 ! See also: [[obj_Initiate]], [[FEDomain_:Import]]
 
@@ -615,10 +599,6 @@ END INTERFACE AbstractDomainImport
 !
 ! The mesh file is opened, the domain is imported, and the file is closed.
 ! Then SetTotalMedium is called for dim = 1 to nsd.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   table : TYPE(toml_table), intent(inout) - toml table of the domain
 !
 ! Examples
 !
@@ -668,14 +648,6 @@ END INTERFACE
 ! Read the table tomlName from the toml file (filename or afile), then call
 ! ImportFromToml with the table.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   tomlName : CHARACTER(*), intent(in) - name of the table in the toml file
-!   afile : TYPE(TxtFile_), optional, intent(inout) - toml file
-!   filename : CHARACTER(*), optional, intent(in) - name of the toml file
-!   printToml : LOGICAL(LGT), optional, intent(in) - if true, the table is
-!     printed
-!
 ! See also: [[obj_ImportFromToml1]]
 
 INTERFACE
@@ -703,12 +675,6 @@ END INTERFACE
 ! summary: Display the content of the domain
 !
 ! FEDomain_ also displays the mesh info of each mesh.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
 !
 ! Examples
 !
@@ -764,12 +730,6 @@ END INTERFACE AbstractDomainDisplay
 ! date: 2024-04-15
 ! summary: Display the meta data of the domain
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   msg : CHARACTER(*), intent(in) - message printed first
-!   unitno : INTEGER(I4B), optional, intent(in) - unit number of the output;
-!     default is stdout
-!
 ! See also: [[obj_Display]]
 
 INTERFACE AbstractDomainDisplayDomainInfo
@@ -791,8 +751,7 @@ END INTERFACE AbstractDomainDisplayDomainInfo
 ! date: 2025-07-21
 ! summary: Returns true if the domain is initiated
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+! Returns true if the domain is initiated, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the domain is initiated
@@ -824,11 +783,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum, globalElement and islocal
 !     arguments
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
 !
 ! Returns:
 !   ans : CLASS(AbstractMesh_), pointer - pointer to the mesh
@@ -896,12 +850,7 @@ END INTERFACE
 ! date: 2021-09-21
 ! summary: Returns true if a node is present in the domain
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
+! Returns true if the node is present, and false otherwise.
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the node is present
@@ -973,15 +922,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the element is present in the mesh
 !
@@ -1018,15 +958,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers of the element
@@ -1107,15 +1038,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes of the element
 !
@@ -1151,13 +1073,6 @@ END INTERFACE
 ! list of nodes the result is sorted and has no duplicates. GetNodeToElements_
 ! works without allocation. The node to elements data of the mesh is initiated
 ! if needed.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global element numbers
@@ -1228,13 +1143,6 @@ END INTERFACE
 !
 ! See GetNodeToElements.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global element numbers, sorted
 !
@@ -1265,16 +1173,6 @@ END INTERFACE
 !
 ! See GetNodeToElements.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   ans(:) : INTEGER(I4B), intent(inout) - global element numbers, size must
-!     be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetNodeToElements1]]
 
 INTERFACE
@@ -1303,16 +1201,6 @@ END INTERFACE
 ! summary: Get the elements around nodes without allocation
 !
 ! See GetNodeToElements.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   ans(:) : INTEGER(I4B), intent(inout) - global element numbers, size must
-!     be at least tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! See also: [[obj_GetNodeToElements1]]
 
@@ -1347,10 +1235,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes
@@ -1414,10 +1298,6 @@ END INTERFACE
 !
 ! obj .tNodes. dim calls GetTotalNodes(dim=dim).
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes of the mesh
 !
@@ -1444,9 +1324,6 @@ END INTERFACE
 !
 ! .tNodes. obj calls GetTotalNodes().
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of nodes
 !
@@ -1472,13 +1349,6 @@ END INTERFACE
 ! Return the number of elements of the mesh of dimension dim (default nsd).
 ! With entityNum, only the elements of that entity are counted. The operator
 ! .tElements. calls this method.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entitynum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of elements
@@ -1548,9 +1418,6 @@ END INTERFACE
 !
 ! .tElements. obj calls GetTotalElements().
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of elements of the mesh of dimension nsd
 !
@@ -1574,10 +1441,6 @@ END INTERFACE
 ! summary: Get the number of elements of a mesh (operator)
 !
 ! obj .tElements. dim calls GetTotalElements(dim=dim).
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of elements of the mesh
@@ -1605,10 +1468,6 @@ END INTERFACE
 !
 ! obj .tElements. [dim, entityNum] calls GetTotalElements(dim, entityNum).
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   opt(2) : INTEGER(I4B), intent(in) - opt(1) is dim, opt(2) is entityNum
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of elements of the entity
 !
@@ -1635,13 +1494,6 @@ END INTERFACE
 !
 ! Local numbers are the local numbers of the mesh of dimension nsd (in
 ! FEDomain_). AbstractDomain_ returns the given numbers.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - local node number
@@ -1718,13 +1570,6 @@ END INTERFACE
 ! Local numbers are the local numbers of the mesh of dimension nsd (in
 ! FEDomain_). AbstractDomain_ returns the given numbers.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans(SIZE(globalNode)) : INTEGER(I4B) - local node numbers
 !
@@ -1754,13 +1599,6 @@ END INTERFACE
 ! summary: Get the local numbers of global elements
 !
 ! This method is implemented by the child class (see FEDomain_).
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement(:) : INTEGER(I4B), intent(in) - global element numbers
-!     (local if islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(SIZE(globalElement)) : INTEGER(I4B) - local element numbers
@@ -1792,13 +1630,6 @@ END INTERFACE
 !
 ! This method is implemented by the child class (see FEDomain_).
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - local element number
 !
@@ -1829,14 +1660,6 @@ END INTERFACE
 !
 ! This method is implemented by the child class (see FEDomain_). FEDomain_
 ! uses the mesh of dimension nsd.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   elemdata : TYPE(ElemData_), intent(inout) - copy of the element data
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -1906,13 +1729,6 @@ END INTERFACE
 !
 ! This method is implemented by the child class (see FEDomain_).
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : TYPE(ElemData_), pointer - pointer to the element data
 !
@@ -1943,10 +1759,6 @@ END INTERFACE
 !
 ! AbstractDomain_ returns localNode.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   localNode : INTEGER(I4B), intent(in) - local node number
-!
 ! Returns:
 !   ans : INTEGER(I4B) - global node number
 !
@@ -1973,10 +1785,6 @@ END INTERFACE
 !
 ! AbstractDomain_ returns localNode.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   localNode(:) : INTEGER(I4B), intent(in) - local node numbers
-!
 ! Returns:
 !   ans(SIZE(localNode)) : INTEGER(I4B) - global node numbers
 !
@@ -2001,10 +1809,7 @@ END INTERFACE
 ! date: 2021-09-21
 ! summary: Get the number of entities of a dimension
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), optional, intent(in) - dimension: 0 points, 1 curves,
-!     2 surfaces, 3 volumes
+! Returns the number of entities of dimension dim.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of entities of dimension dim
@@ -2033,13 +1838,6 @@ END INTERFACE
 ! This method is implemented by the child class (see FEDomain_). FEDomain_
 ! returns the number of nodes, edges, faces and 1 (the cell) of an element of
 ! the mesh of dimension nsd.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(4) : INTEGER(I4B) - nodes, edges, faces, 1
@@ -2076,13 +1874,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: entityNum is the mesh id of the element
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans(2) : INTEGER(I4B) - dimension and entity number
@@ -2164,13 +1955,6 @@ END INTERFACE
 !   - 2026-10-23: Removed the unused entityNum argument
 !   - 2026-10-24: With dim, nodeCoord has nsd rows (it had three); the
 !     coordinates are copied by GetNodeCoord(nodeCoord, nrow, ncol, dim)
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   nodeCoord(:,:) : REAL(DFP), allocatable, intent(inout) - node coordinates
-!     in xiJ format, reallocated to SIZE = [nsd, number of nodes]
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh; if
-!     absent, all nodes of the domain
 !
 ! Examples
 !
@@ -2261,17 +2045,6 @@ END INTERFACE
 !
 ! See GetNodeCoord.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   nodeCoord(:,:) : REAL(DFP), intent(inout) - node coordinates,
-!     SIZE(nodeCoord, 1) >= nsd and SIZE(nodeCoord, 2) >= SIZE(globalNode)
-!   nrow : INTEGER(I4B), intent(out) - number of rows written
-!   ncol : INTEGER(I4B), intent(out) - number of columns written
-!   globalNode(:) : INTEGER(I4B), intent(in) - global node numbers (local if
-!     islocal is true)
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetNodeCoord1]]
 
 INTERFACE
@@ -2283,8 +2056,8 @@ INTERFACE
     !! node coordinates, SIZE(nodeCoord, 1) >= nsd and SIZE(nodeCoord, 2) >=
     !! SIZE(globalNode)
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
-    !! nrow: number of rows written
-    !! ncol: number of columns written
+    !! nrow - number of rows written
+    !! ncol - number of columns written
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global node numbers (local if islocal is true)
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: islocal
@@ -2302,16 +2075,6 @@ END INTERFACE
 ! summary: Get the coordinates of a node
 !
 ! See GetNodeCoord.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   nodeCoord(:) : REAL(DFP), intent(inout) - coordinates of the node,
-!     SIZE(nodeCoord) >= nsd
-!   tsize : INTEGER(I4B), intent(out) - number of entries written
-!   globalNode : INTEGER(I4B), intent(in) - global node number, or local node
-!     number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! See also: [[obj_GetNodeCoord1]]
 
@@ -2353,17 +2116,6 @@ END INTERFACE
 ! columns. GetNodeCoord(nodeCoord, dim), which allocates nodeCoord, and
 ! GetParam(nodeCoord=...) call this method.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   nodeCoord(:,:) : REAL(DFP), intent(inout) - node coordinates,
-!     SIZE(nodeCoord, 1) >= nsd and SIZE(nodeCoord, 2) >= number of nodes
-!     of the domain (or of the mesh of dimension dim)
-!   nrow : INTEGER(I4B), intent(out) - number of rows written, obj%nsd
-!   ncol : INTEGER(I4B), intent(out) - number of columns written (number
-!     of nodes)
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh; if
-!     absent, all nodes of the domain
-!
 ! See also: [[obj_GetNodeCoord1]], [[obj_GetParam]]
 
 INTERFACE
@@ -2392,9 +2144,6 @@ END INTERFACE
 !
 ! See GetNodeCoord.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!
 ! Returns:
 !   ans(:,:) : REAL(DFP), pointer - pointer to the node coordinates of the
 !     domain (xiJ format)
@@ -2420,14 +2169,6 @@ END INTERFACE
 !
 ! Use the kdtree of the node coordinates of the domain; it is initiated if
 ! needed. With nn, the nn nearest nodes are returned, in no fixed order.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   qv(:) : REAL(DFP), intent(in) - coordinates of the query point, SIZE(qv)
-!     >= nsd
-!   x(:) : REAL(DFP), intent(inout) - coordinates of the nearest node
-!   globalNode : INTEGER(I4B), intent(out) - global node number of the nearest
-!     node
 !
 ! Examples
 !
@@ -2495,16 +2236,6 @@ END INTERFACE
 !
 ! See GetNearestNode.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   qv(:) : REAL(DFP), intent(in) - coordinates of the query point, SIZE(qv)
-!     >= nsd
-!   x(:,:) : REAL(DFP), intent(inout) - coordinates of the nearest nodes,
-!     SIZE(x, 2) >= nn
-!   globalNode(:) : INTEGER(I4B), intent(inout) - global node numbers,
-!     SIZE(globalNode) >= nn
-!   nn : INTEGER(I4B), intent(in) - number of nearest nodes
-!
 ! See also: [[obj_GetNearestNode1]]
 
 INTERFACE
@@ -2537,10 +2268,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
 !
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global node numbers
@@ -2612,14 +2339,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   nptrs(:) : INTEGER(I4B), intent(inout) - global node numbers, size must be
-!     at least the number of nodes of the mesh
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   tsize : INTEGER(I4B), optional, intent(out) - number of entries written in
-!     nptrs
-!
 ! See also: [[obj_GetNptrs]]
 
 INTERFACE
@@ -2649,10 +2368,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!
 ! Returns:
 !   ans(:) : INTEGER(I4B), allocatable - global numbers of the internal nodes
 !
@@ -2680,14 +2395,6 @@ END INTERFACE
 ! The kdtree is initiated if needed. The nodes within the radius of the box
 ! are found; if isStrict is true (default) only the nodes inside or on the box
 ! are kept. GetNptrsInBox_ works without allocation.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   box : TYPE(BoundingBox_), intent(in) - bounding box
-!   nptrs(:) : INTEGER(I4B), allocatable, intent(inout) - global node numbers
-!     in the box, it is reallocated
-!   isStrict : LOGICAL(LGT), optional, intent(in) - if true (default), only
-!     nodes inside or on the box are returned
 !
 ! Examples
 !
@@ -2759,15 +2466,6 @@ END INTERFACE
 !
 ! See GetNptrsInBox. In debug mode an error is raised if nptrs is too small.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   box : TYPE(BoundingBox_), intent(in) - bounding box
-!   nptrs(:) : INTEGER(I4B), intent(inout) - global node numbers in the box,
-!     size must be at least the number of nodes found
-!   tnodes : INTEGER(I4B), intent(inout) - number of nodes found
-!   isStrict : LOGICAL(LGT), optional, intent(in) - if true (default), only
-!     nodes inside or on the box are returned
-!
 ! See also: [[obj_GetNptrsInBox]]
 
 INTERFACE
@@ -2799,11 +2497,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
 !
 ! Returns:
 !   ans : TYPE(BoundingBox_) - bounding box
@@ -2870,8 +2563,7 @@ END INTERFACE
 ! date: 2021-09-21
 ! summary: Get the number of spatial dimensions
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+! Returns the number of spatial dimensions.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of spatial dimensions
@@ -2900,14 +2592,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of media of the element
@@ -2939,8 +2623,7 @@ END INTERFACE
 ! date: 2024-04-15
 ! summary: Get the maximum node number
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+! Returns the largest global node number of the domain.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest global node number of the domain
@@ -2964,8 +2647,7 @@ END INTERFACE
 ! date: 2024-04-15
 ! summary: Get the minimum node number
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+! Returns the smallest global node number of the domain.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - smallest global node number of the domain
@@ -2989,8 +2671,7 @@ END INTERFACE
 ! date: 2024-04-15
 ! summary: Get the maximum element number
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+! Returns the largest global element number of the domain.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest global element number of the domain
@@ -3014,8 +2695,7 @@ END INTERFACE
 ! date: 2024-04-15
 ! summary: Get the minimum element number
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
+! Returns the smallest global element number of the domain.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - smallest global element number of the domain
@@ -3045,37 +2725,6 @@ END INTERFACE
 ! (GetTotalElements of the mesh of dimension 0 to nsd; zero for the other
 ! dimensions). nodeCoord gets the coordinates of all nodes (see
 ! GetNodeCoord(nodeCoord, nrow, ncol)).
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   isInitiated : LOGICAL(LGT), optional, intent(out) - true if the domain is
-!     initiated
-!   engine : CHARACTER(*), optional, intent(inout) - engine of the mesh file
-!   majorVersion : INTEGER(I4B), optional, intent(out) - major version of the
-!     mesh file
-!   minorVersion : INTEGER(I4B), optional, intent(out) - minor version of the
-!     mesh file
-!   version : REAL(DFP), optional, intent(out) - version of the mesh file
-!   nsd : INTEGER(I4B), optional, intent(out) - number of spatial dimensions
-!   maxNptrs : INTEGER(I4B), optional, intent(out) - largest node number
-!   minNptrs : INTEGER(I4B), optional, intent(out) - smallest node number
-!   tNodes : INTEGER(I4B), optional, intent(out) - number of nodes
-!   isNodeNumberSparse : LOGICAL(LGT), optional, intent(out) - true if node
-!     numbers are not contiguous
-!   maxElemNum : INTEGER(I4B), optional, intent(out) - largest element number
-!   minElemNum : INTEGER(I4B), optional, intent(out) - smallest element number
-!   isElemNumberSparse : LOGICAL(LGT), optional, intent(out) - true if element
-!     numbers are not contiguous
-!   tEntitiesForNodes : INTEGER(I4B), optional, intent(out) - number of
-!     entities used for nodes
-!   tEntitiesForElements : INTEGER(I4B), optional, intent(out) - number of
-!     entities used for elements
-!   tElements(0:3) : INTEGER(I4B), optional, intent(inout) - number of
-!     elements of each dimension
-!   tEntities(0:3) : INTEGER(I4B), optional, intent(inout) - number of
-!     entities of each dimension
-!   nodeCoord(:,:) : REAL(DFP), optional, intent(inout) - node coordinates,
-!     at least nsd rows and as many columns as nodes
 !
 ! Examples
 !
@@ -3176,15 +2825,6 @@ END INTERFACE
 ! uses the mesh of dimension nsd; its edges are numbered by
 ! InitiateEdgeConnectivity of the mesh.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   localEdgeNumber : INTEGER(I4B), intent(in) - local edge number in the
-!     element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - global edge number
 !
@@ -3263,15 +2903,6 @@ END INTERFACE
 ! This method is implemented by the child class (see FEDomain_). FEDomain_
 ! uses the mesh of dimension nsd.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   localFaceNumber : INTEGER(I4B), intent(in) - local face number in the
-!     element
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - global face number
 !
@@ -3309,20 +2940,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   ans(:) : INTEGER(I4B), intent(inout) - connectivity, size must be at least
-!     tsize
-!   tsize : INTEGER(I4B), intent(out) - number of entries written
-!   opt : CHARACTER(*), optional, intent(in) - connectivity: V vertex
-!     (default), E edges, F faces, C cell, A all
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! See also: [[obj_GetConnectivity]], [[obj_GetConnectivity2_]]
 
 INTERFACE
@@ -3359,30 +2976,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   cellCon(:) : INTEGER(I4B), intent(inout) - cell number of the element
-!   faceCon(:) : INTEGER(I4B), intent(inout) - global face numbers of the
-!     element
-!   edgeCon(:) : INTEGER(I4B), intent(inout) - global edge numbers of the
-!     element
-!   nodeCon(:) : INTEGER(I4B), intent(inout) - global node numbers of the
-!     element
-!   tCellCon : INTEGER(I4B), intent(out) - number of entries written in
-!     cellCon
-!   tFaceCon : INTEGER(I4B), intent(out) - number of entries written in
-!     faceCon
-!   tEdgeCon : INTEGER(I4B), intent(out) - number of entries written in
-!     edgeCon
-!   tnodeCon : INTEGER(I4B), intent(out) - number of entries written in
-!     nodeCon
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! See also: [[obj_GetConnectivity1_]]
 
@@ -3432,17 +3025,6 @@ END INTERFACE
 ! uses the mesh of dimension dim: with globalElement it returns the vertex
 ! nodes of the element, with entityNum those of the entity, else those of the
 ! mesh.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), optional, intent(in) - global element number
-!     (local if islocal is true)
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   entityNum : INTEGER(I4B), optional, intent(in) - entity number of the mesh
-!     of dimension dim
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of vertex nodes
@@ -3525,15 +3107,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement(:) : INTEGER(I4B), intent(in) - global element numbers
-!     (local if islocal is true)
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of vertex nodes of the elements
 !
@@ -3570,25 +3143,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   cellOrient(:) : INTEGER(I4B), intent(inout) - cell orientation
-!   faceOrient(:,:) : INTEGER(I4B), intent(inout) - face orientation, one
-!     column per face
-!   edgeOrient(:) : INTEGER(I4B), intent(inout) - edge orientation
-!   tCellOrient : INTEGER(I4B), intent(out) - number of entries written in
-!     cellOrient
-!   tFaceOrient(2) : INTEGER(I4B), intent(out) - number of rows and columns
-!     written in faceOrient
-!   tEdgeOrient : INTEGER(I4B), intent(out) - number of entries written in
-!     edgeOrient
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
 !
 ! Examples
 !
@@ -3679,15 +3233,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : INTEGER(I4B) - topology index
 !
@@ -3726,15 +3271,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(in) - domain object
-!   globalElement : INTEGER(I4B), intent(in) - global element number, or local
-!     element number if islocal is true
-!   dim : INTEGER(I4B), optional, intent(in) - dimension of the mesh: 0
-!     points, 1 curves, 2 surfaces, 3 volumes; default is nsd
-!   islocal : LOGICAL(LGT), optional, intent(in) - if true, the given element
-!     or node number is a local number; default is false
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - true if the element is active
 !
@@ -3767,10 +3303,6 @@ END INTERFACE
 ! summary: Set the showTime option
 !
 ! If showTime is true, the time of some domain operations is printed.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   VALUE : LOGICAL(LGT), intent(in) - value of showTime
 !
 ! Examples
 !
@@ -3825,10 +3357,6 @@ END INTERFACE
 !
 ! Set the sparsity pattern of mat from the mesh of dimension nsd (see the mesh
 ! method SetSparsity), then finish the pattern.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
 !
 ! Examples
 !
@@ -3904,11 +3432,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-24: Works for one domain (the node to node map was empty)
-!
-! Arguments:
-!   domains(:) : CLASS(AbstractDomainPointer_), intent(inout) - domains, one
-!     per physical variable
-!   mat : TYPE(CSRMatrix_), intent(inout) - sparse matrix
 !
 ! Examples
 !
@@ -3988,11 +3511,6 @@ END INTERFACE AbstractDomainSetSparsity
 ! Changes:
 !   - 2026-10-23: Removed the unused entityNum argument
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   n : INTEGER(I4B), intent(in) - number of media
-!
 ! Examples
 !
 !```fortran
@@ -4063,14 +3581,6 @@ END INTERFACE
 ! Set the material id of a medium in the elements of entity entityNum of the
 ! mesh of dimension dim.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   dim : INTEGER(I4B), intent(in) - dimension of the mesh
-!   entityNum : INTEGER(I4B), intent(in) - entity number of the elements
-!   medium : INTEGER(I4B), intent(in) - medium number (for example soil,
-!     water)
-!   material : INTEGER(I4B), intent(in) - material id of the medium
-!
 ! See also: [[obj_SetTotalMedium]]
 
 INTERFACE
@@ -4100,13 +3610,6 @@ END INTERFACE
 ! Set obj = nodeCoord, or with addContribution obj = obj + scale * nodeCoord.
 ! The shape of nodeCoord must be that of the node coordinates of the domain.
 ! The node coordinates of the meshes are not changed.
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!   nodeCoord(:,:) : REAL(DFP), intent(in) - node coordinates in xiJ format
-!   scale : REAL(DFP), optional, intent(in) - scale; default is 1
-!   addContribution : LOGICAL(LGT), optional, intent(in) - if true, add scale
-!     * nodeCoord; default is false
 !
 ! Examples
 !
@@ -4177,9 +3680,6 @@ END INTERFACE
 ! Make a kdtree of the node coordinates of the domain (not sorted).
 ! GetNearestNode and GetNptrsInBox initiate it when needed.
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!
 ! Examples
 !
 !```fortran
@@ -4240,9 +3740,6 @@ END INTERFACE
 !
 ! This method is implemented by the child class (see FEDomain_).
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!
 ! See also: [[FEDomain_:InitiateNodeToElements]]
 
 INTERFACE
@@ -4261,9 +3758,6 @@ END INTERFACE
 ! summary: Initiate the node to nodes data of the meshes
 !
 ! This method is implemented by the child class (see FEDomain_).
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
 !
 ! See also: [[FEDomain_:InitiateNodeToNodes]]
 
@@ -4284,9 +3778,6 @@ END INTERFACE
 !
 ! This method is implemented by the child class (see FEDomain_).
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!
 ! See also: [[FEDomain_:InitiateElementToElements]]
 
 INTERFACE
@@ -4306,9 +3797,6 @@ END INTERFACE
 !
 ! This method is implemented by the child class (see FEDomain_).
 !
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
-!
 ! See also: [[FEDomain_:InitiateFacetElements]]
 
 INTERFACE
@@ -4327,9 +3815,6 @@ END INTERFACE
 ! summary: Initiate the extra node to nodes data of the meshes
 !
 ! This method is implemented by the child class (see FEDomain_).
-!
-! Arguments:
-!   obj : CLASS(AbstractDomain_), intent(inout) - domain object
 !
 ! See also: [[FEDomain_:InitiateExtraNodeToNodes]]
 

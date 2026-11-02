@@ -335,24 +335,6 @@ END TYPE VtkHDF5FilePointer_
 !   - 2026-10-26: only modes NEW and READ; vtkType is checked by
 !     CheckVtkTypeSupport; zlibOpt is passed to HDF5File_%Initiate
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
-!   filename : CHARACTER(*) - name of file (.vtkhdf or .hdf)
-!   mode : CHARACTER(*) - "NEW" or "READ"
-!   vtkType : CHARACTER(*) - VTK data type, "UnstructuredGrid"
-!   zlibOpt : INTEGER(I4B) - (optional) gzip compression level 0-9,
-!     -1 for no compression
-!   chunkPolicy : TYPE(HDF5ChunkPolicy_) - (optional) layout and
-!     compression of datasets
-!   libverLow : INTEGER(I4B) - (optional) lower bound of the file
-!     format version of a new file
-!   compactBytes : INTEGER(INT64) - (optional) limit of the compact
-!     layout in bytes
-!   isTransient : LOGICAL(LGT) - (optional) write time steps (Steps
-!     group), default .FALSE.
-!   frequency : INTEGER(I4B) - (optional) write every frequency steps,
-!     default 1; values less than 1 are taken as 1
-!
 ! Examples
 !
 !```fortran
@@ -447,10 +429,6 @@ END INTERFACE
 !
 ! The file is not opened here. Call InitiateVTKHDF5() after this.
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
-!   table : TYPE(toml_table) - parent table
-!
 ! Examples
 !
 !```fortran
@@ -494,10 +472,6 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Close the file and deallocate the data
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
-!   Delete : LOGICAL(LGT) - (optional) delete the file
-!
 ! See also: [[obj_InitiateVTKHDF5]] (contains an example)
 
 INTERFACE
@@ -516,11 +490,6 @@ END INTERFACE
 !> author: Shion Shimizu
 ! date: 2026-10-24
 ! summary: Display the content of VtkHDF5File_
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
-!   msg : CHARACTER(*) - message
-!   unitno : INTEGER(I4B) - (optional) unit number
 !
 ! See also: [[obj_InitiateVTKHDF5]]
 
@@ -544,9 +513,6 @@ END INTERFACE
 ! summary: Returns true if VTKHDF output is requested
 !
 ! The default value is true. It is set by ImportFromToml.
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
 !
 ! Returns:
 !   ans : LOGICAL(LGT) - output is requested
@@ -579,9 +545,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-26: false for a file which is not opened for writing
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
-!
 ! Returns:
 !   ans : LOGICAL(LGT) - data should be written
 !
@@ -605,8 +568,7 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Number of points of the current mesh
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
+! Returns the number of points (size of point data).
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of points (size of point data)
@@ -630,8 +592,7 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Number of cells of the current mesh
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
+! Returns the number of cells (size of cell data).
 !
 ! Returns:
 !   ans : INTEGER(I4B) - number of cells (size of cell data)
@@ -679,14 +640,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-28: debug checks of the grid data
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   points : REAL(DFP) - coordinates, SIZE(points) = (3, nPoints)
-!   connectivity : INTEGER(I4B) - zero based point ids of all cells,
-!     SIZE(connectivity) = offsets(nCells + 1)
-!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1, offsets(1) = 0
-!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
 !
 ! Formula:
 !
@@ -807,12 +760,16 @@ INTERFACE
     !! VTKHDF file
     REAL(DFP), INTENT(IN) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
+    !! SIZE(points) = (3, nPoints)
     INTEGER(I4B), INTENT(IN) :: connectivity(:)
     !! zero based point ids of all cells
+    !! SIZE(connectivity) = offsets(nCells + 1)
     INTEGER(I4B), INTENT(IN) :: offsets(:)
     !! offsets of cells in connectivity, size nCells + 1
+    !! SIZE(offsets) = nCells + 1, offsets(1) = 0
     INTEGER(INT8), INTENT(IN) :: types(:)
     !! VTK cell types, size nCells
+    !! SIZE(types) = nCells
   END SUBROUTINE obj_WriteUnstructuredGrid
 END INTERFACE
 
@@ -832,10 +789,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-28: example uses WriteUnstructuredGrid
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   time : REAL(DFP) - time value of the step
 !
 ! Examples
 !
@@ -967,9 +920,6 @@ END INTERFACE
 ! latest data. A data array which is written for the first time has
 ! offset zero in the previous steps.
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!
 ! See also: [[obj_BeginTimeStep]] (contains an example)
 
 INTERFACE
@@ -1000,11 +950,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: checks only in DEBUG mode
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   name : CHARACTER(*) - name of data array
-!   VALUE : REAL(DFP) - values, SIZE(VALUE) = GetTotalPoints()
-!
 ! See also: [[obj_BeginTimeStep]] (contains an example),
 ! [[obj_WritePointData2]]
 
@@ -1016,6 +961,7 @@ INTERFACE
     !! name of data array
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values at points
+    !! SIZE(VALUE) = GetTotalPoints()
   END SUBROUTINE obj_WritePointData1
 END INTERFACE
 
@@ -1040,11 +986,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: checks only in DEBUG mode
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   name : CHARACTER(*) - name of data array
-!   VALUE : REAL(DFP) - SIZE(VALUE) = (nComp, GetTotalPoints())
-!
 ! See also: [[obj_WritePointData1]], [[obj_BeginTimeStep]] (contains an
 ! example)
 
@@ -1056,6 +997,7 @@ INTERFACE
     !! name of data array
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! values at points, shape (nComp, nPoints)
+    !! SIZE(VALUE) = (nComp, GetTotalPoints())
   END SUBROUTINE obj_WritePointData2
 END INTERFACE
 
@@ -1081,11 +1023,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: checks only in DEBUG mode
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - values, SIZE(vals) = GetTotalCells()
-!
 ! See also: [[obj_WriteCellData2]], [[obj_WritePointData1]]
 
 INTERFACE
@@ -1096,6 +1033,7 @@ INTERFACE
     !! name of data array
     REAL(DFP), INTENT(IN) :: vals(:)
     !! values at cells
+    !! SIZE(vals) = GetTotalCells()
   END SUBROUTINE obj_WriteCellData1
 END INTERFACE
 
@@ -1120,11 +1058,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-27: checks only in DEBUG mode
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - SIZE(vals) = (nComp, GetTotalCells())
-!
 ! See also: [[obj_WriteCellData1]], [[obj_WritePointData2]]
 
 INTERFACE
@@ -1135,6 +1068,7 @@ INTERFACE
     !! name of data array
     REAL(DFP), INTENT(IN) :: vals(:, :)
     !! values at cells, shape (nComp, nCells)
+    !! SIZE(vals) = (nComp, GetTotalCells())
   END SUBROUTINE obj_WriteCellData2
 END INTERFACE
 
@@ -1160,11 +1094,6 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-10-27: checks only in DEBUG mode
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file opened with mode "NEW"
-!   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - values
 !
 ! See also: [[obj_WritePointData2]]
 
@@ -1205,15 +1134,6 @@ END INTERFACE
 !   - 2026-10-27: type-bound procedure (was a private subroutine);
 !     records in VtkDataArray_, capacity doubling
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - VTKHDF file
-!   loc : INTEGER(I4B) - 1: PointData, 2: CellData, 3: FieldData
-!   name : CHARACTER(*) - name of data array
-!   offset : INTEGER(I4B) - offset (in tuples) of the latest data in
-!     the dataset of the array
-!   ncomp : INTEGER(I4B) - number of components of the latest data
-!   ntuples : INTEGER(I4B) - number of tuples of the latest data
-!
 ! See also: [[obj_WritePointData1]], [[obj_EndTimeStep]]
 
 INTERFACE
@@ -1249,9 +1169,6 @@ END INTERFACE
 !   - 2026-10-28: the Steps group and the part sizes are read once
 !     and cached (see VtkReadCache_)
 !
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
-!
 ! Returns:
 !   ans : INTEGER(I4B) - number of steps
 !
@@ -1275,13 +1192,12 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Time values of all steps
 !
+! Reads the time value of every step of the file into vals (allocated with one
+! entry per step). A file without steps gives an empty array.
+!
 ! Changes:
 !   - 2026-10-28: the Steps group and the part sizes are read once
 !     and cached (see VtkReadCache_)
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
-!   vals : REAL(DFP) - time values (allocatable), SIZE(vals) = NSteps
 !
 ! Examples
 !
@@ -1362,6 +1278,7 @@ INTERFACE
     !! VTKHDF file
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: vals(:)
     !! time values
+    !! SIZE(vals) = NSteps
   END SUBROUTINE obj_GetTimeValues
 END INTERFACE
 
@@ -1379,14 +1296,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-28: the Steps group and the part sizes are read once
 !     and cached (see VtkReadCache_)
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
-!   points : REAL(DFP) - SIZE(points) = (3, nPoints)
-!   connectivity : INTEGER(I4B) - zero based point ids
-!   offsets : INTEGER(I4B) - SIZE(offsets) = nCells + 1
-!   types : INTEGER(INT8) - VTK cell types, SIZE(types) = nCells
-!   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
 !
 ! Examples
 !
@@ -1490,12 +1399,15 @@ INTERFACE
     !! VTKHDF file
     REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: points(:, :)
     !! coordinates of points, shape (3, nPoints)
+    !! SIZE(points) = (3, nPoints)
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: connectivity(:)
     !! zero based point ids
     INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: offsets(:)
     !! offsets of cells, size nCells + 1
+    !! SIZE(offsets) = nCells + 1
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: types(:)
     !! VTK cell types
+    !! SIZE(types) = nCells
     INTEGER(I4B), INTENT(IN), OPTIONAL :: step
     !! step number (1 to NSteps)
   END SUBROUTINE obj_ReadMesh
@@ -1516,12 +1428,6 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-28: the Steps group and the part sizes are read once
 !     and cached (see VtkReadCache_)
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
-!   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - values (allocatable), (nComp, nPoints)
-!   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
 !
 ! Examples
 !
@@ -1623,15 +1529,13 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Read cell data of a step
 !
+! Reads the cell data array name of a step into vals (one column per cell).
+! Data not written in the step is taken from the last step that wrote it
+! (static data).
+!
 ! Changes:
 !   - 2026-10-28: the Steps group and the part sizes are read once
 !     and cached (see VtkReadCache_)
-!
-! Arguments:
-!   obj : CLASS(VtkHDF5File_) - opened VTKHDF file
-!   name : CHARACTER(*) - name of data array
-!   vals : REAL(DFP) - values (allocatable), (nComp, nCells)
-!   step : INTEGER(I4B) - (optional) step number, 1 to NSteps
 !
 ! Examples
 !

@@ -14,18 +14,18 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-03-22
 ! summary: Scalar field data type with LIS engine is defined
 
 MODULE ScalarFieldLis_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE ScalarField_Class, ONLY: ScalarField_
 USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE ScalarField_Class, ONLY: ScalarField_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
@@ -42,7 +42,7 @@ PUBLIC :: ScalarFieldLisPointer_
 !                                                              ScalarField_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: LIS Scalar field
 !
@@ -137,7 +137,7 @@ END TYPE ScalarFieldLisPointer_
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 25 Sept 2021
 ! summary: Initiate AbstractNodeField_ from another instance
 !
@@ -469,7 +469,7 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: obj=obj+scalar*VALUE
 
@@ -695,7 +695,7 @@ END INTERFACE
 !                                                         COPY@BlasMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-17
 ! summary: Copy obj=obj2
 
@@ -723,11 +723,6 @@ END INTERFACE
 ! size. In debug mode an error is raised when the LIS vector of obj or
 ! obj2 is null, or when obj%Size() and obj2%Size() differ.
 !
-! Arguments:
-!   obj : CLASS(ScalarFieldLis_) - first node field
-!   obj2 : CLASS(AbstractNodeField_) - second node field, it should use
-!     the LIS engine
-!
 ! See also: [[obj_Copy]], [[AbstractNodeField_:Swap]]
 
 INTERFACE
@@ -744,7 +739,7 @@ END INTERFACE
 !                                                          Norm2@BlasMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 24 Jan 2022
 ! summary: This function returns NORM2
 
@@ -759,7 +754,7 @@ END INTERFACE
 !                                                          Norm1@BlasMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 24 Jan 2022
 ! summary: This function returns first norm (absolute some)
 
@@ -774,7 +769,7 @@ END INTERFACE
 !                                                          Normi@BlasMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 24 Jan 2022
 ! summary: This function returns infinity norm
 
@@ -789,7 +784,7 @@ END INTERFACE
 !                                                    DOT_PRODUCT@BlasMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-27
 ! summary:  performs dot product
 
@@ -805,7 +800,7 @@ END INTERFACE
 !                                                           PMUL@BlasMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-27
 ! summary:  obj = obj1 * obj2
 
@@ -821,7 +816,7 @@ END INTERFACE
 !                                                     Reciprocal@BlasMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-27
 ! summary:  obj = 1.0 / obj
 
