@@ -112,9 +112,7 @@ TYPE, ABSTRACT :: AbstractFE_
   !! Shared basis, topology, order, orientation and quadrature configuration.
 
 CONTAINS
-  ! CONSTRUCTOR:
   !@ConstructorMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initialize finite element basis options.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Copy => obj_Copy
@@ -122,9 +120,7 @@ CONTAINS
   GENERIC, PUBLIC :: ASSIGNMENT(=) => Copy
   !! Initiate by copy
 
-  !IO:
   !@IOMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display initialization state and basis options.
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: MdEncode => obj_MdEncode
@@ -145,9 +141,7 @@ CONTAINS
     ImportFromToml2
   !! Initialize shared options from a TOML table or named file table.
 
-  ! SET:
   ! @SetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Update selected stored basis parameters.
   PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
@@ -161,9 +155,7 @@ CONTAINS
     obj_SetQuadratureType
   !! Set quadrature rules in a child class.
 
-  !GET:
   ! @GetMethods
-
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetRefElemCoord => &
     obj_GetRefElemCoord
   !! Copy reference element vertex coordinates.
@@ -205,8 +197,9 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetAllGlobalFacetElemShapeData => &
     obj_GetAllGlobalFacetElemShapeData
   !! Map prepared shape data for every facet.
+  PROCEDURE, PUBLIC, PASS(obj) :: GetIsBrokenSpace => obj_GetIsBrokenSpace
+  !! Get isBrokenSpace from BasisOpt_.
 
-  ! GET:
   ! @QuadratureMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
@@ -221,7 +214,6 @@ CONTAINS
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
   !! Return the configured cell quadrature point count.
 
-  ! GET:
   ! @InterpolationMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
     obj_GetInterpolationPoints
@@ -232,7 +224,6 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: FixOrientOfNptrs => obj_FixOrientOfNptrs
   !! Orient connectivity in a child class.
 
-  ! GET:
   ! @FacetDOFMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetFacetDOFValueFromVertex => obj_GetFacetDOFValueFromVertex
@@ -250,27 +241,22 @@ CONTAINS
     obj_GetSTFacetDOFValueFromConstant
   !! Project the unit constant on a space-time facet.
   GENERIC, PUBLIC :: GetFacetDOFValue => &
-    GetFacetDOFValueFromSTFunc, &
-    GetFacetDOFValueFromVertex, &
-    GetFacetDOFValueFromConstant, &
-    GetSTFacetDOFValueFromSTFunc, &
+    GetFacetDOFValueFromSTFunc, GetFacetDOFValueFromVertex, &
+    GetFacetDOFValueFromConstant, GetSTFacetDOFValueFromSTFunc, &
     GetSTFacetDOFValueFromConstant
   !! Project nodal values, a user function or the unit constant on a facet.
 
-  ! GET:
   ! @CellDOFMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetVertexDOFValueFromSTUserFunc => &
     obj_GetVertexDOFValueFromSTFunc
   !! Evaluate a user function at cell vertices.
   GENERIC, PUBLIC :: GetVertexDOFValue => GetVertexDOFValueFromSTUserFunc
   !! Get the vertex dof values
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetInCellDOFValueFromSTUserFunc => &
     obj_GetInCellDOFValueFromSTFunc
   !! Project the residual onto interior cell degrees of freedom.
   GENERIC, PUBLIC :: GetInCellDOFValue => GetInCellDOFValueFromSTUserFunc
   !! Project the interior residual after the boundary coefficients.
-
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromSTFunc => &
     obj_GetDOFValueFromSTFunc
   !! Compute vertex, facet and interior cell coefficients.
@@ -280,10 +266,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetDOFValueFromQuadrature => &
     obj_GetDOFValueFromQuadrature
   !! Project sampled values onto a cell basis.
-  GENERIC, PUBLIC :: GetDOFValue => &
-    GetDOFValueFromSTFunc, &
-    GetDOFValueFromSTFunc2, &
-    GetDOFValueFromQuadrature
+  GENERIC, PUBLIC :: GetDOFValue => GetDOFValueFromSTFunc, &
+    GetDOFValueFromSTFunc2, GetDOFValueFromQuadrature
   !! Get the degree of freedom values
 END TYPE AbstractFE_
 
@@ -2139,6 +2123,21 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! Number of facet entries populated in the arrays.
   END SUBROUTINE obj_GetAllGlobalFacetElemShapeData
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetIsBrokenSpace@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-02
+! summary: Get isBrokenSpace from BasisOpt_
+!
+INTERFACE
+  MODULE FUNCTION obj_GetIsBrokenSpace(obj) RESULT(ans)
+    CLASS(AbstractFE_), INTENT(IN) :: obj
+    LOGICAL(LGT) :: ans
+  END FUNCTION obj_GetIsBrokenSpace
 END INTERFACE
 
 !----------------------------------------------------------------------------
