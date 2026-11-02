@@ -51,6 +51,19 @@ easifem run Initiate_test_1.F90
 formal generate --project doc/formal.md --mirror-sources
 ```
 
+- The project file is `doc/formal.md`. Only the modules listed in its
+  `src_dir` are documented. When you write or change the docs of a
+  module (docblocks, `Examples`), add its relative path
+  `../src/modules/<Module>/` to `src_dir` if it is not there yet, and
+  say so in the report.
+- The pages are written to `docs/api/` (ignored by git).
+- After generating, check the warnings. "Ignoring unknown Ford metadata
+  key" means that a line of the docblock was read as a header field:
+  the first line must be `!> author:` (not `authors:`), and a
+  Description paragraph must come before `Changes:` and `Returns:`;
+  avoid description lines that start with `word:`.
+- Generating the docs needs no build of the library.
+
 ### Linting
 
 ```bash
@@ -71,11 +84,140 @@ fortitude check src/
 - Example/test programs are standalone programs named
   `<Name>_test_<N>.F90` in `src/modules/<Module>/examples/`.
 - Do not add the GPL header to test programs. A test file starts
-  directly with its `!> author:` docblock (or with `PROGRAM main`).
+  directly with its docblock: `!> author:`, `date:` and `summary:`
+  (see the template below).
 - These programs are the source for the `Examples` section of the
   docblocks (see "FORD Docblock Style").
+- When the examples are too long (more than 100 lines), then avoid pasting them in the source code. In this case, source code should mention the "Dummy example": the minimal code which is not indented for running by copy and pasting.
 - Do not compile the library or run examples without explicit
   permission from the user.
+
+#### Template for generating tests
+
+Tests should be generated in small batch by usign block and end block feature of Fortran. Before each block a small comment should be mentioned about what we are testing.
+
+```txt
+!> author: Author Name, Ph. D.
+! date: YYYY-MM-DD
+! summary: Brief description of test
+
+program main
+[USE STATEMENT GOES HERE]
+USE ExceptionHandler_Class, ONLY: e
+USE BaseType, ONLY: math => TypeMathOpt
+IMPLICIT NONE
+
+[DEFINE MAIN GLOBAL TYPES HERE]
+
+CALL e%SetQuietMode(math%yes)
+
+[INITIATE GLOBAL TYPES]
+
+! Test 1: Testing method-1
+Block
+[DECLARE LOCAL VARIABLES FOR TEST]
+
+[TEST GOES HERE]
+End Block
+
+! Test 2: Testing method-1
+Block
+[DECLARE LOCAL VARIABLES FOR TEST]
+
+[TEST GOES HERE]
+End Block
+
+[DEALLOCATE GLOBAL TYPES]
+end program main
+```
+
+For example consider the following tests, which tests GetTotalFaceDOF and GetFaceDOF method of FEDOF for Different baseType and baseContinuity.
+
+```fortran
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-02
+! summary:  Testing GetFaceDOF and GetTotalFaceDOF method of FEDOF class
+
+PROGRAM main
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: ToString
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDomain_Class, ONLY: FEDomain_
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE Test_Method, ONLY: is
+USE Test_Method, ONLY: ok
+IMPLICIT NONE
+
+CHARACTER(*), PARAMETER :: filename = "./meshdata/very_small_quad4_mesh.h5"
+TYPE(FEDOF_) :: obj
+TYPE(FEDomain_) :: dom
+CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+TYPE(HDF5File_) :: meshfile
+
+CALL e%SetQuietMode(math%yes)
+CALL meshfile%Initiate(filename, mode="READ")
+CALL meshfile%OPEN()
+CALL dom%Initiate(meshfile, '')
+mesh => dom%GetMeshPointer()
+
+! testing for order 1, H1 and HIER
+CALL obj%Initiate(baseContinuity="H1", baseInterpolation="HIER", &
+                  isBrokenSpace=math%no, order=1, dom=dom)
+
+! Testing GetFaceDOF
+BLOCK
+  INTEGER(I4B) :: ans(10), tsize
+
+  CALL obj%GetFaceDOF(globalFace=1, islocal=math%yes, ans=ans, &
+                      tsize=tsize)
+
+  CALL OK(tsize .EQ. 0, &
+          obj%GetCaseName()//" Size of faceDOF is zero for order=1")
+END BLOCK
+
+BLOCK
+  INTEGER(I4B) :: tsize
+  tsize = obj%GetTotalFaceDOF(globalFace=1, islocal=math%yes)
+  CALL OK(tsize .EQ. 0, &
+         obj%GetCaseName()//" Size of faceDOF is zero for order=1")
+END BLOCK
+
+! testing for order 3
+CALL obj%Initiate(baseContinuity="H1", baseInterpolation="HIER", &
+                  isBrokenSpace=math%no, order=3, dom=dom)
+
+BLOCK
+  INTEGER(I4B) :: ans(10), tsize
+  CALL obj%GetFaceDOF(globalElement=13, islocal=math%no, &
+                      localFaceNumber=2, ans=ans, tsize=tsize)
+
+  CALL OK(tsize .EQ. 2, &
+          obj%GetCaseName()//" Size of faceDOF is 2 for order=2")
+
+  CALL OK(ALL(ans(1:tsize) .EQ. [12, 13]), &
+          obj%GetCaseName()//" faceDOF for order=2")
+END BLOCK
+
+BLOCK
+  INTEGER(I4B) :: tsize
+
+  tsize = obj%GetTotalFaceDOF(globalElement=13, islocal=math%no, &
+                              localFaceNumber=2)
+
+  CALL OK(tsize .EQ. 2, &
+          obj%GetCaseName()//" GetTotalFaceDOF 2 for order=2")
+
+END BLOCK
+
+CALL dom%DEALLOCATE()
+CALL meshfile%DEALLOCATE()
+CALL obj%DEALLOCATE()
+END PROGRAM main
+```
 
 ## Code Style Guidelines
 
