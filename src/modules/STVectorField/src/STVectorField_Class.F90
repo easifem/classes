@@ -1471,6 +1471,8 @@ END INTERFACE
 ! Changes:
 !   - 2026-11-02: integrate each Neumann boundary condition with its own
 !     data only (before, the data of all conditions was used)
+!   - 2026-11-03: pass the nodal values to the force vector as
+!     (spaceCompo, nns, nnt); before, space and time nodes were swapped
 !
 ! See also: [[obj_ApplyPointNeumannBC]]
 
