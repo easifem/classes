@@ -31,25 +31,27 @@
 ! - [NitscheBC](../NitscheBC)
 
 MODULE AbstractBC_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
-USE String_Class, ONLY: String
-USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class, ONLY: MeshSelection_
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
-USE HDF5File_Class, ONLY: HDF5File_
-USE UserFunction_Class, ONLY: UserFunction_
-USE tomlf, ONLY: toml_table
-USE TxtFile_Class, ONLY: TxtFile_
-USE FEDOF_Class, ONLY: FEDOF_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: FEVariable_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: math => TypeMathOpt
-
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE MeshSelection_Class, ONLY: MeshSelection_
+USE String_Class, ONLY: String
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
+USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
+
 PRIVATE
 
 #ifdef DEBUG_VER
@@ -568,7 +570,7 @@ END INTERFACE AbstractBCImportFromToml
 
 INTERFACE AbstractBCImportFromToml
   MODULE SUBROUTINE obj_ImportFromToml2(obj, dom, tomlName, afile, &
-    filename, printToml)
+                                        filename, printToml)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
@@ -821,7 +823,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, fedof, geofedof, nodeNum, nodalValue, &
-    nrow, ncol, times)
+                             nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -853,7 +855,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, fedof, geofedof, timefedof, nodeNum, &
-    nodalValue, nrow, ncol, times)
+                             nodalValue, nrow, ncol, times)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     !! Abstract boundary condition
     CLASS(FEDOF_), INTENT(INOUT) :: fedof, geofedof
@@ -1190,7 +1192,7 @@ INTERFACE
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
     !! quadrature for element and facet
     TYPE(ElemShapeData_), INTENT(INOUT) :: elemsd, facetElemsd, geoElemsd, &
-      geoFacetElemsd
+                                           geoFacetElemsd
     !! Element shape data on cell and facet
     REAL(DFP), INTENT(INOUT) :: xij(:, :)
     !! xij for element
