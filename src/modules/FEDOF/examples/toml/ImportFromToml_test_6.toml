@@ -1,0 +1,44 @@
+[test1]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = true
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[test1.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+# order = 2
+
+[test2]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = true
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 2
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[test2.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+# order = 2
+
+[test3]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = true
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 3
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[test3.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+# order = 2

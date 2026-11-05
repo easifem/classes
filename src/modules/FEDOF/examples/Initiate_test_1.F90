@@ -1,6 +1,6 @@
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-06
-! summary:  Test the intitiate method for H1, Hierarchical basis,
+! summary:  Test the intitiate method for H1, Hierarchical and Lagrange basis,
 ! for different orders.
 
 PROGRAM main
@@ -41,6 +41,7 @@ CALL obj%Initiate(order=1, dom=dom, baseContinuity= "H1", &
                   quadratureType=[quadopt%GaussLegendre], &
                   quadratureOrder=[2], &
                   quadratureIsOrder=math%yes)
+
 found = obj%GetTotalDOF()
 want = meshptr%GetTotalNodes()
 isok = found .EQ. want
@@ -52,6 +53,7 @@ CALL obj%Initiate(order=2, dom=dom, baseContinuity= "H1", &
                   quadratureType=[quadopt%GaussLegendre], &
                   quadratureOrder=[4], &
                   quadratureIsOrder=math%yes)
+
 found = obj%GetTotalDOF()
 want = meshptr%GetTotalNodes() + meshptr%GetTotalFaces()
 isok = found .EQ. want
@@ -94,6 +96,7 @@ CALL obj%Initiate(order=1, dom=dom, baseContinuity= "H1", &
                   quadratureType=[quadopt%GaussLegendre], &
                   quadratureOrder=[2], &
                   quadratureIsOrder=math%yes)
+
 found = obj%GetTotalDOF()
 want = meshptr%GetTotalNodes()
 isok = found .EQ. want

@@ -80,7 +80,8 @@ DO family = 1, SIZE(families)
     DO ii = 1, nleft
       IF (ANY(right(1:nright) .EQ. left(ii))) SHARED = SHARED + 1
     END DO
-    CALL OK(SHARED .EQ. order + 1_I4B, "Both cells share the same facet DOFs")
+    CALL OK(SHARED .EQ. order + 1_I4B, &
+            "Both cells share the same facet DOFs")
   END DO
 END DO
 

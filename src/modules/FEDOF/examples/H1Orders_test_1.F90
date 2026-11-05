@@ -75,22 +75,23 @@ DO family = 1, SIZE(families)
         globalElement=elements(iel), islocal=.FALSE.)
       CALL OK(ALL(sizes .EQ. localSizes), "Local/global output sizes")
       CALL OK(ALL(cellOrder(1:sizes(1)) .EQ. &
-                  cellOrderLocal(1:localSizes(1))), "Local/global cell order")
+                  cellOrderLocal(1:localSizes(1))), &
+              "Local/global cell order")
       CALL OK(ALL(faceOrder(:, 1:sizes(2)) .EQ. &
                   faceOrderLocal(:, 1:localSizes(2))), &
-                  "Local/global facet orders")
+              "Local/global facet orders")
       CALL OK(ALL(edgeOrder(1:sizes(3)) .EQ. &
                   edgeOrderLocal(1:localSizes(3))), &
-                  "Local/global edge orders")
+              "Local/global edge orders")
       CALL OK(ALL(cellOrient(1:sizes(4)) .EQ. &
                   cellOrientLocal(1:localSizes(4))), &
-                  "Local/global cell orientation")
+              "Local/global cell orientation")
       CALL OK(ALL(faceOrient(1:sizes(5), 1:sizes(6)) .EQ. &
                   faceOrientLocal(1:localSizes(5), 1:localSizes(6))), &
               "Local/global facet orientations")
       CALL OK(ALL(edgeOrient(1:sizes(7)) .EQ. &
                   edgeOrientLocal(1:localSizes(7))), &
-                  "Local/global edge orientations")
+              "Local/global edge orientations")
     END DO
   END DO
 END DO

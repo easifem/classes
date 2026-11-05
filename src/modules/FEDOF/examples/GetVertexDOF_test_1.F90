@@ -4,128 +4,119 @@
 ! H1 Hierarchical Second Order Triangular Mesh
 
 PROGRAM main
-  USE FEDOF_Class, ONLY: FEDOF_
-  USE FEDomain_Class, ONLY: FEDomain_
-  USE AbstractMesh_Class, ONLY: AbstractMesh_
-  USE HDF5File_Class, ONLY: HDF5File_
-  USE Display_Method, ONLY: ToString
-  USE GlobalData, ONLY: I4B
-  USE GlobalData, ONLY: LGT
-  USE Test_Method, ONLY: ok
-  USE ExceptionHandler_Class, ONLY: e
-  USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
-  USE ReallocateUtility, ONLY: Reallocate
-  IMPLICIT NONE
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE Display_Method, ONLY: ToString
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDomain_Class, ONLY: FEDomain_
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE ReallocateUtility, ONLY: Reallocate
+USE Test_Method, ONLY: ok
+IMPLICIT NONE
 
-  CHARACTER(*), PARAMETER :: &
-    filename = "./meshdata/small_tri3_mesh.h5", &
-    baseContinuity = "H1", &
-    baseInterpolation = "Hierarchical", &
-    testname = baseContinuity // " " // baseInterpolation
+CHARACTER(*), PARAMETER ::  filename = "./meshdata/small_tri3_mesh.h5"
+TYPE(FEDOF_) :: obj
+TYPE(FEDomain_) :: dom
+CLASS(AbstractMesh_), POINTER :: mesh => NULL()
+TYPE(HDF5File_) :: meshfile
+LOGICAL(LGT) :: isok
 
-  TYPE(FEDOF_) :: fedof
-  TYPE(FEDomain_) :: dom
-  CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
-  TYPE(HDF5File_) :: meshfile
-  INTEGER(I4B), ALLOCATABLE :: found(:), want(:)
-  INTEGER(I4B) :: order, totalVertexNodes, totalFaces
-  LOGICAL(LGT) :: isok
+CALL e%SetQuietMode(math%yes)
+CALL meshfile%Initiate(filename, mode="READ")
+CALL meshfile%OPEN()
 
-  CALL e%SetQuietMode(EXCEPTION_INFORMATION, .TRUE.)
+CALL dom%Initiate(meshfile, '')
+mesh => dom%GetMeshPointer()
 
-  CALL meshfile%Initiate(filename, mode="READ")
-  CALL meshfile%OPEN()
-  CALL dom%Initiate(meshfile, '')
-  meshptr => dom%GetMeshPointer()
-  totalVertexNodes = meshptr%GetTotalVertexNodes()
-  totalFaces = meshptr%GetTotalFaces()
+BLOCK
+  INTEGER(I4B) :: tsize
+  INTEGER(I4B) :: found(1), want(1)
+  INTEGER(I4B) :: order
+  CHARACTER(*), PARAMETER :: baseContinuity = "H1", &
+                             baseInterpolation = "Hierarchical"
 
-  CALL test1
-  CALL test2
-  CALL test3
+  order = 1
+  CALL obj%Initiate(baseContinuity=baseContinuity, &
+                    baseInterpolation=baseInterpolation, &
+                    isBrokenSpace=math%no, &
+                    order=order, dom=dom)
 
-  CALL dom%DEALLOCATE()
-  CALL meshfile%DEALLOCATE()
+  CALL obj%GetVertexDOF(globalNode=1, islocal=math%yes, &
+                        ans=found, tsize=tsize)
 
-CONTAINS
+  want(1) = 1
 
-!---------------------------------------------------------------------------
-!                                                                      test1
-!---------------------------------------------------------------------------
+  isok = ALL(found .EQ. want)
+  CALL OK(isok, "GetVertexDOF works for (order=1)")
+END BLOCK
 
-  SUBROUTINE test1
+BLOCK
+  INTEGER(I4B) :: tsize
+  INTEGER(I4B) :: found(1), want(1)
+  INTEGER(I4B) :: order
+  CHARACTER(*), PARAMETER :: baseContinuity = "H1", &
+                             baseInterpolation = "Hierarchical"
 
-    INTEGER(I4B) :: tsize
+  order = 3
+  CALL obj%Initiate(baseContinuity=baseContinuity, &
+                    baseInterpolation=baseInterpolation, &
+                    isBrokenSpace=math%no, &
+                    order=order, dom=dom)
 
-    order = 1
-    CALL fedof%Initiate(baseContinuity=baseContinuity, &
-                        baseInterpolation=baseInterpolation, &
-                        order=order, dom=dom)
+  CALL obj%GetVertexDOF(globalNode=1, islocal=math%yes, &
+                        ans=found, tsize=tsize)
 
-    CALL Reallocate(found, 2, want, 2)
-    CALL fedof%GetVertexDOF(globalNode=1, islocal=.TRUE., &
-                            ans=found, tsize=tsize)
+  want(1) = 1
 
-    want(1) = 1
+  isok = ALL(found .EQ. want)
+  CALL OK(isok, "GetVertexDOF works for (order=3) H1 Hierarchical")
+END BLOCK
 
-    isok = ALL(found == want)
-    CALL OK(isok, testname // " GetVertexDOF (order= " // &
-            ToString(order) // "): ")
+BLOCK
+  INTEGER(I4B) :: tsize
+  INTEGER(I4B) :: found(1), want(1)
+  INTEGER(I4B) :: order
+  CHARACTER(*), PARAMETER :: baseContinuity = "H1", &
+                             baseInterpolation = "Lagrange"
 
-  END SUBROUTINE test1
+  order = 3
+  CALL obj%Initiate(baseContinuity=baseContinuity, &
+                    baseInterpolation=baseInterpolation, &
+                    ipType=TypeInterpolationOpt%Equidistance, &
+                    isBrokenSpace=math%no, order=order, dom=dom)
 
-!---------------------------------------------------------------------------
-!                                                                      test2
-!---------------------------------------------------------------------------
+  CALL obj%GetVertexDOF(globalNode=1, islocal=math%yes, ans=found, &
+                        tsize=tsize)
 
-  SUBROUTINE test2
+  want(1) = 1
 
-    INTEGER(I4B) :: tsize
+  isok = ALL(found .EQ. want)
+  CALL OK(isok, "GetVertexDOF works for (order=3) H1 Lagrange")
+END BLOCK
 
-    order = 2
-    CALL fedof%Initiate(baseContinuity=baseContinuity, &
-                        baseInterpolation=baseInterpolation, &
-                        order=order, dom=dom)
+BLOCK
+  INTEGER(I4B) :: tsize
+  INTEGER(I4B) :: found(1)
+  INTEGER(I4B) :: order
+  CHARACTER(*), PARAMETER ::   baseContinuity = "H1", &
+                             baseInterpolation = "Hierarchical"
 
-    CALL Reallocate(found, 2, want, 2)
-    CALL fedof%GetVertexDOF(globalNode=1, islocal=.TRUE., &
-                            ans=found, tsize=tsize)
+  order = 1
+  CALL obj%Initiate(baseContinuity=baseContinuity, &
+                    baseInterpolation=baseInterpolation, &
+                    isBrokenSpace=math%yes, order=order, dom=dom)
 
-    want(1) = 1
+  CALL obj%GetVertexDOF(globalNode=1, islocal=math%yes, &
+                        ans=found, tsize=tsize)
 
-    isok = ALL(found == want)
-    CALL OK(isok, testname // " GetVertexDOF (order= " // &
-            ToString(order) // "): ")
+  CALL OK(tsize .EQ. 0, "GetVertexDOF for broken space returns zero size:")
+END BLOCK
 
-  END SUBROUTINE test2
-
-!---------------------------------------------------------------------------
-!                                                                     test3
-!---------------------------------------------------------------------------
-
-  SUBROUTINE test3
-
-    INTEGER(I4B) :: tsize
-
-    order = 3
-    CALL fedof%Initiate(baseContinuity=baseContinuity, &
-                        baseInterpolation=baseInterpolation, &
-                        order=order, dom=dom)
-
-    CALL Reallocate(found, 2, want, 2)
-    CALL fedof%GetVertexDOF(globalNode=1, islocal=.TRUE., &
-                            ans=found, tsize=tsize)
-
-    want(1) = 1
-
-    isok = ALL(found == want)
-    CALL OK(isok, testname // " GetVertexDOF (order= " // &
-            ToString(order) // "): ")
-
-  END SUBROUTINE test3
-
-!---------------------------------------------------------------------------
-!
-!---------------------------------------------------------------------------
-
+CALL dom%DEALLOCATE()
+CALL meshfile%DEALLOCATE()
+CALL obj%DEALLOCATE()
 END PROGRAM main

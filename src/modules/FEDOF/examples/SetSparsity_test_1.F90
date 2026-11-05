@@ -21,69 +21,55 @@
 !   - 2026-10-24: Use FEDomain_ (dom=) instead of FEMesh_ (mesh=)
 
 PROGRAM main
+USE ArangeUtility, ONLY: Arange
 USE BaseType, ONLY: CSRMatrix_
 USE BaseType, ONLY: DOF_
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: TypeDOFOpt
 USE CSRMatrix_Method, ONLY: CSRMatrixInitiate => Initiate
 USE CSRMatrix_Method, ONLY: ASSIGNMENT(=)
 USE Display_Method, ONLY: Display
 USE DOF_Method, ONLY: DOFInitiate => Initiate
 USE DOF_Method, ONLY: DOFSize => SIZE
 USE ExceptionHandler_Class, ONLY: e
-USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 USE FEDOF_Class, ONLY: FEDOF_
 USE FEDomain_Class, ONLY: FEDomain_
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: LGT
-USE GlobalData, ONLY: NODES_FMT
 USE HDF5File_Class, ONLY: HDF5File_
+USE ReallocateUtility, ONLY: Reallocate
 USE Test_Method, ONLY: OK
 
 IMPLICIT NONE
 
 CHARACTER(*), PARAMETER :: filename = &
                            "./meshdata/very_small_quad4_mesh.h5"
-CHARACTER(*), PARAMETER :: baseContinuity = "H1", &
-                           baseInterpolation = "Hierarchical", &
-                           testname = baseContinuity//" "// &
-                           baseInterpolation//" SetSparsity "
 INTEGER(I4B) :: ii, jj, order
 TYPE(CSRMatrix_) :: mat
 TYPE(DOF_) :: dofobj
 TYPE(FEDOF_) :: obj
 TYPE(FEDomain_) :: dom
 TYPE(HDF5File_) :: meshfile
-REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
-LOGICAL(LGT) :: isok
 
-CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
-
+CALL e%SetQuietMode(math%yes)
 CALL meshfile%Initiate(filename, mode="READ")
 CALL meshfile%OPEN()
 CALL dom%Initiate(meshfile, "")
 
-CALL test1
-CALL test2
-
-CALL obj%DEALLOCATE()
-CALL dom%DEALLOCATE()
-CALL meshfile%DEALLOCATE()
-
-CONTAINS
-
-!---------------------------------------------------------------------------
-!                                                                     test1
-!---------------------------------------------------------------------------
-
-SUBROUTINE test1
+BLOCK
+  REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
+  LOGICAL(LGT) :: isok
   order = 1
-  CALL obj%Initiate(baseContinuity=baseContinuity, &
-                    baseInterpolation=baseInterpolation, &
+  CALL obj%Initiate(baseContinuity="H1", &
+                    baseInterpolation="HIER", &
+                    isBrokenSpace=math%no, &
                     order=order, dom=dom)
+
   CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalDOF()], &
                    names=["K"], spaceCompo=[1], timeCompo=[1], &
-                   storageFMT=NODES_FMT)
+                   storageFMT=TypeDOFOpt%storageFormatDOF)
+
   CALL CSRMatrixInitiate(mat, ncol=DOFSize(dofobj), &
                          nrow=DOFSize(dofobj), idof=dofobj, jdof=dofobj)
   CALL obj%SetSparsity(mat=mat)
@@ -108,30 +94,30 @@ SUBROUTINE test1
   isok = ALL(SHAPE(found) .EQ. [9, 9])
   IF (isok) THEN
     do_jj: DO jj = 1, 9
-      DO ii = 1, 9
+      do_ii: DO ii = 1, 9
         isok = found(ii, jj) .EQ. want(ii, jj)
         IF (.NOT. isok) THEN
-          CALL Display([ii, jj], "ii, jj: ")
+          ! CALL Display([ii, jj], "ii, jj: ")
           EXIT do_jj
         END IF
-      END DO
+      END DO do_ii
     END DO do_jj
   END IF
-  CALL OK(isok, testname//"order 1, all rows")
-END SUBROUTINE test1
+  CALL OK(isok, obj%GetCaseName()//" order 1, all rows")
+END BLOCK
 
-!---------------------------------------------------------------------------
-!                                                                     test2
-!---------------------------------------------------------------------------
-
-SUBROUTINE test2
+BLOCK
+  REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
+  INTEGER(I4B) :: irow
+  LOGICAL(LGT) :: isok
   order = 2
-  CALL obj%Initiate(baseContinuity=baseContinuity, &
-                    baseInterpolation=baseInterpolation, &
+  CALL obj%Initiate(baseContinuity="H1", &
+                    baseInterpolation="HIER", &
+                    isBrokenSpace=math%no, &
                     order=order, dom=dom)
   CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalDOF()], &
                    names=["K"], spaceCompo=[1], timeCompo=[1], &
-                   storageFMT=NODES_FMT)
+                   storageFMT=TypeDOFOpt%storageFormatNodes)
   CALL CSRMatrixInitiate(mat, ncol=DOFSize(dofobj), &
                          nrow=DOFSize(dofobj), idof=dofobj, jdof=dofobj)
   CALL obj%SetSparsity(mat=mat)
@@ -141,34 +127,143 @@ SUBROUTINE test2
   want = found
   want = 0.0_DFP
 
-  want(1, [1, 5, 7, 9, 10, 11, 12, 13, 22]) = 1.0_DFP
-  CALL check_row(1, "order 2, row 1")
-
-  want(5, [5, 1, 2, 7, 8, 9, 10, 11, 12, 13, 22, 17, 18, 19, 24]) = &
-    1.0_DFP
-  CALL check_row(5, "order 2, row 5")
-
-  want(11, [11, 1, 2, 5, 7, 8, 9, 10, 12, 13, 22, 17, 18, 19, 24]) = &
-    1.0_DFP
-  CALL check_row(11, "order 2, row 11")
-END SUBROUTINE test2
-
-!---------------------------------------------------------------------------
-!                                                                 check_row
-!---------------------------------------------------------------------------
-
-SUBROUTINE check_row(irow, msg)
-  INTEGER(I4B), INTENT(IN) :: irow
-  CHARACTER(*), INTENT(IN) :: msg
-
+  irow = 1
+  want(irow, [1, 5, 7, 9, 10, 11, 12, 13, 22]) = 1.0_DFP
   DO jj = 1, SIZE(want, 2)
     isok = found(irow, jj) .EQ. want(irow, jj)
     IF (.NOT. isok) THEN
-      CALL Display([irow, jj], "ii, jj: ")
       EXIT
     END IF
   END DO
-  CALL OK(isok, testname//msg)
-END SUBROUTINE check_row
+  CALL OK(isok, obj%GetCaseName()//" order=2 ")
 
+  irow = 5
+  want(irow, [5, 1, 2, 7, 8, 9, 10, 11, 12, 13, 22, 17, 18, 19, 24]) = 1.0_DFP
+  DO jj = 1, SIZE(want, 2)
+    isok = found(irow, jj) .EQ. want(irow, jj)
+    IF (.NOT. isok) THEN
+      EXIT
+    END IF
+  END DO
+  CALL OK(isok, obj%GetCaseName()//" order=2 ")
+
+  want(11, [11, 1, 2, 5, 7, 8, 9, 10, 12, 13, 22, 17, 18, 19, 24]) = 1.0_DFP
+  DO jj = 1, SIZE(want, 2)
+    isok = found(irow, jj) .EQ. want(irow, jj)
+    IF (.NOT. isok) THEN
+      EXIT
+    END IF
+  END DO
+  CALL OK(isok, obj%GetCaseName()//" order=2 ")
+END BLOCK
+
+! testing brokenSpace onlyCell=true
+BLOCK
+  REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
+  LOGICAL(LGT) :: isok
+  order = 1
+  CALL obj%Initiate(baseContinuity="H1", &
+                    baseInterpolation="HIER", &
+                    isBrokenSpace=math%yes, &
+                    order=order, dom=dom)
+
+  CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalDOF()], &
+                   names=["K"], spaceCompo=[1], timeCompo=[1], &
+                   storageFMT=TypeDOFOpt%storageFormatDOF)
+
+  CALL CSRMatrixInitiate(mat, ncol=DOFSize(dofobj), &
+                         nrow=DOFSize(dofobj), idof=dofobj, jdof=dofobj)
+  CALL obj%SetSparsity(mat=mat, onlyCell=math%yes)
+
+  ! set all entries of the pattern to 1, and convert to a dense matrix
+  mat = 1.0_DFP
+  found = mat
+
+  CALL Reallocate(want, 16, 16)
+  want(1, [1, 2, 3, 4]) = 1.0_DFP
+  want(2, [1, 2, 3, 4]) = 1.0_DFP
+  want(3, [1, 2, 3, 4]) = 1.0_DFP
+  want(4, [1, 2, 3, 4]) = 1.0_DFP
+  want(5, [5, 6, 7, 8]) = 1.0_DFP
+  want(6, [5, 6, 7, 8]) = 1.0_DFP
+  want(7, [5, 6, 7, 8]) = 1.0_DFP
+  want(8, [5, 6, 7, 8]) = 1.0_DFP
+  want(9, [9, 10, 11, 12]) = 1.0_DFP
+  want(10, [9, 10, 11, 12]) = 1.0_DFP
+  want(11, [9, 10, 11, 12]) = 1.0_DFP
+  want(12, [9, 10, 11, 12]) = 1.0_DFP
+  want(13, [13, 14, 15, 16]) = 1.0_DFP
+  want(14, [13, 14, 15, 16]) = 1.0_DFP
+  want(15, [13, 14, 15, 16]) = 1.0_DFP
+  want(16, [13, 14, 15, 16]) = 1.0_DFP
+
+  isok = ALL(SHAPE(found) .EQ. [16, 16])
+  CALL OK(isok, &
+          obj%GetCaseName()//" BrokenSpaces Shape of sparse matrix is correct")
+  IF (isok) THEN
+    do_jj: DO jj = 1, SIZE(want, 2)
+      do_ii: DO ii = 1, SIZE(want, 1)
+        isok = found(ii, jj) .EQ. want(ii, jj)
+        IF (.NOT. isok) EXIT do_jj
+      END DO do_ii
+    END DO do_jj
+  END IF
+  CALL OK(isok, obj%GetCaseName()//" BrokenSpaces order 1, SetSparsity")
+END BLOCK
+
+! testing brokenSpace onlyCell=false
+BLOCK
+  REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
+  LOGICAL(LGT) :: isok
+  order = 1
+  CALL obj%Initiate(baseContinuity="H1", &
+                    baseInterpolation="HIER", &
+                    isBrokenSpace=math%yes, &
+                    order=order, dom=dom)
+
+  CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalDOF()], &
+                   names=["K"], spaceCompo=[1], timeCompo=[1], &
+                   storageFMT=TypeDOFOpt%storageFormatDOF)
+
+  CALL CSRMatrixInitiate(mat, ncol=DOFSize(dofobj), nrow=DOFSize(dofobj), &
+                         idof=dofobj, jdof=dofobj)
+
+  CALL obj%SetSparsity(mat=mat, onlyCell=math%no)
+
+  ! set all entries of the pattern to 1, and convert to a dense matrix
+  mat = 1.0_DFP
+  found = mat
+
+  CALL Reallocate(want, 16, 16)
+  want(Arange(1, 4), Arange(1, 4)) = math%one
+  want(Arange(1, 4), Arange(5, 8)) = math%one
+  want(Arange(1, 4), Arange(9, 12)) = math%one
+  want(Arange(5, 8), Arange(1, 4)) = math%one
+  want(Arange(5, 8), Arange(5, 8)) = math%one
+  want(Arange(5, 8), Arange(13, 16)) = math%one
+  want(Arange(9, 12), Arange(1, 4)) = math%one
+  want(Arange(9, 12), Arange(9, 12)) = math%one
+  want(Arange(9, 12), Arange(13, 16)) = math%one
+  want(Arange(13, 16), Arange(5, 8)) = math%one
+  want(Arange(13, 16), Arange(9, 12)) = math%one
+  want(Arange(13, 16), Arange(13, 16)) = math%one
+
+  isok = ALL(SHAPE(found) .EQ. [16, 16])
+  CALL OK(isok, &
+          obj%GetCaseName()//", BrokenSpaces, onlyCell=false, Shape of sparse matrix is correct")
+  IF (isok) THEN
+    do_jj: DO jj = 1, SIZE(want, 2)
+      do_ii: DO ii = 1, SIZE(want, 1)
+        isok = found(ii, jj) .EQ. want(ii, jj)
+        IF (.NOT. isok) EXIT do_jj
+      END DO do_ii
+    END DO do_jj
+  END IF
+  CALL OK(isok, &
+          obj%GetCaseName()//", BrokenSpaces, onlyCell=false, order 1, SetSparsity")
+END BLOCK
+
+CALL obj%DEALLOCATE()
+CALL dom%DEALLOCATE()
+CALL meshfile%DEALLOCATE()
 END PROGRAM main
