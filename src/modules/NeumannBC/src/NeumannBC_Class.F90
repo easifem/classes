@@ -48,7 +48,6 @@ PUBLIC :: NeumannBCImportFromToml
 
 TYPE, EXTENDS(DirichletBC_) :: NeumannBC_
 CONTAINS
-  PRIVATE
   FINAL :: obj_Final
 END TYPE NeumannBC_
 

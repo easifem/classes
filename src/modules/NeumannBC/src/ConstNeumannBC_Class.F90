@@ -49,9 +49,9 @@ PUBLIC :: ConstNeumannBCImportFromToml
 
 TYPE, EXTENDS(NeumannBC_) :: ConstNeumannBC_
 CONTAINS
-  PRIVATE
-  FINAL :: obj_Final
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportConstBCFromToml
+  FINAL  :: obj_Final
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportConstBCFromToml
   !! Initiate ConstNeumannBC from toml table (overriding)
 END TYPE ConstNeumannBC_
 
