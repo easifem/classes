@@ -15,11 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE DirichletBC_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class, ONLY: MeshSelection_
-USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE AbstractBC_Class, ONLY: AbstractBC_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE MeshSelection_Class, ONLY: MeshSelection_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 
@@ -47,7 +47,6 @@ PUBLIC :: DirichletBCImportFromToml
 
 TYPE, EXTENDS(AbstractBC_) :: DirichletBC_
 CONTAINS
-  PRIVATE
   FINAL :: obj_Final
 END TYPE DirichletBC_
 
