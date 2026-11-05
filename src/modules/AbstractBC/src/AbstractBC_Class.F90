@@ -179,27 +179,22 @@ TYPE, ABSTRACT :: AbstractBC_
   !! Domain
 
 CONTAINS
-  PRIVATE
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate memory occupied by AbstractBC
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of AbstractBC with arguments
 
-  ! IO:
   ! @HDFMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from HDF5File
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data to HDF5File
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display content of AbstractBC
 
-  ! IO:
   ! @TomlMethods
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Initiate from toml
@@ -213,7 +208,6 @@ CONTAINS
     obj_ImportConstBCFromToml
   !! Import constant boundary condition from toml
 
-  ! SET:
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Set the boundary condition value
@@ -230,7 +224,6 @@ CONTAINS
     SetNodalValueType => obj_SetNodalValueType
   !! Set nodal value type
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
@@ -271,7 +264,6 @@ CONTAINS
     obj_GetConstantNodalValue
   !! Get the constant nodal value
 
-  ! GET:
   ! @GetValueMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get the node number and nodal value of the boundary conditions
