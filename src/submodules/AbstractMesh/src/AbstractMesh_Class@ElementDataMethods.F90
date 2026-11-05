@@ -16,19 +16,20 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: TypeRefelemOpt
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D
 USE AbstractMeshUtility, ONLY: InitiateElementToElements2D
 USE AbstractMeshUtility, ONLY: InitiateElementToElements1D
+USE BaseType, ONLY: TypeRefelemOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: ToString
 USE NodeData_Class, ONLY: TypeNode
 USE NodeData_Class, ONLY: NodeData_SetNodeType
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-  "AbstractMesh_Class@ElementDataMethods.F90"
+                           "AbstractMesh_Class@ElementDataMethods.F90"
 #endif
 
 CONTAINS
@@ -38,67 +39,62 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateElementToElements
-  CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
-  LOGICAL(LGT) :: problem
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
+#endif
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
-
-  problem = .NOT. ALLOCATED(obj%elementData)
-
-  IF (problem) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[INTERNAL ERROR] :: ' // &
-                      'AbstractMesh_::obj%elementData is not allocated')
-    RETURN
-  END IF
-
-  IF (obj%isElementToElementsInitiated) RETURN
-  obj%isElementToElementsInitiated = .TRUE.
-
-  SELECT CASE (obj%xidim)
-  CASE (0_I4B)
-
-  CASE (1_I4B)
-
-    CALL InitiateElementToElements1D(elementData=obj%elementData, &
-                                     tNodesInMesh=obj%tNodes, &
-                                     showTime=obj%showTime, &
-                                     local_nptrs=obj%local_nptrs)
-
-  CASE (2_I4B)
-
-    problem = .NOT. obj%isFaceConnectivityInitiated
-    IF (problem) CALL obj%InitiateFaceConnectivity()
-
-    CALL InitiateElementToElements3D(elementData=obj%elementData, &
-                                     tFaceInMesh=obj%tFaces, &
-                                     showTime=obj%showTime)
-
-  CASE (3_I4B)
-
-    problem = .NOT. obj%isFaceConnectivityInitiated
-    IF (problem) CALL obj%InitiateFaceConnectivity()
-
-    CALL InitiateElementToElements3D(elementData=obj%elementData, &
-                                     tFaceInMesh=obj%tFaces, &
-                                     showTime=obj%showTime)
-
-  CASE DEFAULT
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[INTERNAL ERROR] :: No case found for xidim ' &
-                      // ToString(obj%xidim))
-  END SELECT
-
-  CALL MarkInternalNodes(obj=obj)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+isok = ALLOCATED(obj%elementData)
+CALL AssertError1(isok, myName, "elementData not allocated.")
 #endif
 
+IF (obj%isElementToElementsInitiated) RETURN
+obj%isElementToElementsInitiated = .TRUE.
+
+SELECT CASE (obj%xidim)
+CASE (0_I4B)
+
+CASE (1_I4B)
+  CALL InitiateElementToElements1D(elementData=obj%elementData, &
+                                   tNodesInMesh=obj%tNodes, &
+                                   showTime=obj%showTime, &
+                                   local_nptrs=obj%local_nptrs)
+
+CASE (2_I4B)
+  isok = .NOT. obj%isFaceConnectivityInitiated
+  IF (isok) CALL obj%InitiateFaceConnectivity()
+
+  CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                   tFaceInMesh=obj%tFaces, &
+                                   showTime=obj%showTime)
+
+CASE (3_I4B)
+  isok = .NOT. obj%isFaceConnectivityInitiated
+  IF (isok) CALL obj%InitiateFaceConnectivity()
+
+  CALL InitiateElementToElements3D(elementData=obj%elementData, &
+                                   tFaceInMesh=obj%tFaces, &
+                                   showTime=obj%showTime)
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for xidim.")
+#endif
+
+END SELECT
+
+CALL MarkInternalNodes(obj=obj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_InitiateElementToElements
 
 !----------------------------------------------------------------------------
@@ -114,16 +110,24 @@ SUBROUTINE MarkInternalNodes(obj)
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-  IF (obj%xidim .EQ. 0) RETURN
+  IF (obj%xidim .EQ. 0) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
 
   tElements = obj%GetTotalElements()
 
   loop1: DO ii = 1, tElements
-
     isok = obj%isBoundaryElement(ii, isLocal=.TRUE.)
     IF (.NOT. isok) CYCLE loop1
 
@@ -141,14 +145,12 @@ SUBROUTINE MarkInternalNodes(obj)
                                   TypeNode%domainBoundary)
       END DO
     END DO
-
   END DO loop1
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE MarkInternalNodes
 
 !----------------------------------------------------------------------------

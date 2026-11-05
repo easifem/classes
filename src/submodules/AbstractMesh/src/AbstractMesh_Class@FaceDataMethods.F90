@@ -16,18 +16,19 @@
 !
 
 SUBMODULE(AbstractMesh_Class) FaceDataMethods
-USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
-USE ReferenceElement_Method, ONLY: IsQuadrangle
 USE BaseType, ONLY: TypeRefelemOpt
-USE ReferenceTriangle_Method, ONLY: FaceShapeMetaData_Triangle
-USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
-USE ReallocateUtility, ONLY: Reallocate
-USE GlobalData, ONLY: INT8
-USE SortUtility, ONLY: Sort
+USE BaseType, ONLY: math => TypeMathOpt
 USE FaceData_Class, ONLY: FaceData_
 USE FaceData_Class, ONLY: FaceData_Pointer
 USE FaceData_Class, ONLY: Initiate
 USE FaceDataBinaryTree_Class, ONLY: FaceDataBinaryTree_
+USE GlobalData, ONLY: INT8
+USE ReallocateUtility, ONLY: Reallocate
+USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
+USE ReferenceElement_Method, ONLY: IsQuadrangle
+USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
+USE ReferenceTriangle_Method, ONLY: FaceShapeMetaData_Triangle
+USE SortUtility, ONLY: Sort
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -41,29 +42,33 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateFaceConnectivity
-  CHARACTER(*), PARAMETER :: myName = "obj_IntiiateFaceConnectivity()"
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START] ')
+CHARACTER(*), PARAMETER :: myName = "obj_IntiiateFaceConnectivity()"
 #endif
 
-  SELECT CASE (obj%xidim)
-  CASE (2_I4B)
-    CALL InitiateFaceConnectivity2D(obj)
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-  CASE (3_I4B)
-    CALL InitiateFaceConnectivity3D(obj)
+SELECT CASE (obj%xidim)
+CASE (2_I4B)
+  CALL InitiateFaceConnectivity2D(obj)
 
-  CASE DEFAULT
-    CALL e%RaiseError(modName // '::obj_InitiateFaceConnectivity - ' // &
-                      '[INTERNAL ERROR] :: Invalid dimension')
-    RETURN
+CASE (3_I4B)
+  CALL InitiateFaceConnectivity3D(obj)
 
-  END SELECT
+CASE DEFAULT
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END] ')
+  CALL AssertError1(math%no, myName, "No cae found")
+#endif
+
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 
 END PROCEDURE obj_InitiateFaceConnectivity
@@ -76,31 +81,35 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
   ! internal variables
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity2D()"
+#endif
   INTEGER(I4B) :: tElements, iel, elemType, tFaces, face0(2), &
-    sorted_face(2), tsize1, tsize2, iface, &
-    localFaces(2_I4B, TypeRefelemOpt%maxFaces)
-
-  LOGICAL(LGT) :: problem
+                  sorted_face(2), tsize1, tsize2, iface, &
+                  localFaces(2_I4B, TypeRefelemOpt%maxFaces)
+  LOGICAL(LGT) :: isok
   TYPE(FaceDataBinaryTree_) :: faceTree
   TYPE(FaceData_) :: faceValue
   TYPE(FaceData_), POINTER :: facePtr
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-  problem = obj%isFaceConnectivityInitiated
-  IF (problem) RETURN
-
-  problem = .NOT. ALLOCATED(obj%elementData)
-  IF (problem) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[INTERNAL ERROR] :: ' // &
-                      'AbstractMesh_::obj%elementData not allocated')
+  isok = obj%isFaceConnectivityInitiated
+  IF (isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
     RETURN
   END IF
+
+#ifdef DEBUG_VER
+  isok = ALLOCATED(obj%elementData)
+  CALL AssertError1(isok, myName, "obj%elementData is not allocated.")
+#endif
 
   tElements = obj%GetTotalElements()
 
@@ -110,8 +119,8 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
 
   loop1: DO iel = 1, tElements
 
-    problem = .NOT. obj%elementData(iel)%ptr%isActive
-    IF (problem) CYCLE loop1
+    isok = .NOT. obj%elementData(iel)%ptr%isActive
+    IF (isok) CYCLE loop1
 
     elemType = obj%elementData(iel)%ptr%name
 
@@ -158,7 +167,7 @@ SUBROUTINE InitiateFaceConnectivity2D(obj)
   facePtr => NULL()
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 
@@ -172,31 +181,38 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
   ! internal variables
+#ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "InitiateFaceConnectivity3D()"
+#endif
   INTEGER(I4B) :: tElements, iel, elemType, tFaces, &
-    localFaces(4_I4B, TypeRefelemOpt%maxFaces), face0(4), sorted_face(4), &
-    tNodes, tsize1, tsize2, iface, faceElemType(TypeRefelemOpt%maxFaces), &
-    tFaceNodes(TypeRefelemOpt%maxFaces), aint, faceOrient(3_I4B)
-  LOGICAL(LGT) :: problem, abool
+                  localFaces(4_I4B, TypeRefelemOpt%maxFaces), face0(4), &
+                  sorted_face(4), &
+                  tNodes, tsize1, tsize2, iface, &
+                  faceElemType(TypeRefelemOpt%maxFaces), &
+                  tFaceNodes(TypeRefelemOpt%maxFaces), aint, faceOrient(3_I4B)
+  LOGICAL(LGT) :: isok
   TYPE(FaceDataBinaryTree_) :: faceTree
   TYPE(FaceData_) :: faceValue
   TYPE(FaceData_), POINTER :: facePtr
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-  problem = obj%isFaceConnectivityInitiated
-  IF (problem) RETURN
-
-  problem = .NOT. ALLOCATED(obj%elementData)
-  IF (problem) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
-                      '[INTERNAL ERROR] :: ' // &
-                      'AbstractMesh_::obj%elementData not allocated')
+  isok = obj%isFaceConnectivityInitiated
+  IF (isok) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
     RETURN
   END IF
+
+#ifdef DEBUG_VER
+  isok = ALLOCATED(obj%elementData)
+  CALL AssertError1(isok, myName, "obj%elementData is not allocated.")
+#endif
 
   tElements = obj%GetTotalElements()
 
@@ -206,8 +222,8 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
 
   loop1: DO iel = 1, tElements
 
-    problem = .NOT. obj%elementData(iel)%ptr%isActive
-    IF (problem) CYCLE loop1
+    isok = .NOT. obj%elementData(iel)%ptr%isActive
+    IF (isok) CYCLE loop1
 
     elemType = obj%elementData(iel)%ptr%name
 
@@ -226,8 +242,8 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
       face0(1:aint) = &
         obj%elementData(iel)%ptr%globalNodes(localFaces(1:aint, iface))
 
-      abool = IsQuadrangle(faceElemType(iface))
-      IF (abool) THEN
+      isok = IsQuadrangle(faceElemType(iface))
+      IF (isok) THEN
         CALL FaceShapeMetaData_Quadrangle(face=face0(1:aint), &
                                           sorted_face=sorted_face(1:aint), &
                                           faceOrient=faceOrient)
@@ -264,7 +280,7 @@ SUBROUTINE InitiateFaceConnectivity3D(obj)
   facePtr => NULL()
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 

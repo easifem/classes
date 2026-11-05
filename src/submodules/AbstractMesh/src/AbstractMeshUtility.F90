@@ -16,21 +16,21 @@
 !
 
 MODULE AbstractMeshUtility
-USE GlobalData, ONLY: DFP, I4B, LGT, stdout
-USE Display_Method, ONLY: Display, ToString
-USE ReallocateUtility, ONLY: Reallocate
-USE CPUTime_Class, ONLY: CPUTime_
 USE BaseType, ONLY: TypeRefelemOpt
 USE BaseType, ONLY: math => TypeMathOpt
-USE ExceptionHandler_Class, ONLY: e
+USE CPUTime_Class, ONLY: CPUTime_
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE ElemData_Class, ONLY: ElemData_
 USE ElemData_Class, ONLY: ElemDataPointer_
 USE ElemData_Class, ONLY: TypeElem
 USE ElemData_Class, ONLY: DOMAIN_BOUNDARY_ELEMENT
 USE ElemData_Class, ONLY: INTERNAL_ELEMENT
 USE ElemData_Class, ONLY: ElemData_GetGlobalFaces
+USE ExceptionHandler_Class, ONLY: e
 USE FacetData_Class, ONLY: FacetData_
-
+USE GlobalData, ONLY: DFP, I4B, LGT, stdout
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 PRIVATE
 
@@ -84,7 +84,7 @@ SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
   INTEGER(I4B) :: ii, iface, tsize, jj
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
@@ -142,7 +142,7 @@ SUBROUTINE Help_GetFacetDataFromElemData(elementData, facetData, masks, faces)
   END DO loop2
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE Help_GetFacetDataFromElemData
@@ -157,26 +157,30 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
   LOGICAL(LGT), INTENT(IN) :: showTime
 
   ! internal variables
-  CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements3D()"
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "InitiateElementToElements3D()"
+  TYPE(CPUTime_) :: TypeCPUTime
+#endif
   LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tfaces, ii, jj, &
-    temp1(3 * TypeRefelemOpt%maxFaces), cint, &
-    bndyflag(TypeRefelemOpt%maxFaces)
+                  temp1(3 * TypeRefelemOpt%maxFaces), cint, &
+                  bndyflag(TypeRefelemOpt%maxFaces)
   INTEGER(I4B), ALLOCATABLE :: face2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
-  TYPE(CPUTime_) :: TypeCPUTime
-
-  IF (showTime) CALL TypeCPUTime%SetStartTime()
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  IF (showTime) CALL TypeCPUTime%SetStartTime()
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
 #ifdef DEBUG_VER
   problem = tFaceInMesh .EQ. 0
   IF (problem) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[INTERNAL ERROR] :: Total number of faces are zero.')
     RETURN
   END IF
@@ -267,18 +271,20 @@ SUBROUTINE InitiateElementToElements3D(elementData, tFaceInMesh, showTime)
 
   END DO loop2
 
-  IF (ALLOCATED(face2elem)) DEALLOCATE(face2elem)
-  IF (ALLOCATED(amask)) DEALLOCATE(amask)
-
-  IF (showTime) THEN
-    CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName // " : " // myName // &
-                 " : time : " // &
-                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
-  END IF
+  IF (ALLOCATED(face2elem)) DEALLOCATE (face2elem)
+  IF (ALLOCATED(amask)) DEALLOCATE (amask)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  IF (showTime) THEN
+    CALL TypeCPUTime%SetEndTime()
+    CALL Display(modName//" : "//myName// &
+                 " : time : "// &
+                 ToString(TypeCPUTime%GetTime()), unitno=stdout)
+  END IF
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE InitiateElementToElements3D
@@ -303,12 +309,12 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
 #endif
   LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tedges, ii, jj, temp1(3 * 4), &
-    cint, bndyflag(4)
+                  cint, bndyflag(4)
   INTEGER(I4B), ALLOCATABLE :: edge2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
@@ -319,7 +325,7 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
 #ifdef DEBUG_VER
   problem = tEdgeInMesh .EQ. 0
   IF (problem) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[INTERNAL ERROR] :: Total number of edges are zero.')
     RETURN
   END IF
@@ -411,20 +417,20 @@ SUBROUTINE InitiateElementToElements2D(elementData, tEdgeInMesh, showTime)
 
   END DO elemloop2
 
-  IF (ALLOCATED(amask)) DEALLOCATE(amask)
-  IF (ALLOCATED(edge2elem)) DEALLOCATE(edge2elem)
+  IF (ALLOCATED(amask)) DEALLOCATE (amask)
+  IF (ALLOCATED(edge2elem)) DEALLOCATE (edge2elem)
 
 #ifdef DEBUG_VER
   IF (showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName // " : " // myName // &
-                 " : time : " // &
+    CALL Display(modName//" : "//myName// &
+                 " : time : "// &
                  ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 
@@ -449,12 +455,12 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh, &
 
   LOGICAL(LGT) :: problem, isok1, isok2, isbndy
   INTEGER(I4B) :: telems, iel, aint, bint, tNodes, ii, jj, temp1(3 * 2), &
-    cint, bndyflag(2)
+                  cint, bndyflag(2)
   INTEGER(I4B), ALLOCATABLE :: node2elem(:, :)
   LOGICAL(LGT), ALLOCATABLE :: amask(:)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
@@ -465,7 +471,7 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh, &
 #ifdef DEBUG_VER
   problem = tNodesInMesh .EQ. 0
   IF (problem) THEN
-    CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+    CALL e%RaiseError(modName//'::'//myName//' - '// &
                       '[INTERNAL ERROR] :: Total number of nodes are zero.')
     RETURN
   END IF
@@ -556,20 +562,20 @@ SUBROUTINE InitiateElementToElements1D(elementData, tNodesInMesh, &
 
   END DO elemloop2
 
-  IF (ALLOCATED(amask)) DEALLOCATE(amask)
-  IF (ALLOCATED(node2elem)) DEALLOCATE(node2elem)
+  IF (ALLOCATED(amask)) DEALLOCATE (amask)
+  IF (ALLOCATED(node2elem)) DEALLOCATE (node2elem)
 
 #ifdef DEBUG_VER
   IF (showTime) THEN
     CALL TypeCPUTime%SetEndTime()
-    CALL Display(modName // " : " // myName // &
-                 " : time : " // &
+    CALL Display(modName//" : "//myName// &
+                 " : time : "// &
                  ToString(TypeCPUTime%GetTime()), unitno=stdout)
   END IF
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE InitiateElementToElements1D
