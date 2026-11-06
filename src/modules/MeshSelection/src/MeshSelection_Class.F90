@@ -222,8 +222,10 @@ CONTAINS
   !! Initiate the object from toml
 
   ! @GetMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => obj_getMeshID
-  !! Returns the mesh IDs of a dimension
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID => obj_GetMeshID
+  !! Returns the mesh IDs of a dimension with allocation
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMeshID_ => obj_GetMeshID_
+  !! Returns the mesh IDs of a dimension without allocation
 
   ! @GetElemNumMethods
   PROCEDURE, PRIVATE, PASS(obj) :: GetTotalElemNum1 => obj_GetTotalElemNum1
@@ -1541,7 +1543,7 @@ END INTERFACE MeshSelectionDisplay
 ! See also: [[obj_IsMeshIDAllocated]], [[obj_Add]]
 
 INTERFACE
-  MODULE PURE FUNCTION obj_GetMeshID(obj, dim) RESULT(ans)
+  MODULE FUNCTION obj_GetMeshID(obj, dim) RESULT(ans)
     CLASS(MeshSelection_), INTENT(IN) :: obj
     !! mesh selection
     INTEGER(I4B), INTENT(IN) :: dim
@@ -1549,6 +1551,29 @@ INTERFACE
     INTEGER(I4B), ALLOCATABLE :: ans(:)
     !! mesh IDs of dim
   END FUNCTION obj_GetMeshID
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetMeshID_@GetMethods
+!----------------------------------------------------------------------------
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-07
+! summary: GetMeshID of given dimension without allocation.
+!
+! This is method is similar to the [[obj_GetMeshID]] function.
+! But this method does not allocates data.
+!
+INTERFACE
+  MODULE SUBROUTINE obj_GetMeshID_(obj, dim, ans, tsize)
+    CLASS(MeshSelection_), INTENT(IN) :: obj
+    !! mesh selection
+    INTEGER(I4B), INTENT(IN) :: dim
+    !! dimension of the list
+    INTEGER(I4B), INTENT(INOUT)  :: ans(:)
+    !! mesh IDs of given dimension
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! amount of data written in ans
+  END SUBROUTINE obj_GetMeshID_
 END INTERFACE
 
 !----------------------------------------------------------------------------

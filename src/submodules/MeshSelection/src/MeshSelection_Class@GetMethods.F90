@@ -21,6 +21,8 @@
 SUBMODULE(MeshSelection_Class) GetMethods
 USE IntVector_Method, ONLY: ASSIGNMENT(=)
 USE IntVector_Method, ONLY: IsAllocated
+USE IntVector_Method, ONLY: IntVectorGet_ => Get_
+USE IntVector_Method, ONLY: IntVectorGet => Get
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -34,19 +36,70 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshID
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshID()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 SELECT CASE (dim)
 CASE (0)
-  IF (IsAllocated(obj%pointMeshID)) ans = obj%pointMeshID
+  ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
 CASE (1)
-  IF (IsAllocated(obj%curveMeshID)) ans = obj%curveMeshID
+  ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
 CASE (2)
-  IF (IsAllocated(obj%surfaceMeshID)) ans = obj%surfaceMeshID
+  ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
 CASE (3)
-  IF (IsAllocated(obj%volumeMeshID)) ans = obj%volumeMeshID
+  ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for dim.")
+#endif
+  CALL Reallocate(ans, math%zero_i)
+END SELECT
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshID
+
+!----------------------------------------------------------------------------
+!                                                                 GetMeshID_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMeshID_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshID_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = 0
+
+SELECT CASE (dim)
+CASE (0)
+  CALL IntVectorGet_(obj=obj%pointMeshID, ans=ans, tsize=tsize)
+CASE (1)
+  CALL IntVectorGet_(obj=obj%curveMeshID, ans=ans, tsize=tsize)
+CASE (2)
+  CALL IntVectorGet_(obj=obj%surfaceMeshID, ans=ans, tsize=tsize)
+CASE (3)
+  CALL IntVectorGet_(obj=obj%volumeMeshID, ans=ans, tsize=tsize)
 CASE DEFAULT
 END SELECT
-IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
-END PROCEDURE obj_GetMeshID
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshID_
 
 !----------------------------------------------------------------------------
 !                                                         IsMeshIDAllocated
