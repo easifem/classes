@@ -16,13 +16,14 @@
 !
 
 SUBMODULE(AbstractBC_Class) SetMethods
-USE Display_Method, ONLY: Display, ToString
-USE GlobalData, ONLY: CHAR_LF
-USE ReallocateUtility, ONLY: Reallocate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE GlobalData, ONLY: CHAR_LF
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -233,7 +234,7 @@ SUBROUTINE SetCheckError(obj, constantNodalValue, spaceNodalValue, &
   isok = notFunc_notExt .AND. isUserFunction
   IF (isok) THEN
     CALL AssertError1(math%no, myName, &
-                      "AbstractBC_::obj is initiated with &
+      "AbstractBC_::obj is initiated with &
                       &useFunction=.FALSE. and isUseExternal=.FALSE. &
                       &So you cannot provide userFunction.")
   END IF
@@ -244,7 +245,7 @@ SUBROUTINE SetCheckError(obj, constantNodalValue, spaceNodalValue, &
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%constant)
   IF (bool2) THEN
     CALL AssertError1(math%no, myName, &
-                    "AbstractBC_::obj is not initiated &
+      "AbstractBC_::obj is not initiated &
                     &with nodalValueType=Constant &
                     &So, constantNodalValue cannot be present.")
   END IF
@@ -256,7 +257,7 @@ SUBROUTINE SetCheckError(obj, constantNodalValue, spaceNodalValue, &
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%space)
   IF (bool2) THEN
     CALL AssertError1(math%no, myName, &
-                      "AbstractBC_::obj is not initiated &
+      "AbstractBC_::obj is not initiated &
                         &with nodalValueType=Space. So, spaceNodalValue &
                         &cannot be present.")
   END IF
@@ -267,7 +268,7 @@ SUBROUTINE SetCheckError(obj, constantNodalValue, spaceNodalValue, &
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%time)
   IF (bool2) THEN
     CALL AssertError1(math%no, myName, &
-                      "AbstractBC_::obj is not initiated &
+      "AbstractBC_::obj is not initiated &
                       &with nodalValueType=Time. So, timeNodalValue &
                       &cannot be present.")
   END IF
@@ -278,7 +279,7 @@ SUBROUTINE SetCheckError(obj, constantNodalValue, spaceNodalValue, &
   bool2 = bool1 .AND. (obj%nodalValueType .NE. TypeFeVariableOpt%spacetime)
   IF (bool2) THEN
     CALL AssertError1(math%no, myName, &
-                      "AbstractBC_::obj is not initiated with &
+      "AbstractBC_::obj is not initiated with &
                       &nodalValueType=SpaceTime So, spaceTimeNodalValue &
                       &cannot be present")
   END IF
@@ -288,7 +289,7 @@ SUBROUTINE SetCheckError(obj, constantNodalValue, spaceNodalValue, &
   IF (isUserFunction) THEN
     bool1 = obj%isUserFunction
     CALL AssertError1(bool1, myName, &
-                      "AbstractBC_::obj is not correctly initiated &
+      "AbstractBC_::obj is not correctly initiated &
                       &for userFunction")
   END IF
 #endif
@@ -341,7 +342,7 @@ SUBROUTINE set_elem_to_faces(obj)
 
   INTEGER(I4B) :: ii, jj, nsd, tsize, indx(4), tmeshid, maxnode2elem, &
                   localFaceNumber, localCellNumber
-  INTEGER(I4B), POINTER :: intptr(:)
+  INTEGER(I4B), ALLOCATABLE :: intptr(:)
   CLASS(AbstractMesh_), POINTER :: bmesh, cmesh
   INTEGER(I4B), ALLOCATABLE :: bndy2cell(:), bndy_con(:), n2e(:), &
                                cell_con(:)
@@ -374,7 +375,8 @@ SUBROUTINE set_elem_to_faces(obj)
   obj%isElemToFace = .TRUE.
   nsd = obj%dom%GetNSD()
   tsize = nsd - 1
-  CALL obj%boundary%GetMeshIDPointer(dim=tsize, ans=intptr, tsize=tmeshid)
+  intptr = obj%boundary%GetMeshID(dim=tsize)
+  tmeshid = SIZE(intptr)
   ! The above statement tells us that this method works
   ! when isSelectionByMeshID is set to .true. in the boundary object
 
@@ -383,7 +385,7 @@ SUBROUTINE set_elem_to_faces(obj)
   IF (isok) THEN
     obj%tElemToFace = 0
     CALL Reallocate(obj%elemToFace, 0, 0)
-    intptr => NULL()
+    IF (ALLOCATED(intptr)) DEALLOCATE (intptr)
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
@@ -480,7 +482,7 @@ SUBROUTINE set_elem_to_faces(obj)
   IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
   IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
   IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
-  intptr => NULL()
+  IF (ALLOCATED(intptr)) DEALLOCATE (intptr)
   bmesh => NULL()
   cmesh => NULL()
 
@@ -488,7 +490,6 @@ SUBROUTINE set_elem_to_faces(obj)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE set_elem_to_faces
 
 !----------------------------------------------------------------------------
@@ -507,7 +508,7 @@ SUBROUTINE set_elem_to_edges(obj)
 
   INTEGER(I4B) :: ii, jj, tsize, indx(4), tmeshid, maxnode2elem, &
                   localEdgeNumber, localCellNumber, nsd
-  INTEGER(I4B), POINTER :: intptr(:)
+  INTEGER(I4B), ALLOCATABLE  :: intptr(:)
   CLASS(AbstractMesh_), POINTER :: bmesh, cmesh
   INTEGER(I4B), ALLOCATABLE :: bndy2cell(:), bndy_con(:), n2e(:), &
                                cell_con(:)
@@ -519,17 +520,10 @@ SUBROUTINE set_elem_to_edges(obj)
 #endif
 
   IF (obj%isElemToEdge) THEN
-
-#ifdef DEBUG_VER
-    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                      'obj%isElemToEdge is already .true., so nothing to do')
-#endif
-
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
 #endif
-
     RETURN
   END IF
 
@@ -537,14 +531,26 @@ SUBROUTINE set_elem_to_edges(obj)
 
   nsd = obj%dom%GetNSD()
 
-  CALL obj%boundary%GetMeshIDPointer(dim=dim, ans=intptr, tsize=tmeshid)
+  intptr = obj%boundary%GetMeshID(dim=dim)
+  tmeshid = SIZE(intptr)
 
   isok = tmeshid .EQ. 0 .OR. (nsd .NE. 3)
 
   IF (isok) THEN
     obj%tElemToEdge = 0
     CALL Reallocate(obj%elemToEdge, 0, 0)
-    CALL finishme
+    IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+    IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
+    IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
+    IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
+    IF (ALLOCATED(intptr)) DEALLOCATE (intptr)
+    bmesh => NULL()
+    cmesh => NULL()
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
     RETURN
   END IF
 
@@ -604,24 +610,18 @@ SUBROUTINE set_elem_to_edges(obj)
 
   END DO boundary_loop
 
-  DEALLOCATE (n2e, bndy_con, cell_con)
+  IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
+  IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
+  IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
+  IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
+  IF (ALLOCATED(intptr)) DEALLOCATE (intptr)
+  bmesh => NULL()
+  cmesh => NULL()
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
-CONTAINS
-  SUBROUTINE finishme
-    IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
-    IF (ALLOCATED(bndy_con)) DEALLOCATE (bndy_con)
-    IF (ALLOCATED(cell_con)) DEALLOCATE (cell_con)
-    IF (ALLOCATED(bndy2cell)) DEALLOCATE (bndy2cell)
-    intptr => NULL()
-    bmesh => NULL()
-    cmesh => NULL()
-  END SUBROUTINE finishme
-
 END SUBROUTINE set_elem_to_edges
 
 !----------------------------------------------------------------------------

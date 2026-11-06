@@ -196,9 +196,9 @@ CONTAINS
   !! Display content of AbstractBC
 
   ! @TomlMethods
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Initiate from toml
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
     obj_ImportFromToml2
   !! Initiate from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
@@ -247,9 +247,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshID => &
     obj_GetMeshID
   !! Get MeshID
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshIDPointer => &
-    obj_GetMeshIDPointer
-  !! Get mesh id pointer
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshID_ => &
+    obj_GetMeshID_
+  !! Get MeshID
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNodeNum => &
     obj_GetTotalNodeNum
   !! Get total node number
@@ -781,24 +781,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetMeshIDPointer@GetMethods
+!                                                      GetMeshID_@GetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
+!> authors: Vikas Sharma, Ph. D.
 ! date: 2026-02-16
-! summary: Get the pointer to MeshID
+! summary: This routine returns MeshID without allocation
 !
-!# GetMeshIDPointer
-!
-! Get the pointer to MeshID.
+! Get the mesh id.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetMeshIDPointer(obj, dim, ans, tsize)
+  MODULE SUBROUTINE obj_GetMeshID_(obj, dim, ans, tsize)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), POINTER, INTENT(OUT) :: ans(:)
+    !! dimension of the mesh
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! meshID of given dimensions are returned in ans
     INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_GetMeshIDPointer
+    !! amount of data written in ans
+  END SUBROUTINE obj_GetMeshID_
 END INTERFACE
 
 !----------------------------------------------------------------------------

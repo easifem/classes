@@ -16,11 +16,11 @@
 !
 
 SUBMODULE(AbstractBC_Class) IOMethods
+USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 USE Display_Method, ONLY: Display
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
-
 IMPLICIT NONE
+
 CONTAINS
 
 !----------------------------------------------------------------------------

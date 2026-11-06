@@ -16,9 +16,8 @@
 !
 
 SUBMODULE(AbstractBC_Class) ConstructorMethods
-USE InputUtility, ONLY: Input
 USE Display_Method, ONLY: ToString
-
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
 CONTAINS
 
@@ -143,9 +142,9 @@ isok = isok .AND. (obj%nodalValueType .NE. TypeFEVariableOpt%constant)
 
 IF (isok) THEN
   CALL e%RaiseWarning(modName//'::'//myName//" - "// &
-                      "When meshSelection is by MeshID and `isUserFunction` &
-                      &is false, then `nodalValueType` in `AbstractBC_` &
-                      &object should be Constant.")
+                      "When meshSelection is MeshID and `isUserFunction` "// &
+                      "is false, then `nodalValueType` in `AbstractBC_` "// &
+                      "object should be Constant.")
 END IF
 #endif
 

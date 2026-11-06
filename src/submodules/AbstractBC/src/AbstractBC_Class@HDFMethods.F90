@@ -16,8 +16,9 @@
 !
 
 SUBMODULE(AbstractBC_Class) HDFMethods
-USE Display_Method, ONLY: ToString, Display
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE ReallocateUtility, ONLY: Reallocate
 
@@ -161,7 +162,7 @@ IF (.NOT. obj%isUserFunction) THEN
 #ifdef DEBUG_VER
   CASE DEFAULT
     CALL AssertError1(.FALSE., myName, &
-          'No case found for nodalValueType = '//ToString(obj%nodalValueType))
+                      'No case found for nodalValueType = '//ToString(obj%nodalValueType))
 #endif
 
   END SELECT
@@ -250,7 +251,7 @@ IF (.NOT. obj%isUserFunction) THEN
 #ifdef DEBUG_VER
   isok = ALLOCATED(obj%nodalValue)
   CALL AssertError1(isok, myName, &
-                'nodalValue is not allocated, it seems nodalValue is not set')
+                    'nodalValue is not allocated, it seems nodalValue is not set')
 #endif
 
   SELECT CASE (obj%nodalValueType)
@@ -270,7 +271,7 @@ IF (.NOT. obj%isUserFunction) THEN
 #ifdef DEBUG_VER
   CASE DEFAULT
     CALL AssertError1(.FALSE., myName, &
-          'No case found for nodalValueType = '//ToString(obj%nodalValueType))
+                      'No case found for nodalValueType = '//ToString(obj%nodalValueType))
 #endif
 
   END SELECT

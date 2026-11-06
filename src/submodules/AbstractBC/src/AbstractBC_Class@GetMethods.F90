@@ -15,15 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractBC_Class) GetMethods
-USE Display_Method, ONLY: ToString, Display
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 IsInitiated
+!                                                                IsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsInitiated
@@ -39,7 +39,7 @@ ans = obj%isElemToEdge
 END PROCEDURE obj_IsElemToEdgeInitiated
 
 !----------------------------------------------------------------------------
-!                                                       IsElemToFaceInitiated
+!                                                      IsElemToFaceInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsElemToFaceInitiated
@@ -133,12 +133,26 @@ ans = obj%boundary%GetMeshID(dim=dim)
 END PROCEDURE obj_GetMeshID
 
 !----------------------------------------------------------------------------
-!                                                           GetMeshIDPointer
+!                                                                 GetMeshID
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMeshIDPointer
-CALL obj%boundary%GetMeshIDPointer(dim=dim, ans=ans, tsize=tsize)
-END PROCEDURE obj_GetMeshIDPointer
+MODULE PROCEDURE obj_GetMeshID_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshID_()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL obj%boundary%GetMeshID_(dim=dim, ans=ans, tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMeshID_
 
 !----------------------------------------------------------------------------
 !
