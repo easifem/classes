@@ -10,6 +10,7 @@ ignore = [
   "magic-number-in-array-size",
   "mixed-scalar-array-declaration",
   "assumed-size-character-intent",
+  "incorrect-keyword-case",
 ]
 file-extensions = ["f90", "F90"]
 line-length = 78
