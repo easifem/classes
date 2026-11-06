@@ -1,0 +1,27 @@
+ {
+  "nthreads": 10,
+  "lowercase_intrinsics": true,
+  "hover_signature": true,
+  "hover_language": "fortran",
+  "use_signature_help": true,
+  "incremental_sync": true,
+  "recursion_limit": 1000,
+  "source_dirs": [
+    "src/**",
+    "../base/src/**",
+    "/home/easifem/.easifem/easifem/src/tomlf/src/**"
+  ],
+  "include_dirs": ["src/submodules/include"],
+  "pp_defs": {
+  "DEBUG_VER": "",
+  "DEBUG_VER": "",
+  "USE_CMAKE": "",
+  "USE_Real64": "",
+  "USE_Int32": "",
+  "USE_GMSH": "",
+  "USE_LUA": "",
+  "USE_LIS": "",
+  "USE_SUPERLU": ""
+  },
+  "excl_paths": ["docs/**", "build/**", "src/modules/*/examples/**"]
+}
