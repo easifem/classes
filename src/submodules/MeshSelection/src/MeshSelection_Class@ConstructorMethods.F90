@@ -19,18 +19,24 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) ConstructorMethods
+USE BoundingBox_Method, ONLY: BoundingBox_Copy => Copy
+USE BoundingBox_Method, ONLY: BoundingBox_Deallocate => DEALLOCATE
+USE BoundingBox_Method, ONLY: BoundingBox_Initiate => Initiate
+USE BoundingBox_Method, ONLY: BoundingBox_Reallocate => Reallocate
+USE FPL_Method, ONLY: CheckEssentialParam
+USE FPL_Method, ONLY: GetValue
+USE FPL_Method, ONLY: Set
 USE InputUtility, ONLY: Input
+USE IntVector_Method, ONLY: IntVector_Copy => Copy
+USE IntVector_Method, ONLY: IntVector_Deallocate => DEALLOCATE
+USE IntVector_Method, ONLY: IntVector_IsAllocated => IsAllocated
 USE ReallocateUtility, ONLY: Reallocate
-USE IntVector_Method, ONLY: IntVector_Deallocate => DEALLOCATE, &
-                            IntVector_IsAllocated => IsAllocated, &
-                            IntVector_Copy => Copy
-USE FPL_Method, ONLY: CheckEssentialParam, Set, GetValue
-USE BoundingBox_Method, ONLY: BoundingBox_Deallocate => DEALLOCATE, &
-                              BoundingBox_Initiate => Initiate, &
-                              BoundingBox_Reallocate => Reallocate, &
-                              BoundingBox_Copy => Copy
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MeshSelection_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
@@ -151,13 +157,12 @@ END PROCEDURE obj_IsSelectionByBox
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CheckEssentialParam
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
 CHARACTER(:), ALLOCATABLE :: astr, prefix0
 
-#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
-#endif
 
 IF (PRESENT(prefix)) THEN
   prefix0 = prefix
@@ -175,7 +180,6 @@ CALL CheckEssentialParam(obj=param, keys=astr, prefix=prefix0, &
 astr = ""
 prefix0 = ""
 
-#ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
@@ -341,7 +345,21 @@ END PROCEDURE obj_Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Final()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
@@ -399,6 +417,8 @@ IF (isok) THEN
   tsize = SIZE(obj2%pointBox)
   CALL BoundingBox_Reallocate(obj%pointBox, tsize)
   CALL BoundingBox_Copy(obj%pointBox, obj2%pointBox)
+ELSE
+  CALL BoundingBox_Deallocate(obj%pointBox)
 END IF
 
 isok = ALLOCATED(obj2%curveBox)
@@ -406,6 +426,8 @@ IF (isok) THEN
   tsize = SIZE(obj2%curveBox)
   CALL BoundingBox_Reallocate(obj%curveBox, tsize)
   CALL BoundingBox_Copy(obj%curveBox, obj2%curveBox)
+ELSE
+  CALL BoundingBox_Deallocate(obj%curveBox)
 END IF
 
 isok = ALLOCATED(obj2%surfaceBox)
@@ -413,6 +435,8 @@ IF (isok) THEN
   tsize = SIZE(obj2%surfaceBox)
   CALL BoundingBox_Reallocate(obj%surfaceBox, tsize)
   CALL BoundingBox_Copy(obj%surfaceBox, obj2%surfaceBox)
+ELSE
+  CALL BoundingBox_Deallocate(obj%surfaceBox)
 END IF
 
 isok = ALLOCATED(obj2%volumeBox)
@@ -420,6 +444,8 @@ IF (isok) THEN
   tsize = SIZE(obj2%volumeBox)
   CALL BoundingBox_Reallocate(obj%volumeBox, tsize)
   CALL BoundingBox_Copy(obj%volumeBox, obj2%volumeBox)
+ELSE
+  CALL BoundingBox_Deallocate(obj%volumeBox)
 END IF
 
 #ifdef DEBUG_VER
@@ -479,5 +505,7 @@ END PROCEDURE Reallocate_Ptr_Vector
 !----------------------------------------------------------------------------
 !                                                              Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

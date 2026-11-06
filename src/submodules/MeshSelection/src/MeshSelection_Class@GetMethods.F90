@@ -19,9 +19,14 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) GetMethods
-USE IntVector_Method, ONLY: isAllocated, ASSIGNMENT(=), GetPointer, Size
-
+USE IntVector_Method, ONLY: ASSIGNMENT(=)
+USE IntVector_Method, ONLY: IsAllocated
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -31,95 +36,36 @@ CONTAINS
 MODULE PROCEDURE obj_GetMeshID
 SELECT CASE (dim)
 CASE (0)
-  IF (isAllocated(obj%pointMeshID)) ans = obj%pointMeshID
+  IF (IsAllocated(obj%pointMeshID)) ans = obj%pointMeshID
 CASE (1)
-  IF (isAllocated(obj%curveMeshID)) ans = obj%curveMeshID
+  IF (IsAllocated(obj%curveMeshID)) ans = obj%curveMeshID
 CASE (2)
-  IF (isAllocated(obj%surfaceMeshID)) ans = obj%surfaceMeshID
+  IF (IsAllocated(obj%surfaceMeshID)) ans = obj%surfaceMeshID
 CASE (3)
-  IF (isAllocated(obj%volumeMeshID)) ans = obj%volumeMeshID
+  IF (IsAllocated(obj%volumeMeshID)) ans = obj%volumeMeshID
 CASE DEFAULT
 END SELECT
 IF (.NOT. ALLOCATED(ans)) ALLOCATE (ans(0))
 END PROCEDURE obj_GetMeshID
 
 !----------------------------------------------------------------------------
-!                                                         GetMeshIDPointer
+!                                                         IsMeshIDAllocated
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetMeshIDPointer
-tsize = 0
-ans => NULL()
-
+MODULE PROCEDURE obj_IsMeshIDAllocated
 SELECT CASE (dim)
 CASE (0)
-  tsize = SIZE(obj%pointMeshID)
-  ans => GetPointer(obj%pointMeshID, tsize)
-
+  ans = IsAllocated(obj%pointMeshID)
 CASE (1)
-  tsize = SIZE(obj%curveMeshID)
-  ans => GetPointer(obj%curveMeshID, tsize)
-
+  ans = IsAllocated(obj%curveMeshID)
 CASE (2)
-  tsize = SIZE(obj%surfaceMeshID)
-  ans => GetPointer(obj%surfaceMeshID, tsize)
-
+  ans = IsAllocated(obj%surfaceMeshID)
 CASE (3)
-  tsize = SIZE(obj%volumeMeshID)
-  ans => GetPointer(obj%volumeMeshID, tsize)
-
-CASE DEFAULT
-END SELECT
-END PROCEDURE obj_GetMeshIDPointer
-
-!----------------------------------------------------------------------------
-!                                                       GetElemNumPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetElemNumPointer
-tsize = 0
-ans => NULL()
-
-SELECT CASE (dim)
-CASE (0)
-  tsize = SIZE(obj%pointElemNum)
-  ans => GetPointer(obj%pointElemNum, tsize)
-
-CASE (1)
-  tsize = SIZE(obj%curveElemNum)
-  ans => GetPointer(obj%curveElemNum, tsize)
-
-CASE (2)
-  tsize = SIZE(obj%surfaceElemNum)
-  ans => GetPointer(obj%surfaceElemNum, tsize)
-
-CASE (3)
-  tsize = SIZE(obj%volumeElemNum)
-  ans => GetPointer(obj%volumeElemNum, tsize)
-
-CASE DEFAULT
-
-END SELECT
-END PROCEDURE obj_GetElemNumPointer
-
-!----------------------------------------------------------------------------
-!                                                         isMeshIDAllocated
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_isMeshIDAllocated
-SELECT CASE (dim)
-CASE (0)
-  ans = isAllocated(obj%pointMeshID)
-CASE (1)
-  ans = isAllocated(obj%curveMeshID)
-CASE (2)
-  ans = isAllocated(obj%surfaceMeshID)
-CASE (3)
-  ans = isAllocated(obj%volumeMeshID)
+  ans = IsAllocated(obj%volumeMeshID)
 CASE DEFAULT
   ans = .FALSE.
 END SELECT
-END PROCEDURE obj_isMeshIDAllocated
+END PROCEDURE obj_IsMeshIDAllocated
 
 !----------------------------------------------------------------------------
 !                                                         isElemNumAllocated
@@ -128,13 +74,13 @@ END PROCEDURE obj_isMeshIDAllocated
 MODULE PROCEDURE obj_isElemNumAllocated
 SELECT CASE (dim)
 CASE (0)
-  ans = isAllocated(obj%pointElemNum)
+  ans = IsAllocated(obj%pointElemNum)
 CASE (1)
-  ans = isAllocated(obj%curveElemNum)
+  ans = IsAllocated(obj%curveElemNum)
 CASE (2)
-  ans = isAllocated(obj%surfaceElemNum)
+  ans = IsAllocated(obj%surfaceElemNum)
 CASE (3)
-  ans = isAllocated(obj%volumeElemNum)
+  ans = IsAllocated(obj%volumeElemNum)
 CASE DEFAULT
   ans = .FALSE.
 END SELECT
@@ -145,7 +91,7 @@ END PROCEDURE obj_isElemNumAllocated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_isnodenumAllocated
-ans = isAllocated(obj%nodenum)
+ans = IsAllocated(obj%nodenum)
 END PROCEDURE obj_isnodenumAllocated
 
 !----------------------------------------------------------------------------
@@ -175,7 +121,27 @@ END PROCEDURE obj_GetParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetPrefix
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = myprefix
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetPrefix
+
+!----------------------------------------------------------------------------
+!                                                             Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

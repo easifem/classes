@@ -19,17 +19,22 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
 USE BoundingBox_Method, ONLY: BoundingBox_Display => Display
-USE GlobalData, ONLY: CHAR_LF, stdout
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE IntVector_Method, ONLY: Intvector_Display => Display
-USE IntVector_Method, ONLY: ASSIGNMENT(=), isAllocated
-
+USE IntVector_Method, ONLY: ASSIGNMENT(=)
+USE IntVector_Method, ONLY: isAllocated
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                    Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
@@ -47,140 +52,146 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL Display(msg, unitNo=unitNo)
 CALL Display(obj%isInit, "IsInitiated: ", unitNo=unitNo)
-IF (.NOT. obj%isinit) RETURN
+IF (.NOT. obj%isinit) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
-CALL Display(obj%ms(1), "IsSelectionByMeshID : ", unitNo=unitNo)
-CALL Display(obj%ms(2), "IsSelectionByElemNum : ", unitNo=unitNo)
-CALL Display(obj%ms(3), "IsSelectionByNodeNum : ", unitNo=unitNo)
-CALL Display(obj%ms(4), "IsSelectionByBox : ", unitNo=unitNo)
+CALL Display(obj%ms(1), "isSelectionByMeshID : ", unitNo=unitNo)
+CALL Display(obj%ms(2), "isSelectionByElemNum : ", unitNo=unitNo)
+CALL Display(obj%ms(3), "isSelectionByNodeNum : ", unitNo=unitNo)
+CALL Display(obj%ms(4), "isSelectionByBox : ", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%pointMeshID)
-CALL Display(bool1, "PointMeshID ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "pointMeshID ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%curveMeshID)
-CALL Display(bool1, "CurveMeshID ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "curveMeshID ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%surfaceMeshID)
-CALL Display(bool1, "SurfaceMeshID ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "surfaceMeshID ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%volumeMeshID)
-CALL Display(bool1, "VolumeMeshID ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "volumeMeshID ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%pointElemNum)
-CALL Display(bool1, "PointElemNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "pointElemNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%curveElemNum)
-CALL Display(bool1, "CurveElemNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "curveElemNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%surfaceElemNum)
-CALL Display(bool1, "SurfaceElemNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "surfaceElemNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%volumeElemNum)
-CALL Display(bool1, "VolumeElemNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "volumeElemNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%pointNodeNum)
-CALL Display(bool1, "PointNodeNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "pointNodeNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%curveNodeNum)
-CALL Display(bool1, "CurveNodeNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "curveNodeNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%surfaceNodeNum)
-CALL Display(bool1, "SurfaceNodeNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "surfaceNodeNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%volumeNodeNum)
-CALL Display(bool1, "VolumeNodeNum ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "volumeNodeNum ALLOCATED :", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%pointBox)
-CALL Display(bool1, "PointBox ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "pointBox ALLOCATED :", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%curveBox)
-CALL Display(bool1, "CurveBox ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "curveBox ALLOCATED :", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%surfaceBox)
-CALL Display(bool1, "SurfaceBox ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "surfaceBox ALLOCATED :", unitNo=unitNo)
 
 bool1 = ALLOCATED(obj%volumeBox)
-CALL Display(bool1, "VolumeBox ALLOCATED :", unitNo=unitNo)
+CALL Display(bool1, "volumeBox ALLOCATED :", unitNo=unitNo)
 
 bool1 = IsAllocated(obj%pointMeshID)
-CALL Display(bool1, "PointMeshID ALLOCATED :")
+CALL Display(bool1, "pointMeshID ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%pointMeshID, "PointMeshID : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%curveMeshID)
-CALL Display(bool1, "CurveMeshID ALLOCATED :")
+CALL Display(bool1, "curveMeshID ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%curveMeshID, "CurveMeshID : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%surfaceMeshID)
-CALL Display(bool1, "SurfaceMeshID ALLOCATED :")
+CALL Display(bool1, "surfaceMeshID ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%surfaceMeshID, "SurfaceMeshID : ", &
                          unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%volumeMeshID)
-CALL Display(bool1, "VolumeMeshID ALLOCATED :")
+CALL Display(bool1, "volumeMeshID ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%volumeMeshID, "VolumeMeshID : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%pointElemNum)
-CALL Display(bool1, "PointElemNum ALLOCATED :")
+CALL Display(bool1, "pointElemNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%pointElemNum, "PointElemNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%curveElemNum)
-CALL Display(bool1, "CurveElemNum ALLOCATED :")
+CALL Display(bool1, "curveElemNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%curveElemNum, "CurveElemNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%surfaceElemNum)
-CALL Display(bool1, "SurfaceElemNum ALLOCATED :")
+CALL Display(bool1, "surfaceElemNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%surfaceElemNum, "SurfaceElemNum : ", &
                          unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%volumeElemNum)
-CALL Display(bool1, "VolumeElemNum ALLOCATED :")
+CALL Display(bool1, "volumeElemNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%volumeElemNum, "VolumeElemNum : ", &
                          unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%pointNodeNum)
-CALL Display(bool1, "PointNodeNum ALLOCATED :")
+CALL Display(bool1, "pointNodeNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%pointNodeNum, "PointNodeNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%curveNodeNum)
-CALL Display(bool1, "CurveNodeNum ALLOCATED :")
+CALL Display(bool1, "curveNodeNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%curveNodeNum, "CurveNodeNum : ", unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%surfaceNodeNum)
-CALL Display(bool1, "SurfaceNodeNum ALLOCATED :")
+CALL Display(bool1, "surfaceNodeNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%surfaceNodeNum, "SurfaceNodeNum : ", &
                          unitNo=unitNo)
 END IF
 
 bool1 = IsAllocated(obj%volumeNodeNum)
-CALL Display(bool1, "VolumeNodeNum ALLOCATED :")
+CALL Display(bool1, "volumeNodeNum ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   CALL Intvector_Display(obj%volumeNodeNum, "VolumeNodeNum : ", &
                          unitNo=unitNo)
 END IF
 
 bool1 = ALLOCATED(obj%pointBox)
-CALL Display(bool1, "PointBox ALLOCATED :")
+CALL Display(bool1, "pointBox ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%pointBox)
     CALL BoundingBox_Display(obj%pointBox(ii), &
@@ -190,7 +201,7 @@ IF (bool1) THEN
 END IF
 
 bool1 = ALLOCATED(obj%curveBox)
-CALL Display(bool1, "CurveBox ALLOCATED :")
+CALL Display(bool1, "curveBox ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%curveBox)
     CALL BoundingBox_Display(obj%curveBox(ii), &
@@ -200,7 +211,7 @@ IF (bool1) THEN
 END IF
 
 bool1 = ALLOCATED(obj%surfaceBox)
-CALL Display(bool1, "SurfaceBox ALLOCATED :")
+CALL Display(bool1, "surfaceBox ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%surfaceBox)
     CALL BoundingBox_Display(obj%surfaceBox(ii), &
@@ -210,7 +221,7 @@ IF (bool1) THEN
 END IF
 
 bool1 = ALLOCATED(obj%volumeBox)
-CALL Display(bool1, "VolumeBox ALLOCATED :")
+CALL Display(bool1, "volumeBox ALLOCATED :", unitNo=unitNo)
 IF (bool1) THEN
   DO ii = 1, SIZE(obj%volumeBox)
     CALL BoundingBox_Display(obj%volumeBox(ii), &

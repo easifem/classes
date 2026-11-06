@@ -19,17 +19,22 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) TomlMethods
-USE GlobalData, ONLY: CHAR_LF, stdout
-USE Display_Method, ONLY: Display, &
-                          Tostring, &
-                          EqualLine, &
-                          BlankLines
 USE BoundingBox_Method, ONLY: BoundingBox_GetValue => GetValue
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: Tostring
+USE GlobalData, ONLY: CHAR_LF
+USE GlobalData, ONLY: stdout
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_serialize
 USE TomlUtility, ONLY: GetValue
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -37,8 +42,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportParamFromToml
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
-INTEGER(I4B) :: origin, stat
+#endif
+
+INTEGER(I4B) :: origin, STAT
 LOGICAL(LGT) :: isSelectionByElemNum, isSelectionByNodeNum, &
                 isSelectionByBox, isSelectionByMeshID
 
@@ -48,16 +56,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL GetValue(table=table, key="isSelectionByMeshID", &
-   VALUE=isSelectionByMeshID, default_value=.FALSE., origin=origin, stat=stat)
+              VALUE=isSelectionByMeshID, default_value=.FALSE., &
+              origin=origin, STAT=STAT)
 
 CALL GetValue(table=table, key="isSelectionByNodeNum", &
-  VALUE=isSelectionByNodeNum, default_value=.FALSE., origin=origin, stat=stat)
+              VALUE=isSelectionByNodeNum, default_value=.FALSE., &
+              origin=origin, STAT=STAT)
 
 CALL GetValue(table=table, key="isSelectionByBox", &
-      VALUE=isSelectionByBox, default_value=.FALSE., origin=origin, stat=stat)
+              VALUE=isSelectionByBox, default_value=.FALSE., &
+              origin=origin, STAT=STAT)
 
 CALL GetValue(table=table, key="isSelectionByElemNum", &
-  VALUE=isSelectionByElemNum, default_value=.FALSE., origin=origin, stat=stat)
+              VALUE=isSelectionByElemNum, default_value=.FALSE., &
+              origin=origin, STAT=STAT)
 
 CALL SetMeshSelectionParam(param=param, prefix=obj%GetPrefix(), &
                            isSelectionByMeshID=isSelectionByMeshID, &
@@ -84,7 +96,7 @@ SUBROUTINE ReadIsSelectionByMeshIDFromToml(obj, table, dom)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIsSelectionByMeshIDFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   INTEGER(I4B), ALLOCATABLE :: aintvec(:)
   LOGICAL(LGT), PARAMETER :: default_value = .FALSE.
   TYPE(toml_table), POINTER :: node
@@ -102,7 +114,7 @@ SUBROUTINE ReadIsSelectionByMeshIDFromToml(obj, table, dom)
 
   CALL GetValue(table=table, key="isSelectionByMeshID", &
                 VALUE=obj%ms(1), default_value=default_value, origin=origin, &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -110,7 +122,7 @@ SUBROUTINE ReadIsSelectionByMeshIDFromToml(obj, table, dom)
 #endif
 
   node => NULL()
-  CALL toml_get(table, "meshID", node, origin=origin, stat=stat, &
+  CALL toml_get(table, "meshID", node, origin=origin, STAT=STAT, &
                 requested=.FALSE.)
 
   isok = ASSOCIATED(node)
@@ -118,7 +130,7 @@ SUBROUTINE ReadIsSelectionByMeshIDFromToml(obj, table, dom)
 #ifdef DEBUG_VER
   IF (obj%ms(1)) THEN
     CALL AssertError1(isok, myName, &
-          'You have set isSelectionByMeshID = .TRUE. but you have not &
+      'You have set isSelectionByMeshID = .TRUE. but you have not &
           &provided meshID table.')
   END IF
 #endif
@@ -137,22 +149,22 @@ SUBROUTINE ReadIsSelectionByMeshIDFromToml(obj, table, dom)
 
   ! read point
   CALL GetValue(table=node, key="point", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=0_I4B, meshID=aintvec, dom=dom)
 
   ! read line
   CALL GetValue(table=node, key="line", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=1_I4B, meshID=aintvec, dom=dom)
 
   ! read surface
   CALL GetValue(table=node, key="surface", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=2_I4B, meshID=aintvec, dom=dom)
 
   ! read volume
   CALL GetValue(table=node, key="volume", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=3_I4B, meshID=aintvec, dom=dom)
 
 #ifdef DEBUG_VER
@@ -174,7 +186,7 @@ SUBROUTINE ReadIsSelectionByElemNumFromToml(obj, table, dom)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIsSelectionByElemNumFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   INTEGER(I4B), ALLOCATABLE :: aintvec(:)
   LOGICAL(LGT), PARAMETER :: default_value = .FALSE.
   TYPE(toml_table), POINTER :: node
@@ -192,7 +204,7 @@ SUBROUTINE ReadIsSelectionByElemNumFromToml(obj, table, dom)
 
   CALL GetValue(table=table, key="isSelectionByElemNum", &
                 VALUE=obj%ms(2), default_value=default_value, origin=origin, &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -200,7 +212,7 @@ SUBROUTINE ReadIsSelectionByElemNumFromToml(obj, table, dom)
 #endif
 
   node => NULL()
-  CALL toml_get(table, "elemNum", node, origin=origin, stat=stat, &
+  CALL toml_get(table, "elemNum", node, origin=origin, STAT=STAT, &
                 requested=.FALSE.)
 
   isok = ASSOCIATED(node)
@@ -208,7 +220,7 @@ SUBROUTINE ReadIsSelectionByElemNumFromToml(obj, table, dom)
 #ifdef DEBUG_VER
   IF (obj%ms(2)) THEN
     CALL AssertError1(isok, myName, &
-          'You have set isSelectionByElemNum = .TRUE. but you have not &
+      'You have set isSelectionByElemNum = .TRUE. but you have not &
           &provided elemNum table.')
   END IF
 #endif
@@ -225,22 +237,22 @@ SUBROUTINE ReadIsSelectionByElemNumFromToml(obj, table, dom)
 
   ! read points
   CALL GetValue(table=node, key="point", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=0_I4B, elemNum=aintvec, dom=dom)
 
   ! read lines
   CALL GetValue(table=node, key="line", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=1_I4B, elemNum=aintvec, dom=dom)
 
   ! read surfaces
   CALL GetValue(table=node, key="surface", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=2_I4B, elemNum=aintvec, dom=dom)
 
   ! read volumes
   CALL GetValue(table=node, key="volume", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=3_I4B, elemNum=aintvec, dom=dom)
 
 #ifdef DEBUG_VER
@@ -263,7 +275,7 @@ SUBROUTINE ReadIsSelectionByNodeNumFromToml(obj, table, dom)
   CHARACTER(*), PARAMETER :: myName = "ReadIsSelectionByNodeNumFromToml()"
 #endif
 
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   INTEGER(I4B), ALLOCATABLE :: aintvec(:)
   LOGICAL(LGT), PARAMETER :: default_value = .FALSE.
   TYPE(toml_table), POINTER :: node
@@ -281,7 +293,7 @@ SUBROUTINE ReadIsSelectionByNodeNumFromToml(obj, table, dom)
 
   CALL GetValue(table=table, key="isSelectionByNodeNum", &
                 VALUE=obj%ms(3), default_value=default_value, origin=origin, &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -289,7 +301,7 @@ SUBROUTINE ReadIsSelectionByNodeNumFromToml(obj, table, dom)
 #endif
 
   node => NULL()
-  CALL toml_get(table, "nodeNum", node, origin=origin, stat=stat, &
+  CALL toml_get(table, "nodeNum", node, origin=origin, STAT=STAT, &
                 requested=.FALSE.)
 
   isok = ASSOCIATED(node)
@@ -297,7 +309,7 @@ SUBROUTINE ReadIsSelectionByNodeNumFromToml(obj, table, dom)
 #ifdef DEBUG_VER
   IF (obj%ms(3)) THEN
     CALL AssertError1(isok, myName, &
-          'You have set isSelectionByNodeNum = .TRUE. but you have not &
+      'You have set isSelectionByNodeNum = .TRUE. but you have not &
           &provided elemNum table.')
   END IF
 #endif
@@ -314,22 +326,22 @@ SUBROUTINE ReadIsSelectionByNodeNumFromToml(obj, table, dom)
 
   ! read points
   CALL GetValue(table=node, key="point", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=0_I4B, nodeNum=aintvec, dom=dom)
 
   ! read lines
   CALL GetValue(table=node, key="line", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=1_I4B, nodeNum=aintvec, dom=dom)
 
   ! read surfaces
   CALL GetValue(table=node, key="surface", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=2_I4B, nodeNum=aintvec, dom=dom)
 
   ! read volumes
   CALL GetValue(table=node, key="volume", VALUE=aintvec, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=3_I4B, nodeNum=aintvec, dom=dom)
 
 #ifdef DEBUG_VER
@@ -351,7 +363,7 @@ SUBROUTINE ReadIsSelectionByBoxFromToml(obj, table, dom)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIsSelectionByBoxFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT), PARAMETER :: default_value = .FALSE.
   TYPE(toml_table), POINTER :: node
   TYPE(BoundingBox_), ALLOCATABLE :: box(:)
@@ -369,7 +381,7 @@ SUBROUTINE ReadIsSelectionByBoxFromToml(obj, table, dom)
 
   CALL GetValue(table=table, key="isSelectionByBox", &
                 VALUE=obj%ms(4), default_value=default_value, origin=origin, &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -377,7 +389,7 @@ SUBROUTINE ReadIsSelectionByBoxFromToml(obj, table, dom)
 #endif
 
   node => NULL()
-  CALL toml_get(table, "box", node, origin=origin, stat=stat, &
+  CALL toml_get(table, "box", node, origin=origin, STAT=STAT, &
                 requested=.FALSE.)
 
   isok = ASSOCIATED(node)
@@ -402,22 +414,22 @@ SUBROUTINE ReadIsSelectionByBoxFromToml(obj, table, dom)
 
   ! read points
   CALL BoundingBox_GetValue(table=node, key="point", VALUE=box, &
-                            origin=origin, stat=stat, isFound=isok)
+                            origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=0_I4B, box=box, dom=dom)
 
   ! read lines
   CALL BoundingBox_GetValue(table=node, key="line", VALUE=box, &
-                            origin=origin, stat=stat, isFound=isok)
+                            origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=1_I4B, box=box, dom=dom)
 
   ! read surfaces
   CALL BoundingBox_GetValue(table=node, key="surface", VALUE=box, &
-                            origin=origin, stat=stat, isFound=isok)
+                            origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=2_I4B, box=box, dom=dom)
 
   ! read volumes
   CALL BoundingBox_GetValue(table=node, key="volume", VALUE=box, &
-                            origin=origin, stat=stat, isFound=isok)
+                            origin=origin, STAT=STAT, isFound=isok)
   IF (isok) CALL obj%Add(dim=3_I4B, box=box, dom=dom)
 
 #ifdef DEBUG_VER
@@ -463,10 +475,9 @@ MODULE PROCEDURE obj_ImportFromToml2
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 LOGICAL(LGT) :: isok
 #endif
-
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -477,25 +488,18 @@ CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
-      'following error occured while reading the toml file :: cannot find [' &
-                  //tomlName//'] table in config.')
+                  'Cannot find ['//tomlName//'] table in config.')
 #endif
 
 CALL obj%ImportFromToml(table=node)
 
-#ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
-  CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-               unitNo=stdout)
-END IF
-#endif
-
 node => NULL()
+DEALLOCATE (table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
