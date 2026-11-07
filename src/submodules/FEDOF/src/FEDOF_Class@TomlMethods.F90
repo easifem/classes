@@ -73,11 +73,12 @@ DO ii = 1, totalTopo
   CALL obj%fe(jj)%ptr%ImportFromToml(elemType=elemType, table=table, &
                                      nsd=nsd)
 
-  ! TODO: Should be called only once, different elements should
-  ! have same baseInterpolation and baseContinuity
-  obj%baseInterpolation = obj%fe(jj)%ptr%GetBaseInterpolation()
-  obj%baseContinuity = obj%fe(jj)%ptr%GetBaseContinuity()
-  obj%isBrokenSpace = obj%fe(jj)%ptr%GetIsBrokenSpace()
+  ! All elements read the same table, so the first one gives these values
+  IF (ii .EQ. 1) THEN
+    obj%baseInterpolation = obj%fe(jj)%ptr%GetBaseInterpolation()
+    obj%baseContinuity = obj%fe(jj)%ptr%GetBaseContinuity()
+    obj%isBrokenSpace = obj%fe(jj)%ptr%GetIsBrokenSpace()
+  END IF
 END DO
 IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
 
@@ -109,7 +110,8 @@ END PROCEDURE obj_ImportFromToml1
 !                                                         ImportOrderFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound, origin, STAT)
+SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound, origin, &
+                               STAT)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: order(:)
   LOGICAL(LGT), INTENT(OUT) :: islocal
