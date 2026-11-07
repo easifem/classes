@@ -136,7 +136,7 @@ IF (obj%isBrokenSpace) THEN
   RETURN
 END IF
 
-! Following code is executed for brokenSpaces
+! Following code is executed for continuous case
 ! Allocation
 CALL Reallocate(foundFaces, obj%tFaces)
 CALL Reallocate(e2e, ReferenceElementInfo%maxFaces, 3)
@@ -305,6 +305,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                   islocal=islocal)
+
+ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=math%yes)
 
 CALL obj%GetOrders(globalElement=iel, islocal=math%yes, cellOrder=cellOrder, &
                    faceOrder=faceOrder, edgeOrder=edgeOrder, &

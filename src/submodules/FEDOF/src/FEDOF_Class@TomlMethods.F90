@@ -65,6 +65,7 @@ nsd = obj%mesh%GetNSD()
 
 ! Before we make FEDOF we need isBrokenSpace info which
 ! is available after we make AbstractFE by reading toml config.
+obj%ownFePointers = math%yes
 DO ii = 1, totalTopo
   elemType = topoList(ii)
   jj = GetElementIndex(elemType)

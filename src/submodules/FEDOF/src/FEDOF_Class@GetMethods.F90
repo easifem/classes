@@ -588,14 +588,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+opt0 = UpperCase(opt(1:1))
+
 tsize = 0
 localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                            islocal=islocal)
 
-! opt0 is ignored in case of brokenSpace
+! In a broken space only Cell and All select DOFs, the block of the cell
 IF (obj%isBrokenSpace) THEN
-  CALL obj%GetCellDOF(globalCell=localElement, islocal=math%yes, &
-                      ans=ans, tsize=tsize)
+
+  IF (opt0 .EQ. "C" .OR. opt0 .EQ. "A") THEN
+    CALL obj%GetCellDOF(globalCell=localElement, islocal=math%yes, &
+                        ans=ans, tsize=tsize)
+  END IF
+  ! NOTE: In case of Vertex, Edge, and Face tsize = 0
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
@@ -604,8 +610,6 @@ IF (obj%isBrokenSpace) THEN
 END IF
 
 ! following code handles the continuous spaces
-opt0 = UpperCase(opt(1:1))
-
 CALL obj%mesh%GetConnectivity_(globalElement=localElement, &
                                islocal=math%yes, opt=opt0, tsize=tcon, &
                                ans=con)
@@ -865,7 +869,7 @@ MODULE PROCEDURE obj_GetOrders
 CHARACTER(*), PARAMETER :: myName = 'obj_GetOrders()'
 #endif
 
-INTEGER(I4B) :: ii, jj, localElement, tNodeOrder, cellCon(1), &
+INTEGER(I4B) :: ii, localElement, tNodeOrder, cellCon(1), &
                 faceCon(ReferenceElementInfo%maxEdges), &
                 edgeCon(ReferenceElementInfo%maxEdges), &
                 nodeCon(TypeMeshOpt%maxCon)
@@ -875,8 +879,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-localElement = &
-  obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
+                                           islocal=islocal)
 
 CALL obj%mesh%GetConnectivity_(globalElement=localElement, &
                                islocal=math%yes, &
@@ -889,29 +893,33 @@ DO ii = 1, tCellOrder
   cellOrder(ii) = obj%cellOrder(localElement)
 END DO
 
-DO jj = 1, tFaceOrder
-  ii = faceCon(jj)
-  faceOrder(1, jj) = obj%faceOrder(ii)
-  IF (obj%baseContinuity .EQ. "DG") THEN
-    faceOrder(1, jj) = obj%cellOrder(localElement)
-  END IF
-  faceOrder(2:3, jj) = faceOrder(1, jj)
-END DO
+IF (obj%isBrokenSpace) THEN
+  DO ii = 1, tFaceOrder
+    faceOrder(1:3, ii) = obj%cellOrder(localElement)
+  END DO
 
-DO jj = 1, tEdgeOrder
-  ii = edgeCon(jj)
-  edgeOrder(jj) = obj%edgeOrder(ii)
-  IF (obj%baseContinuity .EQ. "DG") THEN
-    edgeOrder(jj) = obj%cellOrder(localElement)
-  END IF
-END DO
+  DO ii = 1, tEdgeOrder
+    edgeOrder(ii) = obj%cellOrder(localElement)
+  END DO
 
-CALL obj%mesh%GetOrientation(cellOrient=cellOrient, faceOrient=faceOrient, &
+ELSE
+  DO ii = 1, tFaceOrder
+    faceOrder(1:3, ii) = obj%faceOrder(faceCon(ii))
+  END DO
+
+  DO ii = 1, tEdgeOrder
+    edgeOrder(ii) = obj%edgeOrder(edgeCon(ii))
+  END DO
+END IF
+
+CALL obj%mesh%GetOrientation(cellOrient=cellOrient, &
+                             faceOrient=faceOrient, &
                              edgeOrient=edgeOrient, &
                              tCellOrient=tCellOrient, &
                              tFaceOrient=tFaceOrient, &
                              tEdgeOrient=tEdgeOrient, &
-                             globalElement=localElement, islocal=math%yes)
+                             globalElement=localElement, &
+                             islocal=math%yes)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1055,19 +1063,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                            islocal=islocal)
 
-IF (obj%baseContinuity .EQ. "DG") THEN
-#ifdef DEBUG_VER
-  CALL AssertError1(localFaceNumber .GE. 1 .AND. &
-                    localFaceNumber .LE. &
-                    obj%mesh%GetTotalVertexNodes( &
-                    globalElement=localElement, islocal=math%yes), &
-                    myName, 'Invalid DG local facet number')
-#endif
+IF (obj%isBrokenSpace) THEN
   ! A DG trace is evaluated from the complete owning-cell coefficient block.
   CALL obj%GetCellDOF(globalCell=localElement, islocal=math%yes, &
                       ans=ans, tsize=tsize)
+
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - [END] ')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
   RETURN
 END IF
