@@ -86,11 +86,13 @@ All 57 tests pass (2026-10-29).
 
 - `scaleForQuadOrder` is 2 by default in the type and in `Deallocate`, but
   1 by default in `ImportFromToml`.
+- `ImportFromToml2`: `dom` is optional but passed to `ImportFromToml1`,
+  which needs it; `printToml` is not used.
+
+## Open
 
 ### 8. Minor
 
-- `ImportFromToml2`: `dom` is optional but passed to `ImportFromToml1`,
-  which needs it; `printToml` is not used.
 - `GetEdgeDOF1`, `GetTotalEdgeDOF1`, `GetFaceDOF1`, `GetTotalFaceDOF1`
   ignore `islocal`.
 - The old numbering skipped inactive entities without propagating offsets.

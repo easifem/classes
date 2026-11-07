@@ -3843,7 +3843,7 @@ END INTERFACE
 !
 ! See also: [[obj_ImportFromToml2]]
 
-INTERFACE FEDOFImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml1(obj, table, dom)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
@@ -3852,7 +3852,7 @@ INTERFACE FEDOFImportFromToml
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     !! domain; the FEDOF uses its mesh of dimension nsd
   END SUBROUTINE obj_ImportFromToml1
-END INTERFACE FEDOFImportFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                   ImportFromToml@IOMethods
@@ -3916,20 +3916,20 @@ END INTERFACE FEDOFImportFromToml
 ! See also: [[obj_ImportFromToml1]]
 
 INTERFACE FEDOFImportFromToml
-  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, &
-                                        filename, printToml, dom)
+  MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, dom, afile, &
+                                        filename, printToml)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the toml table in the file
+    CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
+    !! domain; it must be present
     TYPE(TxtFile_), INTENT(INOUT), OPTIONAL :: afile
     !! toml file (opened)
     CHARACTER(*), INTENT(IN), OPTIONAL :: filename
     !! name of the toml file
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: printToml
     !! not used
-    CLASS(AbstractDomain_), INTENT(IN), OPTIONAL :: dom
-    !! domain; it must be present
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE FEDOFImportFromToml
 
