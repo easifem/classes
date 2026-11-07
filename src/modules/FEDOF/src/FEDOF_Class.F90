@@ -104,9 +104,9 @@ TYPE :: FEDOF_
   !! True for a broken space: all DOFs belong to cells (see
   !! SetFedofForH1Broken)
   LOGICAL(LGT) :: ownFePointers = math%no
-  !! If the object initiates the AbstractFE_ pointer
-  !! then ownFePointer is set to true, in this case
-  !! fedof will deallocate AbstractFE_ pointers in Deallocate Method.
+  !! True if this object made the finite elements (Initiate or
+  !! ImportFromToml); Deallocate then frees them. It is false for a copy,
+  !! which shares the finite elements of its source.
   INTEGER(I4B) :: tdof = math%zero_i
   !! Total number of degrees of freedom
   INTEGER(I4B) :: tNodes = math%zero_i
@@ -120,9 +120,8 @@ TYPE :: FEDOF_
   INTEGER(I4B) :: maxCon = math%zero_i
   !! maximum number of connectivity
   INTEGER(I4B) :: sumElemTotalDOF = math%zero_i
-  !! sum of total  degrees of freedom for each element.
-  !! this is useful for DGM
-  !! This is cached when we initiate the FEDOF
+  !! sum of the total degrees of freedom of the active elements;
+  !! this is useful for DGM. GetSumElemTotalDOF computes and caches it.
   INTEGER(I4B) :: tActiveCells = math%zero_i
   !! total number of active cells in FEDOF and mesh.
   INTEGER(I4B) :: maxQuadPoint = math%zero_i
@@ -178,8 +177,9 @@ TYPE :: FEDOF_
   !! point, line, triangle, quadrangle, tetrahedron, hexahedron, prism,
   !! pyramid
   CLASS(AbstractMesh_), POINTER :: mesh => NULL()
-  !! Pointer to domain
+  !! Pointer to the mesh of dimension nsd of the domain
   CLASS(AbstractDomain_), POINTER :: dom => NULL()
+  !! Pointer to the domain
 
 CONTAINS
   !@ConstructorMethods
@@ -286,7 +286,7 @@ CONTAINS
   !! Get element DOFs without allocation, using the first option letter
   PROCEDURE, PUBLIC, PASS(obj) :: GetFacetConnectivity_ => &
     obj_GetFacetConnectivity_
-  !! Get the H1 DOFs of a facet of an element
+  !! Get the DOFs of a facet of an element (cell block if broken)
   PROCEDURE, PUBLIC, PASS(obj) :: GetMeshPointer => obj_GetMeshPointer
   !! Get a pointer to the mesh of the FEDOF
   PROCEDURE, PUBLIC, PASS(obj) :: GetDomainPointer => obj_GetDomainPointer
@@ -307,7 +307,7 @@ CONTAINS
   !! Get the largest number of degrees of freedom of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetMaxTotalQuadraturePoints => &
     obj_GetMaxTotalQuadraturePoints
-  !! Get the number of quadrature points of the elements
+  !! Get the largest number of quadrature points of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEPointer => obj_GetFEPointer
   !! Get the finite element of an element
   PROCEDURE, PUBLIC, PASS(obj) :: GetSumElemTotalDOF => obj_GetSumElemTotalDOF
@@ -493,6 +493,7 @@ END INTERFACE
 !   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !   - 2026-11-02: optional argument isBrokenSpace replaces the DG
 !     baseContinuity
+!   - 2026-11-07: Order the dummy arguments alpha, beta, lambda.
 !
 ! Formula:
 !   For neighboring cells K and L sharing edge e:
@@ -518,7 +519,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &
     obj, order, dom, baseContinuity, baseInterpolation, isBrokenSpace, &
-    feType, ipType, basisType, alpha, lambda, beta, islocal, dofType, &
+    feType, ipType, basisType, alpha, beta, lambda, islocal, dofType, &
     transformType, quadratureIsHomogeneous, quadratureType, &
     quadratureOrder, quadratureIsOrder, quadratureNips, quadratureIsNips, &
     quadratureAlpha, quadratureBeta, quadratureLambda)
@@ -901,6 +902,18 @@ END INTERFACE
 ! pointers to the domain, the mesh and the finite elements are copied, not the
 ! objects they point to, so obj and obj2 share the finite elements.
 !
+! The finite elements which obj owns are freed first, except those shared
+! with obj2; obj keeps the ownership of shared ones, so a copy of obj
+! onto itself, or from a copy of obj, frees nothing. Otherwise the finite
+! elements stay owned by obj2: Deallocate of obj does not free them, and obj
+! must not be used after obj2 is deallocated or initiated again.
+!
+! An array which is not allocated in obj2 is not copied, so obj keeps its
+! old values when obj2 is not initiated.
+!
+! Changes:
+!   - 2026-11-07: Free the FE of obj; a copy does not own the FE of obj2.
+!
 ! Examples
 !
 !```fortran
@@ -992,8 +1005,13 @@ END INTERFACE
 ! date: 2024-05-20
 ! summary: Deallocate the FEDOF
 !
-! Reset all data, nullify the domain and mesh pointers, and call Deallocate on
-! each finite element and nullify its pointer.
+! Reset all data, nullify the domain and mesh pointers, and nullify the
+! pointers to the finite elements. If obj owns the finite elements, also
+! call Deallocate on each of them and free it. Pointers from GetFEPointer
+! are then no longer valid, and neither are copies of obj.
+!
+! Changes:
+!   - 2026-11-07: Free the finite elements owned by obj.
 !
 ! Examples
 !
@@ -1148,15 +1166,72 @@ END INTERFACE
 ! date: 2026-10-27
 ! summary: Get total number of cells in fedof mesh
 !
-! Sometimes we just need total number of cell elements in mesh.
-! Getting mesh pointer from fedof, just for doing this tasks
-! seems waste of resources. So this method returns total number of
-! cells in fedof.
+! Return the number of cells of the mesh without getting the mesh pointer.
+! Inactive cells are counted; see [[obj_GetTotalActiveCells]].
 !
+! Returns:
+!   ans : INTEGER(I4B) - total number of cells
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractMesh_Class, ONLY: AbstractMesh_
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE BaseType, ONLY: quadopt => TypeQuadratureOpt
+!   USE Display_Method, ONLY: Display
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDOF_Class, ONLY: FEDOF_
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: DFP
+!   USE GlobalData, ONLY: I4B
+!   USE GlobalData, ONLY: LGT
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!   USE Test_Method, ONLY: IS
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
+!   TYPE(FEDOF_) :: obj
+!   TYPE(FEDomain_) :: dom
+!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
+!   TYPE(HDF5File_) :: meshfile
+!   INTEGER(I4B) :: found, want
+!   LOGICAL(LGT) :: isok
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!   CALL meshfile%Initiate(filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL dom%Initiate(meshfile, '')
+!   meshptr => dom%GetMeshPointer()
+!
+!   CALL obj%Initiate( &
+!                      order=1, &
+!                      dom=dom, &
+!                      baseContinuity="H1", &
+!                      baseInterpolation="Hierarchical", &
+!                      quadratureIsHomogeneous=math%yes, &
+!                      quadratureType=[quadopt%GaussLegendre], &
+!                      quadratureOrder=[2], &
+!                      quadratureIsOrder=math%yes)
+!
+!   found = obj%GetTotalCells()
+!   want = meshptr%GetTotalElements()
+!   isok = found .EQ. want
+!   CALL OK(isok, "GetTotalCells order = 1: ")
+!
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetTotalActiveCells]]
+
 INTERFACE
   MODULE FUNCTION obj_GetTotalCells(obj) RESULT(ans)
     CLASS(FEDOF_), INTENT(IN) :: obj
+    !! FEDOF object
     INTEGER(I4B) :: ans
+    !! total number of cells
   END FUNCTION obj_GetTotalCells
 END INTERFACE
 
@@ -1446,10 +1521,8 @@ END INTERFACE
 ! date: 2024-05-14
 ! summary: Get the degrees of freedom of a facet
 !
-! @note
-!   Broken spaces are not handled yet: the code still checks for a DG
-!   baseContinuity (the owning-cell block is returned only then).
-! @endnote
+! In a broken space, write the complete owning-cell block for every local
+! facet, because a trace is evaluated from all DOFs of the cell.
 !
 ! For H1 on two-dimensional linear geometry, write the facet's
 ! vertex DOF numbers followed by its face-interior DOF numbers. Vertex
@@ -1460,6 +1533,7 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-30: Convert facet mesh node identifiers to vertex DOF numbers.
 !   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
+!   - 2026-11-07: Choose the owning-cell block by isBrokenSpace.
 !
 ! Examples
 !
@@ -1563,8 +1637,9 @@ INTERFACE
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     INTEGER(I4B), INTENT(INOUT) :: ans(:)
-    !! H1 vertex and face-interior DOFs;
-    !! only ans(1:tsize) is written (two-dimensional linear geometry)
+    !! H1 vertex and face-interior DOFs (two-dimensional linear geometry),
+    !! or the owning-cell block of a broken space; only ans(1:tsize) is
+    !! written
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written in ans
     INTEGER(I4B), INTENT(IN) :: globalElement
@@ -2027,7 +2102,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetCellDOF@GetMethods
+!                                                  GetTotalCellDOF@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -2246,10 +2321,9 @@ END INTERFACE
 ! date: 2024-05-21
 ! summary: Get the total number of degrees of freedom
 !
-! For BrokenSpaces, this is the sum of the active cell basis sizes.
+! For broken spaces, this is the sum of the active cell basis sizes.
 ! No shared mesh vertex, edge or face DOFs are added.
-! See [[GetConnectivity]] for a
-! complete broken-space numbering and basis-evaluation example.
+! See [[obj_GetConnectivity]] for the broken-space numbering.
 !
 ! GetTotalDOF is a generic method: without arguments it returns the number of
 ! degrees of freedom of the FEDOF; with globalElement, the number of degrees
@@ -2257,14 +2331,12 @@ END INTERFACE
 ! vertices, edges, faces or cell (opt V, E, F or C) or all (A).
 !
 ! Changes:
-!
 !   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !
 ! Returns:
-!
 !   ans : INTEGER(I4B) - total number of degrees of freedom
 !
-! Examples:
+! Examples
 !
 ! Dummy example; the complete program is GetTotalDOF_test_1.F90
 ! in src/modules/FEDOF/examples.
@@ -2428,12 +2500,14 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       Display@IOMethods
+!                                                  DisplayCellOrder@IOMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-19
 ! summary: Display the order of the cells
+!
+! Display whether cellOrder is allocated, its size and its entries.
 !
 ! Examples
 !
@@ -2499,8 +2573,9 @@ END INTERFACE
 !
 ! If order has one entry, all cells get that order. Else order(ii) is the
 ! order of element ii, where ii is a local element number if islocal is true
-! and a global element number if not. Also sets the largest cell, face and
-! edge orders.
+! and a global element number if not. Also sets maxCellOrder; maxFaceOrder
+! and maxEdgeOrder get the same value, which is an upper bound of the face
+! and edge orders of a conforming space.
 !
 ! See also: [[obj_SetFaceOrder]], [[obj_SetEdgeOrder]]
 
@@ -2572,15 +2647,14 @@ END INTERFACE
 ! date: 2025-10-22
 ! summary: Configure the shared finite element for one mesh element
 !
-! In a broken space, use the complete local Lagrange basis at the cell order,
-! including degree zero. Disable shared-edge orientation corrections so
-! the nodal ordering remains local to the cell. The quadrature order is
-! at least one even for constant cells. The returned FE reports its local
-! H1 basis implementation; the FEDOF itself stays a broken space.
+! In a broken space, use the complete local basis at the cell order. The
+! orientation is not set, so the local ordering remains local to the cell.
+! The FE is the broken variant which FEFactory makes for the interpolation.
 !
 ! Set the cell, face and edge orders and orientations in the finite element
 ! of the requested topology. Set its quadrature order to scaleForQuadOrder
-! times the cell order. Both global and local element IDs are accepted.
+! times the cell order (zero for a constant cell). Both global and local
+! element IDs are accepted.
 !
 ! Call SetFE before evaluating the object returned by GetFEPointer.
 ! Elements of one topology share that object: consume its shape data
@@ -2877,13 +2951,14 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!                                                      GetCellOrder@GetMethods
+!                                                     GetCellOrder@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-17
 ! summary: Get the order of the cell of an element
+!
+! Write the order of the cell in ans(1) and set tsize to one.
 !
 ! Examples
 !
@@ -2920,8 +2995,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!                                                      GetCellOrder@GetMethods
+!                                                     GetFaceOrder@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -2929,7 +3003,7 @@ END INTERFACE
 ! summary: Get the order of the faces of an element
 !
 ! ans(1:3, jj) is the order of face jj of the element; the three rows hold the
-! same order.
+! same order. In a broken space all face orders are zero.
 !
 ! Examples
 !
@@ -2999,13 +3073,15 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!
-!                                                      GetCellOrder@GetMethods
+!                                                     GetEdgeOrder@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-17
 ! summary: Get the order of the edges of an element
+!
+! ans(jj) is the order of edge jj of the element, for jj from 1 to tsize.
+! In a broken space all edge orders are zero.
 !
 ! Examples
 !
@@ -3080,11 +3156,9 @@ END INTERFACE
 ! date: 2026-10-24
 ! summary: Get element orders and orientations
 !
-! @note
-!   Broken spaces are not handled yet: the code still checks for a DG
-!   baseContinuity, which no longer exists. It should return the cell
-!   order for every local face and edge of a broken space.
-! @endnote
+! In a broken space, return the cell order for every local face and edge,
+! because the local basis is complete. The stored face and edge orders of a
+! broken space stay zero (see [[obj_GetFaceOrder]]).
 !
 ! Get the cell, face and edge polynomial orders and their mesh
 ! orientations. SetFE uses this method. Convert the supplied element
@@ -3094,6 +3168,7 @@ END INTERFACE
 ! Changes:
 !   - 2026-10-30: Use the converted local element for orientation lookup.
 !   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
+!   - 2026-11-07: Return the cell order in broken spaces by isBrokenSpace.
 !
 ! Examples
 !
@@ -3249,7 +3324,8 @@ END INTERFACE
 ! summary: Get the largest number of degrees of freedom of an element
 !
 ! Return the largest number of degrees of freedom of an element, the size
-! needed for ans of GetConnectivity_. The value is computed once and stored.
+! needed for ans of GetConnectivity_. All elements are visited, inactive
+! ones too. The value is computed once and stored.
 !
 ! Returns:
 !   ans : INTEGER(I4B) - largest number of degrees of freedom of an element
@@ -3376,6 +3452,9 @@ END INTERFACE
 ! scaleForQuadOrder times its cell order and get the number of quadrature
 ! points. The largest of these numbers is returned. The value is computed
 ! once and stored; it is computed again after the orders change.
+! All elements are visited, inactive ones too. The shared finite elements
+! keep the quadrature order of the last element of their topology, so call
+! SetFE before using one of them.
 !
 ! Changes:
 !   - 2026-10-29: return the largest value, not the one of the last element
@@ -3506,7 +3585,7 @@ INTERFACE FEDOFSetSparsity
 END INTERFACE FEDOFSetSparsity
 
 !----------------------------------------------------------------------------
-!                                                     SetSparsity@SetMethod
+!                                              SetSparsity@SetSparsityMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -3517,6 +3596,17 @@ END INTERFACE FEDOFSetSparsity
 ! degrees of freedom of element cellToCell(iel) of col_fedof (columns), in the
 ! block (ivar, jvar) of mat. The pattern is not finished; the caller finishes
 ! it.
+!
+! Inactive elements of obj and of col_fedof are skipped, and so are elements
+! with cellToCell(iel) equal to zero (no matching element).
+!
+! If obj and col_fedof are both broken spaces, the rows of element iel are
+! also connected to the mapped active neighbour cells, as in
+! [[obj_SetSparsity1]] with onlyCell false.
+!
+! Changes:
+!   - 2026-11-07: Skip inactive and unmatched elements.
+!   - 2026-11-07: Add neighbour-cell couplings between two broken spaces.
 !
 ! See also: [[obj_SetSparsity3]]
 
@@ -3529,7 +3619,7 @@ INTERFACE
     !! FEDOF of the columns
     INTEGER(I4B), INTENT(IN) :: cellToCell(:)
     !! cell to cell map: cellToCell(iel) is the global element of col_fedof
-    !! for local element iel of obj
+    !! for local element iel of obj; zero if there is no matching element
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! sparse matrix
     INTEGER(I4B), INTENT(IN) :: ivar
@@ -3551,7 +3641,11 @@ END INTERFACE
 ! the rows and fedofs(2) the columns. Else the block (ivar, jvar) of mat gets
 ! the pattern between fedofs(ivar) and fedofs(jvar); the cell to cell map
 ! between their meshes is made by FEDomainConnectivity_. All FEDOF must have
-! the same nsd.
+! the same nsd. Two broken spaces also get neighbour-cell couplings (see
+! [[obj_SetSparsity2]]); there is no onlyCell option here.
+!
+! Changes:
+!   - 2026-11-07: Add neighbour-cell couplings between two broken spaces.
 !
 ! Examples
 !
@@ -3644,11 +3738,11 @@ END INTERFACE FEDOFSetSparsity
 ! date: 2025-10-21
 ! summary: Get the finite element of an element
 !
-! In a broken space, the pointer refers to the reused local H1 Lagrange
-! evaluator. The broken property comes from cell-owned numbering, not a
-! different local polynomial. Call SetFE before consuming it. Shared-face
-! order reduction and shared-edge orientation corrections are not used
-! for a broken space.
+! In a broken space, the pointer refers to the broken variant of the FE
+! which FEFactory makes for the interpolation. The broken property comes
+! from cell-owned numbering, not a different local polynomial. Call SetFE
+! before consuming it. Shared-face order reduction and shared-edge
+! orientation corrections are not used for a broken space.
 !
 ! Return the finite element of the topology of the element. Call SetFE for the
 ! element first, so that the orders and orientations of the finite element are
@@ -3810,13 +3904,70 @@ END INTERFACE
 ! date: 2026-10-28
 ! summary: Get total number of active cells in fedof.
 !
-! This method lazy compute the total number of active cells in
-! mesh.
+! Count the active cells of the mesh at the first call and cache the value
+! in obj%tActiveCells. DEALLOCATE (and therefore Initiate) resets the cache.
+!
+! Returns:
+!   ans : INTEGER(I4B) - total number of active cells
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE AbstractMesh_Class, ONLY: AbstractMesh_
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE BaseType, ONLY: quadopt => TypeQuadratureOpt
+!   USE Display_Method, ONLY: Display
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDOF_Class, ONLY: FEDOF_
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: DFP
+!   USE GlobalData, ONLY: I4B
+!   USE GlobalData, ONLY: LGT
+!   USE HDF5File_Class, ONLY: HDF5File_
+!   USE Test_Method, ONLY: OK
+!   USE Test_Method, ONLY: IS
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: filename = "./meshdata/small_tri3_mesh.h5"
+!   TYPE(FEDOF_) :: obj
+!   TYPE(FEDomain_) :: dom
+!   CLASS(AbstractMesh_), POINTER :: meshptr => NULL()
+!   TYPE(HDF5File_) :: meshfile
+!   INTEGER(I4B) :: found, want
+!   LOGICAL(LGT) :: isok
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!   CALL meshfile%Initiate(filename, mode="READ")
+!   CALL meshfile%OPEN()
+!   CALL dom%Initiate(meshfile, '')
+!   meshptr => dom%GetMeshPointer()
+!
+!   CALL obj%Initiate( &
+!                      order=1, &
+!                      dom=dom, &
+!                      baseContinuity="H1", &
+!                      baseInterpolation="Hierarchical", &
+!                      quadratureIsHomogeneous=math%yes, &
+!                      quadratureType=[quadopt%GaussLegendre], &
+!                      quadratureOrder=[2], &
+!                      quadratureIsOrder=math%yes)
+!
+!   found = obj%GetTotalActiveCells()
+!   want = meshptr%GetTotalElements()
+!   isok = found .EQ. want
+!   CALL OK(isok, "GetTotalActiveCells order = 1: ")
+!
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetTotalCells]]
 
 INTERFACE
   MODULE FUNCTION obj_GetTotalActiveCells(obj) RESULT(ans)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
-    !! FEDOF; the cached sum is set at the first call
+    !! FEDOF; the cached count is set at the first call
     INTEGER(I4B) :: ans
     !! total number of active cells in fedof.
   END FUNCTION obj_GetTotalActiveCells
@@ -3832,7 +3983,7 @@ END INTERFACE
 !
 ! Read order (a number, a list, or the name of a csv file with the global
 ! element number and the order of each element), islocal and scaleForQuadOrder
-! (default 1) from the table. If order is absent, the order of each element is
+! (default 2) from the table. If order is absent, the order of each element is
 ! the order of its geometry. The finite elements read the other keys
 ! (baseContinuity, baseInterpolation, brokenSpace, ipType, quadrature
 ! options) from the same table; isBrokenSpace of the FEDOF is taken from
@@ -3863,7 +4014,7 @@ END INTERFACE
 ! summary: Initiate the FEDOF from a toml file
 !
 ! Read the table tomlName from the toml file (filename or afile) and call
-! ImportFromToml with it. dom must be present.
+! ImportFromToml with it.
 !
 ! Examples
 !
@@ -3915,7 +4066,7 @@ END INTERFACE
 !
 ! See also: [[obj_ImportFromToml1]]
 
-INTERFACE FEDOFImportFromToml
+INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, dom, afile, &
                                         filename, printToml)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
@@ -3923,7 +4074,7 @@ INTERFACE FEDOFImportFromToml
     CHARACTER(*), INTENT(IN) :: tomlName
     !! name of the toml table in the file
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
-    !! domain; it must be present
+    !! domain; the FEDOF uses its mesh of dimension nsd
     TYPE(TxtFile_), INTENT(INOUT), OPTIONAL :: afile
     !! toml file (opened)
     CHARACTER(*), INTENT(IN), OPTIONAL :: filename
@@ -3931,7 +4082,7 @@ INTERFACE FEDOFImportFromToml
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: printToml
     !! not used
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE FEDOFImportFromToml
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !

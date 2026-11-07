@@ -92,7 +92,8 @@ DO shape = 1, SIZE(fixtures)
                            baseInterpolation="Lagrange", &
                            ipType=TypeInterpolationOpt%Equidistance)
     DO p = 0, 3
-      CALL obj%Initiate(order=p, dom=dom, baseContinuity="DG", &
+      CALL obj%Initiate(order=p, dom=dom, baseContinuity="H1", &
+                        isBrokenSpace=.TRUE., &
                         baseInterpolation="Lagrange", &
                         ipType=TypeInterpolationOpt%Equidistance)
       ndof = obj%GetTotalDOF()

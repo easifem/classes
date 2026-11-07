@@ -66,13 +66,15 @@ DO shape = 1, SIZE(fixtures)
       END IF
       IF (inputMode .EQ. 1) THEN
         CALL obj%Initiate(order=orders, islocal=.TRUE., dom=dom, &
-                          baseContinuity="DG", baseInterpolation="Lagrange", &
+                          baseContinuity="H1", isBrokenSpace=.TRUE., &
+                          baseInterpolation="Lagrange", &
                           ipType=TypeInterpolationOpt%Equidistance)
       ELSE
         globalOrders = 0
         globalOrders(elements) = orders
         CALL obj%Initiate(order=globalOrders, islocal=.FALSE., dom=dom, &
-                          baseContinuity="DG", baseInterpolation="Lagrange", &
+                          baseContinuity="H1", isBrokenSpace=.TRUE., &
+                          baseInterpolation="Lagrange", &
                           ipType=TypeInterpolationOpt%Equidistance)
       END IF
       ndof = SUM(sizes)
