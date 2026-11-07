@@ -18,16 +18,17 @@
 !
 
 SUBMODULE(FEDOF_Class) SetSparsityMethods
-USE BaseType, ONLY: TypeMeshOpt
 USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity
-USE CSRMatrix_Method, ONLY: CSRMatrix_GetMatrixProp => GetMatrixProp
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: ToString
 USE FEDomainConnectivity_Class, ONLY: FEDomainConnectivity_
+USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@SetSparsityMethods.F90"
 #endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -35,45 +36,105 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity1
-CHARACTER(*), PARAMETER :: myName = "obj_setSparsity1()"
-INTEGER(I4B) :: tsize, ii, tdof, iel, telements
-INTEGER(I4B), ALLOCATABLE :: conn(:)
-LOGICAL(LGT) :: isok
-CLASS(AbstractMesh_), POINTER :: mesh
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
+#endif
+CHARACTER(*), PARAMETER :: opt_all = "A"
+INTEGER(I4B) :: ii, jj, te2eConn, tconn, iel, telements, te2e
+INTEGER(I4B), ALLOCATABLE :: conn(:), e2e(:), e2eConn(:)
+LOGICAL(LGT) :: isok, onlyCell0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-mesh => obj%GetMeshPointer()
-
 #ifdef DEBUG_VER
-isok = ASSOCIATED(mesh)
+isok = ASSOCIATED(obj%mesh)
 CALL AssertError1(isok, myName, 'obj%mesh NOT ASSOCIATED')
 
-tsize = mesh%GetTotalElements()
-isok = tsize .NE. 0_I4B
-CALL AssertError1(isok, myName, "Empty mesh found, returning")
+ii = obj%mesh%GetTotalElements()
+isok = ii .NE. 0_I4B
+CALL AssertError1(isok, myName, "Empty mesh found.")
 #endif
 
-tdof = obj%GetMaxTotalConnectivity()
-ALLOCATE (conn(tdof))
+tconn = obj%GetMaxTotalConnectivity()
+CALL Reallocate(conn, tconn)
+telements = obj%mesh%GetTotalElements()
 
-telements = mesh%GetTotalElements()
+onlyCell0 = Input(option=onlyCell, default=math%no)
 
-DO iel = 1, telements
+IF (.NOT. obj%isBrokenSpace .OR. onlyCell0) THEN
+  elemLoop: DO iel = 1, telements
+    isok = obj%mesh%isElementActive(globalElement=iel, islocal=math%yes)
+    IF (.NOT. isok) CYCLE elemLoop
+    CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                              ans=conn, tsize=tconn, opt=opt_all)
+    DO ii = 1, tconn
+      ! TODO: Check if the following method use reallocation at every call
+      CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), col=conn(1:tconn))
+    END DO
+  END DO elemLoop
+
+  CALL CSRMatrix_SetSparsity(mat)
+
+  IF (ALLOCATED(conn)) DEALLOCATE (conn)
+  IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
+  IF (ALLOCATED(e2eConn)) DEALLOCATE (e2eConn)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! The following code is executed for brokenSpaces
+CALL Reallocate(e2e, obj%mesh%GetMaxElementToElements())
+ii = (SIZE(e2e) + 1) * obj%GetMaxTotalConnectivity()
+CALL Reallocate(e2eConn, ii)
+
+elemLoop2: DO iel = 1, telements
+  isok = obj%mesh%isElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE elemLoop2
+
+  ! Get connectivity of fedof for iel
   CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
-                            ans=conn, tsize=tdof, opt="ALL")
-  DO ii = 1, tdof
-    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), col=conn(1:tdof))
+                            ans=conn, tsize=tconn, opt=opt_all)
+
+  ! Get element to element data for iel
+  CALL obj%mesh%GetElementToElements_(ans=e2e, tsize=te2e, &
+                                      globalElement=iel, islocal=math%yes)
+
+  ! Get connectvity of fedof for each element in e2e
+  te2eConn = tconn
+  e2eConn(1:tconn) = conn(1:tconn)
+  elemLoop3: DO ii = 1, te2e
+    ! Check which neighbor element is active
+    isok = obj%mesh%IsElementActive(globalElement=e2e(ii), &
+                                    islocal=math%no)
+    IF (.NOT. isok) CYCLE elemLoop3
+
+    CALL obj%GetConnectivity_(globalElement=e2e(ii), islocal=math%no, &
+                              ans=e2eConn(te2eConn + 1:), tsize=jj, &
+                              opt=opt_all)
+    te2eConn = te2eConn + jj
+  END DO elemLoop3
+
+  ! add sparsity for each dof value in conn
+  DO ii = 1, tconn
+    ! TODO: Check if the following method use reallocation at every call
+    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), &
+                               col=e2eConn(1:te2eConn))
   END DO
-END DO
+
+END DO elemLoop2
 
 CALL CSRMatrix_SetSparsity(mat)
 
-mesh => NULL()
-DEALLOCATE (conn)
+IF (ALLOCATED(conn)) DEALLOCATE (conn)
+IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
+IF (ALLOCATED(e2eConn)) DEALLOCATE (e2eConn)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -86,37 +147,34 @@ END PROCEDURE obj_SetSparsity1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetSparsity2
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity2()"
+#endif
+CHARACTER(*), PARAMETER :: opt_all = "A"
 INTEGER(I4B) :: tsize, ii, tdof, iel, telements, col_telements, col_tdof, &
                 col_iel
-INTEGER(I4B), ALLOCATABLE :: conn(:), col_conn(:)
 LOGICAL(LGT) :: isok
-CLASS(AbstractMesh_), POINTER :: mesh, col_mesh
+INTEGER(I4B), ALLOCATABLE :: conn(:), col_conn(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-mesh => obj%GetMeshPointer()
-col_mesh => col_fedof%GetMeshPointer()
-
 #ifdef DEBUG_VER
-
-isok = ASSOCIATED(mesh)
+isok = ASSOCIATED(obj%mesh)
 CALL AssertError1(isok, myName, 'obj%mesh NOT ASSOCIATED')
 
-isok = ASSOCIATED(col_mesh)
+isok = ASSOCIATED(col_fedof%mesh)
 CALL AssertError1(isok, myName, 'col_fedof%mesh NOT ASSOCIATED')
 
-tsize = mesh%GetTotalElements()
+tsize = obj%mesh%GetTotalElements()
 isok = tsize .NE. 0_I4B
-CALL AssertError1(isok, myName, "Empty mesh found, returning")
+CALL AssertError1(isok, myName, "Empty mesh found for obj, returning")
 
-tsize = col_mesh%GetTotalElements()
+tsize = col_fedof%mesh%GetTotalElements()
 isok = tsize .NE. 0_I4B
-CALL AssertError1(isok, myName, "Empty mesh found, returning")
-
+CALL AssertError1(isok, myName, "Empty mesh found for col_fedof, returning")
 #endif
 
 tdof = obj%GetMaxTotalConnectivity()
@@ -125,7 +183,7 @@ ALLOCATE (conn(tdof))
 col_tdof = col_fedof%GetMaxTotalConnectivity()
 ALLOCATE (col_conn(col_tdof))
 
-telements = mesh%GetTotalElements()
+telements = obj%mesh%GetTotalElements()
 
 #ifdef DEBUG_VER
 col_telements = SIZE(cellToCell)
@@ -134,30 +192,25 @@ CALL AssertError2(telements, col_telements, myName, &
 #endif
 
 DO iel = 1, telements
-
+  ! Check if the element is active
   CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
-                            ans=conn, tsize=tdof, opt="ALL")
+                            ans=conn, tsize=tdof, opt=opt_all)
 
   col_iel = cellToCell(iel)
 
   CALL col_fedof%GetConnectivity_(globalElement=col_iel, islocal=math%no, &
-                                  ans=col_conn, tsize=col_tdof, opt="ALL")
+                                  ans=col_conn, tsize=col_tdof, opt=opt_all)
 
   DO ii = 1, tdof
     CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), &
                                col=col_conn(1:col_tdof), ivar=ivar, &
                                jvar=jvar)
-
   END DO
-
 END DO
 
 ! CALL CSRMatrix_SetSparsity(mat)
-
-mesh => NULL()
-col_mesh => NULL()
-DEALLOCATE (conn)
-DEALLOCATE (col_conn)
+IF (ALLOCATED(conn)) DEALLOCATE (conn)
+IF (ALLOCATED(col_conn)) DEALLOCATE (col_conn)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -185,29 +238,22 @@ LOGICAL(LGT), PARAMETER :: isdebug = math%no
 #endif
 
 #ifdef DEBUG_VER
-!-------------------------- debug (o) ---------------------------
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 DO ivar = 1, SIZE(fedofs)
-
   isok = ASSOCIATED(fedofs(ivar)%ptr)
-
   CALL AssertError1(isok, myName, &
                     'fedofs('//Tostring(ivar)//')%ptr NOT ASSOCIATED')
-
   meshptr => fedofs(ivar)%ptr%GetMeshPointer()
-
   isok = ASSOCIATED(meshptr)
   CALL AssertError1(isok, myName, 'meshptr NOT ASSOCIATED')
-
   nsd(ivar) = meshptr%GetNSD()
-
 END DO
-
 isok = ALL(nsd .EQ. nsd(1))
 CALL AssertError1(isok, myName, 'NSD of fedofsare not identical')
-
-!-------------------------- debug (x) ---------------------------
 #endif
 
 rowMesh => NULL()
@@ -215,7 +261,7 @@ colMesh => NULL()
 
 SELECT CASE (mat%matrixProp(1:4))
 CASE ("RECT")
-  IF (isdebug) CALL Display("matrix is rectangular")
+  ! IF (isdebug) CALL Display("matrix is rectangular")
   rowfedof => fedofs(1)%ptr
   rowMesh => rowfedof%GetMeshPointer()
 
@@ -231,8 +277,7 @@ CASE ("RECT")
 
 CASE DEFAULT
   loop1: DO ivar = 1, SIZE(fedofs)
-
-    IF (isdebug) CALL Display("row domain = "//tostring(ivar))
+    ! IF (isdebug) CALL Display("row domain = "//tostring(ivar))
 
     rowfedof => fedofs(ivar)%ptr
     IF (.NOT. ASSOCIATED(rowfedof)) CYCLE loop1
@@ -242,8 +287,7 @@ CASE DEFAULT
     IF (rowMesh%isEmpty()) CYCLE loop1
 
     loop2: DO jvar = 1, SIZE(fedofs)
-
-      IF (isdebug) CALL Display("col domain = "//tostring(jvar))
+      ! IF (isdebug) CALL Display("col domain = "//tostring(jvar))
 
       colfedof => fedofs(jvar)%ptr
       IF (.NOT. ASSOCIATED(colfedof)) CYCLE loop2
@@ -259,7 +303,6 @@ CASE DEFAULT
       CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, &
                                 cellToCell=cellToCell, ivar=ivar, &
                                 jvar=jvar)
-
     END DO loop2
   END DO loop1
 END SELECT
@@ -274,7 +317,6 @@ CALL domainConn%DEALLOCATE()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetSparsity3
 
 !----------------------------------------------------------------------------

@@ -28,7 +28,7 @@ USE ElemData_Class, ONLY: ElemData_GetTotalGlobalVertexNodes
 USE ElemData_Class, ONLY: ElemData_GetEdge
 USE ElemData_Class, ONLY: ElemData_GetFace
 USE ElemData_Class, ONLY: ElemData_GetCell
-
+USE StringUtility, ONLY: UpperCase
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -42,7 +42,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalCells
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalCells()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%tCells
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalCells
 
 !----------------------------------------------------------------------------
@@ -50,7 +64,21 @@ END PROCEDURE obj_GetTotalCells
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCaseName
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCaseName()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%baseContinuity//obj%baseInterpolation
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetCaseName
 
 !----------------------------------------------------------------------------
@@ -58,8 +86,26 @@ END PROCEDURE obj_GetCaseName
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetVertexDOF
-tsize = 1
-ans(1) = obj%mesh%GetLocalNodeNumber(globalNode, islocal=islocal)
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = 'obj_GetVertexDOF()'
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%isBrokenSpace) THEN
+  tsize = 0
+ELSE
+  tsize = 1
+  ans(1) = obj%mesh%GetLocalNodeNumber(globalNode=globalNode, islocal=islocal)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetVertexDOF
 
 !----------------------------------------------------------------------------
@@ -67,12 +113,26 @@ END PROCEDURE obj_GetVertexDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetEdgeDOF1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetEdgeDOF1()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 tsize = 0
 DO ii = obj%edgeIA(globalEdge), obj%edgeIA(globalEdge + 1) - 1
   tsize = tsize + 1
   ans(tsize) = ii
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetEdgeDOF1
 
 !----------------------------------------------------------------------------
@@ -80,7 +140,21 @@ END PROCEDURE obj_GetEdgeDOF1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEdgeDOF1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEdgeDOF1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%edgeIA(globalEdge + 1) - obj%edgeIA(globalEdge)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalEdgeDOF1
 
 !----------------------------------------------------------------------------
@@ -88,24 +162,53 @@ END PROCEDURE obj_GetTotalEdgeDOF1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetEdgeDOF2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetEdgeDOF2()"
+#endif
 INTEGER(I4B) :: globalEdge
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 globalEdge = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
                                           islocal=islocal, &
                                           localEdgeNumber=localEdgeNumber)
+
 CALL obj%GetEdgeDOF(globalEdge=globalEdge, ans=ans, tsize=tsize, &
                     islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetEdgeDOF2
 
 !----------------------------------------------------------------------------
-!                                                       GetTotalEdgeDOF
+!                                                            GetTotalEdgeDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalEdgeDOF2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalEdgeDOF2()"
+#endif
 INTEGER(I4B) :: globalEdge
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 globalEdge = obj%mesh%GetGlobalEdgeNumber(globalElement=globalElement, &
                                           islocal=islocal, &
                                           localEdgeNumber=localEdgeNumber)
 ans = obj%GetTotalEdgeDOF(globalEdge=globalEdge, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalEdgeDOF2
 
 !----------------------------------------------------------------------------
@@ -141,7 +244,21 @@ END PROCEDURE obj_GetFaceDOF1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalFaceDOF1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFaceDOF1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%faceIA(globalface + 1) - obj%faceIA(globalface)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalFaceDOF1
 
 !----------------------------------------------------------------------------
@@ -178,11 +295,25 @@ END PROCEDURE obj_GetFaceDOF2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalFaceDOF2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalFaceDOF2()"
+#endif
 INTEGER(I4B) :: globalFace
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 globalFace = obj%mesh%GetGlobalFaceNumber(globalElement=globalElement, &
                                           islocal=islocal, &
                                           localFaceNumber=localFaceNumber)
 ans = obj%GetTotalFaceDOF(globalFace=globalFace, islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalFaceDOF2
 
 !----------------------------------------------------------------------------
@@ -190,13 +321,27 @@ END PROCEDURE obj_GetTotalFaceDOF2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCellDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCellDOF()"
+#endif
 INTEGER(I4B) :: ii, jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 jj = obj%mesh%GetLocalElemNumber(globalElement=globalCell, islocal=islocal)
 tsize = 0
 DO ii = obj%cellIA(jj), obj%cellIA(jj + 1) - 1
   tsize = tsize + 1
   ans(tsize) = ii
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetCellDOF
 
 !----------------------------------------------------------------------------
@@ -204,9 +349,23 @@ END PROCEDURE obj_GetCellDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalCellDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalCellDOF()"
+#endif
 INTEGER(I4B) :: jj
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 jj = obj%mesh%GetLocalElemNumber(globalElement=globalCell, islocal=islocal)
 ans = obj%cellIA(jj + 1) - obj%cellIA(jj)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalCellDOF
 
 !----------------------------------------------------------------------------
@@ -214,7 +373,21 @@ END PROCEDURE obj_GetTotalCellDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalVertexDOF
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalVertexDOF()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%tNodes
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalVertexDOF
 
 !----------------------------------------------------------------------------
@@ -222,7 +395,21 @@ END PROCEDURE obj_GetTotalVertexDOF
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalDOF1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalDOF1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%tdof
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalDOF1
 
 !----------------------------------------------------------------------------
@@ -245,22 +432,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 elemdata => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
                                         islocal=islocal)
 
-ent = ElemData_GetTotalEntities(elemdata)
+ans = 0
+IF (obj%isBrokenSpace) THEN
+  jj = ElemData_GetCell(elemdata, islocal=math%yes)
+  ans = obj%cellIA(jj + 1) - obj%cellIA(jj)
+ELSE
+  ent = ElemData_GetTotalEntities(elemdata)
+  ans = ElemData_GetTotalGlobalVertexNodes(elemdata)
+  DO ii = 1, ent(2)
+    jj = ElemData_GetEdge(elemdata, ii)
+    ans = ans + obj%edgeIA(jj + 1) - obj%edgeIA(jj)
+  END DO
 
-ans = ElemData_GetTotalGlobalVertexNodes(elemdata)
+  DO ii = 1, ent(3)
+    jj = ElemData_GetFace(elemdata, ii)
+    ans = ans + obj%faceIA(jj + 1) - obj%faceIA(jj)
+  END DO
 
-DO ii = 1, ent(2)
-  jj = ElemData_GetEdge(elemdata, ii)
-  ans = ans + obj%edgeIA(jj + 1) - obj%edgeIA(jj)
-END DO
-
-DO ii = 1, ent(3)
-  jj = ElemData_GetFace(elemdata, ii)
-  ans = ans + obj%faceIA(jj + 1) - obj%faceIA(jj)
-END DO
-
-jj = ElemData_GetCell(elemdata, islocal=math%yes)
-ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
+  jj = ElemData_GetCell(elemdata, islocal=math%yes)
+  ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
+END IF
 
 elemdata => NULL()
 
@@ -268,7 +459,6 @@ elemdata => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetTotalDOF2
 
 !----------------------------------------------------------------------------
@@ -281,7 +471,8 @@ CHARACTER(*), PARAMETER :: myName = 'obj_GetTotalDOF3()'
 #endif
 
 TYPE(ElemData_), POINTER :: elemdata
-INTEGER(I4B) :: ii, jj, ent(4)
+INTEGER(I4B) :: ii, jj
+INTEGER(I4B) :: ent(4)
 CHARACTER(1) :: opt0
 
 #ifdef DEBUG_VER
@@ -290,30 +481,54 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ans = 0
-
-opt0 = opt(1:1)
+opt0 = UpperCase(opt(1:1))
 
 elemdata => obj%mesh%GetElemDataPointer(globalElement=globalElement, &
-                                        islocal=islocal)
+                                        isLocal=isLocal)
 
-ent = ElemData_GetTotalEntities(elemdata)
+IF (obj%isBrokenSpace) THEN
+  IF (opt0 .EQ. "C" .OR. opt0 .EQ. "A") THEN
+    jj = ElemData_GetCell(elemdata, isLocal=math%yes)
+    ans = obj%cellIA(jj + 1) - obj%cellIA(jj)
+  END IF
 
-SELECT CASE (opt0)
-CASE ('v', 'V')
-  CALL onlyVertex
-CASE ('e', 'E')
-  CALL onlyEdge
-CASE ('f', 'F')
-  CALL onlyFace
-CASE ('c', 'C')
-  CALL onlyCell
+ELSE
+  ent = ElemData_GetTotalEntities(elemdata)
 
-CASE DEFAULT
-  CALL onlyVertex
-  CALL onlyEdge
-  CALL onlyFace
-  CALL onlyCell
-END SELECT
+  SELECT CASE (opt0)
+  CASE ('V')
+    ans = ElemData_GetTotalGlobalVertexNodes(elemdata)
+
+  CASE ('E')
+    DO ii = 1, ent(2)
+      jj = ElemData_GetEdge(elemdata, ii)
+      ans = ans + obj%edgeIA(jj + 1) - obj%edgeIA(jj)
+    END DO
+
+  CASE ('F')
+    DO ii = 1, ent(3)
+      jj = ElemData_GetFace(elemdata, ii)
+      ans = ans + obj%faceIA(jj + 1) - obj%faceIA(jj)
+    END DO
+
+  CASE ('C')
+    jj = ElemData_GetCell(elemdata, islocal=math%yes)
+    ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
+
+  CASE DEFAULT
+    ans = ElemData_GetTotalGlobalVertexNodes(elemdata)
+    DO ii = 1, ent(2)
+      jj = ElemData_GetEdge(elemdata, ii)
+      ans = ans + obj%edgeIA(jj + 1) - obj%edgeIA(jj)
+    END DO
+    DO ii = 1, ent(3)
+      jj = ElemData_GetFace(elemdata, ii)
+      ans = ans + obj%faceIA(jj + 1) - obj%faceIA(jj)
+    END DO
+    jj = ElemData_GetCell(elemdata, islocal=math%yes)
+    ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
+  END SELECT
+END IF
 
 elemdata => NULL()
 
@@ -321,31 +536,6 @@ elemdata => NULL()
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
-CONTAINS
-SUBROUTINE onlyVertex
-  ans = ElemData_GetTotalGlobalVertexNodes(elemdata)
-END SUBROUTINE onlyVertex
-
-SUBROUTINE onlyEdge
-  DO ii = 1, ent(2)
-    jj = ElemData_GetEdge(elemdata, ii)
-    ans = ans + obj%edgeIA(jj + 1) - obj%edgeIA(jj)
-  END DO
-END SUBROUTINE onlyEdge
-
-SUBROUTINE onlyFace
-  DO ii = 1, ent(3)
-    jj = ElemData_GetFace(elemdata, ii)
-    ans = ans + obj%faceIA(jj + 1) - obj%faceIA(jj)
-  END DO
-END SUBROUTINE onlyFace
-
-SUBROUTINE onlyCell
-  jj = ElemData_GetCell(elemdata, islocal=math%yes)
-  ans = ans + obj%cellIA(jj + 1) - obj%cellIA(jj)
-END SUBROUTINE onlyCell
-
 END PROCEDURE obj_GetTotalDOF3
 
 !----------------------------------------------------------------------------
@@ -399,15 +589,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 tsize = 0
-opt0 = opt(1:1)
 localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                            islocal=islocal)
+
+! opt0 is ignored in case of brokenSpace
+IF (obj%isBrokenSpace) THEN
+  CALL obj%GetCellDOF(globalCell=localElement, islocal=math%yes, &
+                      ans=ans, tsize=tsize)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! following code handles the continuous spaces
+opt0 = UpperCase(opt(1:1))
+
 CALL obj%mesh%GetConnectivity_(globalElement=localElement, &
                                islocal=math%yes, opt=opt0, tsize=tcon, &
                                ans=con)
 
 SELECT CASE (opt0)
-CASE ('v', 'V')
+CASE ('V')
   tsize = obj%mesh%GetTotalVertexNodes(globalElement=localElement, &
                                        islocal=math%yes)
   DO ii = 1, tsize
@@ -415,7 +619,7 @@ CASE ('v', 'V')
                           islocal=math%no)
   END DO
 
-CASE ('e', 'E')
+CASE ('E')
   jj = 1
   DO ii = 1, tcon
     CALL obj%GetEdgeDOF(globalEdge=con(ii), ans=ans(jj:), tsize=kk)
@@ -423,7 +627,7 @@ CASE ('e', 'E')
   END DO
   tsize = jj - 1
 
-CASE ('f', 'F')
+CASE ('F')
   jj = 1
   DO ii = 1, tcon
     CALL obj%GetFaceDOF(globalFace=con(ii), ans=ans(jj:), tsize=kk)
@@ -431,7 +635,7 @@ CASE ('f', 'F')
   END DO
   tsize = jj - 1
 
-CASE ('c', 'C')
+CASE ('C')
   jj = 1
   DO ii = 1, tcon
     CALL obj%GetCellDOF(globalCell=con(ii), ans=ans(jj:), tsize=kk, &
@@ -482,14 +686,12 @@ CASE DEFAULT
   END DO
 
   tsize = jj - 1
-
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetConnectivity_
 
 !----------------------------------------------------------------------------
@@ -497,7 +699,21 @@ END PROCEDURE obj_GetConnectivity_
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetMeshPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMeshPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans => obj%mesh
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetMeshPointer
 
 !----------------------------------------------------------------------------
@@ -505,7 +721,21 @@ END PROCEDURE obj_GetMeshPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetDomainPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDomainPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans => obj%dom
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetDomainPointer
 
 !----------------------------------------------------------------------------
@@ -513,7 +743,21 @@ END PROCEDURE obj_GetDomainPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetBaseInterpolation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetBaseInterpolation()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%baseInterpolation
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetBaseInterpolation
 
 !----------------------------------------------------------------------------
@@ -532,8 +776,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-jj = &
-  obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
+jj = obj%mesh%GetLocalElemNumber(globalElement=globalElement, islocal=islocal)
 
 ans(1) = obj%cellOrder(jj)
 tsize = 1
@@ -649,12 +892,18 @@ END DO
 DO jj = 1, tFaceOrder
   ii = faceCon(jj)
   faceOrder(1, jj) = obj%faceOrder(ii)
+  IF (obj%baseContinuity .EQ. "DG") THEN
+    faceOrder(1, jj) = obj%cellOrder(localElement)
+  END IF
   faceOrder(2:3, jj) = faceOrder(1, jj)
 END DO
 
 DO jj = 1, tEdgeOrder
   ii = edgeCon(jj)
   edgeOrder(jj) = obj%edgeOrder(ii)
+  IF (obj%baseContinuity .EQ. "DG") THEN
+    edgeOrder(jj) = obj%cellOrder(localElement)
+  END IF
 END DO
 
 CALL obj%mesh%GetOrientation(cellOrient=cellOrient, faceOrient=faceOrient, &
@@ -805,6 +1054,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 localElement = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                            islocal=islocal)
+
+IF (obj%baseContinuity .EQ. "DG") THEN
+#ifdef DEBUG_VER
+  CALL AssertError1(localFaceNumber .GE. 1 .AND. &
+                    localFaceNumber .LE. &
+                    obj%mesh%GetTotalVertexNodes( &
+                    globalElement=localElement, islocal=math%yes), &
+                    myName, 'Invalid DG local facet number')
+#endif
+  ! A DG trace is evaluated from the complete owning-cell coefficient block.
+  CALL obj%GetCellDOF(globalCell=localElement, islocal=math%yes, &
+                      ans=ans, tsize=tsize)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - [END] ')
+#endif
+  RETURN
+END IF
 
 CALL obj%mesh%GetFacetConnectivity_(ans=ans, tsize=tsize0, &
                                     globalElement=localElement, &

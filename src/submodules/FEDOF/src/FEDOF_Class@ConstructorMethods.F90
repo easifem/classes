@@ -26,6 +26,7 @@ USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE Display_Method, ONLY: ToString
 USE Display_Method, ONLY: Display
 USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: ElemData_GetTotalGlobalVertexNodes
 USE ElemData_Class, ONLY: ElemData_GetTotalEntities
 USE ElemData_Class, ONLY: ElemData_GetEdge
 USE ElemData_Class, ONLY: ElemData_GetFace
@@ -33,12 +34,15 @@ USE ElemData_Class, ONLY: ElemData_GetCell
 USE ElemData_Class, ONLY: ElemData_GetTotalEdgeDOF
 USE ElemData_Class, ONLY: ElemData_GetTotalFaceDOF
 USE ElemData_Class, ONLY: ElemData_GetTotalCellDOF
+USE ElemData_Class, ONLY: ElemData_Name
 USE FEFactoryUtility, ONLY: FEFactory
 USE InputUtility, ONLY: Input
+USE InterpolationUtility, ONLY: InterpolationUtilityGetTotalDOF => GetTotalDOF
+USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle
 USE ReallocateUtility, ONLY: Reallocate
 USE ReferenceElement_Method, ONLY: GetElementIndex
 USE StringUtility, ONLY: UpperCase
-
+USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -66,10 +70,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 order0 = order
 
 CALL obj%Initiate(order=order0, dom=dom, baseContinuity=baseContinuity, &
-                  baseInterpolation=baseInterpolation, feType=feType, &
+                  baseInterpolation=baseInterpolation, &
+                  isBrokenSpace=isBrokenSpace, feType=feType, &
                   ipType=ipType, basisType=basisType, alpha=alpha, &
-                  beta=beta, lambda=lambda, &
-                  dofType=dofType, &
+                  beta=beta, lambda=lambda, dofType=dofType, &
                   transformType=transformType, &
                   quadratureIsHomogeneous=quadratureIsHomogeneous, &
                   quadratureType=quadratureType, &
@@ -94,9 +98,9 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+LOGICAL(LGT) :: isok
 #endif
 
-LOGICAL(LGT) :: isok
 INTEGER(I4B), PARAMETER :: topolist_size = 8
 INTEGER(I4B) :: ii, elemType, nsd, jj
 INTEGER(I4B) :: totalTopo, topoList(topolist_size)
@@ -109,6 +113,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = math%yes
+IF (PRESENT(isBrokenSpace)) obj%isBrokenSpace = isBrokenSpace
+
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
 IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
 
@@ -128,7 +134,7 @@ CALL obj%AllocateSizes()
 CALL obj%SetCellOrder(order=order, islocal=islocal)
 CALL obj%SetFaceOrder()
 CALL obj%SetEdgeOrder()
-CALL obj%SetOrdersFromCellOrder()
+CALL obj%Set()
 
 topoList = obj%mesh%GetElemTopology()
 totalTopo = obj%mesh%GetTotalTopology()
@@ -137,29 +143,22 @@ nsd = obj%mesh%GetNSD()
 DO ii = 1, totalTopo
   elemType = topoList(ii)
   jj = GetElementIndex(elemType)
-
   obj%fe(jj)%ptr => FEFactory(elemType=elemType, &
                               baseContinuity=obj%baseContinuity, &
-                              baseInterpolation=obj%baseInterpolation)
+                              baseInterpolation=obj%baseInterpolation, &
+                              isBrokenSpace=obj%isBrokenSpace)
 
-  CALL obj%fe(jj)%ptr%Initiate(elemType=elemType, nsd=nsd, &
-                               baseContinuity=obj%baseContinuity, &
-                               baseInterpolation=obj%baseInterpolation, &
-                               ipType=ipType, basisType=basisType, &
-                               alpha=alpha, beta=beta, lambda=lambda, &
-                               feType=feType, dofType=dofType, &
-                               transformType=transformType, &
-                               quadratureIsHomogeneous= &
-                               quadratureIsHomogeneous, quadratureType= &
-                               quadratureType, quadratureOrder= &
-                               quadratureOrder, quadratureIsOrder= &
-                               quadratureIsOrder, quadratureNips= &
-                               quadratureNips, quadratureIsNips= &
-                               quadratureIsNips, quadratureAlpha= &
-                               quadratureAlpha, quadratureBeta= &
-                               quadratureBeta, quadratureLambda= &
-                               quadratureLambda)
-
+  CALL obj%fe(jj)%ptr%Initiate( &
+    elemType=elemType, nsd=nsd, baseContinuity=obj%baseContinuity, &
+    baseInterpolation=obj%baseInterpolation, isBrokenSpace=isBrokenSpace, &
+    ipType=ipType, basisType=basisType, alpha=alpha, beta=beta, &
+    lambda=lambda, feType=feType, dofType=dofType, &
+    transformType=transformType, &
+    quadratureIsHomogeneous=quadratureIsHomogeneous, &
+    quadratureType=quadratureType, quadratureOrder=quadratureOrder, &
+    quadratureIsOrder=quadratureIsOrder, quadratureNips=quadratureNips, &
+    quadratureIsNips=quadratureIsNips, quadratureAlpha=quadratureAlpha, &
+    quadratureBeta=quadratureBeta, quadratureLambda=quadratureLambda)
 END DO
 
 #ifdef DEBUG_VER
@@ -172,9 +171,9 @@ END PROCEDURE obj_Initiate2
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_Initiate4
+MODULE PROCEDURE obj_Initiate3
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate4()"
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 LOGICAL(LGT) :: isok
 #endif
 
@@ -210,11 +209,11 @@ DO ii = 1, telems
 END DO
 
 CALL obj%Initiate(dom=dom, baseContinuity=baseContinuity, &
-                  baseInterpolation=baseInterpolation, order=order0, &
+                  baseInterpolation=baseInterpolation, &
+                  isBrokenSpace=isBrokenSpace, order=order0, &
                   ipType=ipType, feType=feType, basisType=basisType, &
                   alpha=alpha, beta=beta, lambda=lambda, islocal=math%yes, &
-                  dofType=dofType, &
-                  transformType=transformType, &
+                  dofType=dofType, transformType=transformType, &
                   quadratureIsHomogeneous=quadratureIsHomogeneous, &
                   quadratureType=quadratureType, &
                   quadratureOrder=quadratureOrder, &
@@ -231,7 +230,7 @@ DEALLOCATE (order0)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_Initiate4
+END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                               AllocateSizes
@@ -260,9 +259,14 @@ ent = obj%mesh%GetTotalEntities()
 
 !info: obj%tNodes is set to the total number of vertex nodes
 ! Read more about the totalNodes and totalVertexNodes in the
-! AbstractMesh_Class. In future, tNodes will be termed as tVertexNodes
-! for consistency.
-obj%tNodes = obj%mesh%GetTotalVertexNodes()
+! AbstractMesh_Class.
+! In future, tNodes will be termed as tVertexNodes for consistency.
+IF (obj%isBrokenSpace) THEN
+  obj%tNodes = math%zero_i
+ELSE
+  obj%tNodes = obj%mesh%GetTotalVertexNodes()
+END IF
+
 obj%tEdges = ent(2)
 obj%tFaces = ent(3)
 obj%tCells = ent(4)
@@ -282,19 +286,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_AllocateSizes
 
 !----------------------------------------------------------------------------
-!                                                     SetOrdersFromCellOrder
+!                                                                       Set
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_SetOrdersFromCellOrder
+MODULE PROCEDURE obj_Set
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetOrdersFromCellOrder()"
-#endif
-
-! Internal variables
-INTEGER(I4B) :: ent(4), tsize, iel, ii, jj, myorder
-LOGICAL(LGT), ALLOCATABLE :: foundEdges(:), foundFaces(:), foundCells(:)
+CHARACTER(*), PARAMETER :: myName = "obj_Set()"
+INTEGER(I4B) :: iel
 TYPE(ElemData_), POINTER :: elemdata
 LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -303,6 +304,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ! Check it all valid ElemDataPointer are associated
 #ifdef DEBUG_VER
+elemdata => NULL()
 loop1: DO iel = 1, obj%tCells
 
   isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
@@ -315,6 +317,38 @@ loop1: DO iel = 1, obj%tCells
   CALL AssertError1(isok, myName, 'elemdata is not allocated')
 
 END DO loop1
+#endif
+
+IF (obj%isBrokenSpace) THEN
+  CALL obj%SetFedofForH1Broken()
+ELSE
+  CALL obj%SetFedofForH1()
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Set
+
+!----------------------------------------------------------------------------
+!                                                              SetFedofForH1
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFedofForH1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFedofForH1()"
+#endif
+
+! Internal variables
+INTEGER(I4B) :: ent(4), tsize, iel, ii, jj, myorder
+LOGICAL(LGT), ALLOCATABLE :: foundEdges(:), foundFaces(:), foundCells(:)
+TYPE(ElemData_), POINTER :: elemdata
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
 CALL Reallocate(foundEdges, obj%tEdges)
@@ -345,7 +379,6 @@ cellLoop: DO iel = 1, obj%tCells
   edgeLoop: DO ii = 1, ent(2)
     jj = ElemData_GetEdge(elemdata, ii)
     isok = foundEdges(jj)
-
     ! if edge not found
     IF (.NOT. isok) THEN
       myorder = INT(obj%edgeOrder(jj), KIND=INT8)
@@ -355,33 +388,25 @@ cellLoop: DO iel = 1, obj%tCells
                                        obj%baseInterpolation)
 
       obj%edgeIA(jj + 1) = tsize
-
       foundEdges(jj) = math%yes
     END IF
-
   END DO edgeLoop
 
   ! faces
   faceLoop: DO ii = 1, ent(3)
-
     jj = ElemData_GetFace(elemdata, ii)
-
     isok = foundFaces(jj)
 
     ! if face not found
     IF (.NOT. isok) THEN
-
       myorder = INT(obj%faceOrder(jj), KIND=INT8)
-
-      tsize = ElemData_GetTotalFaceDOF(obj=elemdata, ii=ii, order=myorder, &
-                                       baseContinuity=obj%baseContinuity, &
-                                       baseInterpolation=obj%baseInterpolation)
-
+      tsize = ElemData_GetTotalFaceDOF( &
+              obj=elemdata, ii=ii, order=myorder, &
+              baseContinuity=obj%baseContinuity, &
+              baseInterpolation=obj%baseInterpolation)
       foundFaces(jj) = math%yes
       obj%faceIA(jj + 1) = tsize
-
     END IF
-
   END DO faceLoop
 
   ! cell
@@ -391,14 +416,13 @@ cellLoop: DO iel = 1, obj%tCells
   ! if cell not found
   IF (.NOT. isok) THEN
     myorder = INT(obj%cellOrder(jj), KIND=INT8)
-    tsize = ElemData_GetTotalCellDOF(obj=elemdata, order=myorder, &
-                                     baseContinuity=obj%baseContinuity, &
-                                     baseInterpolation=obj%baseInterpolation)
+    tsize = ElemData_GetTotalCellDOF( &
+            obj=elemdata, order=myorder, &
+            baseContinuity=obj%baseContinuity, &
+            baseInterpolation=obj%baseInterpolation)
     foundCells(jj) = math%yes
     obj%cellIA(jj + 1) = tsize
-
   END IF
-
 END DO cellLoop
 
 ! Number entities in ID order, independently of cell traversal order.
@@ -433,7 +457,78 @@ IF (ALLOCATED(foundCells)) DEALLOCATE (foundCells)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_SetOrdersFromCellOrder
+END PROCEDURE obj_SetFedofForH1
+
+!----------------------------------------------------------------------------
+!                                                             SetFedofForH1Broken
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFedofForH1Broken
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFedofForH1Broken()"
+#endif
+
+! Internal variables
+INTEGER(I4B) :: tsize, iel, ii, myorder, elemType
+TYPE(ElemData_), POINTER :: elemdata
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+! Now we will store counts for edge, face, and cell in
+!   obj%edgeIA, obj%faceIA, obj%cellIA from 2:n+1
+!   before building the cumulative offsets.
+!   Entities not incident to an active cell have zero interior DOFs.
+obj%cellIA = 0
+obj%edgeIA = 1
+obj%faceIA = 1
+! we do not have edge and face wise dof in case of broken spaces.
+! That is why we have set edgeIA and faceIA to 1
+! We also do not have vertexDOF too.
+! All DOF are cellDOF
+
+cellLoop: DO iel = 1, obj%tCells
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE cellLoop
+  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, &
+                                          islocal=math%yes)
+
+  myorder = INT(obj%cellOrder(iel), KIND=I4B)
+  elemType = Elemdata_Name(elemdata)
+  tsize = InterpolationUtilityGetTotalDOF( &
+          elemType=elemType, order=myorder, &
+          baseContinuity=obj%baseContinuity, &
+          baseInterpolation=obj%baseInterpolation)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(tsize .GT. math%zero_i, myName, &
+                    "error in tsize returned from GetTotalDOF, tsize=" &
+                    //ToString(tsize)//" elemType="//ToString(elemType))
+#endif
+
+  obj%cellIA(iel + 1) = tsize
+END DO cellLoop
+
+obj%cellIA(1) = obj%faceIA(obj%tFaces + 1)
+DO ii = 1, obj%tCells
+  obj%cellIA(ii + 1) = obj%cellIA(ii) + obj%cellIA(ii + 1)
+END DO
+
+obj%tdof = obj%cellIA(obj%tCells + 1) - 1
+
+! The DOF layout has changed, so the cached values are stale
+obj%isMaxConSet = math%no
+obj%isMaxQuadPointSet = math%no
+obj%isSumElemTotalDOFSet = math%no
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetFedofForH1Broken
 
 !----------------------------------------------------------------------------
 !                                                                 Deallocate
@@ -458,6 +553,7 @@ obj%isMaxConSet = math%no
 obj%isMaxQuadPointSet = math%no
 obj%isSumElemTotalDOFSet = math%no
 obj%isTotalActiveCellsSet = math%no
+obj%isBrokenSpace = math%no
 
 obj%tdof = 0
 obj%tNodes = 0
@@ -486,12 +582,18 @@ IF (ALLOCATED(obj%edgeIA)) DEALLOCATE (obj%edgeIA)
 IF (ALLOCATED(obj%faceIA)) DEALLOCATE (obj%faceIA)
 IF (ALLOCATED(obj%cellIA)) DEALLOCATE (obj%cellIA)
 
+IF (obj%ownFePointers) THEN
+  DO ii = 1, SIZE(obj%fe)
+    abool = ASSOCIATED(obj%fe(ii)%ptr)
+    IF (abool) THEN
+      CALL obj%fe(ii)%ptr%DEALLOCATE()
+      DEALLOCATE (obj%fe(ii)%ptr)
+    END IF
+  END DO
+END IF
+
 DO ii = 1, SIZE(obj%fe)
-  abool = ASSOCIATED(obj%fe(ii)%ptr)
-  IF (abool) THEN
-    CALL obj%fe(ii)%ptr%DEALLOCATE()
-    obj%fe(ii)%ptr => NULL()
-  END IF
+  obj%fe(ii)%ptr => NULL()
 END DO
 
 #ifdef DEBUG_VER
@@ -522,6 +624,7 @@ obj%isInit = obj2%isInit
 obj%isMaxConSet = obj2%isMaxConSet
 obj%isMaxQuadPointSet = obj2%isMaxQuadPointSet
 obj%isSumElemTotalDOFSet = obj2%isSumElemTotalDOFSet
+obj%isBrokenSpace = obj%isBrokenSpace
 
 obj%tdof = obj2%tdof
 obj%tNodes = obj2%tNodes
@@ -603,11 +706,11 @@ CALL mesh%GetOrder_(order=order, tsize=telements)
 mesh => NULL()
 
 CALL obj%Initiate(order=order, dom=dom, baseContinuity=baseContinuity, &
-                  baseInterpolation=baseInterpolation, feType=feType, &
+                  baseInterpolation=baseInterpolation, &
+                  isBrokenSpace=math%no, feType=feType, &
                   ipType=ipType, basisType=basisType, alpha=alpha, &
                   lambda=lambda, beta=beta, islocal=math%yes, &
-                  dofType=dofType, &
-                  transformType=transformType, &
+                  dofType=dofType, transformType=transformType, &
                   quadratureIsHomogeneous=quadratureIsHomogeneous, &
                   quadratureType=quadratureType, &
                   quadratureOrder=quadratureOrder, &
@@ -617,6 +720,8 @@ CALL obj%Initiate(order=order, dom=dom, baseContinuity=baseContinuity, &
                   quadratureAlpha=quadratureAlpha, &
                   quadratureBeta=quadratureBeta, &
                   quadratureLambda=quadratureLambda)
+
+IF (ALLOCATED(order)) DEALLOCATE (order)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

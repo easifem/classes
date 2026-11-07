@@ -19,18 +19,18 @@ All 57 tests pass (2026-10-29).
   after `colMesh%isEmpty()` in `FEDOFSetSparsity`, is now `CYCLE loop2`.
   Tests: GetTotalDOF_1-4, GetConnectivity_1-4, SetSparsity_1-2, ...
 - 0b. Edges of a 3D mesh: three causes.
-  - `AllocateSizes` now calls `mesh%InitiateEdgeConnectivity()` when
-    `xidim == 3` (nothing else numbered the edges, `tEdges` was 0).
-  - `Elemdata_GetEdgeConnectivity` (ElemData_Class) returned the local
-    node numbers of the edge (1 to 8) instead of the global ones, so
-    `SetEdgeOrder` found the wrong elements around an edge. It now maps
-    them with `obj%globalNodes`.
-  - `Elemdata_GetTotalEdgeDOF` returned `order - 2`; it now uses
-    `GetTotalInDOF` of a line (`order - 1` for H1), as the face version
-    does.
-  - Also in `SetEdgeOrder`: `n2e2` had `maxFaces` (6) entries but holds
-    the elements around a node; now `maxNodeToElem`.
-  - Tests: GetEdgeDOF_test_1, GetFaceOrder_test_1.
+    - `AllocateSizes` now calls `mesh%InitiateEdgeConnectivity()` when
+      `xidim == 3` (nothing else numbered the edges, `tEdges` was 0).
+    - `Elemdata_GetEdgeConnectivity` (ElemData_Class) returned the local
+      node numbers of the edge (1 to 8) instead of the global ones, so
+      `SetEdgeOrder` found the wrong elements around an edge. It now maps
+      them with `obj%globalNodes`.
+    - `Elemdata_GetTotalEdgeDOF` returned `order - 2`; it now uses
+      `GetTotalInDOF` of a line (`order - 1` for H1), as the face version
+      does.
+    - Also in `SetEdgeOrder`: `n2e2` had `maxFaces` (6) entries but holds
+      the elements around a node; now `maxNodeToElem`.
+    - Tests: GetEdgeDOF_test_1, GetFaceOrder_test_1.
 - 3. `GetMaxTotalQuadraturePoints` starts from 0 and takes the maximum
   over the elements. Test: GetMaxTotalQuadraturePoints_test_1.
 - Stale caches: `SetOrdersFromCellOrder` resets `isMaxConSet`,
@@ -65,7 +65,6 @@ All 57 tests pass (2026-10-29).
 - The vertex part comes from the mesh (global node numbers); the vertex
   degree of freedom is the local node number (`GetVertexDOF`). They agree
   only when the nodes are numbered 1 to N.
-
 - Fixed 2026-10-30 for linear 2D facets: map the prefix to mesh-local
   vertex DOF IDs. Test: `H1FacetConnectivity_test_1` (153 checks).
 
@@ -124,7 +123,6 @@ FEDOF runner also passes all 60 examples (57 existing plus three new).
 Scope limitation: complete 3D facet closure (including edge DOFs) and
 facets on higher-order geometry are not implemented by this batch.
 
-
 ## Uniform H1 numbering batch — 2026-10-30
 
 `SetOrdersFromCellOrder` previously formed each entity offset while
@@ -148,7 +146,6 @@ Fortitude checks and documentation generation also pass.
 Orientation-dependent permutations/signs, variable-order compatibility,
 and complete 3D facet closure are outside this batch.
 
-
 ## Uniform H1 orientation batch — 2026-10-30
 
 See [H1Orientation.md](H1Orientation.md) for the two dependency defects
@@ -158,7 +155,6 @@ local evaluation already apply orientation in their respective paths.
 Reversed-edge basis traces and tangential derivatives now pass for both
 families, triangles and quadrangles, orders one through four, in both
 cell visitation orders. All 64 FEDOF examples pass.
-
 
 ## Variable-order hierarchical H1 batch — 2026-10-30
 

@@ -18,7 +18,8 @@
 !
 
 SUBMODULE(FEDOF_Class) TomlMethods
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE FEFactoryUtility, ONLY: FEFactory
 USE ReallocateUtility, ONLY: Reallocate
 USE ReferenceElement_Method, ONLY: GetElementIndex
@@ -39,62 +40,67 @@ CONTAINS
 
 MODULE PROCEDURE obj_ImportFromToml1
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
-  INTEGER(I4B), PARAMETER :: topoListSize = 8
-  INTEGER(I4B), ALLOCATABLE :: order(:)
-  INTEGER(I4B) :: totalTopo, topoList(topoListSize), nsd, ii, jj, elemType, &
-    tsize
-  LOGICAL(LGT) :: islocal, isFound
+INTEGER(I4B), PARAMETER :: topoListSize = 8
+INTEGER(I4B) :: totalTopo, nsd, ii, jj, elemType, tsize, origin, STAT
+INTEGER(I4B) :: topoList(topoListSize)
+LOGICAL(LGT) :: islocal, isFound
+INTEGER(I4B), ALLOCATABLE :: order(:)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START]')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
 #endif
 
-  CALL obj%DEALLOCATE()
-  obj%isInit = math%yes
-  obj%dom => dom
-  obj%mesh => obj%dom%GetMeshPointer()
+CALL obj%DEALLOCATE()
 
-  islocal = math%no
-  CALL ImportOrderFromToml(table=table, order=order, islocal=islocal, &
-                           isFound=isFound)
+obj%isInit = math%yes
+obj%dom => dom
+obj%mesh => obj%dom%GetMeshPointer()
+topoList = obj%mesh%GetElemTopology()
+totalTopo = obj%mesh%GetTotalTopology()
+nsd = obj%mesh%GetNSD()
 
-  IF (.NOT. isFound) THEN
-    tsize = obj%mesh%GetTotalElements()
-    CALL Reallocate(order, tsize)
-    CALL obj%mesh%GetOrder_(order=order, tsize=tsize)
-    islocal = math%yes
-  END IF
+! Before we make FEDOF we need isBrokenSpace info which
+! is available after we make AbstractFE by reading toml config.
+DO ii = 1, totalTopo
+  elemType = topoList(ii)
+  jj = GetElementIndex(elemType)
+  obj%fe(jj)%ptr => FEFactory(elemType=elemType, table=table)
+  CALL obj%fe(jj)%ptr%ImportFromToml(elemType=elemType, table=table, &
+                                     nsd=nsd)
 
-  CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table)
-  CALL obj%AllocateSizes()
-  CALL obj%SetCellOrder(order=order, islocal=islocal)
-  CALL obj%SetFaceOrder()
-  CALL obj%SetEdgeOrder()
-  CALL obj%SetOrdersFromCellOrder()
+  ! TODO: Should be called only once, different elements should
+  ! have same baseInterpolation and baseContinuity
+  obj%baseInterpolation = obj%fe(jj)%ptr%GetBaseInterpolation()
+  obj%baseContinuity = obj%fe(jj)%ptr%GetBaseContinuity()
+  obj%isBrokenSpace = obj%fe(jj)%ptr%GetIsBrokenSpace()
+END DO
+IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
 
-  topoList = obj%mesh%GetElemTopology()
-  totalTopo = obj%mesh%GetTotalTopology()
-  nsd = obj%mesh%GetNSD()
+islocal = math%no
+CALL ImportOrderFromToml(table=table, order=order, islocal=islocal, &
+                         isFound=isFound, origin=origin, STAT=STAT)
+IF (.NOT. isFound) THEN
+  tsize = obj%mesh%GetTotalElements()
+  CALL Reallocate(order, tsize)
+  CALL obj%mesh%GetOrder_(order=order, tsize=tsize)
+  islocal = math%yes
+END IF
 
-  DO ii = 1, totalTopo
-    elemType = topoList(ii)
-    jj = GetElementIndex(elemType)
-    obj%fe(jj)%ptr => FEFactory(elemType=elemType, table=table)
-    CALL obj%fe(jj)%ptr%ImportFromToml(elemType=elemType, table=table, &
-                                       nsd=nsd)
-    obj%baseInterpolation = obj%fe(jj)%ptr%GetBaseInterpolation()
-    obj%baseContinuity = obj%fe(jj)%ptr%GetBaseContinuity()
-  END DO
-
-  IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = math%yes
+CALL ImportScaleForQuadOrderFromToml(obj=obj, table=table, &
+                                     origin=origin, STAT=STAT)
+CALL obj%AllocateSizes()
+CALL obj%SetCellOrder(order=order, islocal=islocal)
+CALL obj%SetFaceOrder()
+CALL obj%SetEdgeOrder()
+CALL obj%Set()
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END]')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
 #endif
 END PROCEDURE obj_ImportFromToml1
 
@@ -102,26 +108,25 @@ END PROCEDURE obj_ImportFromToml1
 !                                                         ImportOrderFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
+SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound, origin, STAT)
   TYPE(toml_table), INTENT(INOUT) :: table
   INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: order(:)
   LOGICAL(LGT), INTENT(OUT) :: islocal
   LOGICAL(LGT), INTENT(OUT) :: isFound
+  INTEGER(I4B), INTENT(INOUT) :: origin, STAT
 
   ! Internal variables
-  INTEGER(I4B) :: origin, STAT
-
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ImportOrderFromToml()"
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           'Reading islocal...')
 #endif
 
@@ -131,7 +136,7 @@ SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
                 isFound=isFound)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           'Reading order...')
 #endif
 
@@ -140,7 +145,7 @@ SUBROUTINE ImportOrderFromToml(table, order, islocal, isFound)
                 origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE ImportOrderFromToml
@@ -149,12 +154,13 @@ END SUBROUTINE ImportOrderFromToml
 !                                            ImportScaleForQuadOrderFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
+SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table, origin, STAT)
   CLASS(FEDOF_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
+  INTEGER(I4B), INTENT(INOUT) :: origin, STAT
 
   ! internal variables
-  INTEGER(I4B) :: origin, STAT, scaleForQuadOrder
+  INTEGER(I4B) :: scaleForQuadOrder
   LOGICAL(LGT) :: isFound
   INTEGER(I4B), PARAMETER :: default_value = 1
 
@@ -163,7 +169,7 @@ SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
 #endif
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
@@ -173,7 +179,7 @@ SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
 
 #ifdef DEBUG_VER
   IF (.NOT. isFound) THEN
-    CALL e%RaiseDebug(modName // '::' // myName // ' - ' // &
+    CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                       'scaleForQuadOrder not found, using default value ')
   END IF
 #endif
@@ -181,7 +187,7 @@ SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table)
   obj%scaleForQuadOrder = INT(scaleForQuadOrder, KIND=INT8)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
 END SUBROUTINE ImportScaleForQuadOrderFromToml
@@ -192,47 +198,41 @@ END SUBROUTINE ImportScaleForQuadOrderFromToml
 
 MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-  LOGICAL(LGT) :: isok
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
 #endif
 
-  TYPE(toml_table), ALLOCATABLE :: table
-  TYPE(toml_table), POINTER :: node
-  INTEGER(I4B) :: origin, STAT
+TYPE(toml_table), ALLOCATABLE :: table
+TYPE(toml_table), POINTER :: node
+INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[START]')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START]')
 #endif
 
-  CALL GetValue(table=table, afile=afile, filename=filename)
+CALL GetValue(table=table, afile=afile, filename=filename)
 
-  node => NULL()
-  CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
-                STAT=STAT)
+node => NULL()
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
+              STAT=STAT)
 
 #ifdef DEBUG_VER
-  isok = ASSOCIATED(node)
-  CALL AssertError1(isok, myName, &
-                    'following error occured while reading ' // &
-                    'the toml file :: cannot find [' // tomlName // &
-                    "] table in config.")
+isok = ASSOCIATED(node)
+CALL AssertError1(isok, myName, &
+                  'following error occured while reading '// &
+                  'the toml file :: cannot find ['//tomlName// &
+                  "] table in config.")
 #endif
 
-  CALL obj%ImportFromToml(table=node, dom=dom)
+CALL obj%ImportFromToml(table=node, dom=dom)
 
-! #ifdef DEBUG_VER
-! IF (PRESENT(printToml)) THEN
-!   CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
-!                unitNo=stdout)
-! END IF
-! #endif
-
-  node => NULL()
+node => NULL()
+IF (ALLOCATED(table)) DEALLOCATE (table)
 
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
-                          '[END]')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END]')
 #endif
 END PROCEDURE obj_ImportFromToml2
 
