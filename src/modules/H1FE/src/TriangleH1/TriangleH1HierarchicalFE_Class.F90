@@ -581,12 +581,19 @@ END INTERFACE
 ! date: 2024-07-12
 ! summary: Update triangle hierarchical degrees and DOF count
 !
-! When order is present, broadcasts it to cell and face arrays, stores three
-! cell entries and currently four face-order columns, then recomputes the
-! triangular hierarchical DOF count and returns. Otherwise updates supplied
-! cellOrder and faceOrder using their active sizes and computes the count from
-! the first cell degree and three facet degrees. The four-column isotropic
-! branch is recorded in bugs_report/H1FE.md.
+! When cellOrder and faceOrder are both present, they take precedence over
+! order: updates them using their active sizes and computes the count from
+! the first cell degree and three facet degrees. This keeps the face orders
+! of a variable-order mesh.
+!
+! Otherwise, when order is present, broadcasts it to cell and face arrays,
+! stores three cell entries and currently four face-order columns, then
+! recomputes the triangular hierarchical DOF count and returns. The
+! four-column isotropic branch is recorded in bugs-report/H1FE.md.
+!
+! Changes:
+!
+! - 2026-11-08: cellOrder and faceOrder take precedence over order.
 !
 ! Examples
 !

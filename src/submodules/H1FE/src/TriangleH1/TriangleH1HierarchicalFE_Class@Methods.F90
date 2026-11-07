@@ -75,7 +75,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-isok = PRESENT(order)
+! cellOrder and faceOrder take precedence, they can vary from face to face
+isok = PRESENT(order) .AND. &
+       .NOT. (PRESENT(cellOrder) .AND. PRESENT(faceOrder))
 IF (isok) THEN
   cellOrder0 = order
   faceOrder0 = order
