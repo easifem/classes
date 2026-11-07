@@ -19,14 +19,9 @@
 
 SUBMODULE(FEDOF_Class) ConstructorMethods
 USE AbstractFE_Class, ONLY: AbstractFEDeallocate
-USE BaseType, ONLY: TypeInterpolationOpt
-USE BaseType, ONLY: TypePolynomialOpt
 USE BaseType, ONLY: math => TypeMathOpt
-USE BaseType, ONLY: eleminfo => TypeRefelemOpt
 USE Display_Method, ONLY: ToString
-USE Display_Method, ONLY: Display
 USE ElemData_Class, ONLY: ElemData_
-USE ElemData_Class, ONLY: ElemData_GetTotalGlobalVertexNodes
 USE ElemData_Class, ONLY: ElemData_GetTotalEntities
 USE ElemData_Class, ONLY: ElemData_GetEdge
 USE ElemData_Class, ONLY: ElemData_GetFace
@@ -36,13 +31,10 @@ USE ElemData_Class, ONLY: ElemData_GetTotalFaceDOF
 USE ElemData_Class, ONLY: ElemData_GetTotalCellDOF
 USE ElemData_Class, ONLY: ElemData_Name
 USE FEFactoryUtility, ONLY: FEFactory
-USE InputUtility, ONLY: Input
 USE InterpolationUtility, ONLY: InterpolationUtilityGetTotalDOF => GetTotalDOF
-USE QuadrangleInterpolationUtility, ONLY: GetTotalDOF_Quadrangle
 USE ReallocateUtility, ONLY: Reallocate
 USE ReferenceElement_Method, ONLY: GetElementIndex
 USE StringUtility, ONLY: UpperCase
-USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -140,6 +132,7 @@ topoList = obj%mesh%GetElemTopology()
 totalTopo = obj%mesh%GetTotalTopology()
 nsd = obj%mesh%GetNSD()
 
+obj%ownFePointers = math%yes
 DO ii = 1, totalTopo
   elemType = topoList(ii)
   jj = GetElementIndex(elemType)
@@ -460,7 +453,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetFedofForH1
 
 !----------------------------------------------------------------------------
-!                                                             SetFedofForH1Broken
+!                                                         SetFedofForH1Broken
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetFedofForH1Broken
@@ -592,6 +585,8 @@ IF (obj%ownFePointers) THEN
   END DO
 END IF
 
+obj%ownFePointers = math%no
+
 DO ii = 1, SIZE(obj%fe)
   obj%fe(ii)%ptr => NULL()
 END DO
@@ -619,12 +614,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+! Free the finite elements owned by obj, except those shared with obj2.
+! obj keeps the ownership of a shared finite element.
+isok = obj%ownFePointers
+obj%ownFePointers = math%no
+
+feLoop: DO ii = 1, SIZE(obj%fe)
+  IF (.NOT. ASSOCIATED(obj%fe(ii)%ptr)) CYCLE feLoop
+
+  IF (ASSOCIATED(obj%fe(ii)%ptr, obj2%fe(ii)%ptr)) THEN
+    obj%ownFePointers = isok
+  ELSE IF (isok) THEN
+    CALL obj%fe(ii)%ptr%DEALLOCATE()
+    DEALLOCATE (obj%fe(ii)%ptr)
+  END IF
+END DO feLoop
+
 obj%isLagrange = obj2%isLagrange
 obj%isInit = obj2%isInit
 obj%isMaxConSet = obj2%isMaxConSet
 obj%isMaxQuadPointSet = obj2%isMaxQuadPointSet
 obj%isSumElemTotalDOFSet = obj2%isSumElemTotalDOFSet
-obj%isBrokenSpace = obj%isBrokenSpace
+obj%isBrokenSpace = obj2%isBrokenSpace
+obj%isTotalActiveCellsSet = obj2%isTotalActiveCellsSet
 
 obj%tdof = obj2%tdof
 obj%tNodes = obj2%tNodes
@@ -634,6 +646,7 @@ obj%tCells = obj2%tCells
 obj%maxCon = obj2%maxCon
 obj%maxQuadPoint = obj2%maxQuadPoint
 obj%sumElemTotalDOF = obj2%sumElemTotalDOF
+obj%tActiveCells = obj2%tActiveCells
 
 obj%baseContinuity = obj2%baseContinuity
 obj%baseInterpolation = obj2%baseInterpolation
