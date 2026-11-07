@@ -682,54 +682,6 @@ ans = obj%isInit
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_InitiateGeoFEDOF
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_InitiateGeoFEDOF()"
-#endif
-
-INTEGER(I4B), ALLOCATABLE :: order(:)
-INTEGER(I4B) :: telements
-CLASS(AbstractMesh_), POINTER :: mesh
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-mesh => dom%GetMeshPointer()
-telements = mesh%GetTotalElements()
-CALL Reallocate(order, telements)
-CALL mesh%GetOrder_(order=order, tsize=telements)
-mesh => NULL()
-
-CALL obj%Initiate(order=order, dom=dom, baseContinuity=baseContinuity, &
-                  baseInterpolation=baseInterpolation, &
-                  isBrokenSpace=math%no, feType=feType, &
-                  ipType=ipType, basisType=basisType, alpha=alpha, &
-                  lambda=lambda, beta=beta, islocal=math%yes, &
-                  dofType=dofType, transformType=transformType, &
-                  quadratureIsHomogeneous=quadratureIsHomogeneous, &
-                  quadratureType=quadratureType, &
-                  quadratureOrder=quadratureOrder, &
-                  quadratureIsOrder=quadratureIsOrder, &
-                  quadratureNips=quadratureNips, &
-                  quadratureIsNips=quadratureIsNips, &
-                  quadratureAlpha=quadratureAlpha, &
-                  quadratureBeta=quadratureBeta, &
-                  quadratureLambda=quadratureLambda)
-
-IF (ALLOCATED(order)) DEALLOCATE (order)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_InitiateGeoFEDOF
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

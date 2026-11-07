@@ -68,8 +68,6 @@ All 57 tests pass (2026-10-29).
 - Fixed 2026-10-30 for linear 2D facets: map the prefix to mesh-local
   vertex DOF IDs. Test: `H1FacetConnectivity_test_1` (153 checks).
 
-## Open
-
 ### 4. Deallocate does not free the finite elements
 
 - Where: `obj_Deallocate` (ConstructorMethods)
@@ -83,6 +81,8 @@ All 57 tests pass (2026-10-29).
 - Where: `obj_InitiateGeoFEDOF` (interface and ConstructorMethods)
 - Cause: it has no type-bound binding and the module is PRIVATE.
   Add it to the `Initiate` generic (or a binding), or remove it.
+
+## Open
 
 ### 6. SetNodeCoord is not implemented
 
