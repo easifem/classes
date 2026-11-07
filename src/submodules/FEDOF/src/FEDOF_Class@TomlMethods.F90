@@ -162,7 +162,7 @@ SUBROUTINE ImportScaleForQuadOrderFromToml(obj, table, origin, STAT)
   ! internal variables
   INTEGER(I4B) :: scaleForQuadOrder
   LOGICAL(LGT) :: isFound
-  INTEGER(I4B), PARAMETER :: default_value = 1
+  INTEGER(I4B), PARAMETER :: default_value = 2
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ImportScaleForQuadOrderFromToml()"

@@ -82,16 +82,13 @@ All 57 tests pass (2026-10-29).
 - Cause: it has no type-bound binding and the module is PRIVATE.
   Add it to the `Initiate` generic (or a binding), or remove it.
 
-## Open
-
-### 6. SetNodeCoord is not implemented
-
-- Where: `obj_SetNodeCoord` (SetMethods): empty body.
-
 ### 8. Minor
 
 - `scaleForQuadOrder` is 2 by default in the type and in `Deallocate`, but
   1 by default in `ImportFromToml`.
+
+### 8. Minor
+
 - `ImportFromToml2`: `dom` is optional but passed to `ImportFromToml1`,
   which needs it; `printToml` is not used.
 - `GetEdgeDOF1`, `GetTotalEdgeDOF1`, `GetFaceDOF1`, `GetTotalFaceDOF1`
