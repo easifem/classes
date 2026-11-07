@@ -23,6 +23,7 @@ USE IntVector_Method, ONLY: ASSIGNMENT(=)
 USE IntVector_Method, ONLY: IsAllocated
 USE IntVector_Method, ONLY: IntVectorGet_ => Get_
 USE IntVector_Method, ONLY: IntVectorGet => Get
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
