@@ -50,11 +50,11 @@ SELECT CASE (dim)
 CASE (0)
   ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
 CASE (1)
-  ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
+  ans = IntVectorGet(obj=obj%curveMeshID, datatype=math%one_i)
 CASE (2)
-  ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
+  ans = IntVectorGet(obj=obj%surfaceMeshID, datatype=math%one_i)
 CASE (3)
-  ans = IntVectorGet(obj=obj%pointMeshID, datatype=math%one_i)
+  ans = IntVectorGet(obj=obj%volumeMeshID, datatype=math%one_i)
 CASE DEFAULT
 #ifdef DEBUG_VER
   CALL AssertError1(math%no, myName, "No case found for dim.")
@@ -169,28 +169,6 @@ IF (PRESENT(isSelectionByBox)) THEN
   isSelectionByBox = obj%ms(4)
 END IF
 END PROCEDURE obj_GetParam
-
-!----------------------------------------------------------------------------
-!                                                                 GetPrefix
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPrefix
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetPrefix()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ans = myprefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetPrefix
 
 !----------------------------------------------------------------------------
 !                                                             Include Errors
