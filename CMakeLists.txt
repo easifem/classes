@@ -318,6 +318,18 @@ else()
 endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC easifemBase::easifemBase)
 
+# ParaView Catalyst (in situ visualization), optional
+option(USE_CATALYST "Enable ParaView Catalyst in situ visualization" OFF)
+if(USE_CATALYST)
+    find_package(catalyst 2.0 REQUIRED)
+    message(STATUS "[INFO] :: Catalyst found: ${catalyst_DIR}")
+    target_link_libraries(
+        ${PROJECT_NAME}
+        PUBLIC catalyst::catalyst catalyst::catalyst_fortran
+    )
+    list(APPEND TARGET_COMPILE_DEF "-DUSE_CATALYST")
+endif()
+
 # Add source files
 include(src/modules/CMakeLists.txt)
 include(src/submodules/CMakeLists.txt)
