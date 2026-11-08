@@ -1,7 +1,3 @@
-# ignore following extesions
-# added by vikas
-# 2-Dec-2018
-
 *.a
 *.mod
 *.smod
@@ -42,8 +38,6 @@ tests/
 _packages/
 __*
 
-
-
 MESH_CLASS_EXCEPTION.txt
 MSH_CLASS_EXCEPTION.txt
 DOMAIN_CLASS_EXCEPTION.txt
@@ -58,3 +52,5 @@ TODO.md
 
 tui-journal
 .cache/
+.helix
+.rumdl_cache
