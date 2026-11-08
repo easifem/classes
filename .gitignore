@@ -18,6 +18,8 @@
 *.gp
 *.msh
 *.vtkhdf
+*.hdf
+*.hdf5
 
 vscode-settings
 media/
