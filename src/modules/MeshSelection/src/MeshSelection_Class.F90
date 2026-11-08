@@ -30,7 +30,6 @@ USE BaseType, ONLY: BoundingBox_
 USE BaseType, ONLY: IntVector_
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: LGT
@@ -41,15 +40,11 @@ USE TxtFile_Class, ONLY: TxtFile_
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(*), PARAMETER :: myprefix = "MeshSelection"
-
 PUBLIC :: MeshSelectionDeallocate
 PUBLIC :: MeshSelectionReallocate
 PUBLIC :: MeshSelection_
 PUBLIC :: MeshSelectionPointer_
-PUBLIC :: MeshSelectionImportParamFromToml
 PUBLIC :: MeshSelectionImportFromToml
-PUBLIC :: SetMeshSelectionParam
 PUBLIC :: MeshSelectionSet
 PUBLIC :: MeshSelectionDisplay
 PUBLIC :: TypeMeshSelection
@@ -156,9 +151,6 @@ TYPE :: MeshSelection_
 
 CONTAINS
   ! @ConstructorMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: CheckEssentialParam => &
-    obj_CheckEssentialParam
-  !! Check essential parameter
   PROCEDURE, PUBLIC, PASS(obj) :: IsInitiated => obj_IsInitiated
   !! Returns true if the object Is Initiated.
   PROCEDURE, PUBLIC, PASS(obj) :: IsSelectionByMeshID => &
@@ -175,9 +167,7 @@ CONTAINS
   !! Returns true if selection by box is set to true.
   PROCEDURE, PRIVATE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate an instance of meshSelection
-  PROCEDURE, PRIVATE, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate an instance of meshSelection
-  GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2
+  GENERIC, PUBLIC :: Initiate => Initiate1
   !! Initiate an instance of meshSelection
   PROCEDURE, PRIVATE, PASS(obj) :: Copy => obj_Copy
   !! This routine copies object
@@ -211,9 +201,6 @@ CONTAINS
   !! Displays the content
 
   ! @TomlMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ImportParamFromToml => &
-    obj_ImportParamFromToml
-  !! Initiate param from a toml table
   PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Initiate the object from a toml table
   PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -283,8 +270,6 @@ CONTAINS
   !! Returns true if nodeNum is allocated
   PROCEDURE, PUBLIC, PASS(obj) :: GetParam => obj_GetParam
   !! Returns the flags of the object
-  PROCEDURE, PUBLIC, PASS(obj) :: GetPrefix => obj_GetPrefix
-  !! Returns the prefix of the parameters
 END TYPE MeshSelection_
 
 !----------------------------------------------------------------------------
@@ -508,74 +493,6 @@ INTERFACE MeshSelectionDeallocate
 END INTERFACE MeshSelectionDeallocate
 
 !----------------------------------------------------------------------------
-!                                     CheckEssentialParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary: Check that param has the essential parameters
-!
-! Checks that param has the keys isSelectionByMeshID, isSelectionByElemNum,
-! isSelectionByNodeNum and isSelectionByBox under prefix. It raises an
-! error if a key is missing. This routine does nothing in a release build.
-!
-! See also: [[SetMeshSelectionParam]], [[obj_Initiate2]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_CheckEssentialParam(obj, param, prefix)
-    CLASS(MeshSelection_), INTENT(IN) :: obj
-    !! mesh selection
-    TYPE(ParameterList_), INTENT(IN) :: param
-    !! parameter list to check
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: prefix
-    !! prefix of the keys, default is obj%GetPrefix()
-  END SUBROUTINE obj_CheckEssentialParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                   SetMeshSelectionParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary: Set the parameters for initiating MeshSelection_
-!
-! Writes the four selection flags to param under prefix. Use
-! obj%GetPrefix() as prefix, because obj_Initiate2 reads the flags from
-! there.
-!
-! Examples
-!
-!```fortran
-! CALL SetMeshSelectionParam(param=param, prefix=obj%GetPrefix(), &
-!                            isSelectionByElemNum=math%yes)
-! CALL obj%Initiate(param=param)
-!```
-!
-! Full example: src/modules/MeshSelection/examples/Initiate_test_1.F90
-!
-! See also: [[obj_Initiate2]], [[obj_CheckEssentialParam]]
-
-INTERFACE
-  MODULE SUBROUTINE SetMeshSelectionParam( &
-    param, prefix, isSelectionByMeshID, isSelectionByElemNum, &
-    isSelectionByBox, isSelectionByNodeNum)
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! parameter list to update
-    CHARACTER(*), INTENT(IN) :: prefix
-    !! prefix of the keys
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByMeshID
-    !! selection by mesh ID, default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByElemNum
-    !! selection by element number, default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByBox
-    !! selection by box, default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByNodeNum
-    !! selection by node number, default is false
-  END SUBROUTINE SetMeshSelectionParam
-END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -616,42 +533,6 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSelectionByNodeNum
     !! selection by node number, default is false
   END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2021-08-28
-! summary: Initiate an instance of MeshSelection_ from a parameter list
-!
-! Deallocates obj, marks it as initiated and reads the selection flags from
-! param. Every flag must be present in param, so call SetMeshSelectionParam
-! first.
-!
-! Examples
-!
-!```fortran
-! CALL FPL_INIT()
-! CALL param%Initiate()
-! CALL SetMeshSelectionParam(param=param, prefix=obj%GetPrefix(), &
-!                            isSelectionByElemNum=math%yes)
-! CALL obj%Initiate(param=param)
-! CALL OK(obj%IsSelectionByElemNum(), "Initiate(param): elemNum")
-!```
-!
-! Full example: src/modules/MeshSelection/examples/Initiate_test_1.F90
-!
-! See also: [[SetMeshSelectionParam]], [[obj_Initiate1]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, param)
-    CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    !! mesh selection
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! parameter list, see SetMeshSelectionParam
-  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -917,15 +798,11 @@ END INTERFACE
 !
 ! See also: [[obj_Set]]
 
-INTERFACE
+INTERFACE MeshSelectionSet
   MODULE SUBROUTINE obj_Set2(obj)
     CLASS(MeshSelection_), INTENT(INOUT) :: obj(:)
     !! vector of mesh selections
   END SUBROUTINE obj_Set2
-END INTERFACE
-
-INTERFACE MeshSelectionSet
-  MODULE PROCEDURE obj_Set2
 END INTERFACE MeshSelectionSet
 
 !----------------------------------------------------------------------------
@@ -1133,51 +1010,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             ImportParamFromToml@TomlMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-08
-! summary: Initiate param from a toml table
-!
-! Reads isSelectionByMeshID, isSelectionByNodeNum, isSelectionByBox and
-! isSelectionByElemNum from table, and writes them to param. A missing key
-! is taken as false.
-!
-! Only these four keys are read. The tables meshID, elemNum, nodeNum and
-! box are ignored, and they do not change the flags. This differs from
-! [[obj_ImportFromToml1]].
-!
-! Examples
-!
-!```fortran
-! CALL GetValue(table=table, filename=filename)
-! CALL toml_get(table, "region", node, origin=origin, stat=stat, &
-!               requested=math%no)
-! CALL other%ImportParamFromToml(param=param, table=node)
-! CALL other%Initiate(param=param)
-!```
-!
-! Full example: src/modules/MeshSelection/examples/ImportFromToml_test_1.F90
-!
-! See also: [[SetMeshSelectionParam]], [[obj_Initiate2]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_ImportParamFromToml(obj, param, table)
-    CLASS(MeshSelection_), INTENT(INOUT) :: obj
-    !! mesh selection, it gives the prefix
-    TYPE(ParameterList_), INTENT(INOUT) :: param
-    !! parameter list to update
-    TYPE(toml_table), INTENT(INOUT) :: table
-    !! toml table of the selection
-  END SUBROUTINE obj_ImportParamFromToml
-END INTERFACE
-
-INTERFACE MeshSelectionImportParamFromToml
-  MODULE PROCEDURE obj_ImportParamFromToml
-END INTERFACE MeshSelectionImportParamFromToml
-
-!----------------------------------------------------------------------------
 !                                                  ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
@@ -1263,9 +1095,6 @@ END INTERFACE MeshSelectionImportFromToml
 ! PROGRAM main
 ! USE BaseType, ONLY: math => TypeMathOpt
 ! USE ExceptionHandler_Class, ONLY: e
-! USE FPL, ONLY: FPL_FINALIZE
-! USE FPL, ONLY: FPL_INIT
-! USE FPL, ONLY: ParameterList_
 ! USE GlobalData, ONLY: I4B
 ! USE MeshSelection_Class, ONLY: MeshSelection_
 ! USE MeshSelection_Class, ONLY: MeshSelectionImportFromToml
@@ -1274,87 +1103,33 @@ END INTERFACE MeshSelectionImportFromToml
 ! USE tomlf, ONLY: toml_table
 ! USE TomlUtility, ONLY: GetValue
 ! IMPLICIT NONE
-!
 ! CHARACTER(*), PARAMETER :: filename = "./toml/MeshSelection.toml"
 ! TYPE(MeshSelection_) :: obj
 ! INTEGER(I4B) :: ans(16), tsize
-!
 ! CALL e%SetQuietMode(math%yes)
-!
 ! ! Test 1: ImportFromToml reads every table of [region]
 ! BLOCK
 !   CALL obj%ImportFromToml(tomlName="region", filename=filename)
-!
 !   CALL OK(obj%IsInitiated(), "ImportFromToml: IsInitiated")
 !   CALL OK(obj%IsSelectionByMeshID(), "ImportFromToml: meshID flag")
-!   CALL OK(obj%IsSelectionByElemNum(), "ImportFromToml: table sets flag")
+!   CALL OK(obj%IsSelectionByElemNum(), &
+!           "ImportFromToml: elemNum flag, table sets flag")
 !   CALL OK(obj%IsSelectionByNodeNum(), "ImportFromToml: nodeNum flag")
 !   CALL OK(obj%IsSelectionByBox(), "ImportFromToml: box flag")
-!
 !   CALL OK(ALL(obj%GetMeshID(dim=0) .EQ. [1, 2, 3, 4, 5, 6]), "meshID point")
 !   CALL OK(ALL(obj%GetMeshID(dim=1) .EQ. [2, 5, 6, 7]), "meshID line")
 !   CALL OK(ALL(obj%GetMeshID(dim=2) .EQ. [1, 3, 5, 6, 8]), "meshID surface")
 !   CALL OK(ALL(obj%GetMeshID(dim=3) .EQ. [1, 2, 3]), "meshID from txt file")
-!
 !   CALL obj%GetElemNum(dim=2, ans=ans, tsize=tsize)
 !   CALL OK(tsize .EQ. 3, "elemNum: size")
 !   CALL OK(ALL(ans(1:tsize) .EQ. [1, 2, 3]), "elemNum: values")
-!
 !   ! Set has collected the nodes of every dimension
 !   CALL obj%GetNodeNum(ans=ans, tsize=tsize)
 !   CALL OK(tsize .EQ. 11, "nodeNum: size")
 !   CALL OK(ALL(ans(1:tsize) .EQ. [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]), &
 !           "nodeNum: values")
+!   CALL obj%DEALLOCATE()
 ! END BLOCK
-!
-! ! Test 2: ImportParamFromToml reads only the flags
-! BLOCK
-!   TYPE(toml_table), ALLOCATABLE :: table
-!   TYPE(toml_table), POINTER :: node
-!   TYPE(ParameterList_) :: param
-!   TYPE(MeshSelection_) :: other
-!   INTEGER(I4B) :: origin, stat
-!
-!   CALL FPL_INIT()
-!   CALL param%Initiate()
-!
-!   CALL GetValue(table=table, filename=filename)
-!   node => NULL()
-!   CALL toml_get(table, "region", node, origin=origin, stat=stat, &
-!                 requested=math%no)
-!   CALL OK(ASSOCIATED(node), "region table is found")
-!
-!   CALL other%ImportParamFromToml(param=param, table=node)
-!   CALL other%Initiate(param=param)
-!   CALL OK(other%IsSelectionByMeshID(), "ImportParamFromToml: meshID")
-!   CALL OK(.NOT. other%IsSelectionByElemNum(), &
-!           "ImportParamFromToml: elemNum")
-!   CALL OK(.NOT. other%IsMeshIDAllocated(dim=0), &
-!           "ImportParamFromToml: no data")
-!
-!   ! Test 3: ImportFromToml from a table, it deallocates the old data
-!   CALL obj%ImportFromToml(table=node)
-!   CALL OK(ALL(obj%GetMeshID(dim=1) .EQ. [2, 5, 6, 7]), &
-!           "ImportFromToml(table): replaces old data")
-!
-!   CALL other%DEALLOCATE()
-!   CALL param%DEALLOCATE()
-!   CALL FPL_FINALIZE()
-!   node => NULL()
-!   DEALLOCATE (table)
-! END BLOCK
-!
-! ! Test 4: module level generic interface
-! BLOCK
-!   TYPE(MeshSelection_) :: other
-!
-!   CALL MeshSelectionImportFromToml(other, tomlName="region", &
-!                                    filename=filename)
-!   CALL OK(other%IsInitiated(), "MeshSelectionImportFromToml")
-!   CALL other%DEALLOCATE()
-! END BLOCK
-!
-! CALL obj%DEALLOCATE()
 ! END PROGRAM main
 !```
 !
@@ -2164,30 +1939,6 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of entries written to ans
   END SUBROUTINE obj_GetNodeNum3
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetPrefix@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-15
-! summary: Returns the prefix of the parameters
-!
-! The prefix is used for the keys of the parameter list.
-!
-! Returns:
-!   ans : CHARACTER(:), ALLOCATABLE - the value "MeshSelection"
-!
-! See also: [[SetMeshSelectionParam]]
-
-INTERFACE
-  MODULE FUNCTION obj_GetPrefix(obj) RESULT(ans)
-    CLASS(MeshSelection_), INTENT(IN) :: obj
-    !! mesh selection
-    CHARACTER(:), ALLOCATABLE :: ans
-    !! the value "MeshSelection"
-  END FUNCTION obj_GetPrefix
 END INTERFACE
 
 !----------------------------------------------------------------------------

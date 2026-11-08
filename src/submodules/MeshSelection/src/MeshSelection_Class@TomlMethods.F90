@@ -38,52 +38,6 @@ CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class"
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                            ImportFromToml
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ImportParamFromToml
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportParamFromToml()"
-#endif
-
-INTEGER(I4B) :: origin, STAT
-LOGICAL(LGT) :: isSelectionByElemNum, isSelectionByNodeNum, &
-                isSelectionByBox, isSelectionByMeshID
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-CALL GetValue(table=table, key="isSelectionByMeshID", &
-              VALUE=isSelectionByMeshID, default_value=.FALSE., &
-              origin=origin, STAT=STAT)
-
-CALL GetValue(table=table, key="isSelectionByNodeNum", &
-              VALUE=isSelectionByNodeNum, default_value=.FALSE., &
-              origin=origin, STAT=STAT)
-
-CALL GetValue(table=table, key="isSelectionByBox", &
-              VALUE=isSelectionByBox, default_value=.FALSE., &
-              origin=origin, STAT=STAT)
-
-CALL GetValue(table=table, key="isSelectionByElemNum", &
-              VALUE=isSelectionByElemNum, default_value=.FALSE., &
-              origin=origin, STAT=STAT)
-
-CALL SetMeshSelectionParam(param=param, prefix=obj%GetPrefix(), &
-                           isSelectionByMeshID=isSelectionByMeshID, &
-                           isSelectionByNodeNum=isSelectionByNodeNum, &
-                           isSelectionByBox=isSelectionByBox, &
-                           isSelectionByElemNum=isSelectionByElemNum)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_ImportParamFromToml
-
-!----------------------------------------------------------------------------
 !                                            ReadIsSelectionByMeshIDFromToml
 !----------------------------------------------------------------------------
 

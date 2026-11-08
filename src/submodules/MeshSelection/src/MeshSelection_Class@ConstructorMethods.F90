@@ -23,9 +23,6 @@ USE BoundingBox_Method, ONLY: BoundingBox_Copy => Copy
 USE BoundingBox_Method, ONLY: BoundingBox_Deallocate => DEALLOCATE
 USE BoundingBox_Method, ONLY: BoundingBox_Initiate => Initiate
 USE BoundingBox_Method, ONLY: BoundingBox_Reallocate => Reallocate
-USE FPL_Method, ONLY: CheckEssentialParam
-USE FPL_Method, ONLY: GetValue
-USE FPL_Method, ONLY: Set
 USE InputUtility, ONLY: Input
 USE IntVector_Method, ONLY: IntVector_Copy => Copy
 USE IntVector_Method, ONLY: IntVector_Deallocate => DEALLOCATE
@@ -153,75 +150,6 @@ END PROCEDURE obj_IsSelectionByBox
 ! END PROCEDURE obj_GetTotalPointNodenum
 
 !----------------------------------------------------------------------------
-!                                                       CheckEssentialParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_CheckEssentialParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_CheckEssentialParam()"
-CHARACTER(:), ALLOCATABLE :: astr, prefix0
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-
-IF (PRESENT(prefix)) THEN
-  prefix0 = prefix
-ELSE
-  prefix0 = obj%GetPrefix()
-END IF
-
-astr = "/isSelectionByMeshID/isSelectionBynodeNum/"// &
-       "isSelectionByBox/isSelectionByElemNum"
-
-CALL CheckEssentialParam(obj=param, keys=astr, prefix=prefix0, &
-                         myName=myName, modName=modName)
-!note: CheckEssentialParam param is defined in easifemClasses FPL_Method
-
-astr = ""
-prefix0 = ""
-
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_CheckEssentialParam
-
-!----------------------------------------------------------------------------
-!                                                    SetMeshSelectionParam
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE SetMeshSelectionParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "SetMeshSelectionParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-CALL Set(param, datatype=.TRUE., prefix=prefix, &
-         key="isSelectionByElemNum", &
-         VALUE=Input(option=isSelectionByElemNum, default=.FALSE.))
-
-CALL Set(param, datatype=.TRUE., prefix=prefix, &
-         key="isSelectionBynodeNum", &
-         VALUE=Input(option=isSelectionBynodeNum, default=.FALSE.))
-
-CALL Set(param, datatype=.TRUE., prefix=prefix, &
-         key="isSelectionByBox", &
-         VALUE=Input(option=isSelectionByBox, default=.FALSE.))
-
-CALL Set(param, datatype=.TRUE., prefix=prefix, &
-         key="isSelectionByMeshID", &
-         VALUE=Input(option=isSelectionByMeshID, default=.FALSE.))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE SetMeshSelectionParam
-
-!----------------------------------------------------------------------------
 !                                                                 Initiate
 !----------------------------------------------------------------------------
 
@@ -248,40 +176,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 END PROCEDURE obj_Initiate1
-
-!----------------------------------------------------------------------------
-!                                                                 Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
-#endif
-
-CHARACTER(:), ALLOCATABLE :: prefix
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-CALL obj%DEALLOCATE()
-obj%isinit = .TRUE.
-prefix = obj%GetPrefix()
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionByMeshID", &
-              VALUE=obj%ms(1))
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionByElemNum", &
-              VALUE=obj%ms(2))
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionBynodeNum", &
-              VALUE=obj%ms(3))
-CALL GetValue(obj=param, prefix=prefix, key="isSelectionByBox", &
-              VALUE=obj%ms(4))
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
