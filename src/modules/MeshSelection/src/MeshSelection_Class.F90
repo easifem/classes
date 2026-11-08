@@ -44,7 +44,6 @@ PUBLIC :: MeshSelectionDeallocate
 PUBLIC :: MeshSelectionReallocate
 PUBLIC :: MeshSelection_
 PUBLIC :: MeshSelectionPointer_
-PUBLIC :: MeshSelectionImportFromToml
 PUBLIC :: MeshSelectionSet
 PUBLIC :: MeshSelectionDisplay
 PUBLIC :: TypeMeshSelection
@@ -1074,10 +1073,6 @@ INTERFACE
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
-INTERFACE MeshSelectionImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml1
-END INTERFACE MeshSelectionImportFromToml
-
 !----------------------------------------------------------------------------
 !                                                  ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
@@ -1097,7 +1092,6 @@ END INTERFACE MeshSelectionImportFromToml
 ! USE ExceptionHandler_Class, ONLY: e
 ! USE GlobalData, ONLY: I4B
 ! USE MeshSelection_Class, ONLY: MeshSelection_
-! USE MeshSelection_Class, ONLY: MeshSelectionImportFromToml
 ! USE Test_Method, ONLY: OK
 ! USE tomlf, ONLY: toml_get => get_value
 ! USE tomlf, ONLY: toml_table
@@ -1152,10 +1146,6 @@ INTERFACE
     !! not used
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
-
-INTERFACE MeshSelectionImportFromToml
-  MODULE PROCEDURE obj_ImportFromToml2
-END INTERFACE MeshSelectionImportFromToml
 
 !----------------------------------------------------------------------------
 !                                                           Export@HDFMethods

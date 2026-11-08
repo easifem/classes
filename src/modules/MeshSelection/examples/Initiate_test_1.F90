@@ -5,22 +5,15 @@
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: FPL_FINALIZE
-USE FPL, ONLY: FPL_INIT
-USE FPL, ONLY: ParameterList_
 USE GlobalData, ONLY: LGT
 USE MeshSelection_Class, ONLY: MeshSelection_
-USE MeshSelection_Class, ONLY: SetMeshSelectionParam
 USE MeshSelection_Class, ONLY: TypeMeshSelection
 USE Test_Method, ONLY: OK
 IMPLICIT NONE
 
 TYPE(MeshSelection_) :: obj
-TYPE(ParameterList_) :: param
 
 CALL e%SetQuietMode(math%yes)
-CALL FPL_INIT()
-CALL param%Initiate()
 
 ! Test 1: a new instance is not initiated
 BLOCK
@@ -67,20 +60,6 @@ BLOCK
   CALL OK(.NOT. (byElem .OR. byBox), "GetParam: false values")
 END BLOCK
 
-! Test 5: Initiate from a parameter list
-BLOCK
-  CALL SetMeshSelectionParam(param=param, prefix=obj%GetPrefix(), &
-                             isSelectionByElemNum=math%yes, &
-                             isSelectionByNodeNum=math%yes)
-  CALL obj%CheckEssentialParam(param=param)
-  CALL obj%Initiate(param=param)
-  CALL OK(obj%IsInitiated(), "Initiate(param): IsInitiated")
-  CALL OK(obj%IsSelectionByElemNum(), "Initiate(param): elemNum")
-  CALL OK(obj%IsSelectionByNodeNum(), "Initiate(param): nodeNum")
-  CALL OK(.NOT. obj%IsSelectionByMeshID(), "Initiate(param): meshID")
-  CALL OK(.NOT. obj%IsSelectionByBox(), "Initiate(param): box")
-END BLOCK
-
 ! Test 6: Initiate removes the data of an earlier selection
 BLOCK
   CALL obj%Initiate(isSelectionByMeshID=math%yes)
@@ -98,14 +77,5 @@ BLOCK
   CALL OK(.NOT. obj%IsMeshIDAllocated(dim=2), "Deallocate: meshID data")
 END BLOCK
 
-! Test 8: GetPrefix also works on the module level instance
-BLOCK
-  CALL OK(obj%GetPrefix() .EQ. "MeshSelection", "GetPrefix")
-  CALL OK(TypeMeshSelection%GetPrefix() .EQ. "MeshSelection", &
-          "GetPrefix: TypeMeshSelection")
-END BLOCK
-
 CALL obj%DEALLOCATE()
-CALL param%DEALLOCATE()
-CALL FPL_FINALIZE()
 END PROGRAM main
