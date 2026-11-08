@@ -1,44 +1,61 @@
+---
 project: easifemClasses
-summary: EASIFEM Library
-project_download: https://github.com/vickysharma0812
-project_github: https://github.com/vickysharma0812
-project_website: http://www.easifem.com
+summary: easifemClasses is part of easifem library, which is a platform for Expandable And Scalable Infrastructure for Finite Element Methods.
+project_download: https://github.com/easifem/classes
+project_github: https://github.com/easifem/classes
+project_website: https://www.easifem.com
 license: gfdl
-project_dir: ./src
-media_dir: ./media
-page_dir: ${pages}/docs/easifemClasses
-output_dir: ./docs
-exclude_dir: ./src/submodules/
+src_dir: src/modules/H1FE/src/
+         src/modules/AbstractOneDimFE/src/
+         src/modules/BasisOpt/src/
+         src/modules/AbstractFE/src/
+         src/modules/FEDOF/src/
+         src/modules/AbstractField/src/
+         src/modules/AbstractNodeField/src/
+         src/modules/ScalarField/src/
+         src/modules/VectorField/src/
+         src/modules/AbstractFile/src/
+         src/modules/HDF5File/src/
+         src/modules/VtkHDF5File/src/
+         src/modules/UserFunction/src/
+         src/modules/AbstractMesh/src/
+         src/modules/FEMesh/src/
+         src/modules/AbstractDomain/src/
+         src/modules/FEDomain/src/
+         src/modules/VTKMeshUtility/src/
+         src/modules/AbstractMeshField/src/
+         src/modules/MeshField/src/
+         src/modules/ScalarFieldLis/src/
+         src/modules/MeshSelection/src/
+media_dir: docs/media
+page_dir: docs/pages
+output_dir: /tmp/formal/classes
+exclude_dir: src/submodules/
+exclude: **/NodeDataList_Class.F90
+         **/EdgeDataList_Class.F90
+         **/ElemDataList_Class.F90
+         **/FaceDataList_Class.F90
 author: Vikas Sharma
-author_description: Ph. D.
-	Graduate School of Agriculture, Kyoto University,
-	Kyoto, Japan
-email: vickysharma0812@gmail.com
-github: https://vickysharma0812.github.io/
-author_pic:
-twitter:
-website:
-graph: false #time consuming
-source: false #time consuming
+author_description: Graduate School of Agriculture, Kyoto University, Kyoto, Japan
+email: eaifem@gmail.com
+github: https://github.com/easifem
+author_pic: docs/media/vikas.png
+website: https://www.easifem.com
+graph: true
+source: true
 display: public
          protected
          private
-page: true
 sort: alpha
 coloured_edges: true
-extra_filetypes:  inc !
+extra_filetypes: inc !
 print_creation_date: true
-creation_date: %Y-%m-%d %H:%M %z
-md_extensions: markdown.extensions.toc
-               markdown.extensions.smarty
-               markdown.extensions.extra
+creation_date: %Y-%m-%d
+md_extensions: Markdown.extensions.smarty
 predocmark_alt: >
 predocmark: <
 docmark_alt: *
 docmark: !
-fpp_extensions: f90
-preprocesses: true
-
-{!./README.md!}
-
-<!-- FORD features two macros to make it easier to provide intradocumentation links. These are `|url|` which gets replaced by the project URL, and `|media|`, which gets replaced by the (absolute) path to the media directory in the output. you can also use `favicon:` -->
+fpp_extensions: F90
+preprocess: true
+---
