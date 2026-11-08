@@ -54,3 +54,6 @@ tui-journal
 .cache/
 .helix
 .rumdl_cache
+
+workspaces/
+Workspaces/
