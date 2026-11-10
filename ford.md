@@ -27,6 +27,9 @@ src_dir: src/modules/H1FE/src/
          src/modules/MeshField/src/
          src/modules/ScalarFieldLis/src/
          src/modules/MeshSelection/src/
+         src/modules/AbstractMatrixField/src/
+         src/modules/MatrixField/src/
+         src/modules/BlockMatrixField/src/
 media_dir: docs/media
 page_dir: docs/pages
 output_dir: /tmp/formal/classes
@@ -51,7 +54,6 @@ coloured_edges: true
 extra_filetypes: inc !
 print_creation_date: true
 creation_date: %Y-%m-%d
-md_extensions: Markdown.extensions.smarty
 predocmark_alt: >
 predocmark: <
 docmark_alt: *
