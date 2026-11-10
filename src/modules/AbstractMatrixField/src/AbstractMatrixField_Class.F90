@@ -38,6 +38,7 @@ USE FEDOF_Class, ONLY: FEDOFPointer_
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
 IMPLICIT NONE
 PRIVATE
 
@@ -104,6 +105,10 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of the matrix field
+
+  ! @HDFMethods
+  PROCEDURE(obj_Import), DEFERRED, PUBLIC, PASS(obj) :: IMPORT
+  !! Import the matrix field from HDF5 file
 
   ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetRowFEDOFPointer1 => &
@@ -361,6 +366,59 @@ INTERFACE AbstractMatrixFieldDeallocate
     !! matrix field
   END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractMatrixFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                                    IMPORT
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Import a matrix field from HDF5 file
+!
+! The child class reads the matrix from the group and sets the row and
+! column FEDOF pointers with [[AbstractMatrixFieldSetFEDOF]]. A column
+! argument that is absent takes the row value (square matrix).
+!
+! Examples
+!
+!```fortran
+! CALL obj%Import(hdf5=h5, group="/K", rowFedof=fedof, &
+!                 rowGeoFedof=geofedof)
+!```
+!
+! Full example: src/modules/MatrixField/examples/Export_test_1.F90
+!
+! See also: [[MatrixField_:obj_Import]]
+
+ABSTRACT INTERFACE
+  SUBROUTINE obj_Import(obj, hdf5, group, rowFedof, rowFedofs, &
+                        rowGeoFedof, rowGeoFedofs, colFedof, colFedofs, &
+                        colGeoFedof, colGeoFedofs)
+    IMPORT :: AbstractMatrixField_, HDF5File_, FEDOF_, FEDOFPointer_
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    !! matrix field, not initiated
+    TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file open in read mode
+    CHARACTER(*), INTENT(IN) :: group
+    !! group of the matrix field in the HDF5 file
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowFedof
+    !! FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowFedofs(:)
+    !! FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowGeoFedof
+    !! geometric FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowGeoFedofs(:)
+    !! geometric FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colFedof
+    !! FEDOF of the columns, default is rowFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colFedofs(:)
+    !! FEDOF of the columns, default is rowFedofs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colGeoFedof
+    !! geometric FEDOF of the columns, default is rowGeoFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colGeoFedofs(:)
+    !! geometric FEDOF of the columns, default is rowGeoFedofs
+  END SUBROUTINE obj_Import
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                    SetFEDOF

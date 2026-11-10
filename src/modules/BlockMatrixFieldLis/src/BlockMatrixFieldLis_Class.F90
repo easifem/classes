@@ -166,15 +166,31 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, rowFedof, rowFedofs, &
+                               rowGeoFedof, rowGeoFedofs, colFedof, &
+                               colFedofs, colGeoFedof, colGeoFedofs)
     CLASS(BlockMatrixFieldLis_), INTENT(INOUT) :: obj
+    !! matrix field, not initiated
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file open in read mode
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    !! group of the matrix field in the HDF5 file
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowFedof
+    !! FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowFedofs(:)
+    !! FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowGeoFedof
+    !! geometric FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowGeoFedofs(:)
+    !! geometric FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colFedof
+    !! FEDOF of the columns, default is rowFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colFedofs(:)
+    !! FEDOF of the columns, default is rowFedofs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colGeoFedof
+    !! geometric FEDOF of the columns, default is rowGeoFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colGeoFedofs(:)
+    !! geometric FEDOF of the columns, default is rowGeoFedofs
   END SUBROUTINE obj_Import
 END INTERFACE
 

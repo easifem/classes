@@ -47,7 +47,8 @@ CALL h5%DEALLOCATE()
 
 CALL h5%Initiate(filename=filename, mode="READ")
 CALL h5%OPEN()
-CALL obj2%Import(hdf5=h5, group="/K", fedof=fedof, geofedof=geofedof)
+CALL obj2%Import(hdf5=h5, group="/K", rowFedof=fedof, &
+                  rowGeoFedof=geofedof)
 CALL h5%DEALLOCATE()
 
 CALL OK(obj2%IsInitiated(), "Import: IsInitiated")

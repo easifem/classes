@@ -15,10 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) ConstructorMethods
-USE Display_Method, ONLY: ToString
-USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
-USE FPL_Method, ONLY: CheckEssentialParam
-USE GlobalData, ONLY: TypeIntI4B
 USE InputUtility, ONLY: Input
 IMPLICIT NONE
 
@@ -36,9 +32,8 @@ CONTAINS
 MODULE PROCEDURE obj_Initiate1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
-#endif
-INTEGER(I4B) :: ii, tsize
 LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -69,67 +64,6 @@ obj%local_n = obj2%local_n
 obj%is = obj2%is
 obj%ie = obj2%ie
 obj%lis_ptr = obj2%lis_ptr
-
-obj%dof = obj2%dof
-
-obj%fedof => obj2%fedof
-obj%geofedof => obj2%geofedof
-
-isok = ALLOCATED(obj2%fedofs)
-IF (isok) THEN
-  tsize = SIZE(obj2%fedofs)
-  ALLOCATE (obj%fedofs(tsize))
-  DO ii = 1, tsize
-    obj%fedofs(ii)%ptr => obj2%fedofs(ii)%ptr
-  END DO
-END IF
-
-obj%timefedof => obj2%timefedof
-isok = ALLOCATED(obj2%timefedofs)
-IF (isok) THEN
-  tsize = SIZE(obj2%timefedofs)
-  ALLOCATE (obj%timefedofs(tsize))
-  DO ii = 1, tsize
-    obj%timefedofs(ii)%ptr => obj2%timefedofs(ii)%ptr
-  END DO
-END IF
-
-isok = ALLOCATED(obj2%dbc)
-IF (isok) THEN
-  tsize = SIZE(obj2%dbc)
-  ALLOCATE (obj%dbc(tsize))
-  DO ii = 1, tsize
-    obj%dbc(ii)%ptr => obj2%dbc(ii)%ptr
-  END DO
-END IF
-
-isok = ALLOCATED(obj2%nbc)
-IF (isok) THEN
-  tsize = SIZE(obj2%nbc)
-  ALLOCATE (obj%nbc(tsize))
-  DO ii = 1, tsize
-    obj%nbc(ii)%ptr => obj2%nbc(ii)%ptr
-  END DO
-END IF
-
-isok = ALLOCATED(obj2%nbc_point)
-IF (isok) THEN
-  tsize = SIZE(obj2%nbc_point)
-  ALLOCATE (obj%nbc_point(tsize))
-  DO ii = 1, tsize
-    obj%nbc_point(ii)%ptr => obj2%nbc_point(ii)%ptr
-  END DO
-END IF
-
-isok = ALLOCATED(obj2%nodalValue)
-IF (isok) THEN
-  obj%nodalValue = obj2%nodalValue
-END IF
-
-isok = ALLOCATED(obj2%nodeNum)
-IF (isok) THEN
-  obj%nodeNum = obj2%nodeNum
-END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -168,97 +102,11 @@ obj%comm = Input(option=comm, default=math%zero_i)
 obj%local_n = Input(option=local_n, default=math%zero_i)
 obj%global_n = Input(option=global_n, default=math%zero_i)
 
-obj%fedof => fedof
-obj%geofedof => geofedof
-IF (PRESENT(timefedof)) obj%timefedof => timefedof
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END]')
 #endif
 END PROCEDURE obj_Initiate2
-
-!----------------------------------------------------------------------------
-!                                                                Initiate
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Initiate3
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
-#endif
-
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-! note: We should not call deallocate in abstract classes.
-! This is because, in concrete classes we may set some
-! parameters before calling this method.
-! All those parameters will be gone if we call deallocate
-! here.
-! CALL obj%DEALLOCATE()
-
-obj%isInit = math%yes
-obj%name = name
-obj%engine = engine
-obj%fieldType = Input(option=fieldType, default=TypeField%normal)
-obj%comm = Input(option=comm, default=math%zero_i)
-obj%local_n = Input(option=local_n, default=math%zero_i)
-obj%global_n = Input(option=global_n, default=math%zero_i)
-
-tsize = SIZE(fedof)
-ALLOCATE (obj%fedofs(tsize))
-DO ii = 1, tsize
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(fedof(ii)%ptr)
-  CALL AssertError1(isok, myName, &
-                    'fedof('//ToString(ii)//') is not ASSOCIATED.')
-#endif
-  obj%fedofs(ii)%ptr => fedof(ii)%ptr
-END DO
-
-tsize = SIZE(geofedof)
-ALLOCATE (obj%geofedofs(tsize))
-DO ii = 1, tsize
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(geofedof(ii)%ptr)
-  CALL AssertError1(isok, myName, &
-                    'geofedof('//ToString(ii)//') is not ASSOCIATED.')
-#endif
-  obj%geofedofs(ii)%ptr => geofedof(ii)%ptr
-END DO
-
-! If timefedof is not preseent then exit
-isok = PRESENT(timefedof)
-IF (.NOT. isok) THEN
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-tsize = SIZE(timefedof)
-ALLOCATE (obj%timefedofs(tsize))
-DO ii = 1, tsize
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(timefedof(ii)%ptr)
-  CALL AssertError1(isok, myName, &
-                    'timefedof('//ToString(ii)//') is not ASSOCIATED.')
-#endif
-  obj%timefedofs(ii)%ptr => timefedof(ii)%ptr
-END DO
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
-#endif
-
-END PROCEDURE obj_Initiate3
 
 !----------------------------------------------------------------------------
 !                                                             Deallocate
@@ -269,20 +117,15 @@ MODULE PROCEDURE obj_Deallocate
 CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
 
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 obj%isInit = math%no
-obj%isMaxTotalNodeNumForBCSet = math%no
 obj%fieldType = TypeField%normal
 obj%name = ""
 obj%engine = ""
-obj%maxTotalNodeNumForBC = math%zero_i
 obj%comm = math%zero_i
 obj%myRank = math%zero_i
 obj%numProcs = math%one_i
@@ -291,73 +134,6 @@ obj%local_n = math%zero_i
 obj%is = math%zero_i
 obj%ie = math%zero_i
 obj%lis_ptr = math%zero_i
-obj%fedof => NULL()
-obj%geofedof => NULL()
-
-isok = ALLOCATED(obj%fedofs)
-IF (isok) THEN
-  tsize = SIZE(obj%fedofs)
-  DO ii = 1, tsize
-    obj%fedofs(ii)%ptr => NULL()
-  END DO
-  DEALLOCATE (obj%fedofs)
-END IF
-
-isok = ALLOCATED(obj%geofedofs)
-IF (isok) THEN
-  tsize = SIZE(obj%geofedofs)
-  DO ii = 1, tsize
-    obj%geofedofs(ii)%ptr => NULL()
-  END DO
-  DEALLOCATE (obj%geofedofs)
-END IF
-
-obj%timefedof => NULL()
-
-isok = ALLOCATED(obj%timefedofs)
-IF (isok) THEN
-  tsize = SIZE(obj%timefedofs)
-  DO ii = 1, tsize
-    obj%timefedofs(ii)%ptr => NULL()
-  END DO
-  DEALLOCATE (obj%timefedofs)
-END IF
-
-isok = ALLOCATED(obj%dbc)
-IF (isok) THEN
-  tsize = SIZE(obj%dbc)
-  DO ii = 1, tsize
-    obj%dbc(ii)%ptr => NULL()
-  END DO
-  DEALLOCATE (obj%dbc)
-END IF
-
-isok = ALLOCATED(obj%nbc)
-IF (isok) THEN
-  tsize = SIZE(obj%nbc)
-  DO ii = 1, tsize
-    obj%nbc(ii)%ptr => NULL()
-  END DO
-  DEALLOCATE (obj%nbc)
-END IF
-
-isok = ALLOCATED(obj%nbc_point)
-IF (isok) THEN
-  tsize = SIZE(obj%nbc_point)
-  DO ii = 1, tsize
-    obj%nbc_point(ii)%ptr => NULL()
-  END DO
-  DEALLOCATE (obj%nbc_point)
-END IF
-
-isok = ALLOCATED(obj%nodalValue)
-IF (isok) DEALLOCATE (obj%nodalValue)
-
-isok = ALLOCATED(obj%nodeNum)
-IF (isok) DEALLOCATE (obj%nodeNum)
-
-CALL DOF_Deallocate(obj%dof)
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')

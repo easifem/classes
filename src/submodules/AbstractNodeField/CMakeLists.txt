@@ -24,4 +24,7 @@ target_sources(
           ${src_path}/AbstractNodeField_Class@BlasMethods.F90
           ${src_path}/AbstractNodeField_Class@IOMethods.F90
           ${src_path}/AbstractNodeField_Class@HDFMethods.F90
-          ${src_path}/AbstractNodeField_Class@VTKMethods.F90)
+          ${src_path}/AbstractNodeField_Class@VTKMethods.F90
+          ${src_path}/AbstractNodeField_Class@TomlMethods.F90
+          ${src_path}/AbstractNodeField_Class@DOFMethods.F90
+          ${src_path}/AbstractNodeField_Class@BCMethods.F90)

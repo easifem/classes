@@ -15,15 +15,15 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) ConstructorMethods
+USE AbstractField_Class, ONLY: AbstractFieldInitiate
+USE AbstractField_Class, ONLY: AbstractFieldDeallocate
 USE Display_Method, ONLY: ToString
+USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
+USE DOF_Method, ONLY: DOF_Initiate => Initiate
+USE ReallocateUtility, ONLY: Reallocate
 USE RealVector_Method, ONLY: RealVector_Deallocate => DEALLOCATE
 USE RealVector_Method, ONLY: RealVector_Initiate => Initiate
 USE RealVector_Method, ONLY: RealVector_Size => Size
-USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
-USE DOF_Method, ONLY: DOF_Initiate => Initiate
-USE AbstractField_Class, ONLY: AbstractFieldInitiate
-USE AbstractField_Class, ONLY: AbstractFieldDeallocate
-USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -131,6 +131,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 #endif
 
 LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -144,6 +145,67 @@ CALL AbstractFieldInitiate( &
   usePointer=usePointer)
 
 SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
+  obj%dof = obj2%dof
+
+  obj%fedof => obj2%fedof
+  obj%geofedof => obj2%geofedof
+
+  isok = ALLOCATED(obj2%fedofs)
+  IF (isok) THEN
+    tsize = SIZE(obj2%fedofs)
+    ALLOCATE (obj%fedofs(tsize))
+    DO ii = 1, tsize
+      obj%fedofs(ii)%ptr => obj2%fedofs(ii)%ptr
+    END DO
+  END IF
+
+  obj%timefedof => obj2%timefedof
+  isok = ALLOCATED(obj2%timefedofs)
+  IF (isok) THEN
+    tsize = SIZE(obj2%timefedofs)
+    ALLOCATE (obj%timefedofs(tsize))
+    DO ii = 1, tsize
+      obj%timefedofs(ii)%ptr => obj2%timefedofs(ii)%ptr
+    END DO
+  END IF
+
+  isok = ALLOCATED(obj2%dbc)
+  IF (isok) THEN
+    tsize = SIZE(obj2%dbc)
+    ALLOCATE (obj%dbc(tsize))
+    DO ii = 1, tsize
+      obj%dbc(ii)%ptr => obj2%dbc(ii)%ptr
+    END DO
+  END IF
+
+  isok = ALLOCATED(obj2%nbc)
+  IF (isok) THEN
+    tsize = SIZE(obj2%nbc)
+    ALLOCATE (obj%nbc(tsize))
+    DO ii = 1, tsize
+      obj%nbc(ii)%ptr => obj2%nbc(ii)%ptr
+    END DO
+  END IF
+
+  isok = ALLOCATED(obj2%nbc_point)
+  IF (isok) THEN
+    tsize = SIZE(obj2%nbc_point)
+    ALLOCATE (obj%nbc_point(tsize))
+    DO ii = 1, tsize
+      obj%nbc_point(ii)%ptr => obj2%nbc_point(ii)%ptr
+    END DO
+  END IF
+
+  isok = ALLOCATED(obj2%nodalValue)
+  IF (isok) THEN
+    obj%nodalValue = obj2%nodalValue
+  END IF
+
+  isok = ALLOCATED(obj2%nodeNum)
+  IF (isok) THEN
+    obj%nodeNum = obj2%nodeNum
+  END IF
+
   obj%dof_tPhysicalVars = obj2%dof_tPhysicalVars
   obj%dof_storageFMT = obj2%dof_storageFMT
 
@@ -191,9 +253,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! CALL obj%DEALLOCATE()
 
 CALL AbstractFieldInitiate( &
-  obj=obj, name=name, engine=engine, storageFMT=storageFMT, &
-  fieldType=fieldType, comm=comm, local_n=local_n, global_n=global_n, &
-  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
+  local_n=local_n, global_n=global_n)
+
+obj%fedof => fedof
+obj%geofedof => geofedof
+IF (PRESENT(timefedof)) obj%timefedof => timefedof
 
 #ifdef DEBUG_VER
 isok = PRESENT(tPhysicalVarNames)
@@ -369,12 +434,84 @@ MODULE PROCEDURE obj_Deallocate
 CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
 #endif
 
+INTEGER(I4B) :: ii, tsize
+LOGICAL(LGT) :: isok
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
 CALL AbstractFieldDeallocate(obj)
+
+obj%isMaxTotalNodeNumForBCSet = math%no
+obj%maxTotalNodeNumForBC = math%zero_i
+obj%fedof => NULL()
+obj%geofedof => NULL()
+
+isok = ALLOCATED(obj%fedofs)
+IF (isok) THEN
+  tsize = SIZE(obj%fedofs)
+  DO ii = 1, tsize
+    obj%fedofs(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%fedofs)
+END IF
+
+isok = ALLOCATED(obj%geofedofs)
+IF (isok) THEN
+  tsize = SIZE(obj%geofedofs)
+  DO ii = 1, tsize
+    obj%geofedofs(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%geofedofs)
+END IF
+
+obj%timefedof => NULL()
+
+isok = ALLOCATED(obj%timefedofs)
+IF (isok) THEN
+  tsize = SIZE(obj%timefedofs)
+  DO ii = 1, tsize
+    obj%timefedofs(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%timefedofs)
+END IF
+
+isok = ALLOCATED(obj%dbc)
+IF (isok) THEN
+  tsize = SIZE(obj%dbc)
+  DO ii = 1, tsize
+    obj%dbc(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%dbc)
+END IF
+
+isok = ALLOCATED(obj%nbc)
+IF (isok) THEN
+  tsize = SIZE(obj%nbc)
+  DO ii = 1, tsize
+    obj%nbc(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%nbc)
+END IF
+
+isok = ALLOCATED(obj%nbc_point)
+IF (isok) THEN
+  tsize = SIZE(obj%nbc_point)
+  DO ii = 1, tsize
+    obj%nbc_point(ii)%ptr => NULL()
+  END DO
+  DEALLOCATE (obj%nbc_point)
+END IF
+
+isok = ALLOCATED(obj%nodalValue)
+IF (isok) DEALLOCATE (obj%nodalValue)
+
+isok = ALLOCATED(obj%nodeNum)
+IF (isok) DEALLOCATE (obj%nodeNum)
+
+CALL DOF_Deallocate(obj%dof)
 
 obj%dof_tPhysicalVars = 0
 obj%dof_storageFMT = MYSTORAGEFORMAT

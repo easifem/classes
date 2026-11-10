@@ -208,16 +208,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 !From MatrixFieldUtility
 CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group)
 
-! name, engine, fieldType, dof and the fedof pointers
-CALL AbstractFieldImport( &
-  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
-  timefedof=timefedof, timefedofs=timefedofs, geofedof=geofedof, &
-  geofedofs=geofedofs)
+! name, engine, fieldType, comm and sizes
+CALL AbstractFieldImport(obj=obj, hdf5=hdf5, group=group)
 
-! square matrix: the columns use the FEDOF of the rows
+! an absent column argument takes the row value (square matrix)
 CALL AbstractMatrixFieldSetFEDOF( &
-  obj=obj, rowFedof=fedof, rowFedofs=fedofs, rowGeoFedof=geofedof, &
-  rowGeoFedofs=geofedofs)
+  obj=obj, rowFedof=rowFedof, rowFedofs=rowFedofs, &
+  rowGeoFedof=rowGeoFedof, rowGeoFedofs=rowGeoFedofs, colFedof=colFedof, &
+  colFedofs=colFedofs, colGeoFedof=colGeoFedof, colGeoFedofs=colGeoFedofs)
 
 ! From MatrixFieldUtility
 CALL Import_Header(obj=obj, hdf5=hdf5, group=group, &
@@ -249,7 +247,7 @@ dsetname = TRIM(group)//"/pmat"
 isok = hdf5%PathExists(dsetname%chars())
 IF (isok) THEN
   CALL obj%ImportPmat(hdf5=hdf5, group=dsetname%chars(), &
-                      fedof=fedof, fedofs=fedofs)
+                      fedof=rowFedof, fedofs=rowFedofs)
 END IF
 
 #ifdef DEBUG_VER

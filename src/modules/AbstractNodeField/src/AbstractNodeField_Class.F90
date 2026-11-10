@@ -13,10 +13,13 @@
 
 MODULE AbstractNodeField_Class
 USE AbstractBC_Class, ONLY: AbstractBC_
+USE AbstractDomain_Class, ONLY: AbstractDomainPointer_
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE AbstractField_Class, ONLY: AbstractField_
 USE Basetype, ONLY: DOF_
 USE Basetype, ONLY: FEVariable_
 USE Basetype, ONLY: RealVector_
+USE BaseType, ONLY: math => TypeMathOpt
 USE DirichletBC_Class, ONLY: DirichletBCPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_
 USE ExceptionHandler_Class, ONLY: e
@@ -28,9 +31,13 @@ USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: LGT
 USE GlobalData, ONLY: INT8
 USE HDF5File_Class, ONLY: HDF5File_
+USE NeumannBC_Class, ONLY: NeumannBCPointer_
+USE NeumannBC_Class, ONLY: NeumannBC_
 USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeOpt_Class, ONLY: TimeOpt_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
@@ -64,8 +71,7 @@ INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 ! each physical variable in a vector (realVec), in the DOF storage
 ! format: the values are grouped by physical variable and component,
 ! and within a group they follow the DOF numbers of fedof. The DOF
-! layout is given by the DOF_ object of AbstractField_ and by the
-! components below.
+! layout is given by the DOF_ object dof and by the components below.
 !
 ! The child classes (ScalarField_, VectorField_, ...) set the DOF data
 ! in Initiate and provide the methods based on node numbers (Set,
@@ -83,41 +89,76 @@ INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 !   dof_tNodes - number of nodes (DOFs) of each physical variable
 !   dof_names_char - one character name of each physical variable
 !   realVec - vector of values
+!   dof - DOF object
+!   fedof, geofedof, fedofs, geofedofs, timefedof, timefedofs - FEDOF
+!     pointers
+!   dbc, nbc, nbc_point - boundary conditions
+!
+! Changes:
+!   - 2026-11-11: Moved dof, the FEDOF pointers, the boundary conditions
+!     and the methods that use them from [[AbstractField_]].
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
-  INTEGER(I4B) :: dof_tPhysicalVars = 0_I4B
+  LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = math%no
+  !! It is true when we set the maxTotalNodeNumForBC
+  !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
+  INTEGER(I4B) :: maxTotalNodeNumForBC = math%zero_i
+  !! maximum total node num for applying boundary conditions
+  !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
+  TYPE(DOF_) :: dof
+  !! Degree of freedom object,
+  !! which contains the information about how the different
+  !! components of the fields are stored inside the realVec
+  !! or column space of the matrix
+  !! note: This variable is only for internal use
+  CLASS(FEDOF_), POINTER :: fedof => NULL(), geofedof => NULL()
+  !! pointer to fedof and geometric fedof
+  TYPE(FEDOFPointer_), ALLOCATABLE :: fedofs(:), geofedofs(:)
+  !! pointer to fedof
+  CLASS(TimeFEDOF_), POINTER :: timefedof => NULL()
+  !! pointer to time fedof
+  TYPE(TimeFEDOFPointer_), ALLOCATABLE :: timefedofs(:)
+  !! pointer to time fedofs
+  TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
+  !! Dirichlet boundary conditions
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc(:)
+  !! Neumann boundary conditions on surfaces and edges
+  TYPE(NeumannBCPointer_), ALLOCATABLE :: nbc_point(:)
+  !! Neumann boundary conditions for point
+  REAL(DFP), ALLOCATABLE :: nodalValue(:, :)
+  !! This array is used internally to store the nodal values of
+  !! for dirichletBC, NeumannBC,
+  !! The entries are obtained from Get method of AbstractBC
+  !! The number of rows is maxTotalNodeNumForBC
+  INTEGER(I4B), ALLOCATABLE :: nodeNum(:)
+  !! This vector is used internally to apply Dirichlet boundary condition
+  !! It stores the node numbers (fedof) where the DBC, NBC, or nbcPoint
+  !! are applied.
+  INTEGER(I4B) :: dof_tPhysicalVars = math%zero_i
   !! Total number of physical variables
   !! note - This variable is only for internal use
-
   INTEGER(I4B) :: dof_storageFMT = MYSTORAGEFORMAT
   !! Storage format
   !! note - This variable is only for internal use
-
-  INTEGER(I4B) :: tSize = 0
+  INTEGER(I4B) :: tSize = math%zero_i
   !! Total length of the nodal field = tdof * tNodes
   !! note - This variable is only for internal use
-
   INTEGER(I4B), ALLOCATABLE :: dof_spaceCompo(:)
   !! Spatial components
   !! note - This variable is only for internal use
-
   INTEGER(I4B), ALLOCATABLE :: dof_timeCompo(:)
   !! note - This variable is only for internal use
-
   INTEGER(I4B), ALLOCATABLE :: dof_tNodes(:)
   !! Total number of nodes
   !! note - This variable is only for internal use
-
   CHARACTER(1), ALLOCATABLE :: dof_names_char(:)
   !! Single character name of physical variable
   !! note - This variable is only for internal use
-
   TYPE(RealVector_) :: realVec
-  !! Vector of reals to contains the nodes
+  !! Vector of reals for internal use only
   !! note - This variable is only for internal use
 
 CONTAINS
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate from another node field (copy)
@@ -125,6 +166,8 @@ CONTAINS
   !! Initiate by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate with a FEDOF for each variable (under development)
+  GENERIC, PUBLIC :: Initiate => Initiate2, Initiate3
+  !! Initiate by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside
 
@@ -137,6 +180,140 @@ CONTAINS
   !! Import AbstractNodeField from HDF5File_
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export AbstractNodeField to HDF5File_
+
+  ! @TomlMethods
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Import data From toml file
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
+  !! Import data From toml file
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
+  !! Import data From toml file
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml4 => obj_ImportFromToml4
+  !! Import data From toml file
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml5 => obj_ImportFromToml5
+  !! Import data From toml file
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml6 => obj_ImportFromToml6
+  !! Import data From toml file
+  GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, ImportFromToml2, &
+    ImportFromToml3, ImportFromToml4, ImportFromToml5, ImportFromToml6
+  !! Generic method to import data From toml file
+
+  ! @DOFMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
+  !! Returns the total number of degree of freedoms
+  !! This is same as calling Size
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
+    obj_GetTotalVertexDOF
+  !! Returns the total number of vertex degree of freedoms
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => obj_GetTotalEdgeDOF
+  !! Returns the total number of edge degree of freedoms
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => obj_GetTotalFaceDOF
+  !! Returns the total number of face degree of freedoms
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
+  !! Returns the total number of cell degree of freedoms
+  !!  This routine should be implemented by child classes
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
+    obj_GetFEDOFPointer1
+  !! Get the FEDOF pointer, a single pointer is returned
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer2 => &
+    obj_GetFEDOFPointer2
+  !! Get the fedof pointer, a vector of pointers is returned
+  GENERIC, PUBLIC :: GetFEDOFPointer => GetFEDOFPointer1, &
+    GetFEDOFPointer2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer1 => &
+    obj_GetTimeFEDOFPointer1
+  !! Get the timefedof pointer, a single pointer is returned
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetTimeFEDOFPointer2 => &
+    obj_GetTimeFEDOFPointer2
+  !! Get the TimeFEDOF pointer, a vector of pointers is returned
+  GENERIC, PUBLIC :: GetTimeFEDOFPointer => GetTimeFEDOFPointer1, &
+    GetTimeFEDOFPointer2
+  !! Generic method to get the TimeFedof_ pointer
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc1 => &
+    obj_GetTotalNodeLoc1
+  !! Get size of NodeLoc(globalNode, spaceCompo, timeCompo, ivar)
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc2 => &
+    obj_GetTotalNodeLoc2
+  !! Get size of NodeLoc(AbstractBC, ivar)
+  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc3 => &
+    obj_GetTotalNodeLoc3
+  !! Get size of NodeLoc(Vector of AbstractBCPointer, ivar)
+  GENERIC, PUBLIC :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
+    GetTotalNodeLoc3
+  !! Generic method to get the size of NodeLoc
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
+  !! Get location of global node number
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
+  !! Get location of global node number from AbstractBC
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
+  !! Get location of global node number from DirichletBCPointer
+  GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2, &
+    GetNodeLoc3
+  !! Generic method for getting location of nodes
+
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_1 => obj_GetNodeLoc_1
+  !! Like GetNodeLoc1 but without allocation
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_2 => obj_GetNodeLoc_2
+  !! Like GetNodeLoc1 but without allocation
+  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_3 => obj_GetNodeLoc_3
+  !! Like GetNodeLoc1 but without allocation
+  GENERIC, PUBLIC :: GetNodeLoc_ => GetNodeLoc_1, GetNodeLoc_2, &
+    GetNodeLoc_3
+   !! Generic method to get node location
+
+  ! @BCMethods
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetTotalNBC => &
+    obj_GetTotalNBC
+  !! Get size of nbc
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetTotalPointNBC => &
+    obj_GetTotalPointNBC
+  !! Get the size of nbc_point
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetNBCPointer => &
+    obj_GetNBCPointer
+  !! Get the pointer to nbc
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetPointNBCPointer => &
+    obj_GetPointNBCPointer
+  !! Get the pointer to nbc_point
+  PROCEDURE, PRIVATE, PASS(obj) :: GetMaxTotalNodeNumForBC1 => &
+    obj_GetMaxTotalNodeNumForBC1
+  PROCEDURE, PRIVATE, PASS(obj) :: GetMaxTotalNodeNumForBC2 => &
+    obj_GetMaxTotalNodeNumForBC2
+  !! Get the maximum node number for applying boundary conditions
+  !! This will call GetTotalNodeNum on every dbc, nbc, nbc_point
+  !! and return the maximum value. This method is necessary for
+  !! allocating the nodeNum and nodalValue arrays
+  GENERIC, PUBLIC :: GetMaxTotalNodeNumForBC => &
+    GetMaxTotalNodeNumForBC1, GetMaxTotalNodeNumForBC2
+   !! Generic method to get total number of nodes for boundary conditions
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetDirichletBCIndex => &
+    obj_GetDirichletBCIndex
+  !! Get the Dirichlet BC indices
+  PROCEDURE, PRIVATE, PASS(obj) :: GetDirichletBCIndex1_ => &
+    obj_GetDirichletBCIndex1_
+  !! Get the Dirichlet BC indices from dbc stored internally
+  PROCEDURE, PRIVATE, PASS(obj) :: GetDirichletBCIndex2_ => &
+    obj_GetDirichletBCIndex2_
+  !! Get the Dirichlet BC indices from given DirichletBCPointer_
+  GENERIC, PUBLIC :: GetDirichletBCIndex_ => GetDirichletBCIndex1_, &
+    GetDirichletBCIndex2_
+  PROCEDURE, PRIVATE, PASS(obj) :: &
+    GetTotalDirichletBCIndex1 => obj_GetTotalDirichletBCIndex1, &
+    GetTotalDirichletBCIndex2 => obj_GetTotalDirichletBCIndex2
+  !! Get the size of Dirichlet BC indices
+  GENERIC, PUBLIC :: GetTotalDirichletBCIndex => &
+    GetTotalDirichletBCIndex1, GetTotalDirichletBCIndex2
+  !! Generic method to get total number of dirichlet boundary condition
+  !! indices
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: &
+    SetMaxTotalNodeNumForBC1 => obj_SetMaxTotalNodeNumForBC1, &
+    SetMaxTotalNodeNumForBC2 => obj_SetMaxTotalNodeNumForBC2
+  GENERIC, PUBLIC :: SetMaxTotalNodeNumForBC => &
+    SetMaxTotalNodeNumForBC1, SetMaxTotalNodeNumForBC2
+  !! Set maximum total node numbers for boundary conditions
 
   !@VTKMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
@@ -155,8 +332,7 @@ CONTAINS
     obj_GetVtkUnstructuredGridData2
   !! Get vtk data for unstructured grid
   GENERIC, PUBLIC :: GetVtkUnstructuredGridData => &
-    GetVtkUnstructuredGridData1, &
-    GetVtkUnstructuredGridData2
+    GetVtkUnstructuredGridData1, GetVtkUnstructuredGridData2
   !! VTK unstructured grid of Lagrange cells of the field
 
   ! @GetMethods, deferred methods from AbstractField_
@@ -240,7 +416,6 @@ CONTAINS
   !! z = x * y
   PROCEDURE, PUBLIC, PASS(obj) :: Reciprocal => obj_Reciprocal
   !! y = 1/x
-
 END TYPE AbstractNodeField_
 
 !----------------------------------------------------------------------------
@@ -344,7 +519,7 @@ END INTERFACE
 !
 ! See also: [[obj_Deallocate]], [[obj_Copy]]
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
@@ -358,10 +533,6 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: usePointer
     !! not used
   END SUBROUTINE obj_Initiate1
-END INTERFACE
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -389,7 +560,7 @@ END INTERFACE AbstractNodeFieldInitiate
 !
 ! See also: [[ScalarField_:obj_Initiate2]] (contains an example)
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
                                   comm, local_n, global_n, spaceCompo, &
                                   isSpaceCompo, isSpaceCompoScalar, &
@@ -460,10 +631,6 @@ INTERFACE
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
-END INTERFACE
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -485,7 +652,7 @@ END INTERFACE AbstractNodeFieldInitiate
 !
 ! See also: [[obj_Initiate2]]
 
-INTERFACE
+INTERFACE AbstractNodeFieldInitiate
   MODULE SUBROUTINE obj_Initiate3(obj, name, engine, fieldType, comm, &
                                   local_n, global_n, spaceCompo, &
                                   isSpaceCompo, isSpaceCompoScalar, &
@@ -543,10 +710,6 @@ INTERFACE
     !! Vector of TimeFEDOFPointers
     !! All timefedofs should be initiated
   END SUBROUTINE obj_Initiate3
-END INTERFACE
-
-INTERFACE AbstractNodeFieldInitiate
-  MODULE PROCEDURE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 
 !----------------------------------------------------------------------------
@@ -563,15 +726,11 @@ END INTERFACE AbstractNodeFieldInitiate
 !
 ! See also: [[obj_Initiate1]] (contains an example)
 
-INTERFACE
+INTERFACE AbstractNodeFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE AbstractNodeFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE AbstractNodeFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -626,7 +785,7 @@ END INTERFACE AbstractNodeFieldDeallocate
 ! END PROGRAM main
 !```
 
-INTERFACE
+INTERFACE AbstractNodeFieldDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
@@ -635,10 +794,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
     !! unit number, default is stdout
   END SUBROUTINE obj_Display
-END INTERFACE
-
-INTERFACE AbstractNodeFieldDisplay
-  MODULE PROCEDURE obj_Display
 END INTERFACE AbstractNodeFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -2646,5 +2801,851 @@ END INTERFACE
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+!
+!# ImportFromToml
+!
+! This method is used to import data from toml table.
+! fedof: If fedof is not initiated then it will be initiated by
+!        calling fedof%ImportFromToml(node) method.
+!        the node name is specified by fedofName
+!
+! timefedof: If timefedof is not initiated then it will be initiated by
+!            calling timefedof%ImportFromToml(node) method.
+!            the node name is specified by timefedofName.
+!            It is needed for space-time fields.
+!
+! dom: dom is needed to initiate fedof
+! timeOpt: It is needed to initiate timefedof
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
+                                        timefedof, dom)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
+    !! if  it is present then following operations are performed
+    !! - If timefedof is not initiated then it will be initiated by
+    !!   calling timefedof%ImportFromToml(node) method, where node
+    !!   is the table field specified by "timefedofName".
+    !!   In this case we need to provide timeOpt.
+    !!   (Read more at TimeFEDOF_Class.F90)
+    !! - If timefedof is already initiated then it will be used. In
+    !!   this case we do not need use timeOpt
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+!
+!# ImportFromToml
+!
+! In this method we call obj_ImportFromToml1 method.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml2( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, afile, &
+    filename, printToml)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    !! name of the key
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
+    !! if fedof is not initiated then it will be initiated by
+    !! calling fedof%ImportFromToml(node) method.
+    !! where node is the table field called "space".
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! timefedof is needed for space-time fields
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    !! txt file where toml config is stored
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    !! you can pass the filename, then we will make
+    !! the file, open it and read the toml config and
+    !! close the file.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    !! if it is true then we will print the toml config
+  END SUBROUTINE obj_ImportFromToml2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary:  Import data From toml file for block node fields
+!
+!# Introduction
+!
+! This method is like obj_ImportFromToml1 but this method is for
+! BlockNodeField_ and BlockMatrixField_
+!
+! fedof: fedof is a vector of FEDOFPointer_ objects.
+!        If it is not initiated then it will be initiated by calling
+!        fedof(ii)%ImportFromToml(node) method.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml3( &
+    obj, table, fedof, geofedof, timefedof, dom)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    !! The size of fedof should be total number of physical variables.
+    !! If fedof is not allocated then we will allocate it.
+    !! If fedof(ii) not initiated then we will intiate it From
+    !! toml table, in this case we will call improt From toml method
+    !! of fedof. We will need domain in this case
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    !! The size of timefedof should be total number of physical variables.
+    !! timefedof is needed for space-time fields
+    !! If timefedof is not allocated then we will allocate it.
+    !! If timefedof(ii) not initiated then we will intiate it From
+    !! toml table, in this case we will call improt From toml method
+    !! of timefedof. We will need timeOpt in this case
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Abstract domain object
+    !! It is needed when fedof is not initiated.
+    !! When we call ImportFromToml method of fedof
+    !! In this case all fedofs will have same domain
+  END SUBROUTINE obj_ImportFromToml3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml4( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, afile, &
+    filename, printToml)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    !! name of the key
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    !! Read the docs of obj_ImportFromToml3
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    !! Read the docs of obj_ImportFromToml3
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! Read the docs of obj_ImportFromToml3
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    !! text file where toml config is stored
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    !! you can pass the filename, then we will make
+    !! the file, open it and read the toml config and
+    !! close the file.
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    !! if it is true then we will print the toml config
+  END SUBROUTINE obj_ImportFromToml4
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-06
+! summary:  Import data From toml file for block node fields
+!
+!# Introduction
+!   This methos is like obj_ImportFromToml3 but in this case
+! we can provide different domain for each physical variable.
+!
+! In this case domain is NOT optional, it is required.
+! This is because in this case we will initiate fedof
+! If fedof is already initiated then we do not need domain. Hence
+! you should call obj_ImportFromToml3 (without domain) instead of this method.
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml5( &
+    obj, table, fedof, geofedof, timefedof, dom)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(toml_table), INTENT(INOUT) :: table
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    !! Read the docs of obj_ImportFromToml3
+    !! Geometric FEDOF object
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    !! The size of domain should be total number of physical variables.
+    !! Read the docs of obj_ImportFromToml3
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    !! Read the docs of obj_ImportFromToml3
+  END SUBROUTINE obj_ImportFromToml5
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     ImportFromToml@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Import data From toml file
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml6( &
+    obj, tomlName, fedof, geofedof, timefedof, dom, afile, &
+    filename, printToml)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CHARACTER(*), INTENT(IN) :: tomlName
+    TYPE(FEDOFPointer_), ALLOCATABLE, INTENT(INOUT) :: fedof(:), geofedof(:)
+    TYPE(AbstractDomainPointer_), INTENT(IN) :: dom(:)
+    TYPE(TimeFEDOFPointer_), OPTIONAL, ALLOCATABLE, INTENT(INOUT) :: &
+      timefedof(:)
+    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+  END SUBROUTINE obj_ImportFromToml6
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMaxTotalNodeNumForBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC1(obj, dbcVec, dbc)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    CLASS(DirichletBCPointer_), OPTIONAL, INTENT(INOUT) :: dbcVec(:)
+    CLASS(DirichletBC_), OPTIONAL, INTENT(INOUT) :: dbc
+    INTEGER(I4B) :: ans
+  END SUBROUTINE obj_SetMaxTotalNodeNumForBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         SetMaxTotalNodeNumForBC@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+!
+!# Introduction
+!   This method if for block node fields
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMaxTotalNodeNumForBC2(obj, ivar, dbcVec, dbc)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    CLASS(DirichletBCPointer_), OPTIONAL, INTENT(INOUT) :: dbcVec(:)
+    CLASS(DirichletBC_), OPTIONAL, INTENT(INOUT) :: dbc
+    INTEGER(I4B) :: ans
+  END SUBROUTINE obj_SetMaxTotalNodeNumForBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalNBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary: Get the size of nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNBC(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+    !! if nbc is not allocated then ans is zero
+  END FUNCTION obj_GetTotalNBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetTotalNBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary: Get the size of nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalPointNBC(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+    !! if nbc_point is not allocated then ans is zero
+  END FUNCTION obj_GetTotalPointNBC
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetNBCPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Return a poitner to nbc
+
+INTERFACE
+  MODULE FUNCTION obj_GetNBCPointer(obj, indx) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+  !! AbstractField
+    INTEGER(I4B), INTENT(IN) :: indx
+  !! pointer number
+    CLASS(NeumannBC_), POINTER :: ans
+  !! if nbc is not allocated then ans%ptr is null()
+  !! if nbc is allocated but nbc(ii)%ptr is not associated
+  !! then ans(ii)%ptr is null()
+  END FUNCTION obj_GetNBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               GetPointNBCPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-09-12
+! summary:  Return a poitner to nbc_point
+
+INTERFACE
+  MODULE FUNCTION obj_GetPointNBCPointer(obj, indx) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! AbstractField
+    INTEGER(I4B), INTENT(IN) :: indx
+    !! pointer number
+    CLASS(NeumannBC_), POINTER :: ans
+    !! if nbc is not allocated then ans%ptr is null()
+    !! if nbc is allocated but nbc(ii)%ptr is not associated
+    !! then ans(ii)%ptr is null()
+  END FUNCTION obj_GetPointNBCPointer
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                    GetTotalDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of degree of freedoms
+!
+!# Introduction
+! This method is same as calling the size function.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetTotalDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTotalVertexDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of vertex degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalVertexDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetTotalVertexDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalEdgeDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Edge degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalEdgeDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetTotalEdgeDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetTotalFaceDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Face degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalFaceDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetTotalFaceDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                GetTotalCellDOF@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-09-22
+! summary:  Returns the total number of Cell degree of freedoms
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalCellDOF(obj, tPhysicalVars) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
+    INTEGER(I4B) :: ans(tPhysicalVars)
+  END FUNCTION obj_GetTotalCellDOF
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-14
+! summary: Get the FEDOF pointer
+!
+! # Introduction
+!
+! This method returns the fedof pointer. It workds as follows:
+!
+! - if indx is not given then it will return fedof
+! - if indx is given then it will check if the fedofs is allocated
+! -  if fedofs is allocated then it will return the pointer fedof(indx)
+! - if fedofs is not allocated then it will return the pointer to fedof
+! - User should check if the pointer is associated or not.
+
+INTERFACE
+  MODULE FUNCTION obj_GetFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+  !! indx is the index of physical variable
+  !! for which FEDOF pointer is requested
+    CLASS(FEDOF_), POINTER :: ans
+  !! ans is the FEDOF pointer, it is a single pointer
+  !! to FEDOF object.
+  END FUNCTION obj_GetFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-14
+! summary: Get the FEDOF pointer
+
+INTERFACE
+  MODULE FUNCTION obj_GetFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+  !! This is just a dummy argument to have a unique interface
+    TYPE(FEDOFPointer_), ALLOCATABLE :: ans(:)
+  !! List of FEDOF pointers
+  END FUNCTION obj_GetFEDOFPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetTimeFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Get pointer to timefedof
+!
+! # Introduction
+!
+! This method returns the timefedof pointer. It workds as follows:
+!
+! - if indx is not given then it will return timefedof
+! - if indx is given then it will check if the timefedofs is allocated
+! - if timefedofs is allocated
+!   then it will return the pointer timefedof(indx)
+! - if timefedofs is not allocated
+!   then it will return the pointer to fedof
+! - User should check if the pointer is associated or not.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+    CLASS(TimeFEDOF_), POINTER :: ans
+  END FUNCTION obj_GetTimeFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 GetFEDOFPointer@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-07-01
+! summary:  Get timefedof pointers
+
+INTERFACE
+  MODULE FUNCTION obj_GetTimeFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+    !! This is just a dummy argument to have a unique interface
+    TYPE(TimeFEDOFPointer_), ALLOCATABLE :: ans(:)
+    !! List of FEDOF pointers
+  END FUNCTION obj_GetTimeFEDOFPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxTotalNodeNumForBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC1(obj) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalNodeNumForBC1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                         GetMaxTotalNodeNumForBC@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-02
+! summary: Get the maximum total node number for applying boundary conds
+
+INTERFACE
+  MODULE FUNCTION obj_GetMaxTotalNodeNumForBC2(obj, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetMaxTotalNodeNumForBC2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary: Returns total number of nodes for globalNode
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc1( &
+    obj, globalNode, ivar, spaceCompo, timeCompo) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number (this variable is cuurrently not used)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalNodeLoc1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                   GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary:  Get total number of nodes corresponding to nodes in AbstractBC
+!
+!# Introduction
+!
+! This method returns the total number of nodes corresponding to
+! nodes defined in AbstractBC.
+!
+! - First, it will extract time components from obj
+! - Then it will use ivar (default is 1) to extract the total time compo
+!   in ivar
+! - Then, it call GetTotalNodeNum on dbc with stored fedof or fedofs
+! - The result will be tnode * tspace * ttime
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc2(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! AbstractField
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Abstract boundary condition
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! Physical variable number, default is 1
+    INTEGER(I4B) :: ans
+    !! Total number of nodes
+  END FUNCTION obj_GetTotalNodeLoc2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  GetTotalNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-08-26
+! summary: Get total number of nodes corresponding to dbc
+!
+!# Introduction
+! This routine is like GetTotalNodeLoc2, but it is for vector of
+! AbstractBCPointer. This routine calls GetTotalNodeLoc2 for each dbc
+! In debug mode, if dbc(ii)%ptr is not associated then it will skip that dbc.
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalNodeLoc3(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! AbstractField
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! A vector of DirichletBCPointer
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical variable number, default is 1
+    INTEGER(I4B) :: ans
+    !! Total number of Nodes
+  END FUNCTION obj_GetTotalNodeLoc3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode
+
+INTERFACE
+  MODULE FUNCTION obj_GetNodeLoc1(obj, globalNode, ivar, spaceCompo, &
+                                  timeCompo) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetNodeLoc1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetNodeLoc2(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetNodeLoc2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetNodeLoc3(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetNodeLoc3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc_@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeLoc_1(obj, ans, tsize, globalNode, ivar, &
+                                     spaceCompo, timeCompo, islocal)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! Abstract node field
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! result
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size written in ans
+    INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! Global node number
+    !! We get localNodeNumber from the mesh
+    !! This routine is designed for getting the nodelocation
+    !! in AbstractField for Dirichlet boundary nodes
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    !! physical varibale number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
+    !! list of space components
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
+    !! list of time components
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! if true then globalNode are local to obj
+  END SUBROUTINE obj_GetNodeLoc_1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc_@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeLoc_2(obj, ans, tsize, dbc, ivar)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! Abstract node field
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! result
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size written in ans
+    CLASS(AbstractBC_), INTENT(INOUT) :: dbc
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetNodeLoc_2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetNodeLoc@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-29
+! summary: This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetNodeLoc_3(obj, ans, tsize, dbc, ivar)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! result
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    !! Total size written in ans
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Global node number
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetNodeLoc_3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetTotalDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDirichletBCIndex1(obj, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDirichletBCIndex1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                          GetTotalDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetTotalDirichletBCIndex2(obj, dbc, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetTotalDirichletBCIndex2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE FUNCTION obj_GetDirichletBCIndex(obj, ivar) RESULT(ans)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+    INTEGER(I4B), ALLOCATABLE :: ans(:)
+  END FUNCTION obj_GetDirichletBCIndex
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDirichletBCIndex1_(obj, ans, tsize, ivar)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetDirichletBCIndex1_
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetDirichletBCIndex@GeMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date:  2023-11-29
+! summary:  This function returns the location of globalNode from bc
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetDirichletBCIndex2_(obj, dbc, ans, tsize, ivar)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    INTEGER(I4B), INTENT(OUT) :: tsize
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
+  END SUBROUTINE obj_GetDirichletBCIndex2_
+END INTERFACE
 
 END MODULE AbstractNodeField_Class

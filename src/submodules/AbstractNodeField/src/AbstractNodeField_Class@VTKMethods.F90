@@ -22,7 +22,6 @@ USE BaseType, ONLY: TypeFEVariableVector
 USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: TypeFEVariableSpaceTime
 USE BaseType, ONLY: IntVector_
-USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: QuadraturePoint_

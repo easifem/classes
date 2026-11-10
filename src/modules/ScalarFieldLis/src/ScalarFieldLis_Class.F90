@@ -43,10 +43,8 @@ PUBLIC :: ScalarFieldLisPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 25 June 2021
+! date: 2021-06-25
 ! summary: LIS Scalar field
-!
-!{!pages/docs-api/ScalarFieldLis/ScalarFieldLis_.md!}
 
 TYPE, EXTENDS(ScalarField_) :: ScalarFieldLis_
 CONTAINS

@@ -15,9 +15,8 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) IOMethods
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE DOF_Method, ONLY: DOF_Display => Display
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -35,8 +34,7 @@ MODULE PROCEDURE obj_Display
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
 
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok, abool
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -47,9 +45,15 @@ CALL Display(msg, unitNo=unitNo)
 
 isok = obj%IsInitiated()
 CALL Display(isok, msg="isInitiated: ", unitNo=unitNo)
-IF (.NOT. isok) RETURN
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
-CALL Display(obj%name%chars(), msg="name : ", unitNo=unitNo)
+CALL Display(obj%name%Chars(), msg="name : ", unitNo=unitNo)
 
 CALL Display(TypeField%ToString(obj%fieldType), msg='fieldType : ', &
              unitNo=unitNo)
@@ -63,100 +67,6 @@ CALL Display(obj%local_n, msg='local_n: ', unitNo=unitNo)
 CALL Display(obj%is, msg='is: ', unitNo=unitNo)
 CALL Display(obj%ie, msg='ie: ', unitNo=unitNo)
 CALL Display(obj%lis_ptr, msg='lis_ptr: ', unitNo=unitNo)
-
-isok = ASSOCIATED(obj%fedof)
-CALL Display(isok, "fedof ASSOCIATED: ", unitNo=unitNo)
-
-isok = ASSOCIATED(obj%timefedof)
-CALL Display(isok, "timefedof ASSOCIATED: ", unitNo=unitNo)
-
-isok = ALLOCATED(obj%fedofs)
-CALL Display(isok, "fedofs ALLOCATED: ", unitNo=unitNo)
-tsize = 0
-IF (isok) THEN
-  tsize = SIZE(obj%fedofs)
-  CALL Display("fedofs : ALLOCATED ["//ToString(tsize)//"]", unitNo=unitNo)
-END IF
-
-! tsize is zero if not allocated, so it is safe to use
-DO ii = 1, tsize
-  isok = ASSOCIATED(obj%fedofs(ii)%ptr)
-  CALL Display(isok, "fedofs("//ToString(ii)//")%ptr ASSOCIATED: ", &
-               unitNo=unitNo)
-END DO
-
-isok = ALLOCATED(obj%timefedofs)
-CALL Display(isok, "timefedofs ALLOCATED: ", unitNo=unitNo)
-tsize = 0
-IF (isok) THEN
-  tsize = SIZE(obj%timefedofs)
- CALL Display("timefedofs : ALLOCATED ["//ToString(tsize)//"]", unitNo=unitNo)
-END IF
-
-! tsize is zero if not allocated, so it is safe to use
-DO ii = 1, tsize
-  isok = ASSOCIATED(obj%timefedofs(ii)%ptr)
-  CALL Display(isok, "timefedofs("//ToString(ii)//")%ptr ASSOCIATED: ", &
-               unitNo=unitNo)
-END DO
-
-isok = ALLOCATED(obj%dbc)
-CALL Display(isok, "dbc ALLOCATED: ", unitNo=unitNo)
-IF (isok) THEN
-  tsize = SIZE(obj%dbc)
-  CALL Display(tsize, "Size of dbc: ", unitNo=unitNo)
-  DO ii = 1, tsize
-    abool = ASSOCIATED(obj%dbc(ii)%ptr)
-    CALL Display(abool, "dbc("//ToString(ii)//")%ptr ASSOCIATED: ", &
-                 unitNo=unitNo)
-  END DO
-END IF
-
-isok = ALLOCATED(obj%nbc)
-CALL Display(isok, "nbc ALLOCATED: ", unitNo=unitNo)
-IF (isok) THEN
-  tsize = SIZE(obj%nbc)
-  CALL Display(tsize, "Size of nbc: ", unitNo=unitNo)
-  DO ii = 1, tsize
-    abool = ASSOCIATED(obj%nbc(ii)%ptr)
-    CALL Display(abool, "nbc("//ToString(ii)//")%ptr ASSOCIATED: ", &
-                 unitNo=unitNo)
-  END DO
-END IF
-
-isok = ALLOCATED(obj%nbc_point)
-CALL Display(isok, "nbc_point ALLOCATED: ", unitNo=unitNo)
-IF (isok) THEN
-  tsize = SIZE(obj%nbc_point)
-  CALL Display(tsize, "Size of nbc_point: ", unitNo=unitNo)
-  DO ii = 1, tsize
-    abool = ASSOCIATED(obj%nbc_point(ii)%ptr)
-    CALL Display(abool, "nbc_point("//ToString(ii)//")%ptr ASSOCIATED: ", &
-                 unitNo=unitNo)
-  END DO
-END IF
-
-CALL Display(obj%isMaxTotalNodeNumForBCSet, &
-             "isMaxTotalNodeNumForBCSet: ", unitNo=unitNo)
-
-CALL Display(obj%maxTotalNodeNumForBC, &
-             "maxTotalNodeNumForBC: ", unitNo=unitNo)
-
-isok = ALLOCATED(obj%nodalValue)
-CALL Display(isok, "nodalValue ALLOCATED: ", unitNo=unitNo)
-IF (isok) THEN
-  CALL Display(SHAPE(obj%nodalValue), "Shape of nodalValue: ", &
-               unitNo=unitNo)
-END IF
-
-isok = ALLOCATED(obj%nodeNum)
-CALL Display(isok, "nodeNum ALLOCATED: ", unitNo=unitNo)
-IF (isok) THEN
-  CALL Display(SIZE(obj%nodeNum), "Size of nodeNum: ", &
-               unitNo=unitNo)
-END IF
-
-CALL DOF_Display(obj=obj%dof, msg="dof: ", unitNo=unitNo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

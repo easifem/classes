@@ -81,8 +81,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%MatrixField_%IMPORT(hdf5=hdf5, group=group, fedof=fedof, &
-                             fedofs=fedofs)
+CALL obj%MatrixField_%IMPORT( &
+  hdf5=hdf5, group=group, rowFedof=rowFedof, rowFedofs=rowFedofs, &
+  rowGeoFedof=rowGeoFedof, rowGeoFedofs=rowGeoFedofs, colFedof=colFedof, &
+  colFedofs=colFedofs, colGeoFedof=colGeoFedof, colGeoFedofs=colGeoFedofs)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 

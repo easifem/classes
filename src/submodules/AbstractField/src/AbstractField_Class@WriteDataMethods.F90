@@ -15,11 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) WriteDataMethods
-USE Display_Method, ONLY: Display, ToString
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName="AbstractField_Class@WriteDataMethods.F90"
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractField_Class@WriteDataMethods.F90"
 #endif
 
 CONTAINS

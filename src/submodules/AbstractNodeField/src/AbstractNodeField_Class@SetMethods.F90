@@ -15,7 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) SetMethods
-USE BaseType, ONLY: math => TypeMathOpt
 USE HDF5FileUtility, ONLY: ImportRealVector
 USE InputUtility, ONLY: Input
 USE RealVector_Method, ONLY: RealVectorSet => Set

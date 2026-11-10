@@ -175,14 +175,18 @@ END INTERFACE
 !
 ! This routine reads a matrix field written by the Export method of
 ! [[MatrixField_]] from the group `group` of an HDF5 file open in read
-! mode. obj must not be initiated, and fedof or fedofs must be present.
+! mode. obj must not be initiated, and rowFedof or rowFedofs must be
+! present.
 !
 !- AbstractFieldImport reads the data of [[AbstractField_]] (name,
-!  engine, fieldType, dof) and links the FEDOF pointers.
+!  engine, fieldType, comm and sizes).
 !- matrixProp and isRectangle are read from `group`.
 !- The number of physical variables is read from
-!  `group/tPhysicalVarNames`. If only fedof is given, `fedofs` gets one
-!  pointer to fedof per physical variable.
+!  `group/tPhysicalVarNames`. If only rowFedof is given, `rowFedofs`
+!  gets one pointer to rowFedof per physical variable; colFedof is
+!  handled in the same way.
+!- The FEDOF pointers are set by [[AbstractMatrixFieldSetFEDOF]]; an
+!  absent column argument takes the row value (square matrix).
 !- The CSR matrix is read from `group/mat`.
 !- The preconditioner is read from `group/pmat` if it is present.
 !
@@ -191,7 +195,9 @@ END INTERFACE
 !     AbstractFieldImport. Allocate fedofs only when fedofs is absent.
 !     Remove the unused reads of spaceCompo and timeCompo.
 !   - 2026-11-11: Set rowFedofs and colFedofs (square matrix), one
-!     pointer per physical variable.
+!     pointer per physical variable. The arguments are rowFedof(s),
+!     rowGeoFedof(s), colFedof(s) and colGeoFedof(s) instead of
+!     fedof(s), geofedof(s) and timefedof(s).
 !
 ! Examples
 !
@@ -239,7 +245,8 @@ END INTERFACE
 ! ! Test 1: one fedof for all physical variables
 ! CALL h5%Initiate(filename=filename, mode="READ")
 ! CALL h5%OPEN()
-! CALL obj2%Import(hdf5=h5, group="/K", fedof=fedof, geofedof=geofedof)
+! CALL obj2%Import(hdf5=h5, group="/K", rowFedof=fedof, &
+!                   rowGeoFedof=geofedof)
 ! CALL h5%DEALLOCATE()
 !
 ! CALL OK(obj2%IsInitiated(), "Import: IsInitiated")
@@ -262,7 +269,7 @@ END INTERFACE
 ! fedofs(1)%ptr => fedof
 ! CALL h5%Initiate(filename=filename, mode="READ")
 ! CALL h5%OPEN()
-! CALL obj3%Import(hdf5=h5, group="/K", fedofs=fedofs)
+! CALL obj3%Import(hdf5=h5, group="/K", rowFedofs=fedofs)
 ! CALL h5%DEALLOCATE()
 !
 ! CALL OK(obj3%IsInitiated(), "Import fedofs: IsInitiated")
@@ -285,22 +292,31 @@ END INTERFACE
 ! See also: [[MatrixField_:obj_Export]], [[MatrixField_:obj_Import]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
-                               timefedofs, geofedof, geofedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, rowFedof, rowFedofs, &
+                               rowGeoFedof, rowGeoFedofs, colFedof, &
+                               colFedofs, colGeoFedof, colGeoFedofs)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
-    !! block matrix field, not initiated
+    !! matrix field, not initiated
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! HDF5 file open in read mode
     CHARACTER(*), INTENT(IN) :: group
     !! group of the matrix field in the HDF5 file
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    !! FEDOF and geometry FEDOF shared by all physical variables
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    !! FEDOF and geometry FEDOF of each physical variable
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    !! time FEDOF
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
-    !! time FEDOFs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowFedof
+    !! FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowFedofs(:)
+    !! FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowGeoFedof
+    !! geometric FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowGeoFedofs(:)
+    !! geometric FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colFedof
+    !! FEDOF of the columns, default is rowFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colFedofs(:)
+    !! FEDOF of the columns, default is rowFedofs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colGeoFedof
+    !! geometric FEDOF of the columns, default is rowGeoFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colGeoFedofs(:)
+    !! geometric FEDOF of the columns, default is rowGeoFedofs
   END SUBROUTINE obj_Import
 END INTERFACE
 

@@ -15,13 +15,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) HDFMethods
-USE String_Class, ONLY: String
-USE BaseType, ONLY: math => TypeMathOpt
 USE AbstractField_Class, ONLY: AbstractFieldImport
 USE AbstractField_Class, ONLY: AbstractFieldExport
 USE HDF5FileUtility, ONLY: ImportRealVector
 USE HDF5FileUtility, ONLY: ImportDOF
+USE HDF5FileUtility, ONLY: ExportDOF
 USE HDF5FileUtility, ONLY: ExportRealVector
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -50,9 +50,74 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractFieldImport( &
-  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
-  geofedof=geofedof, geofedofs=geofedofs)
+CALL AbstractFieldImport(obj=obj, hdf5=hdf5, group=group)
+
+! isMaxTotalNodeNumForBCSet
+dsetname = TRIM(group)//"/Bool0/isMaxTotalNodeNumForBCSet"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), &
+                 vals=obj%isMaxTotalNodeNumForBCSet)
+END IF
+
+! maxTotalNodeNumForBC
+dsetname = TRIM(group)//"/IntR0/maxTotalNodeNumForBC"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) THEN
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%maxTotalNodeNumForBC)
+END IF
+
+! DofR0
+dsetname = TRIM(group)//"/DofR0/dof"
+isok = hdf5%pathExists(dsetname%chars())
+IF (isok) THEN
+  CALL ImportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%Chars())
+END IF
+
+isok = PRESENT(fedof)
+IF (isok) THEN
+  obj%fedof => fedof
+END IF
+
+isok = PRESENT(geofedof)
+IF (isok) THEN
+  obj%geofedof => geofedof
+END IF
+
+isok = PRESENT(fedofs)
+IF (isok) THEN
+  tsize = SIZE(fedofs)
+  ALLOCATE (obj%fedofs(tsize))
+
+  DO ii = 1, tsize
+    obj%fedofs(ii)%ptr => fedofs(ii)%ptr
+  END DO
+END IF
+
+isok = PRESENT(geofedofs)
+IF (isok) THEN
+  tsize = SIZE(geofedofs)
+  ALLOCATE (obj%geofedofs(tsize))
+
+  DO ii = 1, tsize
+    obj%geofedofs(ii)%ptr => geofedofs(ii)%ptr
+  END DO
+END IF
+
+isok = PRESENT(timefedof)
+IF (isok) THEN
+  obj%timefedof => timefedof
+END IF
+
+isok = PRESENT(timefedofs)
+IF (isok) THEN
+  tsize = SIZE(timefedofs)
+  ALLOCATE (obj%timefedofs(tsize))
+
+  DO ii = 1, tsize
+    obj%timefedofs(ii)%ptr => timefedofs(ii)%ptr
+  END DO
+END IF
 
 ! Integer Scalars
 ! ---------------
@@ -177,6 +242,19 @@ IF (.NOT. obj%IsInitiated()) THEN
 END IF
 
 CALL AbstractFieldExport(obj=obj, hdf5=hdf5, group=group)
+
+! isMaxTotalNodeNumForBCSet
+dsetname = TRIM(group)//"/Bool0/isMaxTotalNodeNumForBCSet"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%isMaxTotalNodeNumForBCSet)
+
+! maxTotalNodeNumForBC
+dsetname = TRIM(group)//"/IntR0/maxTotalNodeNumForBC"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), &
+                vals=obj%maxTotalNodeNumForBC)
+
+! DofR0
+dsetname = TRIM(group)//"/DofR0/dof"
+CALL ExportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%Chars())
 
 ! Integer Scalars
 ! ---------------

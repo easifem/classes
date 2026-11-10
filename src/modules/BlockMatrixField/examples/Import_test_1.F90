@@ -54,7 +54,8 @@ CALL h5%DEALLOCATE()
 ! Test 1: one fedof for all physical variables
 CALL h5%Initiate(filename=filename, mode="READ")
 CALL h5%OPEN()
-CALL obj2%Import(hdf5=h5, group="/K", fedof=fedof, geofedof=geofedof)
+CALL obj2%Import(hdf5=h5, group="/K", rowFedof=fedof, &
+                  rowGeoFedof=geofedof)
 CALL h5%DEALLOCATE()
 
 CALL OK(obj2%IsInitiated(), "Import: IsInitiated")
@@ -77,7 +78,7 @@ CALL OK(ASSOCIATED(obj2%colFedofs(1)%ptr, fedof), "Import: colFedofs(1)")
 fedofs(1)%ptr => fedof
 CALL h5%Initiate(filename=filename, mode="READ")
 CALL h5%OPEN()
-CALL obj3%Import(hdf5=h5, group="/K", fedofs=fedofs)
+CALL obj3%Import(hdf5=h5, group="/K", rowFedofs=fedofs)
 CALL h5%DEALLOCATE()
 
 CALL OK(obj3%IsInitiated(), "Import fedofs: IsInitiated")

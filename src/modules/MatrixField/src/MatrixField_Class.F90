@@ -730,8 +730,11 @@ END INTERFACE MatrixFieldDisplay
 ! group `group` of an HDF5 file open in read mode. obj must not be
 ! initiated.
 !
-!- The data of [[AbstractField_]] (name, engine, fieldType, dof) is
-!  read by AbstractFieldImport, which also links the FEDOF pointers.
+!- The data of [[AbstractField_]] (name, engine, fieldType, comm and
+!  sizes) is read by AbstractFieldImport.
+!- The row and column FEDOF pointers are set by
+!  [[AbstractMatrixFieldSetFEDOF]]. An absent column argument takes the
+!  row value (square matrix).
 !- matrixProp and isRectangle are read from `group`.
 !- The CSR matrix is read from `group/mat`.
 !- The preconditioner is read from `group/pmat` if it is present.
@@ -740,15 +743,18 @@ END INTERFACE MatrixFieldDisplay
 !   - 2026-11-10: Read the header with AbstractFieldImport, the layout
 !     written by obj_Export. Restore dof. Do not raise an error when
 !     `group/pmat` is absent.
-!   - 2026-11-11: Set rowFedof and colFedof (square matrix) from fedof
-!     or fedofs.
+!   - 2026-11-11: The arguments are rowFedof(s), rowGeoFedof(s),
+!     colFedof(s) and colGeoFedof(s) instead of fedof(s), geofedof(s)
+!     and timefedof(s). The DOF of the matrix is read with `group/mat`;
+!     an old `group/DofR0/dof` entry is ignored.
 !
 ! Examples
 !
 !```fortran
 ! CALL h5%Initiate(filename=filename, mode="READ")
 ! CALL h5%OPEN()
-! CALL obj2%Import(hdf5=h5, group="/K", fedof=fedof, geofedof=geofedof)
+! CALL obj2%Import(hdf5=h5, group="/K", rowFedof=fedof, &
+!                   rowGeoFedof=geofedof)
 ! CALL h5%DEALLOCATE()
 !```
 !
@@ -757,23 +763,31 @@ END INTERFACE MatrixFieldDisplay
 ! See also: [[obj_Export]], [[obj_ImportPmat]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import( &
-    obj, hdf5, group, fedof, fedofs, timefedof, timefedofs, geofedof, &
-    geofedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, rowFedof, rowFedofs, &
+                               rowGeoFedof, rowGeoFedofs, colFedof, &
+                               colFedofs, colGeoFedof, colGeoFedofs)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! matrix field, not initiated
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
     !! HDF5 file open in read mode
     CHARACTER(*), INTENT(IN) :: group
     !! group of the matrix field in the HDF5 file
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    !! FEDOF and geometry FEDOF of a square matrix field
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    !! FEDOFs and geometry FEDOFs of a rectangle matrix field
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    !! time FEDOF
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
-    !! time FEDOFs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowFedof
+    !! FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowFedofs(:)
+    !! FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowGeoFedof
+    !! geometric FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowGeoFedofs(:)
+    !! geometric FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colFedof
+    !! FEDOF of the columns, default is rowFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colFedofs(:)
+    !! FEDOF of the columns, default is rowFedofs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colGeoFedof
+    !! geometric FEDOF of the columns, default is rowGeoFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colGeoFedofs(:)
+    !! geometric FEDOF of the columns, default is rowGeoFedofs
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -831,11 +845,15 @@ END INTERFACE
 ! file open in write mode.
 !
 !- AbstractFieldExport writes the data of [[AbstractField_]], for
-!  example `group/StringR0/name` and `group/DofR0/dof`.
+!  example `group/StringR0/name`.
 !- `group/isPmatInitiated`, `group/isRectangle` and `group/matrixProp`
 !  are written next.
 !- The CSR matrix is written to `group/mat`.
 !- The preconditioner is written to `group/pmat` if it is initiated.
+!
+! Changes:
+!   - 2026-11-11: `group/DofR0/dof` is not written; the DOF of the
+!     matrix is written with `group/mat`.
 !
 ! Examples
 !
@@ -880,7 +898,8 @@ END INTERFACE
 !
 ! CALL h5%Initiate(filename=filename, mode="READ")
 ! CALL h5%OPEN()
-! CALL obj2%Import(hdf5=h5, group="/K", fedof=fedof, geofedof=geofedof)
+! CALL obj2%Import(hdf5=h5, group="/K", rowFedof=fedof, &
+!                   rowGeoFedof=geofedof)
 ! CALL h5%DEALLOCATE()
 !
 ! CALL OK(obj2%IsInitiated(), "Import: IsInitiated")

@@ -14,20 +14,22 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-SUBMODULE(AbstractField_Class) TomlMethods
+SUBMODULE(AbstractNodeField_Class) TomlMethods
 USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
 USE Display_Method, ONLY: Display, ToString
+USE EngineOpt_Class, ONLY: TypeEngineName => TypeEngineOpt
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE NeumannBC_Class, ONLY: NeumannBCImportFromToml
+USE String_Class, ONLY: String
 USE tomlf, ONLY: toml_array
 USE tomlf, ONLY: toml_get => get_value
 USE tomlf, ONLY: toml_len => len
 USE TomlUtility, ONLY: GetValue
-USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "AbstractField_Class@TomlMethods.F90"
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractNodeField_Class@TomlMethods.F90"
 #endif
 
 CONTAINS
@@ -111,7 +113,7 @@ LOGICAL(LGT) :: isok
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -127,7 +129,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
@@ -174,7 +176,6 @@ isok = PRESENT(timefedof)
 IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml2( &
   table=table, timefedof=timefedof)
 
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -193,7 +194,7 @@ LOGICAL(LGT) :: isok
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -209,7 +210,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
@@ -257,7 +258,6 @@ IF (isok) THEN
   CALL AbstractFieldReadTimeFEDOFFromToml2(table=table, timefedof=timefedof)
 END IF
 
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
@@ -274,7 +274,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml6()"
 #endif
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -291,7 +291,7 @@ CALL AssertError1(isok, myName, "table is not allocated from GetValue")
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
@@ -323,7 +323,7 @@ SUBROUTINE ReadNameFromToml(table, name)
 #endif
 
   CHARACTER(*), PARAMETER :: default_name = "field"
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
 
 #ifdef DEBUG_VER
@@ -338,7 +338,7 @@ SUBROUTINE ReadNameFromToml(table, name)
 
   CALL GetValue(table=table, key="name", VALUE=name, &
                 default_value=default_name, origin=origin, &
-                stat=stat, isFound=isFound)
+                STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isFound, myName, &
@@ -364,7 +364,7 @@ SUBROUTINE ReadEngineFromToml(table, engine)
 #endif
 
   CHARACTER(*), PARAMETER :: default_engine = TypeEngineName%native_serial
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
 
 #ifdef DEBUG_VER
@@ -379,7 +379,7 @@ SUBROUTINE ReadEngineFromToml(table, engine)
 
   CALL GetValue( &
     table=table, key="engine", VALUE=engine, default_value=default_engine, &
-    origin=origin, stat=stat, isFound=isFound)
+    origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isFound, myName, &
@@ -405,7 +405,7 @@ SUBROUTINE ReadFieldTypeFromToml(table, fieldType)
 #endif
 
   CHARACTER(*), PARAMETER :: default_fieldTypeChar = TypeField%normal_char
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
   TYPE(String) :: fieldTypeChar
 
@@ -420,7 +420,7 @@ SUBROUTINE ReadFieldTypeFromToml(table, fieldType)
 #endif
   CALL GetValue(table=table, key="fieldType", VALUE=fieldTypeChar, &
                 default_value=default_fieldTypeChar, origin=origin, &
-                stat=stat, isFound=isfound)
+                STAT=STAT, isFound=isfound)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isFound, myName, &
@@ -451,7 +451,7 @@ SUBROUTINE ReadSpaceCompoFromToml(table, spaceCompo, isSpaceCompo, &
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadSpaceCompoFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -464,7 +464,7 @@ SUBROUTINE ReadSpaceCompoFromToml(table, spaceCompo, isSpaceCompo, &
 #endif
 
   CALL GetValue(table=table, key="spaceCompo", VALUE=spaceCompo, &
-                origin=origin, stat=stat, isFound=isSpaceCompo, &
+                origin=origin, STAT=STAT, isFound=isSpaceCompo, &
                 isScalar=isSpaceCompoScalar)
 
 #ifdef DEBUG_VER
@@ -487,7 +487,7 @@ SUBROUTINE ReadTimeCompoFromToml(table, timeCompo, isTimeCompo, &
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadTimeCompoFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -500,7 +500,7 @@ SUBROUTINE ReadTimeCompoFromToml(table, timeCompo, isTimeCompo, &
 #endif
 
   CALL GetValue(table=table, key="timeCompo", VALUE=timeCompo, &
-                origin=origin, stat=stat, isFound=isTimeCompo, &
+                origin=origin, STAT=STAT, isFound=isTimeCompo, &
                 isScalar=isTimeCompoScalar)
 
 #ifdef DEBUG_VER
@@ -526,7 +526,7 @@ SUBROUTINE ReadPhysicalVarNamesFromToml( &
   CHARACTER(*), PARAMETER :: myName = "ReadPhysicalVarNamesFromToml()"
 #endif
 
-  INTEGER(I4B) :: origin, stat, ii
+  INTEGER(I4B) :: origin, STAT, ii
   TYPE(String), ALLOCATABLE :: tempstrs(:)
 
 #ifdef DEBUG_VER
@@ -541,7 +541,7 @@ SUBROUTINE ReadPhysicalVarNamesFromToml( &
 
   CALL GetValue( &
     table=table, key="physicalVarNames", VALUE=tempstrs, origin=origin, &
-    stat=stat, isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
+    STAT=STAT, isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
 
   tPhysicalVarNames = 0
   IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(tempstrs)
@@ -642,7 +642,7 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml1(table, fedof, dom)
   CHARACTER(*), PARAMETER :: default_fedofname = "fedof"
   CHARACTER(:), ALLOCATABLE :: key
   TYPE(String) :: fedofName
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isfedof, isok, isFound
   TYPE(toml_table), POINTER :: node
 
@@ -680,11 +680,11 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml1(table, fedof, dom)
   key = "fedofName"
   CALL GetValue(table=table, key=key, VALUE=fedofName, &
                 default_value=default_fedofName, origin=origin, &
-                stat=stat, isFound=isFound)
+                STAT=STAT, isFound=isFound)
 
 ! Get the node from toml table [subtable]
   CALL toml_get(table, fedofName%chars(), node, &
-                origin=origin, requested=math%no, stat=stat)
+                origin=origin, requested=math%no, STAT=STAT)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -732,7 +732,7 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, dom)
   CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadFEDOFFromToml2()"
   CHARACTER(:), ALLOCATABLE :: key
   TYPE(String), ALLOCATABLE :: physicalVarNames(:)
-  INTEGER(I4B) :: origin, stat, tsize, ii, tPhysicalVarNames
+  INTEGER(I4B) :: origin, STAT, tsize, ii, tPhysicalVarNames
   LOGICAL(LGT) :: isok, isfedofalloc, isPhysicalVarNames, &
                   isPhysicalVarNamesScalar, isfedof
   TYPE(toml_table), POINTER :: node
@@ -749,7 +749,7 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, dom)
                     'Reading '//key//' ...')
 #endif
   CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
-                origin=origin, stat=stat, &
+                origin=origin, STAT=STAT, &
                 isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
   tPhysicalVarNames = 0
   IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
@@ -785,7 +785,7 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml2(table, fedof, dom)
 
     ! Get the node (subtable) from toml table for each physical variable
     CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                  origin=origin, requested=math%no, stat=stat)
+                  origin=origin, requested=math%no, STAT=STAT)
 
 #ifdef DEBUG_VER
     isok = ASSOCIATED(node)
@@ -842,7 +842,7 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, dom)
 
   CHARACTER(:), ALLOCATABLE :: key
   TYPE(String), ALLOCATABLE :: physicalVarNames(:)
-  INTEGER(I4B) :: origin, stat, tsize, ii, tPhysicalVarNames, tmesh
+  INTEGER(I4B) :: origin, STAT, tsize, ii, tPhysicalVarNames, tmesh
   LOGICAL(LGT) :: isok, isfedofalloc, isPhysicalVarNames, &
                   isPhysicalVarNamesScalar, isfedof
   TYPE(toml_table), POINTER :: node
@@ -860,7 +860,7 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, dom)
 #endif
 
   CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
-                origin=origin, stat=stat, &
+                origin=origin, STAT=STAT, &
                 isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
   tPhysicalVarNames = 0
   IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
@@ -909,7 +909,7 @@ SUBROUTINE AbstractFieldReadFEDOFFromToml3(table, fedof, dom)
 
     ! Get the node (subtable) from toml table for each physical variable
     CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                  origin=origin, requested=math%no, stat=stat)
+                  origin=origin, requested=math%no, STAT=STAT)
 
 #ifdef DEBUG_VER
     isok = ASSOCIATED(node)
@@ -969,7 +969,7 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1(table, fedof, dom)
   CHARACTER(*), PARAMETER :: default_fedofname = "geofedof"
   CHARACTER(:), ALLOCATABLE :: key
   TYPE(String) :: fedofName
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isfedof, isok, isFound
   TYPE(toml_table), POINTER :: node
 
@@ -1008,11 +1008,11 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml1(table, fedof, dom)
   key = "geofedofName"
   CALL GetValue(table=table, key=key, VALUE=fedofName, &
                 default_value=default_fedofName, origin=origin, &
-                stat=stat, isFound=isFound)
+                STAT=STAT, isFound=isFound)
 
 ! Get the node from toml table [subtable]
   CALL toml_get(table, fedofName%chars(), node, &
-                origin=origin, requested=math%no, stat=stat)
+                origin=origin, requested=math%no, STAT=STAT)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -1061,7 +1061,7 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2(table, fedof, dom)
   CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadGeoFEDOFFromToml2()"
   CHARACTER(:), ALLOCATABLE :: key
   TYPE(String), ALLOCATABLE :: physicalVarNames(:)
-  INTEGER(I4B) :: origin, stat, tsize, ii, tPhysicalVarNames
+  INTEGER(I4B) :: origin, STAT, tsize, ii, tPhysicalVarNames
   LOGICAL(LGT) :: isok, isfedofalloc, isPhysicalVarNames, &
                   isPhysicalVarNamesScalar, isfedof
   TYPE(toml_table), POINTER :: node
@@ -1079,7 +1079,7 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2(table, fedof, dom)
 #endif
 
   CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
-                origin=origin, stat=stat, &
+                origin=origin, STAT=STAT, &
                 isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
   tPhysicalVarNames = 0
   IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
@@ -1115,7 +1115,7 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml2(table, fedof, dom)
 
     ! Get the node (subtable) from toml table for each physical variable
     CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                  origin=origin, requested=math%no, stat=stat)
+                  origin=origin, requested=math%no, STAT=STAT)
 
 #ifdef DEBUG_VER
     isok = ASSOCIATED(node)
@@ -1172,7 +1172,7 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3(table, fedof, dom)
 
   CHARACTER(:), ALLOCATABLE :: key
   TYPE(String), ALLOCATABLE :: physicalVarNames(:)
-  INTEGER(I4B) :: origin, stat, tsize, ii, tPhysicalVarNames, tmesh
+  INTEGER(I4B) :: origin, STAT, tsize, ii, tPhysicalVarNames, tmesh
   LOGICAL(LGT) :: isok, isfedofalloc, isPhysicalVarNames, &
                   isPhysicalVarNamesScalar, isfedof
   TYPE(toml_table), POINTER :: node
@@ -1190,7 +1190,7 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3(table, fedof, dom)
 #endif
 
   CALL GetValue(table=table, key=key, VALUE=physicalVarNames, &
-                origin=origin, stat=stat, &
+                origin=origin, STAT=STAT, &
                 isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
   tPhysicalVarNames = 0
   IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(physicalVarNames)
@@ -1239,7 +1239,7 @@ SUBROUTINE AbstractFieldReadGeoFEDOFFromToml3(table, fedof, dom)
 
     ! Get the node (subtable) from toml table for each physical variable
     CALL toml_get(table, physicalVarNames(ii)%chars(), node, &
-                  origin=origin, requested=math%no, stat=stat)
+                  origin=origin, requested=math%no, STAT=STAT)
 
 #ifdef DEBUG_VER
     isok = ASSOCIATED(node)
@@ -1290,7 +1290,7 @@ SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1(table, timefedof)
   CHARACTER(*), PARAMETER :: DEFAULT_FEDOFNAME_KEY = "timefedofName"
   CHARACTER(:), ALLOCATABLE :: key
   TYPE(String) :: fedofName
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isfedof, isok, isFound
   TYPE(toml_table), POINTER :: node
 
@@ -1337,11 +1337,11 @@ SUBROUTINE AbstractFieldReadTimeFEDOFFromToml1(table, timefedof)
   key = DEFAULT_FEDOFNAME_KEY
   CALL GetValue(table=table, key=key, VALUE=fedofName, &
                 default_value=DEFAULT_FEDOFNAME, origin=origin, &
-                stat=stat, isFound=isFound)
+                STAT=STAT, isFound=isFound)
 
 ! Get the node from toml table [subtable]
   CALL toml_get(table, fedofName%chars(), node, &
-                origin=origin, requested=math%no, stat=stat)
+                origin=origin, requested=math%no, STAT=STAT)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -1403,7 +1403,7 @@ END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2
 !----------------------------------------------------------------------------
 
 SUBROUTINE AbstractFieldReadDBCFromToml(obj, table)
-  CLASS(AbstractField_), INTENT(INOUT) :: obj
+  CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
 
 #ifdef DEBUG_VER
@@ -1453,7 +1453,7 @@ END SUBROUTINE AbstractFieldReadDBCFromToml
 !----------------------------------------------------------------------------
 
 SUBROUTINE AbstractFieldReadNBCFromToml(obj, table)
-  CLASS(AbstractField_), INTENT(INOUT) :: obj
+  CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadNBCFromToml()"
@@ -1497,7 +1497,7 @@ END SUBROUTINE AbstractFieldReadNBCFromToml
 !----------------------------------------------------------------------------
 
 SUBROUTINE AbstractFieldReadPointNBCFromToml(obj, table)
-  CLASS(AbstractField_), INTENT(INOUT) :: obj
+  CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
   TYPE(toml_table), INTENT(INOUT) :: table
 
 #ifdef DEBUG_VER
