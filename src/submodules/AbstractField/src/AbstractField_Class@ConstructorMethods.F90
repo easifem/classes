@@ -15,12 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) ConstructorMethods
-USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
 USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
 USE FPL_Method, ONLY: CheckEssentialParam
-USE FPL_Method, ONLY: FPL_GetValue => GetValue
-USE FPL_Method, ONLY: FPL_Set => Set
 USE GlobalData, ONLY: TypeIntI4B
 USE InputUtility, ONLY: Input
 IMPLICIT NONE
