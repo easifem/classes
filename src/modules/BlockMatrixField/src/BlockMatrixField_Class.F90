@@ -14,82 +14,82 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 July 2021
-! summary: This module defines [[BlockMatrixField_]] class
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-15
+! summary: Native serial block finite element matrix field
 !
-!# Introduction
-!
-! - This module defines [[BlockMatrixField_]] class
-! - It is designed for handling the block tangent matrix in FEM
-!
-!@note
-! [[BlockMatrixField_]] uses `NATIVE_SERIAL` engine for handling the
-! global tangent matrices.
-!@endnote
+! This module defines [[BlockMatrixField_]], a [[MatrixField_]] whose
+! rows and columns can belong to several physical variables, each with
+! its own FEDOF. It uses the `NATIVE_SERIAL` engine and stores the
+! matrix in DOF_FMT.
 
 MODULE BlockMatrixField_Class
-USE GlobalData, ONLY: I4B, DFP, LGT, DOF_FMT
-USE HDF5File_Class, ONLY: HDF5File_
-USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDOF_Class, ONLY: FEDOFPointer_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: DOF_FMT
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
 USE MatrixField_Class, ONLY: MatrixField_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
-
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 IMPLICIT NONE
-
 PRIVATE
 
-INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
-
 PUBLIC :: BlockMatrixField_
+
+INTEGER(I4B), PARAMETER :: mystorageformat = DOF_FMT
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 15 July 2021
-! summary: This is native implementation of finite element tangent matrices.
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-15
+! summary: Native serial block finite element matrix
+!
+! [[BlockMatrixField_]] extends [[MatrixField_]] and has no components
+! of its own. Next to the fedof of [[AbstractField_]], it keeps one
+! FEDOF pointer per physical variable in `fedofs`.
+!
+! At present a [[BlockMatrixField_]] is created by the Initiate method
+! of [[MatrixField_]], from a node field or another matrix field. This
+! gives one physical variable. The constructors for several physical
+! variables (from a ParameterList_) are removed. All other methods
+! except Import come from [[MatrixField_]].
+!
+! Full example: src/modules/BlockMatrixField/examples/Initiate_test_1.F90
+!
+! See also: [[MatrixField_]], [[AbstractMatrixField_]]
 
 TYPE, EXTENDS(MatrixField_) :: BlockMatrixField_
 CONTAINS
-  PRIVATE
   FINAL :: obj_Final
-  !! Finalizer
-  ! IO:
+  !! Finalizer, deallocate the field
+
   !@IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !! Import from hdf5 file
+  !! Import from an HDF5 file
 END TYPE BlockMatrixField_
 
 !----------------------------------------------------------------------------
 !                                SetBlockMatrixFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 20 July 2021
-! summary: This routine Sets the parameter for creating [[BlockMatrixField_]]
-!
-!# Introduction
-!
-! - This routine Sets the essential parameter for initiating
-! an instance of [[BlockMatrixField_]]
-! - The results will be returned in `param`
-! - After Getting `param` user can call [[BlockMatrixField_:Initiate]] method
-!
-!@note
-! The size of `physicalVarNames`, `spaceCompo`, and `timeCompo` should be
-! the same.
-!@endnote
+! Removed API, kept for reference: SetBlockMatrixFieldParam set the
+! parameters of a ParameterList_ for creating a BlockMatrixField_ with
+! several physical variables. The sizes of physicalVarNames, spaceCompo
+! and timeCompo were the same.
 
 ! INTERFACE
-!   MODULE SUBROUTINE SetBlockMatrixFieldParam(param, name, matrixProp, &
-!                  physicalVarNames, spaceCompo, timeCompo, engine, fieldType, &
-!                                              comm, local_n, global_n)
+!   MODULE SUBROUTINE SetBlockMatrixFieldParam( &
+!     param, name, matrixProp, physicalVarNames, spaceCompo, timeCompo, &
+!     engine, fieldType, comm, local_n, global_n)
 !     TYPE(ParameterList_), INTENT(INOUT) :: param
 !     !! Options to create [[BlockMatrixField_]] will be stored in this
 !     CHARACTER(*), INTENT(IN) :: name
@@ -120,13 +120,13 @@ END TYPE BlockMatrixField_
 !                       SetBlockMatrixFieldPrecondParam@sConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 20 July 2021
-! summary: This routine Sets the parameter for precondition of BlockMatrixField_
+! Removed API, kept for reference: SetBlockMatrixFieldPrecondParam set
+! the parameters of a ParameterList_ for the preconditioner.
 
 ! INTERFACE
-!   MODULE SUBROUTINE SetBlockMatrixFieldPrecondParam(param, name, engine, &
-!                 lfil, mbloc, droptol, permtol, alpha, comm, local_n, global_n)
+!   MODULE SUBROUTINE SetBlockMatrixFieldPrecondParam( &
+!     param, name, engine, lfil, mbloc, droptol, permtol, alpha, comm, &
+!     local_n, global_n)
 !     TYPE(ParameterList_), INTENT(INOUT) :: param
 !     !! Options to create precondition of [[BlockMatrixField_]]
 !     INTEGER(I4B), INTENT(IN) :: name
@@ -150,9 +150,18 @@ END TYPE BlockMatrixField_
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Finalizer of a block matrix field
+!
+! This finalizer calls the DEALLOCATE method of [[MatrixField_]].
+!
+! See also: [[MatrixField_:obj_Deallocate]]
+
 INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(BlockMatrixField_), INTENT(INOUT) :: obj
+    !! block matrix field
   END SUBROUTINE obj_Final
 END INTERFACE
 
@@ -160,25 +169,135 @@ END INTERFACE
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Imports the content of matrix field from hdf5file
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Import a block matrix field from an HDF5 file
+!
+! This routine reads a matrix field written by the Export method of
+! [[MatrixField_]] from the group `group` of an HDF5 file open in read
+! mode. obj must not be initiated, and fedof or fedofs must be present.
+!
+!- AbstractFieldImport reads the data of [[AbstractField_]] (name,
+!  engine, fieldType, dof) and links the FEDOF pointers.
+!- matrixProp and isRectangle are read from `group`.
+!- The number of physical variables is read from
+!  `group/tPhysicalVarNames`. If only fedof is given, `fedofs` gets one
+!  pointer to fedof per physical variable.
+!- The CSR matrix is read from `group/mat`.
+!- The preconditioner is read from `group/pmat` if it is present.
+!
+! Changes:
+!   - 2026-11-10: Keep the name, engine and fieldType read by
+!     AbstractFieldImport. Allocate fedofs only when fedofs is absent.
+!     Remove the unused reads of spaceCompo and timeCompo.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE BlockMatrixField_Class, ONLY: BlockMatrixField_
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDOF_Class, ONLY: FEDOFPointer_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE Test_Method, ONLY: OK
+! USE VectorField_Class, ONLY: VectorField_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "BlockMatrixField_test.toml"
+! CHARACTER(*), PARAMETER :: filename = "./Import_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(VectorField_) :: v
+! TYPE(BlockMatrixField_) :: obj, obj2, obj3
+! TYPE(FEDOFPointer_) :: fedofs(1)
+! TYPE(HDF5File_) :: h5
+! REAL(DFP) :: val1, val2
+! INTEGER(I4B) :: ii
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL v%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="v")
+! CALL obj%Initiate(obj2=v)
+! DO ii = 1, SIZE(obj%mat%A)
+!   obj%mat%A(ii) = REAL(ii, DFP)
+! END DO
+!
+! CALL h5%Initiate(filename=filename, mode="NEW")
+! CALL h5%OPEN()
+! CALL obj%Export(hdf5=h5, group="/K")
+! CALL h5%DEALLOCATE()
+!
+! ! Test 1: one fedof for all physical variables
+! CALL h5%Initiate(filename=filename, mode="READ")
+! CALL h5%OPEN()
+! CALL obj2%Import(hdf5=h5, group="/K", fedof=fedof, geofedof=geofedof)
+! CALL h5%DEALLOCATE()
+!
+! CALL OK(obj2%IsInitiated(), "Import: IsInitiated")
+! CALL OK(obj2%GetName() .EQ. "v", "Import: name")
+! CALL OK(obj2%GetEngineName() .EQ. "NATIVE_SERIAL", "Import: engine")
+! CALL OK(ALL(obj2%SHAPE() .EQ. [12, 12]), "Import: Shape")
+! CALL OK(obj2%mat%csr%nnz .EQ. 112, "Import: nnz")
+! CALL OK(ALL(obj2%mat%csr%JA .EQ. obj%mat%csr%JA), "Import: sparsity")
+! CALL OK(ALL(ABS(obj2%mat%A - obj%mat%A) .LT. tol), "Import: values")
+! CALL obj%Get(iNodeNum=5, jNodeNum=6, islocal=math%yes, idof=2, jdof=1, &
+!              VALUE=val1)
+! CALL obj2%Get(iNodeNum=5, jNodeNum=6, islocal=math%yes, idof=2, jdof=1, &
+!               VALUE=val2)
+! CALL OK(ABS(val1 - val2) .LT. tol, "Import: dof, Get(5, 6)")
+! CALL OK(SIZE(obj2%fedofs) .EQ. 1, "Import: one fedof per variable")
+! CALL OK(ASSOCIATED(obj2%fedofs(1)%ptr, fedof), "Import: fedofs(1)")
+!
+! ! Test 2: one fedof pointer per physical variable
+! fedofs(1)%ptr => fedof
+! CALL h5%Initiate(filename=filename, mode="READ")
+! CALL h5%OPEN()
+! CALL obj3%Import(hdf5=h5, group="/K", fedofs=fedofs)
+! CALL h5%DEALLOCATE()
+!
+! CALL OK(obj3%IsInitiated(), "Import fedofs: IsInitiated")
+! CALL OK(ALL(ABS(obj3%mat%A - obj%mat%A) .LT. tol), "Import fedofs: values")
+! CALL OK(SIZE(obj3%fedofs) .EQ. 1, "Import fedofs: SIZE(fedofs)")
+! CALL OK(ASSOCIATED(obj3%fedofs(1)%ptr, fedof), "Import fedofs: fedofs(1)")
+!
+! NULLIFY (fedofs(1)%ptr)
+! CALL obj3%DEALLOCATE()
+! CALL obj2%DEALLOCATE()
+! CALL obj%DEALLOCATE()
+! CALL v%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[MatrixField_:obj_Export]], [[MatrixField_:obj_Import]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
                                timefedofs, geofedof, geofedofs)
     CLASS(BlockMatrixField_), INTENT(INOUT) :: obj
+    !! block matrix field, not initiated
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file open in read mode
     CHARACTER(*), INTENT(IN) :: group
+    !! group of the matrix field in the HDF5 file
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    !! FEDOF and geometry FEDOF shared by all physical variables
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    !! FEDOF and geometry FEDOF of each physical variable
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    !! time FEDOF
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    !! time FEDOFs
   END SUBROUTINE obj_Import
 END INTERFACE
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
 
 END MODULE BlockMatrixField_Class

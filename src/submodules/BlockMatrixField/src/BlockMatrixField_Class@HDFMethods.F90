@@ -17,17 +17,14 @@
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 16 July 2021
-! summary: This module contains constructor method for [[MatrixField_]]
+! summary: HDF5 methods of [[BlockMatrixField_]]
 
 SUBMODULE(BlockMatrixField_Class) HDFMethods
-USE Display_Method, ONLY: ToString
-USE String_Class, ONLY: String
+USE AbstractField_Class, ONLY: AbstractFieldImport
 USE HDF5FileUtility, ONLY: ImportCSRMatrix
-USE MatrixFieldUtility, ONLY: Export_Header
 USE MatrixFieldUtility, ONLY: Import_Header
 USE MatrixFieldUtility, ONLY: Import_CheckError
-USE MatrixFieldUtility, ONLY: Import_PhysicalVar
-USE BaseType, ONLY: math => TypeMathOpt
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -46,19 +43,14 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
-TYPE(String) :: strval, dsetname, name, matrixProp, engine
-INTEGER(I4B), ALLOCATABLE :: timeCompo(:), spaceCompo(:)
-INTEGER(I4B) :: fieldType, ii, tvar
-CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
-LOGICAL(LGT) :: isok, ismat, isRectangle
+TYPE(String) :: dsetname, matrixProp
+INTEGER(I4B) :: ii, tvar
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
-
-! From MatrixFieldUtility
-CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group)
 
 #ifdef DEBUG_VER
 isok = PRESENT(fedof) .OR. PRESENT(fedofs)
@@ -66,10 +58,17 @@ CALL AssertError1(isok, myName, "Either fedof or fedofs should be present")
 #endif
 
 ! From MatrixFieldUtility
-CALL Import_Header( &
-  obj=obj, hdf5=hdf5, group=group, &
-  fieldType=fieldType, name=name, engine=engine, matrixProp=matrixProp, &
-  isRectangle=isRectangle)
+CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group)
+
+! name, engine, fieldType, dof and the fedof pointers
+CALL AbstractFieldImport( &
+  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
+  timefedof=timefedof, timefedofs=timefedofs, geofedof=geofedof, &
+  geofedofs=geofedofs)
+
+! From MatrixFieldUtility
+CALL Import_Header(obj=obj, hdf5=hdf5, group=group, &
+                   matrixProp=matrixProp, isRectangle=obj%isRectangle)
 
 ! tPhysicalVarNames
 dsetname = TRIM(group)//"/tPhysicalVarNames"
@@ -81,105 +80,37 @@ CALL AssertError1(isok, myName, 'dataset '//dsetname//' should be present')
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=tvar)
 
-! spaceCompo
-dsetname = TRIM(group)//"/spaceCompo"
-
-#ifdef DEBUG_VER
-isok = hdf5%PathExists(dsetname%chars())
-CALL AssertError1(isok, myName, 'dataset '//dsetname//' should be present')
-#endif
-
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=spaceCompo)
-
-! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
-
-#ifdef DEBUG_VER
-isok = hdf5%PathExists(dsetname%chars())
-timeCompo = 1
-IF (isok) CALL hdf5%READ(dsetname=dsetname%chars(), vals=timeCompo)
-#endif
-
-dsetname = TRIM(group)//"/mat"
-ismat = hdf5%PathExists(dsetname%chars())
-
-IF (ismat) THEN
-  obj%engine = engine
-  obj%name = name
-  obj%fieldType = fieldType
-
+! one fedof for all physical variables
+isok = PRESENT(fedof) .AND. (.NOT. PRESENT(fedofs))
+IF (isok) THEN
   ALLOCATE (obj%fedofs(tvar))
-  IF (PRESENT(fedof)) THEN
-    obj%fedof => fedof
-    DO ii = 1, tVar
-      obj%fedofs(ii)%ptr => fedof
-    END DO
-  END IF
-
-  IF (PRESENT(fedofs)) THEN
-    DO ii = 1, tVar
-      obj%fedofs(ii)%ptr => fedofs(ii)%ptr
-    END DO
-  END IF
-
-  CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
-  obj%isInit = .TRUE.
-  obj%isPmatInitiated = .FALSE.
-
-END IF
-
-IF (.NOT. ismat) THEN
-
-  ! physicalVarNames
-  ALLOCATE (physicalVarNames(tvar))
-
   DO ii = 1, tvar
-    dsetname = TRIM(group)//"/physicalVarName"//TOSTRING(ii)
-
-#ifdef DEBUG_VER
-    isok = hdf5%PathExists(dsetname%chars())
-    CALL AssertError1(isok, myName, 'dataset '//dsetname// &
-                      ' should be present')
-#endif
-
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    physicalVarNames(ii) = strval%chars()
-
+    obj%fedofs(ii)%ptr => fedof
   END DO
-
-#ifdef DEBUG_VER
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
-#endif
-
-  ! CALL param%Initiate()
-  !
-  ! CALL SetBlockMatrixFieldParam( &
-  !   param=param, name=name%chars(), engine=engine%chars(), &
-  !   physicalVarNames=physicalVarNames, matrixProp=matrixProp%Chars(), &
-  !   spaceCompo=spaceCompo, timeCompo=timeCompo, fieldType=fieldType)
-  !
-  ! IF (PRESENT(fedof)) &
-  !   CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-  !
-  ! IF (PRESENT(fedofs)) &
-  !   CALL obj%Initiate(param=param, fedof=fedofs, geofedof=geofedofs)
-  !
-  ! CALL param%DEALLOCATE()
-
 END IF
 
-! pmat
+! mat
+dsetname = TRIM(group)//"/mat"
+
+#ifdef DEBUG_VER
+isok = hdf5%PathExists(dsetname%chars())
+CALL AssertError1(isok, myName, &
+                  "[WIP ERROR] :: "//dsetname//" should be present. "// &
+                  "Import without /mat is under development")
+#endif
+
+CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
+
+obj%isInit = .TRUE.
+obj%isPmatInitiated = .FALSE.
+
+! pmat is present only if the precondition was set before Export
 dsetname = TRIM(group)//"/pmat"
 isok = hdf5%PathExists(dsetname%chars())
-IF (isok) &
+IF (isok) THEN
   CALL obj%ImportPmat(hdf5=hdf5, group=dsetname%chars(), fedof=fedof, &
                       fedofs=fedofs)
-
-! cleanup
-IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
-IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
-IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

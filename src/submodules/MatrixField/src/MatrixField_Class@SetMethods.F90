@@ -22,7 +22,6 @@
 SUBMODULE(MatrixField_Class) SetMethods
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: DOF_
-USE BaseType, ONLY: math => TypeMathOpt
 USE CSRMatrix_Method, ONLY: Add
 USE CSRMatrix_Method, ONLY: AddToSTMatrix
 USE CSRMatrix_Method, ONLY: GetDOFPointer
@@ -50,12 +49,11 @@ MODULE PROCEDURE obj_Set1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
 INTEGER(I4B) :: val1, val2, val3
-LOGICAL(LGT) :: problem
 LOGICAL(LGT) :: isok
 #endif
 
-LOGICAL(LGT) :: abool
-REAL(DFP) :: areal
+LOGICAL(LGT) :: add0
+REAL(DFP) :: scale0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -72,33 +70,30 @@ CALL AssertError1(isok, myName, &
 #ifdef DEBUG_VER
 val1 = SIZE(VALUE, 1)
 val2 = SIZE(VALUE, 2)
-isok = val1 .EQ. val2
-CALL AssertError1(isok, myName, &
-                  'value is not square matrix, nrow='//ToString(val1)// &
-                  ' ncol='//ToString(val2))
+CALL AssertError2(val1, val2, myName, &
+                  "a=size(value,1), b=size(value,2)")
 #endif
 
 #ifdef DEBUG_VER
-val3 = (.tdof.obj%mat%csr%idof) * SIZE(globalNode)
+val3 = (.tdof. obj%mat%csr%idof) * SIZE(globalNode)
 isok = val1 .EQ. val3
-CALL AssertError1(isok, myName, &
-                  "The shape of value is inconsistent, &
-                   &nrow of value = "//ToString(val1)//" val3 = "// &
-                   ToString(val3))
+CALL AssertError2(val1, val3, myName, &
+                  "a=size(value,1), "// &
+                  "b=(.tdof. obj%mat%csr%idof) * SIZE(globalNode)")
 #endif
 
 #include "./localNodeError.F90"
 
-abool = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
-IF (abool) THEN
-  areal = Input(default=1.0_DFP, option=scale)
-  CALL Add(obj=obj%mat, VALUE=VALUE, nodenum=globalNode, scale=areal, &
+IF (add0) THEN
+  CALL Add(obj=obj%mat, VALUE=VALUE, nodenum=globalNode, scale=scale0, &
            storageFMT=storageFMT)
-  RETURN
+ELSE
+  CALL Set(obj=obj%mat, nodenum=globalNode, VALUE=VALUE, &
+           storageFMT=storageFMT)
 END IF
-
-CALL Set(obj=obj%mat, nodenum=globalNode, VALUE=VALUE, storageFMT=storageFMT)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -121,11 +116,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-
 IF (PRESENT(islocal)) THEN
 #include "./localNodeError.F90"
 END IF
-
 #endif
 
 isnode = PRESENT(globalNode)
@@ -133,24 +126,33 @@ isnode = PRESENT(globalNode)
 #ifdef DEBUG_VER
 ! check: this routine should not be called for rectangle matrix
 IF (isnode .AND. obj%isRectangle) THEN
-  CALL e%raiseError(modName//'::'//myName//' - '// &
-               '[INTERNAL ERROR] :: This routine is not for rectangle matrix')
-  RETURN
+  CALL e%RaiseError(modName//'::'//myName//' - '// &
+                    'This routine is not for rectangle matrix')
 END IF
-
 #endif
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 ! Add
 IF (add0 .AND. isnode) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
   CALL Add(obj=obj%mat, nodenum=globalNode, scale=scale0, VALUE=VALUE)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
   CALL Add(obj=obj%mat, VALUE=VALUE, scale=scale0)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -158,6 +160,11 @@ END IF
 IF (isnode) THEN
   ! check: this routine should not be called for rectangle matrix
   CALL Set(obj=obj%mat, nodenum=globalNode, VALUE=VALUE)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -167,7 +174,6 @@ CALL Set(obj=obj%mat, VALUE=VALUE)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
@@ -189,23 +195,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
   CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
            idof=idof, jdof=jdof, VALUE=VALUE, scale=scale0)
-  RETURN
+ELSE
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, idof=idof, &
+           jdof=jdof, VALUE=VALUE)
 END IF
-
-CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, idof=idof, &
-         jdof=jdof, VALUE=VALUE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
@@ -213,7 +217,9 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
+#endif
 LOGICAL(LGT) :: add0
 REAL(DFP) :: scale0
 
@@ -224,23 +230,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
   CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, ivar=ivar, &
            jvar=jvar, VALUE=VALUE, scale=scale0)
-  RETURN
+ELSE
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, ivar=ivar, &
+           jvar=jvar, VALUE=VALUE)
 END IF
-
-CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, ivar=ivar, &
-         jvar=jvar, VALUE=VALUE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
@@ -248,7 +252,9 @@ END PROCEDURE obj_Set4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set5
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
+#endif
 LOGICAL(LGT) :: add0
 REAL(DFP) :: scale0
 
@@ -259,25 +265,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
-
   CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
            ivar=ivar, jvar=jvar, idof=idof, jdof=jdof, VALUE=VALUE, &
            scale=scale0)
-  RETURN
+ELSE
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
+           ivar=ivar, jvar=jvar, idof=idof, jdof=jdof, VALUE=VALUE)
 END IF
-
-CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-         ivar=ivar, jvar=jvar, idof=idof, jdof=jdof, VALUE=VALUE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
@@ -285,7 +288,9 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+#endif
 LOGICAL(LGT) :: add0
 REAL(DFP) :: scale0
 
@@ -296,17 +301,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
   CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-        ivar=ivar, jvar=jvar, idof=idof, jdof=jdof, VALUE=VALUE, scale=scale0)
-  RETURN
+           ivar=ivar, jvar=jvar, idof=idof, jdof=jdof, VALUE=VALUE, &
+           scale=scale0)
+ELSE
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
+           ivar=ivar, jvar=jvar, idof=idof, jdof=jdof, VALUE=VALUE)
 END IF
-
-CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-         ivar=ivar, jvar=jvar, idof=idof, jdof=jdof, VALUE=VALUE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -319,7 +324,9 @@ END PROCEDURE obj_Set6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set7
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
+#endif
 LOGICAL(LGT) :: add0
 REAL(DFP) :: scale0
 
@@ -330,21 +337,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
-
   CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-       ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, itimecompo=itimecompo, &
-           jspacecompo=jspacecompo, jtimecompo=jtimecompo, VALUE=VALUE, &
+           ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, &
+           itimecompo=itimecompo, jspacecompo=jspacecompo, &
+           jtimecompo=jtimecompo, VALUE=VALUE, &
            scale=scale0)
-  RETURN
-END IF
+ELSE
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
+           ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, &
+           itimecompo=itimecompo, jspacecompo=jspacecompo, &
+           jtimecompo=jtimecompo, VALUE=VALUE)
 
-CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-       ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, itimecompo=itimecompo, &
-         jspacecompo=jspacecompo, jtimecompo=jtimecompo, VALUE=VALUE)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -357,7 +365,9 @@ END PROCEDURE obj_Set7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set8
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
+#endif
 LOGICAL(LGT) :: add0
 REAL(DFP) :: scale0
 
@@ -368,19 +378,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
   CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-       ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, itimecompo=itimecompo, &
-    jspacecompo=jspacecompo, jtimecompo=jtimecompo, VALUE=VALUE, scale=scale0)
-  RETURN
-END IF
+           ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, &
+           itimecompo=itimecompo, jspacecompo=jspacecompo, &
+           jtimecompo=jtimecompo, VALUE=VALUE, &
+           scale=scale0)
 
-CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-       ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, itimecompo=itimecompo, &
-         jspacecompo=jspacecompo, jtimecompo=jtimecompo, VALUE=VALUE)
+ELSE
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
+           ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, &
+           itimecompo=itimecompo, jspacecompo=jspacecompo, &
+           jtimecompo=jtimecompo, VALUE=VALUE)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -394,36 +407,39 @@ END PROCEDURE obj_Set8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+#endif
 LOGICAL(LGT) :: add0
 REAL(DFP) :: scale0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START] ')
+                        '[START] ')
 #endif
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
   CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, ivar=ivar, &
            jvar=jvar, ispacecompo=ispacecompo, itimecompo=itimecompo, &
-    jspacecompo=jspacecompo, jtimecompo=jtimecompo, VALUE=VALUE, scale=scale0)
-  RETURN
-END IF
+           jspacecompo=jspacecompo, jtimecompo=jtimecompo, VALUE=VALUE, &
+           scale=scale0)
+ELSE
 
-CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
-       ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, itimecompo=itimecompo, &
-         jspacecompo=jspacecompo, jtimecompo=jtimecompo, VALUE=VALUE)
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
+           ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, &
+           itimecompo=itimecompo, jspacecompo=jspacecompo, &
+           jtimecompo=jtimecompo, VALUE=VALUE)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
@@ -431,7 +447,9 @@ END PROCEDURE obj_Set9
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set10
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
+#endif
 LOGICAL(LGT) :: add0
 REAL(DFP) :: scale0
 
@@ -442,41 +460,26 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #include "./localNodeError.F90"
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
 IF (add0) THEN
-  scale0 = Input(default=1.0_DFP, option=scale)
-
-  CALL Add(obj=obj%mat, &
-    & inodenum=inodenum, &
-    & jnodenum=jnodenum, &
-    & ivar=ivar, &
-    & jvar=jvar, &
-    & ispacecompo=ispacecompo, &
-    & itimecompo=itimecompo, &
-    & jspacecompo=jspacecompo, &
-    & jtimecompo=jtimecompo, &
-    & VALUE=VALUE, &
-    & scale=scale0)
-  RETURN
+  CALL Add(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
+           ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, &
+           itimecompo=itimecompo, jspacecompo=jspacecompo, &
+           jtimecompo=jtimecompo, &
+           VALUE=VALUE, scale=scale0)
+ELSE
+  CALL Set(obj=obj%mat, inodenum=inodenum, jnodenum=jnodenum, &
+           ivar=ivar, jvar=jvar, ispacecompo=ispacecompo, &
+           itimecompo=itimecompo, jspacecompo=jspacecompo, &
+           jtimecompo=jtimecompo, VALUE=VALUE)
 END IF
-
-CALL Set(obj=obj%mat, &
-  & inodenum=inodenum, &
-  & jnodenum=jnodenum, &
-  & ivar=ivar, &
-  & jvar=jvar, &
-  & ispacecompo=ispacecompo, &
-  & itimecompo=itimecompo, &
-  & jspacecompo=jspacecompo, &
-  & jtimecompo=jtimecompo, &
-  & VALUE=VALUE)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
@@ -484,7 +487,9 @@ END PROCEDURE obj_Set10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set11
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
+#endif
 REAL(DFP) :: scale0
 LOGICAL(LGT) :: add0
 
@@ -493,22 +498,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-add0 = Input(default=.FALSE., option=addContribution)
+add0 = Input(default=math%no, option=addContribution)
+scale0 = Input(default=math%one, option=scale)
 
-SELECT TYPE (VALUE); CLASS IS (MatrixField_)
+SELECT TYPE (VALUE)
+CLASS IS (MatrixField_)
+
   IF (add0) THEN
-    scale0 = Input(default=1.0_DFP, option=scale)
     CALL Add(obj=obj%mat, VALUE=VALUE%mat, scale=scale0, &
-             isSameStructure=.TRUE.)
-    RETURN
+             isSameStructure=math%yes)
+  ELSE
+    CALL Set(obj=obj%mat, VALUE=VALUE%mat, scale=scale0)
   END IF
 
-  CALL Set(obj=obj%mat, VALUE=VALUE%mat, scale=scale0)
+CLASS DEFAULT
 
 #ifdef DEBUG_VER
-CLASS DEFAULT
   CALL AssertError1(math%no, myName, &
-                    'This method is available for MatrixField_ only')
+                    'This method is callable for  MatrixField_::Value only')
 #endif
 
 END SELECT

@@ -20,18 +20,18 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) HDFMethods
+USE AbstractField_Class, ONLY: AbstractFieldExport
+USE AbstractField_Class, ONLY: AbstractFieldImport
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
+USE BaseType, ONLY: DOF_
+USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: Tostring
+USE HDF5FileUtility, ONLY: ExportCSRMatrix, ImportCSRMatrix
 USE MatrixFieldUtility, ONLY: Export_Header
 USE MatrixFieldUtility, ONLY: Import_Header
 USE MatrixFieldUtility, ONLY: Import_CheckError
-USE MatrixFieldUtility, ONLY: Import_PhysicalVar
-USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
-USE AbstractField_Class, ONLY: AbstractFieldExport
-USE HDF5FileUtility, ONLY: ExportCSRMatrix, ImportCSRMatrix
-USE Display_Method, ONLY: Display
-USE Display_Method, ONLY: Tostring
-USE BaseType, ONLY: DOF_
 USE String_Class, ONLY: String
-USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -196,14 +196,8 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
-TYPE(String) :: dsetname, name, matrixProp, engine
-INTEGER(I4B) :: timeCompo1, spaceCompo1
-INTEGER(I4B) :: timeCompo2, spaceCompo2
-INTEGER(I4B) :: tvar1, tvar2
-TYPE(String) :: name1, name2
-CHARACTER(20) :: varnames(2)
-INTEGER(I4B) :: fieldType
-LOGICAL(LGT) :: isRectangle0
+TYPE(String) :: dsetname, matrixProp
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -213,11 +207,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 !From MatrixFieldUtility
 CALL Import_CheckError(obj=obj, hdf5=hdf5, group=group)
 
+! name, engine, fieldType, dof and the fedof pointers
+CALL AbstractFieldImport( &
+  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
+  timefedof=timefedof, timefedofs=timefedofs, geofedof=geofedof, &
+  geofedofs=geofedofs)
+
 ! From MatrixFieldUtility
-CALL Import_Header( &
-  obj=obj, hdf5=hdf5, group=group, &
-  fieldType=fieldType, name=name, engine=engine, matrixProp=matrixProp, &
-  isRectangle=isRectangle0)
+CALL Import_Header(obj=obj, hdf5=hdf5, group=group, &
+                   matrixProp=matrixProp, isRectangle=obj%isRectangle)
 
 ! mat
 dsetname = TRIM(group)//"/mat"
@@ -227,104 +225,25 @@ CALL e%RaiseInformation(modName//"::"//myName//" - "// &
                         "Importing "//dsetname%chars())
 #endif
 
-IF (hdf5%PathExists(dsetname%chars())) THEN
-
-  obj%engine = engine
-  obj%name = name
-  obj%fieldType = fieldType
-  obj%isRectangle = isRectangle0
+isok = hdf5%PathExists(dsetname%chars())
 
 #ifdef DEBUG_VER
-  IF (ASSOCIATED(obj%fedof)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      'obj%fedof is associated, deallocate first')
-  END IF
+CALL AssertError1(isok, myName, &
+                  "[WIP ERROR] :: "//dsetname//" should be present. "// &
+                  "Import without /mat is under development")
 #endif
 
-#ifdef DEBUG_VER
-  IF (ALLOCATED(obj%fedofs)) THEN
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      'obj%fedofs is allocated, deallocate first')
-  END IF
-#endif
+CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
 
-  IF (PRESENT(fedof)) THEN
-    obj%fedof => fedof
-  ELSE IF (PRESENT(fedofs)) THEN
-    ALLOCATE (obj%fedofs(2))
-    obj%fedofs(1)%ptr => fedofs(1)%ptr
-    obj%fedofs(2)%ptr => fedofs(2)%ptr
-  ELSE
-#ifdef DEBUG_VER
-    CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      "For non-rectangle matrix fedof should be present, "// &
-                      "for rectangle matrix matrix fedofs should be present")
-#endif
-  END IF
+obj%isInit = .TRUE.
+obj%isPmatInitiated = .FALSE.
 
-  CALL ImportCSRMatrix(obj=obj%mat, hdf5=hdf5, group=dsetname%chars())
-
-  obj%isInit = .TRUE.
-  obj%isPmatInitiated = .FALSE.
-
-ELSE
-
-  ! Import Physical Variables
-  CALL Import_PhysicalVar( &
-    obj=obj, hdf5=hdf5, group=group, &
-    matrixProp=matrixProp, tvar1=tvar1, tvar2=tvar2, name1=name1, &
-    name2=name2, spaceCompo1=spaceCompo1, spaceCompo2=spaceCompo2, &
-    timeCompo1=timeCompo1, timeCompo2=timeCompo2)
-
-  varnames(1) = name1%chars()
-  varnames(2) = name2%chars()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[WIP ERROR] :: This routine is under development')
-#endif
-
-  ! CALL param%initiate()
-  !
-  ! IF (matrixProp .EQ. "RECTANGLE") THEN
-  !
-  !   CALL SetRectangleMatrixFieldParam( &
-  !     param=param, name=name%chars(), matrixProp=matrixProp%chars(), &
-  !     engine=engine%chars(), physicalVarNames=varnames, &
-  !     spaceCompo=[spaceCompo1, spaceCompo2], &
-  !     timeCompo=[timeCompo1, timeCompo2], fieldType=fieldType)
-  !
-  !   CALL obj%Initiate(param=param, fedof=fedofs, geofedof=geofedofs)
-  !
-  ! ELSE
-  !
-  !   CALL SetMatrixFieldParam( &
-  !     param=param, name=name%chars(), matrixProp=matrixProp%chars(), &
-  !     engine=engine%chars(), spaceCompo=spaceCompo1, timeCompo=timeCompo1, &
-  !     fieldType=fieldType)
-  !
-  !   CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-  !
-  ! END IF
-  !
-  ! CALL param%DEALLOCATE()
-
-END IF
-
+! pmat is present only if the precondition was set before Export
 dsetname = TRIM(group)//"/pmat"
-
-IF (hdf5%PathExists(dsetname%chars())) THEN
+isok = hdf5%PathExists(dsetname%chars())
+IF (isok) THEN
   CALL obj%ImportPmat(hdf5=hdf5, group=dsetname%chars(), &
                       fedof=fedof, fedofs=fedofs)
-ELSE
-  !Issue: #70
-#ifdef DEBUG_VER
-  CALL e%RaiseError(modName//"::"//myName//" - "// &
-                    "Issue #70: At this moment, we cannot "// &
-                   "create preconditioning matrix, when /pmat is absent. "// &
-                    "This routine needs further attention")
-#endif
-
 END IF
 
 #ifdef DEBUG_VER

@@ -106,7 +106,7 @@ CLASS IS (AbstractNodeField_)
   ! Initiate CSRMatrix
   CALL CSRMatrix_Initiate( &
     obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, jdof=dofobj, &
-    matrixProp=astr%chars())
+    matrixProp=matrixProp)
 
   isok = obj%local_n .EQ. 0
   IF (isok) obj%local_n = nrow

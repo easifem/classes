@@ -15,23 +15,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE BlockMatrixFieldLis_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
-USE FPL, ONLY: ParameterList_
-USE HDF5File_Class, ONLY: HDF5File_
-USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BlockMatrixField_Class, ONLY: BlockMatrixField_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
-
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDOF_Class, ONLY: FEDOFPointer_
+USE FPL, ONLY: ParameterList_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "BlockMatrixFieldLis_Class"
-
 PUBLIC :: BlockMatrixFieldLis_
+
+CHARACTER(*), PARAMETER :: modName = "BlockMatrixFieldLis_Class"
 
 !----------------------------------------------------------------------------
 !                                                          BlockMatrixField_
@@ -46,9 +49,6 @@ TYPE, EXTENDS(BlockMatrixField_) :: BlockMatrixFieldLis_
   INTEGER(I4B), ALLOCATABLE :: lis_ja(:)
 
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copy
@@ -56,7 +56,6 @@ CONTAINS
   FINAL :: obj_Final
   !! Finalizer
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
@@ -65,9 +64,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! export matrix field in hdf5file_
 
-  ! GET:
   ! @MatvecMethods
-  PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
+  PROCEDURE, PRIVATE, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
 END TYPE BlockMatrixFieldLis_
 
