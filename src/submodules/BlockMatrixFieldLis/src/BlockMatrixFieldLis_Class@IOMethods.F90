@@ -21,7 +21,6 @@
 
 SUBMODULE(BlockMatrixFieldLis_Class) IOMethods
 USE Display_Method, ONLY: Display
-USE MatrixField_Class, ONLY: MatrixFieldDisplay
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -44,9 +43,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
+CALL obj%MatrixField_%Display(msg=msg, unitno=unitno)
 
-IF (obj%engine%chars() .EQ. "LIS_OMP") THEN
+IF (obj%engine%Chars() .EQ. "LIS_OMP") THEN
 
   isok = ALLOCATED(obj%lis_ia)
   IF (isok) THEN

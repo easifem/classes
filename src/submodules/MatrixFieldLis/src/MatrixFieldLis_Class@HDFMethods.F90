@@ -16,10 +16,8 @@
 !
 
 SUBMODULE(MatrixFieldLis_Class) HDFMethods
-USE MatrixField_Class, ONLY: MatrixFieldExport, &
-                             MatrixFieldImport
-USE String_Class, ONLY: String
 USE CSRMatrix_Method, ONLY: GetNNZ
+USE String_Class, ONLY: String
 
 IMPLICIT NONE
 
@@ -44,7 +42,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldExport(obj=obj, hdf5=hdf5, group=group)
+CALL obj%MatrixField_%Export(hdf5=hdf5, group=group)
 
 isok = ALLOCATED(obj%lis_ia)
 IF (isok) THEN
@@ -81,8 +79,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldImport( &
-  obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs)
+CALL obj%MatrixField_%IMPORT(hdf5=hdf5, group=group, fedof=fedof, &
+                             fedofs=fedofs)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 #ifdef DEBUG_VER

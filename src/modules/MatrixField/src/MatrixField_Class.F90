@@ -51,11 +51,6 @@ PRIVATE
 
 PUBLIC :: MatrixField_
 PUBLIC :: MatrixFieldPointer_
-PUBLIC :: MatrixFieldInitiate
-PUBLIC :: MatrixFieldDeallocate
-PUBLIC :: MatrixFieldDisplay
-PUBLIC :: MatrixFieldImport
-PUBLIC :: MatrixFieldExport
 PUBLIC :: MatrixFieldAllocate
 PUBLIC :: MatrixFieldApplyDirichletBC
 
@@ -768,17 +763,13 @@ END INTERFACE MatrixFieldDeallocate
 !
 ! See also: [[obj_Deallocate_ptr_vector]]
 
-INTERFACE
+INTERFACE MatrixFieldAllocate
   MODULE SUBROUTINE obj_MatrixFieldAllocate1(obj, newsize)
     TYPE(MatrixFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! vector of matrix field pointers
     INTEGER(I4B), INTENT(IN) :: newsize
     !! minimum size of obj
   END SUBROUTINE obj_MatrixFieldAllocate1
-END INTERFACE
-
-INTERFACE MatrixFieldAllocate
-  MODULE PROCEDURE obj_MatrixFieldAllocate1
 END INTERFACE MatrixFieldAllocate
 
 !----------------------------------------------------------------------------
