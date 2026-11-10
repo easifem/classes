@@ -21,6 +21,7 @@
 
 SUBMODULE(BlockMatrixField_Class) HDFMethods
 USE AbstractField_Class, ONLY: AbstractFieldImport
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldSetFEDOF
 USE HDF5FileUtility, ONLY: ImportCSRMatrix
 USE MatrixFieldUtility, ONLY: Import_Header
 USE MatrixFieldUtility, ONLY: Import_CheckError
@@ -88,6 +89,11 @@ IF (isok) THEN
     obj%fedofs(ii)%ptr => fedof
   END DO
 END IF
+
+! square matrix: the columns use the FEDOF of the rows
+CALL AbstractMatrixFieldSetFEDOF( &
+  obj=obj, rowFedof=fedof, rowFedofs=obj%fedofs, rowGeoFedof=geofedof, &
+  rowGeoFedofs=geofedofs)
 
 ! mat
 dsetname = TRIM(group)//"/mat"

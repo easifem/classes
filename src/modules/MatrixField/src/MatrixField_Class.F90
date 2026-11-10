@@ -525,6 +525,7 @@ END INTERFACE
 !
 ! Changes:
 !   - 2026-11-09: The CSR matrix is created with matrixProp "UNSYM".
+!   - 2026-11-11: Set rowFedof and colFedof (square matrix) from obj2.
 !
 ! Examples
 !
@@ -739,6 +740,8 @@ END INTERFACE MatrixFieldDisplay
 !   - 2026-11-10: Read the header with AbstractFieldImport, the layout
 !     written by obj_Export. Restore dof. Do not raise an error when
 !     `group/pmat` is absent.
+!   - 2026-11-11: Set rowFedof and colFedof (square matrix) from fedof
+!     or fedofs.
 !
 ! Examples
 !

@@ -33,6 +33,8 @@ USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDOF_Class, ONLY: FEDOFPointer_
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE GlobalData, ONLY: LGT
@@ -42,6 +44,7 @@ PRIVATE
 PUBLIC :: AbstractMatrixField_
 PUBLIC :: AbstractMatrixFieldDisplay
 PUBLIC :: AbstractMatrixFieldDeallocate
+PUBLIC :: AbstractMatrixFieldSetFEDOF
 
 !----------------------------------------------------------------------------
 !                                                     AbstractMatrixField_
@@ -57,15 +60,38 @@ PUBLIC :: AbstractMatrixFieldDeallocate
 ! by a node number and a degree of freedom number, or by a node number,
 ! a physical variable and its space and time components.
 !
-! The only component of this class is `isPmatInitiated`. The storage of
-! the matrix and of the preconditioner is defined by the child class,
-! for example [[MatrixField_]] stores a CSR matrix.
+! The rows of the matrix belong to `rowFedof` (or `rowFedofs`, one per
+! physical variable), and the columns to `colFedof` (or `colFedofs`).
+! For a square matrix the column pointers point to the same objects as
+! the row pointers. The storage of the matrix and of the preconditioner
+! is defined by the child class, for example [[MatrixField_]] stores a
+! CSR matrix.
+!
+! Changes:
+!   - 2026-11-11: Added the row and column FEDOF pointers, see
+!     [[AbstractMatrixFieldSetFEDOF]].
 !
 ! See also: [[MatrixField_]], [[AbstractNodeField_]]
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractMatrixField_
   LOGICAL(LGT) :: isPmatInitiated = .FALSE.
   !! True if the preconditioning matrix is initiated
+  CLASS(FEDOF_), POINTER :: rowFedof => NULL()
+  !! FEDOF of the rows
+  CLASS(FEDOF_), POINTER :: colFedof => NULL()
+  !! FEDOF of the columns, same as rowFedof for a square matrix
+  CLASS(FEDOF_), POINTER :: rowGeoFedof => NULL()
+  !! Geometric FEDOF of the rows
+  CLASS(FEDOF_), POINTER :: colGeoFedof => NULL()
+  !! Geometric FEDOF of the columns
+  TYPE(FEDOFPointer_), ALLOCATABLE :: rowFedofs(:)
+  !! FEDOF of the rows, one for each physical variable
+  TYPE(FEDOFPointer_), ALLOCATABLE :: colFedofs(:)
+  !! FEDOF of the columns, one for each physical variable
+  TYPE(FEDOFPointer_), ALLOCATABLE :: rowGeoFedofs(:)
+  !! Geometric FEDOF of the rows, one for each physical variable
+  TYPE(FEDOFPointer_), ALLOCATABLE :: colGeoFedofs(:)
+  !! Geometric FEDOF of the columns, one for each physical variable
 CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
@@ -78,6 +104,26 @@ CONTAINS
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of the matrix field
+
+  ! @GetMethods
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetRowFEDOFPointer1 => &
+    obj_GetRowFEDOFPointer1
+  !! Get the row FEDOF pointer of a physical variable
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetRowFEDOFPointer2 => &
+    obj_GetRowFEDOFPointer2
+  !! Get the row FEDOF pointers of all physical variables
+  GENERIC, PUBLIC :: GetRowFEDOFPointer => GetRowFEDOFPointer1, &
+    GetRowFEDOFPointer2
+  !! Generic method to get the row FEDOF pointers
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetColFEDOFPointer1 => &
+    obj_GetColFEDOFPointer1
+  !! Get the column FEDOF pointer of a physical variable
+  PROCEDURE, NON_OVERRIDABLE, PRIVATE, PASS(obj) :: GetColFEDOFPointer2 => &
+    obj_GetColFEDOFPointer2
+  !! Get the column FEDOF pointers of all physical variables
+  GENERIC, PUBLIC :: GetColFEDOFPointer => GetColFEDOFPointer1, &
+    GetColFEDOFPointer2
+  !! Generic method to get the column FEDOF pointers
 
   ! @MatVecMethods
   PROCEDURE(obj_Matvec1), DEFERRED, PRIVATE, PASS(obj) :: Matvec1
@@ -291,8 +337,12 @@ END INTERFACE AbstractMatrixFieldDisplay
 ! summary: Deallocate the data of an abstract matrix field
 !
 ! This routine deallocates the data of [[AbstractField_]] and sets
-! `isPmatInitiated` to false. Child classes call it from their own
-! `DEALLOCATE` method.
+! `isPmatInitiated` to false. It nullifies the row and column FEDOF
+! pointers, but it does not deallocate the FEDOF objects. Child classes
+! call it from their own `DEALLOCATE` method.
+!
+! Changes:
+!   - 2026-11-11: Nullify the row and column FEDOF pointers.
 !
 ! Examples
 !
@@ -311,6 +361,203 @@ INTERFACE AbstractMatrixFieldDeallocate
     !! matrix field
   END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractMatrixFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                                    SetFEDOF
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Set the row and column FEDOF pointers of a matrix field
+!
+! This routine first nullifies the row and column FEDOF pointers of obj.
+! Then it points the row pointers to the given row FEDOFs. A column
+! argument that is absent takes the row value, so for a square matrix
+! only the row arguments are needed. The FEDOF objects are not copied.
+!
+! An unallocated array or a disassociated pointer passed as an actual
+! argument counts as absent.
+!
+! Examples
+!
+!```fortran
+! CALL AbstractMatrixFieldSetFEDOF(obj=obj, rowFedof=fedof, &
+!                                  rowGeoFedof=geofedof)
+! CALL OK(ASSOCIATED(obj%colFedof, fedof), "square: colFedof")
+!```
+!
+! Full example: src/modules/MatrixField/examples/GetRowFEDOFPointer_test_1.F90
+!
+! See also: [[AbstractMatrixField_:GetRowFEDOFPointer]],
+! [[AbstractMatrixField_:GetColFEDOFPointer]]
+
+INTERFACE AbstractMatrixFieldSetFEDOF
+  MODULE SUBROUTINE obj_SetFEDOF(obj, rowFedof, rowFedofs, rowGeoFedof, &
+                                 rowGeoFedofs, colFedof, colFedofs, &
+                                 colGeoFedof, colGeoFedofs)
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    !! matrix field
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowFedof
+    !! FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowFedofs(:)
+    !! FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowGeoFedof
+    !! geometric FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowGeoFedofs(:)
+    !! geometric FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colFedof
+    !! FEDOF of the columns, default is rowFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colFedofs(:)
+    !! FEDOF of the columns, default is rowFedofs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colGeoFedof
+    !! geometric FEDOF of the columns, default is rowGeoFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colGeoFedofs(:)
+    !! geometric FEDOF of the columns, default is rowGeoFedofs
+  END SUBROUTINE obj_SetFEDOF
+END INTERFACE AbstractMatrixFieldSetFEDOF
+
+!----------------------------------------------------------------------------
+!                                                          GetRowFEDOFPointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Get the row FEDOF pointer of a matrix field
+!
+! If indx is present and rowFedofs is allocated, this function returns
+! rowFedofs(indx)%ptr. Otherwise it returns rowFedof. The caller should
+! check that the result is associated.
+!
+! Returns:
+!   ans : CLASS(FEDOF_), POINTER - row FEDOF pointer
+!
+! Examples
+!
+!```fortran
+! fedofPtr => obj%GetRowFEDOFPointer()
+! CALL OK(ASSOCIATED(fedofPtr, fedof), "GetRowFEDOFPointer")
+!```
+!
+! Full example: src/modules/MatrixField/examples/GetRowFEDOFPointer_test_1.F90
+!
+! See also: [[AbstractMatrixField_:GetColFEDOFPointer]]
+
+INTERFACE
+  MODULE FUNCTION obj_GetRowFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    !! matrix field
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+    !! index of the physical variable
+    CLASS(FEDOF_), POINTER :: ans
+    !! row FEDOF pointer
+  END FUNCTION obj_GetRowFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetRowFEDOFPointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Get the row FEDOF pointers of all physical variables
+!
+! This function returns a copy of rowFedofs. The result has size zero
+! when rowFedofs is not allocated.
+!
+! Returns:
+!   ans : TYPE(FEDOFPointer_), ALLOCATABLE - row FEDOF pointers
+!
+! Examples
+!
+!```fortran
+! fedofPtrs = obj%GetRowFEDOFPointer(indx=[1])
+! CALL OK(SIZE(fedofPtrs) .EQ. 1, "GetRowFEDOFPointer: size")
+!```
+!
+! Full example: src/modules/MatrixField/examples/GetRowFEDOFPointer_test_1.F90
+
+INTERFACE
+  MODULE FUNCTION obj_GetRowFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    !! matrix field
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+    !! dummy argument, it only selects this procedure
+    TYPE(FEDOFPointer_), ALLOCATABLE :: ans(:)
+    !! row FEDOF pointers
+  END FUNCTION obj_GetRowFEDOFPointer2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetColFEDOFPointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Get the column FEDOF pointer of a matrix field
+!
+! If indx is present and colFedofs is allocated, this function returns
+! colFedofs(indx)%ptr. Otherwise it returns colFedof. For a square
+! matrix the result is the same as
+! [[AbstractMatrixField_:GetRowFEDOFPointer]].
+!
+! Returns:
+!   ans : CLASS(FEDOF_), POINTER - column FEDOF pointer
+!
+! Examples
+!
+!```fortran
+! fedofPtr => obj%GetColFEDOFPointer()
+! CALL OK(ASSOCIATED(fedofPtr, fedof), "GetColFEDOFPointer")
+!```
+!
+! Full example: src/modules/MatrixField/examples/GetRowFEDOFPointer_test_1.F90
+!
+! See also: [[AbstractMatrixField_:GetRowFEDOFPointer]]
+
+INTERFACE
+  MODULE FUNCTION obj_GetColFEDOFPointer1(obj, indx) RESULT(ans)
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    !! matrix field
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: indx
+    !! index of the physical variable
+    CLASS(FEDOF_), POINTER :: ans
+    !! column FEDOF pointer
+  END FUNCTION obj_GetColFEDOFPointer1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          GetColFEDOFPointer
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Get the column FEDOF pointers of all physical variables
+!
+! This function returns a copy of colFedofs. The result has size zero
+! when colFedofs is not allocated.
+!
+! Returns:
+!   ans : TYPE(FEDOFPointer_), ALLOCATABLE - column FEDOF pointers
+!
+! Examples
+!
+!```fortran
+! fedofPtrs = obj%GetColFEDOFPointer(indx=[1])
+! CALL OK(SIZE(fedofPtrs) .EQ. 1, "GetColFEDOFPointer: size")
+!```
+!
+! Full example: src/modules/MatrixField/examples/GetRowFEDOFPointer_test_1.F90
+
+INTERFACE
+  MODULE FUNCTION obj_GetColFEDOFPointer2(obj, indx) RESULT(ans)
+    CLASS(AbstractMatrixField_), INTENT(IN) :: obj
+    !! matrix field
+    INTEGER(I4B), INTENT(IN) :: indx(1)
+    !! dummy argument, it only selects this procedure
+    TYPE(FEDOFPointer_), ALLOCATABLE :: ans(:)
+    !! column FEDOF pointers
+  END FUNCTION obj_GetColFEDOFPointer2
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                      SIZE

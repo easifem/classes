@@ -21,6 +21,7 @@
 SUBMODULE(MatrixField_Class) ConstructorMethods
 USE AbstractField_Class, ONLY: AbstractFieldInitiate
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDeallocate
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldSetFEDOF
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: DOF_
 USE BaseType, ONLY: TypePrecondOpt
@@ -113,7 +114,12 @@ CLASS IS (AbstractNodeField_)
   isok = obj%global_n .EQ. 0
   IF (isok) obj%global_n = nrow
 
-  CALL obj%fedof%SetSparsity(mat=obj%mat)
+  ! square matrix: the columns use the FEDOF of the rows
+  CALL AbstractMatrixFieldSetFEDOF( &
+    obj=obj, rowFedof=obj2%fedof, rowFedofs=obj2%fedofs, &
+    rowGeoFedof=obj2%geofedof, rowGeoFedofs=obj2%geofedofs)
+
+  CALL obj%rowFedof%SetSparsity(mat=obj%mat)
 
   CALL DOF_Deallocate(dofobj)
 
@@ -122,6 +128,12 @@ CLASS IS (MatrixField_)
   obj%submat = obj2%submat
   obj%isPmatInitiated = obj2%isPMatInitiated
   obj%isRectangle = obj2%isRectangle
+
+  CALL AbstractMatrixFieldSetFEDOF( &
+    obj=obj, rowFedof=obj2%rowFedof, rowFedofs=obj2%rowFedofs, &
+    rowGeoFedof=obj2%rowGeoFedof, rowGeoFedofs=obj2%rowGeoFedofs, &
+    colFedof=obj2%colFedof, colFedofs=obj2%colFedofs, &
+    colGeoFedof=obj2%colGeoFedof, colGeoFedofs=obj2%colGeoFedofs)
 
   CALL MatrixFieldPreconditionCopy(obj=obj%pmat, obj2=obj2%pmat)
 

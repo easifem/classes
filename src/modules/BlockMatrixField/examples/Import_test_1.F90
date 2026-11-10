@@ -69,8 +69,9 @@ CALL obj%Get(iNodeNum=5, jNodeNum=6, islocal=math%yes, idof=2, jdof=1, &
 CALL obj2%Get(iNodeNum=5, jNodeNum=6, islocal=math%yes, idof=2, jdof=1, &
               VALUE=val2)
 CALL OK(ABS(val1 - val2) .LT. tol, "Import: dof, Get(5, 6)")
-CALL OK(SIZE(obj2%fedofs) .EQ. 1, "Import: one fedof per variable")
-CALL OK(ASSOCIATED(obj2%fedofs(1)%ptr, fedof), "Import: fedofs(1)")
+CALL OK(SIZE(obj2%rowFedofs) .EQ. 1, "Import: one fedof per variable")
+CALL OK(ASSOCIATED(obj2%rowFedofs(1)%ptr, fedof), "Import: rowFedofs(1)")
+CALL OK(ASSOCIATED(obj2%colFedofs(1)%ptr, fedof), "Import: colFedofs(1)")
 
 ! Test 2: one fedof pointer per physical variable
 fedofs(1)%ptr => fedof
@@ -81,8 +82,9 @@ CALL h5%DEALLOCATE()
 
 CALL OK(obj3%IsInitiated(), "Import fedofs: IsInitiated")
 CALL OK(ALL(ABS(obj3%mat%A - obj%mat%A) .LT. tol), "Import fedofs: values")
-CALL OK(SIZE(obj3%fedofs) .EQ. 1, "Import fedofs: SIZE(fedofs)")
-CALL OK(ASSOCIATED(obj3%fedofs(1)%ptr, fedof), "Import fedofs: fedofs(1)")
+CALL OK(SIZE(obj3%rowFedofs) .EQ. 1, "Import fedofs: SIZE(rowFedofs)")
+CALL OK(ASSOCIATED(obj3%rowFedofs(1)%ptr, fedof), "Import fedofs: row")
+CALL OK(ASSOCIATED(obj3%colFedofs(1)%ptr, fedof), "Import fedofs: col")
 
 NULLIFY (fedofs(1)%ptr)
 CALL obj3%DEALLOCATE()

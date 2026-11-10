@@ -22,6 +22,7 @@
 SUBMODULE(MatrixField_Class) HDFMethods
 USE AbstractField_Class, ONLY: AbstractFieldExport
 USE AbstractField_Class, ONLY: AbstractFieldImport
+USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldSetFEDOF
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
 USE BaseType, ONLY: DOF_
 USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
@@ -212,6 +213,11 @@ CALL AbstractFieldImport( &
   obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
   timefedof=timefedof, timefedofs=timefedofs, geofedof=geofedof, &
   geofedofs=geofedofs)
+
+! square matrix: the columns use the FEDOF of the rows
+CALL AbstractMatrixFieldSetFEDOF( &
+  obj=obj, rowFedof=fedof, rowFedofs=fedofs, rowGeoFedof=geofedof, &
+  rowGeoFedofs=geofedofs)
 
 ! From MatrixFieldUtility
 CALL Import_Header(obj=obj, hdf5=hdf5, group=group, &
