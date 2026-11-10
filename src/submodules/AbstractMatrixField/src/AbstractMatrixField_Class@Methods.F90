@@ -16,12 +16,15 @@
 !
 
 SUBMODULE(AbstractMatrixField_Class) Methods
-USE AbstractField_Class, ONLY: AbstractFieldDisplay, &
-                               AbstractFieldDeallocate
-
+USE AbstractField_Class, ONLY: AbstractFieldDeallocate
+USE AbstractField_Class, ONLY: AbstractFieldDisplay
 USE Display_Method, ONLY: Display
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "AbstractMatrixField_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,8 +32,22 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
 CALL Display(obj%isPmatInitiated, msg="PmatInitiated: ", unitNo=unitNo)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -38,26 +55,55 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Deallocate()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL AbstractFieldDeallocate(obj)
-obj%isPmatInitiated = .FALSE.
+obj%isPmatInitiated = math%no
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
 !                                                   isPreconditionSet
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_isPreconditionSet
+MODULE PROCEDURE obj_IsPreconditionSet
 ans = obj%isPmatInitiated
-END PROCEDURE obj_isPreconditionSet
+END PROCEDURE obj_IsPreconditionSet
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SPY
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SPY()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine should be implemented by the child class.')
+                  'This routine should be implemented by the child class.')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SPY
 
 !----------------------------------------------------------------------------
@@ -65,9 +111,24 @@ END PROCEDURE obj_SPY
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymSchurLargestEigenVal
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SymSchurLargestEigenVal()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine should be implemented by the child class.')
+                  'This routine should be implemented by the child class.')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SymSchurLargestEigenVal
 
 !----------------------------------------------------------------------------
@@ -75,9 +136,28 @@ END PROCEDURE obj_SymSchurLargestEigenVal
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SymLargestEigenVal
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SymLargestEigenVal()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
- '[INTERNAL ERROR] :: This routine should be implemented by the child class.')
+                  'This routine should be implemented by the child class.')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_SymLargestEigenVal
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END SUBMODULE Methods
