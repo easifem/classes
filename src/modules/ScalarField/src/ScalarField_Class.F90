@@ -1614,6 +1614,12 @@ END INTERFACE
 !   - 2026-11-02: integrate each Neumann boundary condition with its own
 !     data only (before, the data of all conditions was used)
 !
+! Arguments:
+!   obj : CLASS(ScalarField_) - scalar field (right hand side)
+!   nbcField : CLASS(ScalarField_) - work field for the boundary data
+!   scale : REAL(DFP) - scale
+!   times : REAL(DFP) - (optional) time
+!
 ! See also: [[obj_ApplySurfaceNeumannBC2]], [[obj_ApplyPointNeumannBC]]
 
 INTERFACE
