@@ -20,9 +20,12 @@ USE Basetype, ONLY: RealVector_
 USE DirichletBC_Class, ONLY: DirichletBCPointer_
 USE DirichletBC_Class, ONLY: DirichletBC_
 USE ExceptionHandler_Class, ONLY: e
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDOF_Class, ONLY: FEDOFPointer_
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-USE GlobalData, ONLY: DFP, I4B, LGT
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
 USE GlobalData, ONLY: INT8
 USE HDF5File_Class, ONLY: HDF5File_
 USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
@@ -30,7 +33,6 @@ USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
-
 IMPLICIT NONE
 PRIVATE
 
@@ -49,7 +51,6 @@ PUBLIC :: AbstractNodeFieldGetFEVariable
 PUBLIC :: NodeFieldsWriteData
 
 INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
-! INTEGER(I4B), PARAMETER :: myconversion = TypeFieldOpt%conversionNodesToDOF
 
 !----------------------------------------------------------------------------
 !                                                         AbstractNodeField_
@@ -473,9 +474,14 @@ END INTERFACE AbstractNodeFieldInitiate
 ! date: 2021-09-29
 ! summary: Initiate a node field with a FEDOF for each variable
 !
-! @note
+! Initiate a node field with a FEDOF for each variable. The FEDOF is
+! defined in fedofs which is a vector of FEDOFPointer_.
+!
+! Each fedofs has associated geodofs defined inside geofedos.
+!
+!@note
 !   This routine is under development; it raises an error.
-! @endnote
+!@endnote
 !
 ! See also: [[obj_Initiate2]]
 
