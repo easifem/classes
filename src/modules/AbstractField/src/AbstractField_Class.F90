@@ -394,7 +394,7 @@ END INTERFACE AbstractFieldInitiate
 !  This method is like obj_Initiate1, but it works with arugments
 !  instead of parameter list.
 
-INTERFACE
+INTERFACE AbstractFieldInitiate
   MODULE SUBROUTINE obj_Initiate2( &
     obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
     spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
@@ -461,10 +461,6 @@ INTERFACE
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
-END INTERFACE
-
-INTERFACE AbstractFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
 END INTERFACE AbstractFieldInitiate
 
 !----------------------------------------------------------------------------
