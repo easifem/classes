@@ -88,25 +88,25 @@ INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 ! See also: [[MatrixField_]]
 
 TYPE :: MatrixFieldPrecondition_
-  LOGICAL(LGT) :: isInitiated = .FALSE.
+  LOGICAL(LGT) :: isInitiated = math%no
   !! True if the preconditioner is initiated
-  INTEGER(I4B) :: PmatName = 0
+  INTEGER(I4B) :: PmatName = math%zero_i
   !! Name (kind) of the preconditioner
-  INTEGER(I4B) :: nnz = 0
+  INTEGER(I4B) :: nnz = math%zero_i
   !! Number of entries in A and JA
-  INTEGER(I4B) :: ncol = 0
+  INTEGER(I4B) :: ncol = math%zero_i
   !! Number of columns
-  INTEGER(I4B) :: nrow = 0
+  INTEGER(I4B) :: nrow = math%zero_i
   !! Number of rows
-  INTEGER(I4B) :: lfil = 0
+  INTEGER(I4B) :: lfil = math%zero_i
   !! Fill-in parameter of ILUT and ILUK
-  INTEGER(I4B) :: mbloc = 0
+  INTEGER(I4B) :: mbloc = math%zero_i
   !! Block size for the permutation of ILUTP and ILUDP
-  REAL(DFP) :: alpha = 0.0_DFP
+  REAL(DFP) :: alpha = math%zero
   !! Diagonal compensation parameter of ILUD and ILUDP
-  REAL(DFP) :: droptol = 0.0_DFP
+  REAL(DFP) :: droptol = math%zero
   !! Drop tolerance
-  REAL(DFP) :: permtol = 0.0_DFP
+  REAL(DFP) :: permtol = math%zero
   !! Permutation tolerance
   REAL(DFP), ALLOCATABLE :: A(:)
   !! Values in MSR format
@@ -173,9 +173,9 @@ END INTERFACE
 ! See also: [[AbstractMatrixField_]], [[CSRMatrix_]]
 
 TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
-  LOGICAL(LGT) :: isRectangle = .FALSE.
+  LOGICAL(LGT) :: isRectangle = math%no
   !! True if the matrix is a rectangle matrix
-  LOGICAL(LGT) :: isSubmatInit = .FALSE.
+  LOGICAL(LGT) :: isSubmatInit = math%no
   !! True if the submatrix is initiated
   INTEGER(I4B) :: tdbcPtrs = 0
   !! Number of Dirichlet degrees of freedom in dbcPtrs
