@@ -94,12 +94,6 @@ IF (isok) THEN
   END DO
 END IF
 
-obj%exact => obj2%exact
-obj%saveErrorNorm = obj2%saveErrorNorm
-obj%errorType = obj2%errorType
-obj%plotWithResult = obj2%plotWithResult
-obj%plotErrorNorm = obj2%plotErrorNorm
-
 isok = ALLOCATED(obj2%dbc)
 IF (isok) THEN
   tsize = SIZE(obj2%dbc)
@@ -328,12 +322,6 @@ IF (isok) THEN
   END DO
   DEALLOCATE (obj%timefedofs)
 END IF
-
-obj%exact => NULL()
-obj%saveErrorNorm = math%no
-obj%errorType = "NONE"
-obj%plotWithResult = math%no
-obj%plotErrorNorm = math%no
 
 isok = ALLOCATED(obj%dbc)
 IF (isok) THEN

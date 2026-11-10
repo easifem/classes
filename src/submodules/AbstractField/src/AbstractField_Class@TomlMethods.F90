@@ -19,7 +19,6 @@ USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
 USE Display_Method, ONLY: Display, ToString
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE NeumannBC_Class, ONLY: NeumannBCImportFromToml
-USE StringUtility, ONLY: UpperCase
 USE tomlf, ONLY: toml_array
 USE tomlf, ONLY: toml_get => get_value
 USE tomlf, ONLY: toml_len => len
@@ -84,7 +83,6 @@ CALL obj%Initiate( &
   isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, &
   fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
-CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 CALL AbstractFieldReadDBCFromToml(obj=obj, table=table)
 CALL AbstractFieldReadNBCFromToml(obj=obj, table=table)
 CALL AbstractFieldReadPointNBCFromToml(obj=obj, table=table)
@@ -176,7 +174,6 @@ isok = PRESENT(timefedof)
 IF (isok) CALL AbstractFieldReadTimeFEDOFFromToml2( &
   table=table, timefedof=timefedof)
 
-CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -260,7 +257,6 @@ IF (isok) THEN
   CALL AbstractFieldReadTimeFEDOFFromToml2(table=table, timefedof=timefedof)
 END IF
 
-CALL AbstractFieldReadUserFunctionFromToml(obj=obj, table=table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -1401,73 +1397,6 @@ SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2(table, timefedof)
 #endif
 
 END SUBROUTINE AbstractFieldReadTimeFEDOFFromToml2
-
-!----------------------------------------------------------------------------
-!                                      AbstractFieldReadUserFunctionFromToml
-!----------------------------------------------------------------------------
-
-SUBROUTINE AbstractFieldReadUserFunctionFromToml(obj, table)
-  CLASS(AbstractField_), INTENT(INOUT) :: obj
-  TYPE(toml_table), INTENT(INOUT) :: table
-
-  ! Internal variables
-#ifdef DEBUG_VER
- CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadUserFunctionFromToml()"
-#endif
-  TYPE(toml_table), POINTER :: node
-  INTEGER(I4B) :: stat, origin
-  TYPE(String) :: astr
-  LOGICAL(LGT) :: isok
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  node => NULL()
-
-  obj%exact => NULL()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    'Reading exact...')
-#endif
-
-  astr = "exact"
-  CALL toml_get(table, astr%chars(), node, origin=origin, &
-                requested=math%no, stat=stat)
-  isok = ASSOCIATED(node)
-  IF (.NOT. isok) RETURN
-
-  ALLOCATE (obj%exact)
-  CALL obj%exact%ImportFromToml(table=node)
-
-! errorNorm
-  CALL GetValue(table=node, key="errorNorm", VALUE=obj%saveErrorNorm, &
-                default_value=math%no, stat=stat, origin=origin, isfound=isok)
-
-! normType
-  CALL GetValue(table=node, key="normType", VALUE=astr, &
-                default_value="L2SP", stat=stat, origin=origin, isfound=isok)
-
-  obj%errorType = UpperCase(astr%slice(1, 4))
-
-! plotWithResult
-  CALL GetValue(table=node, key="plotWithResult", VALUE=obj%plotWithResult, &
-                default_value=math%no, stat=stat, origin=origin, isfound=isok)
-
-! plotErrorNorm
-  CALL GetValue(table=node, key="plotErrorNorm", VALUE=obj%plotErrorNorm, &
-                default_value=math%no, stat=stat, origin=origin, isfound=isok)
-
-  node => NULL()
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE AbstractFieldReadUserFunctionFromToml
 
 !----------------------------------------------------------------------------
 !                                                AbstractFieldReadDBCFromToml

@@ -78,18 +78,6 @@ CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%isInit)
 dname = TRIM(group)//"/Bool0/isMaxTotalNodeNumForBCSet"
 CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%isMaxTotalNodeNumForBCSet)
 
-! saveErrorNorm
-dname = TRIM(group)//"/Bool0/saveErrorNorm"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%saveErrorNorm)
-
-! plotWithResult
-dname = TRIM(group)//"/Bool0/plotWithResult"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%plotWithResult)
-
-! plotErrorNorm
-dname = TRIM(group)//"/Bool0/plotErrorNorm"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%plotErrorNorm)
-
 ! IntR0
 ! ---------
 ! fieldType
@@ -142,10 +130,6 @@ CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%name)
 dname = TRIM(group)//"/StringR0/engine"
 CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%engine)
 
-! errorType
-dname = TRIM(group)//"/StringR0/errorType"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=String(obj%errorType))
-
 ! DofR0
 dname = TRIM(group)//"/DofR0/dof"
 CALL ExportDOF(obj=obj%dof, hdf5=hdf5, group=dname%Chars())
@@ -166,7 +150,7 @@ END PROCEDURE obj_Export
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 LOGICAL(LGT) :: isok
-TYPE(String) :: strval, dsetname
+TYPE(String) :: dsetname
 INTEGER(I4B) :: tsize, ii
 
 #ifdef DEBUG_VER
@@ -196,27 +180,6 @@ isok = hdf5%pathExists(dsetname%chars())
 IF (isok) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=obj%isMaxTotalNodeNumForBCSet)
-END IF
-
-dsetname = TRIM(group)//"/Bool0/saveErrorNorm"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%saveErrorNorm)
-END IF
-
-dsetname = TRIM(group)//"/Bool0/plotWithResult"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%plotWithResult)
-END IF
-
-dsetname = TRIM(group)//"/Bool0/plotErrorNorm"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%plotErrorNorm)
 END IF
 
 ! IntR0
@@ -306,15 +269,6 @@ dsetname = TRIM(group)//"/StringR0/engine"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%engine)
-END IF
-
-! errorType
-dsetname = TRIM(group)//"/StringR0/errorType"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-  obj%errorType = strval%Slice(1, 4)
-  strval = ""
 END IF
 
 ! DofR0

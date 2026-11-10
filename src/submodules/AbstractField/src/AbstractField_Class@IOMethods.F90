@@ -100,17 +100,6 @@ DO ii = 1, tsize
                unitNo=unitNo)
 END DO
 
-isok = ASSOCIATED(obj%exact)
-CALL Display(isok, "Userfunction exact is associated: ", unitNo=unitNo)
-IF (isok) THEN
-  CALL obj%exact%Display(msg="exact: ", unitNo=unitNo)
-END IF
-
-CALL Display(obj%saveErrorNorm, "saveErrorNorm: ", unitNo=unitNo)
-CALL Display(obj%errorType, "errorType: ", unitNo=unitNo)
-CALL Display(obj%plotWithResult, "plotWithResult: ", unitNo=unitNo)
-CALL Display(obj%plotErrorNorm, "plotErrorNorm: ", unitNo=unitNo)
-
 isok = ALLOCATED(obj%dbc)
 CALL Display(isok, "dbc ALLOCATED: ", unitNo=unitNo)
 IF (isok) THEN

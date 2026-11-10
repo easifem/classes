@@ -55,7 +55,6 @@ USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
-USE UserFunction_Class, ONLY: UserFunction_
 USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
 
@@ -74,6 +73,10 @@ PUBLIC :: AbstractField_
 !> author: Vikas Sharma, Ph. D.
 ! date: 16 Jul 2021
 ! summary: Abstract field is designed to handle fields in FEM
+!
+! Changes:
+!   - 2026-11-10: Removed saveErrorNorm, plotWithResult, plotErrorNorm,
+!     errorType and exact. They were not used by any field.
 
 TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isInit = math%no
@@ -81,12 +84,6 @@ TYPE, ABSTRACT :: AbstractField_
   LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = math%no
   !! It is true when we set the maxTotalNodeNumForBC
   !! see, nodeNum, nodalValue, and GetMaxTotalNodeNumForBC
-  LOGICAL(LGT) :: saveErrorNorm = math%no
-  !! save error norm
-  LOGICAL(LGT) :: plotWithResult = math%no
-  !! do you want to plot exact solution with result
-  LOGICAL(LGT) :: plotErrorNorm = math%no
-  !! plot error norm
 
   INTEGER(I4B) :: fieldType = TypeField%normal
   !! fieldType can be normal, constant, can vary in space and/ or both.
@@ -116,8 +113,6 @@ TYPE, ABSTRACT :: AbstractField_
   TYPE(String) :: engine
   !! Engine of the field, for example
   !! NATIVE_SERIAL, NATIVE_OMP, NATIVE_MPI, PETSC, LIS_OMP, LIS_MPI
-  CHARACTER(4) :: errorType = "NONE"
-  !! errorType
 
   TYPE(DOF_) :: dof
   !! Degree of freedom object,
@@ -134,10 +129,6 @@ TYPE, ABSTRACT :: AbstractField_
   !! pointer to time fedof
   TYPE(TimeFEDOFPointer_), ALLOCATABLE :: timefedofs(:)
   !! pointer to time fedofs
-
-  TYPE(UserFunction_), POINTER :: exact => NULL()
-  !! reference function for displacement
-  !! Reference displacement denotes the exact solution
 
   TYPE(DirichletBCPointer_), ALLOCATABLE :: dbc(:)
   !! Dirichlet boundary conditions
