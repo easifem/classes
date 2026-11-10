@@ -1,0 +1,67 @@
+# Input file for ApplySurfaceNeumannBC_test_1.
+# square_3x2.h5: unit square, two Quadrangle4 elements, six nodes
+# 1 (0,0), 2 (1,0), 3 (1,1), 4 (0,1), 5 (0.5,0), 6 (0.5,1).
+# Line 1 is the bottom edge (nodes 1, 5, 2).
+#
+# Neumann BC: tx = x on line 1 (lua function TractionX).
+# Space and time: order 1 Lagrange.
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+fedofName = "space"
+geofedofName = "geofedof"
+timefedofName = "time"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[u.time]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+[u.time.quadOpt]
+quadratureType = "GaussLegendre"
+
+[[u.neumannBC]]
+name = "bottom_x"
+idof = 1
+nodalValueType = "Space"
+isUserFunction = true
+[u.neumannBC.function]
+name = "TractionX"
+returnType = "Scalar"
+numReturns = 1
+argType = "Space"
+numArgs = 4
+luaScript = "./ApplySurfaceNeumannBC_test_1.lua"
+luaFunctionName = "TractionX"
+[u.neumannBC.boundary]
+isSelectionByMeshID = true
+[u.neumannBC.boundary.meshID]
+line = [1]

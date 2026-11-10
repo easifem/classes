@@ -2359,11 +2359,19 @@ END INTERFACE
 ! date: 2025-11-06
 ! summary: Add the surface Neumann boundary conditions
 !
-! nbcField is set to zero, and the Neumann boundary conditions of the
-! field are applied to it as Dirichlet values (extension of the
-! boundary data to the domain). Then, for each boundary condition, the
-! integral of the test functions times nbcField over the boundary
-! facets is computed, and scale times this integral is added to obj.
+! For each Neumann boundary condition of the field, nbcField is set to zero
+! and only this boundary condition is applied to it as Dirichlet values
+! (extension of its boundary data to the domain). Then the integral of the
+! test functions times nbcField over the facets of this boundary condition is
+! computed, and scale times this integral is added to obj. So each facet gets
+! only the data of its own boundary condition (in particular, x and y
+! conditions on the same boundary are not added twice), and the contributions
+! of several boundary conditions add up. Nothing is done if the field has no
+! Neumann boundary condition.
+!
+! Changes:
+!   - 2026-11-02: integrate each Neumann boundary condition with its own
+!     data only (before, the data of all conditions was used)
 !
 ! See also: [[obj_ApplyPointNeumannBC]]
 

@@ -1,0 +1,72 @@
+# Input file for ApplySurfaceNeumannBC_test_1.
+# square_3x2.h5: unit square, two Quadrangle4 elements, six nodes
+# 1 (0,0), 2 (1,0), 3 (1,1), 4 (0,1), 5 (0.5,0), 6 (0.5,1).
+# Line 1 is the bottom edge (nodes 1, 5, 2), line 2 is the right edge
+# (nodes 2, 3). Node 2 is shared by both lines.
+#
+# Neumann BCs:
+#   right_x : tx = 2 on line 2
+#   right_y : ty = 3 on line 2 (same boundary, other component)
+#   bottom_x: tx = 5 on line 1 (shares node 2 with line 2)
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[[u.neumannBC]]
+name = "right_x"
+idof = 1
+nodalValueType = "Constant"
+value = 2.0
+[u.neumannBC.boundary]
+isSelectionByMeshID = true
+[u.neumannBC.boundary.meshID]
+line = [2]
+
+[[u.neumannBC]]
+name = "right_y"
+idof = 2
+nodalValueType = "Constant"
+value = 3.0
+[u.neumannBC.boundary]
+isSelectionByMeshID = true
+[u.neumannBC.boundary.meshID]
+line = [2]
+
+[[u.neumannBC]]
+name = "bottom_x"
+idof = 1
+nodalValueType = "Constant"
+value = 5.0
+[u.neumannBC.boundary]
+isSelectionByMeshID = true
+[u.neumannBC.boundary.meshID]
+line = [1]

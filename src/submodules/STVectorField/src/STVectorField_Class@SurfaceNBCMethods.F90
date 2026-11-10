@@ -89,16 +89,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 mesh => obj%fedof%GetMeshPointer()
 CALL obj%timefedof%SetFE()
 timefeptr => obj%timefedof%GetFEPointer()
@@ -113,10 +103,11 @@ spaceCompo = obj%GetSpaceCompo(1)
 CALL Reallocate(xij, 3, maxNNSGeo)
 CALL Reallocate(facetCon, maxNNS)
 CALL Reallocate(forceVec, spaceCompo(1), maxNNS, maxNNT)
-CALL Reallocate(nbcValue, spaceCompo(1), maxNNT, maxNNS) ! nodes FMT
+CALL Reallocate(nbcValue, spaceCompo(1), maxNNT, maxNNS)  ! nodes FMT
 
+! forceVar keeps the nodal values as (spaceCompo, nns, nnt)
 forceVar = NodalVariable( &
-           dim1=spaceCompo(1), dim2=maxNNT, dim3=maxNNS, &
+           dim1=spaceCompo(1), dim2=maxNNS, dim3=maxNNT, &
            rank=TypeFEVariableVector, &
            vartype=TypeFEVariableSpaceTime)
 
@@ -125,6 +116,11 @@ DO ibc = 1, tbc
 
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other components and the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 
   CALL STVectorFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
@@ -155,17 +151,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ApplySurfaceNeumannBC
 
 !----------------------------------------------------------------------------
-!                        STScalarFieldAssembleSurfaceSource@ScalarFieldMethods
+!                                          STVectorFieldAssembleSurfaceSource
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
 ! date: 2025-12-11
 ! summary:  Assemble surface source
 !
-!# Introduction
+! This is an internal routine that assembles the surface source (Neumann
+! BC) into the right-hand side (RHS) vector of a space-time vector field.
+! The nodal values of nbcField are read in NODES_FMT, that is
+! (spaceCompo, timeCompo, nns), and reordered to (spaceCompo, nns, nnt)
+! before they are stored in forceVar.
 !
-! This is an internal routine that assemble surface source (Neumann BC)
-! into the right-hand side (RHS) vector of a vector field.
+! Changes:
+!   - 2026-11-03: reorder the nodal values to (spaceCompo, nns, nnt);
+!     before, space and time nodes were swapped
 
 SUBROUTINE STVectorFieldAssembleSurfaceSource( &
   obj, nbc, fedof, geofedof, mesh, nbcField, scale, xij, forceVec, &
@@ -185,6 +186,7 @@ SUBROUTINE STVectorFieldAssembleSurfaceSource( &
   !! cellCon: connectivity of the call
   REAL(DFP), INTENT(INOUT) :: xij(:, :), forceVec(:, :, :), nbcValue(:, :, :)
   !! Working arrays for element vectors and matrix
+  !! nbcValue: nodal values in NODES_FMT (spaceCompo, timeCompo, nns)
   TYPE(FEVariable_), INTENT(INOUT) :: forceVar
   !! Working variables
   TYPE(QuadraturePoint_), INTENT(INOUT) :: quad, facetQuad
@@ -199,6 +201,10 @@ SUBROUTINE STVectorFieldAssembleSurfaceSource( &
 
   REAL(DFP) :: forceVec_swap(SIZE(forceVec, 1), SIZE(forceVec, 3), &
                              SIZE(forceVec, 2))
+  REAL(DFP) :: nbcValue_swap(SIZE(nbcValue, 1), SIZE(nbcValue, 3), &
+                             SIZE(nbcValue, 2))
+  !! nodal values as (spaceCompo, nns, nnt), the layout used by the
+  !! interpolation of a nodal space-time vector FEVariable
   LOGICAL(LGT) :: isElemToEdge, isElemToFace, isok
   INTEGER(I4B) :: tElemToFace, indx, localCellNumber, localFaceNumber, &
                   forceVec_i, forceVec_j, forceVec_k, &
@@ -264,8 +270,12 @@ SUBROUTINE STVectorFieldAssembleSurfaceSource( &
       dim1=nbcValue_i, dim2=nbcValue_j, dim3=nbcValue_k, &
       islocal=math%yes, storageFMT=TypeFieldOpt%storageFormatNodes)
 
+    ! (spaceCompo, timeCompo, nns) -> (spaceCompo, nns, nnt)
+    CALL Swap_(a=nbcValue_swap, b=nbcValue, i1=1, i2=3, i3=2)
+
     CALL FEVariable_Set( &
-      obj=forceVar, val=nbcValue(1:nbcValue_i, 1:nbcValue_j, 1:nbcValue_k), &
+      obj=forceVar, &
+      val=nbcValue_swap(1:nbcValue_i, 1:nbcValue_k, 1:nbcValue_j), &
       rank=TypeFEVariableVector, vartype=TypeFEVariableSpaceTime, &
       scale=math%one, addContribution=math%no)
 
