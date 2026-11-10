@@ -304,7 +304,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
               iNodeNum=iNodeNum, jNodeNum=jNodeNum, ispacecompo=ispacecompo, &
-        jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo)
+              jspacecompo=jspacecompo, itimecompo=itimecompo, &
+              jtimecompo=jtimecompo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -331,7 +332,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL GetValue(obj=obj%mat, VALUE=VALUE, ivar=ivar, jvar=jvar, &
               iNodeNum=iNodeNum, jNodeNum=jNodeNum, ispacecompo=ispacecompo, &
-      jspacecompo=jspacecompo, itimecompo=itimecompo, jtimecompo=jtimecompo, &
+              jspacecompo=jspacecompo, itimecompo=itimecompo, &
+              jtimecompo=jtimecompo, &
               nrow=nrow, ncol=ncol)
 
 #ifdef DEBUG_VER

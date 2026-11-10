@@ -3,8 +3,11 @@
 ! summary: Initiate a matrix field from a scalar field
 !
 ! The scalar field u (order 1 Lagrange on square_3x2.h5, six DOFs) is
-! imported from MatrixField_test.toml. The matrix field obj is then
-! initiated from u. The result is a 6 x 6 unsymmetric CSR matrix whose
+! imported from MatrixField_test.toml.
+!
+! The matrix field obj is then initiated from u.
+!
+! The result is a 6 x 6 unsymmetric CSR matrix whose
 ! sparsity comes from the FEDOF of u: the corner nodes 1, 2, 3, 4 touch
 ! four nodes, the middle nodes 5 and 6 touch six, so nnz = 28.
 

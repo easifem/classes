@@ -24,7 +24,6 @@ USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDeallocate
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: DOF_
 USE BaseType, ONLY: TypePrecondOpt
-USE BaseType, ONLY: math => TypeMathOpt
 USE CSRMatrix_Method, ONLY: ASSIGNMENT(=)
 USE CSRMatrix_Method, ONLY: CSRMatrix_Deallocate => DEALLOCATE
 USE CSRMatrix_Method, ONLY: CSRMatrix_Initiate => Initiate

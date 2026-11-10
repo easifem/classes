@@ -3,8 +3,11 @@
 ! summary: Initiate a matrix field from a vector field and by copying
 !
 ! The vector field v (two space components on square_3x2.h5) is imported
-! from MatrixField_test.toml. The matrix field obj is initiated from v,
-! which gives a 12 x 12 matrix with 28 x 4 = 112 nonzero entries.
+! from MatrixField_test.toml.
+!
+! The matrix field obj is initiated from v which gives a 12 x 12 matrix
+! with 28 x 4 = 112 nonzero entries.
+!
 ! A second matrix field obj2 is then initiated by copying obj; it gets
 ! the same structure and the same values.
 

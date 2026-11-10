@@ -22,7 +22,6 @@
 SUBMODULE(MatrixField_Class) SetColMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 USE Basetype, ONLY: DOF_
-USE Basetype, ONLY: math => TypeMathOpt
 USE CSRMatrix_Method, ONLY: GetDOFPointer
 USE CSRMatrix_Method, ONLY: SetColumn
 USE Display_Method, ONLY: ToString

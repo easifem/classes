@@ -15,12 +15,11 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(MatrixField_Class) DBCMethods
-USE ReallocateUtility, ONLY: Reallocate
 USE CSRMatrix_Method, ONLY: CSRMatrix_GetSubMatrix => GetSubMatrix
 USE CSRMatrix_Method, ONLY: CSRMatrix_Matvec => Matvec
 USE CSRMatrix_Method, ONLY: CSRMatrix_ApplyDBC => ApplyDBC
 USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: math => TypeMathOpt
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
