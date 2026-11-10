@@ -43,8 +43,8 @@ USE String_Class, ONLY: String
 USE UserFunction_Class, ONLY: UserFunction_
 USE UserFunction_Class, ONLY: UserFunctionPointer_
 IMPLICIT NONE
-
 PRIVATE
+
 PUBLIC :: AbstractMeshField_
 PUBLIC :: AbstractMeshFieldDeallocate
 PUBLIC :: AbstractMeshFieldInitiate
