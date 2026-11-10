@@ -21,9 +21,11 @@
 
 SUBMODULE(MatrixField_Class) IOMethods
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldDisplay
-USE Display_Method, ONLY: Display
 USE CSRMatrix_Method, ONLY: CSRMatrix_SPY => SPY
 USE CSRMatrix_Method, ONLY: CSRMatrix_Display => Display
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: BlankLines
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -49,20 +51,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractMatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
-
+CALL Display(msg="AbstractMatrix: ", unitNo=unitNo)
+CALL EqualLine(unitNo=unitNo)
+CALL AbstractMatrixFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
+CALL BlankLines(unitNo=unitNo)
+CALL Display(msg="AbstractMatrix: ", unitNo=unitNo)
+CALL EqualLine(unitNo=unitNo)
 CALL Display(obj%isRectangle, "Is Rectangle: ", unitNo=unitNo)
 CALL Display(obj%isSubmatInit, "Is Submatrix Init: ", unitNo=unitNo)
 CALL Display(obj%tdbcPtrs, "tdbcPtrs: ", unitNo=unitNo)
 CALL Display(obj%tsubIndices, "tsubIndices: ", unitNo=unitNo)
 isok = ALLOCATED(obj%dbcPtrs)
-CALL Display(isok, "dbcPtrs Allocated: ", unitNo=unitNo)
+CALL Display(isok, "dbcPtrs ALLOCATED: ", unitNo=unitNo)
 IF (isok) THEN
   CALL Display(obj%dbcPtrs, "dbcPtrs: ", unitNo=unitNo)
 END IF
 
 isok = ALLOCATED(obj%subIndices)
-CALL Display(isok, "subIndices Allocated: ", unitNo=unitNo)
+CALL Display(isok, "subIndices ALLOCATED: ", unitNo=unitNo)
 IF (isok) THEN
   CALL Display(obj%subIndices, "subIndices: ", unitNo=unitNo)
 END IF
