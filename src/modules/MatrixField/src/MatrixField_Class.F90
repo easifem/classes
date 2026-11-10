@@ -52,7 +52,6 @@ PRIVATE
 PUBLIC :: MatrixField_
 PUBLIC :: MatrixFieldPointer_
 PUBLIC :: MatrixFieldAllocate
-PUBLIC :: MatrixFieldApplyDirichletBC
 
 INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 INTEGER(I4B), PRIVATE, PARAMETER :: IPAR_LENGTH = 14
@@ -85,7 +84,7 @@ INTEGER(I4B), PRIVATE, PARAMETER :: FPAR_LENGTH = 14
 TYPE :: MatrixFieldPrecondition_
   LOGICAL(LGT) :: isInitiated = math%no
   !! True if the preconditioner is initiated
-  INTEGER(I4B) :: PmatName = math%zero_i
+  INTEGER(I4B) :: pmatName = math%zero_i
   !! Name (kind) of the preconditioner
   INTEGER(I4B) :: nnz = math%zero_i
   !! Number of entries in A and JA
@@ -172,14 +171,14 @@ TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
   !! True if the matrix is a rectangle matrix
   LOGICAL(LGT) :: isSubmatInit = math%no
   !! True if the submatrix is initiated
-  INTEGER(I4B) :: tdbcPtrs = 0
+  INTEGER(I4B) :: tdbcPtrs = math%zero_i
   !! Number of Dirichlet degrees of freedom in dbcPtrs
-  INTEGER(I4B) :: tsubIndices = 0
+  INTEGER(I4B) :: tsubIndices = math%zero_i
   !! Number of entries in subIndices
   TYPE(CSRMatrix_) :: mat
-  !! Main matrix
+  !! Main csr sparse matrix which is formed internally
   TYPE(MatrixFieldPrecondition_) :: pmat
-  !! Preconditioner
+  !! Preconditioner, formed internallly
   TYPE(CSRMatrix_) :: submat
   !! Columns of mat for the Dirichlet degrees of freedom, used to
   !! apply the Dirichlet boundary condition to the rhs
@@ -415,75 +414,6 @@ TYPE :: MatrixFieldPointer_
 END TYPE MatrixFieldPointer_
 
 !----------------------------------------------------------------------------
-!                                    SetMatrixFieldParam@sConstructorMethods
-!----------------------------------------------------------------------------
-
-! Removed API, kept for reference: SetMatrixFieldParam set the parameters
-! of a ParameterList_ for creating a MatrixField_.
-
-! INTERFACE
-!   MODULE SUBROUTINE SetMatrixFieldParam( &
-!     param, name, matrixProp, engine, spaceCompo, timeCompo, fieldType, &
-!     comm, local_n, global_n)
-!     TYPE(ParameterList_), INTENT(INOUT) :: param
-!     !! Options to create [[MatrixField_]] will be stored in this
-!     CHARACTER(*), INTENT(IN) :: name
-!     !! Name of the matrix field
-!     CHARACTER(*), INTENT(IN) :: matrixProp
-!     !! Matrix property, "SYM" or "UNSYM"
-!     CHARACTER(*), INTENT(IN) :: engine
-!     !! "NATIVE_SERIE"
-!     !! "LIS_OMP"
-!     !! "LIS_MPI"
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-!     !! Number of space-components, see [[DOF_]]
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-!     !! Number of time-components, see [[DOF_]]
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-!     !! fieldType can be following
-!     !! FIELD_TYPE_NORMAL
-!     !! FIELD_TYPE_CONSTANT
-!     !! FIELD_TYPE_CONSTANT_SPACE
-!     !! FIELD_TYPE_CONSTANT_TIME
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-!   END SUBROUTINE SetMatrixFieldParam
-! END INTERFACE
-
-!----------------------------------------------------------------------------
-!                           SetMatrixFieldPrecondParam@sConstructorMethods
-!----------------------------------------------------------------------------
-
-! Removed API, kept for reference: SetMatrixFieldPrecondParam set the
-! parameters of a ParameterList_ for the preconditioner.
-
-! INTERFACE
-!   MODULE SUBROUTINE SetMatrixFieldPrecondParam( &
-!     param, name, engine, lfil, mbloc, droptol, permtol, alpha, comm, &
-!     local_n, global_n)
-!     TYPE(ParameterList_), INTENT(INOUT) :: param
-!     !! Options to create precondition of [[MatrixField_]]
-!     INTEGER(I4B), INTENT(IN) :: name
-!     !! Name of precondition
-!     CHARACTER(*), INTENT(IN) :: engine
-!     !! "NATIVE_SERIE"
-!     !! "LIS_OMP"
-!     !! "LIS_MPI"
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: lfil
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: mbloc
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: droptol
-!     !! Droptoleranace
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: permtol
-!     !! permutation tolerance
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: alpha
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-!   END SUBROUTINE SetMatrixFieldPrecondParam
-! END INTERFACE
-
-!----------------------------------------------------------------------------
 !                            SetRectangleMatrixFieldParam@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -545,15 +475,11 @@ END TYPE MatrixFieldPointer_
 !
 ! See also: [[obj_Deallocate]]
 
-INTERFACE
+INTERFACE MatrixFieldDeallocate
   MODULE SUBROUTINE Pmat_Deallocate(obj)
     TYPE(MatrixFieldPrecondition_), INTENT(INOUT) :: obj
     !! preconditioner
   END SUBROUTINE Pmat_Deallocate
-END INTERFACE
-
-INTERFACE MatrixFieldDeallocate
-  MODULE PROCEDURE Pmat_Deallocate
 END INTERFACE MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -670,10 +596,6 @@ INTERFACE
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
-INTERFACE MatrixFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE MatrixFieldInitiate
-
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -696,15 +618,11 @@ END INTERFACE MatrixFieldInitiate
 !
 ! See also: [[obj_Initiate1]]
 
-INTERFACE
+INTERFACE MatrixFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! matrix field
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE MatrixFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -729,15 +647,11 @@ END INTERFACE MatrixFieldDeallocate
 !
 ! See also: [[obj_MatrixFieldAllocate1]]
 
-INTERFACE
+INTERFACE MatrixFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(MatrixFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! vector of matrix field pointers
   END SUBROUTINE obj_Deallocate_ptr_vector
-END INTERFACE
-
-INTERFACE MatrixFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE MatrixFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -792,7 +706,7 @@ END INTERFACE MatrixFieldAllocate
 !
 ! This example still needs a matching test.
 
-INTERFACE
+INTERFACE MatrixFieldDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! matrix field
@@ -801,10 +715,6 @@ INTERFACE
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
     !! unit number, default is stdout
   END SUBROUTINE obj_Display
-END INTERFACE
-
-INTERFACE MatrixFieldDisplay
-  MODULE PROCEDURE obj_Display
 END INTERFACE MatrixFieldDisplay
 
 !----------------------------------------------------------------------------
@@ -863,10 +773,6 @@ INTERFACE
     !! time FEDOFs
   END SUBROUTINE obj_Import
 END INTERFACE
-
-INTERFACE MatrixFieldImport
-  MODULE PROCEDURE obj_Import
-END INTERFACE MatrixFieldImport
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
@@ -1006,10 +912,6 @@ INTERFACE
     !! group of the matrix field in the HDF5 file
   END SUBROUTINE obj_Export
 END INTERFACE
-
-INTERFACE MatrixFieldExport
-  MODULE PROCEDURE obj_Export
-END INTERFACE MatrixFieldExport
 
 !----------------------------------------------------------------------------
 !                                                       ExportPmat@IOMethods
@@ -1569,24 +1471,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                         SetPrecondition@PreconditionMethods
-!----------------------------------------------------------------------------
-
-! Removed API, kept for reference: SetPrecondition built the
-! preconditioner from a ParameterList_. Supported preconditioners were
-! ILUT (droptol, lfil), ILUTP (droptol, permtol, lfil, mbloc),
-! ILUD (droptol, alpha), ILUDP (droptol, permtol, alpha, mbloc) and
-! ILUK (lfil), for NATIVE_SERIAL only.
-!
-! INTERFACE
-!   MODULE SUBROUTINE obj_SetPrecondition(obj, param, dbcPtrs)
-!     CLASS(MatrixField_), INTENT(INOUT) :: obj
-!     TYPE(ParameterList_), OPTIONAL, INTENT(IN) :: param
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dbcPtrs(:)
-!   END SUBROUTINE obj_SetPrecondition
-! END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                       GetPrecondition@PreconditionMethods
 !----------------------------------------------------------------------------
 
@@ -1606,10 +1490,10 @@ END INTERFACE
 ! This example still needs a matching test.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetPrecondition(obj, Pmat)
+  MODULE SUBROUTINE obj_GetPrecondition(obj, pmat)
     CLASS(MatrixField_), INTENT(INOUT) :: obj
     !! matrix field
-    CLASS(AbstractMatrixField_), INTENT(INOUT) :: Pmat
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: pmat
     !! preconditioning matrix
   END SUBROUTINE obj_GetPrecondition
 END INTERFACE
@@ -1940,10 +1824,6 @@ INTERFACE
     !! default the stored dbcPtrs
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
-
-INTERFACE MatrixFieldApplyDirichletBC
-  MODULE PROCEDURE obj_ApplyDirichletBC1
-END INTERFACE MatrixFieldApplyDirichletBC
 
 !----------------------------------------------------------------------------
 !                                            ApplyDirichletBCtoRHS@DBCMethods
