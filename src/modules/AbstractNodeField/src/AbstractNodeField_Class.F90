@@ -97,6 +97,7 @@ INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 ! Changes:
 !   - 2026-11-11: Moved dof, the FEDOF pointers, the boundary conditions
 !     and the methods that use them from [[AbstractField_]].
+!   - 2026-11-11: Added SetLocal_n and SetGlobal_n.
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = math%no
@@ -371,6 +372,10 @@ CONTAINS
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromHDF5 => obj_SetFromHDF5
   !! Set values from hdf5
+  PROCEDURE, PUBLIC, PASS(obj) :: SetLocal_n => obj_SetLocal_n
+  !! Set the local size, local_n
+  PROCEDURE, PUBLIC, PASS(obj) :: SetGlobal_n => obj_SetGlobal_n
+  !! Set the global size, global_n
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
@@ -1013,6 +1018,95 @@ END INTERFACE
 INTERFACE AbstractNodeFieldSetParam
   MODULE PROCEDURE obj_SetParam
 END INTERFACE AbstractNodeFieldSetParam
+
+!----------------------------------------------------------------------------
+!                                                       SetLocal_n@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Set the local size of a node field
+!
+! local_n is the number of entries of obj stored on this process.
+! [[obj_Initiate2]] sets it to tSize when it is zero. SIZE of a scalar
+! field returns local_n.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "AbstractNodeField_test.toml"
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarField_) :: x
+!
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL x%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+!
+! CALL OK(x%local_n .EQ. 6, "after Initiate: local_n = 6")
+! CALL OK(x%global_n .EQ. 6, "after Initiate: global_n = 6")
+!
+! CALL x%SetLocal_n(local_n=4)
+! CALL OK(x%local_n .EQ. 4, "SetLocal_n: local_n = 4")
+! CALL OK(x%SIZE() .EQ. 4, "SetLocal_n: SIZE = 4")
+! CALL OK(x%global_n .EQ. 6, "SetLocal_n: global_n unchanged")
+!
+! CALL x%SetGlobal_n(global_n=10)
+! CALL OK(x%global_n .EQ. 10, "SetGlobal_n: global_n = 10")
+! CALL OK(x%local_n .EQ. 4, "SetGlobal_n: local_n unchanged")
+!
+! CALL x%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_SetGlobal_n]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetLocal_n(obj, local_n)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! node field
+    INTEGER(I4B), INTENT(IN) :: local_n
+    !! local size
+  END SUBROUTINE obj_SetLocal_n
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      SetGlobal_n@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Set the global size of a node field
+!
+! global_n is the number of entries of obj on all processes.
+! [[obj_Initiate2]] sets it to tSize when it is zero.
+!
+! Full example: src/modules/AbstractNodeField/examples/SetLocal_n_test_1.F90
+!
+! See also: [[obj_SetLocal_n]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetGlobal_n(obj, global_n)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! node field
+    INTEGER(I4B), INTENT(IN) :: global_n
+    !! global size
+  END SUBROUTINE obj_SetGlobal_n
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                      SetFromHDF5@SetMethods

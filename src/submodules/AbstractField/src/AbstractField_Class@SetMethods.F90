@@ -24,48 +24,6 @@ CHARACTER(*), PARAMETER :: modName = &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-IF (PRESENT(isInitiated)) obj%isInit = isInitiated
-IF (PRESENT(fieldType)) obj%fieldType = fieldType
-IF (PRESENT(name)) obj%name = TRIM(name)
-IF (PRESENT(engine)) obj%engine = TRIM(engine)
-IF (PRESENT(comm)) obj%comm = comm
-IF (PRESENT(myRank)) obj%myRank = myRank
-IF (PRESENT(numProcs)) obj%numProcs = numProcs
-IF (PRESENT(global_n)) obj%global_n = global_n
-IF (PRESENT(local_n)) obj%local_n = local_n
-IF (PRESENT(is)) obj%is = is
-IF (PRESENT(ie)) obj%ie = ie
-IF (PRESENT(lis_ptr)) obj%lis_ptr = lis_ptr
-!
-!SELECT TYPE (obj)
-!CLASS IS (AbstractNodeField_)
-!  IF (PRESENT(tSize)) obj%tSize = tSize
-!  IF (PRESENT(realVec)) obj%realVec = realVec
-!  IF (PRESENT(dof)) obj%dof = dof
-!CLASS IS (AbstractMatrixField_)
-!  IF (PRESENT(isPMatInitiated)) obj%isPMatInitiated = isPMatInitiated
-!END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetParam
-
-!----------------------------------------------------------------------------
 !                                                                     SetName
 !----------------------------------------------------------------------------
 

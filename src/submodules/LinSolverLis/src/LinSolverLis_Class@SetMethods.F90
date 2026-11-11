@@ -44,7 +44,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL amat%GetParam(engine=engine)
+engine = amat%GetEngineName()
 
 isok = TRIM(engine) .EQ. "LIS_OMP"
 CALL AssertError1(isok, myName, &

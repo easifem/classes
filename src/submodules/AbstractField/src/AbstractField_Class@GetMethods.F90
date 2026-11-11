@@ -46,39 +46,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetParam
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetParam()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-IF (PRESENT(isInitiated)) isInitiated = obj%isInit
-IF (PRESENT(fieldType)) fieldType = obj%fieldType
-IF (PRESENT(name)) name = obj%name%chars()
-IF (PRESENT(engine)) engine = obj%engine%chars()
-IF (PRESENT(comm)) comm = obj%comm
-IF (PRESENT(myRank)) myRank = obj%myRank
-IF (PRESENT(numProcs)) numProcs = obj%numProcs
-IF (PRESENT(global_n)) global_n = obj%global_n
-IF (PRESENT(local_n)) local_n = obj%local_n
-IF (PRESENT(is)) is = obj%is
-IF (PRESENT(ie)) ie = obj%ie
-IF (PRESENT(lis_ptr)) lis_ptr = obj%lis_ptr
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_GetParam
-
-!----------------------------------------------------------------------------
 !                                                                     GetName
 !----------------------------------------------------------------------------
 

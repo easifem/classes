@@ -242,7 +242,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: ii, jj, tsize1
+INTEGER(I4B) :: ii, tsize1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -365,9 +365,8 @@ CALL AssertError1(isok, myName, &
                   ') is not same as tSize ('//ToString(tSize)//')')
 #endif
 
-CALL obj%GetParam(local_n=ii, global_n=jj)
-IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
-IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
+IF (obj%local_n .EQ. 0) CALL obj%SetLocal_n(local_n=obj%tSize)
+IF (obj%global_n .EQ. 0) CALL obj%SetGlobal_n(global_n=obj%tSize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
