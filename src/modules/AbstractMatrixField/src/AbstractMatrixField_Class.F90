@@ -102,7 +102,7 @@ CONTAINS
   PROCEDURE(obj_Shape), DEFERRED, PUBLIC, PASS(obj) :: Shape
   !! Get the shape of the matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate matrix from row and col node field
+  !! Initiate matrix from a row and a column node field
   GENERIC, PUBLIC :: Initiate => Initiate2
 
   ! @IOMethods
@@ -698,16 +698,22 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-11-11
-! summary: Initiate matrix field row and col node field.
+! summary: Initiate a matrix field from a row and a column node field
 !
+! Make the matrix A of y = A * x, where y = rowObj and x = colObj are
+! node fields. Child classes implement this method; this version only
+! raises an error (in debug mode).
+!
+! See also: [[MatrixField_]]
+
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, rowObj, colObj)
     CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
-    !! Matrix field to map rowObj with colObj
+    !! matrix field A of y = A * x
     CLASS(AbstractNodeField_), INTENT(INOUT) :: rowObj
-    !! Abstract field for row dimension
+    !! node field y; gives the rows of obj
     CLASS(AbstractNodeField_), INTENT(INOUT) :: colObj
-    !! Abstract field for col dimension
+    !! node field x; gives the columns of obj
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 

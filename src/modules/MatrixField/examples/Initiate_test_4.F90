@@ -49,8 +49,10 @@ CALL obj%Initiate(rowObj=u1, colObj=u2)
 CALL OK(obj%GetName() .EQ. "u", "Initiate2: name")
 CALL OK(ALL(obj%SHAPE() .EQ. [8, 6]), "Initiate2: shape = [8, 6]")
 CALL OK(obj%mat%csr%nnz .EQ. 32, "Initiate2: nnz = 32")
-CALL OK(ASSOCIATED(obj%rowFedof, u1fedof), "Initiate2: rowFedof is u1 fedof")
-CALL OK(ASSOCIATED(obj%colFedof, u2fedof), "Initiate2: colFedof is u2 fedof")
+CALL OK(ASSOCIATED(obj%rowFedof, u1fedof), &
+        "Initiate2: rowFedof is u1 fedof")
+CALL OK(ASSOCIATED(obj%colFedof, u2fedof), &
+        "Initiate2: colFedof is u2 fedof")
 
 CALL done_testing()
 CALL obj%DEALLOCATE()
