@@ -20,16 +20,16 @@
 
 MODULE STVectorField_Class
 USE AbstractField_Class, ONLY: AbstractField_
-USE VectorField_Class, ONLY: VectorField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: FEVariable_
 USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
+USE GlobalData, ONLY: DFP, DOF_FMT, I4B, LGT, NODES_FMT, NodesToDOF
 USE HDF5File_Class, ONLY: HDF5File_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 USE UserFunction_Class, ONLY: UserFunction_
+USE VectorField_Class, ONLY: VectorField_
 USE VectorField_Class, ONLY: VectorField_
 
 IMPLICIT NONE

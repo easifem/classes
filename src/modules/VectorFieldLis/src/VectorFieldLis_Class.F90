@@ -19,17 +19,25 @@
 ! summary: Vector field data type is defined
 
 MODULE VectorFieldLis_Class
-USE GlobalData, ONLY: DFP, I4B, LGT, DOF_FMT, NODES_FMT, NodesToDOF
-USE BaseType, ONLY: FEVariable_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE VectorField_Class, ONLY: VectorField_
+USE BaseType, ONLY: FEVariable_
+USE DirichletBC_Class, ONLY: DirichletBC_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
 USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDOF_Class, ONLY: FEDOFPointer_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: DOF_FMT
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE GlobalData, ONLY: NODES_FMT
+USE GlobalData, ONLY: NodesToDOF
 USE HDF5File_Class, ONLY: HDF5File_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 USE UserFunction_Class, ONLY: UserFunction_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE VectorField_Class, ONLY: VectorField_
 
 IMPLICIT NONE
 PRIVATE

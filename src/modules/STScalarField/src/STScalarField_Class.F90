@@ -28,15 +28,15 @@ USE DirichletBC_Class, ONLY: DirichletBC_
 USE ExceptionHandler_Class, ONLY: e
 USE FEDOF_Class, ONLY: FEDOFPointer_
 USE FEDOF_Class, ONLY: FEDOF_
-USE GlobalData, ONLY: DFP, I4B, LGT, NodesToDOF, NODES_FMT
+USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE GlobalData, ONLY: DFP, I4B, LGT, NODES_FMT, NodesToDOF
 USE HDF5File_Class, ONLY: HDF5File_
 USE ScalarField_Class, ONLY: ScalarField_
 USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeOpt_Class, ONLY: TimeOpt_
-USE UserFunction_Class, ONLY: UserFunction_
 USE tomlf, ONLY: toml_table
-USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
 
 PRIVATE

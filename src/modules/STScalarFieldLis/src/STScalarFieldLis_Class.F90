@@ -19,16 +19,16 @@
 ! summary: STScalar field data type is defined
 
 MODULE STScalarFieldLis_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE STScalarField_Class, ONLY: STScalarField_
-USE ExceptionHandler_Class, ONLY: e
-USE HDF5File_Class, ONLY: HDF5File_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
-USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
 USE BaseType, ONLY: FEVariable_
+USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE STScalarField_Class, ONLY: STScalarField_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
 
 IMPLICIT NONE
 PRIVATE
