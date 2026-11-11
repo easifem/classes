@@ -200,10 +200,6 @@ CONTAINS
   !! Generic method to import data From toml file
 
   ! @DOFMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalDOF => obj_GetTotalDOF
-  !! Returns the total number of degree of freedoms
-  !! This is same as calling Size
-  !!  This routine should be implemented by child classes
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
     obj_GetFEDOFPointer1
   !! Get the FEDOF pointer, a single pointer is returned
@@ -3217,25 +3213,6 @@ INTERFACE
     !! if nbc is allocated but nbc(ii)%ptr is not associated
     !! then ans(ii)%ptr is null()
   END FUNCTION obj_GetPointNBCPointer
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                    GetTotalDOF@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of degree of freedoms
-!
-!# Introduction
-! This method is same as calling the size function.
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalDOF(obj, tPhysicalVars) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-    INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION obj_GetTotalDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
