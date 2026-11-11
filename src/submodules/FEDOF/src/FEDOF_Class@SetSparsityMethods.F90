@@ -62,19 +62,22 @@ tconn = obj%GetMaxTotalConnectivity()
 CALL Reallocate(conn, tconn)
 telements = obj%mesh%GetTotalElements()
 
-elemLoop: DO iel = 1, telements
-  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
-  IF (.NOT. isok) CYCLE elemLoop
+IF (.NOT. obj%isBrokenSpace) THEN
+  ! Continuous space: the DOFs of each cell are connected to each other
+  elemLoop: DO iel = 1, telements
+    isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
+    IF (.NOT. isok) CYCLE elemLoop
 
-  CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
-                            ans=conn, tsize=tconn, opt=opt_all)
-  DO ii = 1, tconn
-    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), col=conn(1:tconn))
-  END DO
-END DO elemLoop
+    CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                              ans=conn, tsize=tconn, opt=opt_all)
+    DO ii = 1, tconn
+      CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), col=conn(1:tconn))
+    END DO
+  END DO elemLoop
 
-IF (obj%isBrokenSpace) THEN
-! The following code is executed for brokenSpaces
+ELSE
+  ! Broken space: the DOFs of each cell are connected to the DOFs of the
+  ! cell itself and of its active neighbour cells, in one pass
   CALL Reallocate(e2e, obj%mesh%GetMaxElementToElements())
   ii = (SIZE(e2e) + 1) * obj%GetMaxTotalConnectivity()
   CALL Reallocate(e2eConn, ii)
@@ -108,7 +111,6 @@ IF (obj%isBrokenSpace) THEN
 
     ! add sparsity for each dof value in conn
     DO ii = 1, tconn
-      ! TODO: Check if the following method use reallocation at every call
       CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), &
                                  col=e2eConn(1:te2eConn))
     END DO
@@ -296,12 +298,17 @@ CASE ("RECT")
   colfedof => fedofs(2)%ptr
   colMesh => colfedof%GetMeshPointer()
 
-  CALL domainConn%DEALLOCATE()
-  CALL domainConn%InitiateCellToCellData(mesh1=rowMesh, mesh2=colMesh)
-  cellToCell => domainConn%GetCellToCellPointer()
+  IF (ASSOCIATED(rowMesh, colMesh)) THEN
+    ! Same mesh: the cell to cell map is the identity
+    CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, ivar=1, jvar=1)
+  ELSE
+    CALL domainConn%DEALLOCATE()
+    CALL domainConn%InitiateCellToCellData(mesh1=rowMesh, mesh2=colMesh)
+    cellToCell => domainConn%GetCellToCellPointer()
 
-  CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, &
-                            cellToCell=cellToCell, ivar=1, jvar=1)
+    CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, &
+                              cellToCell=cellToCell, ivar=1, jvar=1)
+  END IF
 
 CASE DEFAULT
   loop1: DO ivar = 1, SIZE(fedofs)
@@ -319,6 +326,13 @@ CASE DEFAULT
       colMesh => colfedof%GetMeshPointer()
       IF (.NOT. ASSOCIATED(colMesh)) CYCLE loop2
       IF (colMesh%isEmpty()) CYCLE loop2
+
+      IF (ASSOCIATED(rowMesh, colMesh)) THEN
+        ! Same mesh: the cell to cell map is the identity
+        CALL rowfedof%SetSparsity(mat=mat, col_fedof=colfedof, ivar=ivar, &
+                                  jvar=jvar)
+        CYCLE loop2
+      END IF
 
       CALL domainConn%DEALLOCATE()
       CALL domainConn%InitiateCellToCellData(mesh1=rowMesh, mesh2=colMesh)

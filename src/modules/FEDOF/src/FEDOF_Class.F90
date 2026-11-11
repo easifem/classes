@@ -3543,6 +3543,8 @@ END INTERFACE
 !     broken spaces, controlled by onlyCell.
 !   - 2026-11-11: Remove onlyCell; broken spaces always get the
 !     neighbour-cell couplings.
+!   - 2026-11-12: Broken spaces set the cell and neighbour-cell blocks in
+!     one pass; the cell blocks were set twice before.
 !
 ! Examples
 !
@@ -3634,13 +3636,16 @@ END INTERFACE
 !
 ! Each FEDOF is a physical variable. For a RECTANGLE matrix, fedofs(1) gives
 ! the rows and fedofs(2) the columns. Else the block (ivar, jvar) of mat gets
-! the pattern between fedofs(ivar) and fedofs(jvar); the cell to cell map
-! between their meshes is made by FEDomainConnectivity_. All FEDOF must have
-! the same nsd. Two broken spaces also get neighbour-cell couplings (see
-! [[obj_SetSparsity2]]).
+! the pattern between fedofs(ivar) and fedofs(jvar). If the two FEDOF use
+! the same mesh, the pattern is set by [[obj_SetSparsity4]]; else the cell
+! to cell map between their meshes is made by FEDomainConnectivity_ and the
+! pattern is set by [[obj_SetSparsity2]]. All FEDOF must have the same nsd.
+! Two broken spaces also get neighbour-cell couplings.
 !
 ! Changes:
 !   - 2026-11-07: Add neighbour-cell couplings between two broken spaces.
+!   - 2026-11-12: Two FEDOF on the same mesh use SetSparsity4; the cell to
+!     cell map is not made for them.
 !
 ! Examples
 !
@@ -3714,7 +3719,7 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[obj_SetSparsity1]], [[obj_SetSparsity2]]
+! See also: [[obj_SetSparsity1]], [[obj_SetSparsity2]], [[obj_SetSparsity4]]
 
 INTERFACE FEDOFSetSparsity
   MODULE SUBROUTINE obj_SetSparsity3(fedofs, mat)
