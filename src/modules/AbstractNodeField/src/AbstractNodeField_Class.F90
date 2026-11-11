@@ -204,19 +204,6 @@ CONTAINS
   !! Returns the total number of degree of freedoms
   !! This is same as calling Size
   !!  This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexDOF => &
-    obj_GetTotalVertexDOF
-  !! Returns the total number of vertex degree of freedoms
-  !!  This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalEdgeDOF => obj_GetTotalEdgeDOF
-  !! Returns the total number of edge degree of freedoms
-  !!  This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalFaceDOF => obj_GetTotalFaceDOF
-  !! Returns the total number of face degree of freedoms
-  !!  This routine should be implemented by child classes
-  PROCEDURE, PUBLIC, PASS(obj) :: GetTotalCellDOF => obj_GetTotalCellDOF
-  !! Returns the total number of cell degree of freedoms
-  !!  This routine should be implemented by child classes
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetFEDOFPointer1 => &
     obj_GetFEDOFPointer1
   !! Get the FEDOF pointer, a single pointer is returned
@@ -3249,70 +3236,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: tPhysicalVars
     INTEGER(I4B) :: ans(tPhysicalVars)
   END FUNCTION obj_GetTotalDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                              GetTotalVertexDOF@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of vertex degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalVertexDOF(obj, tPhysicalVars) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-    INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION obj_GetTotalVertexDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 GetTotalEdgeDOF@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Edge degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalEdgeDOF(obj, tPhysicalVars) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-    INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION obj_GetTotalEdgeDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                 GetTotalFaceDOF@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Face degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalFaceDOF(obj, tPhysicalVars) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-    INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION obj_GetTotalFaceDOF
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                GetTotalCellDOF@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-09-22
-! summary:  Returns the total number of Cell degree of freedoms
-
-INTERFACE
-  MODULE FUNCTION obj_GetTotalCellDOF(obj, tPhysicalVars) RESULT(ans)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: tPhysicalVars
-    INTEGER(I4B) :: ans(tPhysicalVars)
-  END FUNCTION obj_GetTotalCellDOF
 END INTERFACE
 
 !----------------------------------------------------------------------------
