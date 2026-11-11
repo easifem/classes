@@ -22,7 +22,7 @@ USE Test_Method, ONLY: OK
 USE VectorField_Class, ONLY: VectorField_
 IMPLICIT NONE
 
-CHARACTER(*), PARAMETER :: tomlFileName = "MatrixField_test.toml"
+CHARACTER(*), PARAMETER :: tomlFileName = "Initiate_test_2.toml"
 REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
 TYPE(FEDomain_) :: dom
 TYPE(FEDOF_), TARGET :: fedof, geofedof

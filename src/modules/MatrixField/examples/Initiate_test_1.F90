@@ -22,7 +22,7 @@ USE ScalarField_Class, ONLY: ScalarField_
 USE Test_Method, ONLY: OK
 IMPLICIT NONE
 
-CHARACTER(*), PARAMETER :: tomlFileName = "MatrixField_test.toml"
+CHARACTER(*), PARAMETER :: tomlFileName = "Initiate_test_1.toml"
 TYPE(FEDomain_) :: dom
 TYPE(FEDOF_), TARGET :: fedof, geofedof
 TYPE(ScalarField_) :: u

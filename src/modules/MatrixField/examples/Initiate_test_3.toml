@@ -1,0 +1,69 @@
+# Common input file for the MatrixField_ tests.
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements
+# {1, 5, 6, 4} and {5, 2, 3, 6}, six nodes.
+# u: scalar field, order 1 Lagrange, 6 DOFs -> 6 x 6 matrix.
+# v: vector field, two space components, 12 DOFs -> 12 x 12 matrix.
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 1
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[v]
+name = "v"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[v.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+
+[v.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[v.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
