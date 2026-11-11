@@ -217,35 +217,41 @@ CONTAINS
   GENERIC, PUBLIC :: GetTimeFEDOFPointer => GetTimeFEDOFPointer1, &
     GetTimeFEDOFPointer2
   !! Generic method to get the TimeFedof_ pointer
-  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc1 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc1 => &
     obj_GetTotalNodeLoc1
   !! Get size of NodeLoc(globalNode, spaceCompo, timeCompo, ivar)
-  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc2 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc2 => &
     obj_GetTotalNodeLoc2
   !! Get size of NodeLoc(AbstractBC, ivar)
-  PROCEDURE, PRIVATE, PASS(obj) :: GetTotalNodeLoc3 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetTotalNodeLoc3 => &
     obj_GetTotalNodeLoc3
   !! Get size of NodeLoc(Vector of AbstractBCPointer, ivar)
-  GENERIC, PUBLIC :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
+  GENERIC, PRIVATE :: GetTotalNodeLoc => GetTotalNodeLoc1, GetTotalNodeLoc2, &
     GetTotalNodeLoc3
   !! Generic method to get the size of NodeLoc
-  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc1 => obj_GetNodeLoc1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc1 => &
+    obj_GetNodeLoc1
   !! Get location of global node number
-  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc2 => obj_GetNodeLoc2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc2 => &
+    obj_GetNodeLoc2
   !! Get location of global node number from AbstractBC
-  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc3 => obj_GetNodeLoc3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc3 => &
+    obj_GetNodeLoc3
   !! Get location of global node number from DirichletBCPointer
-  GENERIC, PUBLIC :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2, &
+  GENERIC, PRIVATE :: GetNodeLoc => GetNodeLoc1, GetNodeLoc2, &
     GetNodeLoc3
   !! Generic method for getting location of nodes
 
-  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_1 => obj_GetNodeLoc_1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc_1 => &
+    obj_GetNodeLoc_1
   !! Like GetNodeLoc1 but without allocation
-  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_2 => obj_GetNodeLoc_2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc_2 => &
+    obj_GetNodeLoc_2
   !! Like GetNodeLoc1 but without allocation
-  PROCEDURE, PRIVATE, PASS(obj) :: GetNodeLoc_3 => obj_GetNodeLoc_3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetNodeLoc_3 => &
+    obj_GetNodeLoc_3
   !! Like GetNodeLoc1 but without allocation
-  GENERIC, PUBLIC :: GetNodeLoc_ => GetNodeLoc_1, GetNodeLoc_2, &
+  GENERIC, PRIVATE :: GetNodeLoc_ => GetNodeLoc_1, GetNodeLoc_2, &
     GetNodeLoc_3
    !! Generic method to get node location
 
