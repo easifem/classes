@@ -358,6 +358,109 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetSparsity3
 
 !----------------------------------------------------------------------------
+!                                                                SetSparsity
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetSparsity4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity4()"
+#endif
+CHARACTER(*), PARAMETER :: opt_all = "A"
+INTEGER(I4B) :: tsize, ii, tdof, iel, telements, col_tdof, &
+                jel, te2e
+LOGICAL(LGT) :: isok, isBroken
+INTEGER(I4B), ALLOCATABLE :: conn(:), col_conn(:), e2e(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%mesh)
+CALL AssertError1(isok, myName, 'obj%mesh NOT ASSOCIATED')
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(col_fedof%mesh)
+CALL AssertError1(isok, myName, 'col_fedof%mesh NOT ASSOCIATED')
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(obj%mesh, col_fedof%mesh)
+CALL AssertError1(isok, myName, &
+                  'obj%mesh and col_fedof%mesh are not same.')
+#endif
+
+#ifdef DEBUG_VER
+tsize = obj%mesh%GetTotalElements()
+isok = tsize .NE. 0_I4B
+CALL AssertError1(isok, myName, "Empty mesh found for obj, returning")
+#endif
+
+tdof = obj%GetMaxTotalConnectivity()
+ALLOCATE (conn(tdof))
+
+col_tdof = col_fedof%GetMaxTotalConnectivity()
+
+! Two broken spaces are also coupled through the neighbour cells
+isBroken = obj%isBrokenSpace .AND. col_fedof%isBrokenSpace
+IF (isBroken) THEN
+  CALL Reallocate(e2e, obj%mesh%GetMaxElementToElements())
+  col_tdof = (SIZE(e2e) + 1) * col_tdof
+END IF
+
+ALLOCATE (col_conn(col_tdof))
+
+telements = obj%mesh%GetTotalElements()
+
+loop1: DO iel = 1, telements
+  ! Check if the element is active
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE loop1
+
+  CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                            ans=conn, tsize=tdof, opt=opt_all)
+
+  CALL col_fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                                  ans=col_conn, tsize=col_tdof, opt=opt_all)
+
+  IF (isBroken) THEN
+    CALL obj%mesh%GetElementToElements_(ans=e2e, tsize=te2e, &
+                                        globalElement=iel, islocal=math%yes)
+
+    loop2: DO ii = 1, te2e
+      jel = obj%mesh%GetLocalElemNumber(globalElement=e2e(ii), &
+                                        islocal=math%no)
+      isok = obj%mesh%IsElementActive(globalElement=jel, islocal=math%yes)
+      IF (.NOT. isok) CYCLE loop2
+
+      CALL col_fedof%GetConnectivity_(globalElement=jel, &
+                                      islocal=math%yes, &
+                                      ans=col_conn(col_tdof + 1:), &
+                                      tsize=tsize, opt=opt_all)
+      col_tdof = col_tdof + tsize
+    END DO loop2
+  END IF
+
+  DO ii = 1, tdof
+    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), &
+                               col=col_conn(1:col_tdof), ivar=ivar, &
+                               jvar=jvar)
+  END DO
+END DO loop1
+
+IF (ALLOCATED(conn)) DEALLOCATE (conn)
+IF (ALLOCATED(col_conn)) DEALLOCATE (col_conn)
+IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetSparsity4
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

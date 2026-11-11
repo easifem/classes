@@ -321,7 +321,10 @@ CONTAINS
   !! Set the sparsity pattern of a matrix
   PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity2 => obj_SetSparsity2
   !! Set the sparsity pattern between two FEDOF
-  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2
+  PROCEDURE, PRIVATE, PASS(obj) :: SetSparsity4 => obj_SetSparsity4
+  !! Set the sparsity pattern between two FEDOF on the same mesh
+  GENERIC, PUBLIC :: SetSparsity => SetSparsity1, SetSparsity2, &
+    SetSparsity4
   !! Set the sparsity pattern of a matrix
 END TYPE FEDOF_
 
@@ -3608,7 +3611,7 @@ END INTERFACE FEDOFSetSparsity
 !   - 2026-11-07: Skip inactive and unmatched elements.
 !   - 2026-11-07: Add neighbour-cell couplings between two broken spaces.
 !
-! See also: [[obj_SetSparsity3]]
+! See also: [[obj_SetSparsity3]], [[obj_SetSparsity4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSparsity2(obj, col_fedof, cellToCell, mat, &
@@ -3729,6 +3732,65 @@ INTERFACE FEDOFSetSparsity
     !! sparse matrix
   END SUBROUTINE obj_SetSparsity3
 END INTERFACE FEDOFSetSparsity
+
+!----------------------------------------------------------------------------
+!                                              SetSparsity@SetSparsityMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Set the sparsity pattern between two FEDOF on the same mesh
+!
+! This method is like [[obj_SetSparsity2]] with an identity cell to cell
+! map: obj and col_fedof must have the same mesh (the same mesh pointer).
+! For each active element iel, the degrees of freedom of iel in obj (rows)
+! are connected to the degrees of freedom of iel in col_fedof (columns), in
+! the block (ivar, jvar) of mat. No FEDomainConnectivity_ is needed.
+!
+! If obj and col_fedof are both broken spaces, the rows of element iel are
+! also connected to the active neighbour cells of iel, as in
+! [[obj_SetSparsity1]] with onlyCell false.
+!
+! The pattern is not finished; the caller finishes it with CSRMatrix
+! SetSparsity(mat). obj and col_fedof can be the same object.
+!
+! Examples
+!
+!```fortran
+! TYPE(FEDOF_) :: obj, col_fedof
+! TYPE(FEDomain_) :: dom
+! TYPE(CSRMatrix_) :: mat
+! ! ... initiate dom from a mesh file ...
+!
+! ! both FEDOF use the mesh of dom
+! CALL obj%Initiate(baseContinuity="H1", &
+!   baseInterpolation="Hierarchical", order=2, dom=dom)
+! CALL col_fedof%Initiate(baseContinuity="H1", &
+!   baseInterpolation="Hierarchical", order=1, dom=dom)
+! ! ... initiate mat (RECTANGLE) with the DOFs of obj and col_fedof ...
+!
+! CALL obj%SetSparsity(col_fedof=col_fedof, mat=mat, ivar=1, jvar=1)
+! CALL CSRMatrixSetSparsity(mat)
+!```
+!
+! Full example: src/modules/FEDOF/examples/SetSparsity_test_5.F90
+!
+! See also: [[obj_SetSparsity2]], [[obj_SetSparsity3]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetSparsity4(obj, col_fedof, mat, ivar, jvar)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    !! FEDOF object
+    CLASS(FEDOF_), INTENT(INOUT) :: col_fedof
+    !! FEDOF of the columns
+    TYPE(CSRMatrix_), INTENT(INOUT) :: mat
+    !! sparse matrix
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! physical variable of the rows
+    INTEGER(I4B), INTENT(IN) :: jvar
+    !! physical variable of the columns
+  END SUBROUTINE obj_SetSparsity4
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                  GetFEPointer@GetMethods
