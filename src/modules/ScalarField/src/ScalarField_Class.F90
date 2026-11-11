@@ -364,10 +364,6 @@ INTERFACE
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
-INTERFACE ScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
-END INTERFACE ScalarFieldInitiate
-
 !----------------------------------------------------------------------------
 !                                                    Final@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -399,15 +395,11 @@ END INTERFACE
 !
 ! See also: [[obj_ScalarFieldSafeAllocate1]]
 
-INTERFACE
+INTERFACE ScalarFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(ScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! vector of scalar field pointers
   END SUBROUTINE obj_Deallocate_ptr_vector
-END INTERFACE
-
-INTERFACE ScalarFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE ScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -424,17 +416,13 @@ END INTERFACE ScalarFieldDeallocate
 !
 ! See also: [[obj_Deallocate_ptr_vector]]
 
-INTERFACE
+INTERFACE ScalarFieldSafeAllocate
   MODULE SUBROUTINE obj_ScalarFieldSafeAllocate1(obj, newsize)
     TYPE(ScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! allocatable scalar field pointer
     INTEGER(I4B), INTENT(IN) :: newsize
     !! new size of obj
   END SUBROUTINE obj_ScalarFieldSafeAllocate1
-END INTERFACE
-
-INTERFACE ScalarFieldSafeAllocate
-  MODULE PROCEDURE obj_ScalarFieldSafeAllocate1
 END INTERFACE ScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
@@ -1701,10 +1689,6 @@ INTERFACE
   END SUBROUTINE obj_ApplyBodySource1
 END INTERFACE
 
-INTERFACE ScalarFieldApplyBodySource
-  MODULE PROCEDURE obj_ApplyBodySource1
-END INTERFACE ScalarFieldApplyBodySource
-
 !----------------------------------------------------------------------------
 !                                           ApplyBodySource@BodySourceMethods
 !----------------------------------------------------------------------------
@@ -1732,10 +1716,6 @@ INTERFACE
     !! obj = obj + scale * bodySource integral
   END SUBROUTINE obj_ApplyBodySource2
 END INTERFACE
-
-INTERFACE ScalarFieldApplyBodySource
-  MODULE PROCEDURE obj_ApplyBodySource2
-END INTERFACE ScalarFieldApplyBodySource
 
 !----------------------------------------------------------------------------
 !                                                     SetFromToml@TomlMethods
@@ -1791,10 +1771,6 @@ INTERFACE
   END SUBROUTINE obj_Import
 END INTERFACE
 
-INTERFACE ScalarFieldImport
-  MODULE PROCEDURE obj_Import
-END INTERFACE ScalarFieldImport
-
 !----------------------------------------------------------------------------
 !                                                           Export@HDFMethods
 !----------------------------------------------------------------------------
@@ -1817,10 +1793,6 @@ INTERFACE
     !! group in the file
   END SUBROUTINE obj_Export
 END INTERFACE
-
-INTERFACE ScalarFieldExport
-  MODULE PROCEDURE obj_Export
-END INTERFACE ScalarFieldExport
 
 !----------------------------------------------------------------------------
 !                                                      ExportToVTK@VTKMethods
