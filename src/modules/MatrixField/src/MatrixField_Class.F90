@@ -234,75 +234,75 @@ CONTAINS
   !! Get the size of the matrix
   PROCEDURE, PUBLIC, PASS(obj) :: Shape => obj_Shape
   !! Get the shape of the matrix
-  PROCEDURE, PRIVATE, PASS(obj) :: Get1 => obj_Get1
+  PROCEDURE, PUBLIC, PASS(obj) :: Get1 => obj_Get1
   !! Get an element matrix
-  PROCEDURE, PRIVATE, PASS(obj) :: Get2 => obj_Get2
+  PROCEDURE, PUBLIC, PASS(obj) :: Get2 => obj_Get2
   !! Get a single entry by node and dof
-  PROCEDURE, PRIVATE, PASS(obj) :: Get3 => obj_Get3
+  PROCEDURE, PUBLIC, PASS(obj) :: Get3 => obj_Get3
   !! Get the block of two physical variables
-  PROCEDURE, PRIVATE, PASS(obj) :: Get4 => obj_Get4
+  PROCEDURE, PUBLIC, PASS(obj) :: Get4 => obj_Get4
   !! Get the block of two degrees of freedom
-  PROCEDURE, PRIVATE, PASS(obj) :: Get5 => obj_Get5
+  PROCEDURE, PUBLIC, PASS(obj) :: Get5 => obj_Get5
   !! Get a single entry by physical variable and dof
-  PROCEDURE, PRIVATE, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, PUBLIC, PASS(obj) :: Get6 => obj_Get6
   !! Get a single entry by space and time components
-  PROCEDURE, PRIVATE, PASS(obj) :: Get7 => obj_Get7
+  PROCEDURE, PUBLIC, PASS(obj) :: Get7 => obj_Get7
   !! Get a block of nodes and components
 
   ! @GetRowMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: GetRow1 => obj_GetRow1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow1 => obj_GetRow1
   !! Get a row given by node and dof
-  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetRow2 => obj_GetRow2
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetRow2 => obj_GetRow2
   !! Get a row given by node, physical variable and dof
-  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: GetRow3 => obj_GetRow3
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetRow3 => obj_GetRow3
   !! Get a row given by node and components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetRow4 => obj_GetRow4
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow4 => obj_GetRow4
   !! Get rows of a node for several time components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetRow5 => obj_GetRow5
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow5 => obj_GetRow5
   !! Get rows of a node for several space components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetRow6 => obj_GetRow6
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow6 => obj_GetRow6
   !! Get rows of several nodes and time components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetRow7 => obj_GetRow7
+  PROCEDURE, PUBLIC, PASS(obj) :: GetRow7 => obj_GetRow7
   !! Get rows of several nodes and space components
 
   ! @GetColMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: GetColumn1 => obj_GetColumn1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn1 => obj_GetColumn1
   !! Get a column given by node and dof
-  PROCEDURE, PRIVATE, PASS(obj) :: GetColumn2 => obj_GetColumn2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn2 => obj_GetColumn2
   !! Get a column given by node, physical variable and dof
-  PROCEDURE, PRIVATE, PASS(obj) :: GetColumn3 => obj_GetColumn3
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn3 => obj_GetColumn3
   !! Get a column given by node and components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetColumn4 => obj_GetColumn4
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn4 => obj_GetColumn4
   !! Get columns of a node for several time components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetColumn5 => obj_GetColumn5
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn5 => obj_GetColumn5
   !! Get columns of a node for several space components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetColumn6 => obj_GetColumn6
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn6 => obj_GetColumn6
   !! Get columns of several nodes and time components
-  PROCEDURE, PRIVATE, PASS(obj) :: GetColumn7 => obj_GetColumn7
+  PROCEDURE, PUBLIC, PASS(obj) :: GetColumn7 => obj_GetColumn7
   !! Get columns of several nodes and space components
 
   ! @SetMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, PUBLIC, PASS(obj) :: Set1 => obj_Set1
   !! Set an element matrix
-  PROCEDURE, PRIVATE, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, PUBLIC, PASS(obj) :: Set2 => obj_Set2
   !! Set all entries, or a block of nodes, to a scalar
-  PROCEDURE, PRIVATE, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, PUBLIC, PASS(obj) :: Set3 => obj_Set3
   !! Set a single entry by node and dof
-  PROCEDURE, PRIVATE, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, PUBLIC, PASS(obj) :: Set4 => obj_Set4
   !! Set the block of two physical variables
-  PROCEDURE, PRIVATE, PASS(obj) :: Set5 => obj_Set5
+  PROCEDURE, PUBLIC, PASS(obj) :: Set5 => obj_Set5
   !! Set the block of two degrees of freedom
-  PROCEDURE, PRIVATE, PASS(obj) :: Set6 => obj_Set6
+  PROCEDURE, PUBLIC, PASS(obj) :: Set6 => obj_Set6
   !! Set a single entry by physical variable and dof
-  PROCEDURE, PRIVATE, PASS(obj) :: Set7 => obj_Set7
+  PROCEDURE, PUBLIC, PASS(obj) :: Set7 => obj_Set7
   !! Set a single entry by space and time components
-  PROCEDURE, PRIVATE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PUBLIC, PASS(obj) :: Set8 => obj_Set8
   !! Set a block of nodes and components to a scalar
-  PROCEDURE, PRIVATE, PASS(obj) :: Set9 => obj_Set9
+  PROCEDURE, PUBLIC, PASS(obj) :: Set9 => obj_Set9
   !! Set a block of nodes and time components to a scalar
-  PROCEDURE, PRIVATE, PASS(obj) :: Set10 => obj_Set10
+  PROCEDURE, PUBLIC, PASS(obj) :: Set10 => obj_Set10
   !! Set a block of nodes and space components to a scalar
-  PROCEDURE, PRIVATE, PASS(obj) :: Set11 => obj_Set11
+  PROCEDURE, PUBLIC, PASS(obj) :: Set11 => obj_Set11
   !! Set or add another matrix field
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromSTMatrix => obj_SetFromSTMatrix
   !! Set a time block of a space-time matrix into obj
@@ -311,49 +311,49 @@ CONTAINS
 
   ! SET:
   ! @SetRowMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: SetRow1 => obj_SetRow1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow1 => obj_SetRow1
   !! Set a row given by node and dof
-  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: SetRow2 => obj_SetRow2
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetRow2 => obj_SetRow2
   !! Set a row given by node, physical variable and dof
-  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: SetRow3 => obj_SetRow3
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetRow3 => obj_SetRow3
   !! Set a row given by node and components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetRow4 => obj_SetRow4
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow4 => obj_SetRow4
   !! Set rows of a node for several time components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetRow5 => obj_SetRow5
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow5 => obj_SetRow5
   !! Set rows of a node for several space components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetRow6 => obj_SetRow6
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow6 => obj_SetRow6
   !! Set rows of several nodes and time components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetRow7 => obj_SetRow7
+  PROCEDURE, PUBLIC, PASS(obj) :: SetRow7 => obj_SetRow7
   !! Set rows of several nodes and space components
 
   ! @SetColMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: SetColumn1 => obj_SetColumn1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn1 => obj_SetColumn1
   !! Set a column given by node and dof
-  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: SetColumn2 => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetColumn2 => &
     obj_SetColumn2
   !! Set a column given by node, physical variable and dof
-  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: SetColumn3 => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetColumn3 => &
     obj_SetColumn3
   !! Set a column given by node and components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetColumn4 => obj_SetColumn4
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn4 => obj_SetColumn4
   !! Set columns of a node for several time components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetColumn5 => obj_SetColumn5
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn5 => obj_SetColumn5
   !! Set columns of a node for several space components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetColumn6 => obj_SetColumn6
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn6 => obj_SetColumn6
   !! Set columns of several nodes and time components
-  PROCEDURE, PRIVATE, PASS(obj) :: SetColumn7 => obj_SetColumn7
+  PROCEDURE, PUBLIC, PASS(obj) :: SetColumn7 => obj_SetColumn7
   !! Set columns of several nodes and space components
 
   ! @MatvecMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: Matvec1 => obj_Matvec1
+  PROCEDURE, PUBLIC, PASS(obj) :: Matvec1 => obj_Matvec1
   !! Matrix vector multiplication with Fortran arrays
-  PROCEDURE, PRIVATE, PASS(obj) :: Matvec2 => obj_Matvec2
+  PROCEDURE, PUBLIC, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication with node fields
 
   ! @LUSolveMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: ILUSOLVE1 => obj_ILUSOLVE1
+  PROCEDURE, PUBLIC, PASS(obj) :: ILUSOLVE1 => obj_ILUSOLVE1
   !! Solve (LU) sol = rhs with Fortran arrays
-  PROCEDURE, PRIVATE, PASS(obj) :: ILUSOLVE2 => obj_ILUSOLVE2
+  PROCEDURE, PUBLIC, PASS(obj) :: ILUSOLVE2 => obj_ILUSOLVE2
   !! Solve (LU) sol = rhs with node fields
 
   ! @PreconditionMethods
@@ -382,7 +382,7 @@ CONTAINS
   !! Largest eigenvalues of a symmetric matrix
 
   ! @DBCMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   !! Apply the Dirichlet boundary condition to the matrix
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1
   !! Generic method to apply the Dirichlet boundary condition

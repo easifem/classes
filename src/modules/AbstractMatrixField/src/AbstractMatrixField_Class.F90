@@ -71,6 +71,10 @@ PUBLIC :: AbstractMatrixFieldSetFEDOF
 ! Changes:
 !   - 2026-11-11: Added the row and column FEDOF pointers, see
 !     [[AbstractMatrixFieldSetFEDOF]].
+!   - 2026-11-12: The specific bindings behind the Set, SetRow, SetColumn,
+!     Get, GetRow, GetColumn, Matvec and ILUSOLVE generics are PUBLIC, so
+!     that child types in other modules can override them (a PRIVATE
+!     binding is not overridden from another module). Call the generics.
 !
 ! See also: [[MatrixField_]], [[AbstractNodeField_]]
 
@@ -134,17 +138,17 @@ CONTAINS
   !! Generic method to get the column FEDOF pointers
 
   ! @MatVecMethods
-  PROCEDURE(obj_Matvec1), DEFERRED, PRIVATE, PASS(obj) :: Matvec1
+  PROCEDURE(obj_Matvec1), DEFERRED, PUBLIC, PASS(obj) :: Matvec1
   !! Matrix vector multiplication, x and y are Fortran arrays
-  PROCEDURE(obj_Matvec2), DEFERRED, PRIVATE, PASS(obj) :: Matvec2
+  PROCEDURE(obj_Matvec2), DEFERRED, PUBLIC, PASS(obj) :: Matvec2
   !! Matrix vector multiplication, x and y are node fields
   GENERIC, PUBLIC :: Matvec => Matvec1, Matvec2
   !! Generic matrix vector multiplication
 
   ! @ILUSolveMethods
-  PROCEDURE(obj_ILUSOLVE1), PRIVATE, DEFERRED, PASS(obj) :: ILUSOLVE1
+  PROCEDURE(obj_ILUSOLVE1), PUBLIC, DEFERRED, PASS(obj) :: ILUSOLVE1
   !! Solve (LU) sol = rhs, sol and rhs are Fortran arrays
-  PROCEDURE(obj_ILUSOLVE2), PRIVATE, DEFERRED, PASS(obj) :: ILUSOLVE2
+  PROCEDURE(obj_ILUSOLVE2), PUBLIC, DEFERRED, PASS(obj) :: ILUSOLVE2
   !! Solve (LU) sol = rhs, sol and rhs are node fields
   GENERIC, PUBLIC :: ILUSOLVE => ILUSOLVE1, ILUSOLVE2
   !! Generic solver with the incomplete LU preconditioner
@@ -178,121 +182,121 @@ CONTAINS
   !! Plot the sparsity pattern
 
   ! @SetMethods
-  PROCEDURE(obj_Set1), PRIVATE, DEFERRED, PASS(obj) :: Set1
+  PROCEDURE(obj_Set1), PUBLIC, DEFERRED, PASS(obj) :: Set1
   !! Set an element matrix
-  PROCEDURE(obj_Set2), PRIVATE, DEFERRED, PASS(obj) :: Set2
+  PROCEDURE(obj_Set2), PUBLIC, DEFERRED, PASS(obj) :: Set2
   !! Set all entries, or a block of nodes, to a scalar
-  PROCEDURE(obj_Set3), PRIVATE, DEFERRED, PASS(obj) :: Set3
+  PROCEDURE(obj_Set3), PUBLIC, DEFERRED, PASS(obj) :: Set3
   !! Set a single entry by node and degree of freedom
-  PROCEDURE(obj_Set4), PRIVATE, DEFERRED, PASS(obj) :: Set4
+  PROCEDURE(obj_Set4), PUBLIC, DEFERRED, PASS(obj) :: Set4
   !! Set the block of two physical variables
-  PROCEDURE(obj_Set5), PRIVATE, DEFERRED, PASS(obj) :: Set5
+  PROCEDURE(obj_Set5), PUBLIC, DEFERRED, PASS(obj) :: Set5
   !! Set the block of two degrees of freedom
-  PROCEDURE(obj_Set6), PRIVATE, DEFERRED, PASS(obj) :: Set6
+  PROCEDURE(obj_Set6), PUBLIC, DEFERRED, PASS(obj) :: Set6
   !! Set a single entry by physical variable and dof
-  PROCEDURE(obj_Set7), PRIVATE, DEFERRED, PASS(obj) :: Set7
+  PROCEDURE(obj_Set7), PUBLIC, DEFERRED, PASS(obj) :: Set7
   !! Set a single entry by space and time components
-  PROCEDURE(obj_Set8), PRIVATE, DEFERRED, PASS(obj) :: Set8
+  PROCEDURE(obj_Set8), PUBLIC, DEFERRED, PASS(obj) :: Set8
   !! Set a block of nodes and components to a scalar
-  PROCEDURE(obj_Set9), PRIVATE, DEFERRED, PASS(obj) :: Set9
+  PROCEDURE(obj_Set9), PUBLIC, DEFERRED, PASS(obj) :: Set9
   !! Set a block of nodes and time components to a scalar
-  PROCEDURE(obj_Set10), PRIVATE, DEFERRED, PASS(obj) :: Set10
+  PROCEDURE(obj_Set10), PUBLIC, DEFERRED, PASS(obj) :: Set10
   !! Set a block of nodes and space components to a scalar
-  PROCEDURE(obj_Set11), PRIVATE, DEFERRED, PASS(obj) :: Set11
+  PROCEDURE(obj_Set11), PUBLIC, DEFERRED, PASS(obj) :: Set11
   !! Set or add another matrix field
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
     Set6, Set7, Set8, Set9, Set10, Set11
   !! Generic method to set entries
 
   ! @SetRow
-  PROCEDURE(obj_SetRow1), PRIVATE, DEFERRED, PASS(obj) :: SetRow1
+  PROCEDURE(obj_SetRow1), PUBLIC, DEFERRED, PASS(obj) :: SetRow1
   !! Set a row given by node and dof
-  PROCEDURE(obj_SetRow2), PRIVATE, DEFERRED, PASS(obj) :: SetRow2
+  PROCEDURE(obj_SetRow2), PUBLIC, DEFERRED, PASS(obj) :: SetRow2
   !! Set a row given by node, physical variable and dof
-  PROCEDURE(obj_SetRow3), PRIVATE, DEFERRED, PASS(obj) :: SetRow3
+  PROCEDURE(obj_SetRow3), PUBLIC, DEFERRED, PASS(obj) :: SetRow3
   !! Set a row given by node and components
-  PROCEDURE(obj_SetRow4), PRIVATE, DEFERRED, PASS(obj) :: SetRow4
+  PROCEDURE(obj_SetRow4), PUBLIC, DEFERRED, PASS(obj) :: SetRow4
   !! Set rows of a node for several time components
-  PROCEDURE(obj_SetRow5), PRIVATE, DEFERRED, PASS(obj) :: SetRow5
+  PROCEDURE(obj_SetRow5), PUBLIC, DEFERRED, PASS(obj) :: SetRow5
   !! Set rows of a node for several space components
-  PROCEDURE(obj_SetRow6), PRIVATE, DEFERRED, PASS(obj) :: SetRow6
+  PROCEDURE(obj_SetRow6), PUBLIC, DEFERRED, PASS(obj) :: SetRow6
   !! Set rows of several nodes and time components
-  PROCEDURE(obj_SetRow7), PRIVATE, DEFERRED, PASS(obj) :: SetRow7
+  PROCEDURE(obj_SetRow7), PUBLIC, DEFERRED, PASS(obj) :: SetRow7
   !! Set rows of several nodes and space components
   GENERIC, PUBLIC :: SetRow => SetRow1, SetRow2, SetRow3, &
     SetRow4, SetRow5, SetRow6, SetRow7
   !! Generic method to set rows
 
   ! @SetColumn
-  PROCEDURE(obj_SetColumn1), PRIVATE, DEFERRED, PASS(obj) :: SetColumn1
+  PROCEDURE(obj_SetColumn1), PUBLIC, DEFERRED, PASS(obj) :: SetColumn1
   !! Set a column given by node and dof
-  PROCEDURE(obj_SetColumn2), PRIVATE, DEFERRED, PASS(obj) :: SetColumn2
+  PROCEDURE(obj_SetColumn2), PUBLIC, DEFERRED, PASS(obj) :: SetColumn2
   !! Set a column given by node, physical variable and dof
-  PROCEDURE(obj_SetColumn3), PRIVATE, DEFERRED, PASS(obj) :: SetColumn3
+  PROCEDURE(obj_SetColumn3), PUBLIC, DEFERRED, PASS(obj) :: SetColumn3
   !! Set a column given by node and components
-  PROCEDURE(obj_SetColumn4), PRIVATE, DEFERRED, PASS(obj) :: SetColumn4
+  PROCEDURE(obj_SetColumn4), PUBLIC, DEFERRED, PASS(obj) :: SetColumn4
   !! Set columns of a node for several time components
-  PROCEDURE(obj_SetColumn5), PRIVATE, DEFERRED, PASS(obj) :: SetColumn5
+  PROCEDURE(obj_SetColumn5), PUBLIC, DEFERRED, PASS(obj) :: SetColumn5
   !! Set columns of a node for several space components
-  PROCEDURE(obj_SetColumn6), PRIVATE, DEFERRED, PASS(obj) :: SetColumn6
+  PROCEDURE(obj_SetColumn6), PUBLIC, DEFERRED, PASS(obj) :: SetColumn6
   !! Set columns of several nodes and time components
-  PROCEDURE(obj_SetColumn7), PRIVATE, DEFERRED, PASS(obj) :: SetColumn7
+  PROCEDURE(obj_SetColumn7), PUBLIC, DEFERRED, PASS(obj) :: SetColumn7
   !! Set columns of several nodes and space components
   GENERIC, PUBLIC :: SetColumn => SetColumn1, SetColumn2, &
     SetColumn3, SetColumn4, SetColumn5, SetColumn6, SetColumn7
   !! Generic method to set columns
 
   ! @GetMethods
-  PROCEDURE(obj_Get1), PRIVATE, DEFERRED, PASS(obj) :: Get1
+  PROCEDURE(obj_Get1), PUBLIC, DEFERRED, PASS(obj) :: Get1
   !! Get an element matrix
-  PROCEDURE(obj_Get2), PRIVATE, DEFERRED, PASS(obj) :: Get2
+  PROCEDURE(obj_Get2), PUBLIC, DEFERRED, PASS(obj) :: Get2
   !! Get a single entry by node and dof
-  PROCEDURE(obj_Get3), PRIVATE, DEFERRED, PASS(obj) :: Get3
+  PROCEDURE(obj_Get3), PUBLIC, DEFERRED, PASS(obj) :: Get3
   !! Get the block of two physical variables
-  PROCEDURE(obj_Get4), PRIVATE, DEFERRED, PASS(obj) :: Get4
+  PROCEDURE(obj_Get4), PUBLIC, DEFERRED, PASS(obj) :: Get4
   !! Get the block of two degrees of freedom
-  PROCEDURE(obj_Get5), PRIVATE, DEFERRED, PASS(obj) :: Get5
+  PROCEDURE(obj_Get5), PUBLIC, DEFERRED, PASS(obj) :: Get5
   !! Get a single entry by physical variable and dof
-  PROCEDURE(obj_Get6), PRIVATE, DEFERRED, PASS(obj) :: Get6
+  PROCEDURE(obj_Get6), PUBLIC, DEFERRED, PASS(obj) :: Get6
   !! Get a single entry by space and time components
-  PROCEDURE(obj_Get7), PRIVATE, DEFERRED, PASS(obj) :: Get7
+  PROCEDURE(obj_Get7), PUBLIC, DEFERRED, PASS(obj) :: Get7
   !! Get a block of nodes and components
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6, Get7
   !! Generic method to get entries
 
   ! @GetColumn
-  PROCEDURE(obj_GetColumn1), PRIVATE, DEFERRED, PASS(obj) :: GetColumn1
+  PROCEDURE(obj_GetColumn1), PUBLIC, DEFERRED, PASS(obj) :: GetColumn1
   !! Get a column given by node and dof
-  PROCEDURE(obj_GetColumn2), PRIVATE, DEFERRED, PASS(obj) :: GetColumn2
+  PROCEDURE(obj_GetColumn2), PUBLIC, DEFERRED, PASS(obj) :: GetColumn2
   !! Get a column given by node, physical variable and dof
-  PROCEDURE(obj_GetColumn3), PRIVATE, DEFERRED, PASS(obj) :: GetColumn3
+  PROCEDURE(obj_GetColumn3), PUBLIC, DEFERRED, PASS(obj) :: GetColumn3
   !! Get a column given by node and components
-  PROCEDURE(obj_GetColumn4), PRIVATE, DEFERRED, PASS(obj) :: GetColumn4
+  PROCEDURE(obj_GetColumn4), PUBLIC, DEFERRED, PASS(obj) :: GetColumn4
   !! Get columns of a node for several time components
-  PROCEDURE(obj_GetColumn5), PRIVATE, DEFERRED, PASS(obj) :: GetColumn5
+  PROCEDURE(obj_GetColumn5), PUBLIC, DEFERRED, PASS(obj) :: GetColumn5
   !! Get columns of a node for several space components
-  PROCEDURE(obj_GetColumn6), PRIVATE, DEFERRED, PASS(obj) :: GetColumn6
+  PROCEDURE(obj_GetColumn6), PUBLIC, DEFERRED, PASS(obj) :: GetColumn6
   !! Get columns of several nodes and time components
-  PROCEDURE(obj_GetColumn7), PRIVATE, DEFERRED, PASS(obj) :: GetColumn7
+  PROCEDURE(obj_GetColumn7), PUBLIC, DEFERRED, PASS(obj) :: GetColumn7
   !! Get columns of several nodes and space components
   GENERIC, PUBLIC :: GetColumn => GetColumn1, GetColumn2, &
     GetColumn3, GetColumn4, GetColumn5, GetColumn6, GetColumn7
   !! Generic method to get columns
 
   ! @GetRow
-  PROCEDURE(obj_GetRow1), PRIVATE, DEFERRED, PASS(obj) :: GetRow1
+  PROCEDURE(obj_GetRow1), PUBLIC, DEFERRED, PASS(obj) :: GetRow1
   !! Get a row given by node and dof
-  PROCEDURE(obj_GetRow2), PRIVATE, DEFERRED, PASS(obj) :: GetRow2
+  PROCEDURE(obj_GetRow2), PUBLIC, DEFERRED, PASS(obj) :: GetRow2
   !! Get a row given by node, physical variable and dof
-  PROCEDURE(obj_GetRow3), PRIVATE, DEFERRED, PASS(obj) :: GetRow3
+  PROCEDURE(obj_GetRow3), PUBLIC, DEFERRED, PASS(obj) :: GetRow3
   !! Get a row given by node and components
-  PROCEDURE(obj_GetRow4), PRIVATE, DEFERRED, PASS(obj) :: GetRow4
+  PROCEDURE(obj_GetRow4), PUBLIC, DEFERRED, PASS(obj) :: GetRow4
   !! Get rows of a node for several time components
-  PROCEDURE(obj_GetRow5), PRIVATE, DEFERRED, PASS(obj) :: GetRow5
+  PROCEDURE(obj_GetRow5), PUBLIC, DEFERRED, PASS(obj) :: GetRow5
   !! Get rows of a node for several space components
-  PROCEDURE(obj_GetRow6), PRIVATE, DEFERRED, PASS(obj) :: GetRow6
+  PROCEDURE(obj_GetRow6), PUBLIC, DEFERRED, PASS(obj) :: GetRow6
   !! Get rows of several nodes and time components
-  PROCEDURE(obj_GetRow7), PRIVATE, DEFERRED, PASS(obj) :: GetRow7
+  PROCEDURE(obj_GetRow7), PUBLIC, DEFERRED, PASS(obj) :: GetRow7
   !! Get rows of several nodes and space components
   GENERIC, PUBLIC :: GetRow => GetRow1, GetRow2, &
     GetRow3, GetRow4, GetRow5, GetRow6, GetRow7

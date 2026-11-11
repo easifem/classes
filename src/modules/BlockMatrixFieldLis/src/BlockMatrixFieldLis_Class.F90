@@ -65,7 +65,7 @@ CONTAINS
   !! export matrix field in hdf5file_
 
   ! @MatvecMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: Matvec2 => obj_Matvec2
+  PROCEDURE, PUBLIC, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
 END TYPE BlockMatrixFieldLis_
 

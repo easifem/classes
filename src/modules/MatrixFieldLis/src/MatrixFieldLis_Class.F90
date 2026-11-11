@@ -77,11 +77,11 @@ CONTAINS
   !! export matrix field in hdf5file_
 
   ! @MatvecMethods
-  PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
+  PROCEDURE, PUBLIC, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
 
   ! @DBCMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   !! Apply dirichlet boundary condition
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBCtoRHS => &
     obj_ApplyDirichletBCToRHS
