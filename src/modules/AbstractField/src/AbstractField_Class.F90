@@ -232,11 +232,36 @@ END INTERFACE AbstractFieldInitiate
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-11-11
-! summary: Deallocate [[AbstractField_]]
+! summary: Deallocate the data common to all fields
 !
+! This routine resets the data of [[AbstractField_]] to the default
+! values: isInit is false, fieldType is TypeField%normal, name and engine
+! are empty, numProcs is one, and comm, myRank, global_n, local_n, is, ie
+! and lis_ptr are zero. It does not free the LIS object of lis_ptr; the
+! LIS child classes do that before they call this routine.
+!
+! The child classes call it from their own Deallocate method, see
+! [[AbstractNodeField_:DEALLOCATE]] and [[AbstractMatrixField_]]. Call the
+! type-bound obj%DEALLOCATE() of the child class.
+!
+! Examples
+!
+!```fortran
+! TYPE(ScalarField_) :: obj
+! ! ... initiate obj ...
+! CALL obj%DEALLOCATE()
+! ! inside the Deallocate method of a child class:
+! CALL AbstractFieldDeallocate(obj)
+!```
+!
+! This example still needs a matching test.
+!
+! See also: [[obj_Initiate2]]
+
 INTERFACE AbstractFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
+    !! field
   END SUBROUTINE obj_Deallocate
 END INTERFACE AbstractFieldDeallocate
 
@@ -246,13 +271,37 @@ END INTERFACE AbstractFieldDeallocate
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2026-11-11
-! summary: Display [[AbstractField_]]
+! summary: Display the data common to all fields
 !
+! This routine displays msg and isInitiated. If the field is initiated, it
+! also displays name, fieldType, engine, comm, myRank, numProcs, global_n,
+! local_n, is, ie and lis_ptr.
+!
+! The child classes call it from their own Display method and then
+! display their own data, see [[AbstractNodeField_:Display]] and
+! [[AbstractMatrixField_]]. Call the type-bound obj%Display() of the child
+! class.
+!
+! Examples
+!
+!```fortran
+! TYPE(ScalarField_) :: obj
+! ! ... initiate obj ...
+! CALL obj%Display(msg="scalar field u: ")
+! ! inside the Display method of a child class:
+! CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
+!```
+!
+! This example still needs a matching test.
+
 INTERFACE AbstractFieldDisplay
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
+    !! field
     CHARACTER(*), INTENT(IN) :: msg
+    !! message displayed first
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    !! unit number of the output, default is stdout
   END SUBROUTINE obj_Display
 END INTERFACE AbstractFieldDisplay
 
