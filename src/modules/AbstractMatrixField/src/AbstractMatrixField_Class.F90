@@ -101,6 +101,9 @@ CONTAINS
   !! Get the size of the matrix
   PROCEDURE(obj_Shape), DEFERRED, PUBLIC, PASS(obj) :: Shape
   !! Get the shape of the matrix
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate matrix from row and col node field
+  GENERIC, PUBLIC :: Initiate => Initiate2
 
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
@@ -687,6 +690,25 @@ ABSTRACT INTERFACE
     INTEGER(I4B) :: ans(2)
     !! number of rows and columns
   END FUNCTION obj_Shape
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Initiate matrix field row and col node field.
+!
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, rowObj, colObj)
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    !! Matrix field to map rowObj with colObj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: rowObj
+    !! Abstract field for row dimension
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: colObj
+    !! Abstract field for col dimension
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------

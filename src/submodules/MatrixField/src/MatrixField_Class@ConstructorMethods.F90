@@ -25,9 +25,11 @@ USE AbstractMatrixField_Class, ONLY: AbstractMatrixFieldSetFEDOF
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: DOF_
 USE BaseType, ONLY: TypePrecondOpt
+USE BlockNodeField_Class, ONLY: BlockNodeField_
 USE CSRMatrix_Method, ONLY: ASSIGNMENT(=)
 USE CSRMatrix_Method, ONLY: CSRMatrix_Deallocate => DEALLOCATE
 USE CSRMatrix_Method, ONLY: CSRMatrix_Initiate => Initiate
+USE CSRMatrix_Method, ONLY: CSRMatrix_SetSparsity => SetSparsity
 USE Display_Method, ONLY: ToString
 USE DOF_Method, ONLY: DOF_Deallocate => DEALLOCATE
 USE DOF_Method, ONLY: DOF_Initiate => Initiate
@@ -55,58 +57,37 @@ MODULE PROCEDURE obj_Initiate1
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
 #endif
 
-TYPE(DOF_) :: dofobj
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: ii, tsize, tNodes(1), timeCompo(1), spaceCompo(1), &
-                storageFMT, nrow, ncol
 CHARACTER(*), PARAMETER :: matrixProp = "UNSYM"
-TYPE(String) :: astr
-CHARACTER(1) :: names_char(1)
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: ii, tsize, nrow, ncol
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%DEALLOCATE()
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
 
 #ifdef DEBUG_VER
 isok = obj2%IsInitiated()
 CALL AssertError1(isok, myName, "obj2 is not initiated")
 #endif
 
-CALL AbstractFieldInitiate( &
-  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
-  usePointer=usePointer)
+CALL AbstractFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
+                           copyStructure=copyStructure, &
+                           usePointer=usePointer)
 
 SELECT TYPE (obj2)
 CLASS IS (AbstractNodeField_)
-  ! Initiate dof object
-  tNodes = obj2%GetTotalDOF(tPhysicalVars=1)
-  spaceCompo = obj2%GetSpaceCompo(tPhysicalVars=1)
-  timeCompo = obj2%GetTimeCompo(tPhysicalVars=1)
-  astr = obj2%GetName()
-  storageFMT = mystorageformat
-  names_char(1) (1:1) = astr%Slice(1, 1)
-  CALL DOF_Initiate( &
-    obj=dofobj, tNodes=tNodes, names=names_char, spaceCompo=spaceCompo, &
-    timeCompo=timeCompo, storageFMT=storageFMT)
-
   ! Get nrow and ncol from obj2
   nrow = obj2%SIZE()
   ncol = nrow
 
-#ifdef DEBUG_VER
-  isok = nrow .EQ. (tNodes(1) * spaceCompo(1) * timeCompo(1))
-  CALL AssertError1(isok, myName, &
-                    "nrow should be same as "// &
-                    "tNodes(1) * spaceCompo(1) * timeCompo(1)")
-#endif
-
   ! Initiate CSRMatrix
-  CALL CSRMatrix_Initiate( &
-    obj=obj%mat, nrow=nrow, ncol=ncol, idof=dofobj, jdof=dofobj, &
-    matrixProp=matrixProp)
+  CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=obj2%dof, &
+                          jdof=obj2%dof, matrixProp=matrixProp)
 
   isok = obj%local_n .EQ. 0
   IF (isok) obj%local_n = nrow
@@ -115,13 +96,15 @@ CLASS IS (AbstractNodeField_)
   IF (isok) obj%global_n = nrow
 
   ! square matrix: the columns use the FEDOF of the rows
-  CALL AbstractMatrixFieldSetFEDOF( &
-    obj=obj, rowFedof=obj2%fedof, rowFedofs=obj2%fedofs, &
-    rowGeoFedof=obj2%geofedof, rowGeoFedofs=obj2%geofedofs)
+  CALL AbstractMatrixFieldSetFEDOF(obj=obj, rowFedof=obj2%fedof, &
+                                   rowFedofs=obj2%fedofs, &
+                                   rowGeoFedof=obj2%geofedof, &
+                                   rowGeoFedofs=obj2%geofedofs, &
+                                   colFedofs=obj2%fedofs, &
+                                   colGeoFedof=obj2%geofedof, &
+                                   colGeoFedofs=obj2%geofedofs)
 
   CALL obj%rowFedof%SetSparsity(mat=obj%mat)
-
-  CALL DOF_Deallocate(dofobj)
 
 CLASS IS (MatrixField_)
   obj%mat = obj2%mat
@@ -149,13 +132,6 @@ CLASS IS (MatrixField_)
     obj%subIndices(ii) = obj2%subIndices(ii)
   END DO
 
-#ifdef DEBUG_VER
-
-CLASS DEFAULT
-  CALL AssertError1(math%no, myName, &
-                    'obj2 should an instance of MatrixField_ or its child')
-#endif
-
 END SELECT
 
 #ifdef DEBUG_VER
@@ -163,6 +139,94 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+USE BlockNodeField_Class, ONLY: BlockNodeField_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+CHARACTER(*), PARAMETER :: matrixProp = "UNSYM"
+INTEGER(I4B) :: nrow, ncol
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
+#ifdef DEBUG_VER
+isok = rowObj%IsInitiated()
+CALL AssertError1(isok, myName, "rowObj is not initiated")
+#endif
+
+#ifdef DEBUG_VER
+isok = colObj%IsInitiated()
+CALL AssertError1(isok, myName, "colObj is not initiated")
+#endif
+
+#ifdef DEBUG_VER
+isok = rowObj%GetEngineName() .EQ. colObj%GetEngineName()
+CALL AssertError1(isok, myName, &
+                  "rowObj and colObj do not engine name")
+#endif
+
+#ifdef DEBUG_VER
+SELECT TYPE (rowObj)
+CLASS IS (BlockNodeField_)
+  CALL AssertError1(math%no, myName, &
+                    "This method should not be called for blockNodeField_")
+END SELECT
+#endif
+
+#ifdef DEBUG_VER
+SELECT TYPE (colObj)
+CLASS IS (BlockNodeField_)
+  CALL AssertError1(math%no, myName, &
+                    "This method should not be called for blockNodeField_")
+END SELECT
+#endif
+
+CALL AbstractFieldInitiate(obj=obj, obj2=colObj, copyFull=math%yes)
+
+nrow = rowObj%SIZE()
+ncol = colObj%SIZE()
+
+CALL CSRMatrix_Initiate(obj=obj%mat, nrow=nrow, ncol=ncol, idof=rowObj%dof, &
+                        jdof=colObj%dof, matrixProp=matrixProp)
+
+isok = obj%local_n .EQ. 0
+IF (isok) obj%local_n = nrow
+
+isok = obj%global_n .EQ. 0
+IF (isok) obj%global_n = nrow
+
+! set fedofs
+CALL AbstractMatrixFieldSetFEDOF(obj=obj, rowFedof=rowObj%fedof, &
+                                 rowGeoFedof=rowObj%geofedof, &
+                                 colFedof=colObj%fedof, &
+                                 colGeoFedof=colObj%geofedof)
+
+! Set sparsity
+CALL obj%rowFedof%SetSparsity(mat=obj%mat, col_fedof=obj%colFedof, &
+                              ivar=math%one_i, &
+                              jvar=math%one_i)
+
+! Set final sparsity
+CALL CSRMatrix_SetSparsity(obj=obj%mat)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                               MatrixFieldPreconditionCopy

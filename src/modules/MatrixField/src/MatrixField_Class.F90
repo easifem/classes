@@ -190,7 +190,9 @@ TYPE, EXTENDS(AbstractMatrixField_) :: MatrixField_
 CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate from a node field or another matrix field
+  !! Initiate matrix from a node field or another matrix field
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate matrix from row and col node field
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the field
   FINAL :: obj_Final
@@ -414,47 +416,6 @@ TYPE :: MatrixFieldPointer_
 END TYPE MatrixFieldPointer_
 
 !----------------------------------------------------------------------------
-!                            SetRectangleMatrixFieldParam@ConstructorMethods
-!----------------------------------------------------------------------------
-
-! Removed API, kept for reference: SetRectangleMatrixFieldParam set the
-! parameters of a ParameterList_ for a rectangle MatrixField_, used in
-! mixed finite element formulations. The sizes of physicalVarNames,
-! spaceCompo and timeCompo were 2.
-
-! INTERFACE
-!   MODULE SUBROUTINE SetRectangleMatrixFieldParam( &
-!     param, name, matrixProp, physicalVarNames, spaceCompo, timeCompo, &
-!     engine, fieldType, comm, local_n, global_n)
-!     TYPE(ParameterList_), INTENT(INOUT) :: param
-!     !! Options to create [[BlockMatrixField_]] will be stored in this
-!     CHARACTER(*), INTENT(IN) :: name
-!     !! Name of the matrix field
-!     CHARACTER(*), INTENT(IN) :: matrixProp
-!     !! Matrix property, "SYM" or "UNSYM"
-!     CHARACTER(*), INTENT(IN) :: physicalVarNames(2)
-!     !! Name of physical variables
-!     INTEGER(I4B), INTENT(IN) :: spaceCompo(2)
-!     !! Number of space-components in each physicalVarNames, see [[DOF_]]
-!     INTEGER(I4B), INTENT(IN) :: timeCompo(2)
-!     !! Number of time-components in each physicalVarNames, see [[DOF_]]
-!     CHARACTER(*), OPTIONAL, INTENT(IN) :: engine
-!     !! "NATIVE_SERIE"
-!     !! "LIS_OMP"
-!     !! "LIS_MPI"
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-!     !! fieldType can be following
-!     !! FIELD_TYPE_NORMAL <-- DEFAULT
-!     !! FIELD_TYPE_CONSTANT
-!     !! FIELD_TYPE_CONSTANT_SPACE
-!     !! FIELD_TYPE_CONSTANT_TIME
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
-!   END SUBROUTINE SetRectangleMatrixFieldParam
-! END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -595,6 +556,34 @@ INTERFACE
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
     !! passed to AbstractFieldInitiate
   END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-11
+! summary: Construct a matrix for y = A * x
+!
+! This method create a sparse matrix field from given row and col
+! fields, rowField and colField.
+!
+! We can make matrix for following operations:
+!
+! 1. y = A * x, where both x=colObj and y=rowObj are children of
+! [[AbstractNodeField_]]
+! 2. y = A * B * x, where A = rowObj and B = colObj are both
+! children of [[AbstractMatrixField]]
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, rowObj, colObj)
+    CLASS(MatrixField_), INTENT(INOUT) :: obj
+    !! Matrix field to map rowObj with colObj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: rowObj
+    !! Abstract field for row dimension
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: colObj
+    !! Abstract field for col dimension
+  END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
