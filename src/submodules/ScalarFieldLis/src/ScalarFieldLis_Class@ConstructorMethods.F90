@@ -18,8 +18,6 @@
 SUBMODULE(ScalarFieldLis_Class) ConstructorMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDeallocate
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
-USE ScalarField_Class, ONLY: ScalarFieldInitiate
-
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -85,8 +83,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL ScalarFieldInitiate( &
-  obj=obj, name=name, engine=engine, fieldType=fieldType, &
+CALL obj%ScalarField_%Initiate( &
+  name=name, engine=engine, fieldType=fieldType, &
   storageFMT=storageFMT, comm=comm, local_n=local_n, global_n=global_n, &
   spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
   isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &

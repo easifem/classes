@@ -81,7 +81,7 @@ CONTAINS
   !! Set multiple entries using range
   PROCEDURE, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
   !! Set multiple entries using range
-  PROCEDURE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PUBLIC, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale*obj2
 
   ! @GetMethods

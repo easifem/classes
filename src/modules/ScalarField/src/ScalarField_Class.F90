@@ -41,12 +41,8 @@ PRIVATE
 
 PUBLIC :: ScalarField_
 PUBLIC :: ScalarFieldPointer_
-PUBLIC :: ScalarFieldInitiate
-PUBLIC :: ScalarFieldImport
-PUBLIC :: ScalarFieldExport
 PUBLIC :: ScalarFieldDeallocate
 PUBLIC :: ScalarFieldSafeAllocate
-PUBLIC :: ScalarFieldApplyBodySource
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -88,9 +84,9 @@ CONTAINS
   !! Set selected values using FEVariable
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Copy another scalar field, used for the ASSIGNMENT operator
-  PROCEDURE, PRIVATE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PUBLIC, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale*obj2
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set scalar field using a function
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
