@@ -42,7 +42,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetSparsity1()"
 CHARACTER(*), PARAMETER :: opt_all = "A"
 INTEGER(I4B) :: ii, jj, te2eConn, tconn, iel, telements, te2e
 INTEGER(I4B), ALLOCATABLE :: conn(:), e2e(:), e2eConn(:)
-LOGICAL(LGT) :: isok, onlyCell0
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -62,73 +62,59 @@ tconn = obj%GetMaxTotalConnectivity()
 CALL Reallocate(conn, tconn)
 telements = obj%mesh%GetTotalElements()
 
-onlyCell0 = Input(option=onlyCell, default=math%no)
+elemLoop: DO iel = 1, telements
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE elemLoop
 
-IF (.NOT. obj%isBrokenSpace .OR. onlyCell0) THEN
-  elemLoop: DO iel = 1, telements
-    isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
-    IF (.NOT. isok) CYCLE elemLoop
-
-    CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
-                              ans=conn, tsize=tconn, opt=opt_all)
-    DO ii = 1, tconn
-      CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), col=conn(1:tconn))
-    END DO
-  END DO elemLoop
-
-  CALL CSRMatrix_SetSparsity(mat)
-
-  IF (ALLOCATED(conn)) DEALLOCATE (conn)
-  IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
-  IF (ALLOCATED(e2eConn)) DEALLOCATE (e2eConn)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-! The following code is executed for brokenSpaces
-CALL Reallocate(e2e, obj%mesh%GetMaxElementToElements())
-ii = (SIZE(e2e) + 1) * obj%GetMaxTotalConnectivity()
-CALL Reallocate(e2eConn, ii)
-
-elemLoop2: DO iel = 1, telements
-  isok = obj%mesh%isElementActive(globalElement=iel, islocal=math%yes)
-  IF (.NOT. isok) CYCLE elemLoop2
-
-  ! Get connectivity of fedof for iel
   CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
                             ans=conn, tsize=tconn, opt=opt_all)
-
-  ! Get element to element data for iel
-  CALL obj%mesh%GetElementToElements_(ans=e2e, tsize=te2e, &
-                                      globalElement=iel, islocal=math%yes)
-
-  ! Get connectvity of fedof for each element in e2e
-  te2eConn = tconn
-  e2eConn(1:tconn) = conn(1:tconn)
-  elemLoop3: DO ii = 1, te2e
-    ! Check which neighbor element is active
-    isok = obj%mesh%IsElementActive(globalElement=e2e(ii), &
-                                    islocal=math%no)
-    IF (.NOT. isok) CYCLE elemLoop3
-
-    CALL obj%GetConnectivity_(globalElement=e2e(ii), islocal=math%no, &
-                              ans=e2eConn(te2eConn + 1:), tsize=jj, &
-                              opt=opt_all)
-    te2eConn = te2eConn + jj
-  END DO elemLoop3
-
-  ! add sparsity for each dof value in conn
   DO ii = 1, tconn
-    ! TODO: Check if the following method use reallocation at every call
-    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), &
-                               col=e2eConn(1:te2eConn))
+    CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), col=conn(1:tconn))
   END DO
+END DO elemLoop
 
-END DO elemLoop2
+IF (obj%isBrokenSpace) THEN
+! The following code is executed for brokenSpaces
+  CALL Reallocate(e2e, obj%mesh%GetMaxElementToElements())
+  ii = (SIZE(e2e) + 1) * obj%GetMaxTotalConnectivity()
+  CALL Reallocate(e2eConn, ii)
+
+  elemLoop2: DO iel = 1, telements
+    isok = obj%mesh%isElementActive(globalElement=iel, islocal=math%yes)
+    IF (.NOT. isok) CYCLE elemLoop2
+
+    ! Get connectivity of fedof for iel
+    CALL obj%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                              ans=conn, tsize=tconn, opt=opt_all)
+
+    ! Get element to element data for iel
+    CALL obj%mesh%GetElementToElements_(ans=e2e, tsize=te2e, &
+                                        globalElement=iel, islocal=math%yes)
+
+    ! Get connectvity of fedof for each element in e2e
+    te2eConn = tconn
+    e2eConn(1:tconn) = conn(1:tconn)
+    elemLoop3: DO ii = 1, te2e
+      ! Check which neighbor element is active
+      isok = obj%mesh%IsElementActive(globalElement=e2e(ii), &
+                                      islocal=math%no)
+      IF (.NOT. isok) CYCLE elemLoop3
+
+      CALL obj%GetConnectivity_(globalElement=e2e(ii), islocal=math%no, &
+                                ans=e2eConn(te2eConn + 1:), tsize=jj, &
+                                opt=opt_all)
+      te2eConn = te2eConn + jj
+    END DO elemLoop3
+
+    ! add sparsity for each dof value in conn
+    DO ii = 1, tconn
+      ! TODO: Check if the following method use reallocation at every call
+      CALL CSRMatrix_SetSparsity(obj=mat, row=conn(ii), &
+                                 col=e2eConn(1:te2eConn))
+    END DO
+
+  END DO elemLoop2
+END IF
 
 CALL CSRMatrix_SetSparsity(mat)
 

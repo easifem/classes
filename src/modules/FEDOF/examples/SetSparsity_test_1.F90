@@ -8,6 +8,9 @@
 ! of the elements around node i. For order 2 one degree of freedom is added
 ! on each edge.
 !
+! In a broken space every cell owns its degrees of freedom, and a cell is
+! also connected to its neighbour cells (cells which share an edge).
+!
 ! The mesh very_small_quad4_mesh.h5 is the unit square with four
 ! Quadrangle4 elements (13 to 16) and nine nodes:
 !
@@ -19,6 +22,7 @@
 !
 ! Changes:
 !   - 2026-10-24: Use FEDomain_ (dom=) instead of FEMesh_ (mesh=)
+!   - 2026-11-11: Remove onlyCell; enable the broken space test
 
 PROGRAM main
 USE ArangeUtility, ONLY: Arange
@@ -160,111 +164,55 @@ END BLOCK
 !   CALL OK(isok, obj%GetCaseName()//" order=2 ")
 ! END BLOCK
 
-! testing brokenSpace onlyCell=true
-! BLOCK
-!   REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
-!   LOGICAL(LGT) :: isok
-!   order = 1
-!   CALL obj%Initiate(baseContinuity="H1", &
-!                     baseInterpolation="HIER", &
-!                     isBrokenSpace=math%yes, &
-!                     order=order, dom=dom)
+! Test2: H1, HIER, brokenSpace: cell blocks and neighbour-cell blocks
+BLOCK
+  REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
+  LOGICAL(LGT) :: isok
+  order = 1
+  CALL obj%Initiate(baseContinuity="H1", &
+                    baseInterpolation="HIER", &
+                    isBrokenSpace=math%yes, &
+                    order=order, dom=dom)
 
-!   CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalDOF()], &
-!                    names=["K"], spaceCompo=[1], timeCompo=[1], &
-!                    storageFMT=TypeDOFOpt%storageFormatDOF)
+  CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalDOF()], &
+                   names=["K"], spaceCompo=[1], timeCompo=[1], &
+                   storageFMT=TypeDOFOpt%storageFormatDOF)
 
-!   CALL CSRMatrixInitiate(mat, ncol=DOFSize(dofobj), &
-!                          nrow=DOFSize(dofobj), idof=dofobj, jdof=dofobj)
-!   CALL obj%SetSparsity(mat=mat, onlyCell=math%yes)
+  CALL CSRMatrixInitiate(mat, ncol=DOFSize(dofobj), nrow=DOFSize(dofobj), &
+                         idof=dofobj, jdof=dofobj)
 
-!   ! set all entries of the pattern to 1, and convert to a dense matrix
-!   mat = 1.0_DFP
-!   found = mat
+  CALL obj%SetSparsity(mat=mat)
 
-!   CALL Reallocate(want, 16, 16)
-!   want(1, [1, 2, 3, 4]) = 1.0_DFP
-!   want(2, [1, 2, 3, 4]) = 1.0_DFP
-!   want(3, [1, 2, 3, 4]) = 1.0_DFP
-!   want(4, [1, 2, 3, 4]) = 1.0_DFP
-!   want(5, [5, 6, 7, 8]) = 1.0_DFP
-!   want(6, [5, 6, 7, 8]) = 1.0_DFP
-!   want(7, [5, 6, 7, 8]) = 1.0_DFP
-!   want(8, [5, 6, 7, 8]) = 1.0_DFP
-!   want(9, [9, 10, 11, 12]) = 1.0_DFP
-!   want(10, [9, 10, 11, 12]) = 1.0_DFP
-!   want(11, [9, 10, 11, 12]) = 1.0_DFP
-!   want(12, [9, 10, 11, 12]) = 1.0_DFP
-!   want(13, [13, 14, 15, 16]) = 1.0_DFP
-!   want(14, [13, 14, 15, 16]) = 1.0_DFP
-!   want(15, [13, 14, 15, 16]) = 1.0_DFP
-!   want(16, [13, 14, 15, 16]) = 1.0_DFP
+  ! set all entries of the pattern to 1, and convert to a dense matrix
+  mat = 1.0_DFP
+  found = mat
 
-!   isok = ALL(SHAPE(found) .EQ. [16, 16])
-!   CALL OK(isok, &
-!           obj%GetCaseName()//" BrokenSpaces Shape of sparse matrix is correct")
-!   IF (isok) THEN
-!     do_jj: DO jj = 1, SIZE(want, 2)
-!       do_ii: DO ii = 1, SIZE(want, 1)
-!         isok = found(ii, jj) .EQ. want(ii, jj)
-!         IF (.NOT. isok) EXIT do_jj
-!       END DO do_ii
-!     END DO do_jj
-!   END IF
-!   CALL OK(isok, obj%GetCaseName()//" BrokenSpaces order 1, SetSparsity")
-! END BLOCK
+  CALL Reallocate(want, 16, 16)
+  want(Arange(1, 4), Arange(1, 4)) = math%one
+  want(Arange(1, 4), Arange(5, 8)) = math%one
+  want(Arange(1, 4), Arange(9, 12)) = math%one
+  want(Arange(5, 8), Arange(1, 4)) = math%one
+  want(Arange(5, 8), Arange(5, 8)) = math%one
+  want(Arange(5, 8), Arange(13, 16)) = math%one
+  want(Arange(9, 12), Arange(1, 4)) = math%one
+  want(Arange(9, 12), Arange(9, 12)) = math%one
+  want(Arange(9, 12), Arange(13, 16)) = math%one
+  want(Arange(13, 16), Arange(5, 8)) = math%one
+  want(Arange(13, 16), Arange(9, 12)) = math%one
+  want(Arange(13, 16), Arange(13, 16)) = math%one
 
-! testing brokenSpace onlyCell=false
-! BLOCK
-!   REAL(DFP), ALLOCATABLE :: found(:, :), want(:, :)
-!   LOGICAL(LGT) :: isok
-!   order = 1
-!   CALL obj%Initiate(baseContinuity="H1", &
-!                     baseInterpolation="HIER", &
-!                     isBrokenSpace=math%yes, &
-!                     order=order, dom=dom)
-
-!   CALL DOFInitiate(obj=dofobj, tNodes=[obj%GetTotalDOF()], &
-!                    names=["K"], spaceCompo=[1], timeCompo=[1], &
-!                    storageFMT=TypeDOFOpt%storageFormatDOF)
-
-!   CALL CSRMatrixInitiate(mat, ncol=DOFSize(dofobj), nrow=DOFSize(dofobj), &
-!                          idof=dofobj, jdof=dofobj)
-
-!   CALL obj%SetSparsity(mat=mat, onlyCell=math%no)
-
-!   ! set all entries of the pattern to 1, and convert to a dense matrix
-!   mat = 1.0_DFP
-!   found = mat
-
-!   CALL Reallocate(want, 16, 16)
-!   want(Arange(1, 4), Arange(1, 4)) = math%one
-!   want(Arange(1, 4), Arange(5, 8)) = math%one
-!   want(Arange(1, 4), Arange(9, 12)) = math%one
-!   want(Arange(5, 8), Arange(1, 4)) = math%one
-!   want(Arange(5, 8), Arange(5, 8)) = math%one
-!   want(Arange(5, 8), Arange(13, 16)) = math%one
-!   want(Arange(9, 12), Arange(1, 4)) = math%one
-!   want(Arange(9, 12), Arange(9, 12)) = math%one
-!   want(Arange(9, 12), Arange(13, 16)) = math%one
-!   want(Arange(13, 16), Arange(5, 8)) = math%one
-!   want(Arange(13, 16), Arange(9, 12)) = math%one
-!   want(Arange(13, 16), Arange(13, 16)) = math%one
-
-!   isok = ALL(SHAPE(found) .EQ. [16, 16])
-!   CALL OK(isok, &
-!           obj%GetCaseName()//", BrokenSpaces, onlyCell=false, Shape of sparse matrix is correct")
-!   IF (isok) THEN
-!     do_jj: DO jj = 1, SIZE(want, 2)
-!       do_ii: DO ii = 1, SIZE(want, 1)
-!         isok = found(ii, jj) .EQ. want(ii, jj)
-!         IF (.NOT. isok) EXIT do_jj
-!       END DO do_ii
-!     END DO do_jj
-!   END IF
-!   CALL OK(isok, &
-!           obj%GetCaseName()//", BrokenSpaces, onlyCell=false, order 1, SetSparsity")
-! END BLOCK
+  isok = ALL(SHAPE(found) .EQ. [16, 16])
+  CALL OK(isok, obj%GetCaseName()//" broken space, shape is correct")
+  IF (isok) THEN
+    do_jj: DO jj = 1, SIZE(want, 2)
+      do_ii: DO ii = 1, SIZE(want, 1)
+        isok = found(ii, jj) .EQ. want(ii, jj)
+        IF (.NOT. isok) EXIT do_jj
+      END DO do_ii
+    END DO do_jj
+  END IF
+  CALL OK(isok, obj%GetCaseName()//" broken space order 1, all rows")
+END BLOCK
 
 CALL obj%DEALLOCATE()
 CALL dom%DEALLOCATE()

@@ -3530,11 +3530,9 @@ END INTERFACE
 ! other. Inactive elements are skipped.
 !
 ! In a broken space (isBrokenSpace is true) the degrees of freedom of a cell
-! are also connected to the degrees of freedom of its neighbour cells (the
-! cells which share a facet with it, see GetElementToElements_). These
-! couplings are needed by the numerical fluxes on the interior facets. Set
-! onlyCell to true to skip them and keep only the cell blocks. onlyCell is
-! ignored for continuous spaces.
+! are also connected to the degrees of freedom of its active neighbour cells
+! (the cells which share a facet with it, see GetElementToElements_). These
+! couplings are needed by the numerical fluxes on the interior facets.
 !
 ! At the end the pattern of mat is finished (CSRMatrix SetSparsity).
 ! FEDOFSetSparsity(obj, mat) calls this method too.
@@ -3543,11 +3541,10 @@ END INTERFACE
 !   - 2026-10-30: Support cell-owned DG numbering and local evaluation.
 !   - 2026-11-03: Skip inactive elements; add neighbour-cell couplings for
 !     broken spaces, controlled by onlyCell.
+!   - 2026-11-11: Remove onlyCell; broken spaces always get the
+!     neighbour-cell couplings.
 !
 ! Examples
-!
-! Dummy example; the complete program is SetSparsity_test_1.F90
-! in src/modules/FEDOF/examples.
 !
 !```fortran
 ! TYPE(FEDOF_) :: obj
@@ -3566,24 +3563,19 @@ END INTERFACE
 ! CALL obj%Initiate(baseContinuity="H1", &
 !   baseInterpolation="HIER", &
 !   isBrokenSpace=.TRUE., order=1, dom=dom)
-! CALL obj%SetSparsity(mat=mat, onlyCell=.FALSE.)
-!
-! ! broken space: cell blocks only
-! CALL obj%SetSparsity(mat=mat, onlyCell=.TRUE.)
+! CALL obj%SetSparsity(mat=mat)
 !```
 !
-! See also: [[obj_SetSparsity2]], [[obj_SetSparsity3]]
+! Full example: src/modules/FEDOF/examples/SetSparsity_test_1.F90
+!
+! See also: [[obj_SetSparsity2]], [[obj_SetSparsity3]], [[obj_SetSparsity4]]
 
 INTERFACE FEDOFSetSparsity
-  MODULE SUBROUTINE obj_SetSparsity1(obj, mat, onlyCell)
+  MODULE SUBROUTINE obj_SetSparsity1(obj, mat)
     CLASS(FEDOF_), INTENT(INOUT) :: obj
     !! FEDOF object
     TYPE(CSRMatrix_), INTENT(INOUT) :: mat
     !! sparse matrix
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: onlyCell
-    !! used only for broken spaces; if true, only the couplings within
-    !! each cell are set, and the neighbour-cell couplings (jumps at the
-    !! interior facets) are skipped; default is false
   END SUBROUTINE obj_SetSparsity1
 END INTERFACE FEDOFSetSparsity
 
@@ -3605,7 +3597,7 @@ END INTERFACE FEDOFSetSparsity
 !
 ! If obj and col_fedof are both broken spaces, the rows of element iel are
 ! also connected to the mapped active neighbour cells, as in
-! [[obj_SetSparsity1]] with onlyCell false.
+! [[obj_SetSparsity1]].
 !
 ! Changes:
 !   - 2026-11-07: Skip inactive and unmatched elements.
@@ -3645,7 +3637,7 @@ END INTERFACE
 ! the pattern between fedofs(ivar) and fedofs(jvar); the cell to cell map
 ! between their meshes is made by FEDomainConnectivity_. All FEDOF must have
 ! the same nsd. Two broken spaces also get neighbour-cell couplings (see
-! [[obj_SetSparsity2]]); there is no onlyCell option here.
+! [[obj_SetSparsity2]]).
 !
 ! Changes:
 !   - 2026-11-07: Add neighbour-cell couplings between two broken spaces.
@@ -3749,7 +3741,7 @@ END INTERFACE FEDOFSetSparsity
 !
 ! If obj and col_fedof are both broken spaces, the rows of element iel are
 ! also connected to the active neighbour cells of iel, as in
-! [[obj_SetSparsity1]] with onlyCell false.
+! [[obj_SetSparsity1]].
 !
 ! The pattern is not finished; the caller finishes it with CSRMatrix
 ! SetSparsity(mat). obj and col_fedof can be the same object.

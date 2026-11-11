@@ -3,8 +3,8 @@
 ! summary: Testing FEDOFSetSparsity for a broken space
 !
 ! For one FEDOF of a broken space, FEDOFSetSparsity must give the same
-! pattern as SetSparsity with onlyCell false: a cell is coupled to itself
-! and to its neighbour cells.
+! pattern as SetSparsity: a cell is coupled to itself and to its neighbour
+! cells.
 !
 ! The mesh very_small_quad4_mesh.h5 is the unit square with four Quadrangle4
 ! elements. Every cell has two neighbours, and a cell of order p owns

@@ -7,8 +7,7 @@
 ! cases for order 1 to maxOrder:
 !
 ! - H1: continuous space
-! - DG-cell: broken space, onlyCell=true (cell blocks only)
-! - DG-flux: broken space, onlyCell=false (cell and neighbour blocks)
+! - DG-flux: broken space (cell and neighbour blocks)
 !
 ! Each case is repeated nrep times. The matrix is initiated before each
 ! repetition, and only the call of SetSparsity is timed. The first
@@ -29,10 +28,9 @@
 !
 ! The checks verify the number of nonzeros:
 !
-! - DG-cell: every cell has n = (p+1)(p+2)/2 DOFs, so nnz = tdof * n;
-! - DG-flux: a triangle has at most three neighbours, so
-!   nnz(DG-cell) < nnz(DG-flux) <= 4 * nnz(DG-cell);
-! - DG-cell and DG-flux: cells do not share DOFs, so npairs = nnz;
+! - DG-flux: every cell has n = (p+1)(p+2)/2 DOFs and at most three
+!   neighbours, so tdof * n < nnz <= 4 * tdof * n;
+! - DG-flux: cells do not share DOFs, so npairs = nnz;
 ! - H1: nnz > tdof, and npairs >= nnz (shared DOFs give duplicates).
 !
 ! Build the library and this program in Release mode to get timings that
@@ -89,11 +87,10 @@ DO order = 1, maxOrder
 
     CALL obj%Initiate(baseContinuity="H1", baseInterpolation="HIER", &
                       isBrokenSpace=math%no, order=order, dom=dom)
-    CALL RunCase("H1", order, math%no, math%no, tdof, nnz, npairs, &
-                 tfirst, tmin)
+    CALL RunCase("H1", order, math%no, tdof, nnz, npairs, tfirst, tmin)
   END BLOCK
 
-  ! Test 2 and 3: broken space, without and with neighbour couplings
+  ! Test 2: broken space, cell and neighbour couplings
   BLOCK
     INTEGER(I4B) :: tdof, nnzCell, nnzFlux, npairs, n
     REAL(DFP) :: tfirst, tmin
@@ -102,12 +99,14 @@ DO order = 1, maxOrder
     CALL obj%Initiate(baseContinuity="H1", baseInterpolation="HIER", &
                       isBrokenSpace=math%yes, order=order, dom=dom)
 
-    CALL RunCase("DG-cell", order, math%yes, math%no, tdof, nnzCell, &
-                 npairs, tfirst, tmin)
+    CALL RunCase("DG-flux", order, math%yes, tdof, nnzFlux, npairs, &
+                 tfirst, tmin)
     n = (order + 1) * (order + 2) / 2
-    CALL RunCase("DG-flux", order, math%no, math%yes, tdof, nnzFlux, &
-                 npairs, tfirst, tmin)
+    nnzCell = tdof * n
     isok = (nnzFlux .GT. nnzCell) .AND. (nnzFlux .LE. 4 * nnzCell)
+    CALL OK(isok, "DG-flux order "//ToString(order)//": nnz bounds")
+    CALL OK(npairs .EQ. nnzFlux, &
+            "DG-flux order "//ToString(order)//": npairs = nnz")
   END BLOCK
 
 END DO
@@ -123,14 +122,12 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 ! Initiate a matrix for obj and time obj%SetSparsity nrep times.
-SUBROUTINE RunCase(caseName, order, onlyCell, isFlux, tdof, nnz, &
-                   npairs, tfirst, tmin)
+SUBROUTINE RunCase(caseName, order, isFlux, tdof, nnz, npairs, tfirst, &
+                   tmin)
   CHARACTER(*), INTENT(IN) :: caseName
   !! name of the case, printed in the table
   INTEGER(I4B), INTENT(IN) :: order
   !! order of the space, printed in the table
-  LOGICAL(LGT), INTENT(IN) :: onlyCell
-  !! onlyCell argument of SetSparsity
   LOGICAL(LGT), INTENT(IN) :: isFlux
   !! true for a broken space with neighbour couplings (see LoopOnly)
   INTEGER(I4B), INTENT(OUT) :: npairs
@@ -164,7 +161,7 @@ SUBROUTINE RunCase(caseName, order, onlyCell, isFlux, tdof, nnz, &
                            nrow=DOFSize(dofobj), idof=dofobj, jdof=dofobj)
 
     CALL SYSTEM_CLOCK(t0, rate)
-    CALL obj%SetSparsity(mat=mat, onlyCell=onlyCell)
+    CALL obj%SetSparsity(mat=mat)
     CALL SYSTEM_CLOCK(t1)
 
     t = REAL(t1 - t0, DFP) / REAL(rate, DFP)
