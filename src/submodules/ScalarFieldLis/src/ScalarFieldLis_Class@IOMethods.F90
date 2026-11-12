@@ -19,10 +19,13 @@ SUBMODULE(ScalarFieldLis_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay
 USE Display_Method, ONLY: Display
-
 IMPLICIT NONE
 
 #include "lisf.h"
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class@IOMethods.F90"
+#endif
 
 CONTAINS
 
@@ -50,6 +53,7 @@ isok = ierr .EQ. LIS_FALSE
 CALL Display(isok, "ScalarFieldLis_ is available: ", unitno=unitno)
 
 IF (.NOT. isok) THEN
+
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')

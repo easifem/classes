@@ -16,9 +16,9 @@
 !
 
 SUBMODULE(ScalarField_Class) ConstructorMethods
-USE Display_Method, ONLY: ToString
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 
 #ifdef DEBUG_VER

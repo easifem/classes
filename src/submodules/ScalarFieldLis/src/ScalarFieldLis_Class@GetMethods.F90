@@ -20,6 +20,10 @@ IMPLICIT NONE
 
 #include "lisf.h"
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -94,8 +98,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 tsize = (iend - istart) / stride + 1
-CALL lis_vector_get_values_from_range( &
-  obj%lis_ptr, istart, stride, tsize, VALUE, ierr)
+CALL lis_vector_get_values_from_range(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, ierr)
 
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
@@ -155,7 +159,7 @@ ans => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-       '[INTERNAL ERROR] :: This method is not available for ScalarFieldLis_')
+                  '[INTERNAL ERROR] :: This method is not available for ScalarFieldLis_')
 #endif
 
 #ifdef DEBUG_VER

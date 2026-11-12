@@ -16,13 +16,17 @@
 !
 
 SUBMODULE(ScalarFieldLis_Class) HDFMethods
-USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 #include "lisf.h"
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class@HDFMethods.F90"
+#endif
 
 CONTAINS
 
@@ -54,7 +58,11 @@ CALL AssertError1(isok, myName, &
 
 realvec => AbstractNodeFieldGetPointer(obj)
 CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
+
 NULLIFY (realvec)
 CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 
@@ -126,18 +134,28 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! then we update values from realvec to lis_vector using scatter methods
 
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, &
                          obj%global_n, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 realvec => AbstractNodeFieldGetPointer(obj)
+
 CALL lis_vector_scatter(realvec, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 NULLIFY (realvec)
 
