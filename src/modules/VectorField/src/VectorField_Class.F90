@@ -1807,6 +1807,17 @@ END INTERFACE
 ! must have the same spaceCompo and meshes with the same number of
 ! elements.
 !
+! Examples
+!
+!```fortran
+! TYPE(VectorField_) :: u, w
+! ! u: order 1 Lagrange, w: order 2 Lagrange, same spaceCompo
+! CALL w%SetLagrangeDOF(obj2=u)
+! ! w now interpolates u at its own interpolation points
+!```
+!
+! Full example: src/modules/VectorField/examples/SetLagrangeDOF_test_1.F90
+!
 ! See also: [[obj_SetByFunction]]
 
 INTERFACE
@@ -2268,6 +2279,82 @@ END INTERFACE
 ! the values. The component must not be larger than spaceCompo
 ! (checked in debug mode).
 !
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE DirichletBC_Class, ONLY: DirichletBCDeallocate
+! USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
+! USE DirichletBC_Class, ONLY: DirichletBCPointer_
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE Test_Method, ONLY: OK
+! USE VectorField_Class, ONLY: VectorField_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ApplyDirichletBC_test_1.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(VectorField_) :: u
+! TYPE(DirichletBCPointer_), ALLOCATABLE :: extDBC(:)
+! REAL(DFP) :: found(6), want(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+! CALL DirichletBCImportFromToml(obj=extDBC, dom=dom, tomlName="extDBC", &
+!                                filename=tomlFileName)
+!
+! ! Test 1: internal list of Dirichlet BCs
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyDirichletBC(times=0.0_DFP)
+!   want = [1.0_DFP, 0.0_DFP, 0.0_DFP, 1.0_DFP, 0.0_DFP, 0.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "internal dbc: x")
+!   want = [0.0_DFP, 2.0_DFP, 2.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "internal dbc: y")
+! END BLOCK
+!
+! ! Test 2: vector of DirichletBCPointer_
+! BLOCK
+!   CALL u%Set(VALUE=-1.0_DFP)
+!   CALL u%ApplyDirichletBC(dbc=extDBC, times=0.0_DFP)
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1)
+!   CALL OK(ALL(ABS(found + 1.0_DFP) .LT. tol), "dbc vector: x unchanged")
+!   want = [7.0_DFP, 7.0_DFP, -1.0_DFP, -1.0_DFP, 7.0_DFP, -1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "dbc vector: y")
+! END BLOCK
+!
+! ! Test 3: single DirichletBC_
+! BLOCK
+!   CALL u%Set(VALUE=3.0_DFP)
+!   CALL u%ApplyDirichletBC(dbc=extDBC(1)%ptr)
+!   want = [7.0_DFP, 7.0_DFP, 3.0_DFP, 3.0_DFP, 7.0_DFP, 3.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "single dbc: y")
+!   CALL u%Get(VALUE=found, tsize=tsize, globalNode=5)
+!   CALL OK(ALL(ABS(found(1:2) - [3.0_DFP, 7.0_DFP]) .LT. tol), &
+!           "single dbc: node 5")
+! END BLOCK
+!
+! CALL DirichletBCDeallocate(extDBC)
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
 ! See also: [[obj_ApplyDirichletBC2]]
 
 INTERFACE
@@ -2291,7 +2378,8 @@ END INTERFACE
 !
 ! Same as [[obj_ApplyDirichletBC1]] for each associated pointer of dbc.
 !
-! See also: [[obj_ApplyDirichletBC1]], [[obj_ApplyDirichletBC3]]
+! See also: [[obj_ApplyDirichletBC1]] (contains an example),
+! [[obj_ApplyDirichletBC3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
@@ -2314,7 +2402,8 @@ END INTERFACE
 !
 ! Calls [[obj_ApplyDirichletBC2]] with obj%dbc.
 !
-! See also: [[obj_ApplyDirichletBC2]]
+! See also: [[obj_ApplyDirichletBC1]] (contains an example),
+! [[obj_ApplyDirichletBC2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
@@ -2337,6 +2426,68 @@ END INTERFACE
 ! (obj%nbc_point), the node numbers and the values (at time times) are
 ! obtained, and scale * value is added to component nbc%GetDOFNo() of
 ! these nodes.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE Test_Method, ONLY: OK
+! USE VectorField_Class, ONLY: VectorField_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = &
+!                            "ApplyPointNeumannBC_test_1.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(VectorField_) :: u
+! REAL(DFP) :: found(6), want(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+!
+! ! Test 1: number of point Neumann BCs
+! CALL OK(u%GetTotalPointNBC() .EQ. 2, "GetTotalPointNBC")
+!
+! ! Test 2: scale = 1
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyPointNeumannBC(scale=1.0_DFP, times=0.0_DFP)
+!   want = [2.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "scale = 1: x")
+!   want = [0.0_DFP, 0.0_DFP, 4.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "scale = 1: y")
+! END BLOCK
+!
+! ! Test 3: added to the current values, scale = 0.5
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%ApplyPointNeumannBC(scale=0.5_DFP)
+!   want = [2.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "add with scale = 0.5: x")
+!   want = [1.0_DFP, 1.0_DFP, 3.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "add with scale = 0.5: y")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
 !
 ! See also: [[obj_ApplySurfaceNeumannBC]]
 
@@ -2373,6 +2524,77 @@ END INTERFACE
 !   - 2026-11-02: integrate each Neumann boundary condition with its own
 !     data only (before, the data of all conditions was used)
 !
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDOF_Class, ONLY: FEDOF_
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: DFP
+!   USE GlobalData, ONLY: I4B
+!   USE Test_Method, ONLY: OK
+!   USE VectorField_Class, ONLY: VectorField_
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: tomlFileName = &
+!                              "ApplySurfaceNeumannBC_test_1.toml"
+!   REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+!   TYPE(FEDomain_) :: dom
+!   TYPE(FEDOF_), TARGET :: fedof, geofedof
+!   TYPE(VectorField_) :: u, nbcField
+!   REAL(DFP) :: vec(6), expected(2, 6)
+!   INTEGER(I4B) :: tsize, inode
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!   CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+!   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                         filename=tomlFileName, tomlName="u")
+!   CALL nbcField%Initiate(NAME="nbcField", engine="NATIVE_SERIAL", &
+!                          spaceCompo=[2], fedof=fedof, geofedof=geofedof)
+!
+!   CALL OK(u%GetTotalNBC() .EQ. 3, "GetTotalNBC")
+!
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplySurfaceNeumannBC(nbcField=nbcField, scale=1.0_DFP, &
+!                                times=0.0_DFP)
+!
+!   expected(:, 1) = [12.5_DFP, 0.0_DFP]
+!   expected(:, 2) = [22.5_DFP, 15.0_DFP]
+!   expected(:, 3) = [10.0_DFP, 15.0_DFP]
+!   expected(:, 4) = [0.0_DFP, 0.0_DFP]
+!   expected(:, 5) = [25.0_DFP, 0.0_DFP]
+!   expected(:, 6) = [0.0_DFP, 0.0_DFP]
+!
+!   DO inode = 1, 6
+!     CALL u%Get(VALUE=vec, tsize=tsize, globalNode=inode)
+!     CALL OK(ALL(ABS(vec(1:2) - expected(:, inode)) .LT. tol), &
+!             "node "//CHAR(48 + inode))
+!   END DO
+!
+!   CALL u%Get(VALUE=vec, tsize=tsize, spaceCompo=1)
+!   CALL OK(ABS(SUM(vec(1:tsize)) - 70.0_DFP) .LT. tol, &
+!           "total x force = (2 + 5) * 10")
+!   CALL u%Get(VALUE=vec, tsize=tsize, spaceCompo=2)
+!   CALL OK(ABS(SUM(vec(1:tsize)) - 30.0_DFP) .LT. tol, &
+!           "total y force = 3 * 10")
+!
+!   ! scale and addContribution: applying again with scale -1 gives zero
+!   CALL u%ApplySurfaceNeumannBC(nbcField=nbcField, scale=-1.0_DFP, &
+!                                times=0.0_DFP)
+!   CALL u%Get(VALUE=vec, tsize=tsize, spaceCompo=1)
+!   CALL OK(ALL(ABS(vec(1:tsize)) .LT. tol), "scale = -1: x is zero")
+!
+!   CALL nbcField%DEALLOCATE()
+!   CALL u%DEALLOCATE()
+!   CALL fedof%DEALLOCATE()
+!   CALL geofedof%DEALLOCATE()
+!   CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
 ! See also: [[obj_ApplyPointNeumannBC]]
 
 INTERFACE
@@ -2403,6 +2625,24 @@ END INTERFACE
 !
 ! $$ u_{cI} = u_{cI} + s \int_{\Omega} N_I f_c(x, y, z, t) \, d\Omega $$
 !
+! Changes:
+!   - 2026-11-12: times is passed to the body source as its fourth
+!     argument; all spaceCompo components are used (before, only nsd)
+!
+! Examples
+!
+!```fortran
+! TYPE(VectorField_) :: u
+! TYPE(UserFunction_) :: func
+! ! func: vector user function, numArgs = 4 (x, y, z, t),
+! ! numReturns = spaceCompo
+! CALL u%Set(VALUE=0.0_DFP)
+! CALL u%ApplyBodySource(bodySource=func, scale=1.0_DFP, times=2.0_DFP)
+! ! component c of node I: u = u + scale * integral(N_I f_c)
+!```
+!
+! Full example: src/modules/VectorField/examples/ApplyBodySource_test_1.F90
+!
 ! See also: [[obj_ApplyBodySource2]]
 
 INTERFACE
@@ -2431,6 +2671,17 @@ END INTERFACE
 !
 ! Same as [[obj_ApplyBodySource1]], but the body source is the vector
 ! field bodySource, which is interpolated at the quadrature points.
+!
+! Examples
+!
+!```fortran
+! TYPE(VectorField_) :: u, v
+! ! v uses the same fedof as u
+! CALL u%Set(VALUE=0.0_DFP)
+! CALL u%ApplyBodySource(bodySource=v, scale=1.0_DFP)
+!```
+!
+! Full example: src/modules/VectorField/examples/ApplyBodySource_test_1.F90
 !
 ! See also: [[obj_ApplyBodySource1]]
 
