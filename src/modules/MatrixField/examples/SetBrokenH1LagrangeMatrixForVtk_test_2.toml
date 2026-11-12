@@ -5,14 +5,14 @@
 # u2 (columns): scalar field, order 1 Lagrange, 6 DOFs -> 8 x 6 matrix.
 
 [domain]
-filename = "../meshdata/square_3x2.h5"
+filename = "./meshdata/square_3x2.h5"
 totalMedium = 1
 
 [colNode]
 name = "u"
 engine = "NATIVE_SERIAL"
 fieldType = "Normal"
-spaceCompo = 1
+spaceCompo = 2
 timeCompo = 1
 fedofName = "space"
 geofedofName = "geofedof"

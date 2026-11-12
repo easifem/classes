@@ -1,3 +1,0 @@
-BuildType = "Debug"
-BuildDir = "/tmp/easifemClasses/MatrixField/example-1/"
-TargetLibs = ["easifemClasses"]

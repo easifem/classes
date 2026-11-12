@@ -16,10 +16,19 @@
 !
 
 SUBMODULE(AbstractMatrixField_Class) Methods
+USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractField_Class, ONLY: AbstractFieldDeallocate
 USE AbstractField_Class, ONLY: AbstractFieldDisplay
+USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
 USE Display_Method, ONLY: Display
 USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: ElemshapeData_Deallocate => DEALLOCATE
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -377,6 +386,153 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate2
+
+!----------------------------------------------------------------------------
+!                                              SetBrokenLagrangeMatrixForVTK
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetBrokenLagrangeMatrixForVTK
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetBrokenLagrangeMatrixForVTK()"
+#endif
+INTEGER(I4B) :: tElements, maxNNE, iel, jj, &
+                refElemCoord_nrow, refElemCoord_ncol, xij_nrow, xij_ncol, &
+                rowFecon_size, colFecon_size, cellOrder_size
+INTEGER(I4B) :: cellOrder(3), ipType(3)
+REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), VALUE(:, :)
+INTEGER(I4B), ALLOCATABLE :: rowFecon(:), colFecon(:)
+LOGICAL(LGT) :: isok
+TYPE(QuadraturePoint_) :: quad
+TYPE(ElemShapeData_) :: elemsd
+CLASS(AbstractMesh_), POINTER :: colMesh
+CLASS(FEDOF_), POINTER :: rowFedof, colFedof
+CLASS(AbstractFE_), POINTER :: feptr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+IF (ivar .GT. math%one_i) THEN
+  isok = ALLOCATED(obj%rowFedofs)
+  CALL AssertError1(isok, myName, "rowFedofs not allocated.")
+END IF
+#endif
+
+#ifdef DEBUG_VER
+IF (jvar .GT. math%one_i) THEN
+  isok = ALLOCATED(obj%colFedofs)
+  CALL AssertError1(isok, myName, "colFedofs not allocated.")
+END IF
+#endif
+
+rowFedof => GetFEDOFPointer(obj%rowFedof, obj%rowFedofs, ivar)
+colFedof => GetFEDOFPointer(obj%colFedof, obj%colFedofs, jvar)
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(rowFedof)
+CALL AssertError1(isok, myName, "rowFedof is not associated.")
+#endif
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(colFedof)
+CALL AssertError1(isok, myName, "colFedof is not associated.")
+#endif
+
+#ifdef DEBUG_VER
+isok = rowFedof%IsInitiated()
+CALL AssertError1(isok, myName, "rowFedof is not initiated")
+#endif
+
+#ifdef DEBUG_VER
+isok = colFedof%IsInitiated()
+CALL AssertError1(isok, myName, "colFedof is not initiated")
+#endif
+
+colMesh => colFedof%GetMeshPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(rowFedof%GetMeshPointer(), colMesh)
+CALL AssertError1(isok, myName, &
+                  "rowMesh and colMesh are not same.")
+#endif
+
+tElements = colMesh%GetTotalElements()
+ipType = TypeInterpolationOpt%Equidistance
+maxNNE = colMesh%GetMaxNNE()
+
+! The VTK points of an element are the dofs of the broken Lagrange
+! rowFedof, so xij and rowFecon have the same size.
+CALL Reallocate(refElemCoord, 3, maxNNE)
+refElemCoord = math%zero
+CALL Reallocate(xij, 4, rowFedof%GetMaxTotalConnectivity())
+xij = math%zero
+CALL Reallocate(rowFecon, rowFedof%GetMaxTotalConnectivity())
+CALL Reallocate(colFecon, colFedof%GetMaxTotalConnectivity())
+CALL Reallocate(VALUE, SIZE(rowFecon), SIZE(colFecon))
+
+elemLoop: DO iel = 1, tElements
+  isok = colMesh%IsElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE elemLoop
+
+  ! order of the VTK cell, isotropic order is assumed
+  CALL colFedof%GetCellOrder(ans=cellOrder, tsize=cellOrder_size, &
+                             globalElement=iel, islocal=math%yes)
+  cellOrder(2:3) = cellOrder(1)
+
+  CALL colFedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => colFedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+  ! points of the vtk cell in the reference element
+  CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
+                             ncol=refElemCoord_ncol)
+
+  CALL feptr%GetInterpolationPoints(xij=refElemCoord(1:refElemCoord_nrow, &
+                                                     1:refElemCoord_ncol), &
+                                    ans=xij, nrow=xij_nrow, ncol=xij_ncol, &
+                                    order=cellOrder, ipType=ipType)
+
+  CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_ncol))
+
+  CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+
+  CALL colFedof%GetConnectivity_(ans=colFecon, &
+                                 tsize=colFecon_size, opt="A", &
+                                 globalElement=iel, islocal=math%yes)
+  CALL feptr%FixOrientOfNptrs(colFecon, colFecon_size)
+
+  CALL rowFedof%GetConnectivity_(ans=rowFecon, &
+                                 tsize=rowFecon_size, opt="A", &
+                                 globalElement=iel, islocal=math%yes)
+
+  VALUE(1:rowFecon_size, 1:colFecon_size) = &
+    TRANSPOSE(elemsd%N(1:elemsd%nns, 1:elemsd%nips))
+
+  DO jj = 1, nCopy
+    CALL obj%Set(iNodeNum=rowFecon(1:rowFecon_size), &
+                 jNodeNum=colFecon(1:colFecon_size), &
+                 islocal=math%yes, &
+                 ivar=ivar, jvar=jvar, idof=jj, jdof=jj, &
+                 VALUE=VALUE(1:rowFecon_size, 1:colFecon_size))
+  END DO
+
+END DO elemLoop
+
+IF (ALLOCATED(refElemCoord)) DEALLOCATE (refElemCoord)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(VALUE)) DEALLOCATE (VALUE)
+IF (ALLOCATED(rowFecon)) DEALLOCATE (rowFecon)
+IF (ALLOCATED(colFecon)) DEALLOCATE (colFecon)
+CALL QuadraturePoint_Deallocate(quad)
+CALL ElemshapeData_Deallocate(elemsd)
+NULLIFY (colMesh, rowFedof, colFedof, feptr)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetBrokenLagrangeMatrixForVTK
 
 !----------------------------------------------------------------------------
 !

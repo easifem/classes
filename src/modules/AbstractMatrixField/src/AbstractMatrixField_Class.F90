@@ -207,6 +207,9 @@ CONTAINS
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, &
     Set6, Set7, Set8, Set9, Set10, Set11
   !! Generic method to set entries
+  PROCEDURE, PUBLIC, PASS(obj) :: SetBrokenLagrangeMatrixForVTK => &
+    obj_SetBrokenLagrangeMatrixForVTK
+  !! Set the matrix that maps the field dofs to the broken Lagrange dofs
 
   ! @SetRow
   PROCEDURE(obj_SetRow1), PUBLIC, DEFERRED, PASS(obj) :: SetRow1
@@ -3568,6 +3571,74 @@ ABSTRACT INTERFACE
     REAL(DFP), INTENT(IN) :: a
     !! scale factor
   END SUBROUTINE obj_Scal
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                      SetBrokenLagrangeMatrixForVTK@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-13
+! summary: Set the matrix that maps field dofs to broken Lagrange dofs
+!   for VTK output.
+!
+! This routine fills the block (ivar, jvar) of the matrix. The rows belong
+! to a broken Lagrange FEDOF (see
+! [[FEDOF_:InitiateBrokenLagrangeFedofForVTK]]), whose dofs are the points
+! of the VTK cells, one set per element. The columns belong to the FEDOF of
+! the field, for example a hierarchical basis. If u holds the dofs of the
+! field, then M u gives the values of the field at the VTK points.
+!
+! For each active element the routine:
+!
+! - gets the order of the element from the column FEDOF,
+! - computes the equidistant interpolation points of that order in the
+!   reference element,
+! - evaluates the column shape functions at these points,
+! - orients the column connectivity with `FixOrientOfNptrs`,
+! - sets the element block in the matrix for each of the nCopy
+!   diagonal copies (idof = jdof = 1, ..., nCopy).
+!
+! A row dof belongs to exactly one element, so the entries are set, not
+! added.
+!
+! The routine needs the following.
+!
+! - The matrix is initiated, and its sparsity pattern contains the
+!   element blocks.
+! - The row and column FEDOFs are set with [[AbstractMatrixFieldSetFEDOF]].
+!   Pass colFedof explicitly, because by default the columns use the row
+!   FEDOF.
+! - The row and column FEDOFs use the same mesh.
+! - The order of an element is the same in all directions.
+! - `FixOrientOfNptrs` is implemented for the element type of the column
+!   FE.
+!
+! Formula:
+!
+! $$ M_{ij} = N_j(x_i) $$
+!
+! where x_i is the i-th VTK point of an element and N_j is the j-th
+! shape function of the column FE.
+!
+! See also: [[AbstractMatrixFieldSetFEDOF]],
+! [[FEDOF_:InitiateBrokenLagrangeFedofForVTK]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetBrokenLagrangeMatrixForVTK(obj, ivar, jvar, &
+                                                     nCopy)
+    CLASS(AbstractMatrixField_), INTENT(INOUT) :: obj
+    !! Matrix field, initiated with the sparsity of the element blocks
+    INTEGER(I4B), INTENT(IN) :: ivar
+    !! Physical variable of the rows. If ivar > 1, rowFedofs must be
+    !! allocated, and rowFedofs(ivar) is the broken Lagrange FEDOF.
+    INTEGER(I4B), INTENT(IN) :: jvar
+    !! Physical variable of the columns. If jvar > 1, colFedofs must be
+    !! allocated, and colFedofs(jvar) is the FEDOF of the field.
+    INTEGER(I4B), INTENT(IN) :: nCopy
+    !! Number of diagonal copies of the element block. Use 1 for a scalar
+    !! field and spaceCompo for a vector field.
+  END SUBROUTINE obj_SetBrokenLagrangeMatrixForVTK
 END INTERFACE
 
 END MODULE AbstractMatrixField_Class
