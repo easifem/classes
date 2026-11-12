@@ -1,0 +1,60 @@
+# Input file for ApplyPointNeumannBC_test_1 (VectorField_).
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements,
+# six nodes 1 (0,0), 2 (10,0), 3 (10,10), 4 (0,10), 5 (5,0), 6 (5,10).
+# Order 1 Lagrange, two space components: 6 x 2 = 12 values.
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+# Point Neumann BCs of u:
+#   load1_x: f_x = 2 at point 1 (node 1)
+#   load3_y: f_y = 4 at point 3 (node 3)
+
+[[u.pointNeumannBC]]
+name = "load1_x"
+idof = 1
+nodalValueType = "Constant"
+value = 2.0
+[u.pointNeumannBC.boundary]
+isSelectionByMeshID = true
+[u.pointNeumannBC.boundary.meshID]
+point = [1]
+
+[[u.pointNeumannBC]]
+name = "load3_y"
+idof = 2
+nodalValueType = "Constant"
+value = 4.0
+[u.pointNeumannBC.boundary]
+isSelectionByMeshID = true
+[u.pointNeumannBC.boundary.meshID]
+point = [3]
