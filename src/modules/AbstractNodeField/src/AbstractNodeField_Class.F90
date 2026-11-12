@@ -98,6 +98,10 @@ INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 !   - 2026-11-11: Moved dof, the FEDOF pointers, the boundary conditions
 !     and the methods that use them from [[AbstractField_]].
 !   - 2026-11-11: Added SetLocal_n and SetGlobal_n.
+!   - 2026-11-12: The specific bindings behind the SetMultiple,
+!     GetMultiple and AXPY generics are PUBLIC, so that child types in
+!     other modules (ScalarFieldLis_) can override them (a PRIVATE
+!     binding is not overridden from another module). Call the generics.
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = math%no
@@ -336,11 +340,11 @@ CONTAINS
   !! Returns the length of data stored inside the fortran vector
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
-  PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
   !! get many values from indices
-  PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
   !! get many values in a range
-  PROCEDURE, PRIVATE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
   !! get many values in a range into a range of value
   GENERIC, PUBLIC :: GetMultiple => GetMultiple1, GetMultiple2, &
     GetMultiple3
@@ -369,24 +373,24 @@ CONTAINS
   !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
   !! Set all the values to a constant scalar value
-  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
   !! Set multiple entries using indices
-  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
   !! Set multiple entries using range
-  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
   !! Set multiple entries in a range from a range of value
-  PROCEDURE, PRIVATE, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
   !! Set multiple entries in a range to one value
   GENERIC, PUBLIC :: SetMultiple => SetMultiple1, SetMultiple2, &
     SetMultiple3, SetMultiple4
   !! Set multiple entries
 
   ! @BlasMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: AXPY1 => obj_AXPY1
+  PROCEDURE, PUBLIC, PASS(obj) :: AXPY1 => obj_AXPY1
   !! obj = obj + scale * x
-  PROCEDURE, PRIVATE, PASS(obj) :: AXPY2 => obj_AXPY2
+  PROCEDURE, PUBLIC, PASS(obj) :: AXPY2 => obj_AXPY2
   !! obj = obj + a1 * x1 + a2 * x2
-  PROCEDURE, PRIVATE, PASS(obj) :: AXPY3 => obj_AXPY3
+  PROCEDURE, PUBLIC, PASS(obj) :: AXPY3 => obj_AXPY3
   !! obj = obj + a1 * x1 + a2 * x2 + a3 * x3
   GENERIC, PUBLIC :: AXPY => AXPY1, AXPY2, AXPY3
   !! Y = Y + scale * X ...

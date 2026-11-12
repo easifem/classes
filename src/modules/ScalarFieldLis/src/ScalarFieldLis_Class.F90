@@ -27,86 +27,107 @@ USE GlobalData, ONLY: DFP, I4B, LGT
 USE HDF5File_Class, ONLY: HDF5File_
 USE ScalarField_Class, ONLY: ScalarField_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
-
 IMPLICIT NONE
 PRIVATE
-
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class"
-#endif
 
 PUBLIC :: ScalarFieldLis_
 PUBLIC :: ScalarFieldLisPointer_
 
 !----------------------------------------------------------------------------
-!                                                              ScalarField_
+!                                                           ScalarFieldLis_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-25
-! summary: LIS Scalar field
+! summary: Scalar field with the LIS engine (engine = "LIS_OMP")
+!
+! ScalarFieldLis_ is a ScalarField_ whose values are stored in a LIS
+! vector (lis_ptr) instead of the Fortran vector realVec. The DOF data,
+! the FEDOFs and the boundary conditions are the same as in
+! ScalarField_, and all methods of ScalarField_ (Set, Get, SetByFunction,
+! ApplyDirichletBC, ApplyBodySource, ...) can be used: they reach the
+! values through the methods based on the index of a value (SetSingle,
+! SetAll, SetMultiple, GetSingle, GetMultiple), which this class
+! overrides. The BLAS methods (AXPY, SCAL, COPY, Swap, norms,
+! DOT_PRODUCT, PMUL, Reciprocal) call the LIS vector routines; their
+! field arguments must also use the LIS engine.
+!
+! realVec is allocated but it is not kept up to date: it is filled from
+! the LIS vector (lis_vector_gather) only by Display and Export.
+! GetPointer is not available.
+!
+! The LIS library must be started before a field is initiated, by
+! LisOmpEngine_%Initiate (lis_initialize), and stopped after the fields
+! are deallocated, by LisOmpEngine_%DEALLOCATE (lis_finalize).
+!
+! Changes:
+!   - 2026-11-12: The SetMultiple, GetMultiple and AXPY bindings are
+!     PUBLIC, so that they override the bindings of AbstractNodeField_.
+!
+! See also: [[ScalarField_]], [[AbstractNodeField_]]
 
 TYPE, EXTENDS(ScalarField_) :: ScalarFieldLis_
 CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate an instance by copying
+  !! Initiate an instance by copying another node field
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate an instance of ScalarField_ by passing arguments
+  !! Initiate an instance of ScalarFieldLis_ by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
-  !! Deallocate the object
+  !! Destroy the LIS vector and deallocate the object
   FINAL :: obj_Final
   !! Finalizer
 
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the object
-
   ! @HDF5Methods
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !! Export the object
+  !! Export the field to an HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !! Import the object
+  !! Import the field from an HDF5 file (not yet available)
 
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetSingle => obj_SetSingle
   !! Set single entry
   PROCEDURE, PUBLIC, PASS(obj) :: SetAll => obj_SetAll
   !! Set all the values to a constant scalar value
-  PROCEDURE, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple1 => obj_SetMultiple1
   !! Set multiple entries using indices
-  PROCEDURE, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
-  !! Set multiple entries using range
-  PROCEDURE, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
-  !! Set multiple entries using range
-  PROCEDURE, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
-  !! Set multiple entries using range
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple2 => obj_SetMultiple2
+  !! Set multiple entries in a range
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple3 => obj_SetMultiple3
+  !! Set multiple entries in a range from a range of value
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
+  !! Set multiple entries in a range to one value
   PROCEDURE, PUBLIC, PASS(obj) :: Set8 => obj_Set8
-  !! obj = obj + scale*obj2
+  !! obj = obj + scale * obj2
 
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
-  !! This method is not avaiable in ScalarFieldList
+  !! Not available for ScalarFieldLis_, returns NULL
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
-  !! Get the size of the object
+  !! Number of values of the field
   PROCEDURE, PUBLIC, PASS(obj) :: GetSingle => obj_GetSingle
   !! Get single entry
-  PROCEDURE, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
-  !! get many values from indices
-  PROCEDURE, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
-  !! get many values from trides
-  PROCEDURE, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
-  !! get many values from trides
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple1 => obj_GetMultiple1
+  !! Get many values from indices
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple2 => obj_GetMultiple2
+  !! Get many values in a range
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
+  !! Get many values in a range into a range of value
 
   ! @BlasMethods
-  PROCEDURE, PASS(obj) :: AXPY1 => obj_AXPY1
-  PROCEDURE, PASS(obj) :: AXPY2 => obj_AXPY2
-  PROCEDURE, PASS(obj) :: AXPY3 => obj_AXPY3
-  !! Y = Y + scale * X ...
+  PROCEDURE, PUBLIC, PASS(obj) :: AXPY1 => obj_AXPY1
+  !! obj = obj + scale * x
+  PROCEDURE, PUBLIC, PASS(obj) :: AXPY2 => obj_AXPY2
+  !! obj = obj + a1 * x1 + a2 * x2
+  PROCEDURE, PUBLIC, PASS(obj) :: AXPY3 => obj_AXPY3
+  !! obj = obj + a1 * x1 + a2 * x2 + a3 * x3
   PROCEDURE, PUBLIC, PASS(obj) :: SCAL => obj_SCAL
-  !! X = scale * X
+  !! obj = scale * obj
   PROCEDURE, PUBLIC, PASS(obj) :: COPY => obj_Copy
-  !! Y = X
+  !! obj = obj2
   PROCEDURE, PUBLIC, PASS(obj) :: Swap => obj_Swap
   !! Swap the values of obj and obj2
   PROCEDURE, PUBLIC, PASS(obj) :: Norm2 => obj_Norm2
@@ -116,19 +137,20 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Normi => obj_Normi
   !! Returns the infinity norm
   PROCEDURE, PUBLIC, PASS(obj) :: DOT_PRODUCT => obj_DOT_PRODUCT
-  !! dot product
+  !! Dot product of obj and obj2
   PROCEDURE, PUBLIC, PASS(obj) :: PMUL => obj_PMUL
-  !! z = x * y
+  !! obj = obj1 * obj2, entry by entry
   PROCEDURE, PUBLIC, PASS(obj) :: Reciprocal => obj_Reciprocal
-  !! y = 1/x
+  !! obj = 1 / obj, entry by entry
 END TYPE ScalarFieldLis_
 
 !----------------------------------------------------------------------------
-!                                                       ScalarFieldPointer_
+!                                                    ScalarFieldLisPointer_
 !----------------------------------------------------------------------------
 
 TYPE :: ScalarFieldLisPointer_
   CLASS(ScalarFieldLis_), POINTER :: ptr => NULL()
+  !! pointer to a LIS scalar field
 END TYPE ScalarFieldLisPointer_
 
 !----------------------------------------------------------------------------
@@ -136,31 +158,113 @@ END TYPE ScalarFieldLisPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 25 Sept 2021
-! summary: Initiate AbstractNodeField_ from another instance
+! date: 2021-09-25
+! summary: Initiate a LIS scalar field by copying another node field
 !
-!# Introduction
+! The data of obj2 (name, engine, sizes, DOF data, FEDOF pointers,
+! boundary condition pointers and realVec) are copied into obj by
+! AbstractNodeFieldInitiate. Then a new LIS vector is created for obj
+! (lis_vector_create, lis_vector_set_size, lis_vector_get_range) and the
+! values of obj2 are copied into it: from the LIS vector of obj2 when
+! obj2 is a ScalarFieldLis_ (lis_vector_copy), otherwise from the copied
+! realVec (lis_vector_scatter). obj and obj2 have separate LIS vectors.
 !
-! This method initiates an AbstractNodeField_ instance
-! by copying all or some contents from another instance of AbstractNodeField_
+! copyStructure and usePointer are not used.
 !
-! If obj is not initiated then we copy everything
-! For fedof and fedofs we always use pointers
+! Changes:
+!   - 2026-11-12: The values of obj2 are copied into the new LIS vector
+!     (before, the new vector was empty).
 !
-! If obj is initiated then we only copy the data stored in realvec
+! Examples
 !
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE LisOmpEngine_Class, ONLY: LisOmpEngine_
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
 !
-! Currently, copyStructure and usePointer is not used
+! CHARACTER(*), PARAMETER :: tomlFileName = "ScalarFieldLis_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(LisOmpEngine_) :: lis
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarFieldLis_) :: u, w, w2
+! TYPE(ScalarField_) :: n
+! REAL(DFP) :: found(6), want(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL lis%Initiate()
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+!
+! want = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
+! CALL u%Set(VALUE=want)
+! CALL w%Initiate(obj2=u, copyFull=math%yes)
+!
+! ! Test 1: structure is copied
+! CALL OK(w%IsInitiated(), "w: IsInitiated")
+! CALL OK(w%SIZE() .EQ. u%SIZE(), "w: Size = u%Size")
+!
+! ! Test 2: values are copied
+! BLOCK
+!   CALL w%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "w: values of u")
+! END BLOCK
+!
+! ! Test 3: w has its own LIS vector
+! BLOCK
+!   CALL w%Set(VALUE=0.0_DFP)
+!   CALL u%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "u unchanged")
+! END BLOCK
+!
+! ! Test 4: copy of a native scalar field
+! BLOCK
+!   CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", fedof=fedof, &
+!                   geofedof=geofedof)
+!   CALL n%Set(VALUE=-want)
+!   CALL w2%Initiate(obj2=n, copyFull=math%yes)
+!   CALL w2%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found + want) .LT. tol), "w2: values of n")
+! END BLOCK
+!
+! CALL w2%DEALLOCATE()
+! CALL n%DEALLOCATE()
+! CALL w%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! CALL lis%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
                                   usePointer)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field to be initiated
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
-    !! It should be a child of AbstractNodeField_
+    !! field to copy, it should be a child of AbstractNodeField_
+    !! (ScalarFieldLis_ or a native ScalarField_)
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyFull
+    !! passed to AbstractNodeFieldInitiate
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyStructure
+    !! not used
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: usePointer
+    !! not used
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -171,6 +275,76 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-12-03
 ! summary: Initiate an instance of ScalarFieldLis_ by arguments
+!
+! The scalar field data are set by the Initiate method of ScalarField_
+! (one physical variable, one space and one time component, one value
+! for each DOF of fedof). Then the LIS vector of local size local_n and
+! global size global_n is created (lis_vector_create,
+! lis_vector_set_size) and the local range is, ie is read
+! (lis_vector_get_range). The values of a new vector are zero.
+!
+! ImportFromToml with engine = "LIS_OMP" also calls this method. The
+! LIS library must be started before (LisOmpEngine_%Initiate).
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE LisOmpEngine_Class, ONLY: LisOmpEngine_
+! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ScalarFieldLis_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(LisOmpEngine_) :: lis
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarFieldLis_) :: u, v
+! REAL(DFP) :: found(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL lis%Initiate()
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+! CALL v%Initiate(NAME="v", engine="LIS_OMP", fedof=fedof, &
+!                 geofedof=geofedof)
+!
+! ! Test 1: both fields are initiated, with one value for each DOF
+! CALL OK(u%IsInitiated(), "u: IsInitiated")
+! CALL OK(v%IsInitiated(), "v: IsInitiated")
+! CALL OK(u%SIZE() .EQ. 6, "u: Size")
+! CALL OK(v%SIZE() .EQ. fedof%GetTotalDOF(), "v: Size = total DOF")
+! CALL OK(v%GetTotalPhysicalVars() .EQ. 1, "v: one physical variable")
+!
+! ! Test 2: u and v have their own LIS vectors
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL v%Set(VALUE=2.0_DFP)
+!   CALL u%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - 1.0_DFP) .LT. tol), "u: values")
+!   CALL v%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - 2.0_DFP) .LT. tol), "v: values")
+! END BLOCK
+!
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! CALL lis%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate1]], [[ScalarField_:obj_Initiate2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
@@ -183,10 +357,11 @@ INTERFACE
                                   isTNodes, isTNodesScalar, tSize, fedof, &
                                   geofedof, timefedof)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field to be initiated
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
+    !! name of the engine, "LIS_OMP"
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
@@ -252,7 +427,7 @@ INTERFACE
     !! total size of node field
     !! not required
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF object
+    !! FEDOF of the field and FEDOF of the geometry
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
@@ -262,9 +437,20 @@ END INTERFACE
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-03
+! summary: Destroy the LIS vector and deallocate the object
+!
+! The LIS vector is destroyed (lis_vector_destroy), then the data of the
+! node field are deallocated (AbstractNodeFieldDeallocate). Call it
+! before LisOmpEngine_%DEALLOCATE (lis_finalize).
+!
+! See also: [[obj_Initiate2]] (contains an example)
+
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
   END SUBROUTINE obj_Deallocate
 END INTERFACE
 
@@ -272,9 +458,16 @@ END INTERFACE
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-12-03
+! summary: Finalizer, calls Deallocate
+!
+! See also: [[obj_Deallocate]]
+
 INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
   END SUBROUTINE obj_Final
 END INTERFACE
 
@@ -285,49 +478,151 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-15
 ! summary: Display the object
+!
+! Displays whether the LIS vector is available. If it is, the values of
+! the LIS vector are gathered into realVec (lis_vector_gather) and the
+! node field is displayed by AbstractNodeFieldDisplay.
+!
+! See also: [[obj_Export]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field, realVec is updated from the LIS vector
     CHARACTER(*), INTENT(IN) :: msg
+    !! message displayed first
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitno
+    !! unit number, default is stdout
   END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Export@IOMethods
+!                                                          Export@HDFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-15
-! summary:  Export the data into hdf5 file
+! summary: Export the field to an HDF5 file
+!
+! The values of the LIS vector are gathered into realVec
+! (lis_vector_gather), then the field is written in group of hdf5 by
+! AbstractNodeFieldExport, in the same layout as a native node field.
+! In debug mode an error is raised when the LIS vector is not
+! available.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE LisOmpEngine_Class, ONLY: LisOmpEngine_
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ScalarFieldLis_test.toml"
+! CHARACTER(*), PARAMETER :: filename = "Export_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(LisOmpEngine_) :: lis
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarFieldLis_) :: u
+! TYPE(ScalarField_) :: y
+! TYPE(HDF5File_) :: h5
+! REAL(DFP) :: want(6), found(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL lis%Initiate()
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+!
+! want = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
+! CALL u%Set(VALUE=want)
+!
+! CALL h5%Initiate(filename=filename, mode="NEW")
+! CALL h5%OPEN()
+! CALL u%Export(hdf5=h5, group="/u")
+! CALL h5%DEALLOCATE()
+!
+! CALL h5%Initiate(filename=filename, mode="READ")
+! CALL h5%OPEN()
+! CALL y%IMPORT(hdf5=h5, group="/u", fedof=fedof, geofedof=geofedof)
+! CALL h5%DEALLOCATE()
+!
+! ! Test 1: the exported data is read back
+! CALL OK(y%IsInitiated(), "Import: IsInitiated")
+! CALL OK(y%SIZE() .EQ. 6, "Import: Size")
+!
+! ! Test 2: the exported values are the values of the LIS vector
+! BLOCK
+!   CALL y%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "Export: values")
+! END BLOCK
+!
+! CALL y%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! CALL lis%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Import]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field, realVec is updated from the LIS vector
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened for writing
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
   END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         Import@IOMethods
+!                                                         Import@HDFMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-15
-! summary: Import data from hdf5 file
+! summary: Import the field from an HDF5 file (not yet available)
+!
+! The data are read by AbstractNodeFieldImport, then the LIS vector is
+! created and the values of realVec are copied into it
+! (lis_vector_scatter). The routine is under development: in debug mode
+! it raises an error. To read an exported field, import it into a
+! native ScalarField_ (see the example of Export).
+!
+! See also: [[obj_Export]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
                                timefedofs, geofedof, geofedofs)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened for reading
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
     CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    !! FEDOF of the field and FEDOF of the geometry
     TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    !! FEDOFs for multiple physical variables (not used)
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    !! TimeFEDOF (not used)
     TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
+    !! TimeFEDOFs (not used)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -336,147 +631,422 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
+! date: 2023-03-28
 ! summary: Set single entry
+!
+! Sets entry indx of the LIS vector to scale * VALUE
+! (lis_vector_set_value with LIS_INS_VALUE), or adds scale * VALUE when
+! addContribution is true (LIS_ADD_VALUE).
+!
+! Examples
+!
+!```fortran
+! CALL x%SetSingle(indx=3, VALUE=2.0_DFP, scale=4.0_DFP)
+! CALL x%GetSingle(indx=3, VALUE=val)
+! CALL OK(ABS(val - 8.0_DFP) .LT. tol, "SetSingle: scale * value")
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_1.F90
+!
+! See also: [[obj_GetSingle]], [[obj_SetAll]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetSingle(obj, indx, VALUE, scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: indx
+    !! index of the entry, 1 <= indx <= obj%Size()
     REAL(DFP), INTENT(IN) :: VALUE
+    !! value
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    !! scale, default 1
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       SetAll@SetMethods
+!                                                          SetAll@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-03
 ! summary: Set all the values
+!
+! Sets all entries to scale * VALUE (lis_vector_set_all), or adds
+! scale * VALUE to each entry when addContribution is true. Set(VALUE)
+! of ScalarField_ calls this method.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE LisOmpEngine_Class, ONLY: LisOmpEngine_
+! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ScalarFieldLis_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(LisOmpEngine_) :: lis
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarFieldLis_) :: u
+! REAL(DFP) :: val, found(6)
+! INTEGER(I4B) :: ii
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL lis%Initiate()
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+!
+! ! Test 1: all entries
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   DO ii = 1, 6
+!     CALL u%Get(VALUE=found(ii), globalNode=ii, islocal=math%yes)
+!   END DO
+!   CALL OK(ALL(ABS(found - 1.0_DFP) .LE. tol), "Set all")
+!
+!   CALL u%Set(VALUE=1.0_DFP, scale=2.0_DFP, addContribution=math%yes)
+!   CALL u%Get(VALUE=val, globalNode=4, islocal=math%yes)
+!   CALL OK(ABS(val - 3.0_DFP) .LE. tol, "Set all: add 2 * 1")
+! END BLOCK
+!
+! ! Test 2: single entry
+! BLOCK
+!   CALL u%Set(globalNode=2, islocal=math%yes, VALUE=5.0_DFP)
+!   CALL u%Get(VALUE=val, globalNode=2, islocal=math%yes)
+!   CALL OK(ABS(val - 5.0_DFP) .LT. tol, "Set single")
+!
+!   CALL u%Set(globalNode=2, islocal=math%yes, VALUE=5.0_DFP, &
+!              scale=2.0_DFP)
+!   CALL u%Get(VALUE=val, globalNode=2, islocal=math%yes)
+!   CALL OK(ABS(val - 10.0_DFP) .LT. tol, "Set single: scale")
+!
+!   CALL u%Set(globalNode=2, islocal=math%yes, VALUE=1.0_DFP, &
+!              scale=3.0_DFP, addContribution=math%yes)
+!   CALL u%Get(VALUE=val, globalNode=2, islocal=math%yes)
+!   CALL OK(ABS(val - 13.0_DFP) .LT. tol, "Set single: add 3 * 1")
+!
+!   CALL u%Get(VALUE=val, globalNode=1, islocal=math%yes)
+!   CALL OK(ABS(val - 3.0_DFP) .LT. tol, "other entries unchanged")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! CALL lis%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_SetSingle]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetAll(obj, VALUE, scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     REAL(DFP), INTENT(IN) :: VALUE
     !! value to be set or add
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetAll
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                     SetMultiple@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
+! date: 2023-03-28
 ! summary: Set multiple entries using indices
+!
+! Sets entry indx(i) to scale * VALUE(i) for i = 1, ..., SIZE(indx)
+! (lis_vector_set_values4), or adds scale * VALUE(i) when
+! addContribution is true.
+!
+! Examples
+!
+!```fortran
+! CALL x%SetMultiple(indx=[2, 4], VALUE=[10.0_DFP, 20.0_DFP], &
+!                    scale=2.0_DFP)
+! CALL x%GetMultiple(indx=[4, 2], VALUE=found, tsize=tsize)
+! CALL OK(ALL(ABS(found(1:2) - [40.0_DFP, 20.0_DFP]) .LT. tol), &
+!         "SetMultiple indx: scale * value")
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_1.F90
+!
+! See also: [[obj_SetMultiple2]], [[obj_GetMultiple1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMultiple1(obj, indx, VALUE, scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: indx(:)
-    !! index, size(indx) = size(value) = tsize
+    !! indices, SIZE(indx) = SIZE(VALUE)
     REAL(DFP), INTENT(IN) :: VALUE(:)
-    !! values which will be use din obj=value
+    !! values, obj(indx(i)) = scale * VALUE(i)
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetMultiple1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                     SetMultiple@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Get single entry
+! date: 2023-03-28
+! summary: Set multiple entries in a range
+!
+! Sets the entries istart, istart + stride, ..., iend to scale * VALUE(1),
+! scale * VALUE(2), ... (lis_vector_set_values5), or adds them when
+! addContribution is true. The number of entries is
+! (iend - istart) / stride + 1.
+!
+! Examples
+!
+!```fortran
+! CALL x%SetMultiple(istart=1, iend=5, stride=2, &
+!                    VALUE=[1.0_DFP, 2.0_DFP, 3.0_DFP], scale=3.0_DFP)
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_1.F90
+!
+! See also: [[obj_SetMultiple1]], [[obj_GetMultiple2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMultiple2(obj, istart, iend, stride, VALUE, &
                                      scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
-    !! index, size(indx) = size(value) = tsize
+    !! range of entries of obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
-    !! obj = value
+    !! values, SIZE(VALUE) >= (iend - istart) / stride + 1
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetMultiple2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                     SetMultiple@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-06-02
-! summary: Get multiple entries using trides
+! date: 2024-06-02
+! summary: Set multiple entries in a range from a range of value
+!
+! Sets the entries istart:iend:stride of obj to scale times the entries
+! istart_value:iend_value:stride_value of VALUE
+! (lis_vector_set_values8), or adds them when addContribution is true.
+! Both ranges have (iend - istart) / stride + 1 entries.
+!
+! Examples
+!
+!```fortran
+! ! x(2:6:2) = -1 * src(4:6)
+! CALL x%SetMultiple(istart=2, iend=6, stride=2, VALUE=src, &
+!                    istart_value=4, iend_value=6, stride_value=1, &
+!                    scale=-1.0_DFP)
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_1.F90
+!
+! See also: [[obj_SetMultiple2]], [[obj_GetMultiple3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMultiple3(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
-    !! index, size(indx) = size(value) = tsize
+    !! range of entries of obj
     REAL(DFP), INTENT(IN) :: VALUE(:)
-    !! returned vlaue
+    !! values
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
-    !! range of values
+    !! range of entries of VALUE, same number of entries as obj range
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetMultiple3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                     SetMultiple@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Get single entry
+! date: 2023-03-28
+! summary: Set multiple entries in a range to one value
+!
+! Sets the entries istart:iend:stride to scale * VALUE
+! (lis_vector_set_values6), or adds scale * VALUE when addContribution
+! is true.
+!
+! Examples
+!
+!```fortran
+! ! x(1:6:3) = 0.5 * 8
+! CALL x%SetMultiple(istart=1, iend=6, stride=3, VALUE=8.0_DFP, &
+!                    scale=0.5_DFP)
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_1.F90
+!
+! See also: [[obj_SetMultiple2]], [[obj_SetAll]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetMultiple4(obj, istart, iend, stride, VALUE, &
                                      scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
-    !! index, size(indx) = size(value) = tsize
+    !! range of entries of obj
     REAL(DFP), INTENT(IN) :: VALUE
-    !! obj = value
+    !! one value for all entries in the range
     REAL(DFP), INTENT(IN), OPTIONAL :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetMultiple4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: obj=obj+scalar*VALUE
+! date: 2021-06-25
+! summary: Set or add another scalar field: obj = obj + scale * VALUE
+!
+! If addContribution is true, then scale * VALUE is added to obj.
+! Otherwise obj is set to scale * VALUE. VALUE can be
+!
+!- a ScalarFieldLis_: the LIS vector of VALUE is used
+!  (lis_vector_set_values9),
+!- a native ScalarField_: its Fortran vector is used (SetMultiple).
+!
+! The assignment obj = VALUE (Set7 of ScalarField_) calls this method.
+! Both fields must have the same FEDOF. An error is raised (in debug
+! mode) if obj or VALUE is not initiated, or VALUE is another type.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE LisOmpEngine_Class, ONLY: LisOmpEngine_
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ScalarFieldLis_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(LisOmpEngine_) :: lis
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarFieldLis_) :: u, v
+! TYPE(ScalarField_) :: n
+! REAL(DFP) :: found(6), want(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL lis%Initiate()
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+! CALL v%Initiate(NAME="v", engine="LIS_OMP", fedof=fedof, &
+!                 geofedof=geofedof)
+! CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", fedof=fedof, &
+!                 geofedof=geofedof)
+!
+! want = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
+! CALL u%Set(VALUE=want)
+!
+! ! Test 1: assignment from a LIS field
+! BLOCK
+!   CALL v%Set(VALUE=0.0_DFP)
+!   v = u
+!   CALL v%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "v = u")
+! END BLOCK
+!
+! ! Test 2: LIS field, set and add
+! BLOCK
+!   CALL v%Set(VALUE=9.0_DFP)
+!   CALL v%Set(VALUE=u, scale=-3.0_DFP, addContribution=math%no)
+!   CALL v%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found + 3.0_DFP * want) .LT. tol), "v = -3 * u")
+!
+!   CALL v%Set(VALUE=u, scale=2.0_DFP, addContribution=math%yes)
+!   CALL v%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found + want) .LT. tol), "v = v + 2 * u")
+! END BLOCK
+!
+! ! Test 3: native field, set and add
+! BLOCK
+!   CALL n%Set(VALUE=10.0_DFP * want)
+!   CALL v%Set(VALUE=n, scale=0.5_DFP, addContribution=math%no)
+!   CALL v%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - 5.0_DFP * want) .LT. tol), "v = 0.5 * n")
+!
+!   CALL v%Set(VALUE=n, scale=-1.0_DFP, addContribution=math%yes)
+!   CALL v%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found + 5.0_DFP * want) .LT. tol), "v = v - n")
+! END BLOCK
+!
+! ! Test 4: u is not changed
+! BLOCK
+!   CALL u%Get(VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "u unchanged")
+! END BLOCK
+!
+! CALL n%DEALLOCATE()
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! CALL lis%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[ScalarField_:obj_Set8]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set8(obj, VALUE, scale, addContribution)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     CLASS(ScalarField_), INTENT(IN) :: VALUE
+    !! other scalar field (ScalarFieldLis_ or ScalarField_)
     REAL(DFP), INTENT(IN) :: scale
+    !! scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
+    !! add (true) or set (false)
   END SUBROUTINE obj_Set8
 END INTERFACE
 
@@ -515,28 +1085,50 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-12-04
-! summary: Get the pointer
+! summary: Not available, returns NULL
+!
+! The values are stored in the LIS vector, not in realVec, so no
+! pointer to them can be returned. The result is NULL and in debug mode
+! an error is raised. Use Get or GetMultiple instead.
+!
+! Returns:
+!   ans : REAL(DFP), POINTER - NULL
+!
+! See also: [[obj_GetMultiple2]]
 
 INTERFACE
   MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
     CLASS(ScalarFieldLis_), TARGET, INTENT(IN) :: obj
+    !! LIS scalar field
     REAL(DFP), POINTER :: ans(:)
+    !! always NULL
   END FUNCTION obj_GetPointer
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Size@GetMethods
+!                                                           Size@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-12-04
-! summary: Get the size of the object
+! summary: Number of values of the field
+!
+! Returns local_n, the number of values stored on this process. For a
+! serial field it is the total number of DOFs of fedof.
+!
+! Returns:
+!   ans : INTEGER(I4B) - number of values
+!
+! See also: [[obj_Initiate2]] (contains an example)
 
 INTERFACE
   MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dims
+    !! not used
     INTEGER(I4B) :: ans
+    !! number of values
   END FUNCTION obj_Size
 END INTERFACE
 
@@ -545,78 +1137,118 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Set single entry
+! date: 2023-03-28
+! summary: Get single entry
+!
+! Returns entry indx of the LIS vector (lis_vector_get_value).
+!
+! See also: [[obj_SetSingle]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: indx
+    !! index of the entry, 1 <= indx <= obj%Size()
     REAL(DFP), INTENT(OUT) :: VALUE
+    !! value of the entry
   END SUBROUTINE obj_GetSingle
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                     GetMultiple@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
+! date: 2023-03-28
 ! summary: Get multiple entries using indices
+!
+! VALUE(i) is entry indx(i) of the LIS vector, i = 1, ..., SIZE(indx)
+! (lis_vector_get_values_from_index); tsize = SIZE(indx).
+!
+! See also: [[obj_SetMultiple1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: indx(:)
-    !! index, size(indx) = size(value) = tsize
+    !! indices of the entries
     REAL(DFP), INTENT(OUT) :: VALUE(:)
-    !! returned vlaue
+    !! values, SIZE(VALUE) >= SIZE(indx)
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! total number of data written in value
+    !! number of values written in VALUE, SIZE(indx)
   END SUBROUTINE obj_GetMultiple1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                     GetMultiple@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Get multiple enties using range
+! date: 2023-03-28
+! summary: Get multiple entries in a range
+!
+! VALUE(1:tsize) are the entries istart:iend:stride of the LIS vector
+! (lis_vector_get_values_from_range), with
+! tsize = (iend - istart) / stride + 1. Get(VALUE, tsize) of
+! ScalarField_ calls this method.
+!
+! See also: [[obj_SetMultiple2]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
-    !! index, size(indx) = size(value) = tsize
+    !! range of entries of obj
     REAL(DFP), INTENT(OUT) :: VALUE(:)
-    !! returned vlaue
+    !! values, SIZE(VALUE) >= tsize
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! total number of data written in value
+    !! number of values written in VALUE
   END SUBROUTINE obj_GetMultiple2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSingle@GetMethods
+!                                                     GetMultiple@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-06-02
-! summary: Get multiple entries using trides
+! date: 2024-06-02
+! summary: Get multiple entries in a range into a range of value
+!
+! The entries istart:iend:stride of the LIS vector are written in
+! VALUE(istart_value:iend_value:stride_value)
+! (lis_vector_get_values_from_range2); the other entries of VALUE are
+! not changed. tsize = (iend - istart) / stride + 1.
+!
+! Examples
+!
+!```fortran
+! ! found(4:6) = x(1:3)
+! CALL x%GetMultiple(istart=1, iend=3, stride=1, VALUE=found, &
+!                    istart_value=4, iend_value=6, stride_value=1, &
+!                    tsize=tsize)
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_1.F90
+!
+! See also: [[obj_SetMultiple3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      tsize)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
-    !! index, size(indx) = size(value) = tsize
+    !! range of entries of obj
     REAL(DFP), INTENT(OUT) :: VALUE(:)
-    !! returned vlaue
+    !! values, entries istart_value:iend_value:stride_value are written
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
-    !! range of values
+    !! range of entries of VALUE, same number of entries as obj range
     INTEGER(I4B), INTENT(OUT) :: tsize
-    !! total number of data written in value
+    !! number of values written in VALUE
   END SUBROUTINE obj_GetMultiple3
 END INTERFACE
 
@@ -625,14 +1257,37 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-12-17
-! summary:  obj = obj + s * x
+! date: 2023-12-17
+! summary: obj = obj + scale * x
+!
+! Calls lis_vector_axpy. x must use the LIS engine and have the same
+! size as obj.
+!
+! Formula:
+!   $$ obj = obj + s \, x $$
+!
+! Examples
+!
+!```fortran
+! CALL w%SetAll(VALUE=0.0_DFP)
+! CALL w%AXPY(x=x, scale=2.0_DFP)
+! CALL w%GetMultiple(istart=1, iend=6, stride=1, VALUE=found, &
+!                    tsize=tsize)
+! CALL OK(ALL(ABS(found - 2.0_DFP * src) .LT. tol), "AXPY: w + s * x")
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/AXPY_test_1.F90
+!
+! See also: [[obj_AXPY2]], [[obj_AXPY3]], [[obj_SCAL]]
 
 INTERFACE
   MODULE SUBROUTINE obj_AXPY1(obj, x, scale)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field, obj = obj + scale * x
     CLASS(AbstractNodeField_), INTENT(INOUT) :: x
+    !! node field with the LIS engine
     REAL(DFP), INTENT(IN) :: scale
+    !! scale
   END SUBROUTINE obj_AXPY1
 END INTERFACE
 
@@ -641,16 +1296,28 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
-! date:   2023-12-29
-! summary:  obj = obj + a1 * x1 + a2 * x2
+! date: 2023-12-29
+! summary: obj = obj + a1 * x1 + a2 * x2
+!
+! Calls lis_vector_axpy twice. x1 and x2 must use the LIS engine.
+!
+! Formula:
+!   $$ obj = obj + a_1 x_1 + a_2 x_2 $$
+!
+! See also: [[obj_AXPY1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_AXPY2(obj, x1, x2, a1, a2)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     CLASS(AbstractNodeField_), INTENT(INOUT) :: x1
+    !! first node field with the LIS engine
     CLASS(AbstractNodeField_), INTENT(INOUT) :: x2
+    !! second node field with the LIS engine
     REAL(DFP), INTENT(IN) :: a1
+    !! scale of x1
     REAL(DFP), INTENT(IN) :: a2
+    !! scale of x2
   END SUBROUTINE obj_AXPY2
 END INTERFACE
 
@@ -659,48 +1326,76 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
-! date:   2023-12-29
-! summary:  obj = obj + a1 * x1 + a2 * x2 + a3 * x3
+! date: 2023-12-29
+! summary: obj = obj + a1 * x1 + a2 * x2 + a3 * x3
+!
+! Calls lis_vector_axpy three times. x1, x2 and x3 must use the LIS
+! engine.
+!
+! Formula:
+!   $$ obj = obj + a_1 x_1 + a_2 x_2 + a_3 x_3 $$
+!
+! See also: [[obj_AXPY1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_AXPY3(obj, x1, x2, x3, a1, a2, a3)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
     CLASS(AbstractNodeField_), INTENT(INOUT) :: x1
+    !! first node field with the LIS engine
     CLASS(AbstractNodeField_), INTENT(INOUT) :: x2
+    !! second node field with the LIS engine
     CLASS(AbstractNodeField_), INTENT(INOUT) :: x3
+    !! third node field with the LIS engine
     REAL(DFP), INTENT(IN) :: a1
+    !! scale of x1
     REAL(DFP), INTENT(IN) :: a2
+    !! scale of x2
     REAL(DFP), INTENT(IN) :: a3
+    !! scale of x3
   END SUBROUTINE obj_AXPY3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          ACAL@BlasMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-12-17
-! summary: scaling y = s * y
-
-INTERFACE
-  MODULE SUBROUTINE obj_SCAL(obj, scale)
-    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: scale
-  END SUBROUTINE obj_SCAL
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                         COPY@BlasMethods
+!                                                          SCAL@BlasMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-17
-! summary: Copy obj=obj2
+! summary: Scaling, obj = scale * obj
+!
+! Calls lis_vector_scale.
+!
+! See also: [[obj_AXPY1]] (contains an example)
+
+INTERFACE
+  MODULE SUBROUTINE obj_SCAL(obj, scale)
+    CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale
+  END SUBROUTINE obj_SCAL
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                          COPY@BlasMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-12-17
+! summary: Copy the values, obj = obj2
+!
+! Copies the LIS vector of obj2 into the LIS vector of obj
+! (lis_vector_copy). obj2 must use the LIS engine and have the same size.
+!
+! See also: [[obj_AXPY1]] (contains an example), [[obj_Swap]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Copy(obj, obj2)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field, obj = obj2
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    !! node field with the LIS engine
   END SUBROUTINE obj_Copy
 END INTERFACE
 
@@ -721,7 +1416,7 @@ END INTERFACE
 ! size. In debug mode an error is raised when the LIS vector of obj or
 ! obj2 is null, or when obj%Size() and obj2%Size() differ.
 !
-! See also: [[obj_Copy]], [[AbstractNodeField_:Swap]]
+! See also: [[obj_AXPY1]] (contains an example), [[obj_Copy]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Swap(obj, obj2)
@@ -734,93 +1429,239 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Norm2@BlasMethods
+!                                                         Norm2@BlasMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: This function returns NORM2
+! date: 2022-01-24
+! summary: Returns the L2 norm
+!
+! Calls lis_vector_nrm2.
+!
+! Returns:
+!   ans : REAL(DFP) - L2 norm of the values
+!
+! Formula:
+!   $$ ans = \sqrt{\sum_i x_i^2} $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE LisOmpEngine_Class, ONLY: LisOmpEngine_
+! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ScalarFieldLis_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(LisOmpEngine_) :: lis
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarFieldLis_) :: x, y, z
+! REAL(DFP) :: src(6), ysrc(6), found(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL lis%Initiate()
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL x%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+! CALL y%Initiate(NAME="y", engine="LIS_OMP", fedof=fedof, &
+!                 geofedof=geofedof)
+! CALL z%Initiate(NAME="z", engine="LIS_OMP", fedof=fedof, &
+!                 geofedof=geofedof)
+!
+! src = [1.0_DFP, -2.0_DFP, 3.0_DFP, -4.0_DFP, 5.0_DFP, -6.0_DFP]
+! ysrc = [1.0_DFP, 1.0_DFP, 1.0_DFP, 2.0_DFP, 2.0_DFP, 2.0_DFP]
+! CALL x%SetMultiple(istart=1, iend=6, stride=1, VALUE=src)
+! CALL y%SetMultiple(istart=1, iend=6, stride=1, VALUE=ysrc)
+!
+! ! Test 1: norms
+! CALL OK(ABS(x%Norm1() - 21.0_DFP) .LT. tol, "Norm1")
+! CALL OK(ABS(x%Norm2() - SQRT(91.0_DFP)) .LT. tol, "Norm2")
+! CALL OK(ABS(x%Normi() - 6.0_DFP) .LT. tol, "Normi")
+!
+! ! Test 2: dot product
+! CALL OK(ABS(x%DOT_PRODUCT(obj2=y) + 8.0_DFP) .LT. tol, "DOT_PRODUCT")
+!
+! ! Test 3: PMUL, z = x * y
+! BLOCK
+!   CALL z%PMUL(obj1=x, obj2=y)
+!   CALL z%GetMultiple(istart=1, iend=6, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found - src * ysrc) .LT. tol), "PMUL")
+! END BLOCK
+!
+! ! Test 4: Reciprocal, z = 1 / z
+! BLOCK
+!   CALL z%Reciprocal()
+!   CALL z%GetMultiple(istart=1, iend=6, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found - 1.0_DFP / (src * ysrc)) .LT. tol), &
+!           "Reciprocal")
+! END BLOCK
+!
+! CALL z%DEALLOCATE()
+! CALL y%DEALLOCATE()
+! CALL x%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! CALL lis%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Norm1]], [[obj_Normi]]
 
 INTERFACE
   MODULE FUNCTION obj_Norm2(obj) RESULT(ans)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     REAL(DFP) :: ans
+    !! L2 norm
   END FUNCTION obj_Norm2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Norm1@BlasMethods
+!                                                         Norm1@BlasMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: This function returns first norm (absolute some)
+! date: 2022-01-24
+! summary: Returns the L1 norm (sum of absolute values)
+!
+! Calls lis_vector_nrm1.
+!
+! Returns:
+!   ans : REAL(DFP) - L1 norm of the values
+!
+! Formula:
+!   $$ ans = \sum_i |x_i| $$
+!
+! See also: [[obj_Norm2]] (contains an example)
 
 INTERFACE
   MODULE FUNCTION obj_Norm1(obj) RESULT(ans)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     REAL(DFP) :: ans
+    !! L1 norm
   END FUNCTION obj_Norm1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          Normi@BlasMethods
+!                                                         Normi@BlasMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: This function returns infinity norm
+! date: 2022-01-24
+! summary: Returns the infinity norm (largest absolute value)
+!
+! Calls lis_vector_nrmi. With the OpenMP build of LIS the result is
+! currently wrong, because lis_vector_nrmi does not initialise its
+! thread private maximum (see bugs-report/ScalarFieldLis_bug_report.md,
+! H-01).
+!
+! Returns:
+!   ans : REAL(DFP) - infinity norm of the values
+!
+! Formula:
+!   $$ ans = \max_i |x_i| $$
+!
+! See also: [[obj_Norm2]] (contains an example)
 
 INTERFACE
   MODULE FUNCTION obj_Normi(obj) RESULT(ans)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     REAL(DFP) :: ans
+    !! infinity norm
   END FUNCTION obj_Normi
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    DOT_PRODUCT@BlasMethods
+!                                                   DOT_PRODUCT@BlasMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-27
-! summary:  performs dot product
+! summary: Dot product of obj and obj2
+!
+! Calls lis_vector_dot. obj2 must use the LIS engine and have the same
+! size.
+!
+! Returns:
+!   ans : REAL(DFP) - dot product
+!
+! Formula:
+!   $$ ans = \sum_i x_i y_i $$
+!
+! See also: [[obj_Norm2]] (contains an example)
 
 INTERFACE
   MODULE FUNCTION obj_DOT_PRODUCT(obj, obj2) RESULT(ans)
     CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    !! node field with the LIS engine
     REAL(DFP) :: ans
+    !! dot product
   END FUNCTION obj_DOT_PRODUCT
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           PMUL@BlasMethods
+!                                                          PMUL@BlasMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-27
-! summary:  obj = obj1 * obj2
+! summary: Entry by entry product, obj = obj1 * obj2
+!
+! Calls lis_vector_pmul. obj1 and obj2 must use the LIS engine and have
+! the same size as obj.
+!
+! Formula:
+!   $$ obj_i = (obj1)_i (obj2)_i $$
+!
+! See also: [[obj_Norm2]] (contains an example), [[obj_Reciprocal]]
 
 INTERFACE
   MODULE SUBROUTINE obj_PMUL(obj, obj1, obj2)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field, result
     CLASS(AbstractNodeField_), INTENT(IN) :: obj1
+    !! first node field with the LIS engine
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
+    !! second node field with the LIS engine
   END SUBROUTINE obj_PMUL
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                     Reciprocal@BlasMethods
+!                                                    Reciprocal@BlasMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-27
-! summary:  obj = 1.0 / obj
+! summary: Entry by entry reciprocal, obj = 1 / obj
+!
+! Calls lis_vector_reciprocal. The entries must not be zero.
+!
+! Formula:
+!   $$ obj_i = 1 / obj_i $$
+!
+! See also: [[obj_Norm2]] (contains an example), [[obj_PMUL]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Reciprocal(obj)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS scalar field
   END SUBROUTINE obj_Reciprocal
 END INTERFACE
 
