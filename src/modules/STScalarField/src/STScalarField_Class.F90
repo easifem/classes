@@ -14,9 +14,9 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary: STScalar field data type is defined
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-28
+! summary: Space-time scalar field data type is defined
 
 MODULE STScalarField_Class
 USE AbstractField_Class, ONLY: AbstractField_
@@ -48,26 +48,51 @@ PUBLIC :: STScalarFieldDeallocate
 PUBLIC :: STScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
-!                                                              STScalarField_
+!                                                            STScalarField_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Space-time scalar field
+!
+! A space-time scalar field has one physical variable with one space
+! component and timeCompo time components. For a space-time finite
+! element, timeCompo is the number of DOFs of the time element
+! (timefedof); for example two for order 1 Lagrange in time.
+!
+! The values are stored in the vector of AbstractNodeField_ in the DOF
+! storage format: first the values of all space DOFs of time component
+! 1, then those of time component 2, and so on. The value of space DOF
+! i (the node number for order 1 Lagrange) and time component a is
+! entry (a - 1) * tNodes + i, where tNodes is the number of space DOFs
+! of fedof. idofs = [1, ..., timeCompo] are the DOF numbers of the time
+! components in the DOF object.
+!
+! The values are set by Set, SetByFunction, SetFromScalarField, the
+! boundary condition methods (ApplyDirichletBC, ...) and the methods
+! of AbstractNodeField_, and they are read by Get, GetFEVariable and
+! SetToScalarField.
+!
+! Bindings without PUBLIC are private (PRIVATE after CONTAINS); the
+! Set and Get generics are the API.
+!
+! See also: [[ScalarField_]], [[AbstractNodeField_]],
+! [[STScalarFieldLis_]]
 
 TYPE, EXTENDS(AbstractNodeField_) :: STScalarField_
   INTEGER(I4B), PUBLIC :: timeCompo = 0_I4B
+  !! number of time components (DOFs of the time element)
   INTEGER(I4B), ALLOCATABLE :: idofs(:)
-  !! global idofs 1 to timeCompo
+  !! DOF numbers of the time components, idofs = [1, ..., timeCompo]
 CONTAINS
   PRIVATE
 
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
-  !! Initiate by copy
+  !! Initiate by copying another node field
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate an instance of ScalarField_ by passing arguments
+  !! Initiate an instance of STScalarField_ by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside the STScalarField_ object
   FINAL :: obj_Final
@@ -78,42 +103,38 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of STScalarField_
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
-  !! Import the content of STScalarField_
+  !! Import the content of STScalarField_ from an HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
-  !! Export the content of STScalarField_
+  !! Export the content of STScalarField_ to an HDF5 file
 
   ! SET:
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
-  !! Set single entry
+  !! Set all time components of one node
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
-  !! Set all values to a constant time node values
+  !! Set time component a of all nodes to VALUE(a)
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
-  !! Set all values to a given STScalar
+  !! Set one time component of all nodes to one value
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
-  !! Set selected values to given STScalar
+  !! Set all entries from a rank-2 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
-  !! Set selected values to given STScalar
+  !! Set one time component of all nodes from a vector
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
-  !! obj@timeCompo=obj@timeCompo+scale*value
-  !! (value is an instance of AbstractNodeField)
-  !! if value is space-time field, then value@timeCompo is used
-  !! This method calls Set13
+  !! Set one time component from a node field (not yet available)
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
-  !! Set values to a STScalar by using triplet
+  !! Set all time components of the selected nodes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
-  !! Set values to a STScalar by using triplet
+  !! Set the selected nodes from a rank-2 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
-  !! Set values to a STScalar by using triplet
+  !! Set one time component of the selected nodes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
-  !! Set values to a STScalar by using triplet
+  !! Set one time component of one node
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
-  !! Set values using FEVariable
+  !! Set the selected nodes from an FEVariable
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
-  !! Set all the value to a constant
-  !! WE call setall method here
+  !! Set all entries to one value
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! Copy
+  !! Copy another space-time scalar field
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13
   !! Generic Set Method
@@ -122,24 +143,26 @@ CONTAINS
   !! Set by user function
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
     SetFromScalarField => obj_SetFromScalarField
+  !! Set one time component from a scalar field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
     SetToScalarField => obj_SetToScalarField
+  !! Set a scalar field from one time component
 
   ! GET:
   ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
-  !! Get all components at a given node
-  !! Get all values of a given component
+  !! Get all time components of one node, or all nodes of one time
+  !! component
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
-  !! Get all values in a rank  array
+  !! Get all values in a rank-2 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
-  !! Get selected many values in a rank-2 array
+  !! Get the values of the selected nodes in a rank-2 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
-  !! Get selected many values in a rank-1 array
+  !! Get one time component of the selected nodes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get single entry; call GetSingle method
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
-  !! Get value in FEVariable
+  !! Get the values of the selected nodes in an FEVariable
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6
   !! Generic Get method
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
@@ -149,12 +172,16 @@ CONTAINS
   ! @DirichletBCMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  !! Apply one Dirichlet boundary condition
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  !! Apply a vector of Dirichlet boundary conditions
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyDirichletBC3 => obj_ApplyDirichletBC3
+  !! Apply the Dirichlet boundary conditions of the field
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
+  !! Apply Dirichlet boundary conditions
 
   ! SET:
   ! @BodySourceMethods
@@ -193,6 +220,7 @@ END TYPE STScalarField_
 
 TYPE :: STScalarFieldPointer_
   CLASS(STScalarField_), POINTER :: ptr => NULL()
+  !! pointer to a space-time scalar field
 END TYPE STScalarFieldPointer_
 
 !----------------------------------------------------------------------------
@@ -200,18 +228,29 @@ END TYPE STScalarFieldPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Initiate2
+! date: 2023-03-29
+! summary: Initiate by copying another node field
+!
+! The node field data of obj2 (name, engine, sizes, DOF data, FEDOF and
+! boundary condition pointers, values) are copied by
+! AbstractNodeFieldInitiate. When obj2 is a STScalarField_, timeCompo
+! and idofs are copied as well.
+!
+! See also: [[obj_Initiate2]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1( &
     obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field to be initiated
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    !! passed to AbstractNodeFieldInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    !! passed to AbstractNodeFieldInitiate
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+    !! passed to AbstractNodeFieldInitiate
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -221,11 +260,97 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-07-19
-! summary:  Initiates by passing arguments
+! summary: Initiates by passing arguments
 !
-!# Introduction
-!  This method is like obj_Initiate1, but it works with arugments
-!  instead of parameter list.
+! obj is deallocated first. timeCompo is the total number of DOFs of
+! timefedof when timefedof is present and initiated, otherwise it is
+! timeCompo(1) (an error is raised in debug mode if it is missing).
+! idofs is set to [1, ..., timeCompo]. The node field has one physical
+! variable (named by the first character of name), one space
+! component, timeCompo time components and fedof%GetTotalDOF() space
+! DOFs, so its size is fedof%GetTotalDOF() * timeCompo.
+!
+! ImportFromToml calls this method; the TimeFEDOF is made from the
+! table named by timefedofName.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u, v, w, c
+! REAL(DFP) :: found(12), want(12)
+! INTEGER(I4B) :: ii, tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: field from the toml file
+! CALL OK(u%IsInitiated(), "u: IsInitiated")
+! CALL OK(u%timeCompo .EQ. 2, "u: timeCompo")
+! CALL OK(u%SIZE() .EQ. 12, "u: Size")
+! CALL OK(u%GetTotalPhysicalVars() .EQ. 1, "u: one physical variable")
+!
+! ! Test 2: timeCompo from timefedof
+! BLOCK
+!   CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", fedof=fedof, &
+!                   geofedof=geofedof, timefedof=timefedof)
+!   CALL OK(v%timeCompo .EQ. timefedof%GetTotalDOF(), &
+!           "v: timeCompo = time DOF")
+!   CALL OK(v%SIZE() .EQ. fedof%GetTotalDOF() * v%timeCompo, &
+!           "v: Size = space DOF * timeCompo")
+! END BLOCK
+!
+! ! Test 3: timeCompo given without timefedof
+! BLOCK
+!   CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", fedof=fedof, &
+!                   geofedof=geofedof, timeCompo=[3])
+!   CALL OK(w%timeCompo .EQ. 3, "w: timeCompo")
+!   CALL OK(w%SIZE() .EQ. 18, "w: Size")
+! END BLOCK
+!
+! ! Test 4: copy of u, with its values
+! BLOCK
+!   want = [(REAL(ii, DFP), ii=1, 12)]
+!   CALL u%SetMultiple(istart=1, iend=12, stride=1, VALUE=want)
+!   CALL c%Initiate(obj2=u, copyFull=math%yes)
+!   CALL OK(c%timeCompo .EQ. u%timeCompo, "copy: timeCompo")
+!   CALL OK(c%SIZE() .EQ. u%SIZE(), "copy: Size")
+!   CALL c%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found - want) .LT. tol), "copy: values")
+! END BLOCK
+!
+! CALL c%DEALLOCATE()
+! CALL w%DEALLOCATE()
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &
@@ -235,6 +360,7 @@ INTERFACE
     isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
     isTNodesScalar, tSize, fedof, geofedof, timefedof)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field to be initiated
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field, needed
     CHARACTER(*), INTENT(IN) :: engine
@@ -245,7 +371,7 @@ INTERFACE
     !! FIELD_TYPE_CONSTANT
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
     !! storage format of the scalar field
-    !! Not required.
+    !! Not used, the DOF format is used
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
     !! communication group
     !! Only needed for parallel environment
@@ -256,14 +382,15 @@ INTERFACE
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
-    !! space components
+    !! space components, not used (always 1)
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
     !! if true we will try to access spaceCompo, NOT REQUIRED
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1), NOT REQUIRED
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
-    !! Time components, needed for space-time field
+    !! Time components, timeCompo(1) is used when timefedof is not
+    !! present or not initiated
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
     !! if true we will try to access TimeCompo
     !! Not required, Not needed
@@ -296,38 +423,43 @@ INTERFACE
     !! total size of node field
     !! not required
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF object
+    !! FEDOF of the field and FEDOF of the geometry
     CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
-    !! TimeFEDOF object
+    !! TimeFEDOF object, gives timeCompo
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               Deallocate@ConstructorMethods
+!                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: It deallocates the data stored inside the STScalarField_ obj
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Deallocate the data stored inside the STScalarField_ obj
+!
+! timeCompo is set to zero, idofs is deallocated and the node field
+! data are deallocated by AbstractNodeFieldDeallocate.
+!
+! See also: [[obj_Initiate2]] (contains an example)
 
 INTERFACE STScalarFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
   END SUBROUTINE obj_Deallocate
 END INTERFACE STScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
-!                                STScalarFieldSafeAllocate@ConstructorMethods
+!                              STScalarFieldSafeAllocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-09-25
-! summary:  Safely allocate the scalar field
+! date: 2024-09-25
+! summary: Safely allocate a vector of STScalarFieldPointer_
 !
-!# Introduction
-!
-! This routine will allocate obj if it is not allocated
-! It will allocate obj if its current size is less than newsize
+! obj is allocated with newsize entries if it is not allocated. If its
+! size is less than newsize, it is deallocated (STScalarFieldDeallocate)
+! and allocated again with newsize entries. Otherwise nothing is done.
 
 INTERFACE STScalarFieldSafeAllocate
   MODULE SUBROUTINE obj_STScalarFieldSafeAllocate1(obj, newsize)
@@ -342,9 +474,16 @@ END INTERFACE STScalarFieldSafeAllocate
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-09-25
+! summary: Deallocate a vector of STScalarFieldPointer_
+!
+! Each associated field is deallocated, then obj is deallocated.
+
 INTERFACE STScalarFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(STScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! vector of space-time scalar field pointers
   END SUBROUTINE obj_Deallocate_ptr_vector
 END INTERFACE STScalarFieldDeallocate
 
@@ -352,9 +491,16 @@ END INTERFACE STScalarFieldDeallocate
 !                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Finalizer, calls Deallocate
+!
+! See also: [[obj_Deallocate]]
+
 INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
   END SUBROUTINE obj_Final
 END INTERFACE
 
@@ -362,52 +508,160 @@ END INTERFACE
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 June 2021
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-26
 ! summary: Display the content of [[STScalarField_]]
+!
+! Displays the node field (AbstractNodeFieldDisplay) and timeCompo.
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitno)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     CHARACTER(*), INTENT(IN) :: msg
+    !! message displayed first
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+    !! unit number, default is stdout
   END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Import@IOMethods
+!                                                          Import@HDFMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Imports the content
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Import the field from an HDF5 file
+!
+! The node field data are read by AbstractNodeFieldImport and timeCompo
+! is read from group/timeCompo. The routine then checks the datasets
+! group/tSize, group/dof and group/realVec and raises an error when one
+! of them is missing. These are old paths: Export writes them as
+! group/IntR0/tSize, group/DofR0/dof and group/RealVectorR0/realVec, so
+! the routine currently always raises the error; idofs is not rebuilt
+! either (see bugs-report/STScalarField_bug_report.md, H-03).
+!
+! See also: [[obj_Export]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
                                timefedofs, geofedof, geofedofs)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened for reading
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    !! FEDOF of the field and FEDOF of the geometry
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    !! FEDOFs for multiple physical variables
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    !! TimeFEDOF of the field
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    !! TimeFEDOFs for multiple physical variables
   END SUBROUTINE obj_Import
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Export@IOMethods
+!                                                          Export@HDFMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Exports the content
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Export the field to an HDF5 file
+!
+! Writes the node field data in group (AbstractNodeFieldExport) and
+! timeCompo in group/timeCompo. In the example the Import part stops
+! with an error until Import is fixed (see [[obj_Import]]).
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! CHARACTER(*), PARAMETER :: filename = "Export_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u, y
+! TYPE(HDF5File_) :: h5
+! REAL(DFP) :: src(12), found(12)
+! INTEGER(I4B) :: ii, tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! src = [(REAL(ii, DFP), ii=1, 12)]
+! CALL u%SetMultiple(istart=1, iend=12, stride=1, VALUE=src)
+!
+! CALL h5%Initiate(filename=filename, mode="NEW")
+! CALL h5%OPEN()
+! CALL u%Export(hdf5=h5, group="/u")
+! CALL h5%DEALLOCATE()
+!
+! CALL h5%Initiate(filename=filename, mode="READ")
+! CALL h5%OPEN()
+! CALL y%IMPORT(hdf5=h5, group="/u", fedof=fedof, geofedof=geofedof, &
+!               timefedof=timefedof)
+! CALL h5%DEALLOCATE()
+!
+! ! Test 1: data of the field
+! CALL OK(y%IsInitiated(), "Import: IsInitiated")
+! CALL OK(y%timeCompo .EQ. 2, "Import: timeCompo")
+! CALL OK(y%SIZE() .EQ. 12, "Import: Size")
+!
+! ! Test 2: values
+! BLOCK
+!   CALL y%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found - src) .LT. tol), "Import: values")
+! END BLOCK
+!
+! ! Test 3: Get by node on the imported field
+! BLOCK
+!   found = 0.0_DFP
+!   CALL y%Get(VALUE=found, tsize=tsize, globalNode=3)
+!   CALL OK(tsize .EQ. 2, "Import: Get node, tsize")
+!   CALL OK(ALL(ABS(found(1:2) - [3.0_DFP, 9.0_DFP]) .LT. tol), &
+!           "Import: Get node, values")
+! END BLOCK
+!
+! CALL y%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Import]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened for writing
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
   END SUBROUTINE obj_Export
 END INTERFACE
 
@@ -415,29 +669,107 @@ END INTERFACE
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the single entry of the STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set all time components of one node
 !
-!# Introduction
-! This routine Sets the single entry of the STScalar field. Here, val should
-! be a STScalar representing the components of a STScalar. The size of `value`
-! should be same as `obj%timeCompo`. In simple words it does following.
+! VALUE(a) is the value of time component a at globalNode,
+! SIZE(VALUE) = obj%timeCompo. The entries become scale * VALUE, or
+! scale * VALUE is added when addContribution is true (SetMultiple with
+! the indices of the node). In debug mode an error is raised if obj is
+! not initiated, is a constant field, or SIZE(VALUE) is not timeCompo.
 !
-! STScalar( :, globalNode ) = value( : )
-!
-!
-!### Usage
+! Examples
 !
 !```fortran
-! call obj%Set( globalNode = 10, value= 100.0_DFP*[1,1,1] )
-! call obj%display( "test-1: STScalar field = ")
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+! REAL(DFP) :: found(12), val
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: all entries to one value
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found - 1.0_DFP) .LT. tol), "Set all")
+! END BLOCK
+!
+! ! Test 2: all time components of one node
+! BLOCK
+!   CALL u%Set(globalNode=2, islocal=math%yes, VALUE=[5.0_DFP, 6.0_DFP])
+!   CALL u%Get(VALUE=found, tsize=tsize, globalNode=2)
+!   CALL OK(ALL(ABS(found(1:2) - [5.0_DFP, 6.0_DFP]) .LT. tol), &
+!           "Set node")
+!   ! DOF format: node 2 is entry 2 (time 1) and entry 8 (time 2)
+!   CALL u%GetMultiple(indx=[2, 8], VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found(1:2) - [5.0_DFP, 6.0_DFP]) .LT. tol), &
+!           "Set node: DOF format")
+!
+!   CALL u%Set(globalNode=2, islocal=math%yes, VALUE=[1.0_DFP, 1.0_DFP], &
+!              scale=2.0_DFP, addContribution=math%yes)
+!   CALL u%Get(VALUE=found, tsize=tsize, globalNode=2)
+!   CALL OK(ALL(ABS(found(1:2) - [7.0_DFP, 8.0_DFP]) .LT. tol), &
+!           "Set node: add 2 * value")
+! END BLOCK
+!
+! ! Test 3: one entry
+! BLOCK
+!   CALL u%Set(VALUE=9.0_DFP, globalNode=3, islocal=math%yes, timeCompo=2)
+!   CALL u%Get(VALUE=val, globalNode=3, islocal=math%yes, timeCompo=2)
+!   CALL OK(ABS(val - 9.0_DFP) .LT. tol, "Set single")
+!   CALL u%Get(VALUE=val, globalNode=3, islocal=math%yes, timeCompo=1)
+!   CALL OK(ABS(val - 1.0_DFP) .LT. tol, "Set single: other time")
+! END BLOCK
+!
+! ! Test 4: one value for each time component, all nodes
+! BLOCK
+!   CALL u%Set(VALUE=[2.0_DFP, 3.0_DFP])
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 2.0_DFP) .LT. tol), &
+!           "Set time values: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - 3.0_DFP) .LT. tol), &
+!           "Set time values: time 2")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
 !```
+!
+! See also: [[obj_Set7]], [[obj_Set10]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set1( &
     obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -446,71 +778,145 @@ INTERFACE
     !! values to be set @globalNode, obj = value
     !! value(a) denotes the value at time node `a`
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets all the entries of a STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set time component a of all nodes to VALUE(a)
 !
-!# Introduction
-! This routine work as follows. The size of value should be same as
-! obj%timeCompo, then this value is Set for all the nodal values
+! For each time component a, all its entries become scale * VALUE(a)
+! (or scale * VALUE(a) is added when addContribution is true).
+! SIZE(VALUE) = obj%timeCompo.
 !
-! STScalar( :, i ) = value( : ), for i = 1, tNodes
+! In debug mode the routine currently raises an error for every
+! normal field, because its check for constant fields is inverted (see
+! bugs-report/STScalarField_bug_report.md, H-01).
 !
-!
-!### Usage
-!
-!```fortran
-! call obj%Set( value= 10.0_DFP*[1,1,1] )
-! call obj%display( "test-2: STScalar field = ")
-!```
+! See also: [[obj_Set1]] (contains an example), [[obj_Set12]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be set, obj = value
     !! the size of value should be equal to obj%timeCompo
     !! value(i) is value at ith time node
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets all the entries of a STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one time component of all nodes to one value
 !
-!# Introduction
-! This routine Sets all values of `timeCompo` component of the STScalar field
-! to given scalar value `value`
+! All entries of time component timeCompo become scale * VALUE, or
+! scale * VALUE is added when addContribution is true. The other time
+! components are not changed.
 !
-! STScalar( timeCompo, i ) = value, for i = 1, tNodes
-!
-!
-!### Usage
+! Examples
 !
 !```fortran
-! call obj%Set( value= -10.0_DFP, timeCompo=1 )
-! call obj%Set( value= -20.0_DFP, timeCompo=2 )
-! call obj%Set( value= -30.0_DFP, timeCompo=3 )
-! call obj%display( "test-3: STScalar field = ")
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+! REAL(DFP) :: found(12), want(6)
+! INTEGER(I4B) :: ii, tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! want = [(REAL(ii, DFP), ii=1, 6)]
+! CALL u%Set(VALUE=0.0_DFP)
+!
+! ! Test 1: one time component to one value
+! BLOCK
+!   CALL u%Set(VALUE=4.0_DFP, timeCompo=1)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 4.0_DFP) .LT. tol), "timeCompo = 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6)) .LT. tol), "time 2 unchanged")
+! END BLOCK
+!
+! ! Test 2: one time component from a vector
+! BLOCK
+!   CALL u%Set(VALUE=want, timeCompo=2)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "timeCompo = 2: vector")
+!
+!   CALL u%Set(VALUE=want, timeCompo=2, scale=-1.0_DFP, &
+!              addContribution=math%yes)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6)) .LT. tol), "timeCompo = 2: add -1 * vector")
+! END BLOCK
+!
+! ! Test 3: one time component at selected nodes
+! BLOCK
+!   CALL u%Set(VALUE=[10.0_DFP, 20.0_DFP], globalNode=[1, 3], &
+!              islocal=math%yes, timeCompo=1)
+!   CALL u%Get(VALUE=found, globalNode=[1, 3], tsize=tsize, &
+!              islocal=math%yes, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:2) - [10.0_DFP, 20.0_DFP]) .LT. tol), &
+!           "selected nodes, timeCompo")
+!   CALL u%Get(VALUE=found, tsize=tsize, globalNode=2)
+!   CALL OK(ALL(ABS(found(1:2) - [4.0_DFP, 0.0_DFP]) .LT. tol), &
+!           "other nodes unchanged")
+! END BLOCK
+!
+! ! Test 4: all time components at selected nodes
+! BLOCK
+!   CALL u%Set(VALUE=[-1.0_DFP, -2.0_DFP], globalNode=[5, 6], &
+!              islocal=math%yes)
+!   CALL u%Get(VALUE=found, tsize=tsize, globalNode=5)
+!   CALL OK(ALL(ABS(found(1:2) - [-1.0_DFP, -2.0_DFP]) .LT. tol), &
+!           "selected nodes: node 5")
+!   CALL u%Get(VALUE=found, tsize=tsize, globalNode=6)
+!   CALL OK(ALL(ABS(found(1:2) - [-1.0_DFP, -2.0_DFP]) .LT. tol), &
+!           "selected nodes: node 6")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
 !```
+!
+! See also: [[obj_Set5]], [[obj_Set9]], [[obj_Set7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set3(obj, VALUE, timeCompo, scale, addContribution)
@@ -522,25 +928,123 @@ INTERFACE
     !! time component
     !! timecompo should be less than or equal to obj%timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Set all the entries by using given STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set all entries from a rank-2 array
 !
-!# Introduction
-! This routine Set all entries of STScalar field to given STScalar
-! Here shape of should be value(1:tNodes, 1:timeCompo).
+! With storageFMT = DOF format, VALUE(i, a) is the value of space DOF i
+! at time component a (SIZE(VALUE) = [tNodes, timeCompo]); each column
+! is set by Set(VALUE(:), timeCompo). With the NODES format, VALUE(a, i)
+! is used (SIZE(VALUE) = [timeCompo, tNodes]); each column is set by
+! Set(globalNode, islocal, VALUE(:)).
 !
-! STScalar( :, : ) = value( :, : )
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE FieldOpt_Class, ONLY: TypeFieldOpt
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+! REAL(DFP) :: vdof(6, 2), vnodes(2, 6), found(6, 6)
+! INTEGER(I4B) :: ii, nrow, ncol
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! value of node i at time component a is 10 * a + i
+! DO ii = 1, 6
+!   vdof(ii, 1:2) = [10.0_DFP, 20.0_DFP] + REAL(ii, DFP)
+! END DO
+! vnodes = TRANSPOSE(vdof)
+!
+! ! Test 1: all entries, DOF format
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%Set(VALUE=vdof, storageFMT=TypeFieldOpt%storageFormatDOF)
+!   CALL u%Get(VALUE=found, nrow=nrow, ncol=ncol, &
+!              storageFMT=TypeFieldOpt%storageFormatDOF)
+!   CALL OK(ALL(ABS(found(1:6, 1:2) - vdof) .LT. tol), "all, DOF")
+! END BLOCK
+!
+! ! Test 2: all entries, NODES format
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%Set(VALUE=vnodes, storageFMT=TypeFieldOpt%storageFormatNodes)
+!   CALL u%Get(VALUE=found, nrow=nrow, ncol=ncol, &
+!              storageFMT=TypeFieldOpt%storageFormatDOF)
+!   CALL OK(ALL(ABS(found(1:6, 1:2) - vdof) .LT. tol), "all, NODES")
+!
+!   CALL u%Set(VALUE=vnodes, storageFMT=TypeFieldOpt%storageFormatNodes, &
+!              scale=-1.0_DFP, addContribution=math%yes)
+!   CALL u%Get(VALUE=found, nrow=nrow, ncol=ncol, &
+!              storageFMT=TypeFieldOpt%storageFormatDOF)
+!   CALL OK(ALL(ABS(found(1:6, 1:2)) .LT. tol), "all, NODES: add -1")
+! END BLOCK
+!
+! ! Test 3: selected nodes, NODES format
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%Set(globalNode=[2, 4], islocal=math%yes, &
+!              VALUE=vnodes(1:2, [2, 4]), &
+!              storageFMT=TypeFieldOpt%storageFormatNodes)
+!   CALL u%Get(VALUE=found, nrow=nrow, ncol=ncol, globalNode=[2, 4], &
+!              islocal=math%yes, storageFMT=TypeFieldOpt%storageFormatNodes)
+!   CALL OK(ALL(ABS(found(1:2, 1:2) - vnodes(1:2, [2, 4])) .LT. tol), &
+!           "selected, NODES")
+!   CALL u%Get(VALUE=found, nrow=nrow, ncol=ncol, globalNode=[1, 3], &
+!              islocal=math%yes, storageFMT=TypeFieldOpt%storageFormatNodes)
+!   CALL OK(ALL(ABS(found(1:2, 1:2)) .LT. tol), "other nodes unchanged")
+! END BLOCK
+!
+! ! Test 4: selected nodes, DOF format
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%Set(globalNode=[5, 6], islocal=math%yes, &
+!              VALUE=vdof([5, 6], 1:2), &
+!              storageFMT=TypeFieldOpt%storageFormatDOF)
+!   CALL u%Get(VALUE=found, nrow=nrow, ncol=ncol, globalNode=[5, 6], &
+!              islocal=math%yes, storageFMT=TypeFieldOpt%storageFormatDOF)
+!   CALL OK(ALL(ABS(found(1:2, 1:2) - vdof([5, 6], 1:2)) .LT. tol), &
+!           "selected, DOF")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Set8]], [[obj_Get2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set4(obj, VALUE, storageFMT, scale, addContribution)
@@ -548,88 +1052,61 @@ INTERFACE
     !! obj = value
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! values to be set obj = value
-    !! number of cols in value should be equal to obj%timeCompo
-    !! number of rows in value should be equal to fedof%tdof
+    !! DOF format: SIZE(VALUE) = [tNodes, timeCompo]
+    !! NODES format: SIZE(VALUE) = [timeCompo, tNodes]
     INTEGER(I4B), INTENT(IN) :: storageFMT
     !! Storage format of value,
-    !! How the dta is stored in value, NODES_FMT or DOF_FMT
-    !! For NODES_FMT, nrow in value = timeCompo
-    !! For DOF_FMT, nrow in value = nodes
+    !! TypeFieldOpt%storageFormatDOF or TypeFieldOpt%storageFormatNodes
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set4
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Set all the entries by using given STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one time component of all nodes from a vector
 !
-!# Introduction
-! This routine Set all entries of the component `timeCompo` STScalar
-! field  to given fortran STScalar `value`
+! The entries of time component timeCompo become scale * VALUE(i) for
+! space DOF i, SIZE(VALUE) = number of space DOFs, or they are added
+! when addContribution is true.
 !
-! STScalar( timeCompo, : ) = value( : )
-!
-!
-!### Usage
-!
-!```fortran
-! call reallocate( real1, dom%GetTotalNodes() )
-! real1 = 3.0_DFP
-! call obj%Set( value=real1, timeCompo=3 )
-! call obj%display( "test-5: STScalar field = " )
-!```
+! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set5(obj, VALUE, timeCompo, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! values to be set obj = value
     !! size of values should be equal to the total number of nodes
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set5
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Set all the entries by using given STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one time component from a node field (not yet available)
 !
-!# Introduction
-! This routine Set all entries of the component `timeCompo` STScalar
-! field  to given scalar field `value`
+! Meant to set time component timeCompo of obj from the node field
+! VALUE. The routine is not implemented: it raises an error. Use
+! SetFromScalarField for a scalar field.
 !
-! STScalar( timeCompo, : ) = value
-!
-!
-!### Usage
-!
-!```fortran
-! call scalarObj%initiate( param, dom )
-! call scalarObj%Set( value = 2.0_DFP )
-! call obj%Set( value=scalarObj, timeCompo=2 )
-! call obj%display( "test-6: STScalar field = ")
-! ierr = param%Set( key="fieldType", value=FIELD_TYPE_CONSTANT)
-! call scalarObj%Deallocate()
-! call scalarObj%initiate( param, dom )
-! call scalarObj%Set( value=10.0_DFP )
-! call obj%Set( value=scalarObj, timeCompo=1 )
-! call obj%display( "test-7: STScalar field = ")
-!```
+! See also: [[obj_SetFromScalarField]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set6(obj, VALUE, timeCompo, scale, addContribution)
@@ -640,38 +1117,25 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set6
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set all time components of the selected nodes
 !
-!# Introduction
+! For each node in globalNode, time component a becomes scale * VALUE(a)
+! (Set1 is called for each node). SIZE(VALUE) = obj%timeCompo; all
+! selected nodes get the same values.
 !
-! This soubroutine Sets the selected enties to a STScalar entry value( : )
-!
-! Effectively it does the following:
-!
-! STScalar( :, globalNode ) = value( : ), for entries in global nodes
-!
-!
-!### Usage
-!
-!```fortran
-! call reallocate( real2, 3, 4)
-! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
-! real2( :, 4 ) = -4.0
-! call obj%Set( value=real2, globalNode=[1,3,5,7] )
-! call obj%display( "test-8: STScalar field = ")
-!```
+! See also: [[obj_Set3]] (contains an example), [[obj_Set1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set7( &
@@ -688,34 +1152,25 @@ INTERFACE
     !! value denotes the time component value at globalNodes
     !! note that all space nodes have same value.
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set7
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set the selected nodes from a rank-2 array
 !
-!# Introduction
-! This routine Sets all selected entries.
-! STScalar( :, globalNode ) = value( :, : )
+! With the NODES format VALUE(a, j) is the value of time component a at
+! globalNode(j) (Set1 for each node); with the DOF format VALUE(j, a)
+! is used (Set9 for each time component).
 !
-!
-!### Usage
-!
-!```fortran
-! call reallocate( real2, 3, 4)
-! real2( :, 1 ) = -1.0; real2( :, 2 ) = -2.0; real2( :, 3 ) = -3.0
-! real2( :, 4 ) = -4.0
-! call obj%Set( value=real2, globalNode=[1,3,5,7] )
-! call obj%display( "test-8: STScalar field = ")
-!```
+! See also: [[obj_Set4]] (contains an example), [[obj_Get3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set8( &
@@ -742,34 +1197,25 @@ INTERFACE
     !! The storage format of value,
     !! It can be either NODES_FMT or DOF_FMT
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set8
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one time component of the selected nodes
 !
-!# Introduction
-! This routine Sets the selected components of selected nodes to given value
+! The entry of time component timeCompo at globalNode(j) becomes
+! scale * VALUE(j), SIZE(VALUE) = SIZE(globalNode), or it is added when
+! addContribution is true.
 !
-! STScalar( timeCompo, globalNode ) = value( : )
-!
-!
-!### Usage
-!
-!```fortran
-! call reallocate( real1, 4)
-! real1 = [1,10,100,1000]
-! call obj%Set( value=real1, globalNode=[1,3,5,7], timeCompo=1 )
-! call obj%display( "test-9: STScalar field = " )
-!```
+! See also: [[obj_Set3]] (contains an example), [[obj_Get4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set9( &
@@ -787,24 +1233,25 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set9
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one time component of one node
 !
-!# Introduction
-! selected components, selected nodes
+! The entry of time component timeCompo at globalNode becomes
+! scale * VALUE (SetSingle), or it is added when addContribution is
+! true.
 !
-! STScalar( timeCompo, globalNode ) = value
+! See also: [[obj_Set1]] (contains an example), [[obj_Get5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set10( &
@@ -820,27 +1267,45 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set10
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: Set the STScalar values
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set the selected nodes from an FEVariable
 !
-!# Introduction
-! Set entries using FEVariable
+! VALUE must be a nodal, scalar, space-time FEVariable whose values are
+! stored as val(a, j), the value of time component a at globalNode(j)
+! (the layout returned by Get6 and GetFEVariable). The values are set
+! by Set8 with the NODES format. In debug mode an error is raised for
+! another vartype.
+!
+! Examples
+!
+!```fortran
+! vals(1:2, 1) = [1.0_DFP, 2.0_DFP]
+! vals(1:2, 2) = [3.0_DFP, 4.0_DFP]
+! fevar = NodalVariable(vals, TypeFEVariableScalar, &
+!                       TypeFEVariableSpaceTime)
+! CALL u%Set(VALUE=fevar, globalNode=[1, 2], islocal=math%yes)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Set_test_4.F90
+!
+! See also: [[obj_Get6]], [[obj_Set8]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set11( &
     obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! value in FEVariable
     !! It should be nodal scalar space-time variable
@@ -849,20 +1314,24 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true then global node number is local node number
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set11
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: Set the STScalar values
+!> author: Vikas Sharma, Ph. D.
+! date: 2022-01-24
+! summary: Set all entries to one value
 !
-!# Introduction
-! Set entries using the selected nodes using triplet.
+! All entries become scale * VALUE (SetAll), or scale * VALUE is added
+! when addContribution is true.
+!
+! See also: [[obj_Set1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set12(obj, VALUE, scale, addContribution)
@@ -871,27 +1340,38 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE
     !! scalar value to be set
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-    !! scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-    !! add or set
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_Set12
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Set@SetMethods
+!                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: Set the STScalar values
+!> author: Vikas Sharma, Ph. D.
+! date: 2022-01-24
+! summary: Copy another space-time scalar field, obj = VALUE
 !
-!# Introduction
-! Set entries using the selected nodes using triplet.
+! The values of VALUE are copied into obj (COPY). Both fields must be
+! initiated (checked in debug mode) and have the same size.
+!
+! Examples
+!
+!```fortran
+! CALL u%SetMultiple(istart=1, iend=12, stride=1, VALUE=src)
+! CALL v%Set(VALUE=u)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Set_test_4.F90
 
 INTERFACE
   MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field, obj = VALUE
     CLASS(STScalarField_), INTENT(IN) :: VALUE
+    !! space-time scalar field to copy
   END SUBROUTINE obj_Set13
 END INTERFACE
 
@@ -918,59 +1398,194 @@ END INTERFACE
 ! END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
+!                                              SetFromScalarField@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Set the STScalarField
+! date: 2023-03-29
+! summary: Set one time component from a scalar field
+!
+! The entries of time component timeCompo become scale times the
+! values of the scalar field VALUE, or they are added when
+! addContribution is true. VALUE must have the same space FEDOF and
+! use the native engine (its Fortran vector is used through
+! GetPointer).
+!
+! Examples
+!
+!```fortran
+! CALL s%Set(VALUE=want)
+! CALL u%SetFromScalarField(timeCompo=2, VALUE=s)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Set_test_4.F90
+!
+! See also: [[obj_SetToScalarField]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetFromScalarField( &
     obj, timeCompo, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component of obj to be set
     CLASS(ScalarField_), INTENT(IN) :: VALUE
+    !! scalar field with the native engine
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetFromScalarField
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Set@SetMethods
+!                                                SetToScalarField@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Set the STScalarField
+! date: 2023-03-29
+! summary: Set a scalar field from one time component
+!
+! The values of the scalar field VALUE become scale times the entries
+! of time component timeCompo of obj, or they are added when
+! addContribution is true. obj must use the native engine (its Fortran
+! vector is used through GetPointer).
+!
+! Examples
+!
+!```fortran
+! CALL u%SetToScalarField(timeCompo=1, VALUE=s)
+! CALL s%Get(VALUE=found, tsize=tsize)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Set_test_4.F90
+!
+! See also: [[obj_SetFromScalarField]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetToScalarField( &
     obj, timeCompo, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(IN) :: obj
+    !! space-time scalar field with the native engine
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component of obj to be copied
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
+    !! scalar field to be set
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! add (true) or set (false, default)
   END SUBROUTINE obj_SetToScalarField
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            Set@SetMethods
+!                                                   SetByFunction@SetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-12-18
-! summary:   Set By function
+! date: 2023-12-18
+! summary: Set by a user function
+!
+! For each node of the mesh, func(x, y, z, t) is evaluated at the node
+! coordinates. When times is present, time component a uses
+! t = times(a), SIZE(times) = obj%timeCompo; otherwise t = 0 and the
+! same value is used for all time components. The values are set at
+! the node number (Set1), so the routine is meant for order 1
+! Lagrange interpolation in space.
+!
+! In debug mode the routine currently raises an error for every
+! Lagrange field, because it compares the interpolation name with "Lag"
+! while FEDOF stores "LAGR" (see bugs-report/STScalarField_bug_report.md,
+! H-02).
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: InterfaceScalarSubroutine
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! USE UserFunction_Class, ONLY: UserFunction_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! REAL(DFP), PARAMETER :: f0(6) = [1.0_DFP, 11.0_DFP, 31.0_DFP, &
+!                                  21.0_DFP, 6.0_DFP, 26.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+! TYPE(UserFunction_) :: func
+! PROCEDURE(InterfaceScalarSubroutine), POINTER :: procptr
+! REAL(DFP) :: found(12)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL func%Initiate(NAME="func", returnType=TypeFEVariableOpt%scalar, &
+!                    argType=TypeFEVariableOpt%space, numArgs=4, &
+!                    numReturns=1)
+! procptr => linearFunc
+! CALL func%SetScalarFunctionPointer(func=procptr)
+!
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: one time for each time component
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%SetByFunction(func=func, times=[0.0_DFP, 1.0_DFP])
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - f0) .LT. tol), "times: t = 0")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - f0 - 3.0_DFP) .LT. tol), "times: t = 1")
+! END BLOCK
+!
+! ! Test 2: without times, f at t = 0 for all time components
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%SetByFunction(func=func)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - f0) .LT. tol), "no times")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+!
+! CONTAINS
+!
+! SUBROUTINE linearFunc(args, nargs, ans)
+!   REAL(DFP), INTENT(IN) :: args(:)
+!   INTEGER(I4B), INTENT(IN) :: nargs
+!   REAL(DFP), INTENT(INOUT) :: ans
+!   ans = 1.0_DFP + args(1) + 2.0_DFP * args(2) + 3.0_DFP * args(4)
+! END SUBROUTINE linearFunc
+!
+! END PROGRAM main
+!```
 
 INTERFACE
   MODULE SUBROUTINE obj_SetByFunction( &
     obj, func, times, ivar, idof, spaceCompo, timeCompo)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     CLASS(UserFunction_), INTENT(INOUT) :: func
-      !! User function
+    !! User function, scalar with 4 arguments (x, y, z, t)
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    !! If present then its size should be 1
+    !! times of the time components, SIZE(times) = obj%timeCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     !! ivar (not used)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
@@ -986,25 +1601,38 @@ END INTERFACE
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the single entry of the STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get all time components of one node, or one time component
 !
-!# Introduction
+! If globalNode is present, VALUE(1:timeCompo) are the values of all
+! time components at globalNode (a local node number) and
+! tsize = timeCompo. If timeCompo is present, VALUE(1:tNodes) are the
+! values of all space DOFs of this time component and tsize = tNodes.
+! Exactly one of globalNode and timeCompo must be present (checked in
+! debug mode).
 !
-! If globalnode is present then
-! It returns all the timecomponent at globalnode
+! Examples
 !
-! If timecompo is present then
-! It returns the scalar field at time timecompo.
+!```fortran
+! src = [(REAL(ii, DFP), ii=1, 12)]
+! CALL u%SetMultiple(istart=1, iend=12, stride=1, VALUE=src)
+! CALL u%Get(VALUE=found, tsize=tsize, globalNode=4)
+! CALL OK(ALL(ABS(found(1:2) - [4.0_DFP, 10.0_DFP]) .LT. tol), &
+!         "node: values")
+! CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+! CALL OK(ALL(ABS(found(1:6) - src(7:12)) .LT. tol), &
+!         "timeCompo: values")
+!```
 !
-!@note
-!Both globalnode and timecompo should not be present
-!@endnote
+! Full example: src/modules/STScalarField/examples/Get_test_1.F90
+!
+! See also: [[obj_Get4]], [[obj_Get5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, VALUE, tsize, globalNode, timeCompo)
     CLASS(STScalarField_), INTENT(IN) :: obj
+    !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! Value to be returned
     INTEGER(I4B), INTENT(OUT) :: tsize
@@ -1025,41 +1653,74 @@ END INTERFACE
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Get all the entries by using given STScalar field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get all values in a rank-2 array
+!
+! With the NODES format VALUE(a, i) is the value of time component a at
+! space DOF i (nrow = timeCompo, ncol = tNodes); with the DOF format
+! VALUE(i, a) (nrow = tNodes, ncol = timeCompo).
+!
+! Examples
+!
+!```fortran
+! CALL u%Get(VALUE=v2, nrow=nrow, ncol=ncol, &
+!            storageFMT=TypeFieldOpt%storageFormatNodes)
+! CALL OK(nrow .EQ. 2 .AND. ncol .EQ. 6, "all, NODES: shape")
+!```
+!
+! Full example: src/modules/STScalarField/examples/Get_test_1.F90
+!
+! See also: [[obj_Set4]], [[obj_Get3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol, storageFMT)
     CLASS(STScalarField_), INTENT(IN) :: obj
+    !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
-    !! Number of rows in value equals to the timeCompo
-    !! Number of columns in value equals to the total number of nodes
+    !! values, SIZE(VALUE, 1) >= nrow, SIZE(VALUE, 2) >= ncol
     INTEGER(I4B), INTENT(OUT) :: nrow
     !! number of rows written in value
     INTEGER(I4B), INTENT(OUT) :: ncol
     !! number of cols written in value
     INTEGER(I4B), INTENT(IN) :: storageFMT
     !! if storageFMT is NODES_FMT then
-    !! nrow = obj%timeCompo, ncol = size(globalNode)
+    !! nrow = obj%timeCompo, ncol = number of space DOFs
     !! if stroageFMT is DOF_FMT then
-    !! nrow = size(globalNode), ncol = obj%timeCompo
+    !! nrow = number of space DOFs, ncol = obj%timeCompo
   END SUBROUTINE obj_Get2
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get the values of the selected nodes in a rank-2 array
+!
+! With the NODES format VALUE(a, j) is the value of time component a at
+! globalNode(j) (nrow = timeCompo, ncol = SIZE(globalNode)); with the
+! DOF format VALUE(j, a) (nrow = SIZE(globalNode), ncol = timeCompo).
+!
+! Examples
+!
+!```fortran
+! CALL u%Get(VALUE=v2, nrow=nrow, ncol=ncol, globalNode=[2, 5], &
+!            islocal=math%yes, storageFMT=TypeFieldOpt%storageFormatDOF)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Get_test_1.F90
+!
+! See also: [[obj_Set8]], [[obj_Get2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get3( &
     obj, VALUE, nrow, ncol, globalNode, islocal, storageFMT)
     CLASS(STScalarField_), INTENT(IN) :: obj
+    !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
+    !! values, SIZE(VALUE, 1) >= nrow, SIZE(VALUE, 2) >= ncol
     INTEGER(I4B), INTENT(OUT) :: nrow
     !! number of rows written in value
     INTEGER(I4B), INTENT(OUT) :: ncol
@@ -1077,17 +1738,32 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Get@GetMethods
+!                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get one time component of the selected nodes
+!
+! VALUE(j) is the value of time component timeCompo at globalNode(j),
+! tsize = SIZE(globalNode).
+!
+! Examples
+!
+!```fortran
+! CALL u%Get(VALUE=found, globalNode=[3, 6], tsize=tsize, &
+!            islocal=math%yes, timeCompo=2)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Get_test_1.F90
+!
+! See also: [[obj_Set9]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get4( &
     obj, VALUE, globalNode, tsize, islocal, timeCompo)
     CLASS(STScalarField_), INTENT(IN) :: obj
+    !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values to be returned
     !! size should be equal to the size of globalNode
@@ -1103,12 +1779,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Get@GetMethods
+!                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get single entry
+!
+! VALUE is the value of time component timeCompo at globalNode
+! (GetSingle).
+!
+! Examples
+!
+!```fortran
+! CALL u%Get(VALUE=val, globalNode=6, islocal=math%yes, timeCompo=1)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Get_test_1.F90
+!
+! See also: [[obj_Set10]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal, timeCompo)
@@ -1126,12 +1815,18 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Get@GetMethods
+!                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine return value in FEVariable
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get the values of the selected nodes in an FEVariable
+!
+! VALUE becomes a nodal, scalar, space-time FEVariable with
+! val(a, j) = value of time component a at globalNode(j)
+! (s = [timeCompo, SIZE(globalNode)]), from Get3 with the NODES format.
+!
+! See also: [[obj_Set11]] (contains an example), [[obj_GetFeVariable]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get6(obj, VALUE, globalNode, islocal)
@@ -1151,9 +1846,9 @@ END INTERFACE
 !                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine return value in FEVariable
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get one time component in a node field (commented out)
 
 ! INTERFACE
 !   MODULE SUBROUTINE obj_Get7(obj, VALUE, timeCompo)
@@ -1191,17 +1886,27 @@ END INTERFACE
 ! END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetTimeComponent@GetMethods
+!                                                   GetTimeCompo@GetMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-10-29
-! summary:  Get time components
+! date: 2023-10-29
+! summary: Returns timeCompo
+!
+! This function is not bound to the type and its generic name
+! STScalarFieldGetTimeCompo is not public; use the component timeCompo
+! or GetTimeCompo of AbstractNodeField_ (see
+! bugs-report/STScalarField_bug_report.md, L-01).
+!
+! Returns:
+!   ans : INTEGER(I4B) - obj%timeCompo
 
 INTERFACE
   MODULE FUNCTION obj_GetTimeCompo(obj) RESULT(ans)
     CLASS(STScalarField_), INTENT(IN) :: obj
+    !! space-time scalar field
     INTEGER(I4B) :: ans
+    !! number of time components
   END FUNCTION obj_GetTimeCompo
 END INTERFACE
 
@@ -1214,12 +1919,27 @@ END INTERFACE STScalarFieldGetTimeCompo
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Set single entry
+! date: 2023-03-28
+! summary: Get the values of the selected nodes in an FEVariable
+!
+! Same as Get(VALUE=fevar, globalNode, islocal) (Get6); ivar is not
+! used.
+!
+! Examples
+!
+!```fortran
+! CALL u%GetFEVariable(globalNode=[2, 1], islocal=math%yes, VALUE=fevar)
+! CALL OK(ALL(fevar%s(1:2) .EQ. [2, 2]), "GetFEVariable: shape")
+!```
+!
+! Full example: src/modules/STScalarField/examples/Set_test_4.F90
+!
+! See also: [[obj_Get6]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(STScalarField_), INTENT(IN) :: obj
+    !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -1240,15 +1960,100 @@ END INTERFACE STScalarFieldGetFEVariable
 !                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 22 Jan 2021
-! summary: Apply Dirichlet boundary condition
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-01-22
+! summary: Apply one Dirichlet boundary condition
+!
+! The node numbers and the values of dbc at the time nodes (times) are
+! obtained (dbc%Get with fedof, geofedof and timefedof), and for each
+! time component the entries of these nodes are set to the values
+! (Set9). Only the boundary entries are changed.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE DirichletBC_Class, ONLY: DirichletBCDeallocate
+! USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
+! USE DirichletBC_Class, ONLY: DirichletBCPointer_
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ApplyDirichletBC_test_1.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! REAL(DFP), PARAMETER :: times(2) = [0.0_DFP, 1.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+! TYPE(DirichletBCPointer_), ALLOCATABLE :: extDBC(:)
+! REAL(DFP) :: found(12), want(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+! CALL DirichletBCImportFromToml(obj=extDBC, dom=dom, tomlName="extDBC", &
+!                                filename=tomlFileName)
+!
+! ! Test 1: internal list of Dirichlet BCs
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyDirichletBC(times=times)
+!   want = [1.0_DFP, 2.0_DFP, 2.0_DFP, 1.0_DFP, 0.0_DFP, 0.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "internal dbc: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "internal dbc: time 2")
+! END BLOCK
+!
+! ! Test 2: vector of DirichletBCPointer_
+! BLOCK
+!   CALL u%Set(VALUE=-1.0_DFP)
+!   CALL u%ApplyDirichletBC(dbc=extDBC, times=times)
+!   want = [7.0_DFP, 7.0_DFP, -1.0_DFP, -1.0_DFP, 7.0_DFP, -1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "dbc vector")
+! END BLOCK
+!
+! ! Test 3: single DirichletBC_
+! BLOCK
+!   CALL u%Set(VALUE=3.0_DFP)
+!   CALL u%ApplyDirichletBC(dbc=extDBC(1)%ptr, times=times)
+!   want = [7.0_DFP, 7.0_DFP, 3.0_DFP, 3.0_DFP, 7.0_DFP, 3.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "single dbc")
+! END BLOCK
+!
+! CALL DirichletBCDeallocate(extDBC)
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ApplyDirichletBC2]], [[obj_ApplyDirichletBC3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
+    !! Dirichlet boundary condition
     REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time nodes, SIZE(times) = obj%timeCompo
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -1256,15 +2061,23 @@ END INTERFACE
 !                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 22 Jan 2021
-! summary: Apply Dirichlet boundary condition
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-01-22
+! summary: Apply a vector of Dirichlet boundary conditions
+!
+! Same as [[obj_ApplyDirichletBC1]] for each associated pointer of dbc,
+! in order.
+!
+! See also: [[obj_ApplyDirichletBC1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     TYPE(DirichletBCPointer_), INTENT(INOUT) :: dbc(:)
+    !! Dirichlet boundary conditions, null pointers are skipped
     REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time nodes, SIZE(times) = obj%timeCompo
   END SUBROUTINE obj_ApplyDirichletBC2
 END INTERFACE
 
@@ -1272,28 +2085,146 @@ END INTERFACE
 !                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 22 Jan 2021
-! summary: Apply Dirichlet boundary condition
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-01-22
+! summary: Apply the Dirichlet boundary conditions of the field
+!
+! Same as [[obj_ApplyDirichletBC2]] with the internal list obj%dbc (for
+! example the dirichletBC tables of the toml file).
+!
+! See also: [[obj_ApplyDirichletBC1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
     REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time nodes, SIZE(times) = obj%timeCompo
   END SUBROUTINE obj_ApplyDirichletBC3
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 ApplyBodySource@NBCMethods
+!                                         ApplyBodySource@BodySourceMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-19
-! summary: Add Contribution of body source to scalar field
+! summary: Add the body source given by a user function
+!
+! For each element, the integral over the element and the time slab
+! times(1) to times(2) of the space test functions N_I, the time test
+! functions T_a and the body source is computed by quadrature
+! (STForceVector_), and scale times this integral is added to the
+! entry of node I and time component a.
+!
+! Formula:
+!   $$ u_{Ia} = u_{Ia} + s \int_{t} \int_{\Omega} N_I T_a f(x, y, z, t)
+!      \, d\Omega \, dt $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE BaseType, ONLY: TypeFEVariableOpt
+! USE BaseType, ONLY: InterfaceScalarSubroutine
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! USE UserFunction_Class, ONLY: UserFunction_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! REAL(DFP), PARAMETER :: times(2) = [0.0_DFP, 1.0_DFP]
+! REAL(DFP), PARAMETER :: space(6) = [12.5_DFP, 12.5_DFP, 12.5_DFP, &
+!                                     12.5_DFP, 25.0_DFP, 25.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+! TYPE(UserFunction_) :: funcOne, funcT
+! PROCEDURE(InterfaceScalarSubroutine), POINTER :: procptr
+! REAL(DFP) :: found(12)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL funcOne%Initiate(NAME="one", returnType=TypeFEVariableOpt%scalar, &
+!                       argType=TypeFEVariableOpt%space, numArgs=4, &
+!                       numReturns=1)
+! procptr => oneFunc
+! CALL funcOne%SetScalarFunctionPointer(func=procptr)
+! CALL funcT%Initiate(NAME="t", returnType=TypeFEVariableOpt%scalar, &
+!                     argType=TypeFEVariableOpt%space, numArgs=4, &
+!                     numReturns=1)
+! procptr => tFunc
+! CALL funcT%SetScalarFunctionPointer(func=procptr)
+!
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: f = 1
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyBodySource(bodySource=funcOne, scale=1.0_DFP, times=times)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 0.5_DFP * space) .LT. tol), &
+!           "f = 1: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - 0.5_DFP * space) .LT. tol), &
+!           "f = 1: time 2")
+! END BLOCK
+!
+! ! Test 2: f = t, added with scale 6
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%ApplyBodySource(bodySource=funcT, scale=6.0_DFP, times=times)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - (1.0_DFP + space)) .LT. tol), &
+!           "f = t: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - (1.0_DFP + 2.0_DFP * space)) .LT. tol), &
+!           "f = t: time 2")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+!
+! CONTAINS
+!
+! SUBROUTINE oneFunc(args, nargs, ans)
+!   REAL(DFP), INTENT(IN) :: args(:)
+!   INTEGER(I4B), INTENT(IN) :: nargs
+!   REAL(DFP), INTENT(INOUT) :: ans
+!   ans = 1.0_DFP
+! END SUBROUTINE oneFunc
+!
+! SUBROUTINE tFunc(args, nargs, ans)
+!   REAL(DFP), INTENT(IN) :: args(:)
+!   INTEGER(I4B), INTENT(IN) :: nargs
+!   REAL(DFP), INTENT(INOUT) :: ans
+!   ans = args(4)
+! END SUBROUTINE tFunc
+!
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ApplyBodySource3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field (right hand side)
     CLASS(UserFunction_), INTENT(INOUT) :: bodySource
     !! Body source user function
     !! It should be a scalar function with
@@ -1302,17 +2233,22 @@ INTERFACE
     !! scale for body source
     !! obj = obj + scale * bodySource integral
     REAL(DFP), INTENT(IN) :: times(:)
-    !! time, which will be passed to the body source function
+    !! times of the time slab, passed to the time element
   END SUBROUTINE obj_ApplyBodySource1
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 ApplyBodySource@NBCMethods
+!                                         ApplyBodySource@BodySourceMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-19
-! summary: Add Contribution of body source to scalar field
+! summary: Add the body source given by a field (not yet available)
+!
+! Meant to add the body source given by the space-time field
+! bodySource. The routine is not implemented: it raises an error.
+!
+! See also: [[obj_ApplyBodySource1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
@@ -1328,16 +2264,26 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 ApplyBodySource@NBCMethods
+!                                         ApplyBodySource@BodySourceMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-19
-! summary: Add Contribution of body source to scalar field
+! summary: Add the body source at one time given by a user function
+!
+! For each element, the space integral of N_I f(x, y, z, times) is
+! computed (ForceVector_) and added with obj%Set(globalNode, VALUE).
+! Without a time component this call adds the space force vector to
+! all time components of each node as if it were one value per time
+! component, which is wrong; in debug mode it stops with a size error
+! (see bugs-report/STScalarField_bug_report.md, H-04).
+!
+! See also: [[obj_ApplyBodySource1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyBodySource3(obj, bodySource, scale, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field (right hand side)
     CLASS(UserFunction_), INTENT(INOUT) :: bodySource
     !! Body source user function
     !! It should be a scalar function with
@@ -1352,7 +2298,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   ApplyNeumannBC@NBCMethods
+!                                     ApplySurfaceNeumannBC@SurfaceNBCMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -1373,6 +2319,65 @@ END INTERFACE
 !   - 2026-11-02: integrate each Neumann boundary condition with its own
 !     data only (before, the data of all conditions was used)
 !
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = &
+!                            "ApplySurfaceNeumannBC_test_1.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! REAL(DFP), PARAMETER :: times(2) = [0.0_DFP, 1.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u, nbcField
+! REAL(DFP) :: found(12), want(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+! CALL nbcField%Initiate(obj2=u, copyFull=math%no, &
+!                        copyStructure=math%yes, usePointer=math%yes)
+!
+! CALL OK(u%GetTotalNBC() .EQ. 2, "GetTotalNBC")
+!
+! want = [6.25_DFP, 11.25_DFP, 5.0_DFP, 0.0_DFP, 12.5_DFP, 0.0_DFP]
+!
+! ! Test 1: values of both time components
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplySurfaceNeumannBC(nbcField=nbcField, scale=1.0_DFP, &
+!                                times=times)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "time 1")
+!   CALL OK(ABS(SUM(found(1:6)) - 35.0_DFP) .LT. tol, "time 1: total")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "time 2")
+! END BLOCK
+!
+! CALL nbcField%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
 ! See also: [[obj_ApplyPointNeumannBC]]
 
 INTERFACE
@@ -1385,17 +2390,93 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     !! Scale for neumann boundary condition
     REAL(DFP), INTENT(IN) :: times(:)
-    !! times
+    !! times of the time slab
   END SUBROUTINE obj_ApplySurfaceNeumannBC
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             ApplyPointNeumannBC@NBCMethods
+!                                         ApplyPointNeumannBC@PointNBCMethods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-09-06
 ! summary: Add Contribution of point neumann boundary condition
+!
+! For each point Neumann boundary condition (obj%nbc_point), the node
+! numbers and the values at the time nodes are obtained. The load of
+! time component a is the integral of T_a(t) f(t) over the time slab:
+! the nodal values f_b are multiplied by the time mass matrix
+! ct(a, b), and scale times the result is added to the entries of the
+! nodes. Nothing is done if the field has no point Neumann boundary
+! condition.
+!
+! Formula:
+!   $$ u_{Ia} = u_{Ia} + s \sum_b \int_t T_a T_b \, dt \, f_{Ib} $$
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = &
+!                            "ApplyPointNeumannBC_test_1.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! REAL(DFP), PARAMETER :: times(2) = [0.0_DFP, 1.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+! REAL(DFP) :: found(12), want(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: number of point Neumann BCs
+! CALL OK(u%GetTotalPointNBC() .EQ. 2, "GetTotalPointNBC")
+!
+! ! Test 2: scale = 1
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyPointNeumannBC(scale=1.0_DFP, times=times)
+!   want = [1.0_DFP, 0.0_DFP, 2.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "scale = 1: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "scale = 1: time 2")
+! END BLOCK
+!
+! ! Test 3: added to the current values, scale = 0.5
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%ApplyPointNeumannBC(scale=0.5_DFP, times=times)
+!   want = [1.5_DFP, 1.0_DFP, 2.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "add with scale = 0.5")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ApplySurfaceNeumannBC]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times)
@@ -1404,6 +2485,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     !! scale for neumann boundary condition
     REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time slab
   END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
 
