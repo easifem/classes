@@ -38,19 +38,13 @@ USE TimeOpt_Class, ONLY: TimeOpt_
 USE tomlf, ONLY: toml_table
 USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
-
 PRIVATE
 
 INTEGER(I4B), PARAMETER :: MYCONVERSION = TypeFieldOpt%conversionNodesToDOF
 
 PUBLIC :: STScalarField_
 PUBLIC :: STScalarFieldPointer_
-PUBLIC :: STScalarFieldInitiate
 PUBLIC :: STScalarFieldDeallocate
-PUBLIC :: STScalarFieldDisplay
-PUBLIC :: STScalarFieldImport
-PUBLIC :: STScalarFieldExport
-PUBLIC :: STScalarFieldGetTimeCompo
 PUBLIC :: STScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
@@ -60,8 +54,6 @@ PUBLIC :: STScalarFieldSafeAllocate
 !> authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: STScalar field
-!
-!{!pages/docs-api/STScalarField/STScalarField_.md}
 
 TYPE, EXTENDS(AbstractNodeField_) :: STScalarField_
   INTEGER(I4B), PUBLIC :: timeCompo = 0_I4B
@@ -223,10 +215,6 @@ INTERFACE
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
-INTERFACE STScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE STScalarFieldInitiate
-
 !----------------------------------------------------------------------------
 !                                               Initiate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -314,10 +302,6 @@ INTERFACE
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
-INTERFACE STScalarFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
-END INTERFACE STScalarFieldInitiate
-
 !----------------------------------------------------------------------------
 !                                               Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
@@ -326,14 +310,10 @@ END INTERFACE STScalarFieldInitiate
 ! date: 25 June 2021
 ! summary: It deallocates the data stored inside the STScalarField_ obj
 
-INTERFACE
+INTERFACE STScalarFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
   END SUBROUTINE obj_Deallocate
-END INTERFACE
-
-INTERFACE STScalarFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate
 END INTERFACE STScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -349,31 +329,23 @@ END INTERFACE STScalarFieldDeallocate
 ! This routine will allocate obj if it is not allocated
 ! It will allocate obj if its current size is less than newsize
 
-INTERFACE
+INTERFACE STScalarFieldSafeAllocate
   MODULE SUBROUTINE obj_STScalarFieldSafeAllocate1(obj, newsize)
     TYPE(STScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
     !! allocatable scalar field pointer
     INTEGER(I4B), INTENT(IN) :: newsize
     !! new size of obj
   END SUBROUTINE obj_STScalarFieldSafeAllocate1
-END INTERFACE
-
-INTERFACE STScalarFieldSafeAllocate
-  MODULE PROCEDURE obj_STScalarFieldSafeAllocate1
 END INTERFACE STScalarFieldSafeAllocate
 
 !----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-INTERFACE
+INTERFACE STScalarFieldDeallocate
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(STScalarFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
   END SUBROUTINE obj_Deallocate_ptr_vector
-END INTERFACE
-
-INTERFACE STScalarFieldDeallocate
-  MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE STScalarFieldDeallocate
 
 !----------------------------------------------------------------------------
@@ -402,10 +374,6 @@ INTERFACE
   END SUBROUTINE obj_Display
 END INTERFACE
 
-INTERFACE STScalarFieldDisplay
-  MODULE PROCEDURE obj_Display
-END INTERFACE STScalarFieldDisplay
-
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
@@ -427,10 +395,6 @@ INTERFACE
   END SUBROUTINE obj_Import
 END INTERFACE
 
-INTERFACE STScalarFieldImport
-  MODULE PROCEDURE obj_Import
-END INTERFACE STScalarFieldImport
-
 !----------------------------------------------------------------------------
 !                                                           Export@IOMethods
 !----------------------------------------------------------------------------
@@ -446,10 +410,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
   END SUBROUTINE obj_Export
 END INTERFACE
-
-INTERFACE STScalarFieldExport
-  MODULE PROCEDURE obj_Export
-END INTERFACE STScalarFieldExport
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods

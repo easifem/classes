@@ -16,13 +16,9 @@
 !
 
 SUBMODULE(STScalarFieldLis_Class) HDFMethods
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE String_Class, ONLY: String
-
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport, &
-                                   AbstractNodeFieldGetPointer
-
-USE STScalarField_Class, ONLY: STScalarFieldExport
-
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -59,7 +55,7 @@ realvec => AbstractNodeFieldGetPointer(obj)
 CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
 CALL CHKERR(ierr)
 NULLIFY (realvec)
-CALL STScalarFieldExport(obj=obj, hdf5=hdf5, group=group)
+CALL obj%STScalarField_%Export(hdf5=hdf5, group=group)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

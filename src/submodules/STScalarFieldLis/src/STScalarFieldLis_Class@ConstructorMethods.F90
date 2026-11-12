@@ -16,9 +16,6 @@
 !
 
 SUBMODULE(STScalarFieldLis_Class) ConstructorMethods
-USE STScalarField_Class, ONLY: STScalarFieldInitiate, &
-                               STScalarFieldDeallocate
-
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -59,11 +56,9 @@ END PROCEDURE obj_Final
 
 MODULE PROCEDURE obj_Deallocate
 INTEGER(I4B) :: ierr
-
 CALL lis_vector_destroy(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
-
-CALL STScalarFieldDeallocate(obj)
+CALL obj%STScalarField_%DEALLOCATE()
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------

@@ -17,9 +17,7 @@
 
 SUBMODULE(STScalarFieldLis_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
-USE STScalarField_Class, ONLY: STScalarFieldDisplay
 USE Display_Method, ONLY: Display
-
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -55,7 +53,7 @@ IF (isok) THEN
   CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
   CALL CHKERR(ierr)
   NULLIFY (realvec)
-  CALL STScalarFieldDisplay(obj=obj, msg=msg, unitno=unitno)
+  CALL obj%STScalarField_%Display(msg=msg, unitno=unitno)
 END IF
 
 #ifdef DEBUG_VER

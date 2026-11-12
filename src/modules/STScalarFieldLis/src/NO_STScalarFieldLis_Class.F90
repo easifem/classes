@@ -20,19 +20,11 @@
 
 MODULE STScalarFieldLis_Class
 USE STScalarField_Class, ONLY: STScalarField_
-USE FPL, ONLY: ParameterList_
-USE FEDOF_Class, ONLY: FEDOF_
-
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "STScalarFieldLis_Class"
-CHARACTER(*), PARAMETER :: myprefix = "STScalarField"
-
 PUBLIC :: STScalarFieldLis_
 PUBLIC :: STScalarFieldLisPointer_
-PUBLIC :: STScalarFieldLis
-PUBLIC :: STScalarFieldLis_Pointer
 
 !----------------------------------------------------------------------------
 !                                                         STScalarFieldLis_
@@ -41,8 +33,6 @@ PUBLIC :: STScalarFieldLis_Pointer
 !> authors: Vikas Sharma, Ph. D.
 ! date:  2023-03-23
 ! summary: STScalar field for LIS_OMP engine
-!
-!{!pages/docs-api/STScalarFieldLis/STScalarFieldLis_.md}
 
 TYPE, EXTENDS(STScalarField_) :: STScalarFieldLis_
 END TYPE STScalarFieldLis_
@@ -54,22 +44,5 @@ END TYPE STScalarFieldLis_
 TYPE :: STScalarFieldLisPointer_
   CLASS(STScalarFieldLis_), POINTER :: ptr => NULL()
 END TYPE STScalarFieldLisPointer_
-
-CONTAINS
-
-FUNCTION STScalarFieldLis(param, fedof) RESULT(Ans)
-  TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
-  TYPE(STScalarFieldLis_) :: ans
-  CALL ans%Initiate(param=param, fedof=fedof)
-END FUNCTION STScalarFieldLis
-
-FUNCTION STScalarFieldLis_Pointer(param, fedof) RESULT(Ans)
-  TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
-  CLASS(STScalarFieldLis_), POINTER :: ans
-  ALLOCATE (ans)
-  CALL ans%initiate(param=param, fedof=fedof)
-END FUNCTION STScalarFieldLis_Pointer
 
 END MODULE STScalarFieldLis_Class
