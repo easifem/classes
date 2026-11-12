@@ -14,9 +14,9 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary: STScalar field data type is defined
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-28
+! summary: Space-time scalar field with the LIS engine is defined
 
 MODULE STScalarFieldLis_Class
 USE AbstractField_Class, ONLY: AbstractField_
@@ -42,11 +42,28 @@ PUBLIC :: STScalarFieldLisPointer_
 !                                                         STScalarFieldLis_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-23
-! summary: STScalar field for LIS_OMP engine
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-03-23
+! summary: Space-time scalar field for the LIS_OMP engine
 !
-!{!pages/docs-api/STScalarFieldLis/STScalarFieldLis_.md}
+! STScalarFieldLis_ is meant to be a STScalarField_ whose values are
+! stored in a LIS vector (lis_ptr), like ScalarFieldLis_ for
+! ScalarField_. The class is not finished:
+!
+!- it has no Initiate of its own, so no LIS vector is created
+!  (lis_ptr stays 0) and Initiate and ImportFromToml work as for
+!  STScalarField_,
+!- SetSingle, SetAll, SetMultiple, GetSingle, GetMultiple and the BLAS
+!  methods are not overridden, so the values are stored in realVec,
+!- Display and Export gather the values from the LIS vector, which
+!  does not exist; Import is not available,
+!- the Set13 binding is private and does not override the Set13 of
+!  STScalarField_.
+!
+! See bugs-report/STScalarFieldLis_bug_report.md. Use STScalarField_
+! with the native engine until the class is implemented.
+!
+! See also: [[STScalarField_]], [[ScalarFieldLis_]]
 
 TYPE, EXTENDS(STScalarField_) :: STScalarFieldLis_
 CONTAINS
@@ -55,7 +72,9 @@ CONTAINS
   ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
+  !! Destroy the LIS vector and deallocate the object
   FINAL :: obj_Final
+  !! Finalizer
 
   ! IO:
   ! @IOMethods
@@ -69,13 +88,15 @@ CONTAINS
   ! SET:
   ! @SetMethods
   PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! Set values using FEVariable
+  !! Copy another space-time scalar field (does not override the
+  !! private Set13 of STScalarField_)
 
   ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
+  !! Number of values of the field
   PROCEDURE, PUBLIC, PASS(obj) :: GetPointer => obj_GetPointer
-  !! Get pointer
+  !! Not available, returns NULL
 END TYPE STScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -84,15 +105,23 @@ END TYPE STScalarFieldLis_
 
 TYPE :: STScalarFieldLisPointer_
   CLASS(STScalarFieldLis_), POINTER :: ptr => NULL()
+  !! pointer to a LIS space-time scalar field
 END TYPE STScalarFieldLisPointer_
 
 !----------------------------------------------------------------------------
-!                                                         Final@Constructor
+!                                                  Final@ConstructorMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-03-23
+! summary: Finalizer, calls Deallocate
+!
+! See also: [[obj_Deallocate]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(STScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS space-time scalar field
   END SUBROUTINE obj_Final
 END INTERFACE
 
@@ -100,14 +129,18 @@ END INTERFACE
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine deallocates the data stored inside the
-! STScalarFieldLis_ obj
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Destroy the LIS vector and deallocate the object
+!
+! The LIS vector is destroyed (lis_vector_destroy), then the data of
+! STScalarField_ are deallocated. The generic name
+! STScalarFieldLisDeallocate is not public.
 
 INTERFACE STScalarFieldLisDeallocate
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS space-time scalar field
   END SUBROUTINE obj_Deallocate
 END INTERFACE STScalarFieldLisDeallocate
 
@@ -115,15 +148,22 @@ END INTERFACE STScalarFieldLisDeallocate
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 June 2021
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-26
 ! summary: Display the content of [[STScalarFieldLis_]]
+!
+! Displays msg and whether the LIS vector is available. If it is, the
+! values are gathered into realVec (lis_vector_gather) and the field is
+! displayed by the Display method of STScalarField_.
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS space-time scalar field
     CHARACTER(*), INTENT(IN) :: msg
+    !! message displayed first
     INTEGER(I4B), INTENT(IN), OPTIONAL :: unitNo
+    !! unit number, default is stdout
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -131,20 +171,35 @@ END INTERFACE
 !                                                         Import@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Imports the content
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Import the field from an HDF5 file (not yet available)
+!
+! The node field data are read by AbstractNodeFieldImport and
+! timeCompo from group/timeCompo; then the LIS vector is created and
+! realVec is copied into it (lis_vector_scatter). The routine is under
+! development: in debug mode it raises an error (see
+! bugs-report/STScalarFieldLis_bug_report.md, M-02).
+!
+! See also: [[obj_Export]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
                                timefedofs, geofedof, geofedofs)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS space-time scalar field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened for reading
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
     CLASS(FEDOF_), TARGET, INTENT(IN), OPTIONAL :: fedof, geofedof
+    !! FEDOF of the field and FEDOF of the geometry
     TYPE(FEDOFPointer_), INTENT(IN), OPTIONAL :: fedofs(:), geofedofs(:)
+    !! FEDOFs for multiple physical variables
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    !! TimeFEDOF (not used)
     TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedofs(:)
+    !! TimeFEDOFs (not used)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -152,27 +207,51 @@ END INTERFACE
 !                                                          Export@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Exports the content
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Export the field to an HDF5 file
+!
+! The values of the LIS vector are gathered into realVec
+! (lis_vector_gather), then the field is written by the Export method
+! of STScalarField_. In debug mode an error is raised when the LIS
+! vector is not available, which is currently always the case (see
+! bugs-report/STScalarFieldLis_bug_report.md, H-01).
+!
+! See also: [[STScalarField_:obj_Export]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS space-time scalar field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened for writing
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
   END SUBROUTINE obj_Export
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   Size@ConstructorMethods
+!                                                           Size@GetMethods
 !----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-03-23
+! summary: Number of values of the field
+!
+! Returns local_n, the number of values stored on this process
+! (number of space DOFs times timeCompo for a serial field).
+!
+! Returns:
+!   ans : INTEGER(I4B) - number of values
 
 INTERFACE
   MODULE FUNCTION obj_Size(obj, dims) RESULT(ans)
     CLASS(STScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS space-time scalar field
     INTEGER(I4B), INTENT(IN), OPTIONAL :: dims
+    !! not used
     INTEGER(I4B) :: ans
+    !! number of values
   END FUNCTION obj_Size
 END INTERFACE
 
@@ -180,17 +259,24 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 24 Jan 2022
-! summary: Set the STScalar values
+!> author: Vikas Sharma, Ph. D.
+! date: 2022-01-24
+! summary: Copy another space-time scalar field, obj = VALUE
 !
-!# Introduction
-! Set entries using the selected nodes using triplet.
+! For a STScalarFieldLis_ VALUE the LIS vector is copied
+! (lis_vector_copy). For a native STScalarField_ VALUE the routine
+! calls obj%Set(VALUE=realvec), which is Set2 of STScalarField_ (one
+! value for each time component), not a copy of all values. The
+! binding is private and does not override the Set13 of STScalarField_,
+! so Set(VALUE=field) does not call this routine (see
+! bugs-report/STScalarFieldLis_bug_report.md, M-01).
 
 INTERFACE
   MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
+    !! LIS space-time scalar field, obj = VALUE
     CLASS(STScalarField_), INTENT(IN) :: VALUE
+    !! space-time scalar field to copy
   END SUBROUTINE obj_Set13
 END INTERFACE
 
@@ -198,10 +284,21 @@ END INTERFACE
 !                                                     GetPointer@GetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-03-23
+! summary: Not available, returns NULL
+!
+! The result is NULL and an error is raised. Use Get instead.
+!
+! Returns:
+!   ans : REAL(DFP), POINTER - NULL
+
 INTERFACE
   MODULE FUNCTION obj_GetPointer(obj) RESULT(ans)
     CLASS(STScalarFieldLis_), TARGET, INTENT(IN) :: obj
+    !! LIS space-time scalar field
     REAL(DFP), POINTER :: ans(:)
+    !! always NULL
   END FUNCTION obj_GetPointer
 END INTERFACE
 
