@@ -1,0 +1,39 @@
+# Input file for MatrixField Initiate_test_4.
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements
+# {1, 5, 6, 4} and {5, 2, 3, 6}, six nodes.
+# u1 (rows): scalar field, order 1 Lagrange, broken space, 8 DOFs.
+# u2 (columns): scalar field, order 1 Lagrange, 6 DOFs -> 8 x 6 matrix.
+
+[domain]
+filename = "../meshdata/square_3x2.h5"
+totalMedium = 1
+
+[colNode]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 1
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[colNode.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+
+[colNode.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+order = 2
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[colNode.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
