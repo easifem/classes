@@ -1,74 +1,99 @@
 !> author: Vikas Sharma, Ph. D.
-! summary: Set_test_4
+! date: 2026-11-12
+! summary: Set and get space-time values with FEVariable, and copy
 !
-! Results:
+!- Get(VALUE=fevar, globalNode(:), islocal) and GetFEVariable return
+!  the values of the selected nodes in a nodal, vector, space-time
+!  FEVariable,
+!- Set(VALUE=fevar, globalNode(:), islocal) sets the selected nodes from
+!  such a FEVariable,
+!- Set(VALUE=v) copies another space-time vector field.
 !
-!```txt
-! # VAR :U
-!   DOF-1 ,    DOF-2 ,    DOF-3 ,    DOF-4 ,
-! --------,  --------,  --------,  --------,
-! 0.468014,  0.193133,  0.825314,  0.189746,
-! 0.870013,  0.165566,  0.767453,  0.480631,
-! 0.544904,  0.097415,  0.914453,  0.895436,
-!
-! # spaceCompo = 2
-! # timeCompo = 2
-!
-! value =( :, :, 1 ) =
-! ---------------------
-!  0.468014  0.825314
-!  0.193133  0.189746
-! value =( :, :, 2 ) =
-! ---------------------
-!  0.870013  0.767453
-!  0.165566  0.480631
-! value =( :, :, 3 ) =
-! ---------------------
-!  0.544904  0.914453
-!  0.097415  0.895436
-!```
+! The values of nodes 1, 5, 2 are read in a FEVariable and set at
+! nodes 3, 6, 4. The test values are f(s, t, i) = 100 s + 10 t + i.
 
 PROGRAM main
-  USE easifemBase
-  USE easifemClasses
-  TYPE( Domain_ ) :: dom
-  TYPE( STVectorField_ ) :: obj
-  TYPE( HDF5File_ ) :: meshfile
-  TYPE( ParameterList_ ) :: param
-  INTEGER( I4B ) :: ierr
-  INTEGER( I4B ), PARAMETER :: spaceCompo=2_I4B
-  INTEGER( I4B ), PARAMETER :: timeCompo=2_I4B
-  REAL( DFP ), allocatable :: value(:,:,:)
-  CHARACTER(*), PARAMETER :: engine = "NATIVE_SERIAL"
-  INTEGER( I4B ) :: tnodes
+USE BaseType, ONLY: FEVariable_
+USE BaseType, ONLY: math => TypeMathOpt
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDomain_Class, ONLY: FEDomain_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: NODES_FMT
+USE STVectorField_Class, ONLY: STVectorField_
+USE Test_Method, ONLY: OK
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+IMPLICIT NONE
 
-  ! import domain
-  CALL meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  CALL meshfile%open()
-  CALL dom%initiate( hdf5=meshfile, group="" )
-  CALL meshfile%Deallocate()
+CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+TYPE(FEDomain_) :: dom
+TYPE(FEDOF_), TARGET :: fedof, geofedof
+TYPE(TimeFEDOF_), TARGET :: timefedof
+TYPE(STVectorField_) :: u, v
+TYPE(FEVariable_) :: fevar, fevar2
+REAL(DFP) :: v3(2, 2, 6), a3(2, 2, 3), b3(2, 2, 3), found(24), &
+             found2(24)
+INTEGER(I4B) :: ii, jj, kk, dim1, dim2, dim3, tsize
 
+CALL e%SetQuietMode(math%yes)
+CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+                      fedof=fedof, geofedof=geofedof, &
+                      timefedof=timefedof, dom=dom)
 
-  ! set parameters for VectorField_
-  CALL FPL_INIT()
-  CALL param%initiate()
-  CALL SetSTVectorFieldParam( &
-    & param=param, &
-    & fieldType=FIELD_TYPE_NORMAL, &
-    & name="U", &
-    & engine=engine, &
-    & spaceCompo=spaceCompo, &
-    & timeCompo=timeCompo)
+DO kk = 1, 6
+  DO jj = 1, 2
+    DO ii = 1, 2
+      v3(ii, jj, kk) = 100.0_DFP * ii + 10.0_DFP * jj + kk
+    END DO
+  END DO
+END DO
+CALL u%Set(VALUE=v3)
 
-  CALL obj%initiate( param, dom )
-  tnodes = dom%getTotalNodes()
-  call reallocate(value, spaceCompo, timeCompo, tnodes)
-  call random_number(value)
+! Test 1: FEVariable round trip
+BLOCK
+  CALL u%Get(VALUE=fevar, globalNode=[1, 5, 2], islocal=math%yes)
+  CALL u%GetFEVariable(VALUE=fevar2, globalNode=[1, 5, 2], &
+                       islocal=math%yes)
+  CALL u%Set(VALUE=fevar, globalNode=[3, 6, 4], islocal=math%yes)
+  CALL u%Get(VALUE=a3, storageFMT=NODES_FMT, globalNode=[1, 5, 2], &
+             islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
+  CALL u%Get(VALUE=b3, storageFMT=NODES_FMT, globalNode=[3, 6, 4], &
+             islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
+  CALL OK(ALL(ABS(a3 - b3) .LT. tol), &
+          "Set(FEVariable) from Get(FEVariable)")
+  CALL OK(ALL(ABS(a3(:, :, 2) - v3(:, :, 5)) .LT. tol), &
+          "Set(FEVariable): source nodes unchanged")
+END BLOCK
 
-  call obj%set(value=value)
-  CALL obj%Display("obj = ")
-  call display(value(:,:,1:3), "value = ")
+! Test 2: GetFEVariable gives the same FEVariable as Get
+BLOCK
+  CALL u%Set(VALUE=0.0_DFP)
+  CALL u%Set(VALUE=fevar2, globalNode=[3, 6, 4], islocal=math%yes)
+  CALL u%Get(VALUE=b3, storageFMT=NODES_FMT, globalNode=[3, 6, 4], &
+             islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
+  CALL OK(ALL(ABS(a3 - b3) .LT. tol), "GetFEVariable")
+END BLOCK
 
-  CALL obj%Deallocate(); CALL dom%Deallocate()
-  CALL param%Deallocate(); CALL FPL_FINALIZE()
+! Test 3: copy another field
+BLOCK
+  CALL u%Set(VALUE=v3)
+  CALL v%Initiate(obj2=u)
+  CALL v%Set(VALUE=0.0_DFP)
+  CALL v%Set(VALUE=u)
+  CALL u%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
+                     tsize=tsize)
+  CALL v%GetMultiple(istart=1, iend=24, stride=1, VALUE=found2, &
+                     tsize=tsize)
+  CALL OK(ALL(ABS(found - found2) .LT. tol), "Set(STVectorField_)")
+END BLOCK
+
+CALL v%DEALLOCATE()
+CALL u%DEALLOCATE()
+CALL timefedof%DEALLOCATE()
+CALL fedof%DEALLOCATE()
+CALL geofedof%DEALLOCATE()
+CALL dom%DEALLOCATE()
 END PROGRAM main

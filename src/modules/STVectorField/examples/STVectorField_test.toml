@@ -1,36 +1,30 @@
-[timeOpt]
-timeDependency = "Transient"
-dt = 0.1
-startTime = 0.0
-endTime = 1.0
+# Common input file for the STVectorField_ tests.
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements,
+# six nodes 1 (0,0), 2 (10,0), 3 (10,10), 4 (0,10), 5 (5,0), 6 (5,10).
+# Space: order 1 Lagrange, six DOFs, two space components
+# (spaceCompo = 2). Time: order 1 Lagrange, two DOFs (timeCompo = 2).
+# The field has 6 * 2 * 2 = 24 values.
 
-[field1]
-name = "field1"
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
 engine = "NATIVE_SERIAL"
 fieldType = "Normal"
 spaceCompo = 2
-# space component, the default value is 1
-# for scalar fields you can omit this
-# for vector fields you must specify this value
-
 fedofName = "space"
-# fedofName contains the name of the subtable which
-# contains the fedof data for this field.
-
 geofedofName = "geofedof"
-# geofedof name
-
 timefedofName = "time"
-# timefedofName contains the name of the subtable which
-# contains the timefedof data for this field.
 
-[field1.geofedof]
+[u.geofedof]
 baseContinuity = "H1"
 baseInterpolation = "Lagrange"
 ipType = "Equidistance"
 baseType = "Monomial"
 
-[field1.space]
+[u.space]
 baseContinuity = "H1"
 baseInterpolation = "Lagrange"
 ipType = "Equidistance"
@@ -38,12 +32,12 @@ baseType = "Monomial"
 order = 1
 scaleForQuadOrder = 2
 quadOptName = "quadOpt"
-[field1.space.quadOpt]
+
+[u.space.quadOpt]
 isHomogeneous = true
 quadratureType = "GaussLegendre"
-# order = 2
 
-[field1.time]
+[u.time]
 baseContinuity = "H1"
 baseInterpolation = "Lagrange"
 ipType = "Equidistance"
@@ -51,5 +45,6 @@ baseType = "Monomial"
 order = 1
 scaleForQuadOrder = 2
 quadOptName = "quadOpt"
-[field1.time.quadOpt]
+
+[u.time.quadOpt]
 quadratureType = "GaussLegendre"

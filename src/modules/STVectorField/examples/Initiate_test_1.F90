@@ -1,90 +1,87 @@
 !> author: Vikas Sharma, Ph. D.
-! summary: Initiate_test_1
+! date: 2026-11-12
+! summary: Initiate a space-time vector field
 !
-! Results:
+! u is read from STVectorField_test.toml (ImportFromToml): order 1
+! Lagrange in space (six DOFs) and time (two DOFs), spaceCompo = 2. So
+! timeCompo = 2 and u%SIZE() = 6 * 2 * 2 = 24.
 !
-!```txt
-! #obj =
-! # isInitiated : TRUE
-! # name :U
-! # fieldType : NORMAL
-! # engine :NATIVE_SERIAL
-! # comm: 0
-! # myRank: 0
-! # numProcs: 1
-! # global_n: 62
-! # local_n: 62
-! # is: 0
-! # ie: 0
-! # lis_ptr: 0
-! # domain : ASSOCIATED
-! # domains : NOT ALLOCATED
-! # tSize : 62
-! # # DOF data :
-! # Total Physical Variables :1
-! # Name : U
-! # Space Components : 2
-! # Time Components : 1
-! # Total Nodes : 31
-! # Storage Format : Nodes
-! # Value Map :
-! --------------
-!        1
-!       32
-!       63
-! # VAR :U
-!  DOF-1 ,   DOF-2 ,
-! -------,  -------,
-! 0.00000,  0.00000,
-! 0.00000,  0.00000,
-! 0.00000,  0.00000,
-! 0.00000,  0.00000,
-! 0.00000,  0.00000,
-! .
-! .
-! .
-! 0.00000,  0.00000,
-! # spaceCompo = 2
-!```
+! v is initiated by arguments with the same fedof, geofedof and
+! timefedof; timeCompo is taken from timefedof. w is a copy of v
+! (Initiate(obj2)). DEALLOCATE resets spaceCompo and timeCompo.
 
 PROGRAM main
-  USE easifemBase
-  USE easifemClasses
-  TYPE( Domain_ ) :: dom
-  TYPE( STVectorField_ ) :: obj
-  TYPE( HDF5File_ ) :: meshfile, resultFile
-  TYPE( ParameterList_ ) :: param
-  INTEGER( I4B ) :: ierr
-  INTEGER( I4B ), PARAMETER :: spaceCompo=2_I4B
-  INTEGER( I4B ), PARAMETER :: timeCompo=2_I4B
-  CHARACTER(*), PARAMETER :: engine = "NATIVE_SERIAL"
+USE BaseType, ONLY: math => TypeMathOpt
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDomain_Class, ONLY: FEDomain_
+USE FieldOpt_Class, ONLY: TypeFieldOpt
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE STVectorField_Class, ONLY: STVectorField_
+USE Test_Method, ONLY: OK
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+IMPLICIT NONE
 
-  ! import domain
-  CALL meshfile%initiate( filename="./mesh.h5", mode="READ" )
-  CALL meshfile%open()
-  CALL dom%initiate( hdf5=meshfile, group="" )
-  CALL meshfile%Deallocate()
+CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+TYPE(FEDomain_) :: dom
+TYPE(FEDOF_), TARGET :: fedof, geofedof
+TYPE(TimeFEDOF_), TARGET :: timefedof
+TYPE(STVectorField_) :: u, v, w
+CHARACTER(1) :: names(1)
+REAL(DFP) :: found(24)
+INTEGER(I4B) :: tsize
 
-  ! set parameters for STVectorField_
-  CALL FPL_INIT()
-  CALL param%initiate()
-  CALL SetSTVectorFieldParam( &
-   & param=param, &
-    & fieldType=FIELD_TYPE_NORMAL, &
-    & name="U", &
-    & engine=engine, &
-    & spaceCompo=spaceCompo, &
-    & timeCompo=timeCompo)
+CALL e%SetQuietMode(math%yes)
+CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+                      fedof=fedof, geofedof=geofedof, &
+                      timefedof=timefedof, dom=dom)
 
-  CALL obj%initiate( param, dom )
+! Test 1: ImportFromToml
+CALL OK(u%IsInitiated(), "ImportFromToml: IsInitiated")
+CALL OK(u%spaceCompo .EQ. 2, "ImportFromToml: spaceCompo")
+CALL OK(u%timeCompo .EQ. 2, "ImportFromToml: timeCompo")
+CALL OK(u%SIZE() .EQ. 24, "ImportFromToml: Size = 24")
 
-  CALL obj%Display("obj = ")
+! Test 2: Initiate by arguments
+CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+                fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+CALL OK(v%IsInitiated(), "Initiate: IsInitiated")
+CALL OK(v%spaceCompo .EQ. 2, "Initiate: spaceCompo")
+CALL OK(v%timeCompo .EQ. timefedof%GetTotalDOF(), &
+        "Initiate: timeCompo = total time DOF")
+CALL OK(v%SIZE() .EQ. fedof%GetTotalDOF() * 2 * 2, &
+        "Initiate: Size = space DOF * spaceCompo * timeCompo")
+CALL OK(v%GetTotalPhysicalVars() .EQ. 1, "GetTotalPhysicalVars")
+CALL v%GetPhysicalNames(names)
+CALL OK(names(1) .EQ. "v", "GetPhysicalNames")
+CALL OK(ALL(v%GetSpaceCompo(1) .EQ. [2]), "GetSpaceCompo")
+CALL OK(ALL(v%GetTimeCompo(1) .EQ. [2]), "GetTimeCompo")
+CALL OK(v%GetStorageFMT() .EQ. TypeFieldOpt%storageFormatDOF, &
+        "GetStorageFMT")
 
-  CALL resultFile%initiate( filename="./result.h5", mode="NEW" )
-  CALL resultFile%open()
-  CALL obj%export( hdf5=resultFile, group="/STVectorField1")
+! Test 3: copy
+CALL v%Set(VALUE=3.0_DFP)
+CALL w%Initiate(obj2=v)
+CALL OK(w%spaceCompo .EQ. 2, "Initiate(obj2): spaceCompo")
+CALL OK(w%timeCompo .EQ. 2, "Initiate(obj2): timeCompo")
+CALL w%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
+                   tsize=tsize)
+CALL OK(tsize .EQ. 24, "Initiate(obj2): Size")
+CALL OK(ALL(ABS(found - 3.0_DFP) .LT. tol), "Initiate(obj2): values")
 
-  CALL obj%Deallocate(); CALL dom%Deallocate()
-  CALL resultFile%Deallocate()
-  CALL param%Deallocate(); CALL FPL_FINALIZE()
+! Test 4: DEALLOCATE
+CALL w%DEALLOCATE()
+CALL OK(.NOT. w%IsInitiated(), "DEALLOCATE: not initiated")
+CALL OK(w%spaceCompo .EQ. 0, "DEALLOCATE: spaceCompo = 0")
+CALL OK(w%timeCompo .EQ. 0, "DEALLOCATE: timeCompo = 0")
+
+CALL v%DEALLOCATE()
+CALL u%DEALLOCATE()
+CALL timefedof%DEALLOCATE()
+CALL fedof%DEALLOCATE()
+CALL geofedof%DEALLOCATE()
+CALL dom%DEALLOCATE()
 END PROGRAM main

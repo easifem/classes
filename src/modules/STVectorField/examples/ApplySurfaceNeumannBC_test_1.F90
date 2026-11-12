@@ -3,19 +3,23 @@
 ! summary: Apply a space varying surface Neumann BC of a space-time
 !   vector field
 !
-! The field u (order 1 Lagrange in space on the unit square
-! square_3x2.h5, order 1 Lagrange in time) has one Neumann BC, see
+! The field u (order 1 Lagrange in space on square_3x2.h5, [0, 10] x
+! [0, 10], order 1 Lagrange in time) has one Neumann BC, see
 ! ApplySurfaceNeumannBC_test_1.toml: tx = x on the bottom edge (line 1,
-! nodes 1 (0,0), 5 (0.5,0), 2 (1,0)). The time interval is [0, 1].
+! nodes 1 (0,0), 5 (5,0), 2 (10,0)). The time interval is [0, 1].
 !
 ! For a time node a, the right hand side at a space node i is
 !   int_0^1 T_a dt * int N_i x ds = 0.5 * int N_i x ds,
-! that is node 1: 1/48, node 5: 1/8, node 2: 5/48 for both time
+! that is node 1: 25/12, node 5: 25/2, node 2: 125/12 for both time
 ! components, and zero for the y component and the other nodes. The
 ! two time components must be the same, because tx does not depend on
 ! time (if space and time nodes were swapped, they would differ).
 ! For this mesh the local node numbers are the same as the global node
 ! numbers.
+!
+! Changes:
+!   - 2026-11-12: expected values for the [0, 10] x [0, 10] mesh (they
+!     were for a unit square).
 
 PROGRAM main
   USE BaseType, ONLY: math => TypeMathOpt
@@ -58,8 +62,8 @@ PROGRAM main
                                times=[0.0_DFP, 1.0_DFP])
 
   ! node:       1             2             3        4        5
-  expected = [1.0_DFP / 48.0_DFP, 5.0_DFP / 48.0_DFP, 0.0_DFP, 0.0_DFP, &
-              1.0_DFP / 8.0_DFP, 0.0_DFP]
+  expected = [25.0_DFP / 12.0_DFP, 125.0_DFP / 12.0_DFP, 0.0_DFP, &
+              0.0_DFP, 12.5_DFP, 0.0_DFP]
 
   DO itime = 1, 2
     ch = CHAR(48 + itime)

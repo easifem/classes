@@ -1,6 +1,6 @@
 # Input file for ApplySurfaceNeumannBC_test_1.
-# square_3x2.h5: unit square, two Quadrangle4 elements, six nodes
-# 1 (0,0), 2 (1,0), 3 (1,1), 4 (0,1), 5 (0.5,0), 6 (0.5,1).
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements,
+# six nodes 1 (0,0), 2 (10,0), 3 (10,10), 4 (0,10), 5 (5,0), 6 (5,10).
 # Line 1 is the bottom edge (nodes 1, 5, 2).
 #
 # Neumann BC: tx = x on line 1 (lua function TractionX).
