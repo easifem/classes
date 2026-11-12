@@ -191,6 +191,9 @@ CONTAINS
   !! Initiate a FEDOF from a table of element numbers and orders
   GENERIC, PUBLIC :: Initiate => Initiate1, Initiate2, Initiate3
   !! Initiate the FEDOF
+  PROCEDURE, PUBLIC, PASS(obj) :: InitiateBrokenLagrangeFedofForVTK => &
+    obj_InitiateBrokenLagrangeFedofForVTK
+  !! Initiate Broken Lagrange FEDOF for VTK
   PROCEDURE, PRIVATE, PASS(obj) :: AllocateSizes => obj_AllocateSizes
   !! Allocate the order and degree of freedom arrays
   PROCEDURE, PRIVATE, PASS(obj) :: Set => obj_Set
@@ -738,6 +741,23 @@ INTERFACE
     !! Ultraspherical lambda of the quadrature; see QuadratureOpt_; size 3 (x,
     !! y, z)
   END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                       InitiateBrokenLagrangeFedofForVTK@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-12
+! summary: Initiate broken lagrange fedof for creating vtk fields
+!
+! The space will be obtained from `from` fedof.
+!
+INTERFACE
+  MODULE SUBROUTINE obj_InitiateBrokenLagrangeFedofForVTK(obj, from)
+    CLASS(FEDOF_), INTENT(INOUT) :: obj
+    CLASS(FEDOF_), INTENT(INOUT) :: from
+  END SUBROUTINE obj_InitiateBrokenLagrangeFedofForVTK
 END INTERFACE
 
 !----------------------------------------------------------------------------

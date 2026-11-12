@@ -20,6 +20,8 @@
 SUBMODULE(FEDOF_Class) ConstructorMethods
 USE AbstractFE_Class, ONLY: AbstractFEDeallocate
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
 USE Display_Method, ONLY: ToString
 USE ElemData_Class, ONLY: ElemData_
 USE ElemData_Class, ONLY: ElemData_GetTotalEntities
@@ -188,8 +190,7 @@ CALL AssertError1(isok, myName, &
 
 isok = tsize .EQ. telems
 CALL AssertError1(isok, myName, &
-  'number of cols of order array is not equal to&
-  &number of elements')
+                  'number of cols of order is not equal to number of elements')
 #endif
 
 ALLOCATE (order0(telems))
@@ -224,6 +225,54 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Initiate3
+
+!----------------------------------------------------------------------------
+!                                          InitiateBrokenLagrangeFedofForVTK
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_InitiateBrokenLagrangeFedofForVTK
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = &
+                           "obj_InitiateBrokenLagrangeFedofForVTK()"
+#endif
+
+INTEGER(I4B) :: tCells, ii, jj, kk
+INTEGER(I4B) :: basisType(3)
+INTEGER(I4B), ALLOCATABLE :: cellOrders(:)
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tCells = from%GetTotalCells()
+CALL Reallocate(cellOrders, tCells)
+
+jj = 0
+elem_loop: DO ii = 1, tCells
+  isok = from%mesh%IsElementActive(globalElement=ii, islocal=math%yes)
+  IF (.NOT. isok) CYCLE elem_loop
+
+  CALL from%GetCellOrder(ans=cellOrders(jj + 1:), tsize=kk, &
+                         globalElement=ii, islocal=math%yes)
+  jj = jj + kk
+END DO elem_loop
+
+basisType = TypePolynomialOpt%monomial
+CALL obj%Initiate(order=cellOrders, dom=from%dom, &
+                  baseContinuity="H1", baseInterpolation="LAGR", &
+                  isBrokenSpace=math%yes, &
+                  ipType=TypeInterpolationOpt%Equidistance, &
+                  basisType=basisType, islocal=math%yes)
+
+IF (ALLOCATED(cellOrders)) DEALLOCATE (cellOrders)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_InitiateBrokenLagrangeFedofForVTK
 
 !----------------------------------------------------------------------------
 !                                                               AllocateSizes
