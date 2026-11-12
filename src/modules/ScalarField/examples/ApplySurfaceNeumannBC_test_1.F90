@@ -2,19 +2,24 @@
 ! date: 2026-11-02
 ! summary: Apply surface Neumann BCs of a scalar field
 !
-! The field u (order 1 Lagrange on the unit square square_3x2.h5) has
+! The field u (order 1 Lagrange on square_3x2.h5, [0, 10] x [0, 10]) has
 ! two Neumann BCs, see ApplySurfaceNeumannBC_test_1.toml: q = 2 on the
 ! right edge (line 2, nodes 2 and 3), and q = 5 on the bottom edge
 ! (line 1, nodes 1, 5, 2). Node 2 is shared by both edges.
 !
 ! For a constant flux q on an edge of length L with linear shape
-! functions, each end node of the edge gets q * L / 2. So the expected
-! right hand side is
-!   node 1: 1.25, node 5: 2.5, node 2: 1 + 1.25 = 2.25, node 3: 1,
+! functions, each end node of the edge gets q * L / 2. The right edge
+! has length 10, the bottom edge two segments of length 5. So the
+! expected right hand side is
+!   node 1: 12.5, node 5: 25, node 2: 10 + 12.5 = 22.5, node 3: 10,
 !   nodes 4 and 6: 0.
 ! The facets of each edge use only the value of their own BC, also at
 ! the corner node 2. For this mesh the local node numbers are the same
 ! as the global node numbers.
+!
+! Changes:
+!   - 2026-11-12: expected values for the [0, 10] x [0, 10] mesh (they
+!     were for a unit square).
 
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt
@@ -50,7 +55,7 @@ CALL u%Set(VALUE=0.0_DFP)
 CALL u%ApplySurfaceNeumannBC(nbcField=nbcField, scale=1.0_DFP, &
                              times=0.0_DFP)
 
-expected = [1.25_DFP, 2.25_DFP, 1.0_DFP, 0.0_DFP, 2.5_DFP, 0.0_DFP]
+expected = [12.5_DFP, 22.5_DFP, 10.0_DFP, 0.0_DFP, 25.0_DFP, 0.0_DFP]
 
 total = 0.0_DFP
 DO inode = 1, 6
@@ -59,7 +64,7 @@ DO inode = 1, 6
           "node "//CHAR(48 + inode))
   total = total + val
 END DO
-CALL OK(ABS(total - 7.0_DFP) .LT. tol, "total flux = 2 + 5")
+CALL OK(ABS(total - 70.0_DFP) .LT. tol, "total flux = (2 + 5) * 10")
 
 CALL nbcField%DEALLOCATE()
 CALL u%DEALLOCATE()
