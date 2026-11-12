@@ -14,9 +14,9 @@
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 28 June 2021
-! summary: STVector field data type is defined
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-28
+! summary: Space-time vector field data type is defined
 
 MODULE STVectorField_Class
 USE AbstractField_Class, ONLY: AbstractField_
@@ -51,18 +51,44 @@ PUBLIC :: STVectorFieldSafeAllocate
 !                                                             STVectorField_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-06
-! summary: STVector field
+! summary: Space-time vector field
 !
-!{!pages/docs-api/STVectorField/STVectorField_.md!}
+! A space-time vector field has one physical variable with spaceCompo
+! space components and timeCompo time components (timeCompo is the
+! number of DOFs of timefedof). There is one value for each DOF of
+! fedof, each space component and each time component, stored in the
+! vector of AbstractNodeField_ in DOF format. The component (s, t) is
+! the local DOF idof = (t - 1) * spaceCompo + s, and the value of DOF i
+! of this component is entry (idof - 1) * tNodes + i, where
+! tNodes = fedof%GetTotalDOF().
+!
+! The values are set by Set (all values, one node, one component,
+! selected nodes, rank 2 and rank 3 arrays, FEVariable, copy),
+! SetByFunction, SetFromVectorField and the boundary condition and
+! body source methods, and read by Get and SetToVectorField.
+!
+! Components:
+!   spaceCompo - number of space components
+!   timeCompo - number of time components
+!   space_idofs - [1, ..., spaceCompo]
+!   time_idofs - [1, ..., timeCompo]
+!   idofs - [1, ..., spaceCompo * timeCompo], the local DOFs of all
+!     space-time components
 
 TYPE, EXTENDS(AbstractNodeField_) :: STVectorField_
   INTEGER(I4B), PUBLIC :: spaceCompo = 0_I4B
+  !! number of space components
   INTEGER(I4B), PUBLIC :: timeCompo = 0_I4B
+  !! number of time components
   INTEGER(I4B), ALLOCATABLE :: space_idofs(:)
+  !! space components, [1, ..., spaceCompo]
   INTEGER(I4B), ALLOCATABLE :: time_idofs(:)
+  !! time components, [1, ..., timeCompo]
   INTEGER(I4B), ALLOCATABLE :: idofs(:)
+  !! local DOFs of all space-time components,
+  !! [1, ..., spaceCompo * timeCompo]
 CONTAINS
   PRIVATE
 
@@ -70,9 +96,8 @@ CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copy
-
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate by copy
+  !! Initiate by arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored
   FINAL :: obj_Final
@@ -89,66 +114,65 @@ CONTAINS
   ! SET:
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
-  !! Set single entry (Space-time nodal values)
-  !! Space-time nodal values are in 2D array (spaceCompo, timeCompo)
+  !! Set the space-time values of one node
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
-  !! Set all values to a contaant space-time nodal values
-  !! Space-time nodal values are given in a 2D array (spaceCompo, timeCompo)
+  !! Set every node to the same space-time values
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
-  !! Set all values os space-time component to a given constant value
-  !! obj@[spaceCompo, timeCompo] = value
+  !! Set one space-time component of all nodes to a value
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
-  !! Set all values by using a rank-3 fortran array
+  !! Set all values from a rank 3 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
-  !! Set all nodal values of a space-time component by using a rank-1 vector
-  !! obj@[spaceCompo, timeCompo] = value(:)
+  !! Set one space-time component of all nodes from a vector
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
-  !! Set space-time nodal values of selected nodes
+  !! Set the same space-time values at the selected nodes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
-  !! Set space-time nodal values of selected nodes
+  !! Set the selected nodes from a rank 3 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
-  !! Set values to a STvector by using triplet
+  !! Set one space-time component of the selected nodes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
-  !! Set a single node value of  space-time component
+  !! Set one space-time component of one node
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
-  !! Set selected nodal values by using FEVariable
+  !! Set the selected nodes from a FEVariable
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
-  !! Set values to a STvector by using triplet
+  !! Set all values to one value
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
-  !! obj@[ivar, idof] = value@[ivar_value, idof_value]
+  !! Set several space components of one time component
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set13 => obj_Set13
-  !! Set all nodal values of many space components and a given time component
+  !! Set several time components of one space component
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
-  !! Set values using an instance of AbstractNodeField_
+  !! Copy another space-time vector field
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
-
+  !! Set the values of the field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
+  !! Set the values from a user function
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetFromVectorField => &
     obj_SetFromVectorField
+  !! Set one time component from a vector field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetToVectorField => &
     obj_SetToVectorField
+  !! Set a vector field from one time component
 
   ! GET:
   ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
-  !! Get space-time nodal values of a single node in 1D array
-  !! Get all the nodal values of space-time component in 1D array
+  !! Get the values of a node, a component, or both in a vector
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
-  !! Get all the values in a rank3 array
+  !! Get all values in a rank 3 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
-  !! Get space-time nodal value of many nodes in rank-3 array
+  !! Get the values of the selected nodes in a rank 3 array
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
-  !! Get nodal values of a space-time component at many nodes
+  !! Get one space-time component of the selected nodes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
-  !! Get a single nodal value of space-time component
+  !! Get one space-time component of one node
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
-  !! Get space-time nodal values of a single node
+  !! Get the space-time values of one node
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get7 => obj_Get7
-  !! Get space-time nodal value in fevariable
+  !! Get the values of the selected nodes in a FEVariable
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, &
     Get6, Get7
+  !! Get the values of the field
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetFEVariable => &
     obj_GetFeVariable
   !! Get multiple values in FEVariable
@@ -157,30 +181,28 @@ CONTAINS
   ! @DirichletBCMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
     obj_ApplyDirichletBC1
-  !! Appply dirichlet boundary condition
+  !! Apply a Dirichlet boundary condition
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
     obj_ApplyDirichletBC2
-  !! Apply dirichlet boundary condition
+  !! Apply a list of Dirichlet boundary conditions
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC3 => &
     obj_ApplyDirichletBC3
-  !! Apply dirichlet boundary condition
+  !! Apply the Dirichlet boundary conditions of the field
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
+  !! Apply Dirichlet boundary conditions
 
   ! SET:
   ! @BodySourceMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyBodySource1 => obj_ApplyBodySource1
-  !! Add contribution of body source to the scalar field
-  !! body source is given as user function
+  !! Add the space-time body source given by a user function
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyBodySource2 => obj_ApplyBodySource2
-  !! Add contribution of body source to the scalar field
-  !! body source is given external scalar field
+  !! Add the body source given by a field (under development)
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
     ApplyBodySource3 => obj_ApplyBodySource3
-  !! Add contribution of body source to the scalar field
-  !! body source is given as user function
+  !! Add the body source at one time given by a user function
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, &
     ApplyBodySource2, ApplyBodySource3
   !! Generic method for setting body source
@@ -189,13 +211,13 @@ CONTAINS
   ! @SurfaceNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplySurfaceNeumannBC => &
     obj_ApplySurfaceNeumannBC
-  !! Apply Surface neumann boundary condition
+  !! Add the surface Neumann boundary conditions
 
   ! SET:
   ! @PointNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
-  !! Apply point neumann boundary condition
+  !! Add the point Neumann boundary conditions
 
 END TYPE STVectorField_
 
@@ -212,18 +234,28 @@ END TYPE STVectorFieldPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Initiate2
+! date: 2023-03-29
+! summary: Initiate a space-time vector field from another field
+!
+! Calls Initiate of AbstractNodeField_ (copy of the field data, the DOF
+! data and the values). If obj2 is a space-time vector field, spaceCompo,
+! timeCompo, idofs, space_idofs and time_idofs are copied too.
+!
+! See also: [[obj_Initiate2]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate1( &
     obj, obj2, copyFull, copyStructure, usePointer)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(AbstractField_), INTENT(INOUT) :: obj2
     !! It should be a child of AbstractNodeField_
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyFull
+    !! not used
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: copyStructure
+    !! not used
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: usePointer
+    !! not used
   END SUBROUTINE obj_Initiate1
 END INTERFACE
 
@@ -235,6 +267,118 @@ END INTERFACE STVectorFieldInitiate
 !
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-06
+! summary: Initiate a space-time vector field by passing arguments
+!
+! The data stored in obj is deallocated first. A space-time vector field
+! has one physical variable, whose name is the first character of name,
+! with spaceCompo(1) space components and timeCompo time components.
+! If timefedof is present and initiated, timeCompo is
+! timefedof%GetTotalDOF(); otherwise timeCompo(1) is used (one of them is
+! required, checked in debug mode). spaceCompo is required (checked in
+! debug mode).
+!
+! There is one value for each DOF of fedof, each space component and
+! each time component, so obj%Size() is
+! fedof%GetTotalDOF() * spaceCompo * timeCompo. The values are stored in
+! DOF format: the component (s, t) is the local DOF
+! idof = (t - 1) * spaceCompo + s, and entry (idof - 1) * tNodes + i
+! is the value of DOF i (tNodes = fedof%GetTotalDOF()).
+!
+! space_idofs is [1, ..., spaceCompo], time_idofs is
+! [1, ..., timeCompo] and idofs is [1, ..., spaceCompo * timeCompo].
+!
+! The arguments storageFMT, isSpaceCompo, isSpaceCompoScalar,
+! isTimeCompo, isTimeCompoScalar, tPhysicalVarNames, physicalVarNames,
+! isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes,
+! isTNodesScalar and tSize are not used.
+!
+! Initiate(obj2) makes a copy of another field ([[obj_Initiate1]]); the
+! example shows both.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE FieldOpt_Class, ONLY: TypeFieldOpt
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u, v, w
+! CHARACTER(1) :: names(1)
+! REAL(DFP) :: found(24)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: ImportFromToml
+! CALL OK(u%IsInitiated(), "ImportFromToml: IsInitiated")
+! CALL OK(u%spaceCompo .EQ. 2, "ImportFromToml: spaceCompo")
+! CALL OK(u%timeCompo .EQ. 2, "ImportFromToml: timeCompo")
+! CALL OK(u%SIZE() .EQ. 24, "ImportFromToml: Size = 24")
+!
+! ! Test 2: Initiate by arguments
+! CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+!                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+! CALL OK(v%IsInitiated(), "Initiate: IsInitiated")
+! CALL OK(v%spaceCompo .EQ. 2, "Initiate: spaceCompo")
+! CALL OK(v%timeCompo .EQ. timefedof%GetTotalDOF(), &
+!         "Initiate: timeCompo = total time DOF")
+! CALL OK(v%SIZE() .EQ. fedof%GetTotalDOF() * 2 * 2, &
+!         "Initiate: Size = space DOF * spaceCompo * timeCompo")
+! CALL OK(v%GetTotalPhysicalVars() .EQ. 1, "GetTotalPhysicalVars")
+! CALL v%GetPhysicalNames(names)
+! CALL OK(names(1) .EQ. "v", "GetPhysicalNames")
+! CALL OK(ALL(v%GetSpaceCompo(1) .EQ. [2]), "GetSpaceCompo")
+! CALL OK(ALL(v%GetTimeCompo(1) .EQ. [2]), "GetTimeCompo")
+! CALL OK(v%GetStorageFMT() .EQ. TypeFieldOpt%storageFormatDOF, &
+!         "GetStorageFMT")
+!
+! ! Test 3: copy
+! CALL v%Set(VALUE=3.0_DFP)
+! CALL w%Initiate(obj2=v)
+! CALL OK(w%spaceCompo .EQ. 2, "Initiate(obj2): spaceCompo")
+! CALL OK(w%timeCompo .EQ. 2, "Initiate(obj2): timeCompo")
+! CALL w%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
+!                    tsize=tsize)
+! CALL OK(tsize .EQ. 24, "Initiate(obj2): Size")
+! CALL OK(ALL(ABS(found - 3.0_DFP) .LT. tol), "Initiate(obj2): values")
+!
+! ! Test 4: DEALLOCATE
+! CALL w%DEALLOCATE()
+! CALL OK(.NOT. w%IsInitiated(), "DEALLOCATE: not initiated")
+! CALL OK(w%spaceCompo .EQ. 0, "DEALLOCATE: spaceCompo = 0")
+! CALL OK(w%timeCompo .EQ. 0, "DEALLOCATE: timeCompo = 0")
+!
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate1]], [[obj_Deallocate]]
+
 INTERFACE
   MODULE SUBROUTINE obj_Initiate2( &
     obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
@@ -243,6 +387,7 @@ INTERFACE
     isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
     isTNodesScalar, tSize, fedof, geofedof, timefedof)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field, needed
     CHARACTER(*), INTENT(IN) :: engine
@@ -318,13 +463,20 @@ END INTERFACE STVectorFieldInitiate
 !                                              Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: Deallocates the data stored inside the STVectorField_ obj
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Deallocate the data stored in the field
+!
+! spaceCompo and timeCompo are set to zero, idofs, space_idofs and
+! time_idofs are deallocated, and the data of AbstractNodeField_ is
+! deallocated.
+!
+! See also: [[obj_Initiate2]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
   END SUBROUTINE obj_Deallocate
 END INTERFACE
 
@@ -336,9 +488,19 @@ END INTERFACE STVectorFieldDeallocate
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-09-25
+! summary: Deallocate a vector of STVectorFieldPointer_
+!
+! Each associated pointer is deallocated and nullified (the targets are
+! not freed), then obj is deallocated.
+!
+! See also: [[obj_STVectorFieldSafeAllocate1]]
+
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate_ptr_vector(obj)
     TYPE(STVectorFieldPointer_), ALLOCATABLE, INTENT(INOUT) :: obj(:)
+    !! vector of space-time vector field pointers
   END SUBROUTINE obj_Deallocate_ptr_vector
 END INTERFACE
 
@@ -351,13 +513,14 @@ END INTERFACE STVectorFieldDeallocate
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-09-25
-! summary:  Safely allocate the STVector field
+! date: 2024-09-25
+! summary: Safely allocate a vector of STVectorFieldPointer_
 !
-!# Introduction
+! If obj is not allocated, it is allocated with newsize. If its size is
+! less than newsize, it is deallocated with STVectorFieldDeallocate and
+! allocated with newsize. Otherwise nothing is done.
 !
-! This routine will allocate obj if it is not allocated
-! It will allocate obj if its current size is less than newsize
+! See also: [[obj_Deallocate_ptr_vector]]
 
 INTERFACE
   MODULE SUBROUTINE obj_STVectorFieldSafeAllocate1(obj, newsize)
@@ -376,9 +539,16 @@ END INTERFACE STVectorFieldSafeAllocate
 !                                                   Final@ConstructorMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Finalizer of the field
+!
+! Calls [[obj_Deallocate]].
+
 INTERFACE
   MODULE SUBROUTINE obj_Final(obj)
     TYPE(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
   END SUBROUTINE obj_Final
 END INTERFACE
 
@@ -386,15 +556,29 @@ END INTERFACE
 !                                                          Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 26 June 2021
-! summary: Display the content of [[STVectorField_]]
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-26
+! summary: Display the content of the field
+!
+! Displays the data of AbstractNodeField_, spaceCompo and timeCompo.
+!
+! Examples
+!
+!```fortran
+! TYPE(STVectorField_) :: u
+! CALL u%Display("u = ")
+!```
+!
+! Full example: src/modules/STVectorField/examples/Initiate_test_1.F90
 
 INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CHARACTER(*), INTENT(IN) :: msg
+    !! message to display first
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    !! unit number, default is stdout
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -406,20 +590,32 @@ END INTERFACE STVectorFieldDisplay
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Imports the content
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Import the field from an HDF5 file
+!
+! Reads the data of AbstractNodeField_ from group, then spaceCompo and
+! timeCompo. The field must have been written by [[obj_Export]].
+!
+! See also: [[obj_Export]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Import(obj, hdf5, group, fedof, fedofs, timefedof, &
                                timefedofs, geofedof, geofedofs)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
     CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
+    !! FEDOF of the space and of the geometry
     TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
+    !! FEDOFs of the space and of the geometry (several physical variables)
     CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
+    !! TimeFEDOF of the time
     TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    !! TimeFEDOFs of the time (several physical variables)
   END SUBROUTINE obj_Import
 END INTERFACE
 
@@ -431,15 +627,99 @@ END INTERFACE STVectorFieldImport
 !                                                           Export@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 16 July 2021
-! summary: This routine Exports the content
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-07-16
+! summary: Export the field to an HDF5 file
+!
+! Writes the data of AbstractNodeField_ in group, and
+! group/IntR0/timeCompo and group/IntR0/spaceCompo. Nothing is written
+! if the field is not initiated.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE HDF5File_Class, ONLY: HDF5File_
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+! CHARACTER(*), PARAMETER :: h5FileName = "Export_test_1.h5"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u, v
+! TYPE(HDF5File_) :: h5
+! REAL(DFP) :: found(24), found2(24)
+! INTEGER(I4B) :: tsize, ii, s, t
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+! DO t = 1, 2
+!   DO s = 1, 2
+!     CALL u%Set(VALUE=[(100.0_DFP * s + 10.0_DFP * t + ii, ii=1, 6)], &
+!                spaceCompo=s, timeCompo=t)
+!   END DO
+! END DO
+!
+! ! Export
+! CALL h5%Initiate(h5FileName, mode="NEW")
+! CALL h5%OPEN()
+! CALL u%Export(hdf5=h5, group="u")
+! CALL h5%DEALLOCATE()
+! CALL OK(.TRUE., "Export")
+!
+! ! Import
+! CALL h5%Initiate(h5FileName, mode="READ")
+! CALL h5%OPEN()
+! CALL v%IMPORT(hdf5=h5, group="u", fedof=fedof, geofedof=geofedof, &
+!               timefedof=timefedof)
+! CALL h5%DEALLOCATE()
+!
+! CALL OK(v%IsInitiated(), "Import: IsInitiated")
+! CALL OK(v%spaceCompo .EQ. 2, "Import: spaceCompo")
+! CALL OK(v%timeCompo .EQ. 2, "Import: timeCompo")
+! CALL OK(v%SIZE() .EQ. 24, "Import: Size")
+! CALL u%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
+!                    tsize=tsize)
+! CALL v%GetMultiple(istart=1, iend=24, stride=1, VALUE=found2, &
+!                    tsize=tsize)
+! CALL OK(ALL(ABS(found - found2) .LT. tol), "Import: values")
+! CALL v%Get(VALUE=found2, tsize=tsize, spaceCompo=2, timeCompo=1)
+! CALL OK(ALL(ABS(found2(1:6) - found(7:12)) .LT. tol), &
+!         "Import: Get component")
+!
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Import]]
 
 INTERFACE STVectorFieldExport
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
   END SUBROUTINE obj_Export
 END INTERFACE STVectorFieldExport
 
@@ -447,24 +727,132 @@ END INTERFACE STVectorFieldExport
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the single entry of the STVector field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set the space-time values of one node
 !
-!# Introduction
-! This routine Sets the single entry of the STvector field. Here,
-! `value` is a two dimensional array of real numbers, denoting the space-time
-! components of the vector. The first index denotes the space components,
-! second index denotes the time-components. As a result, total number of rows
-! and columns in `value` are equal to the total number of spaceCompo and
-! timeCompo.
+! VALUE(s, t) is set to space component s and time component t of
+! globalNode, so SIZE(VALUE, 1) = spaceCompo and SIZE(VALUE, 2) =
+! timeCompo (checked in debug mode). globalNode is a local node number;
+! islocal is not used.
 !
-! STvector( :, :, globalNode ) = value( :, : )
+! Without addContribution the entries become scale * VALUE; with
+! addContribution = .TRUE. scale * VALUE is added. The same rule holds
+! for all Set methods.
+!
+! The example also shows Set(VALUE) for all entries ([[obj_Set11]]),
+! Set(VALUE(:, :)) for all nodes ([[obj_Set2]]) and one entry
+! ([[obj_Set9]]).
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u
+! REAL(DFP) :: found(24), mat(2, 2), val
+! INTEGER(I4B) :: tsize, nrow, ncol
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: all entries to one value
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found - 1.0_DFP) .LT. tol), "Set all")
+! END BLOCK
+!
+! ! Test 2: the same space-time matrix at every node
+! BLOCK
+!   mat = RESHAPE([1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP], [2, 2])
+!   CALL u%Set(VALUE=mat)
+!   CALL u%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found(1:6) - 1.0_DFP) .LT. tol) .AND. &
+!           ALL(ABS(found(7:12) - 2.0_DFP) .LT. tol) .AND. &
+!           ALL(ABS(found(13:18) - 3.0_DFP) .LT. tol) .AND. &
+!           ALL(ABS(found(19:24) - 4.0_DFP) .LT. tol), &
+!           "Set matrix at all nodes: DOF format")
+! END BLOCK
+!
+! ! Test 3: space-time matrix of one node
+! BLOCK
+!   mat = RESHAPE([5.0_DFP, 6.0_DFP, 7.0_DFP, 8.0_DFP], [2, 2])
+!   CALL u%Set(globalNode=2, islocal=math%yes, VALUE=mat)
+!   CALL u%Get(VALUE=mat, nrow=nrow, ncol=ncol, globalNode=2, &
+!              islocal=math%yes)
+!   CALL OK(nrow .EQ. 2 .AND. ncol .EQ. 2, "Get node: nrow, ncol")
+!   CALL OK(ALL(ABS(mat - RESHAPE([5.0_DFP, 6.0_DFP, 7.0_DFP, &
+!                                  8.0_DFP], [2, 2])) .LT. tol), &
+!           "Set node")
+!   ! node 2 is entry 2, 8, 14, 20
+!   CALL u%GetMultiple(indx=[2, 8, 14, 20], VALUE=found, tsize=tsize)
+!   CALL OK(ALL(ABS(found(1:4) - [5.0_DFP, 6.0_DFP, 7.0_DFP, &
+!                                 8.0_DFP]) .LT. tol), &
+!           "Set node: DOF format")
+!
+!   mat = 1.0_DFP
+!   CALL u%Set(globalNode=2, islocal=math%yes, VALUE=mat, &
+!              scale=2.0_DFP, addContribution=math%yes)
+!   CALL u%Get(VALUE=mat, nrow=nrow, ncol=ncol, globalNode=2, &
+!              islocal=math%yes)
+!   CALL OK(ALL(ABS(mat - RESHAPE([7.0_DFP, 8.0_DFP, 9.0_DFP, &
+!                                  10.0_DFP], [2, 2])) .LT. tol), &
+!           "Set node: add 2 * value")
+! END BLOCK
+!
+! ! Test 4: one entry
+! BLOCK
+!   CALL u%Set(VALUE=9.0_DFP, globalNode=3, islocal=math%yes, &
+!              spaceCompo=2, timeCompo=1)
+!   CALL u%Get(VALUE=val, globalNode=3, islocal=math%yes, spaceCompo=2, &
+!              timeCompo=1)
+!   CALL OK(ABS(val - 9.0_DFP) .LT. tol, "Set single")
+!   CALL u%Get(VALUE=val, globalNode=3, islocal=math%yes, spaceCompo=1, &
+!              timeCompo=1)
+!   CALL OK(ABS(val - 1.0_DFP) .LT. tol, "Set single: other component")
+!   CALL u%Set(VALUE=1.0_DFP, globalNode=3, islocal=math%yes, &
+!              spaceCompo=2, timeCompo=1, addContribution=math%yes)
+!   CALL u%Get(VALUE=val, globalNode=3, islocal=math%yes, spaceCompo=2, &
+!              timeCompo=1)
+!   CALL OK(ABS(val - 10.0_DFP) .LT. tol, "Set single: add")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Get6]], [[obj_Set6]], [[obj_Set7]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set1( &
     obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     INTEGER(I4B), INTENT(IN) :: globalNode
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -472,8 +860,9 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! space-time nodal values at global node
     !! number of rows in value is equal to obj%spaceCompo
-    !! numberof columns in value is equal to obj%spaceCompo
+    !! number of columns in value is equal to obj%timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
     !! add or set
   END SUBROUTINE obj_Set1
@@ -483,26 +872,26 @@ END INTERFACE
 !                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets all the entries of a STVector field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set every node to the same space-time values
 !
-!# Introduction
-! This routine Sets all entries of the STvector field. Here,
-! `value` is a two dimensional array of real numbers, denoting the space-time
-! components of the vector. The first index denotes the space components,
-! second index denotes the time-components. As a result, total number of rows
-! and columns in `value` are equal to the total number of spaceCompo and
-! timeCompo.
+! VALUE(s, t) is set to space component s and time component t of all
+! nodes. SIZE(VALUE, 1) = spaceCompo and SIZE(VALUE, 2) = timeCompo
+! (checked in debug mode).
 !
-! STvector( :, :, i ) = value( :, : ), for i = 1, tNodes
+! See also: [[obj_Set1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set2(obj, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
+    !! space-time values, SIZE(VALUE) = (spaceCompo, timeCompo)
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_Set2
 END INTERFACE
 
@@ -510,21 +899,40 @@ END INTERFACE
 !                                                             Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets all the entries of a STVector field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one space-time component of all nodes to a value
 !
-!# Introduction
-! This routine Sets all entries of the space-time vector field. Here
-! `spaceCompo` and `timeCompo` are the spatial temporal components, which we
-! want to replace by a scalar value `value`.
+! Space component spaceCompo and time component timeCompo of all nodes
+! are set to VALUE.
 !
-! STvector( spaceCompo, timeCompo, i ) = value, for i = 1, tNodes
+! The example also shows [[obj_Set5]], [[obj_Set12]] and [[obj_Set13]].
+!
+! Examples
+!
+!```fortran
+! TYPE(STVectorField_) :: u
+! REAL(DFP) :: a(6), m(2, 6), found(6)
+! INTEGER(I4B) :: tsize
+! ! u: spaceCompo = 2, timeCompo = 2, six nodes
+! CALL u%Set(VALUE=4.0_DFP, spaceCompo=2, timeCompo=1)
+! CALL u%Set(VALUE=a, spaceCompo=1, timeCompo=2)
+! CALL u%Set(VALUE=m, spaceCompo=[1, 2], timeCompo=2, &
+!            storageFMT=NODES_FMT)
+! CALL u%Set(VALUE=m, spaceCompo=2, timeCompo=[1, 2], &
+!            storageFMT=NODES_FMT)
+! CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=2)
+!```
+!
+! Full example: src/modules/STVectorField/examples/Set_test_2.F90
+!
+! See also: [[obj_Get1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set3( &
     obj, VALUE, spaceCompo, timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE
     !! obj = value
     INTEGER(I4B), INTENT(IN) :: spaceCompo
@@ -542,27 +950,53 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Set all the entries by using given STVector field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set all values from a rank 3 array
 !
-!# Introduction
-! This routine Set all entries of the space-time vector.
-! The first index of `value` denotes the spatial components
-! The second index of `value` denotes the temporal components
-! The thrid index of `value` denotes the node number
+! VALUE(s, t, i) is set to space component s and time component t of
+! node i. SIZE(VALUE) must be (spaceCompo, timeCompo, tNodes) (checked
+! in debug mode).
 !
-! STvector( :, :, : ) = value( :, :, : )
+! The example also shows [[obj_Set6]], [[obj_Set7]], [[obj_Set8]],
+! [[obj_Get2]], [[obj_Get3]] and [[obj_Get4]].
+!
+! Examples
+!
+!```fortran
+! TYPE(STVectorField_) :: u
+! REAL(DFP) :: v3(2, 2, 6), w3(2, 2, 3), mat(2, 2), found(6)
+! INTEGER(I4B) :: dim1, dim2, dim3, tsize
+! ! u: spaceCompo = 2, timeCompo = 2, six nodes
+! CALL u%Set(VALUE=v3)
+! CALL u%Get(VALUE=v3, storageFMT=NODES_FMT, dim1=dim1, dim2=dim2, &
+!            dim3=dim3)
+! CALL u%Set(VALUE=mat, globalNode=[2, 5], islocal=.TRUE.)
+! CALL u%Set(globalNode=[6, 4, 1], islocal=.TRUE., VALUE=w3)
+! CALL u%Get(VALUE=w3, storageFMT=NODES_FMT, globalNode=[6, 4, 1], &
+!            islocal=.TRUE., dim1=dim1, dim2=dim2, dim3=dim3)
+! CALL u%Set(VALUE=[7.0_DFP, 8.0_DFP], globalNode=[3, 5], &
+!            islocal=.TRUE., spaceCompo=2, timeCompo=2)
+! CALL u%Get(VALUE=found, tsize=tsize, globalNode=[3, 5], &
+!            islocal=.TRUE., spaceCompo=2, timeCompo=2)
+!```
+!
+! Full example: src/modules/STVectorField/examples/Set_test_3.F90
+!
+! See also: [[obj_Get2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set4(obj, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE(:, :, :)
     !! number of first dim in value is equal to obj%spaceCompo
     !! number of second dim in value is equal to obj%timeCompo
     !! number of 3rd dimension is equal to total number of nodes
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_Set4
 END INTERFACE
 
@@ -570,23 +1004,20 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Set all nodal values of a given space-time component
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one space-time component of all nodes from a vector
 !
-!# Introduction
+! VALUE(i) is set to space component spaceCompo and time component
+! timeCompo of node i. SIZE(VALUE) is the total number of nodes.
 !
-! This routine Sets all entries of the space-time vector field. Here
-! `spaceCompo` and `timeCompo` are the spatial temporal components, which we
-! want to replace by a vector `value`. Note that the size of `value` should
-! be equal to the total number of nodes in the mesh.
-!
-! STvector( spaceCompo, timeCompo, : ) = value( : )
+! See also: [[obj_Set3]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set5( &
     obj, VALUE, spaceCompo, timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! nodal values of space-time component
     !! the size should be equal to the total number of nodes
@@ -605,24 +1036,21 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set the same space-time values at the selected nodes
 !
-!# Introduction
-! This soubroutine Sets the selected enties in space-time vector to a
-! constant space-time nodal values. Here globalNode is the list of global
-! node number. `value` is a rank2 array of real numbers. Its first index
-! denotes the space component and second component denotes time component.
+! VALUE(s, t) is set to space component s and time component t of each
+! node in globalNode. SIZE(VALUE, 1) = spaceCompo and SIZE(VALUE, 2) =
+! timeCompo (checked in debug mode).
 !
-!Effectively it does the following:
-!
-! STvector( :, :, globalNode ) = value( :, : ), for entries in global nodes
+! See also: [[obj_Set4]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set6( &
     obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -630,7 +1058,9 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! space-time nodal value which will be assigned to globalNode
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_Set6
 END INTERFACE
 
@@ -638,29 +1068,21 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set the selected nodes from a rank 3 array
 !
-!# Introduction
-! This routine Sets selected entries of space-time vector field. Here
-! globalNode contains the list of global nodes here values will be changed.
+! VALUE(s, t, j) is set to space component s and time component t of
+! node globalNode(j). SIZE(VALUE) must be (spaceCompo, timeCompo,
+! SIZE(globalNode)) (checked in debug mode).
 !
-! - `value` is a rank-3 array.
-! - Its first index denotes the space component,
-! - second index denotes the time components
-! - third component denotes the node number.
-!
-!@note
-!The size of dimension should be equal to the size of globalNode.
-!@endnote
-!
-! STvector( :, :, globalNode ) = value( :, :, : )
+! See also: [[obj_Set4]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set7( &
     obj, globalNode, islocal, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -681,20 +1103,22 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one space-time component of the selected nodes
 !
-!# Introduction
-! This routine Sets the selected components of selected nodes to given value
+! VALUE(j) is set to space component spaceCompo and time component
+! timeCompo of node globalNode(j). SIZE(VALUE) = SIZE(globalNode)
+! (checked in debug mode).
 !
-! STvector( spaceCompo, globalNode ) = value( : )
+! See also: [[obj_Set4]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set8( &
     obj, VALUE, globalNode, islocal, spaceCompo, timeCompo, scale, &
     addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE(:)
     !! nodal values of space-time component
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -706,7 +1130,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component in obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_Set8
 END INTERFACE
 
@@ -714,20 +1140,21 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Sets the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set one space-time component of one node
 !
-!# Introduction
-! selected components, selected nodes
+! VALUE is set to space component spaceCompo and time component
+! timeCompo of globalNode.
 !
-! STvector( spaceCompo, globalNode ) = value
+! See also: [[obj_Set1]] (contains an example), [[obj_Get5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set9( &
     obj, VALUE, globalNode, islocal, spaceCompo, timeCompo, scale, &
     addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE
     !! obj = value
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -739,7 +1166,9 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component in obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_Set9
 END INTERFACE
 
@@ -747,14 +1176,114 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: Set the STvector values using triplet
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set the selected nodes from a FEVariable
+!
+! VALUE must be a space-time FEVariable (other types raise an error in
+! debug mode). Its rank 3 data is passed to [[obj_Set7]], so it is read
+! as (spaceCompo, timeCompo, SIZE(globalNode)).
+!
+! Note: [[obj_Get7]] returns a FEVariable of shape (spaceCompo, nns,
+! nnt), which does not fit this layout; see the example.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: FEVariable_
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: NODES_FMT
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u, v
+! TYPE(FEVariable_) :: fevar, fevar2
+! REAL(DFP) :: v3(2, 2, 6), a3(2, 2, 3), b3(2, 2, 3), found(24), &
+!              found2(24)
+! INTEGER(I4B) :: ii, jj, kk, dim1, dim2, dim3, tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! DO kk = 1, 6
+!   DO jj = 1, 2
+!     DO ii = 1, 2
+!       v3(ii, jj, kk) = 100.0_DFP * ii + 10.0_DFP * jj + kk
+!     END DO
+!   END DO
+! END DO
+! CALL u%Set(VALUE=v3)
+!
+! ! Test 1: FEVariable round trip
+! BLOCK
+!   CALL u%Get(VALUE=fevar, globalNode=[1, 5, 2], islocal=math%yes)
+!   CALL u%GetFEVariable(VALUE=fevar2, globalNode=[1, 5, 2], &
+!                        islocal=math%yes)
+!   CALL u%Set(VALUE=fevar, globalNode=[3, 6, 4], islocal=math%yes)
+!   CALL u%Get(VALUE=a3, storageFMT=NODES_FMT, globalNode=[1, 5, 2], &
+!              islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
+!   CALL u%Get(VALUE=b3, storageFMT=NODES_FMT, globalNode=[3, 6, 4], &
+!              islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
+!   CALL OK(ALL(ABS(a3 - b3) .LT. tol), &
+!           "Set(FEVariable) from Get(FEVariable)")
+!   CALL OK(ALL(ABS(a3(:, :, 2) - v3(:, :, 5)) .LT. tol), &
+!           "Set(FEVariable): source nodes unchanged")
+! END BLOCK
+!
+! ! Test 2: GetFEVariable gives the same FEVariable as Get
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%Set(VALUE=fevar2, globalNode=[3, 6, 4], islocal=math%yes)
+!   CALL u%Get(VALUE=b3, storageFMT=NODES_FMT, globalNode=[3, 6, 4], &
+!              islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
+!   CALL OK(ALL(ABS(a3 - b3) .LT. tol), "GetFEVariable")
+! END BLOCK
+!
+! ! Test 3: copy another field
+! BLOCK
+!   CALL u%Set(VALUE=v3)
+!   CALL v%Initiate(obj2=u)
+!   CALL v%Set(VALUE=0.0_DFP)
+!   CALL v%Set(VALUE=u)
+!   CALL u%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
+!                      tsize=tsize)
+!   CALL v%GetMultiple(istart=1, iend=24, stride=1, VALUE=found2, &
+!                      tsize=tsize)
+!   CALL OK(ALL(ABS(found - found2) .LT. tol), "Set(STVectorField_)")
+! END BLOCK
+!
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Get7]], [[obj_GetFeVariable]], [[obj_Set14]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set10( &
     obj, VALUE, globalNode, islocal, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     TYPE(FEVariable_), INTENT(IN) :: VALUE
     !! FE variable
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
@@ -772,17 +1301,24 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: Set the STvector values using triplet
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Set all values to one value
+!
+! Calls SetAll of AbstractNodeField_.
+!
+! See also: [[obj_Set1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set11(obj, VALUE, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE
     !! Set all value to a constant value
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_Set11
 END INTERFACE
 
@@ -792,24 +1328,21 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2023-12-10
-! summary: Set values for several space components for a given timecompo
+! summary: Set several space components of one time component
 !
-!# Introduction
+! Sets space components spaceCompo(:) at time component timeCompo of all
+! nodes. With storageFMT = NODES_FMT, VALUE(j, i) is component
+! spaceCompo(j) of node i, so VALUE is (SIZE(spaceCompo), tNodes); with
+! DOF_FMT VALUE is the transpose, (tNodes, SIZE(spaceCompo)). The sizes
+! are checked in debug mode.
 !
-! This routine sets the values of several space components of
-! of space-time vector field.
-! Note that this routine sets all the nodal values.
-!
-! The number of columns in `Value` should be equal to the total
-! number of nodes in the domain.
-!
-! The total number of rows in the value should be equal to the size
-! of `spaceCompo`
+! See also: [[obj_Set3]] (contains an example), [[obj_Set13]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set12( &
     obj, VALUE, spaceCompo, timeCompo, storageFMT, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! If storage is NODES_FMT
     !! The number of rows equal to the size of spaceCompo
@@ -837,12 +1370,21 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2023-12-10
-! summary: Set values for several time components for a given spaceCompo
+! summary: Set several time components of one space component
+!
+! Sets time components timeCompo(:) of space component spaceCompo of all
+! nodes. With storageFMT = NODES_FMT, VALUE(j, i) is time component
+! timeCompo(j) of node i, so VALUE is (SIZE(timeCompo), tNodes); with
+! DOF_FMT VALUE is the transpose, (tNodes, SIZE(timeCompo)). The sizes
+! are checked in debug mode.
+!
+! See also: [[obj_Set3]] (contains an example), [[obj_Set12]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set13( &
     obj, VALUE, spaceCompo, timeCompo, storageFMT, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(IN) :: VALUE(:, :)
     !! The numbe rows in value should be equal to the size of timeCompo
     !! The number of columns in value should be equal to the
@@ -868,14 +1410,21 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-03-29
-! summary: Set values
+! summary: Copy another space-time vector field
+!
+! If VALUE is of type STVectorField_, obj%Copy(VALUE) is called; other
+! types raise an error in debug mode.
+!
+! See also: [[obj_Set10]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Set14(obj, VALUE)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(STVectorField_), INTENT(IN) :: VALUE
+    !! space-time vector field to copy
   END SUBROUTINE obj_Set14
 END INTERFACE
 
@@ -883,7 +1432,7 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+! authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: This routine Set all nodal values of a given space-time component
 !
@@ -922,7 +1471,7 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+! authors: Vikas Sharma, Ph. D.
 ! date: 2024-06-08
 ! summary: Set values
 !
@@ -960,20 +1509,117 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-24
-! summary: obj@timeCompo = value
+! summary: Set one time component from a vector field
+!
+! For each space component s, component s of VALUE is set to space
+! component s and time component timeCompo of obj. VALUE must have
+! obj%spaceCompo components and the same DOFs as obj.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! USE VectorField_Class, ONLY: VectorField_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u
+! TYPE(VectorField_) :: v, w
+! REAL(DFP) :: a(6), b(6), found(12)
+! INTEGER(I4B) :: tsize, ii
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+! CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+!                 fedof=fedof, geofedof=geofedof)
+! CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=[2], &
+!                 fedof=fedof, geofedof=geofedof)
+!
+! a = [(REAL(ii, DFP), ii=1, 6)]
+! b = 10.0_DFP * a
+! CALL v%Set(VALUE=a, spaceCompo=1)
+! CALL v%Set(VALUE=b, spaceCompo=2)
+!
+! ! Test 1: SetFromVectorField
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%SetFromVectorField(VALUE=v, timeCompo=2)
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - a) .LT. tol), "SetFromVectorField: x")
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - b) .LT. tol), "SetFromVectorField: y")
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6)) .LT. tol), &
+!           "SetFromVectorField: time 1 unchanged")
+!
+!   CALL u%SetFromVectorField(VALUE=v, timeCompo=2, scale=2.0_DFP, &
+!                             addContribution=math%yes)
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - 3.0_DFP * b) .LT. tol), &
+!           "SetFromVectorField: add 2 * value")
+! END BLOCK
+!
+! ! Test 2: SetToVectorField
+! BLOCK
+!   CALL w%Set(VALUE=0.0_DFP)
+!   CALL u%SetToVectorField(VALUE=w, timeCompo=2)
+!   CALL w%Get(VALUE=found, tsize=tsize, spaceCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 3.0_DFP * a) .LT. tol), &
+!           "SetToVectorField: x")
+!   CALL w%Get(VALUE=found, tsize=tsize, spaceCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - 3.0_DFP * b) .LT. tol), &
+!           "SetToVectorField: y")
+!
+!   CALL u%SetToVectorField(VALUE=w, timeCompo=1, scale=1.0_DFP, &
+!                           addContribution=math%yes)
+!   CALL w%Get(VALUE=found, tsize=tsize, spaceCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 3.0_DFP * a) .LT. tol), &
+!           "SetToVectorField: add time 1 (zero)")
+! END BLOCK
+!
+! CALL w%DEALLOCATE()
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_SetToVectorField]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetFromVectorField( &
     obj, VALUE, timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(VectorField_), INTENT(IN) :: VALUE
     !! It should be a child of VectorField_
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of vector field
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_SetFromVectorField
 END INTERFACE
 
@@ -983,16 +1629,27 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2025-12-11
-! summary:  Set to VectorField_
+! summary: Set a vector field from one time component
+!
+! For each space component s, space component s and time component
+! timeCompo of obj is set to component s of VALUE. VALUE must have
+! obj%spaceCompo components and the same DOFs as obj.
+!
+! See also: [[obj_SetFromVectorField]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_SetToVectorField(obj, VALUE, timeCompo, &
                                          scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(VectorField_), INTENT(INOUT) :: VALUE
+    !! vector field, set from time component timeCompo of obj
     INTEGER(I4B), INTENT(IN) :: timeCompo
+    !! time component of obj, at most obj%timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
+    !! scale, default is 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
+    !! if true, scale * value is added, otherwise set
   END SUBROUTINE obj_SetToVectorField
 END INTERFACE
 
@@ -1000,10 +1657,40 @@ END INTERFACE
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2024-06-06
+! summary: Set the values from a user function
+!
+! func is a vector function of (x, y, z, t) with spaceCompo values. For
+! each node i of the mesh, the coordinates of the node are passed to
+! func:
+!
+! - with times, SIZE(times) = timeCompo (checked in debug mode), and time
+!   component a of node i is set to func(x_i, times(a)),
+! - without times, t = 0 and all time components of node i are set to
+!   func(x_i, 0).
+!
+! Only the mesh nodes are set, so this is correct for order 1 Lagrange in
+! space (DOF number = node number); the other DOFs of higher orders are
+! not set. ivar, idof, spaceCompo and timeCompo are not used.
+!
+! Examples
+!
+!```fortran
+! TYPE(STVectorField_) :: u
+! TYPE(UserFunction_) :: func
+! ! func: vector function, numArgs = 4, numReturns = spaceCompo
+! CALL u%SetByFunction(func=func, times=[0.0_DFP, 1.0_DFP])
+! CALL u%SetByFunction(func=func)
+!```
+!
+! Full example: src/modules/STVectorField/examples/SetByFunction_test_1.F90
+
 INTERFACE
   MODULE SUBROUTINE obj_SetByFunction( &
     obj, func, times, ivar, idof, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
@@ -1023,30 +1710,130 @@ END INTERFACE
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-06-06
-! summary: Get nodal values
+! summary: Get the values of a node, a component, or both
 !
-!# Introduction
+! The optional arguments that are present select the values:
 !
-! if globalNode present then it returns the space-time nodal values
-! at that node.
+! - globalNode, spaceCompo, timeCompo: one value (tsize = 1),
+! - globalNode: all values of the node, (s, t) = (1, 1), (2, 1), ...,
+!   (spaceCompo, timeCompo) (tsize = spaceCompo * timeCompo),
+! - globalNode, spaceCompo: the time components of (node, s)
+!   (tsize = timeCompo),
+! - globalNode, timeCompo: the space components of (node, t)
+!   (tsize = spaceCompo),
+! - spaceCompo, timeCompo: component (s, t) of all nodes (tsize = tNodes),
+! - spaceCompo: all time components of s, time 1 first
+!   (tsize = tNodes * timeCompo),
+! - timeCompo: all space components of t, space 1 first
+!   (tsize = tNodes * spaceCompo).
 !
-! if spaceCompo and timeCompo is present then it returns the
-! nodal values of that space-time component
+! At least one of them must be present. globalNode is a local node
+! number.
 !
-! Node Space Time
-! Node No-Space No-Time
-! Node Space No-Time
-! Node No-Space Time
-! No-Node Space Time
-! No-Node Space No-Time
-! No-Node No-Space Time
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u
+! REAL(DFP) :: found(24), want(12)
+! INTEGER(I4B) :: tsize, ii, s, t
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! DO t = 1, 2
+!   DO s = 1, 2
+!     CALL u%Set(VALUE=[(f(s, t, ii), ii=1, 6)], spaceCompo=s, timeCompo=t)
+!   END DO
+! END DO
+!
+! ! Test 1: node, space and time
+! CALL u%Get(VALUE=found, tsize=tsize, globalNode=3, spaceCompo=2, &
+!            timeCompo=1)
+! CALL OK(tsize .EQ. 1 .AND. ABS(found(1) - f(2, 1, 3)) .LT. tol, &
+!         "node, space, time")
+!
+! ! Test 2: node
+! CALL u%Get(VALUE=found, tsize=tsize, globalNode=3)
+! CALL OK(tsize .EQ. 4, "node: tsize")
+! CALL OK(ALL(ABS(found(1:4) - [f(1, 1, 3), f(2, 1, 3), f(1, 2, 3), &
+!                               f(2, 2, 3)]) .LT. tol), "node: values")
+!
+! ! Test 3: node and space
+! CALL u%Get(VALUE=found, tsize=tsize, globalNode=3, spaceCompo=2)
+! CALL OK(tsize .EQ. 2, "node, space: tsize")
+! CALL OK(ALL(ABS(found(1:2) - [f(2, 1, 3), f(2, 2, 3)]) .LT. tol), &
+!         "node, space: values")
+!
+! ! Test 4: node and time
+! CALL u%Get(VALUE=found, tsize=tsize, globalNode=3, timeCompo=1)
+! CALL OK(tsize .EQ. 2, "node, time: tsize")
+! CALL OK(ALL(ABS(found(1:2) - [f(1, 1, 3), f(2, 1, 3)]) .LT. tol), &
+!         "node, time: values")
+!
+! ! Test 5: space and time
+! CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=2)
+! CALL OK(tsize .EQ. 6, "space, time: tsize")
+! CALL OK(ALL(ABS(found(1:6) - [(f(1, 2, ii), ii=1, 6)]) .LT. tol), &
+!         "space, time: values")
+!
+! ! Test 6: space
+! CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1)
+! CALL OK(tsize .EQ. 12, "space: tsize")
+! want = [[(f(1, 1, ii), ii=1, 6)], [(f(1, 2, ii), ii=1, 6)]]
+! CALL OK(ALL(ABS(found(1:12) - want) .LT. tol), "space: values")
+!
+! ! Test 7: time
+! CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+! CALL OK(tsize .EQ. 12, "time: tsize")
+! want = [[(f(1, 2, ii), ii=1, 6)], [(f(2, 2, ii), ii=1, 6)]]
+! CALL OK(ALL(ABS(found(1:12) - want) .LT. tol), "time: values")
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+!
+! CONTAINS
+!
+! PURE FUNCTION f(sc, tc, nd) RESULT(ans)
+!   INTEGER(I4B), INTENT(IN) :: sc, tc, nd
+!   REAL(DFP) :: ans
+!   ans = 100.0_DFP * sc + 10.0_DFP * tc + nd
+! END FUNCTION f
+!
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Set3]], [[obj_Get4]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get1( &
     obj, VALUE, tsize, globalNode, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! value = obj
     INTEGER(I4B), INTENT(OUT) :: tsize
@@ -1064,27 +1851,29 @@ END INTERFACE
 !                                                            Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Get all the entries of the space-time vector field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get all values in a rank 3 array
 !
-!# Introduction
-! This routine returns all the nodal values of space-time nodal vector field.
-! Here value is a rank3 array of reals.
+! With storageFMT = NODES_FMT, VALUE(s, t, i) is space component s and
+! time component t of node i, and (dim1, dim2, dim3) = (spaceCompo,
+! timeCompo, tNodes). With DOF_FMT, VALUE(i, s, t) holds the same value
+! and (dim1, dim2, dim3) = (tNodes, spaceCompo, timeCompo).
 !
-! - Its first index denotes the spatial component
-! - the second index denotes the temporal component
-! - the third index denotes the node number.
+! See also: [[obj_Set4]] (contains an example), [[obj_Get3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE, storageFMT, dim1, dim2, dim3)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :, :)
+    !! values, see storageFMT
     INTEGER(I4B), INTENT(IN) :: storageFMT
     !! storage format of value
     !! NODES_FMT: dim1, dim2, dim3 => obj%spaceCompo, obj%timeCompo, tNodes
     !! DOF_FMT: dim1, dim2, dim3 => tNodes, obj%spaceCompo, obj%timeCompo
     INTEGER(I4B), INTENT(OUT) :: dim1, dim2, dim3
+    !! sizes of the data written in value, see storageFMT
   END SUBROUTINE obj_Get2
 END INTERFACE
 
@@ -1092,25 +1881,23 @@ END INTERFACE
 !                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the space-time nodal values of selected nodes
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get the values of the selected nodes in a rank 3 array
 !
-!# Introduction
-!         This routine returns the space-time nodal values of selected nodes.
-! The values will be returned in rank3 array value.
-! - The first index corresponds to the spatial components
-! - The second index corresponds to the temporal components,
-! - The third index corresponds to the node number.
+! Same as [[obj_Get2]] for the nodes in globalNode: with NODES_FMT,
+! VALUE(s, t, j) is the value of node globalNode(j) and (dim1, dim2,
+! dim3) = (spaceCompo, timeCompo, SIZE(globalNode)); with DOF_FMT,
+! VALUE(j, s, t) and (dim1, dim2, dim3) = (SIZE(globalNode),
+! spaceCompo, timeCompo).
 !
-!@note
-! The size of third dimension of value should be equal to size of globalNode.
-!@endnote
+! See also: [[obj_Set4]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Get3( &
     obj, VALUE, storageFMT, globalNode, islocal, dim1, dim2, dim3)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :, :)
     !! returned value
     !! dim1 is space compoennt
@@ -1135,27 +1922,27 @@ END INTERFACE
 !                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the nodal value of a space-time vector field
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get one space-time component of the selected nodes
 !
-!# Introduction
-! This routine returns the nodal values of a space-time nodal vector.
-! In this routine we can specify the spatial and temporal component using
-! spaceCompo and timeCompo. globalNode contains the list of global node
-! number. Also, the values are returned in the a vector scalar `values`. Note
-! that the length of value should be equal to the size of globalNode vector.
+! VALUE(j) is space component spaceCompo and time component timeCompo of
+! node globalNode(j); tsize = SIZE(globalNode).
+!
+! See also: [[obj_Set4]] (contains an example), [[obj_Set8]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get4( &
     obj, VALUE, tsize, globalNode, islocal, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! nodal values of space-time component
     !! size of value is same as size of global node
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! total size written in value
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
+    !! local node numbers
     ! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true the global node number are local node number
@@ -1170,14 +1957,20 @@ END INTERFACE
 !                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the selected entries
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get one space-time component of one node
+!
+! VALUE is space component spaceCompo and time component timeCompo of
+! globalNode.
+!
+! See also: [[obj_Set1]] (contains an example), [[obj_Set9]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get5( &
     obj, VALUE, globalNode, islocal, spaceCompo, timeCompo)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE
     !! nodal value of space-time component
     INTEGER(I4B), INTENT(IN) :: globalNode
@@ -1195,13 +1988,19 @@ END INTERFACE
 !                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the space-time value at given node number
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get the space-time values of one node
+!
+! VALUE(s, t) is space component s and time component t of globalNode;
+! nrow = spaceCompo and ncol = timeCompo.
+!
+! See also: [[obj_Set1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_Get6(obj, VALUE, nrow, ncol, globalNode, islocal)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! space-time nodal values at global node
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
@@ -1219,14 +2018,22 @@ END INTERFACE
 !                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine returns the space-time value at given node number
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-06-25
+! summary: Get the values of the selected nodes in a FEVariable
+!
+! VALUE is a nodal, vector, space-time FEVariable of shape (spaceCompo,
+! SIZE(globalNode), timeCompo): entry (s, j, t) is space component s and
+! time component t of node globalNode(j).
+!
+! See also: [[obj_Set10]] (contains an example), [[obj_GetFeVariable]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Get7(obj, VALUE, globalNode, islocal)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
+    !! nodal, vector, space-time FEVariable (spaceCompo, nodes, timeCompo)
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -1238,7 +2045,7 @@ END INTERFACE
 !                                                             Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+! authors: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: Get value in an instance of AbstractNodeField_
 !
@@ -1288,7 +2095,7 @@ END INTERFACE
 !                                                           Get@GetMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+! authors: Vikas Sharma, Ph. D.
 ! date: 06 Jan 2022
 ! summary: REturns the value
 
@@ -1309,12 +2116,17 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-03-28
-! summary: Set single entry
+! date: 2023-03-28
+! summary: Get the values of the selected nodes in a FEVariable
+!
+! Same as [[obj_Get7]]; ivar is not used.
+!
+! See also: [[obj_Set10]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(STVectorField_), INTENT(IN) :: obj
+    !! space-time vector field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
     LOGICAL(LGT), INTENT(IN) :: islocal
@@ -1334,15 +2146,112 @@ END INTERFACE STVectorFieldGetFEVariable
 !                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 22 Jan 2021
-! summary: Apply Dirichlet boundary condition
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-01-22
+! summary: Apply a Dirichlet boundary condition
+!
+! The node numbers and the nodal values at the time nodes are obtained
+! from dbc%Get with times, fedof, geofedof and timefedof: the values are
+! (nodes, timeCompo). Space component dbc%GetDOFNo() and time component
+! a of these nodes is set to the values of column a. The component must
+! not be larger than spaceCompo (checked in debug mode).
+!
+! The example also shows [[obj_ApplyDirichletBC2]] and
+! [[obj_ApplyDirichletBC3]].
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE DirichletBC_Class, ONLY: DirichletBCDeallocate
+! USE DirichletBC_Class, ONLY: DirichletBCImportFromToml
+! USE DirichletBC_Class, ONLY: DirichletBCPointer_
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "ApplyDirichletBC_test_1.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! REAL(DFP), PARAMETER :: times(2) = [0.0_DFP, 1.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u
+! TYPE(DirichletBCPointer_), ALLOCATABLE :: extDBC(:)
+! REAL(DFP) :: found(24), want(6)
+! INTEGER(I4B) :: tsize, itime
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+! CALL DirichletBCImportFromToml(obj=extDBC, dom=dom, tomlName="extDBC", &
+!                                filename=tomlFileName)
+!
+! ! Test 1: internal list of Dirichlet BCs
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyDirichletBC(times=times)
+!   DO itime = 1, 2
+!     want = [1.0_DFP, 0.0_DFP, 0.0_DFP, 1.0_DFP, 0.0_DFP, 0.0_DFP]
+!     CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=itime)
+!     CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), &
+!             "internal dbc: x, time "//CHAR(48 + itime))
+!     want = [0.0_DFP, 2.0_DFP, 2.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP]
+!     CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2, timeCompo=itime)
+!     CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), &
+!             "internal dbc: y, time "//CHAR(48 + itime))
+!   END DO
+! END BLOCK
+!
+! ! Test 2: vector of DirichletBCPointer_
+! BLOCK
+!   CALL u%Set(VALUE=-1.0_DFP)
+!   CALL u%ApplyDirichletBC(dbc=extDBC, times=times)
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) + 1.0_DFP) .LT. tol), &
+!           "dbc vector: x unchanged")
+!   want = [7.0_DFP, 7.0_DFP, -1.0_DFP, -1.0_DFP, 7.0_DFP, -1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "dbc vector: y")
+! END BLOCK
+!
+! ! Test 3: single DirichletBC_
+! BLOCK
+!   CALL u%Set(VALUE=3.0_DFP)
+!   CALL u%ApplyDirichletBC(dbc=extDBC(1)%ptr, times=times)
+!   want = [7.0_DFP, 7.0_DFP, 3.0_DFP, 3.0_DFP, 7.0_DFP, 3.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "single dbc: y")
+! END BLOCK
+!
+! CALL DirichletBCDeallocate(extDBC)
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ApplyDirichletBC2]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC1(obj, dbc, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(DirichletBC_), INTENT(INOUT) :: dbc
+    !! Dirichlet boundary condition
     REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time nodes, SIZE(times) = timeCompo
   END SUBROUTINE obj_ApplyDirichletBC1
 END INTERFACE
 
@@ -1350,9 +2259,14 @@ END INTERFACE
 !                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 22 Jan 2021
-! summary: Apply Dirichlet boundary condition
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-01-22
+! summary: Apply a list of Dirichlet boundary conditions
+!
+! Same as [[obj_ApplyDirichletBC1]] for each associated pointer of dbc.
+!
+! See also: [[obj_ApplyDirichletBC1]] (contains an example),
+! [[obj_ApplyDirichletBC3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC2(obj, dbc, times)
@@ -1369,9 +2283,13 @@ END INTERFACE
 !                                               ApplyDirichletBC@DBCMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
-! date: 22 Jan 2021
-! summary: Apply Dirichlet boundary condition
+!> author: Vikas Sharma, Ph. D.
+! date: 2021-01-22
+! summary: Apply the Dirichlet boundary conditions of the field
+!
+! Calls [[obj_ApplyDirichletBC2]] with obj%dbc.
+!
+! See also: [[obj_ApplyDirichletBC1]] (contains an example)
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyDirichletBC3(obj, times)
@@ -1388,11 +2306,38 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2025-12-11
-! summary:  Apply Body source to ST vector field
+! summary: Add the space-time body source given by a user function
+!
+! The time element on times (the time nodes) gives the time shape
+! functions T_a and quadrature points. For each element, the body source
+! is evaluated at the space-time quadrature points (x, y, z, t), and
+!
+!   obj(c, a, I) = obj(c, a, I) + scale * integral N_I T_a f_c
+!
+! is added for space component c, time component a and node I. The
+! source has elemsd%nsd rows, so spaceCompo must be equal to the
+! dimension of the mesh.
+!
+! Examples
+!
+!```fortran
+! TYPE(STVectorField_) :: u
+! TYPE(UserFunction_) :: func
+! ! func: vector function, numArgs = 4 (x, y, z, t),
+! ! numReturns = spaceCompo
+! CALL u%Set(VALUE=0.0_DFP)
+! CALL u%ApplyBodySource(bodySource=func, scale=1.0_DFP, &
+!                        times=[0.0_DFP, 1.0_DFP])
+!```
+!
+! Full example: src/modules/STVectorField/examples/ApplyBodySource_test_1.F90
+!
+! See also: [[obj_ApplyBodySource3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(UserFunction_), INTENT(INOUT) :: bodySource
     !! Body source user function
     !! It should be a vector function with
@@ -1411,7 +2356,11 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2025-12-11
-! summary:  Apply Body source to ST vector field
+! summary: Add the body source given by a space-time vector field
+!
+! Under development: raises an error in debug mode and does nothing.
+!
+! See also: [[obj_ApplyBodySource1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
@@ -1432,11 +2381,21 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2025-12-11
-! summary:  Apply Body source to ST vector field
+! summary: Add the body source at one time given by a user function
+!
+! The body source is evaluated at the space quadrature points with
+! t = times, and the element vector integral N_I f_c (spaceCompo, nns)
+! is passed to Set with the element nodes. That Set expects the values of
+! one node for all time components (spaceCompo, timeCompo), so this
+! routine stops in debug mode when nns differs from timeCompo; it does
+! not work yet.
+!
+! See also: [[obj_ApplyBodySource1]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyBodySource3(obj, bodySource, scale, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
+    !! space-time vector field
     CLASS(UserFunction_), INTENT(INOUT) :: bodySource
     !! Body source user function
     !! It should be a vector function with
@@ -1474,6 +2433,74 @@ END INTERFACE
 !   - 2026-11-03: pass the nodal values to the force vector as
 !     (spaceCompo, nns, nnt); before, space and time nodes were swapped
 !
+! Examples
+!
+!```fortran
+! PROGRAM main
+!   USE BaseType, ONLY: math => TypeMathOpt
+!   USE ExceptionHandler_Class, ONLY: e
+!   USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+!   USE FEDOF_Class, ONLY: FEDOF_
+!   USE FEDomain_Class, ONLY: FEDomain_
+!   USE GlobalData, ONLY: DFP
+!   USE GlobalData, ONLY: I4B
+!   USE STVectorField_Class, ONLY: STVectorField_
+!   USE Test_Method, ONLY: OK
+!   USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+!   IMPLICIT NONE
+!
+!   CHARACTER(*), PARAMETER :: tomlFileName = &
+!                              "ApplySurfaceNeumannBC_test_1.toml"
+!   REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+!   INTEGER(I4B), PARAMETER :: nodes(6) = [1, 2, 3, 4, 5, 6]
+!   TYPE(FEDomain_) :: dom
+!   TYPE(FEDOF_), TARGET :: fedof, geofedof
+!   TYPE(TimeFEDOF_), TARGET :: timefedof
+!   TYPE(STVectorField_) :: u, nbcField
+!   REAL(DFP) :: val(6), expected(6)
+!   INTEGER(I4B) :: tsize, itime
+!   CHARACTER(1) :: ch
+!
+!   CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+!   CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+!   CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                         fedof=fedof, geofedof=geofedof, &
+!                         timefedof=timefedof, dom=dom)
+!   CALL nbcField%Initiate(obj2=u, copyFull=math%no, &
+!                          copyStructure=math%yes, usePointer=math%yes)
+!
+!   CALL OK(u%GetTotalNBC() .EQ. 1, "GetTotalNBC")
+!   CALL OK(u%timeCompo .EQ. 2, "timeCompo")
+!
+!   CALL u%SetAll(VALUE=0.0_DFP)
+!   CALL u%ApplySurfaceNeumannBC(nbcField=nbcField, scale=1.0_DFP, &
+!                                times=[0.0_DFP, 1.0_DFP])
+!
+!   ! node:       1             2             3        4        5
+!   expected = [25.0_DFP / 12.0_DFP, 125.0_DFP / 12.0_DFP, 0.0_DFP, &
+!               0.0_DFP, 12.5_DFP, 0.0_DFP]
+!
+!   DO itime = 1, 2
+!     ch = CHAR(48 + itime)
+!     CALL u%Get(VALUE=val, tsize=tsize, globalNode=nodes, &
+!                islocal=math%yes, spaceCompo=1, timeCompo=itime)
+!     CALL OK(ALL(ABS(val(1:tsize) - expected) .LT. tol), &
+!             "x component, time component "//ch)
+!     CALL u%Get(VALUE=val, tsize=tsize, globalNode=nodes, &
+!                islocal=math%yes, spaceCompo=2, timeCompo=itime)
+!     CALL OK(ALL(ABS(val(1:tsize)) .LT. tol), &
+!             "y component, time component "//ch)
+!   END DO
+!
+!   CALL nbcField%DEALLOCATE()
+!   CALL u%DEALLOCATE()
+!   CALL timefedof%DEALLOCATE()
+!   CALL fedof%DEALLOCATE()
+!   CALL geofedof%DEALLOCATE()
+!   CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
 ! See also: [[obj_ApplyPointNeumannBC]]
 
 INTERFACE
@@ -1496,7 +2523,90 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2025-12-11
-! summary:  Add Contribution of point neumann boundary condition
+! summary: Add the point Neumann boundary conditions
+!
+! The time element on times gives the time mass matrix
+! ct(a, b) = integral T_a T_b dt. For each point Neumann boundary
+! condition of the field (obj%nbc_point), the node numbers and the nodal
+! values at the time nodes f_b are obtained, and
+!
+!   obj(c, a, I) = obj(c, a, I) + scale * sum_b ct(a, b) f_b(I)
+!
+! is added for space component c = nbc%GetDOFNo(). Nothing is done if the
+! field has no point Neumann boundary condition.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STVectorField_Class, ONLY: STVectorField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = &
+!                            "ApplyPointNeumannBC_test_1.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! REAL(DFP), PARAMETER :: times(2) = [0.0_DFP, 1.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STVectorField_) :: u
+! REAL(DFP) :: found(24), want(6)
+! INTEGER(I4B) :: tsize, itime
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! ! Test 1: number of point Neumann BCs
+! CALL OK(u%GetTotalPointNBC() .EQ. 2, "GetTotalPointNBC")
+!
+! ! Test 2: scale = 1
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyPointNeumannBC(scale=1.0_DFP, times=times)
+!   DO itime = 1, 2
+!     want = [1.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP]
+!     CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=itime)
+!     CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), &
+!             "scale = 1: x, time "//CHAR(48 + itime))
+!     want = [0.0_DFP, 0.0_DFP, 2.0_DFP, 0.0_DFP, 0.0_DFP, 0.0_DFP]
+!     CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2, timeCompo=itime)
+!     CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), &
+!             "scale = 1: y, time "//CHAR(48 + itime))
+!   END DO
+! END BLOCK
+!
+! ! Test 3: added to the current values, scale = 0.5
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%ApplyPointNeumannBC(scale=0.5_DFP, times=times)
+!   want = [1.5_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=1, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "add with scale = 0.5: x")
+!   want = [1.0_DFP, 1.0_DFP, 2.0_DFP, 1.0_DFP, 1.0_DFP, 1.0_DFP]
+!   CALL u%Get(VALUE=found, tsize=tsize, spaceCompo=2, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - want) .LT. tol), "add with scale = 0.5: y")
+! END BLOCK
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ApplySurfaceNeumannBC]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyPointNeumannBC(obj, scale, times)
@@ -1505,6 +2615,7 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: scale
     !! scale for neumann boundary condition
     REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time nodes, SIZE(times) = timeCompo
   END SUBROUTINE obj_ApplyPointNeumannBC
 END INTERFACE
 
