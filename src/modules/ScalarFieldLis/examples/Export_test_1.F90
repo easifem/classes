@@ -5,8 +5,9 @@
 ! Export gathers the values of the LIS vector into the Fortran vector
 ! and then writes the field (AbstractField_ data, DOF data and values)
 ! in a group of an HDF5 file. The file is read back into a native
-! ScalarField_ (Import of ScalarFieldLis_ is not yet available), whose
-! values must be the values of u.
+! ScalarField_ (same layout as a native field), whose values must be
+! the values of u. Import into a ScalarFieldLis_ is tested in
+! Import_test_1.F90.
 
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt

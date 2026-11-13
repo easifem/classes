@@ -1,5 +1,6 @@
 ! This program is a part of EASIFEM library
-! Copyright (C) 2020-2021  Vikas Sharma, Ph.D
+! Expandable And Scalable Infrastructure for Finite Element Methods
+! htttps://www.easifem.com
 !
 ! This program is free software: you can redistribute it and/or modify
 ! it under the terms of the GNU General Public License as published by
@@ -13,31 +14,18 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
-
+!
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-03-22
 ! summary: Scalar field data type with LIS engine is defined
 
 MODULE ScalarFieldLis_Class
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
-USE BaseType, ONLY: FEVariable_
-USE ExceptionHandler_Class, ONLY: e
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE FPL, ONLY: ParameterList_
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE HDF5File_Class, ONLY: HDF5File_
 USE ScalarField_Class, ONLY: ScalarField_
-USE String_Class, ONLY: String
-
 IMPLICIT NONE
 PRIVATE
 
-CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class"
-CHARACTER(*), PARAMETER :: myPrefix = "ScalarField"
 PUBLIC :: ScalarFieldLis_
 PUBLIC :: ScalarFieldLisPointer_
-PUBLIC :: ScalarFieldLis
-PUBLIC :: ScalarFieldLis_Pointer
 
 !----------------------------------------------------------------------------
 !                                                              ScalarField_
@@ -46,13 +34,8 @@ PUBLIC :: ScalarFieldLis_Pointer
 !> author: Vikas Sharma, Ph. D.
 ! date: 25 June 2021
 ! summary: LIS Scalar field
-!
-!{!pages/docs-api/ScalarFieldLis/ScalarFieldLis_.md!}
 
 TYPE, EXTENDS(ScalarField_) :: ScalarFieldLis_
-CONTAINS
-  PRIVATE
-  FINAL :: obj_Final
 END TYPE ScalarFieldLis_
 
 !----------------------------------------------------------------------------
@@ -62,47 +45,5 @@ END TYPE ScalarFieldLis_
 TYPE :: ScalarFieldLisPointer_
   CLASS(ScalarFieldLis_), POINTER :: ptr => NULL()
 END TYPE ScalarFieldLisPointer_
-
-CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                         Final@Constructor
-!----------------------------------------------------------------------------
-
-SUBROUTINE obj_Final(obj)
-  TYPE(ScalarFieldLis_), INTENT(INOUT) :: obj
-  CALL obj%DEALLOCATE()
-END SUBROUTINE obj_Final
-
-!----------------------------------------------------------------------------
-!                                                         Vector@Constructor
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary:         This function returns an instance of [[ScalarFieldLis_]]
-
-FUNCTION ScalarFieldLis(param, fedof) RESULT(Ans)
-  TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
-  TYPE(ScalarFieldLis_) :: ans
-  CALL ans%Initiate(param=param, fedof=fedof)
-END FUNCTION
-
-!----------------------------------------------------------------------------
-!                                         ScalarFieldLis_Pointer@Constructor
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary:         This function returns an instance of [[ScalarFieldLis_]]
-
-FUNCTION ScalarFieldLis_Pointer(param, fedof) RESULT(Ans)
-  TYPE(ParameterList_), INTENT(IN) :: param
-  TYPE(FEDOF_), TARGET, INTENT(IN) :: fedof
-  CLASS(ScalarFieldLis_), POINTER :: ans
-  ALLOCATE (ScalarFieldLis_ :: ans)
-  CALL ans%Initiate(param=param, fedof=fedof)
-END FUNCTION
 
 END MODULE ScalarFieldLis_Class
