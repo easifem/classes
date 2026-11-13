@@ -1667,10 +1667,13 @@ END INTERFACE
 ! date: 2022-01-24
 ! summary: Returns the infinity norm (largest absolute value)
 !
-! Calls lis_vector_nrmi. With the OpenMP build of LIS the result is
-! currently wrong, because lis_vector_nrmi does not initialise its
-! thread private maximum (see bugs-report/ScalarFieldLis_bug_report.md,
-! H-01).
+! Calls lis_vector_nrmi.
+!
+! Changes:
+!   - 2026-11-14: Correct with the OpenMP build of LIS. Before, the
+!     thread private maximum in lis_vector_nrmi was not initialised and
+!     the result was wrong; fixed in the easifem fork of LIS
+!     (lis-latest). Needs a LIS built after this fix.
 !
 ! Returns:
 !   ans : REAL(DFP) - infinity norm of the values
