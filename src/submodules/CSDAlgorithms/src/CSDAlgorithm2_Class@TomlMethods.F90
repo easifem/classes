@@ -15,238 +15,238 @@
 !
 
 SUBMODULE(CSDAlgorithm2_Class) TomlMethods
-
 USE Display_Method, ONLY: Display
-
-USE GlobalData, ONLY: CHAR_LF, stdout
-
+USE GlobalData, ONLY: CHAR_LF
+USE GlobalData, ONLY: stdout
 USE String_Class, ONLY: String
-
 USE StringUtility, ONLY: UpperCase
-
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_serialize
 USE TomlUtility, ONLY: GetValue
-
-USE tomlf, ONLY: toml_serialize,  &
-  & toml_get => get_value, &
-  & toml_len => len, &
-  & toml_array,  &
-  & toml_stat
 
 IMPLICIT NONE
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!
+!                                                         ReadOptionalReal
 !----------------------------------------------------------------------------
 
-SUBROUTINE Help_GammaBatheMethodImportFromToml(obj, table, nodeName)
-  CLASS(CSDAlgorithm2_), INTENT(INOUT) :: obj
-  TYPE(toml_table), INTENT(INOUT) :: table
-  TYPE(String), INTENT(IN) :: nodeName
+! val is allocated only if key is in node. An unallocated actual
+! argument is an absent optional argument, so the defaults of the method
+! routines apply to the missing keys.
 
+SUBROUTINE ReadOptionalReal(node, key, val)
+  TYPE(toml_table), INTENT(INOUT) :: node
+  !! table of the method
+  CHARACTER(*), INTENT(IN) :: key
+  !! key of the parameter
+  REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val
+  !! value, allocated only if found
+
+  REAL(DFP) :: areal
   INTEGER(I4B) :: origin, stat
-  LOGICAL(LGT) :: isok
+  LOGICAL(LGT) :: isFound
+
+  CALL GetValue(table=node, key=key, VALUE=areal, &
+                default_value=math%zero, origin=origin, stat=stat, &
+                isFound=isFound)
+  IF (isFound) val = areal
+END SUBROUTINE ReadOptionalReal
+
+!----------------------------------------------------------------------------
+!                                                    BatheMethodImportFromToml
+!----------------------------------------------------------------------------
+
+! Read the parameters of Bathe method from the table astr. The key gamma
+! is read as splittingRatio if splittingRatio is not given. The names
+! starting with RHO (BETA) select rho-infinity-Bathe (beta1/beta2-Bathe)
+! even if rhoInf (beta1, beta2) is not given.
+
+SUBROUTINE BatheMethodImportFromToml(obj, table, astr)
+  CLASS(CSDAlgorithm2_), INTENT(INOUT) :: obj
+  !! algorithm object
+  TYPE(toml_table), INTENT(INOUT) :: table
+  !! table of the algorithm
+  TYPE(String), INTENT(IN) :: astr
+  !! value of methodName, name of the table of the method
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "BatheMethodImportFromToml()"
+#endif
   TYPE(toml_table), POINTER :: node
-  REAL(DFP) :: gamma
-  REAL(DFP), PARAMETER :: default_gamma = math%half
+  INTEGER(I4B) :: origin, stat
+  REAL(DFP), ALLOCATABLE :: splittingRatio, rhoInf, beta1, beta2
+  CHARACTER(4) :: variant
 
-  CALL toml_get(table, nodeName%chars(), node, &
-                origin=origin, requested=.FALSE., stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-  gamma = default_gamma
-  isok = ASSOCIATED(node)
-  IF (isok) THEN
-    CALL GetValue(node, "gamma", gamma, &
-                  default_value=default_gamma, &
-                  origin=origin, stat=stat)
+  node => NULL()
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=math%no, stat=stat)
+
+  IF (ASSOCIATED(node)) THEN
+    CALL ReadOptionalReal(node, "splittingRatio", splittingRatio)
+    IF (.NOT. ALLOCATED(splittingRatio)) THEN
+      CALL ReadOptionalReal(node, "gamma", splittingRatio)
+    END IF
+    CALL ReadOptionalReal(node, "rhoInf", rhoInf)
+    CALL ReadOptionalReal(node, "beta1", beta1)
+    CALL ReadOptionalReal(node, "beta2", beta2)
   END IF
+
+  variant = UpperCase(astr%slice(1, 4))
+  SELECT CASE (variant)
+  CASE ("RHOB", "RBAT")
+    IF (.NOT. ALLOCATED(rhoInf)) rhoInf = math%zero
+  CASE ("BETA", "BBAT")
+    IF (.NOT. (ALLOCATED(beta1) .OR. ALLOCATED(beta2))) THEN
+      beta1 = math%one / 3.0_DFP
+    END IF
+  CASE DEFAULT
+    ! the parameters given in the table select the variant
+  END SELECT
+
+  CALL obj%BatheMethod(splittingRatio=splittingRatio, rhoInf=rhoInf, &
+                       beta1=beta1, beta2=beta2)
 
   node => NULL()
 
-  CALL obj%BatheMethod(gamma=gamma)
-
-END SUBROUTINE Help_GammaBatheMethodImportFromToml
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE BatheMethodImportFromToml
 
 !----------------------------------------------------------------------------
-!
+!                                              NewmarkBetaMethodImportFromToml
 !----------------------------------------------------------------------------
 
-SUBROUTINE Help_BetaBatheMethodImportFromToml(obj, table, nodeName)
+! Read beta and gamma of Newmark-beta method from the table astr
+
+SUBROUTINE NewmarkBetaMethodImportFromToml(obj, table, astr)
   CLASS(CSDAlgorithm2_), INTENT(INOUT) :: obj
+  !! algorithm object
   TYPE(toml_table), INTENT(INOUT) :: table
-  TYPE(String), INTENT(IN) :: nodeName
+  !! table of the algorithm
+  TYPE(String), INTENT(IN) :: astr
+  !! value of methodName, name of the table of the method
 
-  INTEGER(I4B) :: origin, stat
-  LOGICAL(LGT) :: isok
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "NewmarkBetaMethodImportFromToml()"
+#endif
   TYPE(toml_table), POINTER :: node
-  REAL(DFP) :: gamma, beta1, beta2
-  REAL(DFP), PARAMETER :: default_gamma = math%half, &
-                          default_beta1 = math%one / 3.0_DFP, &
-                          default_beta2 = math%one - default_beta1
+  INTEGER(I4B) :: origin, stat
+  REAL(DFP), ALLOCATABLE :: beta, gamma
 
-  CALL toml_get(table, nodeName%chars(), node, &
-                origin=origin, requested=.FALSE., stat=stat)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
-  gamma = default_gamma
-  beta1 = default_beta1
-  beta2 = default_beta2
+  node => NULL()
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=math%no, stat=stat)
 
-  isok = ASSOCIATED(node)
-  IF (isok) THEN
-    CALL GetValue(node, "gamma", gamma, &
-                  default_value=default_gamma, &
-                  origin=origin, stat=stat)
-    CALL GetValue(node, "beta1", beta1, &
-                  default_value=default_beta1, &
-                  origin=origin, stat=stat)
-    CALL GetValue(node, "beta2", beta2, &
-                  default_value=default_beta2, &
-                  origin=origin, stat=stat)
+  IF (ASSOCIATED(node)) THEN
+    CALL ReadOptionalReal(node, "beta", beta)
+    CALL ReadOptionalReal(node, "gamma", gamma)
   END IF
 
-  CALL obj%BatheMethod(gamma=gamma, beta1=beta1, beta2=beta2)
+  CALL obj%NewmarkBetaMethod(beta=beta, gamma=gamma)
 
-END SUBROUTINE Help_BetaBatheMethodImportFromToml
+  node => NULL()
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE Help_RhoBatheMethodImportFromToml(obj, table, nodeName)
-  CLASS(CSDAlgorithm2_), INTENT(INOUT) :: obj
-  TYPE(toml_table), INTENT(INOUT) :: table
-  TYPE(String), INTENT(IN) :: nodeName
-
-  INTEGER(I4B) :: origin, stat
-  LOGICAL(LGT) :: isok
-  TYPE(toml_table), POINTER :: node
-  REAL(DFP) :: gamma, rhoInf
-  REAL(DFP), PARAMETER :: default_gamma = math%half, &
-                          default_rhoInf = math%zero
-
-  CALL toml_get(table, nodeName%chars(), node, &
-                origin=origin, requested=.FALSE., stat=stat)
-
-  gamma = default_gamma
-  rhoInf = default_rhoInf
-
-  isok = ASSOCIATED(node)
-  IF (isok) THEN
-    CALL GetValue(node, "gamma", gamma, &
-                  default_value=default_gamma, &
-                  origin=origin, stat=stat)
-    CALL GetValue(node, "rhoInf", rhoInf, &
-                  default_value=default_rhoInf, &
-                  origin=origin, stat=stat)
-  END IF
-
-  CALL obj%BatheMethod(gamma=gamma, rhoInf=rhoInf)
-
-END SUBROUTINE Help_RhoBatheMethodImportFromToml
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE NewmarkBetaMethodImportFromToml
 
 !----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-SUBROUTINE Help_SingleStepMethodImportFromToml(obj, table)
-  CLASS(CSDAlgorithm2_), INTENT(INOUT) :: obj
-  TYPE(toml_table), INTENT(INOUT) :: table
-
-  obj%splitRatios(1) = math%one
-  obj%singleStep = .TRUE.
-
-  ALLOCATE (obj%substeps(1)%ptr)
-
-  CALL obj%substeps(1)%ptr%ImportFromToml(table)
-
-END SUBROUTINE Help_SingleStepMethodImportFromToml
-
-!----------------------------------------------------------------------------
-!                                                             ImportFromToml1
+!                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml1
-
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: found
 TYPE(String) :: astr
+REAL(DFP) :: dt
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START] ')
 #endif
 
 CALL obj%DEALLOCATE()
 
 CALL GetValue(table=table, key="methodName", VALUE=astr, &
-              default_value="BATHE", origin=origin, stat=stat, &
-              isfound=found)
+              default_value="Bathe", origin=origin, stat=stat)
 
-#ifdef DEBUG_VER
-CALL AssertError1(found, myName, &
-     'Cannot find methodName field in toml table. &
-     & MethodName specifies the name of algorithm.')
-#endif
-
-obj%name = UpperCase(astr%slice(1, 4))
-
-SELECT CASE (obj%name)
-CASE ("GAMM", "GBAT", "BATH")
-
-  CALL Help_GammaBatheMethodImportFromToml(obj, table, nodeName=astr)
-
-CASE ("BETA", "BBAT")
-
-  CALL Help_BetaBatheMethodImportFromToml(obj, table, nodeName=astr)
-
-CASE ("RHOB", "RBAT")
-
-  CALL Help_RhoBatheMethodImportFromToml(obj, table, nodeName=astr)
-
-CASE ("NEWM", "TRAP", "HHTA", "COLL")
-
-  CALL Help_SingleStepMethodImportFromToml(obj, table)
-
+SELECT CASE (UpperCase(astr%slice(1, 4)))
+CASE ("BATH", "GAMM", "GBAT", "BETA", "BBAT", "RHOB", "RBAT")
+  CALL BatheMethodImportFromToml(obj, table, astr)
+CASE ("NEWM", "TRAP")
+  CALL NewmarkBetaMethodImportFromToml(obj, table, astr)
 CASE DEFAULT
-
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-    & '[WIP ERROR] :: User defined method not supported')
-
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    'unknown methodName '//astr%chars()// &
+                    ', it should be Bathe or Newmark')
+#endif
 END SELECT
+
+CALL GetValue(table=table, key="form", VALUE=astr, &
+              default_value="U", origin=origin, stat=stat)
+CALL obj%SetForm(astr%chars())
+
+CALL GetValue(table=table, key="forceEvaluation", VALUE=astr, &
+              default_value="interpolate", origin=origin, stat=stat)
+CALL obj%SetForceEvaluation(astr%chars())
+
+CALL GetValue(table=table, key="dt", VALUE=dt, &
+              default_value=math%zero, origin=origin, stat=stat, &
+              isfound=found)
+IF (found) CALL obj%Initiate(dt=dt)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
-!                                                             ImportFromToml2
+!                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
+LOGICAL(LGT) :: isok
 #endif
 
-LOGICAL(LGT) :: isok
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
 INTEGER(I4B) :: origin, stat
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[START]')
+                        '[START] ')
 #endif
 
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, &
-              origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
@@ -259,7 +259,8 @@ CALL AssertError1(isok, myName, &
 CALL obj%ImportFromToml(table=node)
 
 #ifdef DEBUG_VER
-IF (PRESENT(printToml)) THEN
+isok = PRESENT(printToml)
+IF (isok) THEN
   CALL Display(toml_serialize(node), "toml config = "//CHAR_LF, &
                unitNo=stdout)
 END IF
@@ -270,13 +271,12 @@ DEALLOCATE (table)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END]')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
-!                                                              Include errors
+!                                                             Include errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"
