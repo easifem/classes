@@ -1517,6 +1517,16 @@ END INTERFACE
 ! component s and time component timeCompo of obj. VALUE must have
 ! obj%spaceCompo components and the same DOFs as obj.
 !
+! VALUE can use any engine: with a native engine (NATIVE_*) its Fortran
+! vector is used directly (GetPointer); otherwise, for example a
+! VectorFieldLis_, all its values are first read into a temporary array
+! by VALUE%GetMultiple (tested in
+! src/modules/STVectorField/examples/SetFromVectorField_test_2.F90).
+!
+! Changes:
+!   - 2026-11-14: VALUE can be a VectorFieldLis_ (before, GetPointer
+!     returned NULL and SetMultiple dereferenced it).
+!
 ! Examples
 !
 !```fortran
@@ -1613,7 +1623,7 @@ INTERFACE
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     CLASS(VectorField_), INTENT(IN) :: VALUE
-    !! It should be a child of VectorField_
+    !! vector field, any engine (native or LIS)
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of vector field
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale

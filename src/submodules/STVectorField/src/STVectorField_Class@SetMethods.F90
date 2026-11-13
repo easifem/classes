@@ -744,8 +744,10 @@ MODULE PROCEDURE obj_SetFromVectorField
 CHARACTER(*), PARAMETER :: myName = "obj_SetFromVectorField()"
 LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: idof, icompo, s(3), p(3)
+INTEGER(I4B) :: idof, icompo, s(3), p(3), tsize
+LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE, TARGET :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -764,7 +766,19 @@ CALL AssertError1(isok, myName, &
                   'VectorField_::value is not initiated')
 #endif
 
-realvec => VALUE%GetPointer()
+! Native engines store the values in realVec, other engines (LIS) do not:
+! their values are copied into temp
+isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
+
+IF (isNative) THEN
+  realvec => VALUE%GetPointer()
+ELSE
+  tsize = VALUE%SIZE()
+  ALLOCATE (temp(tsize))
+  CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                         VALUE=temp, tsize=tsize)
+  realvec => temp
+END IF
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
@@ -788,6 +802,7 @@ DO icompo = 1, obj%spaceCompo
 END DO
 
 realvec => NULL()
+IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
