@@ -18,12 +18,6 @@
 SUBMODULE(ScalarField_Class) SetMethods
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE DOF_Method, ONLY: GetNodeLoc
-USE DOF_Method, ONLY: OPERATOR(.tNodes.)
-USE FEVariable_Method, ONLY: FEVariableGet => GET
-USE InputUtility, ONLY: Input
-USE ReallocateUtility, ONLY: Reallocate
-! USE DOF_Method, ONLY: GetIDOF
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableConstant
 USE BaseType, ONLY: TypeFEVariableSpace
@@ -31,10 +25,15 @@ USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: math => TypeMathOpt
+USE DOF_Method, ONLY: GetNodeLoc
+USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
 USE ElemShapeData_Method, ONLY: GetInterpolation_
+USE FEVariable_Method, ONLY: FEVariableGet => GET
+USE InputUtility, ONLY: Input
 USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePointInitiate => Initiate
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -343,12 +342,12 @@ IF (isNative) THEN
 ELSE
   p = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
   tsize = (p(2) - p(1)) / p(3) + 1
-  ALLOCATE (temp(tsize))
+  CALL Reallocate(temp, tsize)
   CALL VALUE%GetMultiple(istart=p(1), iend=p(2), stride=p(3), VALUE=temp, &
                          tsize=tsize)
   CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=temp, &
                        scale=scale, addContribution=addContribution)
-  DEALLOCATE (temp)
+  IF (ALLOCATED(temp)) DEALLOCATE (temp)
 END IF
 
 #ifdef DEBUG_VER
