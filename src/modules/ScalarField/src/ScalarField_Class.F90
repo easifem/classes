@@ -920,6 +920,25 @@ END INTERFACE
 ! An error is raised (in debug mode) if obj or VALUE is not initiated.
 ! Both fields must have the same FEDOF.
 !
+! VALUE can use any engine. With a native engine (NATIVE_*) its Fortran
+! vector is used directly (GetPointer). With another engine, for
+! example a ScalarFieldLis_, the values are read into a temporary
+! array by VALUE%GetMultiple, then set by obj%SetMultiple.
+!
+! Changes:
+!   - 2026-11-13: VALUE can be a ScalarFieldLis_ (before, GetPointer
+!     returned NULL and obj%SetMultiple dereferenced it).
+!
+! Examples
+!
+!```fortran
+! ! n is a native ScalarField_, u is a ScalarFieldLis_
+! n = u
+! CALL n%Set(VALUE=u, scale=2.0_DFP, addContribution=math%yes)
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/Set_test_4.F90
+!
 ! See also: [[obj_Set7]] (contains an example)
 
 INTERFACE
@@ -927,7 +946,7 @@ INTERFACE
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     CLASS(ScalarField_), INTENT(IN) :: VALUE
-    !! other scalar field
+    !! other scalar field, any engine (native or LIS)
     REAL(DFP), INTENT(IN) :: scale
     !! scale
     LOGICAL(LGT), INTENT(IN) :: addContribution

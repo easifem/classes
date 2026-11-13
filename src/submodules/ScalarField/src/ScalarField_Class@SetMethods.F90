@@ -309,8 +309,10 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3)
+INTEGER(I4B) :: s(3), p(3), tsize
+LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -329,10 +331,25 @@ CALL AssertError1(isok, myName, "ScalarField_::value not initiated")
 
 s = GetNodeLoc(obj=obj%dof, idof=math%one_i)
 
-realvec => VALUE%GetPointer()
-CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-                     scale=scale, addContribution=addContribution)
-realvec => NULL()
+! Native engines store the values in realVec, other engines (LIS) do not
+isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
+
+IF (isNative) THEN
+  realvec => VALUE%GetPointer()
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                       VALUE=realvec, scale=scale, &
+                       addContribution=addContribution)
+  realvec => NULL()
+ELSE
+  p = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
+  tsize = (p(2) - p(1)) / p(3) + 1
+  ALLOCATE (temp(tsize))
+  CALL VALUE%GetMultiple(istart=p(1), iend=p(2), stride=p(3), VALUE=temp, &
+                         tsize=tsize)
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=temp, &
+                       scale=scale, addContribution=addContribution)
+  DEALLOCATE (temp)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
