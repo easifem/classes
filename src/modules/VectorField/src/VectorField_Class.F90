@@ -1540,12 +1540,20 @@ END INTERFACE
 ! date: 2023-03-29
 ! summary: Copy the values of another vector field
 !
-! obj = VALUE: all values of VALUE are copied into obj. VALUE must be a
-! VectorField_ (an error is raised in debug mode otherwise) with the
-! same size.
+! obj = VALUE: all values of VALUE are copied into obj. VALUE must have
+! the same size. obj and VALUE can use any engine (native or LIS). With
+! a native engine (NATIVE_*) the Fortran vector of VALUE is used
+! directly (GetPointer); otherwise the values are read into a temporary
+! array by VALUE%GetMultiple. obj%SetMultiple writes them into obj.
 !
 ! Get(VALUE=w) copies the values of obj into w ([[obj_Get7]]); the
-! example shows both.
+! example shows both. Copies between native and LIS fields are tested in
+! src/modules/VectorFieldLis/examples/Set_test_2.F90.
+!
+! Changes:
+!   - 2026-11-14: VALUE can be a VectorFieldLis_ (before, only the exact
+!     type VectorField_ was accepted, and other types raised an error in
+!     debug mode or were ignored).
 !
 ! Examples
 !
@@ -1610,7 +1618,7 @@ INTERFACE
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field, obj = VALUE
     CLASS(VectorField_), INTENT(IN) :: VALUE
-    !! vector field to be copied
+    !! vector field to be copied, any engine (native or LIS)
   END SUBROUTINE obj_Set13
 END INTERFACE
 

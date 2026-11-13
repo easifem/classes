@@ -638,7 +638,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
 #endif
 
 INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -650,21 +652,24 @@ CALL AssertError1(obj%isInitiated(), myName, &
                   "VectorField_::obj is not initiated")
 #endif
 
-SELECT TYPE (VALUE)
-TYPE IS (VectorField_)
+! Native engines store the values in realVec, other engines (LIS) do not
+isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
 
+IF (isNative) THEN
   realvec => VALUE%GetPointer()
   tsize = SIZE(realvec)
   CALL obj%SetMultiple(VALUE=realvec, istart=1_I4B, iend=tsize, &
                        stride=1_I4B)
   realvec => NULL()
-
-#ifdef DEBUG_VER
-CLASS DEFAULT
-  CALL AssertError1(math%no, myName, &
-                    'Unknown type of VectorField_::value')
-#endif
-END SELECT
+ELSE
+  tsize = VALUE%SIZE()
+  ALLOCATE (temp(tsize))
+  CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                         VALUE=temp, tsize=tsize)
+  CALL obj%SetMultiple(VALUE=temp, istart=1_I4B, iend=tsize, &
+                       stride=1_I4B)
+  DEALLOCATE (temp)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
