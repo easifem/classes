@@ -1,0 +1,23 @@
+[oldBathe]
+methodName = "bathe"
+bathe.gamma = 0.6
+
+[rhoBathe]
+methodName = "RhoBathe"
+form = "A"
+forceEvaluation = "evaluate"
+dt = 0.1
+[rhoBathe.RhoBathe]
+splittingRatio = 0.5
+
+[betaBathe]
+methodName = "Bathe"
+[betaBathe.Bathe]
+beta1 = 0.3
+beta2 = 0.6
+
+[newmark]
+methodName = "Newmark"
+dt = 0.1
+[newmark.Newmark]
+beta = 0.3
