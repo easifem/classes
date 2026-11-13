@@ -794,11 +794,7 @@ END INTERFACE
 !
 ! For each time component a, all its entries become scale * VALUE(a)
 ! (or scale * VALUE(a) is added when addContribution is true).
-! SIZE(VALUE) = obj%timeCompo.
-!
-! In debug mode the routine currently raises an error for every
-! normal field, because its check for constant fields is inverted (see
-! bugs-report/STScalarField_bug_report.md, H-01).
+! SIZE(VALUE) = obj%timeCompo. Not callable for a constant field.
 !
 ! See also: [[obj_Set1]] (contains an example), [[obj_Set12]]
 

@@ -30,10 +30,10 @@ USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE FEVariable_Method, ONLY: Get
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-USE GlobalData, ONLY: NONE, SpaceTime, Scalar
+USE GlobalData, ONLY: NONE, Scalar, SpaceTime
 USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
-USE RealVector_Method, ONLY: Set, Add, GetPointer
+USE RealVector_Method, ONLY: Add, GetPointer, Set
 USE SafeSizeUtility, ONLY: SafeSize
 IMPLICIT NONE
 
@@ -53,7 +53,7 @@ INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                   Set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
@@ -131,7 +131,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%fieldType .EQ. TypeField%constant
+isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
 #endif
@@ -227,9 +227,9 @@ CALL AssertError1(isok, myName, &
 #ifdef DEBUG_VER
 IF (storageFMT .EQ. TypeFieldOpt%storageFormatNodes) THEN
   nrow = obj%timeCompo
-  ncol = obj%dof.tNodes.1
+  ncol = obj%dof .tNodes. 1
 ELSE
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%timeCompo
 END IF
 
@@ -254,7 +254,7 @@ IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   RETURN
 END IF
 
-ncol = obj%dof.tNodes.1
+ncol = obj%dof .tNodes. 1
 DO jj = 1, ncol
   CALL obj%Set(VALUE=VALUE(:, jj), scale=scale, &
                addContribution=addContribution, &
@@ -295,7 +295,7 @@ CALL AssertError1(isok, myName, "timeCompo out of bound")
 isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, "Not callable for constant field")
 
-tsize = obj%dof.tNodes.timeCompo
+tsize = obj%dof .tNodes. timeCompo
 CALL AssertError2(SIZE(VALUE), tsize, myName, &
                   "a=SIZE(VALUE), b=obj%dof.tNodes.timeCompo")
 #endif
