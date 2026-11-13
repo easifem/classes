@@ -222,7 +222,7 @@ TYPE SDAlgorithm2Pointer_
 END TYPE SDAlgorithm2Pointer_
 
 !----------------------------------------------------------------------------
-!                                             NewmarkBeta@ConstructorMethods
+!                                                          NewmarkBeta@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -274,7 +274,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                          HHTAlphaMethod@ConstructorMethods
+!                                                       HHTAlphaMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -329,7 +329,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                  GeneralizedAlphaMethod@ConstructorMethods
+!                                               GeneralizedAlphaMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -402,7 +402,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                        CollocationMethod@ConstructorMethods
+!                                                    CollocationMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -454,7 +454,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                Initiate@ConstructorMethods
+!                                                             Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -501,7 +501,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                             IsInitiated@ConstructorMethods
+!                                                          IsInitiated@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -543,7 +543,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 SetForm@ConstructorMethods
+!                                                              SetForm@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -583,7 +583,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 GetForm@ConstructorMethods
+!                                                              GetForm@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -622,7 +622,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      SetForceEvaluation@ConstructorMethods
+!                                                   SetForceEvaluation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -673,7 +673,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                      GetForceEvaluation@ConstructorMethods
+!                                                   GetForceEvaluation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -711,7 +711,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            GetForceTime@ConstructorMethods
+!                                                         GetForceTime@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -761,7 +761,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                            HouboltMethod@ConstructorMethods
+!                                                        HouboltMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -776,7 +776,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                MakeZeros@ConstructorMethods
+!                                                            MakeZeros@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -792,7 +792,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                  Display@ConstructorMethods
+!                                                              Display@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -808,7 +808,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               Deallocate@ConstructorMethods
+!                                                           Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
