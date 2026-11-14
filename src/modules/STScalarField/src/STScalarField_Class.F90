@@ -1350,16 +1350,17 @@ END INTERFACE
 ! summary: Set the selected nodes from an FEVariable
 !
 ! VALUE must be a nodal, scalar, space-time FEVariable whose values are
-! stored as val(a, j), the value of time component a at globalNode(j)
-! (the layout returned by Get6 and GetFEVariable). The values are set
-! by Set8 with the NODES format. In debug mode an error is raised for
-! another vartype.
+! stored as val(j, a), the value at globalNode(j) of time component a
+! (s = [SIZE(globalNode), timeCompo]). This is the easifemBase layout
+! (space first) and the layout returned by Get6 and GetFEVariable. The
+! values are set by Set8 with the DOF format. In debug mode an error is
+! raised for another vartype.
 !
 ! Examples
 !
 !```fortran
-! vals(1:2, 1) = [1.0_DFP, 2.0_DFP]
-! vals(1:2, 2) = [3.0_DFP, 4.0_DFP]
+! vals(1, 1:2) = [1.0_DFP, 2.0_DFP]
+! vals(2, 1:2) = [3.0_DFP, 4.0_DFP]
 ! fevar = NodalVariable(vals, TypeFEVariableScalar, &
 !                       TypeFEVariableSpaceTime)
 ! CALL u%Set(VALUE=fevar, globalNode=[1, 2], islocal=math%yes)
@@ -1894,8 +1895,10 @@ END INTERFACE
 ! summary: Get the values of the selected nodes in an FEVariable
 !
 ! VALUE becomes a nodal, scalar, space-time FEVariable with
-! val(a, j) = value of time component a at globalNode(j)
-! (s = [timeCompo, SIZE(globalNode)]), from Get3 with the NODES format.
+! val(j, a) = value at globalNode(j) of time component a
+! (s = [SIZE(globalNode), timeCompo]), from Get3 with the DOF format.
+! This is the easifemBase layout (space first), so VALUE can be passed
+! to the easifemBase space-time routines (STForceVector_, ...).
 !
 ! See also: [[obj_Set11]] (contains an example), [[obj_GetFeVariable]]
 

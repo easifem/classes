@@ -4,7 +4,8 @@
 !
 !- Set(VALUE=fevar, globalNode(:), islocal) sets the selected nodes
 !  from a nodal, space-time, scalar FEVariable whose values are stored
-!  as val(a, j): time component a of node globalNode(j),
+!  as val(j, a): node globalNode(j), time component a (the easifemBase
+!  layout, space first),
 !- GetFEVariable(globalNode(:), islocal, VALUE) returns them in the
 !  same layout,
 !- Set(VALUE=v) copies another space-time field (Set13),
@@ -51,10 +52,10 @@ CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", fedof=fedof, &
 CALL s%Initiate(NAME="s", engine="NATIVE_SERIAL", fedof=fedof, &
                 geofedof=geofedof)
 
-! Test 1: FEVariable, vals(a, j) for node j = 1, 2
+! Test 1: FEVariable, vals(j, a) for node j = 1, 2 and time a = 1, 2
 BLOCK
-  vals(1:2, 1) = [1.0_DFP, 2.0_DFP]
-  vals(1:2, 2) = [3.0_DFP, 4.0_DFP]
+  vals(1, 1:2) = [1.0_DFP, 2.0_DFP]
+  vals(2, 1:2) = [3.0_DFP, 4.0_DFP]
   fevar = NodalVariable(vals, TypeFEVariableScalar, &
                         TypeFEVariableSpaceTime)
   CALL u%Set(VALUE=0.0_DFP)
@@ -65,7 +66,8 @@ BLOCK
 
   CALL u%GetFEVariable(globalNode=[2, 1], islocal=math%yes, VALUE=fevar)
   CALL OK(ALL(fevar%s(1:2) .EQ. [2, 2]), "GetFEVariable: shape")
-  CALL OK(ALL(ABS(fevar%val(1:4) - [3.0_DFP, 4.0_DFP, 1.0_DFP, &
+  ! val(j, a) column by column: nodes 2, 1 at time 1, then at time 2
+  CALL OK(ALL(ABS(fevar%val(1:4) - [3.0_DFP, 1.0_DFP, 4.0_DFP, &
                                     2.0_DFP]) .LT. tol), &
           "GetFEVariable: values")
 END BLOCK

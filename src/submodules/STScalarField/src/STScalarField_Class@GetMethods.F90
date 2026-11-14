@@ -304,12 +304,13 @@ CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
 REAL(DFP), ALLOCATABLE :: v(:, :)
 INTEGER(I4B) :: nrow, ncol
 
-nrow = obj%timeCompo
-ncol = SIZE(globalNode)
+! v(j, a): node globalNode(j), time component a (easifemBase layout)
+nrow = SIZE(globalNode)
+ncol = obj%timeCompo
 ALLOCATE (v(nrow, ncol))
 
 CALL obj%Get(VALUE=v, nrow=nrow, ncol=ncol, globalNode=globalNode, &
-             islocal=islocal, storageFMT=NODES_FMT)
+             islocal=islocal, storageFMT=TypeField%storageFormatDOF)
 
 VALUE = NodalVariable(v, TypeFEVariableScalar, TypeFEVariableSpaceTime)
 

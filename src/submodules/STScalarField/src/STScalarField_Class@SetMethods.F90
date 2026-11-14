@@ -628,7 +628,7 @@ CASE (SpaceTime)
                          TypeFEVariableSpaceTime), &
                globalNode=globalNode, scale=scale, &
                addContribution=addContribution, islocal=islocal, &
-               storageFMT=NODES_FMT)
+               storageFMT=TypeField%storageFormatDOF)
 
 CASE DEFAULT
 #ifdef DEBUG_VER

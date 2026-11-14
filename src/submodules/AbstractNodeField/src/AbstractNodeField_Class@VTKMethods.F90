@@ -334,11 +334,11 @@ SUBROUTINE ExportFieldToVTK(obj, vtk, nptrs, tPhysicalVars, dofNames, &
       IF (var_vartype .EQ. TypeFEVariableOpt%spaceTime) THEN
         r2 = FEVariableGet(fevar, TypeFEVariableScalar, &
                            TypeFEVariableSpaceTime)
+        ! r2(j, a): node j, time component a
         DO itime = 1, timeCompo(ivar)
-          CALL vtk%WriteDataArray(name=String(name//"_t"// &
-                                              ToString(itime)), x=r2(itime, &
-                                                                     :), &
-                                  numberOfComponents=spaceCompo(ivar))
+          CALL vtk%WriteDataArray( &
+            name=String(name//"_t"//ToString(itime)), x=r2(:, itime), &
+            numberOfComponents=spaceCompo(ivar))
         END DO
       END IF
 
