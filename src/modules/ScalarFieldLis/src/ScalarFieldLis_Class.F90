@@ -1049,12 +1049,17 @@ END INTERFACE
 ! addContribution is true. The number of values is given by the range
 ! of obj. VALUE can have any engine:
 !
-!- NATIVE_SERIAL: its vector of values is passed to
-!  [[obj_SetMultiple3]], no temporary array,
-!- ScalarFieldLis_, set with scale 1: the LIS vectors are copied by
-!  lis_vector_get_values_from_range4, no temporary array,
-!- otherwise: the values are copied to a temporary array by
+!- NATIVE: its vector of values is passed to [[obj_SetMultiple3]],
+!  no temporary array,
+!- VALUE uses the LIS engine: scale times the range of VALUE is set
+!   (or added) in the range of obj (lis_vector_set_values9), no
+!   copy. obj and VALUE can be the same field when the two ranges do
+!   not overlap.
+!- otherwise (other engine) the range of VALUE is copied into a
+!   temporary array
 !  GetMultiple of VALUE, then set by [[obj_SetMultiple3]].
+!
+
 !
 ! @note
 !   obj and VALUE can be the same field, but then the two ranges should
@@ -1082,7 +1087,7 @@ INTERFACE
     !! LIS scalar field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
-    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: VALUE
+    CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: VALUE
     !! node field from which the values are taken
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of entries of VALUE
@@ -1476,7 +1481,7 @@ END INTERFACE
 ! size as obj.
 !
 ! Formula:
-!   $$ obj = obj + s \, x $$
+!   $$ obj = obj + s*x $$
 !
 ! Examples
 !

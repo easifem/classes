@@ -19,6 +19,7 @@
 ! date: 2023-03-22
 ! summary: Scalar field data type with LIS engine is defined
 
+#ifndef USE_LIS
 MODULE ScalarFieldLis_Class
 USE ScalarField_Class, ONLY: ScalarField_
 IMPLICIT NONE
@@ -27,23 +28,12 @@ PRIVATE
 PUBLIC :: ScalarFieldLis_
 PUBLIC :: ScalarFieldLisPointer_
 
-!----------------------------------------------------------------------------
-!                                                              ScalarField_
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: LIS Scalar field
-
 TYPE, EXTENDS(ScalarField_) :: ScalarFieldLis_
 END TYPE ScalarFieldLis_
-
-!----------------------------------------------------------------------------
-!                                                       ScalarFieldPointer_
-!----------------------------------------------------------------------------
 
 TYPE :: ScalarFieldLisPointer_
   CLASS(ScalarFieldLis_), POINTER :: ptr => NULL()
 END TYPE ScalarFieldLisPointer_
 
 END MODULE ScalarFieldLis_Class
+#endif
