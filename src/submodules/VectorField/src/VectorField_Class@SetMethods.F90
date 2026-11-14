@@ -314,7 +314,10 @@ END PROCEDURE obj_Set5
 MODULE PROCEDURE obj_Set6
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -322,13 +325,31 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'VectorField_::obj is not initiated')
+
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'AbstractNodeField_::value is not initiated')
+
+isok = spaceCompo .GE. 1 .AND. spaceCompo .LE. obj%spaceCompo
+CALL AssertError1(isok, myName, "spaceCompo out of bound")
+
+isok = obj%fieldType .NE. TypeFieldOpt%constant
+CALL AssertError1(isok, myName, "Not callable for constant field")
+
+CALL AssertError2(VALUE%SIZE(), obj%dof .tNodes. spaceCompo, myName, &
+                  "a=VALUE%SIZE(), b=obj%dof.tNodes.spaceCompo")
 #endif
 
-! CALL obj%Set(ivar=1, idof=spaceCompo, VALUE=VALUE, ivar_value=1, &
-!           idof_value=spaceCompo, scale=scale, &
-!           addContribution=addContribution)
+s = GetNodeLoc(obj=obj%dof, idof=spaceCompo)
+
+! the engines of obj and VALUE copy the values, see SetMultiple5
+CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=VALUE, &
+                     istart_value=1, iend_value=VALUE%SIZE(), &
+                     stride_value=1, scale=scale, &
+                     addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

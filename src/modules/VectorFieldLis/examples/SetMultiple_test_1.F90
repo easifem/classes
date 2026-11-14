@@ -3,10 +3,11 @@
 ! summary: Set and Get methods of a LIS vector field
 !
 ! SetSingle, SetAll, SetMultiple and GetSingle, GetMultiple work on the
-! LIS vector. The Set methods of VectorField_ (Set2, ...) call them,
-! so they work on the LIS vector too. u, v are VectorFieldLis_ with 12
-! values (6 nodes, spaceCompo = 2) and n is a native VectorField_.
-! Value (I, c) of node I and component c has the index (c-1)*6 + I.
+! LIS vector. The Set methods of VectorField_ (Set2, Set6, ...) call
+! them, so they work on the LIS vector too. u, v are VectorFieldLis_
+! with 12 values (6 nodes, spaceCompo = 2), n is a native VectorField_
+! and s is a ScalarFieldLis_ with 6 values. Value (I, c) of node I and
+! component c has the index (c-1)*6 + I.
 
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt
@@ -16,6 +17,7 @@ USE FEDomain_Class, ONLY: FEDomain_
 USE GlobalData, ONLY: DFP
 USE GlobalData, ONLY: I4B
 USE LisOmpEngine_Class, ONLY: LisOmpEngine_
+USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 USE Test_Method, ONLY: OK
 USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
@@ -28,7 +30,8 @@ TYPE(FEDomain_) :: dom
 TYPE(FEDOF_), TARGET :: fedof, geofedof
 TYPE(VectorFieldLis_) :: u, v
 TYPE(VectorField_) :: n
-REAL(DFP) :: found(12), want(12), areal
+TYPE(ScalarFieldLis_) :: s
+REAL(DFP) :: found(12), want(12), areal, s6(6)
 INTEGER(I4B) :: ii, tsize
 
 CALL e%SetQuietMode(math%yes)
@@ -40,6 +43,8 @@ CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
                 fedof=fedof, geofedof=geofedof)
 CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=[2], &
                 fedof=fedof, geofedof=geofedof)
+CALL s%Initiate(NAME="s", engine="LIS_OMP", fedof=fedof, &
+                geofedof=geofedof)
 want = [(REAL(ii, DFP), ii=1, 12)]
 
 ! Test 1: SetSingle and GetSingle, set and add
@@ -97,6 +102,15 @@ CALL v%SetMultiple(istart=7, iend=12, stride=1, VALUE=u, istart_value=1, &
 CALL v%GetMultiple(istart=7, iend=12, stride=1, VALUE=found, tsize=tsize)
 CALL OK(ALL(ABS(found(1:6) - want(1:6)) .LT. tol), "LIS <- LIS")
 
+! Test 9: Set6 of VectorField_, component 2 from a LIS scalar field
+s6 = [10.0_DFP, 20.0_DFP, 30.0_DFP, 40.0_DFP, 50.0_DFP, 60.0_DFP]
+CALL s%SetMultiple(istart=1, iend=6, stride=1, VALUE=s6)
+CALL u%Set(VALUE=s, spaceCompo=2)
+CALL u%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, tsize=tsize)
+CALL OK(ALL(ABS(found(1:6) - want(1:6)) .LT. tol) .AND. &
+        ALL(ABS(found(7:12) - s6) .LT. tol), "Set6: component from field")
+
+CALL s%DEALLOCATE()
 CALL n%DEALLOCATE()
 CALL v%DEALLOCATE()
 CALL u%DEALLOCATE()
