@@ -72,16 +72,16 @@ BLOCK
                       localFaceNumber=2, ans=ans, tsize=tsize)
 
   CALL OK(tsize .EQ. 2, &
-          obj%GetCaseName()//" Size of faceDOF is 2 for order=2")
+          obj%GetCaseName()//" Size of faceDOF is 2 for order=3")
 
   tsize = obj%GetTotalFaceDOF(globalElement=13, islocal=math%no, &
                               localFaceNumber=2)
 
   CALL OK(tsize .EQ. 2, &
-          obj%GetCaseName()//" GetTotalFaceDOF 2 for order=2")
+          obj%GetCaseName()//" GetTotalFaceDOF 2 for order=3")
 
   CALL OK(ALL(ans(1:tsize) .EQ. [12, 13]), &
-          obj%GetCaseName()//" faceDOF for order=2")
+          obj%GetCaseName()//" faceDOF for order=3")
 END BLOCK
 
 CALL dom%DEALLOCATE()
