@@ -41,6 +41,7 @@ USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 USE STScalarField_Class, ONLY: STScalarField_
 USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
 USE STVectorFieldLis_Class, ONLY: STVectorFieldLis_
+USE SwapUtility, ONLY: Swap_
 USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 IMPLICIT NONE
@@ -487,6 +488,7 @@ MODULE PROCEDURE obj_Set10
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
 #endif
+REAL(DFP), ALLOCATABLE :: m3a(:, :, :), m3b(:, :, :)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -495,10 +497,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 SELECT CASE (VALUE%vartype)
 CASE (SpaceTime)
-  CALL obj%Set( &
-    VALUE=GET(VALUE, TypeFEVariableVector, TypeFEVariableSpaceTime), &
-    globalNode=globalNode, islocal=islocal, scale=scale, &
-    addContribution=addContribution)
+  ! m3a is in (i, J, a) format (space component, node, time component),
+  ! obj_Set7 needs (i, a, J), so swap the last two dimensions
+  m3a = GET(VALUE, TypeFEVariableVector, TypeFEVariableSpaceTime)
+  ALLOCATE (m3b(SIZE(m3a, 1), SIZE(m3a, 3), SIZE(m3a, 2)))
+  CALL Swap_(a=m3b, b=m3a, i1=1, i2=3, i3=2)
+  CALL obj%Set(VALUE=m3b, globalNode=globalNode, islocal=islocal, &
+               scale=scale, addContribution=addContribution)
 
 CASE DEFAULT
 
@@ -766,6 +771,16 @@ CALL AssertError1(isok, myName, &
                   'VectorField_::value is not initiated')
 #endif
 
+#ifdef DEBUG_VER
+CALL AssertError2(VALUE%spaceCompo, obj%spaceCompo, myName, &
+                  "a=VALUE%spaceCompo, b=obj%spaceCompo")
+#endif
+
+#ifdef DEBUG_VER
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
+#endif
+
 ! Native engines store the values in realVec, other engines (LIS) do not:
 ! their values are copied into temp
 isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
@@ -837,6 +852,16 @@ CALL AssertError1(isok, myName, &
 isok = VALUE%IsInitiated()
 CALL AssertError1(isok, myName, &
                   'VectorField_::value is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(VALUE%spaceCompo, obj%spaceCompo, myName, &
+                  "a=VALUE%spaceCompo, b=obj%spaceCompo")
+#endif
+
+#ifdef DEBUG_VER
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 realvec => obj%GetPointer()

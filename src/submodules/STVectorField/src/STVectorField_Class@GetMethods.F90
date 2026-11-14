@@ -98,7 +98,7 @@ CASE ("YNY")
 
   CALL GetNodeLoc_( &
     obj=obj%dof, nodenum=globalNode, ivar=1, &
-    spaceCompo=obj%space_idofs, timeCompo=obj%timeCompo, ans=indx, &
+    spaceCompo=obj%space_idofs, timeCompo=timeCompo, ans=indx, &
     tsize=tsize)
   CALL obj%GetMultiple(VALUE=VALUE, indx=indx(1:tsize), tsize=tsize)
 
@@ -119,8 +119,8 @@ CASE ("NYN")
     indx(1) = GetIDOF(spaceCompo=spaceCompo, timeCompo=ii, &
                       tspaceCompo=obj%spaceCompo)
     s = GetNodeLoc(obj=obj%dof, idof=indx(1))
-    CALL obj%GetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), stride=s(3), &
-                         tsize=indx(2))
+    CALL obj%GetMultiple(VALUE=VALUE(tsize + 1:), istart=s(1), iend=s(2), &
+                         stride=s(3), tsize=indx(2))
     tsize = tsize + indx(2)
   END DO
 
@@ -132,8 +132,8 @@ CASE ("NNY")
     indx(1) = GetIDOF(spaceCompo=ii, timeCompo=timeCompo, &
                       tspaceCompo=obj%spaceCompo)
     s = GetNodeLoc(obj=obj%dof, idof=indx(1))
-    CALL obj%GetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), stride=s(3), &
-                         tsize=indx(2))
+    CALL obj%GetMultiple(VALUE=VALUE(tsize + 1:), istart=s(1), iend=s(2), &
+                         stride=s(3), tsize=indx(2))
     tsize = tsize + indx(2)
   END DO
 

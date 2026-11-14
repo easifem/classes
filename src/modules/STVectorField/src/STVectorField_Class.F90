@@ -1432,83 +1432,6 @@ END INTERFACE
 !                                                           Set@SetMethods
 !----------------------------------------------------------------------------
 
-! authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: This routine Set all nodal values of a given space-time component
-!
-!# Introduction
-!
-! This routine Sets all entries of the space-time vector field. Here
-! `spaceCompo` and `timeCompo` are the spatial temporal components, which we
-! want to replace by a vector of scalars. These vectors of scalar are stored
-! inside a scalar field called `value`. Note that the size of `value` should
-! be equal to the total number of nodes in the mesh.
-!
-! STvector( spaceCompo, : ) = value
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Set14( &
-!     obj, VALUE, spaceCompo, timeCompo, scale, addContribution)
-!     CLASS(STVectorField_), INTENT(INOUT) :: obj
-!     !! obj@[spaceCompo, timeCompo] = value (value is scalar field)
-!     !! obj@[spaceCompo, timeCompo] = value@timeCompo (value is st scalar)
-!     !! obj@[spaceCompo, timeCompo] = value@[spaceCompo, timeCompo]
-!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-!     !! Instance of abstract node field which contains
-!     !! the nodal values of space-time component
-!     INTEGER(I4B), INTENT(IN) :: spaceCompo
-!     !! space component of obj
-!     INTEGER(I4B), INTENT(IN) :: timeCompo
-!     !! time component in obj
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-!     !! scale
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-!     !! add or set
-!   END SUBROUTINE obj_Set14
-! END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-! authors: Vikas Sharma, Ph. D.
-! date: 2024-06-08
-! summary: Set values
-!
-!# Introduction
-!
-! obj@[ivar, idof] = value@[ivar_value, idof_value]
-!
-! value can be any field. The conversion rule are defined as follows:
-!
-! If value is scalr, vector stscalr or stvector field then
-! We first get the pointer to the value by calling GetPointer method
-! Then we call setMultiple method on obj to set the multiple values
-! using the range.
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Set16( &
-!     obj, ivar, idof, VALUE, ivar_value, idof_value, scale, addContribution)
-!     CLASS(STVectorField_), INTENT(INOUT) :: obj
-!     INTEGER(I4B), INTENT(IN) :: ivar
-!     !! physical variable in obj
-!     INTEGER(I4B), INTENT(IN) :: idof
-!     !! local degree of freedom in obj
-!     CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-!     !! obj = value
-!     INTEGER(I4B), INTENT(IN) :: ivar_value
-!     !! physical variable in value
-!     INTEGER(I4B), INTENT(IN) :: idof_value
-!     !! local degree of freedom in value
-!     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
-!     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
-!   END SUBROUTINE obj_Set16
-! END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
 !> author: Vikas Sharma, Ph. D.
 ! date: 2023-12-24
 ! summary: Set one time component from a vector field
@@ -2052,76 +1975,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-! authors: Vikas Sharma, Ph. D.
-! date: 25 June 2021
-! summary: Get value in an instance of AbstractNodeField_
-!
-!# Introduction
-!
-! If spaceCompo and timeCompo are present then:
-! - value = obj@[spaceCompo, timeCompo] (if value is scalar field)
-! - value@timeCompo = obj@[spaceCompo, timeCompo] (if value is st scalar field)
-! - value@spaceCompo = obj@[spaceCompo, timeCompo] (if value is vector field)
-! - value@[spaceCompo, timeCompo] = obj@[spaceCompo, timeCompo]
-!    (if value is st vector field)
-!
-! If spacecompo is present and timecompo is not present then:
-!   value should be an instance of STScalarField or STVectorField
-!   If value is ST scalar field:
-!     value@timeCompo = obj@[spaceCompo, timeCompo] for all timeCompo
-!   If value is ST vector field:
-!     value@[spaceCompo, timeCompo]= obj@[spaceCompo, timeCompo]
-!       for all timeCompo
-!
-! If spacecompo is not present and timecompo is present then:
-!   value should an instance of VectorField_ and STVectorField_
-!   If value is VectorField_:
-!     value@spaceCompo = obj@[spaceCompo, timeCompo] for all spaceCompo
-!   If value is STVectorField_:
-!     value@[spaceCompom timeCompo] = obj@[spaceCompo, timeCompo]
-!       for all spaceCompo
-!
-! If spacecompo and timecompo are not present then:
-!   value should be an instance of STVectorField_
-!   In this case; value = obj
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Get8(obj, VALUE, spaceCompo, timeCompo)
-!     CLASS(STVectorField_), INTENT(IN) :: obj
-!     !! value=obj
-!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-!     !! value=obj
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo
-!     !!  space component
-!     INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
-!     !! time component
-!   END SUBROUTINE obj_Get8
-! END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Get@GetMethods
-!----------------------------------------------------------------------------
-
-! authors: Vikas Sharma, Ph. D.
-! date: 06 Jan 2022
-! summary: REturns the value
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Get9( &
-!     obj, ivar, idof, VALUE, ivar_value, idof_value)
-!     CLASS(STVectorField_), INTENT(IN) :: obj
-!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-!     INTEGER(I4B), INTENT(IN) :: ivar
-!     INTEGER(I4B), INTENT(IN) :: idof
-!     INTEGER(I4B), INTENT(IN) :: ivar_value
-!     INTEGER(I4B), INTENT(IN) :: idof_value
-!   END SUBROUTINE obj_Get9
-! END INTERFACE
-
-!----------------------------------------------------------------------------
 !                                                   GetFEVariable@GetMethods
 !----------------------------------------------------------------------------
 
@@ -2325,8 +2178,8 @@ END INTERFACE
 !   obj(c, a, I) = obj(c, a, I) + scale * integral N_I T_a f_c
 !
 ! is added for space component c, time component a and node I. The
-! source has elemsd%nsd rows, so spaceCompo must be equal to the
-! dimension of the mesh.
+! source function must return spaceCompo values; spaceCompo can differ
+! from the dimension of the mesh.
 !
 ! Examples
 !
@@ -2394,16 +2247,43 @@ END INTERFACE
 ! summary: Add the body source at one time given by a user function
 !
 ! The body source is evaluated at the space quadrature points with
-! t = times, and the element vector integral N_I f_c (spaceCompo, nns)
-! is passed to Set with the element nodes. That Set expects the values of
-! one node for all time components (spaceCompo, timeCompo), so this
-! routine stops in debug mode when nns differs from timeCompo; it does
-! not work yet.
+! t = times, and
+!
+!   obj(c, a, I) = obj(c, a, I) + scale * integral N_I f_c(x, times)
+!
+! is added for space component c and node I. The source is added to the
+! time component a = timeCompo; when timeCompo is absent, it is added to
+! every time component.
+!
+! The source function must return spaceCompo values; it is evaluated at
+! (x, y, z) of the mesh, so spaceCompo can differ from the dimension of
+! the mesh.
+!
+! Changes:
+!
+!- 2026-11-15: timeCompo argument added; the source was passed to the
+!  wrong Set before.
+!
+! Examples
+!
+!```fortran
+! TYPE(STVectorField_) :: u
+! TYPE(UserFunction_) :: func
+! ! func: vector function, numArgs = 4 (x, y, z, t),
+! ! numReturns = spaceCompo
+! CALL u%Set(VALUE=0.0_DFP)
+! ! add to time component 1 only
+! CALL u%ApplyBodySource(bodySource=func, scale=1.0_DFP, &
+!                        times=0.0_DFP, timeCompo=1)
+!```
+!
+! Full example: src/modules/STVectorField/examples/ApplyBodySource_test_2.F90
 !
 ! See also: [[obj_ApplyBodySource1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyBodySource3(obj, bodySource, scale, times)
+  MODULE SUBROUTINE obj_ApplyBodySource3(obj, bodySource, scale, times, &
+                                         timeCompo)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     CLASS(UserFunction_), INTENT(INOUT) :: bodySource
@@ -2416,6 +2296,9 @@ INTERFACE
     REAL(DFP), INTENT(IN) :: times
     !! time, which will be passed to the body source function
     !! This time can also represent a quadrature point time
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo
+    !! time component to which the source is added
+    !! default: all time components
   END SUBROUTINE obj_ApplyBodySource3
 END INTERFACE
 

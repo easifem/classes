@@ -144,7 +144,7 @@ DO iel = 1, tElements
 
   CALL FEVariable_Set( &
     obj=forceVar, &
-    val=forceVecQuad(1:elemsd%nsd, 1:elemsd%nips, 1:timeelemsd%nips), &
+    val=forceVecQuad(1:spaceCompo(1), 1:elemsd%nips, 1:timeelemsd%nips), &
     rank=TypeFEVariableVector, varType=TypeFEVariableSpaceTime, &
     scale=math%one, addContribution=math%no)
 
@@ -295,7 +295,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource3()"
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
                 tcellCon, tforceVec, xij_i, xij_j, maxNips, ips, &
-                spaceCompo(1), force_i, force_j, tsize
+                spaceCompo(1), force_i, force_j, tsize, aa, a1, a2, ii
 REAL(DFP) :: args(4)
 
 TYPE(QuadraturePoint_) :: quad
@@ -319,6 +319,18 @@ maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 maxNips = obj%fedof%GetMaxTotalQuadraturePoints()
 spaceCompo = obj%GetspaceCompo(1)
+
+a1 = 1
+a2 = obj%timeCompo
+IF (PRESENT(timeCompo)) THEN
+  a1 = timeCompo
+  a2 = timeCompo
+END IF
+
+#ifdef DEBUG_VER
+CALL AssertError1(a1 .GE. 1 .AND. a2 .LE. obj%timeCompo, myName, &
+                  "timeCompo out of bound")
+#endif
 
 CALL Reallocate(xij, 3, maxNNEGeo)
 CALL Reallocate(cellcon, maxNNE)
@@ -358,16 +370,23 @@ DO iel = 1, tElements
   END DO
 
   CALL FEVariable_Set( &
-    obj=forceVar, val=forceVecQuad(1:elemsd%nsd, 1:elemsd%nips), &
+    obj=forceVar, val=forceVecQuad(1:spaceCompo(1), 1:elemsd%nips), &
     rank=TypeFEVariableVector, varType=TypeFEVariableSpace, &
     scale=math%one, addContribution=math%no)
 
   CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableVector, &
                     ans=forceVec, nrow=force_i, ncol=force_j)
 
-  CALL obj%Set( &
-    globalNode=cellcon(1:tcellCon), islocal=math%yes, scale=scale, &
-    addContribution=math%yes, VALUE=forceVec(1:force_i, 1:force_j))
+  ! forceVec is (spaceCompo, nns), add row ii to the space component ii
+  ! of the time components a1 to a2
+  DO aa = a1, a2
+    DO ii = 1, force_i
+      CALL obj%Set(VALUE=forceVec(ii, 1:force_j), &
+                   globalNode=cellcon(1:tcellCon), islocal=math%yes, &
+                   spaceCompo=ii, timeCompo=aa, scale=scale, &
+                   addContribution=math%yes)
+    END DO
+  END DO
 
 END DO
 
