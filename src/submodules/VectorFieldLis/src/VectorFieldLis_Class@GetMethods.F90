@@ -13,33 +13,230 @@
 !
 ! You should have received a copy of the GNU General Public License
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
+!
 
 SUBMODULE(VectorFieldLis_Class) GetMethods
-USE GlobalData, ONLY: DOF_FMT, NODES_FMT
-
-USE DOF_Method, ONLY: GetNodeLoc_, &
-                      OPERATOR(.tNodes.), &
-                      GetNodeLoc, &
-                      GetIDOF
-
-USE ScalarField_Class, ONLY: ScalarField_
-
-USE STScalarField_Class, ONLY: STScalarField_
-
-USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-
-USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-
-USE Display_Method, ONLY: ToString
-
+USE BaseType, ONLY: math => TypeMathOpt
+USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #include "lisf.h"
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "VectorFieldLis_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Size
+!                                                                 GetSingle
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetSingle
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetSingle()"
+#endif
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL lis_vector_get_value(obj%lis_ptr, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetSingle
+
+!----------------------------------------------------------------------------
+!                                                                GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple1()"
+#endif
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = SIZE(indx)
+
+CALL lis_vector_get_values_from_index(obj%lis_ptr, tsize, indx, VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMultiple1
+
+!----------------------------------------------------------------------------
+!                                                                GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple2()"
+#endif
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = (iend - istart) / stride + 1
+CALL lis_vector_get_values_from_range(obj%lis_ptr, istart, stride, tsize, &
+                                      VALUE, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMultiple2
+
+!----------------------------------------------------------------------------
+!                                                                GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple3
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple3()"
+#endif
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = (iend - istart) / stride + 1
+
+CALL lis_vector_get_values_from_range2( &
+  obj%lis_ptr, istart, stride, tsize, VALUE, istart_value, stride_value, ierr)
+
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMultiple3
+
+!----------------------------------------------------------------------------
+!                                                               GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple4()"
+#endif
+INTEGER(I4B) :: ierr, jj, tsize
+LOGICAL(LGT) :: isAdd, isScale
+REAL(DFP) :: areal
+REAL(DFP), ALLOCATABLE :: temp(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isAdd = Input(option=addContribution, default=math%no)
+isScale = PRESENT(scale)
+areal = Input(option=scale, default=math%one)
+tsize = (iend - istart) / stride + 1
+jj = istart_value + (tsize - 1) * stride_value
+
+IF (.NOT. isAdd) THEN
+
+  ! plain copy: LIS writes in the range of VALUE
+  CALL lis_vector_get_values_from_range2( &
+    obj%lis_ptr, istart, stride, tsize, VALUE, istart_value, stride_value, &
+    ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  IF (isScale) THEN
+    VALUE(istart_value:jj:stride_value) = &
+      areal * VALUE(istart_value:jj:stride_value)
+  END IF
+
+ELSE
+
+  ! add: copy the values first
+  ! ALLOCATE (temp(tsize))
+  CALL Reallocate(temp, tsize)
+  CALL lis_vector_get_values_from_range2( &
+    obj%lis_ptr, istart, stride, tsize, temp, 1, 1, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  VALUE(istart_value:jj:stride_value) = &
+    VALUE(istart_value:jj:stride_value) + areal * temp(1:tsize)
+  IF (ALLOCATED(temp)) DEALLOCATE (temp)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMultiple4
+
+!----------------------------------------------------------------------------
+!                                                               GetPointer
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetPointer
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetPointer()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[INTERNAL ERROR] :: GetPointer is not available '// &
+                  'for a field with the LIS engine')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetPointer
+
+!----------------------------------------------------------------------------
+!                                                                      Size
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Size
@@ -47,97 +244,7 @@ ans = obj%local_n
 END PROCEDURE obj_Size
 
 !----------------------------------------------------------------------------
-!                                                                GetPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetPointer
-CHARACTER(*), PARAMETER :: myName = "obj_GetPointer()"
-ans => NULL()
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-     '[INTERNAL ERROR] :: This method is not available for STScalarFieldLis_')
-END PROCEDURE obj_GetPointer
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Get9
-! CHARACTER(*), PARAMETER :: myName = "obj_Get9()"
-! INTEGER(I4B) :: tsize, s(3), p(3), ierr
-! REAL(DFP), POINTER :: realvec(:)
-!
-! #include "./lis_null_error.F90"
-!
-! s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
-!
-! SELECT TYPE (VALUE)
-!
-! TYPE IS (ScalarField_)
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! TYPE IS (STScalarField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => VALUE%GetPointer()
-!
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                       istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! TYPE IS (VectorField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, &
-!                                             ivar=ivar_value, idof=idof_value))
-!
-!   realvec => VALUE%GetPointer()
-!
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                       istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! TYPE IS (ScalarFieldLis_)
-!
-!   tsize = obj%dof.tNodes.idof
-!   CALL lis_vector_get_values_from_range3(obj%lis_ptr, s(1), s(3), tsize, &
-!                                          VALUE%lis_ptr, ierr)
-!
-!   CALL check_lis_error
-!
-! TYPE IS (STScalarFieldLis_)
-!
-!   tsize = obj%dof.tNodes.idof
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!
-!   CALL lis_vector_get_values_from_range4(obj%lis_ptr, s(1), s(3), tsize, &
-!                                          VALUE%lis_ptr, p(1), p(3), ierr)
-!
-!   CALL check_lis_error
-!
-! CLASS DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     '[INTENRAL ERROR] :: No case found for the type of value')
-!   RETURN
-! END SELECT
-!
-! CONTAINS
-!
-! SUBROUTINE check_lis_error
-! #ifdef DEBUG_VER
-!   CALL CHKERR(ierr)
-! #endif
-!
-! END SUBROUTINE check_lis_error
-!
-! END PROCEDURE obj_Get9
-
-!----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

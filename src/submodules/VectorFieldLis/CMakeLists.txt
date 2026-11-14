@@ -23,5 +23,6 @@ if(USE_LIS)
             ${src_path}/VectorFieldLis_Class@IOMethods.F90
             ${src_path}/VectorFieldLis_Class@HDFMethods.F90
             ${src_path}/VectorFieldLis_Class@SetMethods.F90
-            ${src_path}/VectorFieldLis_Class@GetMethods.F90)
+            ${src_path}/VectorFieldLis_Class@GetMethods.F90
+            ${src_path}/VectorFieldLis_Class@BlasMethods.F90)
 endif()

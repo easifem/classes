@@ -38,6 +38,7 @@ exclude: **/NodeDataList_Class.F90
          **/EdgeDataList_Class.F90
          **/ElemDataList_Class.F90
          **/FaceDataList_Class.F90
+         **/NO_*_Class.F90
 author: Vikas Sharma
 author_description: Graduate School of Agriculture, Kyoto University, Kyoto, Japan
 email: eaifem@gmail.com

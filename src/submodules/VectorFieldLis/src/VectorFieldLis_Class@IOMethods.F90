@@ -16,25 +16,27 @@
 !
 
 SUBMODULE(VectorFieldLis_Class) IOMethods
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 USE Display_Method, ONLY: Display
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer, &
-                                   AbstractNodeFieldDisplay
-
 IMPLICIT NONE
 
 #include "lisf.h"
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "VectorFieldLis_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                     Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
 #endif
-
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
@@ -43,26 +45,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+CALL Display(msg, unitno=unitno)
+
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
-IF (ierr .NE. LIS_FALSE) THEN
-  CALL Display(msg, unitno=unitno)
-  CALL Display("obj%lis_ptr not available.", unitno=unitno)
+isok = ierr .EQ. LIS_FALSE
+CALL Display(isok, "obj%lis_ptr associated: ", unitno=unitno)
 
+IF (isok) THEN
+  realvec => AbstractNodeFieldGetPointer(obj)
+  CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+  CALL CHKERR(ierr)
 #endif
-
-  RETURN
+  NULLIFY (realvec)
+  CALL obj%VectorField_%Display(msg=msg, unitno=unitno)
 END IF
-
-realvec => AbstractNodeFieldGetPointer(obj)
-CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
-CALL CHKERR(ierr)
-
-NULLIFY (realvec)
-CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -71,7 +69,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                              Include errors
+!
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

@@ -17,6 +17,7 @@
 
 SUBMODULE(STScalarFieldLis_Class) ConstructorMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+USE BaseType, ONLY: math => TypeMathOpt
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -71,9 +72,8 @@ CALL CHKERR(ierr)
 ! Copy the values into the new LIS vector.
 ! A LIS obj2 keeps its values in its LIS vector (its realVec is not
 ! up to date), other node fields keep them in realVec, which has been
-! copied into obj%realVec above.
-isLis = (obj2%engine%chars() .EQ. "LIS_OMP") .OR. &
-        (obj2%engine%chars() .EQ. "LIS_MPI")
+! copied into obj%realVec above. obj%engine is the engine of obj2.
+isLis = obj%engine%INDEX("LIS") .EQ. math%one_i
 
 IF (isLis) THEN
   CALL lis_vector_copy(obj2%lis_ptr, obj%lis_ptr, ierr)
