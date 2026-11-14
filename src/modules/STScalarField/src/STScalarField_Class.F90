@@ -533,13 +533,11 @@ END INTERFACE
 ! date: 2021-07-16
 ! summary: Import the field from an HDF5 file
 !
-! The node field data are read by AbstractNodeFieldImport and timeCompo
-! is read from group/timeCompo. The routine then checks the datasets
-! group/tSize, group/dof and group/realVec and raises an error when one
-! of them is missing. These are old paths: Export writes them as
-! group/IntR0/tSize, group/DofR0/dof and group/RealVectorR0/realVec, so
-! the routine currently always raises the error; idofs is not rebuilt
-! either (see bugs-report/STScalarField_bug_report.md, H-03).
+! Reads a field written by [[obj_Export]]. The node field data
+! (DOF, size and values) are read by AbstractNodeFieldImport; the FEDOFs
+! and the TimeFEDOF are given as arguments. Then timeCompo is read from
+! group/IntR0/timeCompo and idofs from group/IntR1/idofs. In debug mode
+! an error is raised if one of these datasets is missing.
 !
 ! See also: [[obj_Export]] (contains an example)
 
@@ -571,9 +569,9 @@ END INTERFACE
 ! date: 2021-07-16
 ! summary: Export the field to an HDF5 file
 !
-! Writes the node field data in group (AbstractNodeFieldExport) and
-! timeCompo in group/timeCompo. In the example the Import part stops
-! with an error until Import is fixed (see [[obj_Import]]).
+! Writes the node field data in group (AbstractNodeFieldExport),
+! timeCompo in group/IntR0/timeCompo and idofs in group/IntR1/idofs.
+! The field can be read back by [[obj_Import]].
 !
 ! Examples
 !

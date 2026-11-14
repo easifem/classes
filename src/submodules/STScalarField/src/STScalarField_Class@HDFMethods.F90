@@ -16,9 +16,9 @@
 !
 
 SUBMODULE(STScalarField_Class) HDFMethods
-USE String_Class, ONLY: String
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -35,11 +35,10 @@ CONTAINS
 MODULE PROCEDURE obj_Import
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+LOGICAL(LGT) :: isok
 #endif
 
 TYPE(String) :: dsetname
-LOGICAL(LGT) :: bools(3), isok
-! TYPE(ParameterList_) :: param
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -48,56 +47,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL AbstractNodeFieldImport( &
   obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
-  timefedof=timefedof, timefedofs=timefedofs)
+  timefedof=timefedof, timefedofs=timefedofs, geofedof=geofedof, &
+  geofedofs=geofedofs)
 
 ! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
+dsetname = TRIM(group)//"/IntR0/timeCompo"
 
 #ifdef DEBUG_VER
 isok = hdf5%pathExists(dsetname%chars())
 CALL AssertError1(isok, myName, &
-                  'The dataset timeCompo should be present')
+                  dsetname//' should be present')
 #endif
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
 
-dsetname = TRIM(group)//"/tSize"
-bools(1) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/dof"
-bools(2) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/realVec"
-bools(3) = hdf5%pathExists(dsetname%chars())
-
-isok = ALL(bools)
-IF (isok) THEN
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
+! idofs
+dsetname = TRIM(group)//"/IntR1/idofs"
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = hdf5%pathExists(dsetname%chars())
+CALL AssertError1(isok, myName, &
+                  dsetname//' should be present')
 #endif
 
-! CALL param%Initiate()
-!
-! CALL SetSTScalarFieldParam(param=param, name=obj%name%chars(), &
-!   fieldType=obj%fieldType, timeCompo=obj%timeCompo, engine=obj%engine%chars())
-!
-! obj%isInit = .FALSE.
-!
-! CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-!
-! CALL param%DEALLOCATE()
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%idofs)
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//"::"//myName//" - "// &
-                        "[END]")
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -119,8 +97,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 
 ! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
+dsetname = TRIM(group)//"/IntR0/timeCompo"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%timeCompo)
+
+! idofs
+dsetname = TRIM(group)//"/IntR1/idofs"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%idofs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

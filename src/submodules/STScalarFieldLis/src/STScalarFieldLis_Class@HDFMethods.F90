@@ -86,7 +86,7 @@ CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
                              fedof=fedof, fedofs=fedofs)
 
 ! timeCompo
-dsetname = TRIM(group)//"/timeCompo"
+dsetname = TRIM(group)//"/IntR0/timeCompo"
 #ifdef DEBUG_VER
 isok = hdf5%pathExists(dsetname%chars())
 CALL AssertError1(isok, myName, &
