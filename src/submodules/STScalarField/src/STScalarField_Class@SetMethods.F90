@@ -316,7 +316,12 @@ END PROCEDURE obj_Set5
 MODULE PROCEDURE obj_Set6
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: s(3), vs(3), tsize
+REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -324,9 +329,63 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'STScalarField_::obj is not initiated')
+
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'STScalarField_::value is not initiated')
+
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant STScalar field')
+
+isok = (objTimeCompo .GE. 1) .AND. (objTimeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, &
+                  'objTimeCompo should be in [1, obj%timeCompo]')
+
+isok = (valueTimeCompo .GE. 1) .AND. &
+       (valueTimeCompo .LE. VALUE%timeCompo)
+CALL AssertError1(isok, myName, &
+                  'valueTimeCompo should be in [1, value%timeCompo]')
 #endif
+
+s = GetNodeLoc(obj=obj%dof, idof=objTimeCompo)
+vs = GetNodeLoc(obj=VALUE%dof, idof=valueTimeCompo)
+
+#ifdef DEBUG_VER
+CALL AssertError2((s(2) - s(1)) / s(3) + 1, (vs(2) - vs(1)) / vs(3) + 1, &
+                  myName, 'a=size of obj time component, '// &
+                  'b=size of value time component')
+#endif
+
+IF (VALUE%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ! native engine: the values are in realVec, no copy
+  realvec => VALUE%GetPointer()
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, &
+                    'realvec obtained from value is not ASSOCIATED')
+#endif
+
+  CALL obj%SetMultiple( &
+    VALUE=realvec(vs(1):vs(2):vs(3)), scale=scale, &
+    addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3))
+
+  realvec => NULL()
+
+ELSE
+  ! other engines: copy the time component by GetMultiple
+  ALLOCATE (temp((vs(2) - vs(1)) / vs(3) + 1))
+  CALL VALUE%GetMultiple(istart=vs(1), iend=vs(2), stride=vs(3), &
+                         VALUE=temp, tsize=tsize)
+  CALL obj%SetMultiple( &
+    VALUE=temp(1:tsize), scale=scale, addContribution=addContribution, &
+    istart=s(1), iend=s(2), stride=s(3))
+  DEALLOCATE (temp)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -651,8 +710,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetFromScalarField()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3)
+INTEGER(I4B) :: s(3), tsize
 REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -673,19 +733,32 @@ CALL AssertError1(isok, myName, &
 
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
-realvec => VALUE%GetPointer()
+IF (VALUE%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ! native engine: the values are in realVec, no copy
+  realvec => VALUE%GetPointer()
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(realvec)
-CALL AssertError1(isok, myName, &
-                  'realvec obtained from value is not ASSOCIATED')
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, &
+                    'realvec obtained from value is not ASSOCIATED')
 #endif
 
-CALL obj%SetMultiple( &
-  VALUE=realvec, scale=scale, addContribution=addContribution, &
-  istart=s(1), iend=s(2), stride=s(3))
+  CALL obj%SetMultiple( &
+    VALUE=realvec, scale=scale, addContribution=addContribution, &
+    istart=s(1), iend=s(2), stride=s(3))
 
-realvec => NULL()
+  realvec => NULL()
+
+ELSE
+  ! other engines: copy the values by GetMultiple
+  ALLOCATE (temp(VALUE%SIZE()))
+  CALL VALUE%GetMultiple(istart=1, iend=SIZE(temp), stride=1, &
+                         VALUE=temp, tsize=tsize)
+  CALL obj%SetMultiple( &
+    VALUE=temp(1:tsize), scale=scale, addContribution=addContribution, &
+    istart=s(1), iend=s(2), stride=s(3))
+  DEALLOCATE (temp)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -703,8 +776,9 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetToScalarField()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3), p(3)
+INTEGER(I4B) :: s(3), p(3), tsize
 REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -726,20 +800,33 @@ CALL AssertError1(isok, myName, &
 s = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
 p = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
-realvec => obj%GetPointer()
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  ! native engine: the values are in realVec, no copy
+  realvec => obj%GetPointer()
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(realvec)
-CALL AssertError1(isok, myName, &
-                  'realvec obtained To value is not ASSOCIATED')
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, &
+                    'realvec obtained from obj is not ASSOCIATED')
 #endif
 
-CALL VALUE%SetMultiple( &
-  VALUE=realvec, scale=scale, addContribution=addContribution, &
-  istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-  istart=s(1), iend=s(2), stride=s(3))
+  CALL VALUE%SetMultiple( &
+    VALUE=realvec, scale=scale, addContribution=addContribution, &
+    istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+    istart=s(1), iend=s(2), stride=s(3))
 
-realvec => NULL()
+  realvec => NULL()
+
+ELSE
+  ! other engines: copy the time component by GetMultiple
+  ALLOCATE (temp((p(2) - p(1)) / p(3) + 1))
+  CALL obj%GetMultiple(istart=p(1), iend=p(2), stride=p(3), &
+                       VALUE=temp, tsize=tsize)
+  CALL VALUE%SetMultiple( &
+    VALUE=temp(1:tsize), scale=scale, addContribution=addContribution, &
+    istart=s(1), iend=s(2), stride=s(3))
+  DEALLOCATE (temp)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

@@ -125,7 +125,7 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set one time component of all nodes from a vector
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
-  !! Set one time component from a node field (not yet available)
+  !! Set one time component from a time component of another field
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set all time components of the selected nodes
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
@@ -1099,22 +1099,101 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-25
-! summary: Set one time component from a node field (not yet available)
+! summary: Set one time component from a time component of another field
 !
-! Meant to set time component timeCompo of obj from the node field
-! VALUE. The routine is not implemented: it raises an error. Use
-! SetFromScalarField for a scalar field.
+! Time component objTimeCompo of obj becomes
 !
-! See also: [[obj_SetFromScalarField]]
+!   obj(objTimeCompo) = scale * VALUE(valueTimeCompo)
+!
+! or, when addContribution is true,
+!
+!   obj(objTimeCompo) = obj(objTimeCompo) + scale * VALUE(valueTimeCompo)
+!
+! The other time components of obj are not changed. obj and VALUE must
+! have the same space DOFs. For the native engine the values of VALUE
+! are read from its realVec (GetPointer, no copy); for other engines
+! they are copied by GetMultiple. Not callable for a constant field.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u, v
+! REAL(DFP) :: found(12), src(12)
+! INTEGER(I4B) :: ii, tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+! CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", fedof=fedof, &
+!                 geofedof=geofedof, timefedof=timefedof)
+!
+! src = [(REAL(ii, DFP), ii=1, 12)]
+! CALL v%SetMultiple(istart=1, iend=12, stride=1, VALUE=src)
+!
+! ! Test 1: u(time 1) = v(time 2)
+! BLOCK
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%Set(objTimeCompo=1, VALUE=v, valueTimeCompo=2)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - src(7:12)) .LT. tol), "set: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6)) .LT. tol), "set: time 2 not changed")
+! END BLOCK
+!
+! ! Test 2: u(time 2) = u(time 2) + 2 * v(time 1)
+! BLOCK
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%Set(objTimeCompo=2, VALUE=v, valueTimeCompo=1, scale=2.0_DFP, &
+!              addContribution=math%yes)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 1.0_DFP) .LT. tol), &
+!           "add: time 1 not changed")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - (1.0_DFP + 2.0_DFP * src(1:6))) .LT. tol), &
+!           "add: time 2")
+! END BLOCK
+!
+! CALL v%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_SetFromScalarField]], [[obj_Set13]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Set6(obj, VALUE, timeCompo, scale, addContribution)
+  MODULE SUBROUTINE obj_Set6(obj, objTimeCompo, VALUE, valueTimeCompo, &
+                             scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
-    !! obj@timeCompo = value
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
-    !! value in abstract node field
-    INTEGER(I4B), INTENT(IN) :: timeCompo
-    !! time component
+    !! space-time scalar field, obj(objTimeCompo) = value(valueTimeCompo)
+    INTEGER(I4B), INTENT(IN) :: objTimeCompo
+    !! time component of obj to be set, 1 <= objTimeCompo <= obj%timeCompo
+    CLASS(STScalarField_), INTENT(IN) :: VALUE
+    !! space-time scalar field with the same space DOFs as obj
+    INTEGER(I4B), INTENT(IN) :: valueTimeCompo
+    !! time component of value, 1 <= valueTimeCompo <= value%timeCompo
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1406,9 +1485,10 @@ END INTERFACE
 !
 ! The entries of time component timeCompo become scale times the
 ! values of the scalar field VALUE, or they are added when
-! addContribution is true. VALUE must have the same space FEDOF and
-! use the native engine (its Fortran vector is used through
-! GetPointer).
+! addContribution is true. VALUE must have the same space FEDOF. For
+! the native engine the values of VALUE are read from its realVec
+! (GetPointer, no copy); for other engines they are copied by
+! GetMultiple.
 !
 ! Examples
 !
@@ -1429,7 +1509,7 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of obj to be set
     CLASS(ScalarField_), INTENT(IN) :: VALUE
-    !! scalar field with the native engine
+    !! scalar field with the same space FEDOF as obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
@@ -1447,8 +1527,10 @@ END INTERFACE
 !
 ! The values of the scalar field VALUE become scale times the entries
 ! of time component timeCompo of obj, or they are added when
-! addContribution is true. obj must use the native engine (its Fortran
-! vector is used through GetPointer).
+! addContribution is true. VALUE must have the same space FEDOF. For
+! the native engine the values of obj are read from its realVec
+! (GetPointer, no copy); for other engines they are copied by
+! GetMultiple.
 !
 ! Examples
 !
@@ -1465,7 +1547,7 @@ INTERFACE
   MODULE SUBROUTINE obj_SetToScalarField( &
     obj, timeCompo, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(IN) :: obj
-    !! space-time scalar field with the native engine
+    !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of obj to be copied
     CLASS(ScalarField_), INTENT(INOUT) :: VALUE
