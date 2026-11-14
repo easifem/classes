@@ -101,6 +101,8 @@ CONTAINS
   !! Set multiple entries in a range from a range of value
   PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
   !! Set multiple entries in a range to one value
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple5 => obj_SetMultiple5
+  !! Set multiple entries in a range from a range of another field
   PROCEDURE, PUBLIC, PASS(obj) :: Set8 => obj_Set8
   !! obj = obj + scale * obj2
 
@@ -117,6 +119,8 @@ CONTAINS
   !! Get many values in a range
   PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
   !! Get many values in a range into a range of value
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple4 => obj_GetMultiple4
+  !! value(range) = [value(range) +] scale * obj(range)
 
   ! @BlasMethods
   PROCEDURE, PUBLIC, PASS(obj) :: AXPY1 => obj_AXPY1
@@ -1033,6 +1037,63 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                     SetMultiple@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-14
+! summary: Set multiple entries in a range from a range of another field
+!
+! obj(istart:iend:stride) is set to scale * VALUE(istart_value::
+! stride_value), or scale times these values is added when
+! addContribution is true. The number of values is given by the range
+! of obj. VALUE can have any engine:
+!
+!- NATIVE_SERIAL: its vector of values is passed to
+!  [[obj_SetMultiple3]], no temporary array,
+!- ScalarFieldLis_, set with scale 1: the LIS vectors are copied by
+!  lis_vector_get_values_from_range4, no temporary array,
+!- otherwise: the values are copied to a temporary array by
+!  GetMultiple of VALUE, then set by [[obj_SetMultiple3]].
+!
+! @note
+!   obj and VALUE can be the same field, but then the two ranges should
+!   not overlap.
+! @endnote
+!
+! Examples
+!
+!```fortran
+! ! x(1:3) = x(1:3) + 2 * y(4:6)
+! CALL x%SetMultiple(istart=1, iend=3, stride=1, VALUE=y, &
+!                    istart_value=4, iend_value=6, stride_value=1, &
+!                    scale=2.0_DFP, addContribution=math%yes)
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_2.F90
+!
+! See also: [[obj_SetMultiple3]], [[obj_GetMultiple4]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMultiple5(obj, istart, iend, stride, VALUE, &
+                                     istart_value, iend_value, stride_value, &
+                                     scale, addContribution)
+    CLASS(ScalarFieldLis_), TARGET, INTENT(INOUT) :: obj
+    !! LIS scalar field
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! range of entries of obj
+    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: VALUE
+    !! node field from which the values are taken
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of entries of VALUE
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    !! scale, default 1
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
+    !! add (true) or set (false, default)
+  END SUBROUTINE obj_SetMultiple5
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                            Set@SetMethods
 !----------------------------------------------------------------------------
 
@@ -1353,6 +1414,54 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! number of values written in VALUE
   END SUBROUTINE obj_GetMultiple3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     GetMultiple@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-14
+! summary: Scale entries in a range and set or add them to VALUE
+!
+! VALUE(istart_value::stride_value) = scale * obj(istart:iend:stride),
+! or scale * obj(istart:iend:stride) is added when addContribution is
+! true. The number of values is given by the range of obj; the other
+! entries of VALUE are not changed. With scale 1 and without
+! addContribution the values are written directly
+! (lis_vector_get_values_from_range2); otherwise they are first copied
+! to a temporary array.
+!
+! Examples
+!
+!```fortran
+! ! found(2:6:2) = found(2:6:2) + 2 * x(1:5:2)
+! CALL x%GetMultiple(istart=1, iend=5, stride=2, VALUE=found, &
+!                    istart_value=2, iend_value=6, stride_value=2, &
+!                    scale=2.0_DFP, addContribution=math%yes)
+!```
+!
+! Full example: src/modules/ScalarFieldLis/examples/SetMultiple_test_2.F90
+!
+! See also: [[obj_GetMultiple3]], [[obj_SetMultiple5]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple4(obj, istart, iend, stride, VALUE, &
+                                     istart_value, iend_value, stride_value, &
+                                     scale, addContribution)
+    CLASS(ScalarFieldLis_), INTENT(IN) :: obj
+    !! LIS scalar field
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! range of entries of obj
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    !! values are set or added in the range of VALUE
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of entries of VALUE
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    !! scale, default 1
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
+    !! add (true) or set (false, default)
+  END SUBROUTINE obj_GetMultiple4
 END INTERFACE
 
 !----------------------------------------------------------------------------

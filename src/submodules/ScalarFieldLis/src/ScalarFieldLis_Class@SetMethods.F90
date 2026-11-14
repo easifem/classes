@@ -236,6 +236,91 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetMultiple4
 
 !----------------------------------------------------------------------------
+!                                                                 SetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMultiple5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple5()"
+LOGICAL(LGT) :: isok
+#endif
+INTEGER(I4B) :: ierr, tsize, tsize2, iend_value2
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE :: temp(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+tsize = (iend - istart) / stride + 1
+iend_value2 = istart_value + (tsize - 1) * stride_value
+
+! VALUE is native: its vector of values is passed, no copy
+IF (VALUE%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+  realvec => VALUE%GetPointer()
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, &
+                    'realvec obtained from value is not ASSOCIATED')
+#endif
+
+  CALL obj%SetMultiple3( &
+    istart=istart, iend=iend, stride=stride, VALUE=realvec, &
+    istart_value=istart_value, iend_value=iend_value2, &
+    stride_value=stride_value, scale=areal, addContribution=abool)
+
+  realvec => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! VALUE is a LIS vector and the values are only copied: LIS copies the
+! range from one LIS vector to the other, no copy
+SELECT TYPE (VALUE)
+CLASS IS (ScalarFieldLis_)
+  IF ((.NOT. abool) .AND. (areal .EQ. math%one)) THEN
+    CALL lis_vector_get_values_from_range4( &
+      VALUE%lis_ptr, istart_value, stride_value, tsize, obj%lis_ptr, &
+      istart, stride, ierr)
+
+#ifdef DEBUG_VER
+    CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
+END SELECT
+
+! otherwise: copy the values of VALUE to a temporary array
+ALLOCATE (temp(tsize))
+CALL VALUE%GetMultiple(istart=istart_value, iend=iend_value2, &
+                       stride=stride_value, VALUE=temp, tsize=tsize2)
+CALL obj%SetMultiple3( &
+  istart=istart, iend=iend, stride=stride, VALUE=temp, istart_value=1, &
+  iend_value=tsize, stride_value=1, scale=areal, addContribution=abool)
+DEALLOCATE (temp)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMultiple5
+
+!----------------------------------------------------------------------------
 !                                                                     SetAll
 !----------------------------------------------------------------------------
 

@@ -277,6 +277,48 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetMultiple4
 
 !----------------------------------------------------------------------------
+!                                                                 SetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMultiple5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple5()"
+LOGICAL(LGT) :: isok
+#endif
+INTEGER(I4B) :: tsize
+REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = (iend - istart) / stride + 1
+
+! the values of obj are in realVec: VALUE writes into them, so the
+! engine of VALUE reads its own values and no temporary is needed
+realvec => obj%GetPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, &
+                  'realvec obtained from obj is not ASSOCIATED')
+#endif
+
+CALL VALUE%GetMultiple4( &
+  istart=istart_value, iend=istart_value + (tsize - 1) * stride_value, &
+  stride=stride_value, VALUE=realvec, istart_value=istart, iend_value=iend, &
+  stride_value=stride, scale=scale, addContribution=addContribution)
+
+realvec => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMultiple5
+
+!----------------------------------------------------------------------------
 !                                                                 SetAll
 !----------------------------------------------------------------------------
 

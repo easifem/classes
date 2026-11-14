@@ -386,6 +386,45 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetMultiple3
 
 !----------------------------------------------------------------------------
+!                                                               GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple4()"
+#endif
+INTEGER(I4B) :: ii, jj, tsize
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+tsize = (iend - istart) / stride + 1
+
+IF (abool) THEN
+  DO ii = 0, tsize - 1
+    jj = istart_value + ii * stride_value
+    VALUE(jj) = VALUE(jj) + areal * obj%realVec%val(istart + ii * stride)
+  END DO
+ELSE
+  DO ii = 0, tsize - 1
+    jj = istart_value + ii * stride_value
+    VALUE(jj) = areal * obj%realVec%val(istart + ii * stride)
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMultiple4
+
+!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

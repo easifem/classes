@@ -346,8 +346,10 @@ CONTAINS
   !! get many values in a range
   PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple3 => obj_GetMultiple3
   !! get many values in a range into a range of value
+  PROCEDURE, PUBLIC, PASS(obj) :: GetMultiple4 => obj_GetMultiple4
+  !! value(range) = [value(range) +] scale * obj(range)
   GENERIC, PUBLIC :: GetMultiple => GetMultiple1, GetMultiple2, &
-    GetMultiple3
+    GetMultiple3, GetMultiple4
   !! get many values
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
@@ -381,8 +383,10 @@ CONTAINS
   !! Set multiple entries in a range from a range of value
   PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple4 => obj_SetMultiple4
   !! Set multiple entries in a range to one value
+  PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple5 => obj_SetMultiple5
+  !! Set multiple entries in a range from a range of another field
   GENERIC, PUBLIC :: SetMultiple => SetMultiple1, SetMultiple2, &
-    SetMultiple3, SetMultiple4
+    SetMultiple3, SetMultiple4, SetMultiple5
   !! Set multiple entries
 
   ! @BlasMethods
@@ -1473,6 +1477,112 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                      SetMultiple@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-14
+! summary: Set multiple values in a range from a range of another field
+!
+! obj(istart:iend:stride) is set to scale * VALUE(istart_value::
+! stride_value), where VALUE is a node field (the number of values is
+! given by the range of obj). If addContribution is true, then scale
+! times these values is added.
+!
+! No temporary array is used when obj or VALUE has the NATIVE_SERIAL
+! engine. The implementation of obj passes its own vector of values to
+! [[obj_GetMultiple4]] of VALUE, so the engine of VALUE reads the
+! values; an engine which does not store the values in realVec (e.g.
+! LIS) overrides this method.
+!
+! @note
+!   obj and VALUE can be the same field, but then the two ranges should
+!   not overlap.
+! @endnote
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "AbstractNodeField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarField_) :: x, y
+! REAL(DFP) :: found(6), src(6)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL x%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+! CALL y%Initiate(NAME="y", engine="NATIVE_SERIAL", fedof=fedof, &
+!                 geofedof=geofedof)
+!
+! src = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
+! CALL y%SetMultiple(istart=1, iend=6, stride=1, VALUE=src)
+!
+! ! x(2:6:2) = 3 * y(1:3)
+! CALL x%SetAll(VALUE=7.0_DFP)
+! CALL x%SetMultiple(istart=2, iend=6, stride=2, VALUE=y, &
+!                    istart_value=1, iend_value=3, stride_value=1, &
+!                    scale=3.0_DFP)
+! CALL x%GetMultiple(istart=1, iend=6, stride=1, VALUE=found, &
+!                    tsize=tsize)
+! CALL OK(ALL(ABS(found - [7.0_DFP, 3.0_DFP, 7.0_DFP, 6.0_DFP, &
+!                          7.0_DFP, 9.0_DFP]) .LT. tol), "set")
+!
+! ! x(1:3) = x(1:3) + y(4:6)
+! CALL x%SetAll(VALUE=1.0_DFP)
+! CALL x%SetMultiple(istart=1, iend=3, stride=1, VALUE=y, &
+!                    istart_value=4, iend_value=6, stride_value=1, &
+!                    addContribution=math%yes)
+! CALL x%GetMultiple(istart=1, iend=6, stride=1, VALUE=found, &
+!                    tsize=tsize)
+! CALL OK(ALL(ABS(found - [5.0_DFP, 6.0_DFP, 7.0_DFP, 1.0_DFP, &
+!                          1.0_DFP, 1.0_DFP]) .LT. tol), "add")
+!
+! CALL y%DEALLOCATE()
+! CALL x%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_SetMultiple3]], [[obj_GetMultiple4]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetMultiple5(obj, istart, iend, stride, VALUE, &
+                                     istart_value, iend_value, stride_value, &
+                                     scale, addContribution)
+    CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: obj
+    !! node field
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! range of obj
+    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: VALUE
+    !! node field from which the values are taken
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of VALUE
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    !! scale, default is 1
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
+    !! add or set, default is set
+  END SUBROUTINE obj_SetMultiple5
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                      GetMultiple@GetMethods
 !----------------------------------------------------------------------------
 
@@ -1552,6 +1662,89 @@ INTERFACE
     INTEGER(I4B), INTENT(OUT) :: tsize
     !! total number of data written in value
   END SUBROUTINE obj_GetMultiple3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      GetMultiple@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-14
+! summary: Scale multiple values in a range and set or add them to VALUE
+!
+! VALUE(istart_value::stride_value) = scale * obj(istart:iend:stride);
+! if addContribution is true, then scale * obj(istart:iend:stride) is
+! added to VALUE(istart_value::stride_value). The number of values is
+! given by the range of obj. The entries of VALUE outside its range are
+! not changed.
+!
+! This method is used by [[obj_SetMultiple5]] to copy a range of one
+! field into another field without a temporary array.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE ScalarField_Class, ONLY: ScalarField_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "AbstractNodeField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarField_) :: y
+! REAL(DFP) :: found(6), src(6)
+!
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL y%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+!
+! src = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
+! CALL y%SetMultiple(istart=1, iend=6, stride=1, VALUE=src)
+!
+! ! found(2:6:2) = found(2:6:2) + 2 * y(1:5:2)
+! found = 1.0_DFP
+! CALL y%GetMultiple(istart=1, iend=5, stride=2, VALUE=found, &
+!                    istart_value=2, iend_value=6, stride_value=2, &
+!                    scale=2.0_DFP, addContribution=math%yes)
+! CALL OK(ALL(ABS(found - [1.0_DFP, 3.0_DFP, 1.0_DFP, 7.0_DFP, &
+!                          1.0_DFP, 11.0_DFP]) .LT. tol), "add")
+!
+! CALL y%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_GetMultiple3]], [[obj_SetMultiple5]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_GetMultiple4(obj, istart, iend, stride, VALUE, &
+                                     istart_value, iend_value, stride_value, &
+                                     scale, addContribution)
+    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    !! node field
+    INTEGER(I4B), INTENT(IN) :: istart, iend, stride
+    !! range of obj
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
+    !! values are set or added in the range of VALUE
+    INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
+    !! range of VALUE
+    REAL(DFP), INTENT(IN), OPTIONAL :: scale
+    !! scale, default is 1
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: addContribution
+    !! add or set, default is set
+  END SUBROUTINE obj_GetMultiple4
 END INTERFACE
 
 !----------------------------------------------------------------------------

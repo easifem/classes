@@ -319,9 +319,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3), vs(3), tsize
-REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE :: temp(:)
+INTEGER(I4B) :: s(3), vs(3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -360,32 +358,11 @@ CALL AssertError2((s(2) - s(1)) / s(3) + 1, (vs(2) - vs(1)) / vs(3) + 1, &
                   'b=size of value time component')
 #endif
 
-IF (VALUE%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-  ! native engine: the values are in realVec, no copy
-  realvec => VALUE%GetPointer()
-
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(realvec)
-  CALL AssertError1(isok, myName, &
-                    'realvec obtained from value is not ASSOCIATED')
-#endif
-
-  CALL obj%SetMultiple( &
-    VALUE=realvec(vs(1):vs(2):vs(3)), scale=scale, &
-    addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3))
-
-  realvec => NULL()
-
-ELSE
-  ! other engines: copy the time component by GetMultiple
-  ALLOCATE (temp((vs(2) - vs(1)) / vs(3) + 1))
-  CALL VALUE%GetMultiple(istart=vs(1), iend=vs(2), stride=vs(3), &
-                         VALUE=temp, tsize=tsize)
-  CALL obj%SetMultiple( &
-    VALUE=temp(1:tsize), scale=scale, addContribution=addContribution, &
-    istart=s(1), iend=s(2), stride=s(3))
-  DEALLOCATE (temp)
-END IF
+! the engines of obj and VALUE copy the values, see SetMultiple5
+CALL obj%SetMultiple( &
+  istart=s(1), iend=s(2), stride=s(3), VALUE=VALUE, istart_value=vs(1), &
+  iend_value=vs(2), stride_value=vs(3), scale=scale, &
+  addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -710,9 +687,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetFromScalarField()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3), tsize
-REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE :: temp(:)
+INTEGER(I4B) :: s(3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -733,32 +708,11 @@ CALL AssertError1(isok, myName, &
 
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
-IF (VALUE%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-  ! native engine: the values are in realVec, no copy
-  realvec => VALUE%GetPointer()
-
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(realvec)
-  CALL AssertError1(isok, myName, &
-                    'realvec obtained from value is not ASSOCIATED')
-#endif
-
-  CALL obj%SetMultiple( &
-    VALUE=realvec, scale=scale, addContribution=addContribution, &
-    istart=s(1), iend=s(2), stride=s(3))
-
-  realvec => NULL()
-
-ELSE
-  ! other engines: copy the values by GetMultiple
-  ALLOCATE (temp(VALUE%SIZE()))
-  CALL VALUE%GetMultiple(istart=1, iend=SIZE(temp), stride=1, &
-                         VALUE=temp, tsize=tsize)
-  CALL obj%SetMultiple( &
-    VALUE=temp(1:tsize), scale=scale, addContribution=addContribution, &
-    istart=s(1), iend=s(2), stride=s(3))
-  DEALLOCATE (temp)
-END IF
+! the engines of obj and VALUE copy the values, see SetMultiple5
+CALL obj%SetMultiple( &
+  istart=s(1), iend=s(2), stride=s(3), VALUE=VALUE, istart_value=1, &
+  iend_value=VALUE%SIZE(), stride_value=1, scale=scale, &
+  addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -776,9 +730,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetToScalarField()"
 LOGICAL(LGT) :: isok
 #endif
 
-INTEGER(I4B) :: s(3), p(3), tsize
-REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE :: temp(:)
+INTEGER(I4B) :: s(3), p(3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -800,33 +752,11 @@ CALL AssertError1(isok, myName, &
 s = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
 p = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
-  ! native engine: the values are in realVec, no copy
-  realvec => obj%GetPointer()
-
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(realvec)
-  CALL AssertError1(isok, myName, &
-                    'realvec obtained from obj is not ASSOCIATED')
-#endif
-
-  CALL VALUE%SetMultiple( &
-    VALUE=realvec, scale=scale, addContribution=addContribution, &
-    istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-    istart=s(1), iend=s(2), stride=s(3))
-
-  realvec => NULL()
-
-ELSE
-  ! other engines: copy the time component by GetMultiple
-  ALLOCATE (temp((p(2) - p(1)) / p(3) + 1))
-  CALL obj%GetMultiple(istart=p(1), iend=p(2), stride=p(3), &
-                       VALUE=temp, tsize=tsize)
-  CALL VALUE%SetMultiple( &
-    VALUE=temp(1:tsize), scale=scale, addContribution=addContribution, &
-    istart=s(1), iend=s(2), stride=s(3))
-  DEALLOCATE (temp)
-END IF
+! the engines of VALUE and obj copy the values, see SetMultiple5
+CALL VALUE%SetMultiple( &
+  istart=s(1), iend=s(2), stride=s(3), VALUE=obj, istart_value=p(1), &
+  iend_value=p(2), stride_value=p(3), scale=scale, &
+  addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

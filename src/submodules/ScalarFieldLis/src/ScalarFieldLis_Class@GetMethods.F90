@@ -16,6 +16,9 @@
 !
 
 SUBMODULE(ScalarFieldLis_Class) GetMethods
+USE BaseType, ONLY: math => TypeMathOpt
+USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -140,6 +143,69 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetMultiple3
+
+!----------------------------------------------------------------------------
+!                                                               GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple4()"
+#endif
+INTEGER(I4B) :: ierr, jj, tsize
+LOGICAL(LGT) :: isAdd, isScale
+REAL(DFP) :: areal
+REAL(DFP), ALLOCATABLE :: temp(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isAdd = Input(option=addContribution, default=math%no)
+isScale = PRESENT(scale)
+areal = Input(option=scale, default=math%one)
+tsize = (iend - istart) / stride + 1
+jj = istart_value + (tsize - 1) * stride_value
+
+IF (.NOT. isAdd) THEN
+
+  ! plain copy: LIS writes in the range of VALUE
+  CALL lis_vector_get_values_from_range2( &
+    obj%lis_ptr, istart, stride, tsize, VALUE, istart_value, stride_value, &
+    ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  IF (isScale) THEN
+    VALUE(istart_value:jj:stride_value) = &
+      areal * VALUE(istart_value:jj:stride_value)
+  END IF
+
+ELSE
+
+  ! add: copy the values first
+  ! ALLOCATE (temp(tsize))
+  CALL Reallocate(temp, tsize)
+  CALL lis_vector_get_values_from_range2( &
+    obj%lis_ptr, istart, stride, tsize, temp, 1, 1, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+
+  VALUE(istart_value:jj:stride_value) = &
+    VALUE(istart_value:jj:stride_value) + areal * temp(1:tsize)
+  IF (ALLOCATED(temp)) DEALLOCATE (temp)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMultiple4
 
 !----------------------------------------------------------------------------
 !                                                               GetPointer

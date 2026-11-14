@@ -11,7 +11,6 @@
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
-USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
 USE FEDOF_Class, ONLY: FEDOF_
 USE FEDomain_Class, ONLY: FEDomain_
 USE GlobalData, ONLY: DFP
@@ -28,7 +27,7 @@ TYPE(ScalarField_) :: x
 REAL(DFP) :: found(6), src(6)
 INTEGER(I4B) :: tsize
 
-CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+CALL e%SetQuietMode(math%yes)
 CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL x%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                       filename=tomlFileName, tomlName="u")
