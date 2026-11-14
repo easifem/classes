@@ -21,7 +21,6 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: ElemshapeData_
 USE BaseType, ONLY: FEVariable_
-USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpace
@@ -39,8 +38,8 @@ USE STForceVector_Method, ONLY: STForceVector_
 
 #ifdef DEBUG_VER
 USE Display_Method, ONLY: Display
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
 USE ElemshapeData_Method, ONLY: ElemshapeData_Display => Display
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Display => Display
 #endif
 
 IMPLICIT NONE
@@ -99,7 +98,7 @@ CALL Reallocate(forceVec, maxNNS, maxNNT)
 CALL Reallocate(forceVecQuad, maxNips, maxNipt)
 
 forceVar = QuadratureVariable( &
-           nrow=maxNips, ncol=maxNipt, rank=TypeFEVariableScalar, &
+           nrow=maxNips, ncol=maxNipt, RANK=TypeFEVariableScalar, &
            vartype=TypeFEVariableSpaceTime)
 
 args = 0.0_DFP
@@ -134,7 +133,7 @@ DO iel = 1, tElements
 
   CALL FEVariable_Set( &
     obj=forceVar, val=forceVecQuad(1:elemsd%nips, 1:timeelemsd%nips), &
-    rank=TypeFEVariableScalar, varType=TypeFEVariableSpaceTime, &
+    RANK=TypeFEVariableScalar, varType=TypeFEVariableSpaceTime, &
     scale=1.0_DFP, addContribution=math%no)
 
   CALL STForceVector_( &
@@ -278,13 +277,13 @@ END PROCEDURE obj_ApplyBodySource2
 MODULE PROCEDURE obj_ApplyBodySource3
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyBodySource3()"
+LOGICAL(LGT) :: isok
 #endif
-
-LOGICAL(LGT), PARAMETER :: yes = .TRUE., no = .FALSE.
 
 INTEGER(I4B) :: iel, tElements, maxNNE, maxNNEGeo, &
                 tcellCon, tforceVec, xij_i, xij_j, maxNips, ips
 REAL(DFP) :: args(4)
+CHARACTER(*), PARAMETER :: opt_all = "A"
 
 TYPE(QuadraturePoint_) :: quad
 TYPE(ElemshapeData_) :: elemsd, geoelemsd
@@ -300,6 +299,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, &
+                  'timeCompo should be in [1, obj%timeCompo]')
+#endif
+
 mesh => obj%fedof%GetMeshPointer()
 
 tElements = mesh%GetTotalElements()
@@ -313,7 +318,7 @@ CALL Reallocate(forceVec, maxNNE)
 CALL Reallocate(forceVecQuad, maxNips)
 
 forceVar = QuadratureVariable( &
-           tsize=maxNips, rank=TypeFEVariableScalar, &
+           tsize=maxNips, RANK=TypeFEVariableScalar, &
            vartype=TypeFEVariableSpace)
 
 args = 0.0_DFP
@@ -321,21 +326,22 @@ args(4) = times
 
 DO iel = 1, tElements
 
-  CALL obj%fedof%SetFE(globalElement=iel, islocal=yes)
-  CALL obj%geofedof%SetFE(globalElement=iel, islocal=yes)
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
 
-  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=yes)
-  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, islocal=math%yes)
 
-  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=yes, &
-                                  ans=cellcon, tsize=tcellCon, opt="A")
+  CALL obj%fedof%GetConnectivity_(globalElement=iel, islocal=math%yes, &
+                                  ans=cellcon, tsize=tcellCon, opt=opt_all)
 
-  CALL mesh%GetNodeCoord( &
-    nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=yes, globalElement=iel)
+  CALL mesh%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
+                         islocal=math%yes, &
+                         globalElement=iel)
 
-  CALL feptr%GetGlobalElemShapeData2( &
-    geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
-    quad=quad)
+  CALL feptr%GetGlobalElemShapeData2(geofeptr=geofeptr, elemsd=elemsd, &
+                                     geoelemsd=geoelemsd, xij=xij, &
+                                     quad=quad)
 
   DO ips = 1, elemsd%nips
     args(1:elemsd%nsd) = elemsd%coord(1:elemsd%nsd, ips)
@@ -344,15 +350,15 @@ DO iel = 1, tElements
 
   CALL FEVariable_Set( &
     obj=forceVar, val=forceVecQuad(1:elemsd%nips), &
-    rank=TypeFEVariableScalar, varType=TypeFEVariableSpace, scale=1.0_DFP, &
-    addContribution=no)
+    RANK=TypeFEVariableScalar, varType=TypeFEVariableSpace, scale=math%one, &
+    addContribution=math%no)
 
   CALL ForceVector_(test=elemsd, c=forceVar, crank=TypeFEVariableScalar, &
                     ans=forceVec, tsize=tforceVec)
 
-  CALL obj%Set( &
-    globalNode=cellcon(1:tcellCon), islocal=yes, scale=scale, &
-    addContribution=yes, VALUE=forceVec(1:tforceVec))
+  CALL obj%Set(VALUE=forceVec(1:tforceVec), globalNode=cellcon(1:tcellCon), &
+               islocal=math%yes, timeCompo=timeCompo, scale=scale, &
+               addContribution=math%yes)
 END DO
 
 IF (ALLOCATED(xij)) DEALLOCATE (xij)
