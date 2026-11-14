@@ -2238,23 +2238,132 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-11-19
-! summary: Add the body source given by a field (not yet available)
+! summary: Add the body source given by a space-time scalar field
 !
-! Meant to add the body source given by the space-time field
-! bodySource. The routine is not implemented: it raises an error.
+! The body source f is interpolated from the nodal values of the
+! space-time scalar field bodySource,
 !
-! See also: [[obj_ApplyBodySource1]]
+!   f(x, t) = sum_J sum_b N_J(x) T_b(t) f(J, b),
+!
+! and for each element and each time component a
+!
+!   obj(I, a) = obj(I, a) + scale * integral N_I T_a f dx dt
+!
+! is added, where the time integral is over the time slab given by
+! times (as in [[obj_ApplyBodySource1]]).
+!
+! obj and bodySource must be defined on the same mesh; in debug mode
+! an error is raised otherwise. Two cases are handled separately:
+!
+!- bodySource has the same fedof and timefedof as obj (the pointers
+!  are associated with the same targets): the nodal values of
+!  bodySource on each element are used directly,
+!- otherwise: not implemented yet, an error is raised.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE GlobalData, ONLY: DFP
+! USE GlobalData, ONLY: I4B
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! REAL(DFP), PARAMETER :: tol = 1.0E-10_DFP
+! REAL(DFP), PARAMETER :: times(2) = [0.0_DFP, 1.0_DFP]
+! REAL(DFP), PARAMETER :: space(6) = [12.5_DFP, 12.5_DFP, 12.5_DFP, &
+!                                     12.5_DFP, 25.0_DFP, 25.0_DFP]
+! REAL(DFP), PARAMETER :: xnode(6) = [0.0_DFP, 10.0_DFP, 10.0_DFP, &
+!                                     0.0_DFP, 5.0_DFP, 5.0_DFP]
+! REAL(DFP), PARAMETER :: spaceX(6) = [125.0_DFP / 6.0_DFP, &
+!                                      625.0_DFP / 6.0_DFP, &
+!                                      625.0_DFP / 6.0_DFP, &
+!                                      125.0_DFP / 6.0_DFP, &
+!                                      125.0_DFP, 125.0_DFP]
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u, f
+! REAL(DFP) :: found(12)
+! INTEGER(I4B) :: tsize
+!
+! CALL e%SetQuietMode(math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+! CALL f%Initiate(NAME="f", engine="NATIVE_SERIAL", fedof=fedof, &
+!                 geofedof=geofedof, timefedof=timefedof)
+!
+! ! Test 1: f = 1
+! BLOCK
+!   CALL f%Set(VALUE=1.0_DFP)
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyBodySource(bodySource=f, scale=1.0_DFP, times=times)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 0.5_DFP * space) .LT. tol), &
+!           "f = 1: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - 0.5_DFP * space) .LT. tol), &
+!           "f = 1: time 2")
+! END BLOCK
+!
+! ! Test 2: f = t (0 at time node 1, 1 at time node 2), added with scale 6
+! BLOCK
+!   CALL f%Set(VALUE=[0.0_DFP, 1.0_DFP])
+!   CALL u%Set(VALUE=1.0_DFP)
+!   CALL u%ApplyBodySource(bodySource=f, scale=6.0_DFP, times=times)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - (1.0_DFP + space)) .LT. tol), &
+!           "f = t: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - (1.0_DFP + 2.0_DFP * space)) .LT. tol), &
+!           "f = t: time 2")
+! END BLOCK
+!
+! ! Test 3: f = x (same nodal values at both time nodes)
+! BLOCK
+!   CALL f%SetMultiple(istart=1, iend=12, stride=1, VALUE=[xnode, xnode])
+!   CALL u%Set(VALUE=0.0_DFP)
+!   CALL u%ApplyBodySource(bodySource=f, scale=1.0_DFP, times=times)
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=1)
+!   CALL OK(ALL(ABS(found(1:6) - 0.5_DFP * spaceX) .LT. tol), &
+!           "f = x: time 1")
+!   CALL u%Get(VALUE=found, tsize=tsize, timeCompo=2)
+!   CALL OK(ALL(ABS(found(1:6) - 0.5_DFP * spaceX) .LT. tol), &
+!           "f = x: time 2")
+! END BLOCK
+!
+! CALL f%DEALLOCATE()
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_ApplyBodySource1]], [[obj_ApplyBodySource3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
+  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale, times)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
-    !! Scalar field
+    !! space-time scalar field (right hand side)
     !! The test function will be corresponding to the obj
-    CLASS(STScalarField_), INTENT(INOUT) :: bodySource
-    !! Body source in terms of scalar field
+    CLASS(STScalarField_), INTENT(IN) :: bodySource
+    !! Body source as a space-time scalar field on the same mesh as obj
     REAL(DFP), INTENT(IN) :: scale
     !! scale for body source
     !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time slab, passed to the time element
   END SUBROUTINE obj_ApplyBodySource2
 END INTERFACE
 
