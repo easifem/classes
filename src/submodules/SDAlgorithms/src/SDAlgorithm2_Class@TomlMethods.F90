@@ -17,17 +17,14 @@
 !
 
 SUBMODULE(SDAlgorithm2_Class) TomlMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
+USE Display_Method, ONLY: Display
+USE GlobalData, ONLY: CHAR_LF
+USE GlobalData, ONLY: stdout
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: UpperCase
-USE Display_Method, ONLY: Display
-
-USE TomlUtility, ONLY: GetValue, GetValue_
-USE tomlf, ONLY: toml_serialize, &
-                 toml_get => get_value, &
-                 toml_len => len, &
-                 toml_array, &
-                 toml_stat
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_serialize
+USE TomlUtility, ONLY: GetValue
 
 IMPLICIT NONE
 
@@ -50,7 +47,7 @@ SUBROUTINE NewmarkBetaMethodImportFromToml(obj, table, astr, origin, stat)
   LOGICAL(LGT) :: isok
   TYPE(toml_table), POINTER :: node
   REAL(DFP) :: beta, gamma
-  REAL(DFP), PARAMETER :: default_beta = 0.25_DFP, default_gamma = 0.5_DFP
+  REAL(DFP), PARAMETER :: default_beta = 0.25_DFP, default_gamma = math%half
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -58,7 +55,7 @@ SUBROUTINE NewmarkBetaMethodImportFromToml(obj, table, astr, origin, stat)
 #endif
 
   CALL toml_get(table, astr%chars(), node, origin=origin, &
-                requested=.FALSE., stat=stat)
+                requested=math%no, stat=stat)
 
   beta = default_beta
   gamma = default_gamma
@@ -107,11 +104,11 @@ SUBROUTINE HHTAlphaMethodImportFromToml(obj, table, astr, origin, stat)
 #endif
 
   CALL toml_get(table, astr%chars(), node, origin=origin, &
-                requested=.FALSE., stat=stat)
+                requested=math%no, stat=stat)
 
   alpha = default_alpha
-  beta = (1.0_DFP - alpha)**2 * 0.25_DFP
-  gamma = (1.0_DFP - 2.0_DFP * alpha) * 0.50_DFP
+  beta = (math%one - alpha)**2 * 0.25_DFP
+  gamma = (math%one - math%two * alpha) * math%half
   default_beta = beta
   default_gamma = gamma
 
@@ -119,6 +116,12 @@ SUBROUTINE HHTAlphaMethodImportFromToml(obj, table, astr, origin, stat)
   IF (isok) THEN
     CALL GetValue(table=node, key="alpha", VALUE=alpha, &
                   default_value=default_alpha, origin=origin, stat=stat)
+
+    ! defaults of beta and gamma follow the alpha that was read
+    default_beta = (math%one - alpha)**2 * 0.25_DFP
+    default_gamma = (math%one - math%two * alpha) * math%half
+    beta = default_beta
+    gamma = default_gamma
 
     CALL GetValue(table=node, key="beta", VALUE=beta, &
                   default_value=default_beta, origin=origin, stat=stat)
@@ -138,6 +141,73 @@ SUBROUTINE HHTAlphaMethodImportFromToml(obj, table, astr, origin, stat)
 END SUBROUTINE HHTAlphaMethodImportFromToml
 
 !----------------------------------------------------------------------------
+!                                        GeneralizedAlphaMethodImportFromToml
+!----------------------------------------------------------------------------
+
+! Only the parameters present in the table are passed to
+! GeneralizedAlphaMethod, so its defaults apply to the missing ones. An
+! unallocated actual argument is an absent optional argument.
+
+SUBROUTINE GeneralizedAlphaMethodImportFromToml(obj, table, astr, origin, &
+                                                stat)
+  CLASS(SDAlgorithm2_), INTENT(INOUT) :: obj
+  TYPE(toml_table), INTENT(INOUT) :: table
+  TYPE(String), INTENT(INOUT) :: astr
+  INTEGER(I4B), INTENT(INOUT) :: origin, stat
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = &
+    "GeneralizedAlphaMethodImportFromToml()"
+#endif
+  TYPE(toml_table), POINTER :: node
+  REAL(DFP), ALLOCATABLE :: rhoInf, alphaM, alphaF, beta, gamma
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  CALL toml_get(table, astr%chars(), node, origin=origin, &
+                requested=math%no, stat=stat)
+
+  IF (ASSOCIATED(node)) THEN
+    CALL ReadOptional("rhoInf", rhoInf)
+    CALL ReadOptional("alphaM", alphaM)
+    CALL ReadOptional("alphaF", alphaF)
+    CALL ReadOptional("beta", beta)
+    CALL ReadOptional("gamma", gamma)
+  END IF
+
+  CALL obj%GeneralizedAlphaMethod(rhoInf=rhoInf, alphaM=alphaM, &
+                                  alphaF=alphaF, beta=beta, gamma=gamma)
+
+  node => NULL()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+CONTAINS
+
+  ! val is allocated only if key is in node
+  SUBROUTINE ReadOptional(key, val)
+    CHARACTER(*), INTENT(IN) :: key
+    REAL(DFP), ALLOCATABLE, INTENT(INOUT) :: val
+
+    REAL(DFP) :: areal
+    LOGICAL(LGT) :: isFound
+
+    CALL GetValue(table=node, key=key, VALUE=areal, &
+                  default_value=math%zero, origin=origin, stat=stat, &
+                  isFound=isFound)
+    IF (isFound) val = areal
+  END SUBROUTINE ReadOptional
+
+END SUBROUTINE GeneralizedAlphaMethodImportFromToml
+
+!----------------------------------------------------------------------------
 !                                             CollocationMethodImportFromToml
 !----------------------------------------------------------------------------
 
@@ -154,8 +224,8 @@ SUBROUTINE CollocationMethodImportFromToml(obj, table, astr, origin, stat)
   LOGICAL(LGT) :: isok
   TYPE(toml_table), POINTER :: node
   REAL(DFP) :: beta, gamma, theta
-  REAL(DFP), PARAMETER :: default_beta = 1.0_DFP / 6.0_DFP, &
-                          default_gamma = 0.5_DFP, &
+  REAL(DFP), PARAMETER :: default_beta = math%one / 6.0_DFP, &
+                          default_gamma = math%half, &
                           default_theta = 1.4_DFP
 
 #ifdef DEBUG_VER
@@ -164,7 +234,7 @@ SUBROUTINE CollocationMethodImportFromToml(obj, table, astr, origin, stat)
 #endif
 
   CALL toml_get(table, astr%chars(), node, origin=origin, &
-                requested=.FALSE., stat=stat)
+                requested=math%no, stat=stat)
 
   beta = default_beta
   gamma = default_gamma
@@ -193,179 +263,6 @@ SUBROUTINE CollocationMethodImportFromToml(obj, table, astr, origin, stat)
 END SUBROUTINE CollocationMethodImportFromToml
 
 !----------------------------------------------------------------------------
-!                                             UserDefinedMethodImportFromToml
-!----------------------------------------------------------------------------
-
-SUBROUTINE UserDefinedMethodImportFromToml(obj, table, astr, origin, stat)
-  CLASS(SDAlgorithm2_), INTENT(INOUT) :: obj
-  TYPE(toml_table), INTENT(INOUT) :: table
-  TYPE(String), INTENT(INOUT) :: astr
-  INTEGER(I4B), INTENT(INOUT) :: origin, stat
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "UserDefinedMethodImportFromToml()"
-#endif
-  LOGICAL(LGT) :: isok
-  TYPE(toml_table), POINTER :: node, node2
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  node => NULL()
-  CALL toml_get(table, astr%chars(), node, origin=origin, requested=.FALSE., &
-                stat=stat)
-
-#ifdef DEBUG_VER
-  isok = ASSOCIATED(node)
-  CALL AssertError1(isok, myName, &
-                    'following error occured while reading the toml file :: &
-                    &cannot find '//astr%chars()//" table")
-#endif
-
-  CALL toml_get(node, "tanmat", node2, origin=origin, requested=.FALSE., &
-                stat=stat)
-
-  isok = ASSOCIATED(node2)
-  obj%tanmat = 0.0_DFP
-
-  IF (isok) THEN
-    CALL GetValue(table=node2, key="M", VALUE=obj%tanmat(1), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="C", VALUE=obj%tanmat(2), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="K", VALUE=obj%tanmat(3), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-  END IF
-
-  obj%rhs_u1 = 0.0_DFP
-  obj%rhs_v1 = 0.0_DFP
-  obj%rhs_a1 = 0.0_DFP
-  obj%rhs_f1 = 0.0_DFP
-  obj%rhs_f2 = 0.0_DFP
-
-  CALL toml_get(node, "rhs", node2, origin=origin, requested=.FALSE., &
-                stat=stat)
-  isok = ASSOCIATED(node2)
-
-  IF (isok) THEN
-    CALL GetValue(table=node2, key="MU", VALUE=obj%rhs_u1(1), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="CU", VALUE=obj%rhs_u1(2), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="KU", VALUE=obj%rhs_u1(3), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="MV", VALUE=obj%rhs_v1(1), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="CV", VALUE=obj%rhs_v1(2), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="KV", VALUE=obj%rhs_v1(3), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="MA", VALUE=obj%rhs_a1(1), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="CA", VALUE=obj%rhs_a1(2), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="KA", VALUE=obj%rhs_a1(3), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="F1", VALUE=obj%rhs_f1, &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="F2", VALUE=obj%rhs_f2, &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-  END IF
-
-  node2 => NULL()
-  CALL GetValue(table=node, key="alpha", VALUE=obj%alpha, &
-                default_value=0.0_DFP, origin=origin, stat=stat)
-
-  CALL toml_get(node, "dis", node2, origin=origin, requested=.FALSE., &
-                stat=stat)
-
-  obj%dis = 0.0_DFP
-  isok = ASSOCIATED(node2)
-
-  IF (isok) THEN
-
-    CALL GetValue(table=node2, key="U1", VALUE=obj%dis(1), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="V1", VALUE=obj%dis(2), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="A1", VALUE=obj%dis(3), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="U2", VALUE=obj%dis(4), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-  END IF
-
-  node2 => NULL()
-
-  CALL toml_get(node, "vel", node2, origin=origin, requested=.FALSE., &
-                stat=stat)
-
-  obj%vel = 0.0_DFP
-  isok = ASSOCIATED(node2)
-
-  IF (isok) THEN
-    CALL GetValue(table=node2, key="U1", VALUE=obj%vel(1), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="V1", VALUE=obj%vel(2), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="A1", VALUE=obj%vel(3), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="U2", VALUE=obj%vel(4), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-  END IF
-
-  node2 => NULL()
-  CALL toml_get(node, "acc", node2, origin=origin, requested=.FALSE., &
-                stat=stat)
-
-  obj%acc = 0.0_DFP
-  isok = ASSOCIATED(node2)
-
-  IF (isok) THEN
-    CALL GetValue(table=node2, key="U1", VALUE=obj%acc(1), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="V1", VALUE=obj%acc(2), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="A1", VALUE=obj%acc(3), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-
-    CALL GetValue(table=node2, key="U2", VALUE=obj%acc(4), &
-                  default_value=0.0_DFP, origin=origin, stat=stat)
-  END IF
-
-  CALL obj%MakeZeros()
-
-  NULLIFY (node, node2)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END SUBROUTINE UserDefinedMethodImportFromToml
-
-!----------------------------------------------------------------------------
 !                                                             ImportFromToml
 !----------------------------------------------------------------------------
 
@@ -377,6 +274,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 INTEGER(I4B) :: origin, stat
 LOGICAL(LGT) :: found
 TYPE(String) :: astr
+REAL(DFP) :: dt
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -407,15 +305,36 @@ CASE ("HHTA")
   CALL HHTAlphaMethodImportFromToml(obj=obj, table=table, astr=astr, &
                                     origin=origin, stat=stat)
 
+CASE ("GENA", "GENE")
+  CALL GeneralizedAlphaMethodImportFromToml(obj=obj, table=table, &
+                                            astr=astr, origin=origin, &
+                                            stat=stat)
+
 CASE ("COLL")
   CALL CollocationMethodImportFromToml(obj=obj, table=table, astr=astr, &
                                        origin=origin, stat=stat)
 
 CASE DEFAULT
-  CALL UserDefinedMethodImportFromToml(obj=obj, table=table, astr=astr, &
-                                       origin=origin, stat=stat)
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    'unknown methodName '//astr%chars()// &
+                    ', it should be NEWM, TRAP, HHTA, GENA or COLL')
+#endif
 
 END SELECT
+
+CALL GetValue(table=table, key="form", VALUE=astr, &
+              default_value="U", origin=origin, stat=stat)
+CALL obj%SetForm(astr%chars())
+
+CALL GetValue(table=table, key="forceEvaluation", VALUE=astr, &
+              default_value="interpolate", origin=origin, stat=stat)
+CALL obj%SetForceEvaluation(astr%chars())
+
+CALL GetValue(table=table, key="dt", VALUE=dt, &
+              default_value=math%zero, origin=origin, stat=stat, &
+              isfound=found)
+IF (found) CALL obj%Initiate(dt=dt)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -445,7 +364,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
-CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
+CALL toml_get(table, tomlName, node, origin=origin, requested=math%no, &
               stat=stat)
 
 #ifdef DEBUG_VER
