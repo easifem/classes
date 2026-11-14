@@ -61,7 +61,7 @@ LOGICAL(LGT) :: isok
 #endif
 
 LOGICAL(LGT) :: bool1, bool2
-INTEGER(I4B) :: ierr, ii, s(3), indx(obj%timeCompo)
+INTEGER(I4B) :: s(3), indx(obj%timeCompo)
 
 bool1 = PRESENT(globalNode)
 bool2 = PRESENT(timeCompo)
