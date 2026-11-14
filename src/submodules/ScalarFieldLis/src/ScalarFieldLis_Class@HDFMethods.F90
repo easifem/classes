@@ -89,6 +89,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
 ! Destroy the LIS vector of obj, if any
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 IF (ierr .EQ. LIS_FALSE) THEN

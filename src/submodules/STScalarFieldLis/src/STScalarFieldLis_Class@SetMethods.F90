@@ -392,8 +392,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 SELECT TYPE (VALUE)
 
 TYPE IS (STScalarField_)
+  ! copy all values of the native field into the LIS vector
   realvec => VALUE%GetPointer()
-  CALL obj%Set(VALUE=realvec)
+  CALL obj%SetMultiple(istart=1, iend=obj%SIZE(), stride=1, &
+                       VALUE=realvec)
   realvec => NULL()
 
 TYPE is (STScalarFieldLis_)

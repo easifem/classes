@@ -17,11 +17,14 @@
 
 SUBMODULE(STScalarFieldLis_Class) HDFMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
-USE String_Class, ONLY: String
+USE EngineOpt_Class, ONLY: TypeEngineOpt
 IMPLICIT NONE
 
 #include "lisf.h"
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "STScalarFieldLis_Class@HDFMethods.F90"
+#endif
 
 CONTAINS
 
@@ -53,7 +56,11 @@ CALL AssertError1(isok, myName, &
 
 realvec => AbstractNodeFieldGetPointer(obj)
 CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
+
 NULLIFY (realvec)
 CALL obj%STScalarField_%Export(hdf5=hdf5, group=group)
 
@@ -72,72 +79,57 @@ MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 #endif
 
-TYPE(String) :: dsetname
-LOGICAL(LGT) :: bools(3), isok
-REAL(DFP), POINTER :: realvec(:)
 INTEGER(I4B) :: ierr
+REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractNodeFieldImport(obj=obj, hdf5=hdf5, group=group, &
-                             fedof=fedof, fedofs=fedofs)
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
 
-! timeCompo
-dsetname = TRIM(group)//"/IntR0/timeCompo"
+! Destroy the LIS vector of obj, if any
+CALL lis_vector_is_null(obj%lis_ptr, ierr)
+IF (ierr .EQ. LIS_FALSE) THEN
+  CALL lis_vector_destroy(obj%lis_ptr, ierr)
 #ifdef DEBUG_VER
-isok = hdf5%pathExists(dsetname%chars())
-CALL AssertError1(isok, myName, &
-                  "The dataset timeCompo should be present")
+  CALL CHKERR(ierr)
 #endif
+END IF
 
-CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
+! Read the node field data, timeCompo and idofs
+CALL obj%STScalarField_%IMPORT( &
+  hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
+  timefedof=timefedof, timefedofs=timefedofs, geofedof=geofedof, &
+  geofedofs=geofedofs)
 
-dsetname = TRIM(group)//"/tSize"
-bools(1) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/dof"
-bools(2) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/realVec"
-bools(3) = hdf5%pathExists(dsetname%chars())
+! The file may come from a native field
+obj%engine = TypeEngineOpt%lis_omp
 
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-! isok = ALL(bools)
-! IF (.NOT. isok) THEN
-!   CALL param%Initiate()
-!   CALL SetSTScalarFieldParam( &
-!     param=param, name=obj%name%chars(), fieldType=obj%fieldType, &
-!     timeCompo=obj%timeCompo, engine=obj%engine%chars())
-!
-!   obj%isInit = .FALSE.
-!   CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-!   CALL param%DEALLOCATE()
-!   CALL callFinish
-!   RETURN
-! END IF
-
-! till now we have read tSize, dof, and realVec
-! but we have not created lis vector
-! so we create lis_vector
-! then we update values from realvec to lis_vector using scatter methods
-
+! Create the LIS vector and copy realVec into it
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 CALL lis_vector_set_size(obj%lis_ptr, obj%local_n, obj%global_n, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 CALL lis_vector_get_range(obj%lis_ptr, obj%is, obj%ie, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 realvec => AbstractNodeFieldGetPointer(obj)
 CALL lis_vector_scatter(realvec, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
 CALL CHKERR(ierr)
+#endif
 
 NULLIFY (realvec)
 
