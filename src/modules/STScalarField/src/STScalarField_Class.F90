@@ -90,9 +90,6 @@ TYPE, EXTENDS(AbstractNodeField_) :: STScalarField_
   INTEGER(I4B), ALLOCATABLE :: idofs(:)
   !! DOF numbers of the time components, idofs = [1, ..., timeCompo]
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copying another node field
@@ -103,7 +100,6 @@ CONTAINS
   FINAL :: obj_Final
   !! Finalizer
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of STScalarField_
@@ -112,107 +108,101 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export the content of STScalarField_ to an HDF5 file
 
-  ! SET:
   ! @SetMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set1 => obj_Set1
   !! Set all time components of one node
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set2 => obj_Set2
   !! Set time component a of all nodes to VALUE(a)
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set3 => obj_Set3
   !! Set one time component of all nodes to one value
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set4 => obj_Set4
   !! Set all entries from a rank-2 array
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set5 => obj_Set5
   !! Set one time component of all nodes from a vector
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set6 => obj_Set6
   !! Set one time component from a time component of another field
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set7 => obj_Set7
   !! Set all time components of the selected nodes
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set8 => obj_Set8
   !! Set the selected nodes from a rank-2 array
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set9 => obj_Set9
   !! Set one time component of the selected nodes
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set10 => obj_Set10
   !! Set one time component of one node
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set11 => obj_Set11
   !! Set the selected nodes from an FEVariable
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all entries to one value
   PROCEDURE, PUBLIC, PASS(obj) :: Set13 => obj_Set13
   !! Copy another space-time scalar field
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13
   !! Generic Set Method
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
-    SetByFunction => obj_SetByFunction
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) ::  SetByFunction => &
+    obj_SetByFunction
   !! Set by user function
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
-    SetFromScalarField => obj_SetFromScalarField
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetFromScalarField => &
+    obj_SetFromScalarField
   !! Set one time component from a scalar field
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: &
-    SetToScalarField => obj_SetToScalarField
+  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetToScalarField => &
+    obj_SetToScalarField
   !! Set a scalar field from one time component
 
-  ! GET:
   ! @GetMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get all time components of one node, or all nodes of one time
   !! component
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get2 => obj_Get2
   !! Get all values in a rank-2 array
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get3 => obj_Get3
   !! Get the values of the selected nodes in a rank-2 array
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get4 => obj_Get4
   !! Get one time component of the selected nodes
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get5 => obj_Get5
   !! Get single entry; call GetSingle method
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Get6 => obj_Get6
   !! Get the values of the selected nodes in an FEVariable
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, Get6
   !! Generic Get method
   PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get Finite Element variable
 
-  ! SET:
   ! @DirichletBCMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
-    ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC1 => &
+    obj_ApplyDirichletBC1
   !! Apply one Dirichlet boundary condition
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
-    ApplyDirichletBC2 => obj_ApplyDirichletBC2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC2 => &
+    obj_ApplyDirichletBC2
   !! Apply a vector of Dirichlet boundary conditions
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
-    ApplyDirichletBC3 => obj_ApplyDirichletBC3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyDirichletBC3 => &
+    obj_ApplyDirichletBC3
   !! Apply the Dirichlet boundary conditions of the field
   GENERIC, PUBLIC :: ApplyDirichletBC => ApplyDirichletBC1, &
     ApplyDirichletBC2, ApplyDirichletBC3
   !! Apply Dirichlet boundary conditions
 
-  ! SET:
   ! @BodySourceMethods
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
-    ApplyBodySource1 => obj_ApplyBodySource1
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource1 => &
+    obj_ApplyBodySource1
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
-    ApplyBodySource2 => obj_ApplyBodySource2
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource2 => &
+    obj_ApplyBodySource2
   !! Add contribution of body source to the scalar field
   !! body source is given external scalar field
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: &
-    ApplyBodySource3 => obj_ApplyBodySource3
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ApplyBodySource3 => &
+    obj_ApplyBodySource3
   !! Add contribution of body source to the scalar field
   !! body source is given as user function
   GENERIC, PUBLIC :: ApplyBodySource => ApplyBodySource1, &
     ApplyBodySource2, ApplyBodySource3
   !! Generic method for setting body source
 
-  ! SET:
   ! @SurfaceNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplySurfaceNeumannBC => &
     obj_ApplySurfaceNeumannBC
   !! Apply Surface neumann boundary condition
 
-  ! SET:
   ! @PointNBCMethods
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: ApplyPointNeumannBC => &
     obj_ApplyPointNeumannBC
@@ -1924,78 +1914,6 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2021-06-25
-! summary: Get one time component in a node field (commented out)
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Get7(obj, VALUE, timeCompo)
-!     CLASS(STScalarField_), INTENT(IN) :: obj
-!     !! space-time scalar field
-!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-!     !! returned value in AbstractNodeField format
-!     INTEGER(I4B), INTENT(IN) :: timeCompo
-!     !! time component, it should be less than obj%timeCompo
-!   END SUBROUTINE obj_Get7
-! END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                             Get@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-03-29
-! summary: Get values
-
-! INTERFACE
-!   MODULE SUBROUTINE obj_Get8( &
-!     obj, ivar, idof, VALUE, ivar_value, idof_value)
-!     CLASS(STScalarField_), INTENT(IN) :: obj
-!     CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
-!     INTEGER(I4B), INTENT(IN) :: ivar
-!     !! physical variable in obj
-!     INTEGER(I4B), INTENT(IN) :: idof
-!     !! local degree of freedom in obj
-!     INTEGER(I4B), INTENT(IN) :: ivar_value
-!     !! physical variable in VALUE
-!     INTEGER(I4B), INTENT(IN) :: idof_value
-!     !! local degree of freedom in VALUE
-!   END SUBROUTINE obj_Get8
-! END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                   GetTimeCompo@GetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-10-29
-! summary: Returns timeCompo
-!
-! This function is not bound to the type and its generic name
-! STScalarFieldGetTimeCompo is not public; use the component timeCompo
-! or GetTimeCompo of AbstractNodeField_ (see
-! bugs-report/STScalarField_bug_report.md, L-01).
-!
-! Returns:
-!   ans : INTEGER(I4B) - obj%timeCompo
-
-INTERFACE
-  MODULE FUNCTION obj_GetTimeCompo(obj) RESULT(ans)
-    CLASS(STScalarField_), INTENT(IN) :: obj
-    !! space-time scalar field
-    INTEGER(I4B) :: ans
-    !! number of time components
-  END FUNCTION obj_GetTimeCompo
-END INTERFACE
-
-INTERFACE STScalarFieldGetTimeCompo
-  MODULE PROCEDURE obj_GetTimeCompo
-END INTERFACE STScalarFieldGetTimeCompo
-
-!----------------------------------------------------------------------------
 !                                                   GetFEVariable@GetMethods
 !----------------------------------------------------------------------------
 
@@ -2032,10 +1950,6 @@ INTERFACE
     !! Physical component
   END SUBROUTINE obj_GetFeVariable
 END INTERFACE
-
-INTERFACE STScalarFieldGetFEVariable
-  MODULE PROCEDURE obj_GetFeVariable
-END INTERFACE STScalarFieldGetFEVariable
 
 !----------------------------------------------------------------------------
 !                                               ApplyDirichletBC@DBCMethods
