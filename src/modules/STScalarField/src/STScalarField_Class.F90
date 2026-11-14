@@ -2261,7 +2261,11 @@ END INTERFACE
 !- bodySource has the same fedof and timefedof as obj (the pointers
 !  are associated with the same targets): the nodal values of
 !  bodySource on each element are used directly,
-!- otherwise: not implemented yet, an error is raised.
+!- otherwise (another fedof or timefedof, for example another order):
+!  the shape functions of bodySource are evaluated at the quadrature
+!  points of obj and f is interpolated there.
+!
+! See ApplyBodySource_test_4.F90 for the second case.
 !
 ! Examples
 !

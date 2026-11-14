@@ -456,28 +456,178 @@ END SUBROUTINE ApplyBodySource2_SameFEDOF
 ! date: 2026-11-14
 ! summary: ApplyBodySource2 when bodySource has another fedof or timefedof
 !
-! Not implemented yet: raises an error. bodySource should be
-! interpolated at the quadrature points of obj with its own shape
-! functions (same mesh, element iel of obj is element iel of
-! bodySource).
+! obj and bodySource are on the same mesh, so element iel of obj is
+! element iel of bodySource. On each element the space shape functions
+! of bodySource (N^B) are evaluated at the quadrature points of obj
+! (with the geometry of obj), and the time shape functions of
+! bodySource (T^B) at the time quadrature points of obj. The body
+! source at the quadrature points,
+!
+!   f(ips, ipt) = sum_J sum_b N^B_J(ips) f(J, b) T^B_b(ipt),
+!
+! is used as a quadrature space-time FEVariable in STForceVector_, as
+! in [[obj_ApplyBodySource1]].
 
 SUBROUTINE ApplyBodySource2_DiffFEDOF(obj, bodySource, scale, times)
   CLASS(STScalarField_), INTENT(INOUT) :: obj
   !! space-time scalar field (right hand side)
   CLASS(STScalarField_), INTENT(IN) :: bodySource
-  !! body source with another fedof or timefedof
+  !! body source with another fedof or timefedof, same mesh as obj
   REAL(DFP), INTENT(IN) :: scale
   !! scale for body source
   REAL(DFP), INTENT(IN) :: times(:)
   !! times of the time slab
 
-  CHARACTER(*), PARAMETER :: myName = &
-                             "STScalarField_Class@BodySourceMethods.F90::ApplyBodySource2_DiffFEDOF()"
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ApplyBodySource2_DiffFEDOF()"
+#endif
 
-  ! raised also in release mode, the result would be wrong otherwise
-  CALL e%RaiseError(myName//' - '// &
-                    '[WIP ERROR] :: bodySource with a fedof or timefedof '// &
-                    'different from obj is not implemented yet')
+  INTEGER(I4B) :: iel, tElements, maxNNS, maxNNT, maxNNSGeo, maxNips, &
+                  maxNipt, maxNNSB, maxNNTB, tcellCon, tcellConB, xij_i, &
+                  xij_j, forceVec_i, forceVec_j, nodal_i, nodal_j, ips, &
+                  ipt, jj, bb
+  INTEGER(I4B), ALLOCATABLE :: cellcon(:), cellconB(:)
+  REAL(DFP) :: fval
+  REAL(DFP), ALLOCATABLE :: xij(:, :), forceVec(:, :), nodalVal(:, :), &
+                            forceVecQuad(:, :)
+  TYPE(QuadraturePoint_) :: quad, timeQuad
+  TYPE(ElemshapeData_) :: elemsd, geoelemsd, timeelemsd, timegeoelemsd, &
+                          elemsdB, geoelemsdB, timeelemsdB, timegeoelemsdB
+  TYPE(FEVariable_) :: forceVar
+  CLASS(AbstractFE_), POINTER :: feptr, geofeptr, feptrB
+  CLASS(AbstractOneDimFE_), POINTER :: timefeptr, timefeptrB
+  CLASS(AbstractMesh_), POINTER :: mesh
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  mesh => obj%fedof%GetMeshPointer()
+  tElements = mesh%GetTotalElements()
+
+  ! time shape data of obj, and of bodySource at the time quadrature
+  ! points of obj
+  CALL obj%timefedof%SetFE()
+  timefeptr => obj%timefedof%GetFEPointer()
+  CALL timefeptr%GetGlobalTimeElemShapeData( &
+    elemsd=timeelemsd, geoelemsd=timegeoelemsd, quad=timeQuad, &
+    times=times)
+
+  CALL bodySource%timefedof%SetFE()
+  timefeptrB => bodySource%timefedof%GetFEPointer()
+  CALL timefeptrB%GetGlobalTimeElemShapeData( &
+    elemsd=timeelemsdB, geoelemsd=timegeoelemsdB, quad=timeQuad, &
+    times=times, doNotInitQuad=math%yes)
+
+  maxNNSGeo = obj%geofedof%GetMaxTotalConnectivity()
+  maxNNS = obj%fedof%GetMaxTotalConnectivity()
+  maxNNT = obj%timefedof%GetMaxTotalConnectivity()
+  maxNips = obj%fedof%GetMaxTotalQuadraturePoints()
+  maxNipt = obj%timefedof%GetMaxTotalQuadraturePoints()
+  maxNNSB = bodySource%fedof%GetMaxTotalConnectivity()
+  maxNNTB = bodySource%timefedof%GetMaxTotalConnectivity()
+
+  CALL Reallocate(xij, 3, maxNNSGeo)
+  CALL Reallocate(cellcon, maxNNS)
+  CALL Reallocate(cellconB, maxNNSB)
+  CALL Reallocate(forceVec, maxNNS, maxNNT)
+  CALL Reallocate(nodalVal, maxNNSB, maxNNTB)
+  CALL Reallocate(forceVecQuad, maxNips, maxNipt)
+
+  forceVar = QuadratureVariable( &
+             nrow=maxNips, ncol=maxNipt, RANK=TypeFEVariableScalar, &
+             vartype=TypeFEVariableSpaceTime)
+
+  DO iel = 1, tElements
+
+    CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+    CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
+    CALL bodySource%fedof%SetFE(globalElement=iel, islocal=math%yes)
+
+    feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+    geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, &
+                                          islocal=math%yes)
+    feptrB => bodySource%fedof%GetFEPointer(globalElement=iel, &
+                                            islocal=math%yes)
+
+    CALL obj%fedof%GetConnectivity_( &
+      globalElement=iel, islocal=math%yes, ans=cellcon, tsize=tcellCon, &
+      opt="A")
+
+    CALL bodySource%fedof%GetConnectivity_( &
+      globalElement=iel, islocal=math%yes, ans=cellconB, &
+      tsize=tcellConB, opt="A")
+
+    CALL mesh%GetNodeCoord( &
+      nodeCoord=xij, nrow=xij_i, ncol=xij_j, islocal=math%yes, &
+      globalElement=iel)
+
+    CALL feptr%GetGlobalElemShapeData2( &
+      geofeptr=geofeptr, elemsd=elemsd, geoelemsd=geoelemsd, xij=xij, &
+      quad=quad)
+
+    ! shape functions of bodySource at the quadrature points of obj
+    CALL feptrB%GetGlobalElemShapeData2( &
+      geofeptr=geofeptr, elemsd=elemsdB, geoelemsd=geoelemsdB, xij=xij, &
+      quad=quad, doNotInitQuad=math%yes)
+
+    ! nodalVal(J, b): value of bodySource at space DOF cellconB(J) and
+    ! time component b
+    CALL bodySource%Get( &
+      VALUE=nodalVal, nrow=nodal_i, ncol=nodal_j, &
+      globalNode=cellconB(1:tcellConB), islocal=math%yes, &
+      storageFMT=TypeFieldOpt%storageFormatDOF)
+
+    DO ipt = 1, timeelemsd%nips
+      DO ips = 1, elemsd%nips
+        fval = 0.0_DFP
+        DO bb = 1, nodal_j
+          DO jj = 1, nodal_i
+            fval = fval + elemsdB%N(jj, ips) * nodalVal(jj, bb) &
+                   *timeelemsdB%N(bb, ipt)
+          END DO
+        END DO
+        forceVecQuad(ips, ipt) = fval
+      END DO
+    END DO
+
+    CALL FEVariable_Set( &
+      obj=forceVar, val=forceVecQuad(1:elemsd%nips, 1:timeelemsd%nips), &
+      RANK=TypeFEVariableScalar, varType=TypeFEVariableSpaceTime, &
+      scale=1.0_DFP, addContribution=math%no)
+
+    CALL STForceVector_( &
+      testSpace=elemsd, testTime=timeelemsd, c=forceVar, &
+      crank=TypeFEVariableScalar, ans=forceVec, nrow=forceVec_i, &
+      ncol=forceVec_j)
+
+    CALL obj%Set( &
+      globalNode=cellcon(1:tcellCon), islocal=math%yes, scale=scale, &
+      addContribution=math%yes, &
+      VALUE=forceVec(1:forceVec_i, 1:forceVec_j), &
+      storageFMT=TypeFieldOpt%storageFormatDOF)
+
+  END DO
+
+  DEALLOCATE (cellcon, cellconB, xij, forceVec, nodalVal, forceVecQuad)
+  NULLIFY (feptr, geofeptr, feptrB, timefeptr, timefeptrB, mesh)
+  CALL QuadraturePoint_Deallocate(quad)
+  CALL QuadraturePoint_Deallocate(timeQuad)
+  CALL ElemshapeData_Deallocate(elemsd)
+  CALL ElemshapeData_Deallocate(geoelemsd)
+  CALL ElemshapeData_Deallocate(timeelemsd)
+  CALL ElemshapeData_Deallocate(timegeoelemsd)
+  CALL ElemshapeData_Deallocate(elemsdB)
+  CALL ElemshapeData_Deallocate(geoelemsdB)
+  CALL ElemshapeData_Deallocate(timeelemsdB)
+  CALL ElemshapeData_Deallocate(timegeoelemsdB)
+  CALL FEVariable_Deallocate(forceVar)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ApplyBodySource2_DiffFEDOF
 
 !----------------------------------------------------------------------------
