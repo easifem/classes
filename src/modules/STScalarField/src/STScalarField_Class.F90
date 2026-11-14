@@ -138,7 +138,7 @@ CONTAINS
   !! Set the selected nodes from an FEVariable
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all entries to one value
-  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
+  PROCEDURE, PUBLIC, PASS(obj) :: Set13 => obj_Set13
   !! Copy another space-time scalar field
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13

@@ -56,9 +56,7 @@ PUBLIC :: STScalarFieldLisPointer_
 !- SetSingle, SetAll, SetMultiple, GetSingle, GetMultiple and the BLAS
 !  methods are not overridden, so the values are stored in realVec,
 !- Display and Export gather the values from the LIS vector, which
-!  does not exist; Import is not available,
-!- the Set13 binding is private and does not override the Set13 of
-!  STScalarField_.
+!  does not exist; Import is not available.
 !
 ! See bugs-report/STScalarFieldLis_bug_report.md. Use STScalarField_
 ! with the native engine until the class is implemented.
@@ -87,9 +85,9 @@ CONTAINS
 
   ! SET:
   ! @SetMethods
-  PROCEDURE, PASS(obj) :: Set13 => obj_Set13
-  !! Copy another space-time scalar field (does not override the
-  !! private Set13 of STScalarField_)
+  PROCEDURE, PUBLIC, PASS(obj) :: Set13 => obj_Set13
+  !! Copy another space-time scalar field (overrides Set13 of
+  !! STScalarField_)
 
   ! GET:
   ! @GetMethods
@@ -266,9 +264,7 @@ END INTERFACE
 ! For a STScalarFieldLis_ VALUE the LIS vector is copied
 ! (lis_vector_copy). For a native STScalarField_ VALUE the routine
 ! calls obj%Set(VALUE=realvec), which is Set2 of STScalarField_ (one
-! value for each time component), not a copy of all values. The
-! binding is private and does not override the Set13 of STScalarField_,
-! so Set(VALUE=field) does not call this routine (see
+! value for each time component), not a copy of all values (see
 ! bugs-report/STScalarFieldLis_bug_report.md, M-01).
 
 INTERFACE
