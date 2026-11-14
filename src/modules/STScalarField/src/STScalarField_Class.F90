@@ -1486,13 +1486,13 @@ END INTERFACE
 ! coordinates. When times is present, time component a uses
 ! t = times(a), SIZE(times) = obj%timeCompo; otherwise t = 0 and the
 ! same value is used for all time components. The values are set at
-! the node number (Set1), so the routine is meant for order 1
-! Lagrange interpolation in space.
+! the node number (Set1), that is, the mesh node number is used as the
+! space DOF number.
 !
-! In debug mode the routine currently raises an error for every
-! Lagrange field, because it compares the interpolation name with "Lag"
-! while FEDOF stores "LAGR" (see bugs-report/STScalarField_bug_report.md,
-! H-02).
+! Only order 1 Lagrange interpolation in space is supported. In debug
+! mode a non-Lagrange interpolation raises an error. For a Lagrange
+! space of order greater than 1 the DOFs that are not mesh nodes are
+! not set; this is not checked.
 !
 ! Examples
 !

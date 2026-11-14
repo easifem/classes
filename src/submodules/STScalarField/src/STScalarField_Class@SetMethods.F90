@@ -771,7 +771,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 baseInterpolation = obj%fedof%GetBaseInterpolation()
 
 #ifdef DEBUG_VER
-isok = baseInterpolation(1:3) .EQ. "Lag"
+isok = baseInterpolation .EQ. "LAGR"
 CALL AssertError1(isok, myName, &
                   'This routine is only valid for Lagrange interpolation.')
 #endif
