@@ -18,6 +18,7 @@
 ! date: 2024-05-31
 ! summary: STScalar field data type is defined
 
+#ifndef USE_LIS
 MODULE STScalarFieldLis_Class
 USE STScalarField_Class, ONLY: STScalarField_
 IMPLICIT NONE
@@ -26,23 +27,12 @@ PRIVATE
 PUBLIC :: STScalarFieldLis_
 PUBLIC :: STScalarFieldLisPointer_
 
-!----------------------------------------------------------------------------
-!                                                         STScalarFieldLis_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date:  2023-03-23
-! summary: STScalar field for LIS_OMP engine
-
 TYPE, EXTENDS(STScalarField_) :: STScalarFieldLis_
 END TYPE STScalarFieldLis_
-
-!----------------------------------------------------------------------------
-!                                                   STScalarFieldLisPointer_
-!----------------------------------------------------------------------------
 
 TYPE :: STScalarFieldLisPointer_
   CLASS(STScalarFieldLis_), POINTER :: ptr => NULL()
 END TYPE STScalarFieldLisPointer_
 
 END MODULE STScalarFieldLis_Class
+#endif
