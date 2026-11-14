@@ -83,7 +83,7 @@ IF (bool1) THEN
 END IF
 
 IF (bool2) THEN
-  isok = SIZE(VALUE) .GE. (obj%dof.tNodes.1_I4B)
+  isok = SIZE(VALUE) .GE. (obj%dof .tNodes. 1_I4B)
   CALL AssertError1(isok, myName, "Size of value is not enough")
 END IF
 
@@ -101,7 +101,7 @@ END IF
 !> Get all values of timeCompo
 ! IF (bool2) THEN
 
-tsize = obj%dof.tNodes.1_I4B
+tsize = obj%dof .tNodes. 1_I4B
 
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
@@ -129,11 +129,11 @@ CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
 IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%timeCompo
 
 ELSE
-  ncol = obj%dof.tNodes.1
+  ncol = obj%dof .tNodes. 1
   nrow = obj%timeCompo
 END IF
 
@@ -152,10 +152,10 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
 END IF
 
 IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%timeCompo
 
-  !$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
+!$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
   DO jj = 1, ncol
     s = GetNodeLoc(obj=obj%dof, idof=jj)
 
@@ -163,13 +163,13 @@ IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
                          VALUE=VALUE(:, jj), tsize=mynrow)
 
   END DO
-  !$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
   RETURN
 END IF
 
 nrow = obj%timeCompo
-ncol = obj%dof.tNodes.1
+ncol = obj%dof .tNodes. 1
 
 !$OMP PARALLEL DO PRIVATE(jj, indx, mynrow)
 DO jj = 1, ncol
@@ -192,7 +192,7 @@ LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
 INTEGER(I4B) :: jj, mynrow
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
@@ -226,12 +226,12 @@ IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   nrow = SIZE(globalNode)
   ncol = obj%timeCompo
 
-  !$OMP PARALLEL DO PRIVATE(jj, mynrow)
+!$OMP PARALLEL DO PRIVATE(jj, mynrow)
   DO jj = 1, ncol
     CALL obj%Get(globalNode=globalNode, islocal=islocal, VALUE=VALUE(:, jj), &
                  tsize=mynrow, timeCompo=jj)
   END DO
-  !$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
   RETURN
 END IF
@@ -255,7 +255,7 @@ END PROCEDURE obj_Get3
 MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
 
@@ -288,7 +288,7 @@ MODULE PROCEDURE obj_Get5
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
 INTEGER(I4B) :: indx
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, idof=timeCompo)
 CALL obj%GetSingle(indx=indx, VALUE=VALUE)

@@ -18,7 +18,6 @@
 SUBMODULE(STScalarField_Class) SetMethods
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ArangeUtility, ONLY: Arange
-USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpaceTime
 USE Display_Method, ONLY: tostring
@@ -93,7 +92,7 @@ isok = obj%timeCompo .LE. TEMP_INTVEC_LEN
 CALL AssertError1(isok, myName, "size of TEMP_INTVEC is not enough")
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
                tsize=tsize)
@@ -462,7 +461,7 @@ CALL AssertError2(SIZE(VALUE), SIZE(globalNode), &
 
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 tsize = SIZE(globalNode)
 
@@ -524,7 +523,7 @@ isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, 'Not callable for constant STScalar field')
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, idof=timeCompo, nodenum=globalNode)
 
@@ -561,7 +560,7 @@ CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 SELECT CASE (VALUE%vartype)
 

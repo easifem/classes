@@ -19,7 +19,6 @@ SUBMODULE(STScalarField_Class) PointNBCMethods
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
-USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
 USE MassMatrix_Method, ONLY: MassMatrix_
 USE NeumannBC_Class, ONLY: NeumannBC_
