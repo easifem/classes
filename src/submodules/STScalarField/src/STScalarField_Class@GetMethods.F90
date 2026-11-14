@@ -257,7 +257,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 
 #include "./include/localNodeError.F90"
 
-IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
 
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, ivar=1, &
                  idof=timeCompo, VALUE=VALUE, tsize=tsize, &
