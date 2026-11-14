@@ -1571,7 +1571,7 @@ INTERFACE
     !! node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of obj
-    CLASS(AbstractNodeField_), TARGET, INTENT(IN) :: VALUE
+    CLASS(AbstractNodeField_), TARGET, INTENT(INOUT) :: VALUE
     !! node field from which the values are taken
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of VALUE

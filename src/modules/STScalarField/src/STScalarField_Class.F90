@@ -1180,7 +1180,7 @@ INTERFACE
     !! space-time scalar field, obj(objTimeCompo) = value(valueTimeCompo)
     INTEGER(I4B), INTENT(IN) :: objTimeCompo
     !! time component of obj to be set, 1 <= objTimeCompo <= obj%timeCompo
-    CLASS(STScalarField_), INTENT(IN) :: VALUE
+    CLASS(STScalarField_), INTENT(INOUT) :: VALUE
     !! space-time scalar field with the same space DOFs as obj
     INTEGER(I4B), INTENT(IN) :: valueTimeCompo
     !! time component of value, 1 <= valueTimeCompo <= value%timeCompo
@@ -1499,7 +1499,7 @@ INTERFACE
     !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of obj to be set
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
+    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
     !! scalar field with the same space FEDOF as obj
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale, default 1
@@ -1537,7 +1537,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_SetToScalarField( &
     obj, timeCompo, VALUE, scale, addContribution)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of obj to be copied
