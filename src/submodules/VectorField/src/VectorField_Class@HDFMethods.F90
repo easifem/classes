@@ -16,10 +16,10 @@
 !
 
 SUBMODULE(VectorField_Class) HDFMethods
-USE Display_Method, ONLY: Display
-USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
+USE Display_Method, ONLY: Display
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -45,6 +45,10 @@ TYPE(String) :: dsetname
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
 
 CALL AbstractNodeFieldImport( &
   obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
