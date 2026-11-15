@@ -9,7 +9,7 @@
   "source_dirs": [
     "src/**",
     "../base/src/**",
-    "/home/easifem/.easifem/easifem/src/tomlf/src/**"
+    "~/.easifem/easifem/src/tomlf/src/**"
   ],
   "include_dirs": ["src/submodules/include"],
   "pp_defs": {
