@@ -16,43 +16,62 @@
 !
 
 SUBMODULE(STVectorFieldLis_Class) IOMethods
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer, &
-                                   AbstractNodeFieldDisplay
-
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 
 #include "lisf.h"
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "STVectorFieldLis_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                    Display
+!                                                                     Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL Display(msg, unitno=unitno)
+
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
-IF (ierr .NE. LIS_FALSE) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          'STVectorFieldLis_::obj is NOT AVAILABLE')
-  RETURN
+isok = ierr .EQ. LIS_FALSE
+CALL Display(isok, "obj%lis_ptr associated: ", unitno=unitno)
+
+IF (isok) THEN
+  realvec => AbstractNodeFieldGetPointer(obj)
+  CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+#endif
+  NULLIFY (realvec)
+  CALL obj%STVectorField_%Display(msg=msg, unitno=unitno)
 END IF
 
-realvec => AbstractNodeFieldGetPointer(obj)
-CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
-CALL CHKERR(ierr)
-
-NULLIFY (realvec)
-CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
-
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods
