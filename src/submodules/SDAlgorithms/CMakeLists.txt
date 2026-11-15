@@ -22,7 +22,6 @@ target_sources(
         ${src_path}/SDAlgorithm1_Class@ConstructorMethods.F90
         ${src_path}/SDAlgorithm1_Class@IOMethods.F90
         ${src_path}/SDAlgorithm1_Class@TomlMethods.F90
-        ${src_path}/SDAlgorithm2_Class@ConstructorMethods.F90
-        ${src_path}/SDAlgorithm2_Class@IOMethods.F90
+        ${src_path}/SDAlgorithm2_Class@Methods.F90
         ${src_path}/SDAlgorithm2_Class@TomlMethods.F90
 )

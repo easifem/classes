@@ -1,0 +1,17 @@
+[timeIntegration]
+methodName = "HHTA"
+form = "A"
+forceEvaluation = "evaluate"
+dt = 0.1
+[timeIntegration.HHTA]
+alpha = -0.1
+
+[timeIntegration2]
+methodName = "NEWM"
+
+[timeIntegration3]
+methodName = "GeneralizedAlpha"
+dt = 0.1
+[timeIntegration3.GeneralizedAlpha]
+rhoInf = 0.5
+alphaF = 0.4
