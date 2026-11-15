@@ -20,12 +20,15 @@ USE BaseType, ONLY: varopt => TypeFEVariableOpt
 USE GlobalData, ONLY: CHAR_LF
 USE Display_Method, ONLY: ToString
 USE ReallocateUtility, ONLY: Reallocate
+#ifdef USE_LUA
+USE LuaInterface, ONLY: lua_close
+#endif
 USE EquationParser_Class, ONLY: EquationParser_Pointer
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-                           "UserFunction_Class@SetMethods.F90"
+  "UserFunction_Class@SetMethods.F90"
 #endif
 
 CONTAINS
@@ -36,19 +39,19 @@ CONTAINS
 
 MODULE PROCEDURE obj_SetName
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetName()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-obj%name = name
+  obj%name = NAME
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetName
 
@@ -58,26 +61,26 @@ END PROCEDURE obj_SetName
 
 MODULE PROCEDURE obj_SetScalarFunctionPointer
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetScalarFunctionPointer()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetScalarFunctionPointer()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError2(obj%returnType, varopt%scalar, myName, &
-                  'a=obj%returnType and b=scalar')
+  CALL AssertError2(obj%returnType, varopt%scalar, myName, &
+                    'a=obj%returnType and b=scalar')
 #endif
 
-obj%isExternalFunc = math%yes
-obj%scalarFunction => func
-obj%engineID = funcopt%externalEngine
+  obj%isExternalFunc = math%yes
+  obj%scalarFunction => func
+  obj%engineID = funcopt%externalEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetScalarFunctionPointer
 
@@ -87,26 +90,26 @@ END PROCEDURE obj_SetScalarFunctionPointer
 
 MODULE PROCEDURE obj_SetVectorFunctionPointer
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetVectorFunctionPointer()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetVectorFunctionPointer()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError2(obj%returnType, varopt%vector, myName, &
-                  'a=obj%returnType and b=vector')
+  CALL AssertError2(obj%returnType, varopt%vector, myName, &
+                    'a=obj%returnType and b=vector')
 #endif
 
-obj%isExternalFunc = math%yes
-obj%vectorFunction => func
-obj%engineID = funcopt%externalEngine
+  obj%isExternalFunc = math%yes
+  obj%vectorFunction => func
+  obj%engineID = funcopt%externalEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetVectorFunctionPointer
 
@@ -116,26 +119,26 @@ END PROCEDURE obj_SetVectorFunctionPointer
 
 MODULE PROCEDURE obj_SetMatrixFunctionPointer
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixFunctionPointer()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixFunctionPointer()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError2(obj%returnType, varopt%matrix, myName, &
-                  'a=obj%returnType and b=matrix')
+  CALL AssertError2(obj%returnType, varopt%matrix, myName, &
+                    'a=obj%returnType and b=matrix')
 #endif
 
-obj%isExternalFunc = math%yes
-obj%matrixFunction => func
-obj%engineID = funcopt%externalEngine
+  obj%isExternalFunc = math%yes
+  obj%matrixFunction => func
+  obj%engineID = funcopt%externalEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetMatrixFunctionPointer
 
@@ -145,29 +148,35 @@ END PROCEDURE obj_SetMatrixFunctionPointer
 
 MODULE PROCEDURE obj_SetLuaScript
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetLuaScript()"
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_SetLuaScript()"
+  LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START]')
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%isInit
-CALL AssertError1(isok, myName, &
-                  'UserFunction_::obj is not initiated.')
+  isok = obj%isInit
+  CALL AssertError1(isok, myName, &
+                    'UserFunction_::obj is not initiated.')
 #endif
 
-obj%isLuaScript = math%yes
-obj%luaScript = luaScript
-obj%luaFunctionName = luaFunctionName
-obj%engineID = funcopt%luaEngine
+#ifdef USE_LUA
+  IF (obj%isLuaStateOpen) CALL lua_close(obj%luaState)
+#endif
+  obj%luaState = C_NULL_PTR
+  obj%isLuaStateOpen = math%no
+
+  obj%isLuaScript = math%yes
+  obj%luaScript = luaScript
+  obj%luaFunctionName = luaFunctionName
+  obj%engineID = funcopt%luaEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END]')
 #endif
 END PROCEDURE obj_SetLuaScript
 
@@ -177,32 +186,32 @@ END PROCEDURE obj_SetLuaScript
 
 MODULE PROCEDURE obj_SetScalarConstantVal
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetScalarConstantVal()"
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_SetScalarConstantVal()"
+  LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START]')
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%isInit
-CALL AssertError1(isok, myName, &
-                  'UserFunction_::obj is not initiated.')
+  isok = obj%isInit
+  CALL AssertError1(isok, myName, &
+                    'UserFunction_::obj is not initiated.')
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError2(obj%returnType, varopt%scalar, myName, &
-                  'a=obj%returnType and b=scalar')
+  CALL AssertError2(obj%returnType, varopt%scalar, myName, &
+                    'a=obj%returnType and b=scalar')
 #endif
 
-obj%scalarValue = val
-obj%engineID = funcopt%constEngine
+  obj%scalarValue = val
+  obj%engineID = funcopt%constEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END]')
 #endif
 END PROCEDURE obj_SetScalarConstantVal
 
@@ -212,40 +221,40 @@ END PROCEDURE obj_SetScalarConstantVal
 
 MODULE PROCEDURE obj_SetVectorConstantVal
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetVectorConstantVal()"
-INTEGER(I4B) :: tsize
+  CHARACTER(*), PARAMETER :: myName = "obj_SetVectorConstantVal()"
+  INTEGER(I4B) :: tsize
 #endif
 
-LOGICAL(LGT) :: isok
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
-#endif
-
-#ifdef DEBUG_VER
-isok = obj%isInit
-CALL AssertError1(isok, myName, &
-                  'UserFunction_::obj is not initiated.')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START]')
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError2(obj%returnType, varopt%vector, myName, &
-                  'a=obj%returnType and b=vector')
+  isok = obj%isInit
+  CALL AssertError1(isok, myName, &
+                    'UserFunction_::obj is not initiated.')
 #endif
 
 #ifdef DEBUG_VER
-tsize = SIZE(val)
-CALL AssertError3(obj%numReturns, tsize, myName, &
-                  'a = obj%numReturns and b=size(val)')
+  CALL AssertError2(obj%returnType, varopt%vector, myName, &
+                    'a=obj%returnType and b=vector')
 #endif
 
-obj%vectorValue(1:obj%numReturns) = val(1:obj%numReturns)
-obj%engineID = funcopt%constEngine
+#ifdef DEBUG_VER
+  tsize = SIZE(val)
+  CALL AssertError3(obj%numReturns, tsize, myName, &
+                    'a = obj%numReturns and b=size(val)')
+#endif
+
+  obj%vectorValue(1:obj%numReturns) = val(1:obj%numReturns)
+  obj%engineID = funcopt%constEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END]')
 #endif
 END PROCEDURE obj_SetVectorConstantVal
 
@@ -255,44 +264,44 @@ END PROCEDURE obj_SetVectorConstantVal
 
 MODULE PROCEDURE obj_SetMatrixConstantVal
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixConstantVal()"
-INTEGER(I4B) :: myshape(2)
-LOGICAL(LGT) :: isok
+  CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixConstantVal()"
+  INTEGER(I4B) :: myshape(2)
+  LOGICAL(LGT) :: isok
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START]')
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%isInit
-CALL AssertError1(isok, myName, &
-                  'UserFunction_::obj is not initiated.')
+  isok = obj%isInit
+  CALL AssertError1(isok, myName, &
+                    'UserFunction_::obj is not initiated.')
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError2(obj%returnType, varopt%matrix, myName, &
-                  'a=obj%argType and b=matrix')
+  CALL AssertError2(obj%returnType, varopt%matrix, myName, &
+                    'a=obj%argType and b=matrix')
 #endif
 
 #ifdef DEBUG_VER
-myshape = SHAPE(val)
-CALL AssertError3(obj%returnShape(1), myshape(1), myName, &
-                  'shape mismatch: a=obj%returnShape(1) and b=rows of val')
+  myshape = SHAPE(val)
+  CALL AssertError3(obj%returnShape(1), myshape(1), myName, &
+                    'shape mismatch: a=obj%returnShape(1) and b=rows of val')
 
-CALL AssertError3(obj%returnShape(2), myshape(2), myName, &
-                  'shape mismatch: a=obj%returnShape(2) and b=cols of val')
+  CALL AssertError3(obj%returnShape(2), myshape(2), myName, &
+                    'shape mismatch: a=obj%returnShape(2) and b=cols of val')
 #endif
 
-obj%matrixValue(1:obj%returnShape(1), 1:obj%returnShape(2)) = &
-  val(1:obj%returnShape(1), 1:obj%returnShape(2))
+  obj%matrixValue(1:obj%returnShape(1), 1:obj%returnShape(2)) = &
+    val(1:obj%returnShape(1), 1:obj%returnShape(2))
 
-obj%engineID = funcopt%constEngine
+  obj%engineID = funcopt%constEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END]')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END]')
 #endif
 END PROCEDURE obj_SetMatrixConstantVal
 
@@ -302,20 +311,20 @@ END PROCEDURE obj_SetMatrixConstantVal
 
 MODULE PROCEDURE obj_SetScalarEquationParser
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetScalarEquationParser()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetScalarEquationParser()"
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
-CALL obj%scalarEqParser%Initiate(funcStr=funcStr, var=var)
-obj%engineID = funcopt%equationParserEngine
+  CALL obj%scalarEqParser%Initiate(funcStr=funcStr, var=var)
+  obj%engineID = funcopt%equationParserEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetScalarEquationParser
 
@@ -325,45 +334,45 @@ END PROCEDURE obj_SetScalarEquationParser
 
 MODULE PROCEDURE obj_SetVectorEquationParser
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetVectorEquationParser()"
+  CHARACTER(*), PARAMETER :: myName = "obj_GetVectorEquationParser()"
 #endif
 
-INTEGER(I4B) :: ii
-LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: ii
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-INTEGER(I4B) :: tfuncStrs
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  INTEGER(I4B) :: tfuncStrs
 #endif
 
 #ifdef DEBUG_VER
-tfuncStrs = SIZE(funcStr)
-CALL AssertError2(tfuncStrs, obj%numReturns, myName, &
-                  "a=size(funcStr), b=obj%numReturns")
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError3(tfuncStrs, funcopt%vectorFuncNumReturns, myName, &
-                  "a=size(funcStr), b=obj%vectorFuncNumReturns")
+  tfuncStrs = SIZE(funcStr)
+  CALL AssertError2(tfuncStrs, obj%numReturns, myName, &
+                    "a=size(funcStr), b=obj%numReturns")
 #endif
 
-DO ii = 1, obj%numReturns
-  isok = ASSOCIATED(obj%vectorEqParser(ii)%ptr)
-  IF (isok) CALL obj%vectorEqParser(ii)%ptr%DEALLOCATE()
+#ifdef DEBUG_VER
+  CALL AssertError3(tfuncStrs, funcopt%vectorFuncNumReturns, myName, &
+                    "a=size(funcStr), b=obj%vectorFuncNumReturns")
+#endif
 
-  obj%vectorEqParser(ii)%ptr => EquationParser_Pointer( &
-                                funcStr=funcStr(ii)%chars(), var=var)
-END DO
+  DO ii = 1, obj%numReturns
+    isok = ASSOCIATED(obj%vectorEqParser(ii)%ptr)
+    IF (isok) CALL obj%vectorEqParser(ii)%ptr%DEALLOCATE()
 
-obj%engineID = funcopt%equationParserEngine
+    obj%vectorEqParser(ii)%ptr => &
+      EquationParser_Pointer(funcStr=funcStr(ii)%chars(), var=var)
+  END DO
+
+  obj%engineID = funcopt%equationParserEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetVectorEquationParser
 
@@ -373,49 +382,48 @@ END PROCEDURE obj_SetVectorEquationParser
 
 MODULE PROCEDURE obj_SetMatrixEquationParser
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixEquationParser()"
+  CHARACTER(*), PARAMETER :: myName = "obj_SetMatrixEquationParser()"
 #endif
 
-INTEGER(I4B) :: ii, jj
-LOGICAL(LGT) :: isok
+  INTEGER(I4B) :: ii, jj
+  LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-INTEGER(I4B) :: funcSize
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
+  INTEGER(I4B) :: funcSize
 #endif
 
 #ifdef DEBUG_VER
-funcSize = SIZE(funcStr, 1)
-CALL AssertError2(obj%returnShape(1), funcSize, myName, &
-                  "a=obj%returnShape(1), a=Rows in funcStr")
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
 #endif
 
 #ifdef DEBUG_VER
-funcSize = SIZE(funcStr, 2)
-CALL AssertError2(obj%returnShape(2), funcSize, myName, &
-                  "a=obj%returnShape(2), b=Cols in funcStr")
+  funcSize = SIZE(funcStr, 1)
+  CALL AssertError2(obj%returnShape(1), funcSize, myName, &
+                    "a=obj%returnShape(1), a=Rows in funcStr")
 #endif
 
-DO jj = 1, obj%returnShape(2)
-  DO ii = 1, obj%returnShape(1)
-    isok = ASSOCIATED(obj%matrixEqParser(ii, jj)%ptr)
-    IF (isok) CALL obj%matrixEqParser(ii, jj)%ptr%DEALLOCATE()
+#ifdef DEBUG_VER
+  funcSize = SIZE(funcStr, 2)
+  CALL AssertError2(obj%returnShape(2), funcSize, myName, &
+                    "a=obj%returnShape(2), b=Cols in funcStr")
+#endif
 
-    obj%matrixEqParser(ii, jj)%ptr => EquationParser_Pointer( &
-                                      funcStr=funcStr(ii, jj)%Chars(), &
-                                      var=var)
+  DO jj = 1, obj%returnShape(2)
+    DO ii = 1, obj%returnShape(1)
+      isok = ASSOCIATED(obj%matrixEqParser(ii, jj)%ptr)
+      IF (isok) CALL obj%matrixEqParser(ii, jj)%ptr%DEALLOCATE()
+
+      obj%matrixEqParser(ii, jj)%ptr => &
+        EquationParser_Pointer(funcStr=funcStr(ii, jj)%Chars(), var=var)
+    END DO
   END DO
-END DO
 
-obj%engineID = funcopt%equationParserEngine
+  obj%engineID = funcopt%equationParserEngine
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
 #endif
 END PROCEDURE obj_SetMatrixEquationParser
 

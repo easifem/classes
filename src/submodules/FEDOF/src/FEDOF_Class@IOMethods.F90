@@ -18,10 +18,12 @@
 !
 
 SUBMODULE(FEDOF_Class) IOMethods
-USE GlobalData, ONLY: stdout, CHAR_LF
 USE Display_Method, ONLY: Display, ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@IOMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -43,11 +45,23 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
-IF (.NOT. obj%isInit) RETURN
+IF (.NOT. obj%isInit) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
 
 CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
+CALL Display(obj%isBrokenSpace, "isBrokenSpace: ", unitno=unitno)
+CALL Display(obj%ownFePointers, "ownFePointers: ", unitno=unitno)
 CALL Display(obj%isMaxConSet, "isMaxConSet: ", unitno=unitno)
 CALL Display(obj%isMaxQuadPointSet, "isMaxQuadPointSet: ", unitno=unitno)
+CALL Display(obj%isSumElemTotalDOFSet, "isSumElemTotalDOFSet: ", &
+             unitno=unitno)
+CALL Display(obj%isTotalActiveCellsSet, "isTotalActiveCellsSet: ", &
+             unitno=unitno)
 
 CALL Display(obj%tdof, "tdof: ", unitno=unitno)
 CALL Display(obj%tNodes, "tNodes: ", unitno=unitno)
@@ -55,6 +69,8 @@ CALL Display(obj%tEdges, "tEdges: ", unitno=unitno)
 CALL Display(obj%tFaces, "tFaces: ", unitno=unitno)
 CALL Display(obj%tCells, "tCells: ", unitno=unitno)
 CALL Display(obj%maxCon, "maxCon: ", unitno=unitno)
+CALL Display(obj%sumElemTotalDOF, "sumElemTotalDOF: ", unitno=unitno)
+CALL Display(obj%tActiveCells, "tActiveCells: ", unitno=unitno)
 CALL Display(obj%maxQuadPoint, "maxQuadPoint: ", unitno=unitno)
 CALL Display(obj%baseContinuity, "baseContinuity: ", unitno=unitno)
 CALL Display(obj%baseInterpolation, "baseInterpolation: ", unitno=unitno)
@@ -136,9 +152,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 isok = ALLOCATED(obj%cellOrder)
 CALL Display(isok, "cellOrder ALLOCATED: ", unitno=unitno)
-IF (isok) CALL Display(SIZE(obj%cellOrder), "cellOrder size: ", &
-                       unitno=unitno)
-CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno, full=full)
+IF (isok) THEN
+  CALL Display(SIZE(obj%cellOrder), "cellOrder size: ", &
+               unitno=unitno)
+  CALL Display(obj%cellOrder, "cellOrder: ", unitno=unitno, full=full)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

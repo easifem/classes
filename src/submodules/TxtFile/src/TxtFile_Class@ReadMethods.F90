@@ -16,12 +16,9 @@
 !
 
 SUBMODULE(TxtFile_Class) ReadMethods
-USE ISO_FORTRAN_ENV, ONLY: IOSTAT_EOR, IOSTAT_END
-! USE Display_Method, ONLY: tostring
-! USE ReallocateUtility, ONLY: Reallocate
-! USE RealVector_Method, ONLY: ASSIGNMENT(=), Get
-
 USE BaseMethod
+USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: IOSTAT_EOR
+USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY: IOSTAT_END
 
 IMPLICIT NONE
 CONTAINS
@@ -56,7 +53,7 @@ IF (abool) THEN
       CALL obj%SetEOFstat(.TRUE.)
       ! Done reading line. Append last buffer to line.
 
-    ELSEIF (ioerr .EQ. IOSTAT_EOR) THEN
+    ELSE IF (ioerr .EQ. IOSTAT_EOR) THEN
       val = val//TRIM(buffer)
 
       IF (obj%echostat) THEN
@@ -65,7 +62,7 @@ IF (abool) THEN
 
         IF (eioerr .NE. 0) THEN
           CALL e%RaiseError(modName//'::'//myName//" - "// &
-                     'Error echoing line to UNIT='//tostring(obj%echounit)// &
+                            'Error echoing line to UNIT='//tostring(obj%echounit)// &
                             ' (IOSTAT='//tostring(eioerr)//')!')
         END IF
 
@@ -73,11 +70,11 @@ IF (abool) THEN
 
       val = TRIM(val)
 
-    ELSEIF (ioerr .LT. IOSTAT_EOR) THEN
+    ELSE IF (ioerr .LT. IOSTAT_EOR) THEN
 
       ! Error reading line from input file
       CALL e%RaiseError(modName//'::'//myName//" - "// &
-                      ' - Error reading one line from input file (IOSTAT='// &
+                        ' - Error reading one line from input file (IOSTAT='// &
                         tostring(ioerr)//')!')
 
     ELSE
@@ -124,7 +121,8 @@ IF (abool) THEN
     IF (obj%IsEOF()) EXIT
 
     isok = obj%IsValidRecord(aline=aline, ignoreComment=ignoreComment, &
-                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+                             ignoreBlank=ignoreBlank, &
+                             commentSymbol=commentSymbol)
 
     IF (isok) THEN
       jj = jj + 1
@@ -306,18 +304,16 @@ END PROCEDURE txt_Read_vec_Real64
 MODULE PROCEDURE txt_Read_IntVector
 CHARACTER(*), PARAMETER :: myName = "txt_Read_IntVector"
 INTEGER(I4B) :: val_kind
-INTEGER(I4B), POINTER :: vals(:)
 #include "./include/Read_IntRealVector.F90"
 END PROCEDURE txt_Read_IntVector
 
 !----------------------------------------------------------------------------
-!                                                                 Read
+!                                                                      Read
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE txt_Read_RealVector
 CHARACTER(*), PARAMETER :: myName = "txt_Read_RealVector"
 REAL(DFP) :: val_kind
-REAL(DFP), POINTER :: vals(:)
 #include "./include/Read_IntRealVector.F90"
 END PROCEDURE txt_Read_RealVector
 

@@ -15,12 +15,12 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE ConstDirichletBC_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class, ONLY: MeshSelection_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE DirichletBC_Class, ONLY: DirichletBC_
 USE DirichletBC_Class, ONLY: DirichletBCPointer_
+USE ExceptionHandler_Class, ONLY: e
+USE GlobalData, ONLY: DFP, I4B, LGT
+USE MeshSelection_Class, ONLY: MeshSelection_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 
@@ -48,9 +48,9 @@ PUBLIC :: ConstDirichletBCImportFromToml
 
 TYPE, EXTENDS(DirichletBC_) :: ConstDirichletBC_
 CONTAINS
-  PRIVATE
   FINAL :: obj_Final
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportConstBCFromToml
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => &
+    obj_ImportConstBCFromToml
   !! Initiate ConstDirichletBC from toml table (overriding)
 END TYPE ConstDirichletBC_
 

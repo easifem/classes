@@ -29,6 +29,8 @@ PUBLIC :: GetShearModulus
 PUBLIC :: GetShearModulusFEVar
 PUBLIC :: GetPoissonRatio
 PUBLIC :: GetElasticParam
+PUBLIC :: GetLameParam
+PUBLIC :: GetLameParamFEVar_
 PUBLIC :: Get_PlaneStrain_C_InvC
 PUBLIC :: Get_PlaneStress_C_InvC
 PUBLIC :: Get_3D_C_InvC
@@ -234,15 +236,49 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE GetElasticParam(lam, G, EE, nu, shearModulus, &
                                     youngsModulus, poissonRatio, lambda)
-    REAL(DFP), INTENT(OUT) :: lam
-    REAL(DFP), INTENT(OUT) :: G
-    REAL(DFP), INTENT(OUT) :: EE
-    REAL(DFP), INTENT(OUT) :: nu
+    REAL(DFP), INTENT(INOUT) :: lam
+    REAL(DFP), INTENT(INOUT) :: G
+    REAL(DFP), INTENT(INOUT) :: EE
+    REAL(DFP), INTENT(INOUT) :: nu
     REAL(DFP), OPTIONAL, INTENT(IN) :: shearModulus
     REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
     REAL(DFP), OPTIONAL, INTENT(IN) :: poissonRatio
     REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
   END SUBROUTINE GetElasticParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE GetLameParam(lam, mu, shearModulus, &
+                                 youngsModulus, poissonRatio, lambda)
+    REAL(DFP), INTENT(INOUT) :: lam
+    REAL(DFP), INTENT(INOUT) :: mu
+    REAL(DFP), OPTIONAL, INTENT(IN) :: shearModulus
+    REAL(DFP), OPTIONAL, INTENT(IN) :: youngsModulus
+    REAL(DFP), OPTIONAL, INTENT(IN) :: poissonRatio
+    REAL(DFP), OPTIONAL, INTENT(IN) :: lambda
+  END SUBROUTINE GetLameParam
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE GetLameParamFEVar_(lam, mu, shearModulus, &
+                                       youngsModulus, poissonRatio, lambda)
+    TYPE(FEVariable_), INTENT(INOUT) :: lam
+    !! lam should be initiated properly before calling this method
+    TYPE(FEVariable_), INTENT(INOUT) :: mu
+    !! mu should be initiated properly before calling this method
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: shearModulus
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: youngsModulus
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: poissonRatio
+    TYPE(FEVariable_), OPTIONAL, INTENT(IN) :: lambda
+  END SUBROUTINE GetLameParamFEVar_
 END INTERFACE
 
 !----------------------------------------------------------------------------

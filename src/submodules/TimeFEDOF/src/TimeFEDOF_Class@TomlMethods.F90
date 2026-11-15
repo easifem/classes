@@ -51,7 +51,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
-obj%opt => timeOpt
 
 ! cellOrder
 CALL ImportCellOrderFromToml(obj=obj, table=table, origin=origin, stat=stat)
@@ -69,7 +68,7 @@ obj%fe => OneDimFEFactory(table=table)
 #ifdef DEBUG_VER
 isok = ASSOCIATED(obj%fe)
 CALL AssertError1(isok, myName, &
-                  'fe pointer returned from OneDimFEFactory is NULL pointer.')
+                  'fe pointer returned from OneDimFEFactory is NULL.')
 #endif
 
 CALL obj%fe%ImportFromToml(table=table)
@@ -78,7 +77,7 @@ CALL obj%fe%ImportFromToml(table=table)
 obj%baseInterpolation = obj%fe%GetBaseInterpolation()
 
 ! isLagrange
-IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = .TRUE.
+IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagr = .TRUE.
 
 ! baseContinuity
 obj%baseContinuity = obj%fe%GetBaseContinuity()
@@ -121,7 +120,7 @@ CALL AssertError1(isok, myName, &
              'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
-CALL obj%ImportFromToml(table=node, timeOpt=timeOpt)
+CALL obj%ImportFromToml(table=node)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

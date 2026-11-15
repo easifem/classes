@@ -22,7 +22,15 @@ target_sources(
         ${src_path}/TDGAlgorithm1_Class@ConstructorMethods.F90
         ${src_path}/TDGAlgorithm1_Class@IOMethods.F90
         ${src_path}/TDGAlgorithm1_Class@TomlMethods.F90
-        ${src_path}/TDGAlgorithm2_Class@ConstructorMethods.F90
-        ${src_path}/TDGAlgorithm2_Class@IOMethods.F90
+        ${src_path}/TDGAlgorithm2_Class@Methods.F90
         ${src_path}/TDGAlgorithm2_Class@TomlMethods.F90
+        ${src_path}/TDGAlgorithm3_Class@Methods.F90
+        ${src_path}/UvStfemAlgorithm_Class@Methods.F90
+        ${src_path}/UStfemAlgorithm_Class@Methods.F90
+        ${src_path}/VStfemAlgorithm_Class@Methods.F90
+        ${src_path}/AbstractStfemAlgorithm2_Class@Methods.F90
+        ${src_path}/AbstractStfemAlgorithm2_Class@TomlMethods.F90
+        ${src_path}/UStfemAlgorithm2_Class@Methods.F90
+        ${src_path}/VStfemAlgorithm2_Class@Methods.F90
+        ${src_path}/StfemAlgorithm2FactoryUtility@Methods.F90
 )

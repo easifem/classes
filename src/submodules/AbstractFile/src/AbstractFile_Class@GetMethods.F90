@@ -16,42 +16,95 @@
 !
 
 SUBMODULE(AbstractFile_Class) GetMethods
-USE BaseMethod
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "AbstractFile_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                              getFileParts
+!                                                               GetFileParts
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_getFileParts
-  path=obj%path
-  fileName=obj%fileName
-  ext=obj%ext
-END PROCEDURE aFile_getFileParts
-
-!----------------------------------------------------------------------------
-!                                                                getFilePath
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_getFilePath
+MODULE PROCEDURE obj_GetFileParts
   path = obj%path
-END PROCEDURE aFile_getFilePath
-
-!----------------------------------------------------------------------------
-!                                                                getFileName
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_getFileName
   fileName = obj%fileName
-END PROCEDURE aFile_getFileName
-
-!----------------------------------------------------------------------------
-!                                                                getFileExt
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE aFile_getFileExt
   ext = obj%ext
-END PROCEDURE aFile_getFileExt
+END PROCEDURE obj_GetFileParts
+
+!----------------------------------------------------------------------------
+!                                                                GetFilePath
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFilePath
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFilePath()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  path = obj%path
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_GetFilePath
+
+!----------------------------------------------------------------------------
+!                                                                GetFileName
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFileName
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFileName()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  fileName = obj%fileName
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_GetFileName
+
+!----------------------------------------------------------------------------
+!                                                                 GetFileExt
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetFileExt
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_GetFileExt()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ext = obj%ext
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_GetFileExt
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetMethods

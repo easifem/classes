@@ -19,8 +19,12 @@
 
 SUBMODULE(OneDimHierarchicalFE_Class) Methods
 USE BaseType, ONLY: TypeFeVariableOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "OneDimHierarchicalFE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

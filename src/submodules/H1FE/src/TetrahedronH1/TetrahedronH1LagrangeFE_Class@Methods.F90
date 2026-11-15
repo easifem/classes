@@ -18,12 +18,16 @@
 
 SUBMODULE(TetrahedronH1LagrangeFE_Class) Methods
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "TetrahedronH1LagrangeFE_Class@Methods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                     TetrahedronH1LagrangeFEPointer
+!                                            TetrahedronH1LagrangeFEPointer
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_TetrahedronH1LagrangeFEPointer1
@@ -44,32 +48,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_TetrahedronH1LagrangeFEPointer1
-
-!----------------------------------------------------------------------------
-!                                                     TetrahedronH1LagrangeFEPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_TetrahedronH1LagrangeFEPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_TetrahedronH1LagrangeFEPointer2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_TetrahedronH1LagrangeFEPointer2
 
 !----------------------------------------------------------------------------
 !                                                       GetLocalElemShapeData
@@ -122,7 +100,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------
-!                                                      GetGlobalElemShapeData
+!                                                     GetGlobalElemShapeData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetGlobalElemShapeData

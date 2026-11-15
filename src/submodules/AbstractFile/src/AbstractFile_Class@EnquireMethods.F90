@@ -16,40 +16,107 @@
 !
 
 SUBMODULE(AbstractFile_Class) EnquireMethods
-USE BaseMethod
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "AbstractFile_Class@EnquireMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                 isOpen
+!                                                                     IsOpen
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isOpen
-ans = obj%openStat
-END PROCEDURE aFile_isOpen
+MODULE PROCEDURE obj_IsOpen
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsOpen()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ans = obj%openStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_IsOpen
 
 !----------------------------------------------------------------------------
-!                                                                 isEOF
+!                                                                      IsEOF
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isEOF
-ans = obj%eofStat
-END PROCEDURE aFile_isEOF
+MODULE PROCEDURE obj_IsEOF
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsEOF()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ans = obj%eofStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_IsEOF
 
 !----------------------------------------------------------------------------
-!                                                                 isWrite
+!                                                                    IsWrite
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isWrite
-ans = obj%writeStat
-END PROCEDURE aFile_isWrite
+MODULE PROCEDURE obj_IsWrite
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsWrite()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ans = obj%writeStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_IsWrite
 
 !----------------------------------------------------------------------------
-!                                                                 isRead
+!                                                                     IsRead
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE aFile_isRead
-ans = obj%readStat
-END PROCEDURE aFile_isRead
+MODULE PROCEDURE obj_IsRead
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_IsRead()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ans = obj%readStat
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_IsRead
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE EnquireMethods

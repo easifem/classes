@@ -18,16 +18,33 @@
 SUBMODULE(DomainConnectivity_Class) CellMethods
 ! USE BaseMethod
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "DomainConnectivity_Class@CellMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dc_initiateCellToCellData1
-CHARACTER(*), PARAMETER :: myName = "dc_initiateCellToCellData1"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+MODULE PROCEDURE dc_InitiateCellToCellData1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_InitiateCellToCellData1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                    '[WIP ERROR] :: This routine is under development')
+#endif
+
 ! CLASS(AbstractMesh_), POINTER :: mesh1 => NULL()
 ! ! mesh1 in domain1 (low order mesh)
 ! CLASS(AbstractMesh_), POINTER :: mesh2 => NULL()
@@ -135,16 +152,32 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
 ! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 ! IF (ALLOCATED(elem2)) DEALLOCATE (elem2)
-END PROCEDURE dc_initiateCellToCellData1
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE dc_InitiateCellToCellData1
 
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_InitiateCellToCellData2
-CHARACTER(*), PARAMETER :: myName = "dc_InitiateCellToCellData2"
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-  & '[WIP ERROR] :: This routine is under development')
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_InitiateCellToCellData2()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseError(modName // '::' // myName // ' - ' // &
+                    '[WIP ERROR] :: This routine is under development')
+#endif
+
 ! CLASS(AbstractMesh_), POINTER :: mesh1 => NULL()
 ! ! mesh1 in domain1 (low order mesh)
 ! CLASS(AbstractMesh_), POINTER :: mesh2 => NULL()
@@ -275,22 +308,47 @@ CALL e%RaiseError(modName//'::'//myName//' - '// &
 ! IF (ALLOCATED(nptrs2)) DEALLOCATE (nptrs2)
 ! IF (ALLOCATED(nptrs)) DEALLOCATE (nptrs)
 ! IF (ALLOCATED(elem2)) DEALLOCATE (elem2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE dc_InitiateCellToCellData2
 
 !----------------------------------------------------------------------------
-!                                                      getCellToCellPointer
+!                                                       GetCellToCellPointer
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dc_getCellToCellPointer
-ans => obj%cellTocell
-END PROCEDURE dc_getCellToCellPointer
+MODULE PROCEDURE dc_GetCellToCellPointer
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_GetCellToCellPointer()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ans => obj%cellTocell
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE dc_GetCellToCellPointer
 
 !----------------------------------------------------------------------------
-!                                                            getDimEntityNum
+!                                                            GetDimEntityNum
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE dc_getDimEntityNum
-ans = obj%cellToCellExtraData(1:2, globalElement)
-END PROCEDURE dc_getDimEntityNum
+MODULE PROCEDURE dc_GetDimEntityNum
+  ans = obj%cellToCellExtraData(1:2, globalElement)
+END PROCEDURE dc_GetDimEntityNum
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE CellMethods

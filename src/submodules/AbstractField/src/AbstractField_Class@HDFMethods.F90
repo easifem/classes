@@ -15,11 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) HDFMethods
-USE Display_Method, ONLY: Display, ToString
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE HDF5FileUtility, ONLY: ExportDOF
-USE HDF5FileUtility, ONLY: ImportDOF
-
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -46,11 +41,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (.NOT. obj%IsInitiated()) THEN
 #ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'AbstractField_::obj%isInitiated is not initiated')
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
 #endif
+  RETURN
+END IF
 
 ! Check
 #ifdef DEBUG_VER
@@ -72,32 +69,11 @@ CALL AssertError1(isok, myName, &
 dname = TRIM(group)//"/Bool0/isInit"
 CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%isInit)
 
-! isMaxTotalNodeNumForBCSet
-dname = TRIM(group)//"/Bool0/isMaxTotalNodeNumForBCSet"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%isMaxTotalNodeNumForBCSet)
-
-! saveErrorNorm
-dname = TRIM(group)//"/Bool0/saveErrorNorm"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%saveErrorNorm)
-
-! plotWithResult
-dname = TRIM(group)//"/Bool0/plotWithResult"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%plotWithResult)
-
-! plotErrorNorm
-dname = TRIM(group)//"/Bool0/plotErrorNorm"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%plotErrorNorm)
-
 ! IntR0
 ! ---------
 ! fieldType
 dname = TRIM(group)//"/IntR0/fieldType"
 CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%fieldType)
-
-! maxTotalNodeNumForBC
-dname = TRIM(group)//"/IntR0/maxTotalNodeNumForBC"
-CALL hdf5%WRITE(dsetname=dname%chars(), &
-                vals=obj%maxTotalNodeNumForBC)
 
 ! comm
 dname = TRIM(group)//"/IntR0/comm"
@@ -140,16 +116,8 @@ CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%name)
 dname = TRIM(group)//"/StringR0/engine"
 CALL hdf5%WRITE(dsetname=dname%chars(), vals=obj%engine)
 
-! errorType
-dname = TRIM(group)//"/StringR0/errorType"
-CALL hdf5%WRITE(dsetname=dname%chars(), vals=String(obj%errorType))
-
-! DofR0
-dname = TRIM(group)//"/DofR0/dof"
-CALL ExportDOF(obj=obj%dof, hdf5=hdf5, group=dname%Chars())
-
-! fedof, geofedof, fedofs, geofedofs, timefedof, timefedofs,
-! exact, dbc, nbc, nbc_point, nodalValue, and nodeNum are not exported
+! The node data (dof, FEDOF pointers and boundary conditions) is exported
+! by the child classes, see AbstractNodeField_
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -164,25 +132,20 @@ END PROCEDURE obj_Export
 MODULE PROCEDURE obj_Import
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
 LOGICAL(LGT) :: isok
-TYPE(String) :: strval, dsetname
-INTEGER(I4B) :: tsize, ii
+TYPE(String) :: dsetname
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = .NOT. obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'The instance of AbstractField_ is already initiated')
-#endif
-
+! Check
 #ifdef DEBUG_VER
 isok = hdf5%isOpen()
 CALL AssertError1(isok, myName, 'HDF5 file is not opened')
 #endif
 
+! Check
 #ifdef DEBUG_VER
 isok = hdf5%isRead()
 CALL AssertError1(isok, myName, 'HDF5 file does not have read permission')
@@ -192,34 +155,6 @@ obj%isInit = math%yes
 
 ! Bool0
 
-dsetname = TRIM(group)//"/Bool0/isMaxTotalNodeNumForBCSet"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%isMaxTotalNodeNumForBCSet)
-END IF
-
-dsetname = TRIM(group)//"/Bool0/saveErrorNorm"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%saveErrorNorm)
-END IF
-
-dsetname = TRIM(group)//"/Bool0/plotWithResult"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%plotWithResult)
-END IF
-
-dsetname = TRIM(group)//"/Bool0/plotErrorNorm"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%plotErrorNorm)
-END IF
-
 ! IntR0
 
 ! fieldType
@@ -227,13 +162,6 @@ dsetname = TRIM(group)//"/IntR0/fieldType"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%fieldType)
-END IF
-
-! maxTotalNodeNumForBC
-dsetname = TRIM(group)//"/IntR0/maxTotalNodeNumForBC"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%maxTotalNodeNumForBC)
 END IF
 
 ! comm
@@ -307,67 +235,6 @@ dsetname = TRIM(group)//"/StringR0/engine"
 isok = hdf5%pathExists(dsetname%chars())
 IF (isok) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%engine)
-END IF
-
-! errorType
-dsetname = TRIM(group)//"/StringR0/errorType"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-  obj%errorType = strval%Slice(1, 4)
-  strval = ""
-END IF
-
-! DofR0
-dsetname = TRIM(group)//"/DofR0/dof"
-isok = hdf5%pathExists(dsetname%chars())
-IF (isok) THEN
-  CALL ImportDOF(obj=obj%dof, hdf5=hdf5, group=dsetname%Chars())
-END IF
-
-isok = PRESENT(fedof)
-IF (isok) THEN
-  obj%fedof => fedof
-END IF
-
-isok = PRESENT(geofedof)
-IF (isok) THEN
-  obj%geofedof => geofedof
-END IF
-
-isok = PRESENT(fedofs)
-IF (isok) THEN
-  tsize = SIZE(fedofs)
-  ALLOCATE (obj%fedofs(tsize))
-
-  DO ii = 1, tsize
-    obj%fedofs(ii)%ptr => fedofs(ii)%ptr
-  END DO
-END IF
-
-isok = PRESENT(geofedofs)
-IF (isok) THEN
-  tsize = SIZE(geofedofs)
-  ALLOCATE (obj%geofedofs(tsize))
-
-  DO ii = 1, tsize
-    obj%geofedofs(ii)%ptr => geofedofs(ii)%ptr
-  END DO
-END IF
-
-isok = PRESENT(timefedof)
-IF (isok) THEN
-  obj%timefedof => timefedof
-END IF
-
-isok = PRESENT(timefedofs)
-IF (isok) THEN
-  tsize = SIZE(timefedofs)
-  ALLOCATE (obj%timefedofs(tsize))
-
-  DO ii = 1, tsize
-    obj%timefedofs(ii)%ptr => timefedofs(ii)%ptr
-  END DO
 END IF
 
 #ifdef DEBUG_VER

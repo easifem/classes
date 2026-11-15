@@ -16,17 +16,23 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) ConstructorMethods
-USE StringUtility, ONLY: UpperCase
+USE BasisOptUtility, ONLY: SetIntegerType
+USE BasisOptUtility, ONLY: SetRealType
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE InterpolationUtility, ONLY: RefElemDomain
-USE ReferenceElement_Method, ONLY: ElementTopology, &
-                                   XiDimension, &
-                                   RefCoord_, &
-                                   GetElementIndex
 USE QuadraturePoint_Method, ONLY: QuadraturePoint_Copy => Copy
-USE Display_Method, ONLY: ToString, Display
-USE BasisOptUtility, ONLY: SetIntegerType, SetRealType
-
+USE ReferenceElement_Method, ONLY: ElementTopology
+USE ReferenceElement_Method, ONLY: GetElementIndex
+USE ReferenceElement_Method, ONLY: RefCoord_
+USE ReferenceElement_Method, ONLY: XiDimension
+USE StringUtility, ONLY: UpperCase
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@ConstructorMethods.F90"
+#endif
 
 CONTAINS
 
@@ -50,25 +56,20 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL obj%DEALLOCATE()
 
 obj%isInit = .TRUE.
-
 obj%elemType = elemType
-
 obj%nsd = nsd
-
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
-
 obj%baseContinuity = UpperCase(baseContinuity(1:2))
-
 obj%topoType = ElementTopology(elemType)
 
 IF (PRESENT(feType)) obj%feType = feType
+IF (PRESENT(isBrokenSpace)) obj%isBrokenSpace = isBrokenSpace
 
 obj%xidim = XiDimension(obj%topoType)
 
 mystr = RefElemDomain(elemType=obj%topoType, &
                       baseContinuity=obj%baseContinuity, &
                       baseInterpol=obj%baseInterpolation)
-
 obj%refelemDomain = mystr%Slice(1, 1)
 mystr = ""
 
@@ -104,7 +105,6 @@ CALL obj%quadOpt%Initiate( &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
@@ -136,6 +136,7 @@ obj%isCellOrder = obj2%isCellOrder
 obj%isEdgeOrient = obj2%isEdgeOrient
 obj%isFaceOrient = obj2%isFaceOrient
 obj%isCellOrient = obj2%isCellOrient
+obj%isBrokenSpace = obj2%isBrokenSpace
 obj%tdof = obj2%tdof
 obj%nsd = obj2%nsd
 obj%xidim = obj2%xidim

@@ -16,11 +16,15 @@
 !
 
 SUBMODULE(STVectorField_Class) SetMethods
+USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 USE ArangeUtility, ONLY: Arange
+USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: math => TypeMathOpt
+USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableConstant
+USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: TypeFEVariableSpaceTime
 USE BaseType, ONLY: TypeFEVariableVector
 USE Display_Method, ONLY: tostring
@@ -29,18 +33,21 @@ USE DOF_Method, ONLY: GetIndex_
 USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: GetNodeLoc_
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
+USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
 USE FEVariable_Method, ONLY: Get
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE GlobalData, ONLY: SpaceTime
 USE InputUtility, ONLY: Input
+USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
 USE ReallocateUtility, ONLY: Reallocate
-USE RealVector_Method, ONLY: Set, Add, GetPointer
+USE RealVector_Method, ONLY: Add, GetPointer, Set
 USE SafeSizeUtility, ONLY: SafeSize
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 USE STScalarField_Class, ONLY: STScalarField_
 USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
 USE STVectorFieldLis_Class, ONLY: STVectorFieldLis_
+USE SwapUtility, ONLY: Swap_
 USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 IMPLICIT NONE
@@ -222,12 +229,12 @@ CALL AssertError2(SIZE(VALUE, 2), obj%timeCompo, myName, &
 #endif
 
 #ifdef DEBUG_VER
-ii = obj%dof.tNodes.1
+ii = obj%dof .tNodes. 1
 CALL AssertError2(SIZE(VALUE, 3), ii, myName, &
                   "a=size(value, 2) b=obj%dof.tNodes.1")
 #endif
 
-tsize = obj%dof.tNodes.1
+tsize = obj%dof .tNodes. 1
 
 DO ii = 1, tsize
   CALL obj%Set(VALUE=VALUE(:, :, ii), scale=scale, globalNode=ii, &
@@ -487,6 +494,7 @@ MODULE PROCEDURE obj_Set10
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
 #endif
+REAL(DFP), ALLOCATABLE :: m3a(:, :, :), m3b(:, :, :)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -495,10 +503,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 SELECT CASE (VALUE%vartype)
 CASE (SpaceTime)
-  CALL obj%Set( &
-    VALUE=GET(VALUE, TypeFEVariableVector, TypeFEVariableSpaceTime), &
-    globalNode=globalNode, islocal=islocal, scale=scale, &
-    addContribution=addContribution)
+  ! m3a is in (i, J, a) format (space component, node, time component),
+  ! obj_Set7 needs (i, a, J), so swap the last two dimensions
+  m3a = GET(VALUE, TypeFEVariableVector, TypeFEVariableSpaceTime)
+  ALLOCATE (m3b(SIZE(m3a, 1), SIZE(m3a, 3), SIZE(m3a, 2)))
+  CALL Swap_(a=m3b, b=m3a, i1=1, i2=3, i3=2)
+  CALL obj%Set(VALUE=m3b, globalNode=globalNode, islocal=islocal, &
+               scale=scale, addContribution=addContribution)
 
 CASE DEFAULT
 
@@ -558,9 +569,9 @@ END DO
 #ifdef DEBUG_VER
 IF (storageFMT .EQ. NODES_FMT) THEN
   nrow = SIZE(spaceCompo)
-  ncol = obj%dof.tNodes.1
+  ncol = obj%dof .tNodes. 1
 ELSE
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = SIZE(spaceCompo)
 END IF
 #endif
@@ -596,7 +607,7 @@ IF (storageFMT .EQ. DOF_FMT) THEN
   RETURN
 END IF
 
-indx = obj%dof.tNodes.1
+indx = obj%dof .tNodes. 1
 
 DO ii = 1, indx
   CALL GetNodeLoc_(obj=obj%dof, nodenum=ii, ans=TEMP_INTVEC, tsize=tsize, &
@@ -650,9 +661,9 @@ END DO
 #ifdef DEBUG_VER
 IF (storageFMT .EQ. NODES_FMT) THEN
   nrow = SIZE(timeCompo)
-  ncol = obj%dof.tNodes.1
+  ncol = obj%dof .tNodes. 1
 ELSE
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = SIZE(timeCompo)
 END IF
 #endif
@@ -688,7 +699,7 @@ IF (storageFMT .EQ. DOF_FMT) THEN
   RETURN
 END IF
 
-indx = obj%dof.tNodes.1
+indx = obj%dof .tNodes. 1
 
 DO ii = 1, indx
   CALL GetNodeLoc_(obj=obj%dof, nodenum=ii, ans=TEMP_INTVEC, tsize=tsize, &
@@ -744,8 +755,10 @@ MODULE PROCEDURE obj_SetFromVectorField
 CHARACTER(*), PARAMETER :: myName = "obj_SetFromVectorField()"
 LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: idof, icompo, s(3), p(3)
+INTEGER(I4B) :: idof, icompo, s(3), p(3), tsize
+LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE, TARGET :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -764,7 +777,29 @@ CALL AssertError1(isok, myName, &
                   'VectorField_::value is not initiated')
 #endif
 
-realvec => VALUE%GetPointer()
+#ifdef DEBUG_VER
+CALL AssertError2(VALUE%spaceCompo, obj%spaceCompo, myName, &
+                  "a=VALUE%spaceCompo, b=obj%spaceCompo")
+#endif
+
+#ifdef DEBUG_VER
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
+#endif
+
+! Native engines store the values in realVec, other engines (LIS) do not:
+! their values are copied into temp
+isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
+
+IF (isNative) THEN
+  realvec => VALUE%GetPointer()
+ELSE
+  tsize = VALUE%SIZE()
+  ALLOCATE (temp(tsize))
+  CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                         VALUE=temp, tsize=tsize)
+  realvec => temp
+END IF
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
@@ -788,6 +823,7 @@ DO icompo = 1, obj%spaceCompo
 END DO
 
 realvec => NULL()
+IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -822,6 +858,16 @@ CALL AssertError1(isok, myName, &
 isok = VALUE%IsInitiated()
 CALL AssertError1(isok, myName, &
                   'VectorField_::value is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(VALUE%spaceCompo, obj%spaceCompo, myName, &
+                  "a=VALUE%spaceCompo, b=obj%spaceCompo")
+#endif
+
+#ifdef DEBUG_VER
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 realvec => obj%GetPointer()
@@ -861,88 +907,152 @@ END PROCEDURE obj_SetToVectorField
 MODULE PROCEDURE obj_SetByFunction
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
+LOGICAL(LGT) :: isok
 #endif
-LOGICAL(LGT) :: istimes, isok
-INTEGER(I4B) :: ttime, nsd, tnodes, ii, globalNode(1), &
-                itime, ispace, nrow, ncol
-REAL(DFP) :: args(4), xij(3, 1)
-REAL(DFP), ALLOCATABLE :: VALUE(:)
+
+INTEGER(I4B), PARAMETER :: MAX_TOPO_SIZE = 8
 CLASS(AbstractMesh_), POINTER :: meshptr
+CLASS(AbstractFE_), POINTER :: feptr, geofeptr
+INTEGER(I4B) :: telements, iel, maxNNS, maxGeoNNS, maxNips, tans, &
+                xij_i, xij_j, tcon, ii, ispace, itime, ttime, aa
+TYPE(QuadraturePoint_) :: cellQuad
+TYPE(QuadraturePoint_) :: quad(MAX_TOPO_SIZE), facetQuad(MAX_TOPO_SIZE)
+TYPE(ElemShapeData_) :: cellElemsd, geoCellElemsd
+TYPE(ElemShapeData_) :: geoElemsd(MAX_TOPO_SIZE), &
+                        geoFacetElemsd(MAX_TOPO_SIZE), &
+                        elemsd(MAX_TOPO_SIZE), &
+                        facetElemsd(MAX_TOPO_SIZE)
+REAL(DFP) :: times0
+REAL(DFP), ALLOCATABLE :: xij(:, :), ans(:), massMat(:, :), &
+                          funcValue(:), temp(:)
+INTEGER(I4B), ALLOCATABLE :: ipiv(:), con(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-istimes = PRESENT(times)
-isok = math%yes
-
-args = math%zero
-ttime = 1
-IF (istimes) THEN
-  ttime = SIZE(times)
-  isok = ttime .EQ. obj%timeCompo
-END IF
-
 #ifdef DEBUG_VER
+isok = func%GetReturnType() .EQ. TypeFEVariableOpt%vector
+CALL AssertError1(isok, myName, "func should be a vector function.")
+
+! time component a is set to f(., times(a)), so the time DOFs must be
+! point values: Lagrange basis in time
+isok = ASSOCIATED(obj%timefedof)
+CALL AssertError1(isok, myName, "obj%timefedof is not associated.")
+
+isok = obj%timefedof%IsLagrange()
 CALL AssertError1(isok, myName, &
-                  'Size of times should be obj%timeCompo='// &
-                  ToString(obj%timeCompo))
+                  "Only Lagrange interpolation in time is supported; "// &
+                  "timefedof baseInterpolation is "// &
+                  obj%timefedof%GetBaseInterpolation())
+
+IF (PRESENT(times)) THEN
+  isok = SIZE(times) .EQ. obj%timeCompo
+  CALL AssertError1(isok, myName, &
+                    'Size of times should be obj%timeCompo='// &
+                    ToString(obj%timeCompo))
+
+  ! times(a) is the interpolation point of time DOF a, so they are
+  ! distinct
+  DO ii = 1, obj%timeCompo - 1
+    isok = ALL(ABS(times(ii + 1:) - times(ii)) .GT. math%zero)
+    CALL AssertError1(isok, myName, &
+                      "times should be distinct; times("// &
+                      ToString(ii)//") is repeated.")
+  END DO
+END IF
 #endif
 
-meshptr => NULL()
 meshptr => obj%fedof%GetMeshPointer()
+
 #ifdef DEBUG_VER
 isok = ASSOCIATED(meshptr)
 CALL AssertError1(isok, myName, &
-                  "meshptr is not associated.")
+                  "mesh pointer obtained from fedof is not associated.")
 #endif
 
-nsd = meshptr%GetNSD()
-tnodes = meshptr%GetTotalNodes()
+! with times, time component itime gets f(x, times(itime)); without
+! times, f(x, 0) is set at all time components
+ttime = 1
+IF (PRESENT(times)) ttime = obj%timeCompo
+times0 = 0.0_DFP
 
-IF (istimes) THEN
-  DO ii = 1, tnodes
-    globalNode = ii
-    CALL meshptr%GetNodeCoord(globalNode=globalNode, nodeCoord=xij, &
-                              islocal=math%yes, nrow=nrow, ncol=ncol)
-    args(1:nsd) = xij(1:nsd, 1)
+maxNNS = obj%fedof%GetMaxTotalConnectivity()
+maxGeoNNS = obj%geofedof%GetMaxTotalConnectivity()
+maxNips = obj%fedof%GetMaxTotalQuadraturePoints()
 
-    DO itime = 1, obj%timeCompo
-      args(4) = times(itime)
-      CALL func%Get(val=VALUE, args=args)
-      DO ispace = 1, obj%spaceCompo
-        CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE(ispace), &
-                     timeCompo=itime, spaceCompo=ispace, islocal=math%yes)
-      END DO
+CALL Reallocate(massMat, maxNNS, maxNNS)
+CALL Reallocate(ipiv, maxNNS)
+CALL Reallocate(xij, 3, maxGeoNNS)
+CALL Reallocate(ans, maxNNS)
+CALL Reallocate(temp, maxNNS)
+CALL Reallocate(con, maxNNS)
+CALL Reallocate(funcValue, maxNips)
+
+telements = meshptr%GetTotalElements()
+
+DO iel = 1, telements
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+  CALL obj%geofedof%SetFE(globalElement=iel, islocal=math%yes)
+  geofeptr => obj%geofedof%GetFEPointer(globalElement=iel, &
+                                        islocal=math%yes)
+
+  CALL meshptr%GetNodeCoord(nodeCoord=xij, nrow=xij_i, ncol=xij_j, &
+                            globalElement=iel, islocal=math%yes)
+
+  CALL obj%fedof%GetConnectivity_(ans=con, tsize=tcon, opt="A", &
+                                  globalElement=iel, islocal=math%yes)
+
+  DO itime = 1, ttime
+    IF (PRESENT(times)) times0 = times(itime)
+
+    DO ispace = 1, obj%spaceCompo
+      CALL feptr%GetDOFValue(geofeptr=geofeptr, elemsd=elemsd, &
+                             geoElemsd=geoElemsd, &
+                             facetElemsd=facetElemsd, &
+                             geoFacetElemsd=geoFacetElemsd, &
+                             cellElemsd=cellElemsd, &
+                             geoCellElemsd=geoCellElemsd, quad=quad, &
+                             facetQuad=facetQuad, cellQuad=cellQuad, &
+                             xij=xij, times=times0, func=func, &
+                             ans=ans, tsize=tans, massMat=massMat, &
+                             ipiv=ipiv, funcValue=funcValue, temp=temp, &
+                             icompo=ispace)
+
+      IF (PRESENT(times)) THEN
+        CALL obj%Set(VALUE=ans(1:tans), globalNode=con(1:tcon), &
+                     islocal=math%yes, spaceCompo=ispace, &
+                     timeCompo=itime)
+      ELSE
+        DO aa = 1, obj%timeCompo
+          CALL obj%Set(VALUE=ans(1:tans), globalNode=con(1:tcon), &
+                       islocal=math%yes, spaceCompo=ispace, &
+                       timeCompo=aa)
+        END DO
+      END IF
     END DO
   END DO
-END IF
+END DO
 
-IF (.NOT. istimes) THEN
+DEALLOCATE (massMat, ipiv, xij, ans, temp, con, funcValue)
 
-  DO ii = 1, tnodes
-    globalNode = ii
-    CALL meshptr%GetNodeCoord( &
-      globalNode=globalNode, nodeCoord=xij, &
-      islocal=math%yes, nrow=nrow, ncol=ncol)
+DO ii = 1, MAX_TOPO_SIZE
+  CALL QuadraturePointDeallocate(quad(ii))
+  CALL QuadraturePointDeallocate(facetQuad(ii))
+  CALL ElemShapeDataDeallocate(elemsd(ii))
+  CALL ElemShapeDataDeallocate(facetElemsd(ii))
+  CALL ElemShapeDataDeallocate(geoElemsd(ii))
+  CALL ElemShapeDataDeallocate(geoFacetElemsd(ii))
+END DO
 
-    args(1:nsd) = xij(1:nsd, 1)
-    CALL func%Get(val=VALUE, args=args)
+CALL QuadraturePointDeallocate(cellQuad)
+CALL ElemShapeDataDeallocate(cellElemsd)
+CALL ElemShapeDataDeallocate(geoCellElemsd)
 
-    DO itime = 1, obj%timeCompo
-      DO ispace = 1, obj%spaceCompo
-        CALL obj%Set(globalNode=globalNode(1), VALUE=VALUE(ispace), &
-                     timeCompo=itime, spaceCompo=ispace, &
-                     islocal=math%yes)
-      END DO
-    END DO
-  END DO
-
-END IF
-
-IF (ALLOCATED(VALUE)) DEALLOCATE (VALUE)
-NULLIFY (meshptr)
+NULLIFY (meshptr, feptr, geofeptr)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

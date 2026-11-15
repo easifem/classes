@@ -16,12 +16,12 @@
 !
 
 SUBMODULE(AbstractBC_Class) TomlMethods
-USE Display_Method, ONLY: Display, ToString
-USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
-USE TomlUtility, ONLY: GetValue
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE tomlf, ONLY: toml_get => get_value
-
+USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
 
 CONTAINS
@@ -75,7 +75,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -87,13 +87,13 @@ CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+                  'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node, dom=dom)
@@ -119,7 +119,7 @@ SUBROUTINE ReadNameFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadNameFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -132,7 +132,7 @@ SUBROUTINE ReadNameFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="name", VALUE=obj%name, &
-                default_value=TypeBCOpt%name, origin=origin, stat=stat)
+                default_value=TypeBCOpt%name, origin=origin, STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -151,7 +151,7 @@ SUBROUTINE ReadIdofFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIdofFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -164,7 +164,7 @@ SUBROUTINE ReadIdofFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="idof", VALUE=obj%idof, &
-                default_value=TypeBCOpt%idof, origin=origin, stat=stat)
+                default_value=TypeBCOpt%idof, origin=origin, STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -183,7 +183,7 @@ SUBROUTINE ReadNodalValueTypeFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadNodalValueTypeFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   TYPE(String) :: astr
 
 #ifdef DEBUG_VER
@@ -198,7 +198,7 @@ SUBROUTINE ReadNodalValueTypeFromToml(obj, table)
 
   CALL GetValue(table=table, key="nodalValueType", VALUE=astr, &
                 default_value=TypeBCOpt%nodalValueType_char, &
-                origin=origin, stat=stat)
+                origin=origin, STAT=STAT)
 
   obj%nodalValueType = TypeFieldOpt%ToNumber(astr%chars())
   astr = ''
@@ -220,7 +220,7 @@ SUBROUTINE ReadIsNormalFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIsNormalFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -233,7 +233,7 @@ SUBROUTINE ReadIsNormalFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="isNormal", VALUE=obj%isNormal, &
-                default_value=TypeBCOpt%isNormal, origin=origin, stat=stat)
+                default_value=TypeBCOpt%isNormal, origin=origin, STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -253,7 +253,7 @@ SUBROUTINE ReadIsTangentFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIsTangentFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -266,7 +266,7 @@ SUBROUTINE ReadIsTangentFromToml(obj, table)
 #endif
 
   CALL GetValue(table=table, key="isTangent", VALUE=obj%isTangent, &
-                default_value=TypeBCOpt%isTangent, origin=origin, stat=stat)
+                default_value=TypeBCOpt%isTangent, origin=origin, STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -285,7 +285,7 @@ SUBROUTINE ReadIsUseExternalFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIsUseExternalFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -299,7 +299,7 @@ SUBROUTINE ReadIsUseExternalFromToml(obj, table)
 
   CALL GetValue(table=table, key="isUseExternal", VALUE=obj%isUseExternal, &
                 default_value=TypeBCOpt%isUseExternal, origin=origin, &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -318,7 +318,7 @@ SUBROUTINE ReadIsUserFunctionFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadIsUserFunctionFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -333,7 +333,7 @@ SUBROUTINE ReadIsUserFunctionFromToml(obj, table)
   CALL GetValue( &
     table=table, key="isUserFunction", VALUE=obj%isUserFunction, &
     default_value=TypeBCOpt%isUserFunction, origin=origin, &
-    stat=stat)
+    STAT=STAT)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -355,7 +355,7 @@ SUBROUTINE ReadBoundaryFromToml(obj, table, dom)
   LOGICAL(LGT) :: isok
 #endif
 
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   TYPE(toml_table), POINTER :: node
 
 #ifdef DEBUG_VER
@@ -370,12 +370,12 @@ SUBROUTINE ReadBoundaryFromToml(obj, table, dom)
 
   node => NULL()
   CALL toml_get(table, "boundary", node, origin=origin, requested=.FALSE., &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
   CALL AssertError1(isok, myName, &
-   'following error occured while reading &
+    'following error occured while reading &
   &the toml file :: cannot find [boundary] table in config.')
 #endif
 
@@ -401,7 +401,7 @@ SUBROUTINE ReadUserFunctionFromToml(obj, table)
   CHARACTER(*), PARAMETER :: myName = "ReadUserFunctionFromToml()"
   LOGICAL(LGT) :: isok
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   TYPE(toml_table), POINTER :: node
 
 #ifdef DEBUG_VER
@@ -418,7 +418,7 @@ SUBROUTINE ReadUserFunctionFromToml(obj, table)
 
   node => NULL()
   CALL toml_get(table, "function", node, origin=origin, requested=.FALSE., &
-                stat=stat)
+                STAT=STAT)
 
 #ifdef DEBUG_VER
   isok = ASSOCIATED(node)
@@ -447,7 +447,7 @@ SUBROUTINE ReadConstantNodalValueFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadConstantNodalValueFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   REAL(DFP) :: areal
   LOGICAL(LGT) :: isok
 
@@ -480,7 +480,7 @@ SUBROUTINE ReadConstantNodalValueFromToml(obj, table)
   END IF
 
   CALL GetValue(table=table, key="value", VALUE=areal, &
-                origin=origin, stat=stat, default_value=0.0_DFP, &
+                origin=origin, STAT=STAT, default_value=0.0_DFP, &
                 isFound=isok)
 
 #ifdef DEBUG_VER
@@ -508,7 +508,7 @@ SUBROUTINE ReadSpaceNodalValueFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadSpaceNodalValueFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   REAL(DFP), ALLOCATABLE :: areal(:)
   LOGICAL(LGT) :: isok
 
@@ -541,7 +541,7 @@ SUBROUTINE ReadSpaceNodalValueFromToml(obj, table)
   END IF
 
   CALL GetValue(table=table, key="value", VALUE=areal, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, 'nodalValueType is Space.&
@@ -571,7 +571,7 @@ SUBROUTINE ReadTimeNodalValueFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadTimeNodalValueFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   REAL(DFP), ALLOCATABLE :: areal(:)
   LOGICAL(LGT) :: isok
 
@@ -604,7 +604,7 @@ SUBROUTINE ReadTimeNodalValueFromToml(obj, table)
   END IF
 
   CALL GetValue(table=table, key="value", VALUE=areal, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, 'nodalValueType is Time.&
@@ -634,7 +634,7 @@ SUBROUTINE ReadSpaceTimeNodalValueFromToml(obj, table)
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "ReadSpaceTimeNodalValueFromToml()"
 #endif
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   REAL(DFP), ALLOCATABLE :: areal(:, :)
   LOGICAL(LGT) :: isok
 
@@ -667,7 +667,7 @@ SUBROUTINE ReadSpaceTimeNodalValueFromToml(obj, table)
   END IF
 
   CALL GetValue(table=table, key="value", VALUE=areal, &
-                origin=origin, stat=stat, isFound=isok)
+                origin=origin, STAT=STAT, isFound=isok)
 
 #ifdef DEBUG_VER
   CALL AssertError1(isok, myName, 'nodalValueType is spaceTime.&

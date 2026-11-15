@@ -16,9 +16,10 @@
 !
 
 SUBMODULE(VectorField_Class) HDFMethods
-USE String_Class, ONLY: String
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldImport
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
+USE Display_Method, ONLY: Display
+USE String_Class, ONLY: String
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -35,21 +36,27 @@ CONTAINS
 MODULE PROCEDURE obj_Import
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+LOGICAL(LGT) :: isok
 #endif
+
 TYPE(String) :: dsetname
-LOGICAL(LGT) :: bools(3), isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
 CALL AbstractNodeFieldImport( &
   obj=obj, hdf5=hdf5, group=group, fedof=fedof, fedofs=fedofs, &
   geofedof=geofedof, geofedofs=geofedofs)
 
 ! spaceCompo
-dsetname = TRIM(group)//"/spaceCompo"
+dsetname = TRIM(group)//"/IntR0/spaceCompo"
+
 #ifdef DEBUG_VER
 isok = hdf5%pathExists(dsetname%chars())
 CALL AssertError1(isok, myName, &
@@ -58,38 +65,16 @@ CALL AssertError1(isok, myName, &
 
 CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
 
-dsetname = TRIM(group)//"/tSize"
-bools(1) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/dof"
-bools(2) = hdf5%pathExists(dsetname%chars())
-dsetname = TRIM(group)//"/realVec"
-bools(3) = hdf5%pathExists(dsetname%chars())
-
-isok = ALL(bools)
-IF (isok) THEN
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
+! spaceCompo
+dsetname = TRIM(group)//"/IntR1/idofs"
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = hdf5%pathExists(dsetname%chars())
+CALL AssertError1(isok, myName, &
+                  dsetname//' should be present')
 #endif
 
-! CALL param%initiate()
-!
-! CALL SetVectorFieldParam(param=param, name=obj%name%chars(), &
-!          fieldType=obj%fieldType, spaceCompo=obj%spaceCompo, &
-!          engine=obj%engine%chars())
-!
-! obj%isInit = .FALSE.
-!
-! CALL obj%Initiate(param=param, fedof=fedof, geofedof=geofedof)
-!
-! CALL param%DEALLOCATE()
+CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%idofs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -112,11 +97,24 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (.NOT. obj%IsInitiated()) THEN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 CALL AbstractNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
 
 ! spaceCompo
-dsetname = TRIM(group)//"/spaceCompo"
+dsetname = TRIM(group)//"/IntR0/spaceCompo"
 CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%spaceCompo)
+
+! idofs
+dsetname = TRIM(group)//"/IntR1/idofs"
+CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=obj%idofs)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

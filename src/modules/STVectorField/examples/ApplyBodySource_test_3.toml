@@ -1,0 +1,88 @@
+# Input file for ApplyBodySource_test_3.
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements.
+# u: order 1 Lagrange in space and time, spaceCompo = 2, timeCompo = 2.
+# f: body source on the same mesh with its own FEDOF (order 2 Lagrange
+# in space) and its own TimeFEDOF (order 1 Lagrange), spaceCompo = 2.
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+fedofName = "space"
+geofedofName = "geofedof"
+timefedofName = "time"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[u.time]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.time.quadOpt]
+quadratureType = "GaussLegendre"
+
+[f]
+name = "f"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+fedofName = "space"
+geofedofName = "geofedof"
+timefedofName = "time"
+
+[f.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[f.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 2
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[f.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[f.time]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[f.time.quadOpt]
+quadratureType = "GaussLegendre"

@@ -936,6 +936,28 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetVarType
 
 !----------------------------------------------------------------------------
+!                                                                GetDefineOn
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDefineOn
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDefineOn()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%defineOn
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetDefineOn
+
+!----------------------------------------------------------------------------
 !                                                              GetTotalShape
 !----------------------------------------------------------------------------
 

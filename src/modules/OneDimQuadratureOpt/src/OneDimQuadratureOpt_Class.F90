@@ -112,6 +112,10 @@ CONTAINS
   !! Set the quadrature type
   PROCEDURE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
+  !! Get quadrature points
+  PROCEDURE, PUBLIC, PASS(obj) :: GetQuadratureOrder => &
+    obj_GetQuadratureOrder
+  !! Get quadrature order
 END TYPE OneDimQuadratureOpt_
 
 !----------------------------------------------------------------------------
@@ -354,6 +358,21 @@ INTERFACE
     CLASS(OneDimQuadratureOpt_), INTENT(IN) :: obj
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
   END SUBROUTINE obj_GetQuadraturePoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetQuadratureOrder@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-11-21
+! summary:  Get the quadrature order
+
+INTERFACE
+  MODULE FUNCTION obj_GetQuadratureOrder(obj) RESULT(ans)
+    CLASS(OneDimQuadratureOpt_), INTENT(IN) :: obj
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetQuadratureOrder
 END INTERFACE
 
 !----------------------------------------------------------------------------

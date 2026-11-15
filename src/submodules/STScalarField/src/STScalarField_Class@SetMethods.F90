@@ -18,7 +18,6 @@
 SUBMODULE(STScalarField_Class) SetMethods
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ArangeUtility, ONLY: Arange
-USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpaceTime
 USE Display_Method, ONLY: tostring
@@ -30,10 +29,10 @@ USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE FEVariable_Method, ONLY: Get
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE FieldOpt_Class, ONLY: TypeFieldOpt
-USE GlobalData, ONLY: NONE, SpaceTime, Scalar
+USE GlobalData, ONLY: NONE, Scalar, SpaceTime
 USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
-USE RealVector_Method, ONLY: Set, Add, GetPointer
+USE RealVector_Method, ONLY: Add, GetPointer, Set
 USE SafeSizeUtility, ONLY: SafeSize
 IMPLICIT NONE
 
@@ -53,7 +52,7 @@ INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                   Set
+!                                                                       Set
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
@@ -93,7 +92,7 @@ isok = obj%timeCompo .LE. TEMP_INTVEC_LEN
 CALL AssertError1(isok, myName, "size of TEMP_INTVEC is not enough")
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
                tsize=tsize)
@@ -131,7 +130,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%fieldType .EQ. TypeField%constant
+isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
 #endif
@@ -227,9 +226,9 @@ CALL AssertError1(isok, myName, &
 #ifdef DEBUG_VER
 IF (storageFMT .EQ. TypeFieldOpt%storageFormatNodes) THEN
   nrow = obj%timeCompo
-  ncol = obj%dof.tNodes.1
+  ncol = obj%dof .tNodes. 1
 ELSE
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%timeCompo
 END IF
 
@@ -254,7 +253,7 @@ IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   RETURN
 END IF
 
-ncol = obj%dof.tNodes.1
+ncol = obj%dof .tNodes. 1
 DO jj = 1, ncol
   CALL obj%Set(VALUE=VALUE(:, jj), scale=scale, &
                addContribution=addContribution, &
@@ -295,7 +294,7 @@ CALL AssertError1(isok, myName, "timeCompo out of bound")
 isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, "Not callable for constant field")
 
-tsize = obj%dof.tNodes.timeCompo
+tsize = obj%dof .tNodes. timeCompo
 CALL AssertError2(SIZE(VALUE), tsize, myName, &
                   "a=SIZE(VALUE), b=obj%dof.tNodes.timeCompo")
 #endif
@@ -317,7 +316,10 @@ END PROCEDURE obj_Set5
 MODULE PROCEDURE obj_Set6
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: s(3), vs(3)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -325,9 +327,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'STScalarField_::obj is not initiated')
+
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'STScalarField_::value is not initiated')
+
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant STScalar field')
+
+isok = (objTimeCompo .GE. 1) .AND. (objTimeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, &
+                  'objTimeCompo should be in [1, obj%timeCompo]')
+
+isok = (valueTimeCompo .GE. 1) .AND. &
+       (valueTimeCompo .LE. VALUE%timeCompo)
+CALL AssertError1(isok, myName, &
+                  'valueTimeCompo should be in [1, value%timeCompo]')
 #endif
+
+s = GetNodeLoc(obj=obj%dof, idof=objTimeCompo)
+vs = GetNodeLoc(obj=VALUE%dof, idof=valueTimeCompo)
+
+#ifdef DEBUG_VER
+CALL AssertError2((s(2) - s(1)) / s(3) + 1, (vs(2) - vs(1)) / vs(3) + 1, &
+                  myName, 'a=size of obj time component, '// &
+                  'b=size of value time component')
+#endif
+
+! the engines of obj and VALUE copy the values, see SetMultiple5
+CALL obj%SetMultiple( &
+  istart=s(1), iend=s(2), stride=s(3), VALUE=VALUE, istart_value=vs(1), &
+  iend_value=vs(2), stride_value=vs(3), scale=scale, &
+  addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -462,7 +497,7 @@ CALL AssertError2(SIZE(VALUE), SIZE(globalNode), &
 
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 tsize = SIZE(globalNode)
 
@@ -524,7 +559,7 @@ isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, 'Not callable for constant STScalar field')
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, idof=timeCompo, nodenum=globalNode)
 
@@ -561,7 +596,7 @@ CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
 #endif
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 SELECT CASE (VALUE%vartype)
 
@@ -570,7 +605,7 @@ CASE (SpaceTime)
                          TypeFEVariableSpaceTime), &
                globalNode=globalNode, scale=scale, &
                addContribution=addContribution, islocal=islocal, &
-               storageFMT=NODES_FMT)
+               storageFMT=TypeField%storageFormatDOF)
 
 CASE DEFAULT
 #ifdef DEBUG_VER
@@ -653,7 +688,6 @@ LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: s(3)
-REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -674,19 +708,11 @@ CALL AssertError1(isok, myName, &
 
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
-realvec => VALUE%GetPointer()
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(realvec)
-CALL AssertError1(isok, myName, &
-                  'realvec obtained from value is not ASSOCIATED')
-#endif
-
+! the engines of obj and VALUE copy the values, see SetMultiple5
 CALL obj%SetMultiple( &
-  VALUE=realvec, scale=scale, addContribution=addContribution, &
-  istart=s(1), iend=s(2), stride=s(3))
-
-realvec => NULL()
+  istart=s(1), iend=s(2), stride=s(3), VALUE=VALUE, istart_value=1, &
+  iend_value=VALUE%SIZE(), stride_value=1, scale=scale, &
+  addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -705,7 +731,6 @@ LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: s(3), p(3)
-REAL(DFP), POINTER :: realvec(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -727,20 +752,11 @@ CALL AssertError1(isok, myName, &
 s = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
 p = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
-realvec => obj%GetPointer()
-
-#ifdef DEBUG_VER
-isok = ASSOCIATED(realvec)
-CALL AssertError1(isok, myName, &
-                  'realvec obtained To value is not ASSOCIATED')
-#endif
-
+! the engines of VALUE and obj copy the values, see SetMultiple5
 CALL VALUE%SetMultiple( &
-  VALUE=realvec, scale=scale, addContribution=addContribution, &
-  istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-  istart=s(1), iend=s(2), stride=s(3))
-
-realvec => NULL()
+  istart=s(1), iend=s(2), stride=s(3), VALUE=obj, istart_value=p(1), &
+  iend_value=p(2), stride_value=p(3), scale=scale, &
+  addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -771,7 +787,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 baseInterpolation = obj%fedof%GetBaseInterpolation()
 
 #ifdef DEBUG_VER
-isok = baseInterpolation(1:3) .EQ. "Lag"
+isok = baseInterpolation .EQ. "LAGR"
 CALL AssertError1(isok, myName, &
                   'This routine is only valid for Lagrange interpolation.')
 #endif

@@ -15,12 +15,18 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) SetMethods
+USE HDF5FileUtility, ONLY: ImportRealVector
 USE InputUtility, ONLY: Input
 USE RealVector_Method, ONLY: RealVectorSet => Set
 USE RealVector_Method, ONLY: RealVectorAdd => Add
-USE BaseType, ONLY: math => TypeMathOpt
-
+USE String_Class, ONLY: String
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -127,9 +133,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+! obj = scale * VALUE without a temporary array: the entries are set
+! to zero, then scale * VALUE is added
+IF ((.NOT. abool) .AND. (areal .NE. math%one)) THEN
+  CALL RealVectorSet(obj%realVec, VALUE=math%zero, nodenum=indx)
+  abool = math%yes
+END IF
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd(obj%realVec, VALUE=VALUE, scale=areal, nodenum=indx)
 ELSE
   CALL RealVectorSet(obj%realVec, VALUE=VALUE, nodenum=indx)
@@ -158,9 +171,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+! obj = scale * VALUE without a temporary array: the entries are set
+! to zero, then scale * VALUE is added
+IF ((.NOT. abool) .AND. (areal .NE. math%one)) THEN
+  CALL RealVectorSet(obj%realVec, VALUE=math%zero, istart=istart, &
+                     iend=iend, stride=stride)
+  abool = math%yes
+END IF
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd( &
     obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
     stride=stride)
@@ -192,9 +213,17 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+
+! obj = scale * VALUE without a temporary array: the entries are set
+! to zero, then scale * VALUE is added
+IF ((.NOT. abool) .AND. (areal .NE. math%one)) THEN
+  CALL RealVectorSet(obj%realVec, VALUE=math%zero, istart=istart, &
+                     iend=iend, stride=stride)
+  abool = math%yes
+END IF
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd( &
     obj=obj%realVec, VALUE=VALUE, scale=areal, istart=istart, &
     iend=iend, stride=stride, istart_value=istart_value, &
@@ -229,15 +258,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
 
 IF (abool) THEN
-  areal = Input(option=scale, default=math%one)
   CALL RealVectorAdd( &
     obj%realVec, VALUE=VALUE, scale=areal, istart=istart, iend=iend, &
     stride=stride)
 ELSE
+  areal = areal * VALUE
   CALL RealVectorSet( &
-    obj%realVec, VALUE=VALUE, istart=istart, iend=iend, stride=stride)
+    obj%realVec, VALUE=areal, istart=istart, iend=iend, stride=stride)
 END IF
 
 #ifdef DEBUG_VER
@@ -245,6 +275,48 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetMultiple4
+
+!----------------------------------------------------------------------------
+!                                                                 SetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetMultiple5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple5()"
+LOGICAL(LGT) :: isok
+#endif
+INTEGER(I4B) :: tsize
+REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tsize = (iend - istart) / stride + 1
+
+! the values of obj are in realVec: VALUE writes into them, so the
+! engine of VALUE reads its own values and no temporary is needed
+realvec => obj%GetPointer()
+
+#ifdef DEBUG_VER
+isok = ASSOCIATED(realvec)
+CALL AssertError1(isok, myName, &
+                  'realvec obtained from obj is not ASSOCIATED')
+#endif
+
+CALL VALUE%GetMultiple4( &
+  istart=istart_value, iend=istart_value + (tsize - 1) * stride_value, &
+  stride=stride_value, VALUE=realvec, istart_value=istart, iend_value=iend, &
+  stride_value=stride, scale=scale, addContribution=addContribution)
+
+realvec => NULL()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetMultiple5
 
 !----------------------------------------------------------------------------
 !                                                                 SetAll
@@ -277,6 +349,70 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_SetAll
+
+!----------------------------------------------------------------------------
+!                                                                  SetLocal_n
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetLocal_n
+obj%local_n = local_n
+END PROCEDURE obj_SetLocal_n
+
+!----------------------------------------------------------------------------
+!                                                                 SetGlobal_n
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetGlobal_n
+obj%global_n = global_n
+END PROCEDURE obj_SetGlobal_n
+
+!----------------------------------------------------------------------------
+!                                                                SetFromHDF5
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_SetFromHDF5
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_SetFromHDF5()"
+#endif
+
+LOGICAL(LGT) :: isok
+TYPE(String) :: dsetname
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsInitiated()
+CALL AssertError1(isok, myName, "hdf5 not initiated.")
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, "hdf5 not open.")
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsRead()
+CALL AssertError1(isok, myName, "hdf5 does not have read access.")
+#endif
+
+! realVec
+dsetname = TRIM(group)//"/RealVectorR0/realVec"
+isok = hdf5%pathExists(dsetname%chars())
+#ifdef DEBUG_VER
+CALL AssertError1(isok, myName, dsetname//" not found.")
+#endif
+IF (isok) THEN
+  CALL ImportRealVector(obj=obj%realvec, hdf5=hdf5, group=dsetname%chars())
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_SetFromHDF5
 
 !----------------------------------------------------------------------------
 !                                                              Include error

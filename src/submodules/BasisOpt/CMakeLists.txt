@@ -17,16 +17,18 @@
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
 target_sources(
-  ${PROJECT_NAME}
-  PRIVATE ${src_path}/BasisOptUtility.F90
-          ${src_path}/BasisOpt_Class@ConstructorMethods.F90
-          ${src_path}/BasisOpt_Class@IOMethods.F90
-          ${src_path}/BasisOpt_Class@TomlMethods.F90
-          ${src_path}/BasisOpt_Class@SetMethods.F90
-          ${src_path}/BasisOpt_Class@GetMethods.F90
-          ${src_path}/BasisOpt_Class@LineH1LagrangeFEMethods.F90
-          ${src_path}/BasisOpt_Class@TriangleH1LagrangeFEMethods.F90
-          ${src_path}/BasisOpt_Class@QuadrangleH1LagrangeFEMethods.F90
-          ${src_path}/BasisOpt_Class@LineH1HierarchicalFEMethods.F90
-          ${src_path}/BasisOpt_Class@TriangleH1HierarchicalFEMethods.F90
-          ${src_path}/BasisOpt_Class@QuadrangleH1HierarchicalFEMethods.F90)
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/BasisOptUtility.F90
+        ${src_path}/BasisOpt_Class@ConstructorMethods.F90
+        ${src_path}/BasisOpt_Class@IOMethods.F90
+        ${src_path}/BasisOpt_Class@TomlMethods.F90
+        ${src_path}/BasisOpt_Class@SetMethods.F90
+        ${src_path}/BasisOpt_Class@GetMethods.F90
+        ${src_path}/BasisOpt_Class@LineH1LagrangeFEMethods.F90
+        ${src_path}/BasisOpt_Class@TriangleH1LagrangeFEMethods.F90
+        ${src_path}/BasisOpt_Class@QuadrangleH1LagrangeFEMethods.F90
+        ${src_path}/BasisOpt_Class@LineH1HierarchicalFEMethods.F90
+        ${src_path}/BasisOpt_Class@TriangleH1HierarchicalFEMethods.F90
+        ${src_path}/BasisOpt_Class@QuadrangleH1HierarchicalFEMethods.F90
+)

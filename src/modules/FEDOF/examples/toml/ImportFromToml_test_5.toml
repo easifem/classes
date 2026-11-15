@@ -1,0 +1,5 @@
+[test1]
+baseContinuity = "H1"
+baseInterpolation = "Hierarchical"
+brokenSpace = true
+order = "./toml/order_broken.csv"

@@ -1,0 +1,16 @@
+[domain]
+domain = [0, 2]
+totalElements = 10
+# this will create one dimensional domain of uniform size
+
+[fedof]
+islocal = true
+order = 1
+scaleForQuadOrder = 2
+baseInterpolation = "Lagrange"
+baseContinuity = "H1"
+ipType = "Equidistance"
+baseType = "Monomial"
+quadOptName = "quadOpt"
+[fedof.quadOpt]
+quadratureType = "GaussLegendre"

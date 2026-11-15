@@ -18,8 +18,12 @@
 
 SUBMODULE(TetrahedronH1FE_Class) Methods
 USE Display_Method, ONLY: ToString
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "TetrahedronH1FE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

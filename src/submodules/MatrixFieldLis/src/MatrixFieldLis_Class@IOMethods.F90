@@ -16,9 +16,7 @@
 !
 
 SUBMODULE(MatrixFieldLis_Class) IOMethods
-USE MatrixField_Class, ONLY: MatrixFieldDisplay
 USE Display_Method, ONLY: Display
-
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -41,7 +39,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldDisplay(obj=obj, msg=msg, unitno=unitno)
+CALL obj%MatrixField_%Display(msg=msg, unitno=unitno)
 
 isok = ALLOCATED(obj%lis_ia)
 CALL Display(isok, "obj%lis_ia ALLOCATED:", unitNo=unitno)

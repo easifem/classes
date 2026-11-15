@@ -18,45 +18,36 @@
 !
 
 MODULE Abstract1DFEM_Class
-USE GlobalData, ONLY: DFP, I4B, LGT
-
-USE BaseType, ONLY: QuadraturePoint_, &
-                    ElemshapeData_, &
-                    poly => TypePolynomialOpt, &
-                    qp => TypeQuadratureOpt, &
-                    ip => TypeInterpolationOpt, &
-                    CSRMatrix_, &
-                    DOF_, &
-                    RealVector_, &
-                    iface_SpaceTimeFunction, &
-                    iface_1DFunction
-
-USE tomlf, ONLY: toml_table, &
-                 toml_serialize, &
-                 toml_get => get_value, &
-                 toml_stat, toml_array, &
-                 toml_len => len
-
-USE FPL, ONLY: ParameterList_
-
-USE TxtFile_Class, ONLY: TxtFile_
-
-USE ExceptionHandler_Class, ONLY: e
-
-USE Display_Method, ONLY: Display, ToString
-
-USE String_Class, ONLY: String
-
-USE UserFunction_Class, ONLY: UserFunction_
-
-USE GnuPlot_Class, ONLY: GnuPlot_
-
+USE BaseType, ONLY: CSRMatrix_
+USE BaseType, ONLY: DOF_
+USE BaseType, ONLY: ElemshapeData_
+USE BaseType, ONLY: iface_1DFunction
+USE BaseType, ONLY: iface_SpaceTimeFunction
+USE BaseType, ONLY: ip => TypeInterpolationOpt
+USE BaseType, ONLY: poly => TypePolynomialOpt
+USE BaseType, ONLY: qp => TypeQuadratureOpt
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: RealVector_
 USE CSVFile_Class, ONLY: CSVFile_
-
-USE SDAlgorithms, ONLY: SDAlgoParam_
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ExceptionHandler_Class, ONLY: e
+USE FPL, ONLY: ParameterList_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE GnuPlot_Class, ONLY: GnuPlot_
 USE ReallocateUtility, ONLY: Reallocate
-
+USE SDAlgorithms, ONLY: SDAlgoParam_
+USE String_Class, ONLY: String
+USE tomlf, ONLY: toml_array
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_len => len
+USE tomlf, ONLY: toml_serialize
+USE tomlf, ONLY: toml_stat
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
+USE UserFunction_Class, ONLY: UserFunction_
 PRIVATE
 
 PUBLIC :: Abstract1DFEM_
@@ -93,7 +84,7 @@ INTERFACE ExportToCSVFile
 END INTERFACE ExportToCSVFile
 
 !----------------------------------------------------------------------------
-!                                                   Abstract1DFEM_
+!                                                              Abstract1DFEM_
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -736,7 +727,7 @@ SUBROUTINE ElementDataImportFromToml_real(table, key, val, telem, isfound)
 
   CHARACTER(*), PARAMETER :: myName = "ElementDataImportFromToml()"
   TYPE(toml_array), POINTER :: array
-  INTEGER(I4B) :: stat, origin, ii, tsize, ncol, &
+  INTEGER(I4B) :: STAT, origin, ii, tsize, ncol, &
                   iostat
   LOGICAL(LGT) :: isOk
   REAL(DFP) :: temp
@@ -751,7 +742,7 @@ SUBROUTINE ElementDataImportFromToml_real(table, key, val, telem, isfound)
   CALL Display(myName//key)
 #endif
 
-  CALL toml_get(table, key, array, origin=origin, stat=stat, &
+  CALL toml_get(table, key, array, origin=origin, STAT=STAT, &
                 requested=.FALSE.)
 
   IF (ASSOCIATED(array)) THEN
@@ -765,18 +756,18 @@ SUBROUTINE ElementDataImportFromToml_real(table, key, val, telem, isfound)
     RETURN
   END IF
 
-  CALL toml_get(table, key, temp, origin=origin, stat=stat)
+  CALL toml_get(table, key, temp, origin=origin, STAT=STAT)
 
-  IF (stat .EQ. toml_stat%success) THEN
+  IF (STAT .EQ. toml_stat%success) THEN
     CALL Reallocate(val, 1)
     val(1) = temp
     isfound = .TRUE.
     RETURN
   END IF
 
-  CALL toml_get(table, key, filename%raw, origin=origin, stat=stat)
+  CALL toml_get(table, key, filename%raw, origin=origin, STAT=STAT)
 
-  IF (stat .EQ. toml_stat%success) THEN
+  IF (STAT .EQ. toml_stat%success) THEN
     ext = filename%extension()
     SELECT CASE (ext%chars())
     CASE (".txt")
@@ -881,7 +872,7 @@ SUBROUTINE ElementDataImportFromToml_int(table, key, val, telem, isfound)
 
   CHARACTER(*), PARAMETER :: myName = "ElementDataImportFromToml()"
   TYPE(toml_array), POINTER :: array
-  INTEGER(I4B) :: stat, origin, ii, tsize, ncol, &
+  INTEGER(I4B) :: STAT, origin, ii, tsize, ncol, &
                   iostat, temp
   LOGICAL(LGT) :: isOk
   TYPE(String) :: filename, ext
@@ -894,7 +885,7 @@ SUBROUTINE ElementDataImportFromToml_int(table, key, val, telem, isfound)
   CALL Display(myName//key)
 #endif
 
-  CALL toml_get(table, key, array, origin=origin, stat=stat, &
+  CALL toml_get(table, key, array, origin=origin, STAT=STAT, &
                 requested=.FALSE.)
 
   IF (ASSOCIATED(array)) THEN
@@ -908,18 +899,18 @@ SUBROUTINE ElementDataImportFromToml_int(table, key, val, telem, isfound)
     RETURN
   END IF
 
-  CALL toml_get(table, key, temp, origin=origin, stat=stat)
+  CALL toml_get(table, key, temp, origin=origin, STAT=STAT)
 
-  IF (stat .EQ. toml_stat%success) THEN
+  IF (STAT .EQ. toml_stat%success) THEN
     CALL Reallocate(val, 1)
     val(1) = temp
     isfound = .TRUE.
     RETURN
   END IF
 
-  CALL toml_get(table, key, filename%raw, origin=origin, stat=stat)
+  CALL toml_get(table, key, filename%raw, origin=origin, STAT=STAT)
 
-  IF (stat .EQ. toml_stat%success) THEN
+  IF (STAT .EQ. toml_stat%success) THEN
     ext = filename%extension()
     SELECT CASE (ext%chars())
     CASE (".txt")

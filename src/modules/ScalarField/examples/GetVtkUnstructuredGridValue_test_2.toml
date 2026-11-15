@@ -1,0 +1,64 @@
+# Input file for GetVtkUnstructuredGridValue_test_2.
+# small_tri3_mesh.h5: Triangle3 elements with different orientations.
+# u (scalar) and v (vector, two components) have order 3 (10 DOF in each
+# element) and the same DOF numbering.
+
+[domain]
+filename = "./meshdata/small_tri3_mesh.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 1
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 3
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[v]
+name = "v"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[v.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[v.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 3
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[v.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"

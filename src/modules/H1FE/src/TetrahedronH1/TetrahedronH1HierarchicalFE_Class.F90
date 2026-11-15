@@ -16,48 +16,90 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: TetrahedronH1HierarchicalFE public interfaces
+!
+! Defines the finite element type, its pointer wrapper and the procedures
+! declared in this module. Implementations reside in the corresponding H1FE
+! submodule.
+!
 MODULE TetrahedronH1HierarchicalFE_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
-USE TetrahedronH1FE_Class, ONLY: TetrahedronH1FE_
+USE BaseType, ONLY: QuadraturePoint_
+USE BaseType, ONLY: ElemShapeData_
 USE ExceptionHandler_Class, ONLY: e
-USE BaseType, ONLY: QuadraturePoint_, ElemShapeData_
-
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: LGT
+USE TetrahedronH1FE_Class, ONLY: TetrahedronH1FE_
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: TetrahedronH1HierarchicalFE_
 PUBLIC :: TetrahedronH1HierarchicalFEPointer_
 PUBLIC :: TetrahedronH1HierarchicalFEPointer
 
-PUBLIC :: FiniteElementDeallocate
-
-CHARACTER(*), PARAMETER :: modName = "TetrahedronH1HierarchicalFE_Class"
-
 !----------------------------------------------------------------------------
 !                                                TetrahedronH1HierarchicalFE_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-10-09
-! summary:  Scalar H1 Hierarchical Finite Element
-
+! date: 2026-10-29
+! summary: TetrahedronH1HierarchicalFE finite element interfaces
+!
+! Extends TetrahedronH1FE_ without introducing additional data components.
+! Inherits the initialization state and basis options and overrides the
+! operations listed below. Some declared operations are WIP placeholders and
+! report under-development errors in DEBUG mode; see each interface and
+! bugs_report/H1FE.md. Pointer factories transfer ownership to their caller.
+! Reset a target with its DEALLOCATE binding, then free owned allocations with
+! intrinsic DEALLOCATE. The declared FiniteElementDeallocate vector helpers
+! currently lack implementations.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
+!   FE_ => TetrahedronH1HierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
+!   NewFE => TetrahedronH1HierarchicalFEPointer
+! IMPLICIT NONE
+! TYPE(FE_), POINTER :: ptr
+!
+! ptr => NewFE()
+! CALL OK(ASSOCIATED(ptr), "Empty constructor allocates a target")
+! CALL OK(.NOT. ptr%isInit, "Empty target starts uninitialized")
+! CALL ptr%DEALLOCATE()
+! DEALLOCATE(ptr)
+! END PROGRAM main
+!```
+!
 TYPE, EXTENDS(TetrahedronH1FE_) :: TetrahedronH1HierarchicalFE_
 CONTAINS
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetLocalElemShapeData => &
     obj_GetLocalElemShapeData
-  !! Get the Local element shape data
-  PROCEDURE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
+  !! Get Local Elem Shape Data (WIP).
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetGlobalElemShapeData => &
     obj_GetGlobalElemShapeData
-  !! Get the Global element shape data
-  PROCEDURE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
-  !! Set the order of shape functions
+  !! Get Global Elem Shape Data (WIP).
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetOrder => obj_SetOrder
+  !! Set Order (WIP).
 END TYPE TetrahedronH1HierarchicalFE_
 
 !----------------------------------------------------------------------------
 !                                         TetrahedronH1HierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Nullable TetrahedronH1HierarchicalFE pointer wrapper
+!
+! Contains a polymorphic ptr initialized to NULL(). The wrapper does not
+! establish ownership of its target; retain an owning reference when target
+! allocations must be deallocated.
+!
 TYPE :: TetrahedronH1HierarchicalFEPointer_
   CLASS(TetrahedronH1HierarchicalFE_), POINTER :: ptr => NULL()
 END TYPE TetrahedronH1HierarchicalFEPointer_
@@ -67,88 +109,91 @@ END TYPE TetrahedronH1HierarchicalFEPointer_
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-07-12
-! summary:  Empty constructor
+! date: 2024-07-12
+! summary: Allocate an uninitialized finite element target
+!
+! Allocates a new target of the concrete finite element type without calling
+! Initiate. The caller owns the allocation: call its DEALLOCATE binding to
+! reset state, then use intrinsic DEALLOCATE on the target when finished.
+!
+! Returns:
+! ans : TYPE(TetrahedronH1HierarchicalFE_) - Allocated finite element target
+! returned to the caller.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
+!   FE_ => TetrahedronH1HierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
+!   NewFE => TetrahedronH1HierarchicalFEPointer
+! IMPLICIT NONE
+! TYPE(FE_), POINTER :: ptr
+!
+! ptr => NewFE()
+! CALL OK(ASSOCIATED(ptr), "Empty constructor allocates a target")
+! CALL OK(.NOT. ptr%isInit, "Empty target starts uninitialized")
+! CALL ptr%DEALLOCATE()
+! DEALLOCATE(ptr)
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractFE_]]
 
 INTERFACE TetrahedronH1HierarchicalFEPointer
   MODULE FUNCTION obj_TetrahedronH1HierarchicalFEPointer1() RESULT(ans)
     TYPE(TetrahedronH1HierarchicalFE_), POINTER :: ans
+    !! Allocated finite element target returned to the caller.
   END FUNCTION obj_TetrahedronH1HierarchicalFEPointer1
 END INTERFACE TetrahedronH1HierarchicalFEPointer
-
-!----------------------------------------------------------------------------
-!                                                      HierarchicalFE@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary: Constructor method
-
-INTERFACE TetrahedronH1HierarchicalFEPointer
-  MODULE FUNCTION obj_TetrahedronH1HierarchicalFEPointer2( &
-    order, nsd, cellOrient, quadratureType, quadratureOrder, &
-    quadratureAlpha, quadratureBeta, quadratureLambda) RESULT(ans)
-    INTEGER(I4B), INTENT(IN) :: order
-    !! Isotropic Order of finite element
-    INTEGER(I4B), INTENT(IN) :: nsd
-    !! Number of spatial dimension
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrient(3)
-    !! Orientation of cell
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureType(:)
-    !! Quadrature type
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: quadratureOrder(:)
-    !! Order of quadrature
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureAlpha(:), &
-                                       quadratureBeta(:)
-    !! For jacobian polynomial
-    REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda(:)
-    !! for ultraspherical polynomial
-    TYPE(TetrahedronH1HierarchicalFE_), POINTER :: ans
-    !! TetrahedronH1HierarchicalFE_ pointer
-  END FUNCTION obj_TetrahedronH1HierarchicalFEPointer2
-END INTERFACE TetrahedronH1HierarchicalFEPointer
-
-!----------------------------------------------------------------------------
-!                                                          Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-06-24
-! summary:  Deallocate a vector of TetrahedronH1HierarchicalFE
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Vector(obj)
-    TYPE(TetrahedronH1HierarchicalFE_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE Deallocate_Vector
-END INTERFACE FiniteElementDeallocate
-
-!----------------------------------------------------------------------------
-!                                                          Deallocate@Methods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date:  2023-09-09
-! summary:  Deallocate the vector of TetrahedronH1HierarchicalFEPointer_
-
-INTERFACE FiniteElementDeallocate
-  MODULE SUBROUTINE Deallocate_Ptr_Vector(obj)
-    TYPE(TetrahedronH1HierarchicalFEPointer_), ALLOCATABLE :: obj(:)
-  END SUBROUTINE Deallocate_Ptr_Vector
-END INTERFACE FiniteElementDeallocate
 
 !----------------------------------------------------------------------------
 !                                               GetLocalElemShapeData@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get local element shape data shape data
+! date: 2023-08-15
+! summary: Get Local Elem Shape Data (WIP)
+!
+! This binding is currently a WIP placeholder. It does not perform the
+! operation described by the interface name. The implementation raises an
+! under-development error in DEBUG mode. The example intentionally exposes the
+! unsupported call.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
+!   FE_ => TetrahedronH1HierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: QuadraturePoint_
+! USE BaseType, ONLY: ElemShapeData_
+! IMPLICIT NONE
+! TYPE(FE_) :: obj
+! TYPE(ElemShapeData_) :: shapes
+! TYPE(QuadraturePoint_) :: quad
+!
+! ! This operation is currently a WIP placeholder.
+! CALL obj%GetLocalElemShapeData(elemsd=shapes, quad=quad)
+! CALL OK(shapes%nips > 0_I4B, "Local shapes populated")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractFE_]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetLocalElemShapeData(obj, elemsd, quad)
     CLASS(TetrahedronH1HierarchicalFE_), INTENT(INOUT) :: obj
+    !! Finite element object of the declared class.
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
+    !! Cell shape data, or cell traces at a facet quadrature rule.
     TYPE(QuadraturePoint_), INTENT(INOUT) :: quad
+    !! Cell quadrature, or reference cell points restricted to a facet.
   END SUBROUTINE obj_GetLocalElemShapeData
 END INTERFACE
 
@@ -157,40 +202,59 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2024-07-12
-! summary:  This routine set order in the already initiated AbstractFE_
+! date: 2024-07-12
+! summary: Set Order (WIP)
 !
-!# Introduction
+! This binding is currently a WIP placeholder. It does not perform the
+! operation described by the interface name. The implementation raises an
+! under-development error in DEBUG mode. The example intentionally exposes the
+! unsupported call.
 !
-! This routine sets order in the already initiated AbstractFE_
-! Make sure the object is initiated by calling correct constructor methods
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
+!   FE_ => TetrahedronH1HierarchicalFE_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+! TYPE(FE_) :: obj
+!
+!
+! ! This operation is currently a WIP placeholder.
+! CALL obj%SetOrder(order=1_I4B)
+! CALL OK(obj%opt%GetTotalDOF() > 0_I4B, "SetOrder establishes DOFs")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractFE_]]
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOrder( &
     obj, order, anisoOrder, cellOrder, faceOrder, edgeOrder, tCell, tFace, &
     tEdge, errCheck)
     CLASS(TetrahedronH1HierarchicalFE_), INTENT(INOUT) :: obj
-    !! abstract finite element
+    !! Finite element object of the declared class.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
-    !! order
+    !! Polynomial degree; scalar or directional input as declared.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: anisoOrder(:)
-    !! aniso tropic order
+    !! Anisotropic approximation orders by reference direction.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: cellOrder(:)
-    !! cell order
+    !! Cell approximation degrees; counts and broadcasting follow BasisOpt_.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: faceOrder(:, :)
-    !! face order ! number of rows in faceOrder is 3
-    !! number of columns in faceOrder is tfaceorder
+    !! Facet approximation degrees; three rows and one column per facet.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: edgeOrder(:)
-    !! edge order ! size of edgeorder is tedgeorder
+    !! Approximation orders on the edges.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tCell
-    !! size of cellOrder
+    !! Active size of cell order or orientation data.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tFace
-    !! number of columns in faceOrder
+    !! Active number of face columns.
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: tEdge
-    !! size of edgeorder
+    !! Active size of edge data.
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: errCheck
-    !! user can ignore this option
-    !! for dev: this option checks the errors in debug mode
+    !! Optional DEBUG validation control forwarded where supported.
   END SUBROUTINE obj_SetOrder
 END INTERFACE
 
@@ -199,25 +263,50 @@ END INTERFACE
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date:  2023-08-15
-! summary:  Get Global element shape data shape data
+! date: 2023-08-15
+! summary: Get Global Elem Shape Data (WIP)
+!
+! This binding is currently a WIP placeholder. It does not perform the
+! operation described by the interface name. The implementation raises an
+! under-development error in DEBUG mode. The example intentionally exposes the
+! unsupported call.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE GlobalData, ONLY: I4B
+! USE GlobalData, ONLY: DFP
+! USE TetrahedronH1HierarchicalFE_Class, ONLY: &
+!   FE_ => TetrahedronH1HierarchicalFE_
+! USE Test_Method, ONLY: OK
+! USE BaseType, ONLY: ElemShapeData_
+! IMPLICIT NONE
+! TYPE(FE_) :: obj
+! TYPE(ElemShapeData_) :: shapes, geometry
+! REAL(DFP) :: xij(3, 8)
+!
+! ! This operation is currently a WIP placeholder.
+! xij = 0.0_DFP
+! CALL obj%GetGlobalElemShapeData( &
+!   elemsd=shapes, geoelemsd=geometry, xij=xij)
+! CALL OK(shapes%nips > 0_I4B, "Mapped shapes populated")
+! CALL obj%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[AbstractFE_]]
 
 INTERFACE
   MODULE SUBROUTINE obj_GetGlobalElemShapeData(obj, elemsd, xij, geoelemsd)
     CLASS(TetrahedronH1HierarchicalFE_), INTENT(INOUT) :: obj
-    !! Abstract finite element
+    !! Finite element object of the declared class.
     TYPE(ElemShapedata_), INTENT(INOUT) :: elemsd
-    !! shape function data
+    !! Cell shape data, or cell traces at a facet quadrature rule.
     REAL(DFP), INTENT(IN) :: xij(:, :)
-    !! nodal coordinates of element
-    !! The number of rows in xij should be same as the spatial dimension
-    !! The number of columns should be same as the number of nodes
-    !! present in the reference element in geoElemsd.
+    !! Physical geometry-node coordinates; coordinate directions are rows.
     TYPE(ElemShapeData_), INTENT(INOUT) :: geoelemsd
-    !! shape function data for geometry which contains local shape function
-    !! data. If not present then the local shape function in elemsd
-    !! will be used for geometry. This means we are dealing with
-    !! isoparametric shape functions.
+    !! Required prepared geometry shapes at matching reference points.
   END SUBROUTINE obj_GetGlobalElemShapeData
 END INTERFACE
 

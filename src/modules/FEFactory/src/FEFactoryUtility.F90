@@ -17,16 +17,15 @@
 !
 
 MODULE FEFactoryUtility
-USE GlobalData, ONLY: I4B, DFP, LGT
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
-USE tomlf, ONLY: toml_table
 USE ExceptionHandler_Class, ONLY: e
-
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE tomlf, ONLY: toml_table
 IMPLICIT NONE
 PRIVATE
-
-CHARACTER(*), PARAMETER :: modName = "FEFactoryUtility"
 
 PUBLIC :: FEFactory
 PUBLIC :: OneDimFEFactory
@@ -40,11 +39,17 @@ PUBLIC :: OneDimFEFactory
 ! summary: FEFactory
 
 INTERFACE FEFactory
-  MODULE FUNCTION FEFactory1(elemType, baseContinuity, baseInterpolation) &
-    RESULT(ans)
+  MODULE FUNCTION FEFactory1(elemType, baseContinuity, baseInterpolation, &
+                             isBrokenSpace) RESULT(ans)
     INTEGER(I4B), INTENT(IN) :: elemType
+    !! element type, also known as element name
     CHARACTER(*), INTENT(IN) :: baseContinuity
+    !! base continuity
     CHARACTER(*), INTENT(IN) :: baseInterpolation
+    !! base interpolation
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
+    !! Are we dealing with broken spaces
+    !! Default value is false,
     CLASS(AbstractFE_), POINTER :: ans
   END FUNCTION FEFactory1
 END INTERFACE FEFactory
@@ -74,17 +79,15 @@ END INTERFACE FEFactory
 ! summary:  Internal routine for creating pointer form baseContinuity
 ! and baseInterpolation
 
-INTERFACE
-  MODULE FUNCTION OneDimFEFactory1(baseContinuity, baseInterpolation) &
+INTERFACE OneDimFEFactory
+  MODULE FUNCTION OneDimFEFactory1(baseContinuity, baseInterpolation, &
+                                   isBrokenSpace) &
     RESULT(ans)
     CHARACTER(*), INTENT(IN) :: baseContinuity
     CHARACTER(*), INTENT(IN) :: baseInterpolation
     CLASS(AbstractOneDimFE_), POINTER :: ans
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isBrokenSpace
   END FUNCTION OneDimFEFactory1
-END INTERFACE
-
-INTERFACE OneDimFEFactory
-  MODULE PROCEDURE OneDimFEFactory1
 END INTERFACE OneDimFEFactory
 
 !----------------------------------------------------------------------------
@@ -97,5 +100,9 @@ INTERFACE OneDimFEFactory
     CLASS(AbstractOneDimFE_), POINTER :: ans
   END FUNCTION OneDimFEFactory2
 END INTERFACE OneDimFEFactory
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE FEFactoryUtility

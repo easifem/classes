@@ -19,12 +19,19 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) SetMethods
-USE IntVector_Method, ONLY: Append, RemoveDuplicates, IsAllocated
-USE BoundingBox_Method, ONLY: BoundingBox_Append => Append
 USE AbstractMesh_Class, ONLY: AbstractMesh_
+USE BaseType, ONLY: math => TypeMathOpt
+USE BoundingBox_Method, ONLY: BoundingBox_Append => Append
 USE Display_Method, ONLY: ToString
-
+USE IntVector_Method, ONLY: Append
+USE IntVector_Method, ONLY: IsAllocated
+USE IntVector_Method, ONLY: RemoveDuplicates
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -41,10 +48,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-CALL addmeshid(obj, meshid, dim)
-CALL addelemnum(obj, elemnum, dim)
-CALL addnodenum(obj, nodenum, dim)
-CALL addbox(obj, box, dim)
+CALL AddMeshID(obj, meshid, dim)
+CALL AddElemNum(obj, elemnum, dim)
+CALL AddNodeNum(obj, nodenum, dim)
+CALL AddBox(obj, box, dim)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -56,7 +63,7 @@ END PROCEDURE obj_Add
 !                                                                 AddMeshID
 !----------------------------------------------------------------------------
 
-SUBROUTINE addmeshid(obj, meshid, dim)
+SUBROUTINE AddMeshID(obj, meshid, dim)
   CLASS(MeshSelection_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: meshid(:), dim
 
@@ -92,10 +99,11 @@ SUBROUTINE addmeshid(obj, meshid, dim)
   CASE (3)
     CALL Append(obj%volumeMeshID, meshID)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
-    CALL e%RaiseError(modName//'::'//myName//' - '// &
-                      'No case found for dim = '//ToString(dim))
+
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
+                      "No case found for dim")
 #endif
 
   END SELECT
@@ -104,22 +112,26 @@ SUBROUTINE addmeshid(obj, meshid, dim)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE addmeshid
+END SUBROUTINE AddMeshID
 
 !----------------------------------------------------------------------------
-!                                                                addelemnum
+!                                                                AddElemNum
 !----------------------------------------------------------------------------
 
-SUBROUTINE addelemnum(obj, elemnum, dim)
+SUBROUTINE AddElemNum(obj, elemnum, dim)
   CLASS(MeshSelection_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: elemnum(:), dim
 
   ! Internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "addelemnum()"
+  CHARACTER(*), PARAMETER :: myName = "AddElemNum()"
 #endif
-
   LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   isok = PRESENT(dim) .AND. PRESENT(elemnum)
   IF (.NOT. isok) THEN
@@ -141,30 +153,32 @@ SUBROUTINE addelemnum(obj, elemnum, dim)
   CASE (3)
     CALL Append(obj%volumeElemNum, elemnum)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
+
+#ifdef DEBUG_VER
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       'No case found for dim = '//ToString(dim))
 #endif
+
   END SELECT
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE addelemnum
+END SUBROUTINE AddElemNum
 
 !----------------------------------------------------------------------------
 !                                                                addnodenum
 !----------------------------------------------------------------------------
 
-SUBROUTINE addnodenum(obj, nodenum, dim)
+SUBROUTINE AddNodeNum(obj, nodenum, dim)
   CLASS(MeshSelection_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodenum(:), dim
 
   ! Internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "addnodenum()"
+  CHARACTER(*), PARAMETER :: myName = "AddNodeNum()"
 #endif
   LOGICAL(LGT) :: isok
 
@@ -204,8 +218,8 @@ SUBROUTINE addnodenum(obj, nodenum, dim)
   CASE (3)
     CALL Append(obj%volumeNodeNum, nodeNum)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
+#ifdef DEBUG_VER
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       'No case found for dim = '//ToString(dim))
 #endif
@@ -216,20 +230,20 @@ SUBROUTINE addnodenum(obj, nodenum, dim)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE addnodenum
+END SUBROUTINE AddNodeNum
 
 !----------------------------------------------------------------------------
 !                                                                 addbox
 !----------------------------------------------------------------------------
 
-SUBROUTINE addbox(obj, box, dim)
+SUBROUTINE AddBox(obj, box, dim)
   CLASS(MeshSelection_), INTENT(INOUT) :: obj
   TYPE(BoundingBox_), OPTIONAL, INTENT(IN) :: box(:)
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: dim
 
   ! Internal variables
 #ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "addbox()"
+  CHARACTER(*), PARAMETER :: myName = "AddBox()"
 #endif
 
   LOGICAL(LGT) :: isok
@@ -259,8 +273,8 @@ SUBROUTINE addbox(obj, box, dim)
   CASE (3)
     CALL BoundingBox_Append(obj%volumeBox, box)
 
-#ifdef DEBUG_VER
   CASE DEFAULT
+#ifdef DEBUG_VER
     CALL e%RaiseError(modName//'::'//myName//' - '// &
                       'No case found for dim = '//ToString(dim))
 #endif
@@ -270,7 +284,7 @@ SUBROUTINE addbox(obj, box, dim)
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-END SUBROUTINE addbox
+END SUBROUTINE AddBox
 
 !----------------------------------------------------------------------------
 !                                                                     Set
@@ -367,12 +381,11 @@ END PROCEDURE obj_Set2
 MODULE PROCEDURE obj_SetMaterialToMesh1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myname = "obj_SetMaterialToMesh1()"
+LOGICAL(LGT) :: isok
 #endif
 
 CLASS(AbstractMesh_), POINTER :: mesh
-INTEGER(I4B), POINTER :: intptr(:)
-INTEGER(I4B) :: tsize, ii, iel
-LOGICAL(LGT) :: abool
+INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -382,37 +395,72 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 mesh => dom%GetMeshPointer(dim=dim)
 
 #ifdef DEBUG_VER
-abool = ASSOCIATED(mesh)
-CALL AssertError1(abool, myname, "Mesh pointer is not associated")
+isok = ASSOCIATED(mesh)
+CALL AssertError1(isok, myname, "Mesh pointer is not associated")
 #endif
 
-! isSelectionByMeshID
-intptr => NULL()
-CALL obj%GetMeshIDPointer(dim=dim, ans=intptr, tsize=tsize)
+! IsSelectionByMeshID
+SELECT CASE (dim)
+CASE (0)
+  DO ii = 1, obj%pointMeshID%tsize
+    CALL mesh%SetMaterial(entityNum=obj%pointMeshID%val(ii), &
+                          material=material, medium=medium)
+  END DO
 
-DO ii = 1, tsize
-  CALL mesh%SetMaterial(entityNum=intptr(ii), material=material, &
-                        medium=medium)
-END DO
+  DO ii = 1, obj%pointElemNum%tsize
+    CALL mesh%SetMaterial(medium=medium, material=material, &
+                          globalElement=obj%pointElemNum%val(ii), &
+                          islocal=math%no)
+  END DO
 
-! isSelectionByElemNum
-intptr => NULL()
-CALL obj%GetElemNumPointer(dim=dim, ans=intptr, tsize=tsize)
+CASE (1)
+  DO ii = 1, obj%curveMeshID%tsize
+    CALL mesh%SetMaterial(entityNum=obj%curveMeshID%val(ii), &
+                          material=material, medium=medium)
+  END DO
 
-DO ii = 1, tsize
-  iel = intptr(ii)
-  CALL mesh%SetMaterial(medium=medium, material=material, &
-                        globalElement=iel, islocal=.FALSE.)
-END DO
+  DO ii = 1, obj%curveElemNum%tsize
+    CALL mesh%SetMaterial(medium=medium, material=material, &
+                          globalElement=obj%curveElemNum%val(ii), &
+                          islocal=math%no)
+  END DO
+
+CASE (2)
+  DO ii = 1, obj%surfaceMeshID%tsize
+    CALL mesh%SetMaterial(entityNum=obj%surfaceMeshID%val(ii), &
+                          material=material, medium=medium)
+  END DO
+
+  DO ii = 1, obj%surfaceElemNum%tsize
+    CALL mesh%SetMaterial(medium=medium, material=material, &
+                          globalElement=obj%surfaceElemNum%val(ii), &
+                          islocal=math%no)
+  END DO
+
+CASE (3)
+  DO ii = 1, obj%volumeMeshID%tsize
+    CALL mesh%SetMaterial(entityNum=obj%volumeMeshID%val(ii), &
+                          material=material, medium=medium)
+  END DO
+
+  DO ii = 1, obj%volumeElemNum%tsize
+    CALL mesh%SetMaterial(medium=medium, material=material, &
+                          globalElement=obj%volumeElemNum%val(ii), &
+                          islocal=math%no)
+  END DO
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for dim.")
+#endif
+END SELECT
 
 mesh => NULL()
-intptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetMaterialToMesh1
 
 !----------------------------------------------------------------------------

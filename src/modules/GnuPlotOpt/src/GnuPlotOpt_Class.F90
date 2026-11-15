@@ -17,12 +17,11 @@
 
 MODULE GnuPlotOpt_Class
 
-USE GlobalData, ONLY: I4B, DFP, LGT
+USE GlobalData, ONLY: DFP, I4B, LGT
 
 USE BaseMethod, ONLY: TOSTRING
 
-USE BaseType, ONLY: RealVectorPointer_, &
-                    RealMatrixPointer_
+USE BaseType, ONLY: RealMatrixPointer_, RealVectorPointer_
 
 USE ExceptionHandler_Class, ONLY: e
 
@@ -275,8 +274,10 @@ END TYPE GnuplotOpt_
 
 !> author: Shion Shimizu
 ! date:   2024-06-06
-! update: 2025-02-21
 ! summary:  Initialize the Gnuplot object
+!
+! Changes:
+!   - 2025-02-21
 
 INTERFACE
   MODULE SUBROUTINE obj_Initiate(obj)
@@ -290,8 +291,10 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2024-06-06
-! update: 2025-02-21
 ! summary: Deallocate the Gnuplot object
+!
+! Changes:
+!   - 2025-02-21
 
 INTERFACE
   MODULE SUBROUTINE obj_Deallocate(obj)
@@ -405,7 +408,6 @@ END INTERFACE
 
 !> author: Shion Shimizu
 ! date: 2026-05-05
-! update: add index to overwrite the options
 !
 !# Introduction
 !
@@ -414,6 +416,9 @@ END INTERFACE
 ! If reset is false (default is true), then the new options are added to the existing options
 ! if index is given, then (index)th component will be overwritten
 ! (automatically reset=false)
+!
+! Changes:
+!   - add index to overwrite the options
 
 INTERFACE
   MODULE SUBROUTINE obj_SetOptions(obj, optionStr, reset, index)
@@ -467,12 +472,14 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set x limit
 !
 !# Introduction
 !
 !Set the x axis limits in form of [xmin, xmax]
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetXLim(obj, lims)
@@ -507,12 +514,14 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set y limit
 !
 !# Introduction
 !
 !Set the y axis limits in form of [ymin, ymax]
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetYLim(obj, lims)
@@ -547,12 +556,14 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set z limit
 !
 !# Introduction
 !
 !Set the z axis limits in form of [zmin, zmax]
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetZLim(obj, lims)
@@ -708,8 +719,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set x label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetXLabel(obj, label, color, fontSize, fontName, &
@@ -730,8 +743,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set x2 label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetX2Label(obj, label, color, fontSize, fontName, &
@@ -752,8 +767,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set y label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetYLabel(obj, label, color, fontSize, fontName, &
@@ -774,8 +791,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set y2 label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetY2Label(obj, label, color, fontSize, fontName, &
@@ -796,8 +815,10 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
 ! summary:  set z label
+!
+! Changes:
+!   - 2025-12-22
 
 INTERFACE
   MODULE SUBROUTINE obj_SetZLabel(obj, label, color, fontSize, fontName, &
@@ -838,7 +859,9 @@ END INTERFACE
 !> author: Vikas Sharma, Ph. D.
 ! date:  2024-08-23
 !> author: Shion Shimizu
-! update: 2025-12-22
+!
+! Changes:
+!   - 2025-12-22
 
 ! summary:  set label
 !

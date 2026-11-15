@@ -19,8 +19,12 @@
 
 SUBMODULE(OneDimOrthogonalFE_Class) Methods
 USE BaseType, ONLY: TypeFeVariableOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "OneDimOrthogonalFE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------

@@ -16,9 +16,9 @@
 !
 
 MODULE NodeData_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
-USE Display_Method, ONLY: Display
 USE AppendUtility, ONLY: Expand
+USE Display_Method, ONLY: Display
+USE GlobalData, ONLY: DFP, I4B, LGT
 
 IMPLICIT NONE
 
@@ -75,7 +75,7 @@ END INTERFACE Display
 !                                                                 NodeData_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-26
 ! summary: Data type for storing node data
 
@@ -322,7 +322,7 @@ END SUBROUTINE NodeData_Copy
 !
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-29
 ! summary: Display a single instance of NodeData_
 
@@ -440,7 +440,8 @@ END FUNCTION NodeData_Pointer
 ! summary:  Set node data
 
 SUBROUTINE NodeData_Set(obj, globalNodeNum, localNodeNum, &
-           nodeType, globalNodes, globalElements, extraGlobalNodes, nodeCoord)
+                        nodeType, globalNodes, globalElements, &
+                        extraGlobalNodes, nodeCoord)
   TYPE(NodeData_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: globalNodeNum
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: localNodeNum

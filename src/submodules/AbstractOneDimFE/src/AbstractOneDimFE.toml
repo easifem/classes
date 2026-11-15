@@ -1,0 +1,33 @@
+baseInterpolation = "Lagrange"
+baseContinuity = "H1"
+ipType = "Equidistance"
+# ipType is needed when baseInterpolation is Lagrange
+baseType = "Monomial"
+# baseType is needed when baseInterpolation is Lagrange
+alpha = 0.0
+# alpha is optional
+beta = 0.0
+# beta is optional
+lambda = 0.0
+# lambda is optional
+order = 1
+# order is optional
+feType = "Scalar"
+# feType is scalar
+quadOptName = "quadOpt"
+[quadOpt]
+quadratureType = "GaussLegendre"
+order = 1
+# order is optional here
+nips = 1
+# nips is optional here
+alpha = 0.0
+# alpha is optional here
+beta = 0.0
+# beta is optional here
+lambda = 0.0
+# lambda is optional here
+refelemDomain = "Biunit"
+# refelemDomain is optional here
+refelemCoord = [[-1, 1]]
+# refelemCoord is optional here

@@ -16,8 +16,19 @@
 !
 
 SUBMODULE(HDF5File_Class) WriteBool
-USE BaseMethod
+USE HDF5, ONLY: H5DWRITE_F
+USE HDF5, ONLY: H5KIND_TO_TYPE
+USE HDF5, ONLY: H5_INTEGER_KIND
+USE HDF5, ONLY: H5TCLOSE_F
+USE HDF5, ONLY: H5TENUM_CREATE_F
+USE HDF5, ONLY: H5TENUM_INSERT_F
+USE ISO_C_BINDING, ONLY: C_LOC
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "HDF5File_Class@WriteBool.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -27,47 +38,85 @@ CONTAINS
 #ifdef mem_type
 #undef mem_type
 #endif
-#define mem_type H5T_NATIVE_CHARACTER
 #define mem_type_bool
 
-MODULE PROCEDURE hdf5_write_b0
-#define rank 0
-#include "./write.inc"
-#undef rank
-END PROCEDURE hdf5_write_b0
+MODULE PROCEDURE obj_Write_b0
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_b0()"
+#endif
+#define DATA_RANK 0
+#include "./include/write.F90"
+#undef DATA_RANK
+END PROCEDURE obj_Write_b0
 
 !----------------------------------------------------------------------------
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_b1
-#define rank 1
-#include "./write.inc"
-#undef rank
-END PROCEDURE hdf5_write_b1
+MODULE PROCEDURE obj_Write_b1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_b1()"
+#endif
+#define DATA_RANK 1
+#include "./include/write.F90"
+#undef DATA_RANK
+END PROCEDURE obj_Write_b1
 
 !----------------------------------------------------------------------------
 !                                                                      Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_b2
-#define rank 2
-#include "./write.inc"
-#undef rank
-END PROCEDURE hdf5_write_b2
+MODULE PROCEDURE obj_Write_b2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_b2()"
+#endif
+#define DATA_RANK 2
+#include "./include/write.F90"
+#undef DATA_RANK
+END PROCEDURE obj_Write_b2
 
 !----------------------------------------------------------------------------
 !                                                                     Write
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_write_b3
-#define rank 3
-#include "./write.inc"
-#undef rank
-END PROCEDURE hdf5_write_b3
+MODULE PROCEDURE obj_Write_b3
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Write_b3()"
+#endif
+#define DATA_RANK 3
+#include "./include/write.F90"
+#undef DATA_RANK
+END PROCEDURE obj_Write_b3
 
 !----------------------------------------------------------------------------
-!
+!                                                              Include error
 !----------------------------------------------------------------------------
+!                                                               BoolEnumType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE BoolEnumType
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "BoolEnumType()"
+#endif
+  INTEGER(INT8), TARGET :: v
+  INTEGER(I4B) :: error
+
+  ! The enum {FALSE=0, TRUE=1} on an 8-bit integer, as written by h5py
+  CALL H5TENUM_CREATE_F(H5KIND_TO_TYPE(INT8, H5_INTEGER_KIND), enum_id, &
+                        error)
+  v = 0_INT8
+  CALL H5TENUM_INSERT_F(enum_id, "FALSE", C_LOC(v), error)
+  v = 1_INT8
+  CALL H5TENUM_INSERT_F(enum_id, "TRUE", C_LOC(v), error)
+
+#ifdef DEBUG_VER
+  CALL AssertError1(error .EQ. 0, myName, &
+                    'Could not create the enum type of logical data.')
+#endif
+END PROCEDURE BoolEnumType
+
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE WriteBool

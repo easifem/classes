@@ -21,18 +21,15 @@ USE BaseType, ONLY: ipopt => TypeInterpolationOpt
 USE BaseType, ONLY: polyopt => TypePolynomialOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
+USE BaseType, ONLY: math => TypeMathOpt
 USE ExceptionHandler_Class, ONLY: e
 USE OneDimQuadratureOpt_Class, ONLY: OneDimQuadratureOpt_
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
-
 IMPLICIT NONE
-
 PRIVATE
 
 PUBLIC :: OneDimBasisOpt_, TypeOneDimBasisOpt
-
-CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class"
 
 !----------------------------------------------------------------------------
 !                                                             BasisOpt_Class
@@ -50,6 +47,11 @@ TYPE :: OneDimBasisOpt_
 
   LOGICAL(LGT) :: firstCall = .TRUE.
   !! flag to check if the shape functions are constructed from scratch or not
+
+  LOGICAL(LGT) :: isSpectral = .FALSE.
+  !! If isSpectral is true then we use quadrature points same as
+  !! interpolation points, make sure in this case you use
+  !! baseInterpolation="LAGR"
 
   INTEGER(I4B) :: tdof = 0
   !! total number of degrees of freedom
@@ -178,10 +180,18 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadraturePoints => &
     obj_GetQuadraturePoints
   !! Get the quadrature points
+  !
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetQuadratureOrder => &
+    obj_GetQuadratureOrder
+  !! Get the quadrature Order
 
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetInterpolationPoints => &
-    obj_GetInterpolationPoints
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetInterpolationPoints => obj_GetInterpolationPoints
   !! Get the interpolation points
+
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
+    GetInterpolationPoint => obj_GetInterpolationPoint
+  !! Get an interpolation points
 
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: &
     GetTotalQuadraturePoints => obj_GetTotalQuadraturePoints
@@ -242,7 +252,8 @@ INTERFACE
     obj, baseContinuity, baseInterpolation, feType, ipType, &
     basisType, alpha, beta, lambda, dofType, transformType, order, &
     quadratureType, quadratureOrder, quadratureIsOrder, quadratureNips, &
-    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda)
+    quadratureIsNips, quadratureAlpha, quadratureBeta, quadratureLambda, &
+    isSpectral)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     !! Finite element object
     CHARACTER(*), INTENT(IN) :: baseContinuity
@@ -299,6 +310,9 @@ INTERFACE
     !! Jacobi parameter for quadrature
     REAL(DFP), OPTIONAL, INTENT(IN) :: quadratureLambda
     !! Ultraspherical parameter for quadrature
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpectral
+    !! if isSpectral is true, then we quad points are same as
+    !! interpolation points
   END SUBROUTINE obj_Initiate
 END INTERFACE
 
@@ -352,7 +366,7 @@ INTERFACE
     obj, order, fetype, ipType, basisType, alpha, beta, lambda, &
     refElemDomain, baseContinuity, baseInterpolation, firstCall, &
     quadratureType, quadratureOrder, quadratureNips, quadratureAlpha, &
-    quadratureBeta, quadratureLambda, dofType, transformType)
+    quadratureBeta, quadratureLambda, dofType, transformType, isSpectral)
     CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: order
     !! order of element (isotropic order)
@@ -390,6 +404,7 @@ INTERFACE
     !! Quadrature lambda parameter
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: dofType
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: transformType
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpectral
   END SUBROUTINE obj_SetParam
 END INTERFACE
 
@@ -547,6 +562,22 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                         GetQuadratureOrder
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-19
+! summary:  Get the quadratuere Order
+
+INTERFACE
+  MODULE FUNCTION obj_GetQuadratureOrder(obj) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    !! OneDimBasisOpt
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetQuadratureOrder
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                       GetQuadraturePoints
 !----------------------------------------------------------------------------
 
@@ -561,8 +592,27 @@ INTERFACE
     REAL(DFP), INTENT(INOUT) :: xij(:, :)
     !! interplation points
     INTEGER(I4B), INTENT(INOUT) :: nrow, ncol
-
   END SUBROUTINE obj_GetInterpolationPoints
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                              GetInterpolationPoint@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-08-30
+! summary: Get an interpolation points
+
+INTERFACE
+  MODULE FUNCTION obj_GetInterpolationPoint(obj, indx) RESULT(ans)
+    CLASS(OneDimBasisOpt_), INTENT(INOUT) :: obj
+    !! OneDimBasisOpt
+    INTEGER(I4B), INTENT(IN) :: indx
+    !! index of interpolation points
+    !! indx=1,2 denotes left and right end points
+    !! indx=3,4,... denote internal points
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetInterpolationPoint
 END INTERFACE
 
 !----------------------------------------------------------------------------

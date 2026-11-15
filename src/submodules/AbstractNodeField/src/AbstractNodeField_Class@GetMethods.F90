@@ -19,18 +19,22 @@ USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AppendUtility, ONLY: Append
 USE ArangeUtility, ONLY: Arange
 USE BaseType, ONLY: IntVector_
-USE BaseType, ONLY: math => TypeMathOpt
-USE DOF_Method, ONLY: GetNodeLoc_
 USE Display_Method, ONLY: ToString
+USE DOF_Method, ONLY: GetNodeLoc_
 USE InputUtility, ONLY: Input
 USE IntVector_Method, ONLY: ASSIGNMENT(=)
 USE IntVector_Method, ONLY: IntVector_DEALLOCATE => DEALLOCATE
 USE IntVector_Method, ONLY: IntVector_Get => Get
+USE ReallocateUtility, ONLY: Reallocate
 USE RealVector_Method, ONLY: GetValue_
 USE RealVector_Method, ONLY: RealVector_Get => Get
 USE RealVector_Method, ONLY: RealVector_GetPointer => GetPointer
-USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@GetMethods.F90"
+#endif
 
 CONTAINS
 
@@ -58,7 +62,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-          '[WIP ERROR] :: This routine should be implemented by child class.')
+                  '[WIP ERROR] :: This routine should be implemented '// &
+                  'by child class.')
 #endif
 
 #ifdef DEBUG_VER
@@ -88,7 +93,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 isok = ALLOCATED(obj%dof_names_char)
 CALL AssertError1(isok, myName, &
-                  'AbstractNodeField_::obj%dof_names_char is not allocated.')
+                  'AbstractNodeField_::obj%dof_names_char is not '// &
+                  'allocated.')
 #endif
 
 tnames = SIZE(obj%dof_names_char)
@@ -135,7 +141,8 @@ ans = 0
 #ifdef DEBUG_VER
 isok = ALLOCATED(obj%dof_names_char)
 CALL AssertError1(isok, myName, &
-                  'AbstractNodeField_::obj%dof_names_char is not allocated.')
+                  'AbstractNodeField_::obj%dof_names_char is not '// &
+                  'allocated.')
 #endif
 
 aint = obj%dof_tPhysicalVars
@@ -143,9 +150,10 @@ aint = obj%dof_tPhysicalVars
 #ifdef DEBUG_VER
 tnames = SIZE(obj%dof_names_char)
 isok = tnames .EQ. aint
-CALL AssertError1( &
-  isok, myName, 'The size of names ('//ToString(tnames)// &
-  ') is not same as total physical variables = '//ToString(aint))
+CALL AssertError1(isok, myName, &
+                  'The size of names ('//ToString(tnames)// &
+                  ') is not same as total physical variables = '// &
+                  ToString(aint))
 #endif
 
 ans = aint
@@ -185,9 +193,10 @@ aint = tPhysicalVars
 #ifdef DEBUG_VER
 tnames = SIZE(obj%dof_spaceCompo)
 isok = tnames .EQ. aint
-CALL AssertError1( &
-  isok, myName, 'The size of spaceCompo ('//ToString(tnames)// &
-  ') is not same as total physical variables = '//ToString(aint))
+CALL AssertError1(isok, myName, &
+                  'The size of spaceCompo ('//ToString(tnames)// &
+                  ') is not same as total physical variables = '// &
+                  ToString(aint))
 #endif
 
 ans(1:aint) = obj%dof_spaceCompo(1:aint)
@@ -227,9 +236,10 @@ aint = tPhysicalVars
 #ifdef DEBUG_VER
 tnames = SIZE(obj%dof_timeCompo)
 isok = tnames .EQ. aint
-CALL AssertError1( &
-  isok, myName, 'The size of timeCompo ('//ToString(tnames)// &
-  ') is not same as total physical variables = '//ToString(aint))
+CALL AssertError1(isok, myName, &
+                  'The size of timeCompo ('//ToString(tnames)// &
+                  ') is not same as total physical variables = '// &
+                  ToString(aint))
 #endif
 
 ans(1:aint) = obj%dof_timeCompo(1:aint)
@@ -365,16 +375,54 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL GetValue_( &
-  obj=obj%realVec, istart=istart, iend=iend, stride=stride, VALUE=VALUE, &
-  tsize=tsize, istart_value=istart_value, iend_value=iend_value, &
-  stride_value=stride_value)
+CALL GetValue_(obj=obj%realVec, istart=istart, iend=iend, stride=stride, &
+               VALUE=VALUE, tsize=tsize, istart_value=istart_value, &
+               iend_value=iend_value, stride_value=stride_value)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetMultiple3
+
+!----------------------------------------------------------------------------
+!                                                               GetMultiple
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetMultiple4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple4()"
+#endif
+INTEGER(I4B) :: ii, jj, tsize
+LOGICAL(LGT) :: abool
+REAL(DFP) :: areal
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+abool = Input(option=addContribution, default=math%no)
+areal = Input(option=scale, default=math%one)
+tsize = (iend - istart) / stride + 1
+
+IF (abool) THEN
+  DO ii = 0, tsize - 1
+    jj = istart_value + ii * stride_value
+    VALUE(jj) = VALUE(jj) + areal * obj%realVec%val(istart + ii * stride)
+  END DO
+ELSE
+  DO ii = 0, tsize - 1
+    jj = istart_value + ii * stride_value
+    VALUE(jj) = areal * obj%realVec%val(istart + ii * stride)
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetMultiple4
 
 !----------------------------------------------------------------------------
 !

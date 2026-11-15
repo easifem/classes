@@ -18,13 +18,17 @@
 
 MODULE BasisOptUtility
 USE ExceptionHandler_Class, ONLY: e
-USE GlobalData, ONLY: LGT, I4B, DFP
-
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
 IMPLICIT NONE
+PRIVATE
 
 PUBLIC :: SetIntegerType, SetRealType
 
-CHARACTER(*), PARAMETER :: modName = "BasisOptUtility"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "BasisOptUtility.F90"
+#endif
 
 INTERFACE SetIntegerType
   MODULE PROCEDURE :: SetIntegerType1, SetIntegerType2
@@ -60,12 +64,10 @@ SUBROUTINE SetIntegerType1(a, n, b)
   isok = PRESENT(b)
 
   IF (.NOT. isok) THEN
-
 #ifdef DEBUG_VER
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
 #endif
-
     RETURN
   END IF
 
@@ -265,5 +267,9 @@ SUBROUTINE SetRealType2(a, nrow, ncol, b)
                           '[END] ')
 #endif
 END SUBROUTINE SetRealType2
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
 
 END MODULE BasisOptUtility

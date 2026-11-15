@@ -28,8 +28,7 @@ USE DOF_Method, ONLY: OPERATOR(.SpaceComponents.)
 USE DOF_Method, ONLY: OPERATOR(.TimeComponents.)
 USE DOF_Method, ONLY: OPERATOR(.tNames.)
 USE ExceptionHandler_Class, ONLY: e
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-USE GlobalData, ONLY: LGT, I4B, DFP
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE HDF5File_Class, ONLY: HDF5File_
 USE MatrixField_Class, ONLY: MatrixField_
 USE String_Class, ONLY: String
@@ -220,52 +219,29 @@ END SUBROUTINE Import_PhysicalVar
 !
 !----------------------------------------------------------------------------
 
-SUBROUTINE Import_Header( &
-  obj, hdf5, group, fieldType, name, engine, matrixProp, isRectangle)
+SUBROUTINE Import_Header(obj, hdf5, group, matrixProp, isRectangle)
   CLASS(MatrixField_), INTENT(INOUT) :: obj
+  !! matrix field, not used, kept for dispatch
   TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+  !! HDF5 file, open in read mode
   CHARACTER(*), INTENT(IN) :: group
-  INTEGER(I4B), INTENT(INOUT) :: fieldType
-  TYPE(String), INTENT(INOUT) :: name, engine, matrixProp
+  !! group in the HDF5 file
+  TYPE(String), INTENT(INOUT) :: matrixProp
+  !! matrix property read from group/matrixProp
   LOGICAL(LGT), INTENT(OUT) :: isRectangle
-  TYPE(String) :: dsetname, strval
+  !! read from group/isRectangle; default .FALSE.
 
   ! internal variables
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "Import_Header()"
 #endif
+  TYPE(String) :: dsetname
   LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
-
-  ! fieldType
-  dsetname = TRIM(group)//"/fieldType"
-  isok = hdf5%pathExists(dsetname%Chars())
-  fieldType = TypeField%constant
-  IF (isok) THEN
-    CALL hdf5%READ(dsetname=dsetname%chars(), vals=strval)
-    fieldType = TypeField%ToNumber(strval%chars())
-  END IF
-
-  ! name
-  dsetname = TRIM(group)//"/name"
-#ifdef DEBUG_VER
-  isok = hdf5%pathExists(dsetname%Chars())
-  CALL AssertError1(isok, myName, &
-                    dsetname//" should be present.")
-#endif
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=name)
-
-  ! engine
-  dsetname = TRIM(group)//"/engine"
-  isok = hdf5%pathExists(dsetname%Chars())
-  engine = "NATIVE_SERIAL"
-  IF (isok) THEN
-    CALL hdf5%READ(dsetname=dsetname%Chars(), vals=engine)
-  END IF
 
   ! matrixProp
   dsetname = TRIM(group)//"/matrixProp"
@@ -277,7 +253,7 @@ SUBROUTINE Import_Header( &
   CALL hdf5%READ(dsetname=dsetname%Chars(), vals=matrixProp)
 
   ! isRectangle
-  dsetname = TRIM(group)//"/isRectangle "
+  dsetname = TRIM(group)//"/isRectangle"
   isRectangle = math%no
   isok = hdf5%pathExists(dsetname%Chars())
   IF (isok) THEN
@@ -410,7 +386,7 @@ SUBROUTINE Export_Header(obj, hdf5, group, dname, matprop)
 
   ! matrixProp
   dname = TRIM(group)//"/matrixProp"
-  matprop = STRING(.MatrixProp.obj%mat)
+  matprop = STRING(.MatrixProp. obj%mat)
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
                   vals=matprop)
 
@@ -455,46 +431,46 @@ SUBROUTINE Export_PhysicalVar(obj, hdf5, group, dname, matprop)
     dname = TRIM(group)//"/ivar/tPhysicalVarNames"
 
     CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                    vals=(.tNames.dofobj))
+                    vals=(.tNames. dofobj))
 
-    DO ii = 1, (.tNames.dofobj)
+    DO ii = 1, (.tNames. dofobj)
       dname = TRIM(group)//"/ivar/physicalVarName"//ToString(ii)
       CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                      vals=STRING(dofobj.Names.ii))
+                      vals=STRING(dofobj .Names. ii))
     END DO
 
     dname = TRIM(group)//"/ivar/spaceCompo"
 
     CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                    vals=(.SpaceComponents.dofobj))
+                    vals=(.SpaceComponents. dofobj))
 
     dname = TRIM(group)//"/ivar/timeCompo"
 
     CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                    vals=(.TimeComponents.dofobj))
+                    vals=(.TimeComponents. dofobj))
 
     dofobj => NULL()
     dofobj => getDOFPointer(obj%mat, 2)
     dname = TRIM(group)//"/jvar/tPhysicalVarNames"
 
     CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                    vals=(.tNames.dofobj))
+                    vals=(.tNames. dofobj))
 
-    DO ii = 1, (.tNames.dofobj)
+    DO ii = 1, (.tNames. dofobj)
       dname = TRIM(group)//"/jvar/physicalVarName"//ToString(ii)
       CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                      vals=STRING(dofobj.Names.ii))
+                      vals=STRING(dofobj .Names. ii))
     END DO
 
     dname = TRIM(group)//"/jvar/spaceCompo"
 
     CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-      & vals=(.SpaceComponents.dofobj))
+      & vals = (.SpaceComponents. dofobj))
 
     dname = TRIM(group)//"/jvar/timeCompo"
 
     CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-      & vals=(.TimeComponents.dofobj))
+      & vals = (.TimeComponents. dofobj))
 
     RETURN
   END IF
@@ -504,23 +480,23 @@ SUBROUTINE Export_PhysicalVar(obj, hdf5, group, dname, matprop)
   dname = TRIM(group)//"/tPhysicalVarNames"
 
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                  vals=(.tNames.dofobj))
+                  vals=(.tNames. dofobj))
 
-  DO ii = 1, (.tNames.dofobj)
+  DO ii = 1, (.tNames. dofobj)
     dname = TRIM(group)//"/physicalVarName"//ToString(ii)
     CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                    vals=STRING(dofobj.Names.ii))
+                    vals=STRING(dofobj .Names. ii))
   END DO
 
   dname = TRIM(group)//"/spaceCompo"
 
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                  vals=(.SpaceComponents.dofobj))
+                  vals=(.SpaceComponents. dofobj))
 
   dname = TRIM(group)//"/timeCompo"
 
   CALL hdf5%WRITE(dsetname=TRIM(dname%chars()), &
-                  vals=(.TimeComponents.dofobj))
+                  vals=(.TimeComponents. dofobj))
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &

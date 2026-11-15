@@ -1,0 +1,38 @@
+# Common input file for the BlockMatrixField_ tests.
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements
+# {1, 5, 6, 4} and {5, 2, 3, 6}, six nodes.
+# v: vector field, two space components, 12 DOFs -> 12 x 12 matrix.
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[v]
+name = "v"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+spaceCompo = 2
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[v.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+
+[v.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[v.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"

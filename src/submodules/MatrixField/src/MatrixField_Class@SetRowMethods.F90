@@ -20,13 +20,12 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) SetRowMethods
-USE Basetype, ONLY: DOF_
-USE Basetype, ONLY: math => TypeMathOpt
-USE DOF_Method, ONLY: GetIDOF
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
-USE Display_Method, ONLY: ToString
+USE Basetype, ONLY: DOF_
 USE CSRMatrix_Method, ONLY: SetRow
 USE CSRMatrix_Method, ONLY: GetDOFPointer
+USE Display_Method, ONLY: ToString
+USE DOF_Method, ONLY: GetIDOF
 IMPLICIT NONE
 
 #ifdef DEBUG_VER

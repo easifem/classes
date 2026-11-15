@@ -13,7 +13,3 @@ timefedofName = "time"
 
 [field.time]
 # timefedof related data comes here
-
-[field.exact]
-# exact solution related data comes here
-

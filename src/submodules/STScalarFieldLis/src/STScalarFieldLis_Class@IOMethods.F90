@@ -17,12 +17,14 @@
 
 SUBMODULE(STScalarFieldLis_Class) IOMethods
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
-USE STScalarField_Class, ONLY: STScalarFieldDisplay
 USE Display_Method, ONLY: Display
-
 IMPLICIT NONE
 
 #include "lisf.h"
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "STScalarFieldLis_Class@IOMethods.F90"
+#endif
 
 CONTAINS
 
@@ -53,9 +55,11 @@ CALL Display(isok, "obj%lis_ptr associated: ", unitno=unitno)
 IF (isok) THEN
   realvec => AbstractNodeFieldGetPointer(obj)
   CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
+#ifdef DEBUG_VER
   CALL CHKERR(ierr)
+#endif
   NULLIFY (realvec)
-  CALL STScalarFieldDisplay(obj=obj, msg=msg, unitno=unitno)
+  CALL obj%STScalarField_%Display(msg=msg, unitno=unitno)
 END IF
 
 #ifdef DEBUG_VER

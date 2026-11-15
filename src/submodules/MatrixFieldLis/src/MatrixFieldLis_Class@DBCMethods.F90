@@ -16,15 +16,14 @@
 !
 
 SUBMODULE(MatrixFieldLis_Class) DBCMethods
-USE ReallocateUtility, ONLY: Reallocate
+USE BaseType, ONLY: math => TypeMathOpt
 USE CSRMatrix_Method, ONLY: CSRMatrix_GetSubMatrix => GetSubMatrix
 USE CSRMatrix_Method, ONLY: CSRMatrix_Matvec => Matvec
 USE CSRMatrix_Method, ONLY: CSRMatrix_ApplyDBC => ApplyDBC
 USE CSRMatrix_Method, ONLY: CSRMatrix_GetNNZ => GetNNZ
 USE Display_Method, ONLY: ToString
-USE MatrixField_Class, ONLY: MatrixFieldApplyDirichletBC
-USE BaseType, ONLY: math => TypeMathOpt
 USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
 
 IMPLICIT NONE
 
@@ -49,7 +48,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldApplyDirichletBC(obj=obj, dbcPtrs=dbcPtrs)
+CALL obj%MatrixField_%ApplyDirichletBC(dbcPtrs=dbcPtrs)
 
 IF (.NOT. obj%isSubmatInit) THEN
 
@@ -69,7 +68,7 @@ IF (.NOT. isDBCPtrsPresent) THEN
 
 #ifdef DEBUG_VER
   CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-    'dbcPtrs not present, there is not need to initiate submatrix, returning')
+                    'dbcPtrs not present, there is not need to initiate submatrix, returning')
 #endif
 
 #ifdef DEBUG_VER

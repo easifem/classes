@@ -1,0 +1,15 @@
+[onedimDomain1]
+domain = [0, 2]
+totalElements = 10
+# this will create one dimensional domain of uniform size
+
+[onedimDomain2]
+domain = [0, 2]
+elemLength = 0.1
+# this will create one dimensional domain of uniform size
+
+[onedimDomain3]
+domain = [0, 2]
+totalElements = 4
+elemLength = [0.4, 0.6, 0.6, 0.4]
+# this will create one dimensional domain of uniform size

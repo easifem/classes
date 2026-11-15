@@ -31,25 +31,27 @@
 ! - [NitscheBC](../NitscheBC)
 
 MODULE AbstractBC_Class
-USE GlobalData, ONLY: I4B, DFP, LGT
-USE String_Class, ONLY: String
-USE ExceptionHandler_Class, ONLY: e
-USE MeshSelection_Class, ONLY: MeshSelection_
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractDomain_Class, ONLY: AbstractDomain_
-USE HDF5File_Class, ONLY: HDF5File_
-USE UserFunction_Class, ONLY: UserFunction_
-USE tomlf, ONLY: toml_table
-USE TxtFile_Class, ONLY: TxtFile_
-USE FEDOF_Class, ONLY: FEDOF_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: FEVariable_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: math => TypeMathOpt
-
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
+USE MeshSelection_Class, ONLY: MeshSelection_
+USE String_Class, ONLY: String
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE tomlf, ONLY: toml_table
+USE TxtFile_Class, ONLY: TxtFile_
+USE UserFunction_Class, ONLY: UserFunction_
 IMPLICIT NONE
+
 PRIVATE
 
 #ifdef DEBUG_VER
@@ -177,31 +179,26 @@ TYPE, ABSTRACT :: AbstractBC_
   !! Domain
 
 CONTAINS
-  PRIVATE
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate memory occupied by AbstractBC
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Initiate => obj_Initiate
   !! Initiate an instance of AbstractBC with arguments
 
-  ! IO:
   ! @HDFMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   !! Import data from HDF5File
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data to HDF5File
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display content of AbstractBC
 
-  ! IO:
   ! @TomlMethods
-  PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Initiate from toml
-  PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: ImportFromToml2 => &
     obj_ImportFromToml2
   !! Initiate from toml
   GENERIC, PUBLIC :: ImportFromToml => ImportFromToml1, &
@@ -211,7 +208,6 @@ CONTAINS
     obj_ImportConstBCFromToml
   !! Import constant boundary condition from toml
 
-  ! SET:
   ! @SetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: Set => obj_Set
   !! Set the boundary condition value
@@ -228,7 +224,6 @@ CONTAINS
     SetNodalValueType => obj_SetNodalValueType
   !! Set nodal value type
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: IsInitiated => &
     obj_IsInitiated
@@ -252,9 +247,9 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshID => &
     obj_GetMeshID
   !! Get MeshID
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshIDPointer => &
-    obj_GetMeshIDPointer
-  !! Get mesh id pointer
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetMeshID_ => &
+    obj_GetMeshID_
+  !! Get MeshID
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetTotalNodeNum => &
     obj_GetTotalNodeNum
   !! Get total node number
@@ -269,7 +264,6 @@ CONTAINS
     obj_GetConstantNodalValue
   !! Get the constant nodal value
 
-  ! GET:
   ! @GetValueMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Get1 => obj_Get1
   !! Get the node number and nodal value of the boundary conditions
@@ -320,22 +314,22 @@ INTERFACE AbstractBCInitiate
     !! Boundary
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     !! Domain
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: name
+    CHARACTER(*), INTENT(IN), OPTIONAL:: name
     !! name of boundary condition
     !! default is AbstractBC
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof
+    INTEGER(I4B), INTENT(IN), OPTIONAL:: idof
     !! degree of freedom number
     !! default is 0
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: nodalValueType
+    INTEGER(I4B), INTENT(IN), OPTIONAL:: nodalValueType
     !! Space, Time, SpaceTime, Constant
     !! default is -1
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUserFunction
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isUserFunction
     !! set true when userfucntion is used; default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isNormal
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isNormal
     !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTangent
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isTangent
     !! default is false
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isUseExternal
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: isUseExternal
     !! default is false
   END SUBROUTINE obj_Initiate
 END INTERFACE AbstractBCInitiate
@@ -572,9 +566,9 @@ INTERFACE AbstractBCImportFromToml
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
     CLASS(AbstractDomain_), TARGET, INTENT(IN) :: dom
     CHARACTER(*), INTENT(IN) :: tomlName
-    TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
+    TYPE(TxtFile_), INTENT(INOUT), OPTIONAL:: afile
+    CHARACTER(*), INTENT(IN), OPTIONAL:: filename
+    LOGICAL(LGT), INTENT(IN), OPTIONAL:: printToml
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE AbstractBCImportFromToml
 
@@ -616,7 +610,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Display(obj, msg, unitNo)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     CHARACTER(*), INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitNo
+    INTEGER(I4B), INTENT(IN), OPTIONAL:: unitNo
   END SUBROUTINE obj_Display
 END INTERFACE
 
@@ -787,24 +781,25 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GetMeshIDPointer@GetMethods
+!                                                      GetMeshID_@GetMethods
 !----------------------------------------------------------------------------
 
-!> author: Vikas Sharma, Ph. D.
+!> authors: Vikas Sharma, Ph. D.
 ! date: 2026-02-16
-! summary: Get the pointer to MeshID
+! summary: This routine returns MeshID without allocation
 !
-!# GetMeshIDPointer
-!
-! Get the pointer to MeshID.
+! Get the mesh id.
 
 INTERFACE
-  MODULE SUBROUTINE obj_GetMeshIDPointer(obj, dim, ans, tsize)
+  MODULE SUBROUTINE obj_GetMeshID_(obj, dim, ans, tsize)
     CLASS(AbstractBC_), INTENT(IN) :: obj
     INTEGER(I4B), INTENT(IN) :: dim
-    INTEGER(I4B), POINTER, INTENT(OUT) :: ans(:)
+    !! dimension of the mesh
+    INTEGER(I4B), INTENT(INOUT) :: ans(:)
+    !! meshID of given dimensions are returned in ans
     INTEGER(I4B), INTENT(OUT) :: tsize
-  END SUBROUTINE obj_GetMeshIDPointer
+    !! amount of data written in ans
+  END SUBROUTINE obj_GetMeshID_
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -834,7 +829,7 @@ INTERFACE
     !! ncol = 1 or size of times
     INTEGER(I4B), INTENT(OUT) :: nrow, ncol
     !! number of rows and cols written in nodalValue
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times
+    REAL(DFP), INTENT(IN), OPTIONAL:: times
     !! times vector is only used when usefunction is true in obj
   END SUBROUTINE obj_Get1
 END INTERFACE
@@ -944,20 +939,20 @@ INTERFACE
     useFunction, nodalValueType, isUseExternal, isUserFunction, &
     isElemToFace, isElemToEdge)
     CLASS(AbstractBC_), INTENT(IN) :: obj
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isInitiated
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByBox
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByMeshID
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByElemNum
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isSelectionByNodeNum
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isTangent
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isNormal
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: useFunction
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: idof
-    INTEGER(I4B), OPTIONAL, INTENT(OUT) :: nodalValueType
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUseExternal
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isUserFunction
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToFace
-    LOGICAL(LGT), OPTIONAL, INTENT(OUT) :: isElemToEdge
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isInitiated
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByBox
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByMeshID
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByElemNum
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isSelectionByNodeNum
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isTangent
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isNormal
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: useFunction
+    INTEGER(I4B), INTENT(OUT), OPTIONAL:: idof
+    INTEGER(I4B), INTENT(OUT), OPTIONAL:: nodalValueType
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isUseExternal
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isUserFunction
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isElemToFace
+    LOGICAL(LGT), INTENT(OUT), OPTIONAL:: isElemToEdge
   END SUBROUTINE obj_GetParam
 END INTERFACE
 
@@ -997,19 +992,19 @@ INTERFACE
     obj, constantNodalValue, spaceNodalValue, &
     timeNodalValue, spaceTimeNodalValue, userFunction)
     CLASS(AbstractBC_), INTENT(INOUT) :: obj
-    REAL(DFP), OPTIONAL, INTENT(IN) :: constantNodalValue
+    REAL(DFP), INTENT(IN), OPTIONAL:: constantNodalValue
     !! constant nodal value
-    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceNodalValue(:)
+    REAL(DFP), INTENT(IN), OPTIONAL:: spaceNodalValue(:)
     !! space nodal value
     !! size should be same as the number of boundary nodes
-    REAL(DFP), OPTIONAL, INTENT(IN) :: timeNodalValue(:)
+    REAL(DFP), INTENT(IN), OPTIONAL:: timeNodalValue(:)
     !! time nodal value
     !! size is total number of time nodes
-    REAL(DFP), OPTIONAL, INTENT(IN) :: spaceTimeNodalValue(:, :)
+    REAL(DFP), INTENT(IN), OPTIONAL:: spaceTimeNodalValue(:, :)
     !! space time nodal value
     !! rowsize is total number of boundary nodes
     !! colsize is total number of time nodes
-    TYPE(UserFunction_), TARGET, OPTIONAL, INTENT(IN) :: userFunction
+    TYPE(UserFunction_), TARGET, INTENT(IN), OPTIONAL:: userFunction
     !! user function
   END SUBROUTINE obj_Set
 END INTERFACE
@@ -1196,7 +1191,7 @@ INTERFACE
     !! xij for element
     INTEGER(I4B), INTENT(OUT) :: xij_i, xij_j
     !! size of data written in xij
-    REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
+    REAL(DFP), INTENT(IN), OPTIONAL:: times(:)
     !! times vector is only used when usefunction is true in obj
   END SUBROUTINE obj_GetNBCValue
 END INTERFACE

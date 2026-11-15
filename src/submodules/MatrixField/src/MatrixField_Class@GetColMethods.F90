@@ -20,10 +20,10 @@
 ! summary: This module contains constructor method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) GetColMethods
-USE CSRMatrix_Method, ONLY: GetColumn
-USE DOF_Method, ONLY: GetIDOF
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
+USE CSRMatrix_Method, ONLY: GetColumn
 USE Display_Method, ONLY: ToString
+USE DOF_Method, ONLY: GetIDOF
 IMPLICIT NONE
 
 #ifdef DEBUG_VER

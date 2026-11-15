@@ -61,7 +61,7 @@ LOGICAL(LGT) :: isok
 #endif
 
 LOGICAL(LGT) :: bool1, bool2
-INTEGER(I4B) :: ierr, ii, s(3), indx(obj%timeCompo)
+INTEGER(I4B) :: s(3), indx(obj%timeCompo)
 
 bool1 = PRESENT(globalNode)
 bool2 = PRESENT(timeCompo)
@@ -83,7 +83,7 @@ IF (bool1) THEN
 END IF
 
 IF (bool2) THEN
-  isok = SIZE(VALUE) .GE. (obj%dof.tNodes.1_I4B)
+  isok = SIZE(VALUE) .GE. (obj%dof .tNodes. 1_I4B)
   CALL AssertError1(isok, myName, "Size of value is not enough")
 END IF
 
@@ -101,7 +101,7 @@ END IF
 !> Get all values of timeCompo
 ! IF (bool2) THEN
 
-tsize = obj%dof.tNodes.1_I4B
+tsize = obj%dof .tNodes. 1_I4B
 
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)
 
@@ -129,11 +129,11 @@ CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_:: obj is not initiated")
 
 IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%timeCompo
 
 ELSE
-  ncol = obj%dof.tNodes.1
+  ncol = obj%dof .tNodes. 1
   nrow = obj%timeCompo
 END IF
 
@@ -152,10 +152,10 @@ IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
 END IF
 
 IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
-  nrow = obj%dof.tNodes.1
+  nrow = obj%dof .tNodes. 1
   ncol = obj%timeCompo
 
-  !$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
+!$OMP PARALLEL DO PRIVATE(jj, mynrow, s)
   DO jj = 1, ncol
     s = GetNodeLoc(obj=obj%dof, idof=jj)
 
@@ -163,13 +163,13 @@ IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
                          VALUE=VALUE(:, jj), tsize=mynrow)
 
   END DO
-  !$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
   RETURN
 END IF
 
 nrow = obj%timeCompo
-ncol = obj%dof.tNodes.1
+ncol = obj%dof .tNodes. 1
 
 !$OMP PARALLEL DO PRIVATE(jj, indx, mynrow)
 DO jj = 1, ncol
@@ -192,7 +192,7 @@ LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
 INTEGER(I4B) :: jj, mynrow
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
@@ -226,12 +226,12 @@ IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   nrow = SIZE(globalNode)
   ncol = obj%timeCompo
 
-  !$OMP PARALLEL DO PRIVATE(jj, mynrow)
+!$OMP PARALLEL DO PRIVATE(jj, mynrow)
   DO jj = 1, ncol
     CALL obj%Get(globalNode=globalNode, islocal=islocal, VALUE=VALUE(:, jj), &
                  tsize=mynrow, timeCompo=jj)
   END DO
-  !$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
   RETURN
 END IF
@@ -255,9 +255,9 @@ END PROCEDURE obj_Get3
 MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
-IF (obj%engine%chars() .NE. "NATIVE_SERIAL") THEN
+IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
 
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, ivar=1, &
                  idof=timeCompo, VALUE=VALUE, tsize=tsize, &
@@ -288,7 +288,7 @@ MODULE PROCEDURE obj_Get5
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
 INTEGER(I4B) :: indx
 
-#include "./localNodeError.inc"
+#include "./include/localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, idof=timeCompo)
 CALL obj%GetSingle(indx=indx, VALUE=VALUE)
@@ -304,116 +304,18 @@ CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
 REAL(DFP), ALLOCATABLE :: v(:, :)
 INTEGER(I4B) :: nrow, ncol
 
-nrow = obj%timeCompo
-ncol = SIZE(globalNode)
+! v(j, a): node globalNode(j), time component a (easifemBase layout)
+nrow = SIZE(globalNode)
+ncol = obj%timeCompo
 ALLOCATE (v(nrow, ncol))
 
 CALL obj%Get(VALUE=v, nrow=nrow, ncol=ncol, globalNode=globalNode, &
-             islocal=islocal, storageFMT=NODES_FMT)
+             islocal=islocal, storageFMT=TypeField%storageFormatDOF)
 
 VALUE = NodalVariable(v, TypeFEVariableScalar, TypeFEVariableSpaceTime)
 
 DEALLOCATE (v)
 END PROCEDURE obj_Get6
-
-!----------------------------------------------------------------------------
-!                                                                        Get
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Get7
-! CALL obj%Get(ivar=1_I4B, idof=timeCompo, VALUE=VALUE, ivar_value=1_I4B, &
-!              idof_value=timeCompo)
-! END PROCEDURE obj_Get7
-
-!----------------------------------------------------------------------------
-!                                                                     Get
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Get8
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
-! #endif
-!
-! INTEGER(I4B) :: s(3), tsize, p(3)
-! REAL(DFP), POINTER :: realvec(:)
-!
-! #ifdef DEBUG_VER
-!
-! CALL AssertError1(obj%isInitiated(), myName, &
-!                   "STScalarField_:: obj is not initiated")
-!
-! CALL AssertError1(VALUE%isInitiated(), myName, &
-!                   "STScalarField_:: value is not initiated")
-!
-! #endif
-!
-! s = GetNodeLoc(obj=obj%dof, idof=idof)
-!
-! SELECT TYPE (VALUE)
-!
-! ! TYPE IS (ScalarField_)
-! !
-! !   realvec => VALUE%GetPointer()
-! !   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-! !                        tsize=tsize)
-! !   realvec => NULL()
-!
-! TYPE IS (STScalarField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => VALUE%GetPointer()
-!
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                       istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! TYPE IS (VectorField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => VALUE%GetPointer()
-!
-!   CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!                       istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! ! TYPE IS (STVectorField_)
-!
-!   ! p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   ! realvec => VALUE%GetPointer()
-!   !
-!   ! CALL obj%GetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=realvec, &
-!   !                     istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-!   !                      tsize=tsize)
-!   ! realvec => NULL()
-!
-! ! TYPE IS (ScalarFieldLis_)
-! !   CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
-!
-! TYPE IS (STScalarFieldLis_)
-!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! TYPE IS (VectorFieldLis_)
-!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! CLASS DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     '[INTENRAL ERROR] :: No case found for the type of value')
-!   RETURN
-! END SELECT
-!
-! END PROCEDURE obj_Get8
-
-!----------------------------------------------------------------------------
-!                                                              GetTimeCompo
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_GetTimeCompo
-ans = obj%timeCompo
-END PROCEDURE obj_GetTimeCompo
 
 !----------------------------------------------------------------------------
 !                                                           GetFEVariable

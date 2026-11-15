@@ -16,10 +16,10 @@
 !
 
 MODULE FacetData_Class
-USE GlobalData, ONLY: I4B, LGT
 USE Display_Method, ONLY: Display
-USE ElemData_Class, ONLY: INTERNAL_ELEMENT, BOUNDARY_ELEMENT,  &
-  & DOMAIN_BOUNDARY_ELEMENT, GHOST_ELEMENT
+USE ElemData_Class, ONLY: BOUNDARY_ELEMENT, DOMAIN_BOUNDARY_ELEMENT, &
+                          GHOST_ELEMENT, INTERNAL_ELEMENT
+USE GlobalData, ONLY: I4B, LGT
 IMPLICIT NONE
 PRIVATE
 
@@ -40,7 +40,7 @@ PUBLIC :: BoundaryFacetData_Display
 !                                                                FacetData_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-26
 ! summary: Data storage for internal facets of mesh
 
@@ -63,7 +63,7 @@ END TYPE FacetData_
 !                                                         InternalFacetData_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-26
 ! summary: Data storage for internal facets of mesh
 
@@ -82,7 +82,7 @@ END TYPE InternalFacetData_
 !                                                         BoundaryFacetData_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 18 May 2022
 ! summary: Data storage for Domain facet data
 !
@@ -109,12 +109,13 @@ CONTAINS
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-14
 ! summary: Display the instance of InternalFacetData
 
 SUBROUTINE FacetData_SetParam(obj, elementType, masterCellNumber, &
-                       slaveCellNumber, masterLocalFacetID, slaveLocalFacetID)
+                              slaveCellNumber, masterLocalFacetID, &
+                              slaveLocalFacetID)
   CLASS(FacetData_), INTENT(INOUT) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: elementType
   INTEGER(I4B), OPTIONAL, INTENT(IN) :: masterCellNumber
@@ -133,12 +134,13 @@ END SUBROUTINE FacetData_SetParam
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-14
 ! summary: Display the instance of InternalFacetData
 
 SUBROUTINE FacetData_GetParam(obj, elementType, masterCellNumber, &
-                       slaveCellNumber, masterLocalFacetID, slaveLocalFacetID)
+                              slaveCellNumber, masterLocalFacetID, &
+                              slaveLocalFacetID)
   CLASS(FacetData_), INTENT(IN) :: obj
   INTEGER(I4B), OPTIONAL, INTENT(OUT) :: elementType
   INTEGER(I4B), OPTIONAL, INTENT(OUT) :: masterCellNumber
@@ -157,7 +159,7 @@ END SUBROUTINE FacetData_GetParam
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-14
 ! summary: Display the instance of InternalFacetData
 
@@ -180,13 +182,13 @@ SUBROUTINE FacetData_Display(obj, msg, unitno)
   END SELECT
 
   CALL Display(obj%masterCellNumber, msg="masterCellNumber: ", &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(obj%slaveCellNumber, msg="slaveCellNumber: ", &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(obj%masterlocalFacetID, msg="masterlocalFacetID: ", &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(obj%slavelocalFacetID, msg="slavelocalFacetID: ", &
-    & unitno=unitno)
+    & unitno = unitno)
 
 END SUBROUTINE FacetData_Display
 
@@ -194,7 +196,7 @@ END SUBROUTINE FacetData_Display
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-14
 ! summary: Display the instance of InternalFacetData
 
@@ -219,7 +221,7 @@ END SUBROUTINE FacetData_Display_Filter
 !                                                       IsElement@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-04-14
 ! summary: Display the instance of InternalFacetData
 
@@ -234,7 +236,7 @@ END FUNCTION FacetData_Iselement
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 13 April 2022
 ! summary: Display the instance of InternalFacetData
 
@@ -246,20 +248,20 @@ SUBROUTINE InternalFacetData_Display(obj, msg, unitno)
   CALL Display(TRIM(msg), unitno=unitno)
   CALL Display("elementType: INTERNAL_ELEMENT", unitno=unitno)
   CALL Display(obj%masterCellNumber, msg="masterCellNumber: ", &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(obj%slaveCellNumber, msg="slaveCellNumber: ", &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(obj%masterlocalFacetID, msg="masterlocalFacetID: ", &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(obj%slavelocalFacetID, msg="slavelocalFacetID: ", &
-    & unitno=unitno)
+    & unitno = unitno)
 END SUBROUTINE InternalFacetData_Display
 
 !----------------------------------------------------------------------------
 !                                                         Display@IOMethods
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 13 April 2022
 ! summary: Display the instance of DomainFacetData_
 
@@ -278,9 +280,9 @@ SUBROUTINE BoundaryFacetData_Display(obj, msg, unitno)
     CALL Display("elementType: DOMAIN_BOUNDARY_ELEMENT", unitno=unitno)
   END SELECT
   CALL Display(obj%masterCellNumber, msg="masterCellNumber: ", &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(obj%masterLocalFacetID, msg="masterlocalFacetID: ", &
-    & unitno=unitno)
+    & unitno = unitno)
 END SUBROUTINE BoundaryFacetData_Display
 
 END MODULE FacetData_Class

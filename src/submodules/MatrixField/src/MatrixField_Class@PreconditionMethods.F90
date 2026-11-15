@@ -20,17 +20,17 @@
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) PreconditionMethods
-USE GlobalData, ONLY: PRECOND_ILUT
-USE GlobalData, ONLY: PRECOND_ILUTP
-USE GlobalData, ONLY: PRECOND_ILUD
-USE GlobalData, ONLY: PRECOND_ILUDP
-USE GlobalData, ONLY: PRECOND_ILUK
 USE CSRMatrix_Method, ONLY: GetILUT
 USE CSRMatrix_Method, ONLY: GetILUTP
 USE CSRMatrix_Method, ONLY: GetILUD
 USE CSRMatrix_Method, ONLY: GetILUDP
 USE CSRMatrix_Method, ONLY: GetILUK
 USE CSRMatrix_Method, ONLY: CSRMatrix_Size => Size
+USE GlobalData, ONLY: PRECOND_ILUT
+USE GlobalData, ONLY: PRECOND_ILUTP
+USE GlobalData, ONLY: PRECOND_ILUD
+USE GlobalData, ONLY: PRECOND_ILUDP
+USE GlobalData, ONLY: PRECOND_ILUK
 IMPLICIT NONE
 
 #ifdef DEBUG_VER

@@ -21,7 +21,7 @@ USE BaseType, ONLY: elemopt => TypeElemNameOpt
 USE BaseType, ONLY: TypeMeshOpt
 USE Display_Method, ONLY: Display
 USE ExceptionHandler_Class, ONLY: e
-USE GlobalData, ONLY: I4B, DFP, LGT, INT8
+USE GlobalData, ONLY: DFP, I4B, INT8, LGT
 USE IntegerUtility, ONLY: OPERATOR(.IN.)
 USE InterpolationUtility, ONLY: GetTotalInDOF
 USE ReallocateUtility, ONLY: Reallocate
@@ -34,7 +34,7 @@ USE ReferenceElement_Method, ONLY: GetFaceElemType
 USE ReferenceElement_Method, ONLY: RefElemGetGeoParam
 USE ReferenceQuadrangle_Method, ONLY: FaceShapeMetaData_Quadrangle
 USE ReferenceQuadrangle_Method, ONLY: HelpFaceData_Quadrangle
-USE SortUtility, ONLY: Sort, QuickSort
+USE SortUtility, ONLY: QuickSort, Sort
 IMPLICIT NONE
 
 PRIVATE
@@ -126,7 +126,7 @@ END INTERFACE
 !                                                                 Elemdata_
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-26
 ! summary: Data type for storing element data
 
@@ -139,11 +139,11 @@ TYPE :: Elemdata_
   INTEGER(I4B) :: localElemNum = 0_I4B
   !! local element number
   INTEGER(I4B) :: elementType = INTERNAL_ELEMENT
-  !! BOUNDARY_ELEMENT: If the element contqains the boundary node
+  !! BOUNDARY_ELEMENT - If the element contqains the boundary node
   !! it will be called the boundary element
   !! INTERNAL_ELEMENT: If the element does not contain the boundary node
   !! then it will be called the internal element
-  !! TODO: Change elementType to Int8
+  !! TODO - Change elementType to Int8
   INTEGER(I4B) :: name = 0
   !! This is name of the element
   !! It can be Triangle, Triangle3, Triangle6, etc.
@@ -155,7 +155,7 @@ TYPE :: Elemdata_
   INTEGER(I4B) :: meshID = 0
   !! ID of mesh to which the element belong
   !! This is a gmsh concept
-  !! TODO: Change elementType to Int8
+  !! TODO - Change elementType to Int8
   INTEGER(INT8), ALLOCATABLE :: material(:)
   !! materials mapped to the mesh
   !! material(1) is the material-id (type of material) of medium 1
@@ -167,7 +167,7 @@ TYPE :: Elemdata_
   !! fluid is a medium with n =2
   !! then material(1) denotes the type of soil => clay, sand, silt
   !! and material(2) denotes the type of fluid => water, oil, air
-  !! TODO: Change material to Int8
+  !! TODO - Change material to Int8
   INTEGER(I4B), ALLOCATABLE :: globalNodes(:)
   !! nodes contained in the element, connectivity
   !! Vertex connectivity
@@ -271,7 +271,7 @@ END SUBROUTINE Elemdata_Copy
 !
 !----------------------------------------------------------------------------
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 2024-01-26
 ! summary: Display a single instance of element data
 
@@ -286,7 +286,7 @@ SUBROUTINE Elemdata_Display(obj, msg, unitno)
   CALL Display(obj%globalElemNum, msg="globalElemNum: ", unitno=unitno)
   CALL Display(obj%localElemNum, msg="localElemNum: ", unitno=unitno)
   CALL Display(Elemdata_ElemType2String(obj%elementType), "elementType: ",  &
-    & unitno=unitno)
+    & unitno = unitno)
   CALL Display(ElementName(obj%name), "elementName: ", unitno=unitno)
   CALL Display(ElementName(obj%topoName), "topology: ", unitno=unitno)
 
@@ -340,7 +340,7 @@ SUBROUTINE Elemdata_Display(obj, msg, unitno)
   CALL Display(abool, "globalElements ALLOCATED: ", unitno=unitno)
   IF (abool) THEN
     CALL Display(obj%globalElements, msg="globalElements: ", &
-    & unitno=unitno, full=.TRUE.)
+    & unitno = unitno, full = .TRUE.)
   END IF
 
   ! boundaryData
@@ -410,19 +410,25 @@ END SUBROUTINE Elemdata_Deallocate
 ! date:  2024-04-12
 ! summary:  Set total number of materials
 !
-! this subroutine allocates materials in obj
+! The size of obj%material becomes n. The material ids of the first
+! MIN(n, old size) media are kept; the new media get material id 0.
+!
+! Changes:
+!   - 2026-10-23: Set the number of media to n (it was increased by n)
 
 PURE SUBROUTINE Elemdata_SetTotalMedium(obj, n)
   TYPE(Elemdata_), INTENT(INOUT) :: obj
+  !! element data
   INTEGER(I4B), INTENT(IN) :: n
+  !! total number of media
 
   ! internal variables
   INTEGER(INT8), ALLOCATABLE :: temp_material(:)
   INTEGER(I4B) :: n0
 
   IF (ALLOCATED(obj%material)) THEN
-    n0 = SIZE(obj%material)
-    CALL Reallocate(temp_material, n0 + n)
+    n0 = MIN(SIZE(obj%material), n)
+    CALL Reallocate(temp_material, n)
     temp_material(1:n0) = obj%material(1:n0)
     CALL MOVE_ALLOC(from=temp_material, to=obj%material)
 
@@ -437,8 +443,10 @@ END SUBROUTINE Elemdata_SetTotalMedium
 !----------------------------------------------------------------------------
 
 PURE SUBROUTINE Elemdata_Set(obj, globalElemNum, localElemNum, &
-        elementType, globalNodes, globalElements, boundaryData, globalEdges, &
-   globalFaces, name, topoName, isActive, meshID, medium, material, materials)
+                             elementType, globalNodes, globalElements, &
+                             boundaryData, globalEdges, &
+                             globalFaces, name, topoName, isActive, meshID, &
+                             medium, material, materials)
   ! obj%elementData(ii)%globalElemNum = elemNumber(ii)
   ! obj%elementData(ii)%localElemNum = ii
   ! obj%elementData(ii)%globalNodes = connectivity(:, ii)
@@ -581,7 +589,8 @@ SUBROUTINE Elemdata_GetGlobalFaceCon(obj, globalFaceCon, localFaceCon)
     face_temp(1:aint) = obj%globalNodes(localFaces0(1:aint, iface))
 
     CALL FaceShapeMetaData_Quadrangle(face=face_temp(1:aint), &
-                                   sorted_face=globalFaceCon(1:aint, iface), &
+                                      sorted_face=globalFaceCon(1:aint, &
+                                                                iface), &
                                       localFaces=localFaceCon(1:aint, iface))
   END DO
 
@@ -686,7 +695,8 @@ END SUBROUTINE Elemdata_GetConnectivity
 ! date: 2025-05-10
 ! summary:  Returns the connectvity of the element
 
-SUBROUTINE Elemdata_GetConnectivity2(obj, cellCon, faceCon, edgeCon, nodeCon, &
+SUBROUTINE Elemdata_GetConnectivity2(obj, cellCon, faceCon, &
+                                     edgeCon, nodeCon, &
                                      tCellCon, tFaceCon, tEdgeCon, tNodeCon)
   TYPE(Elemdata_), INTENT(IN) :: obj
   INTEGER(I4B), INTENT(INOUT) :: cellCon(:)
@@ -828,9 +838,13 @@ END FUNCTION Elemdata_GetCell
 ! date: 2024-05-20
 ! summary: Get the total number of edge dof on the edge of an element
 !
-!# Introduction
+! All dofs are internal to the edge, that is, vertex dof are not included.
+! The number is the one of the interior of a line element of the given
+! order (GetTotalInDOF), the same rule as Elemdata_GetTotalFaceDOF.
 !
-! All dofs are internal to the edge, that is, vertex dof are not included
+! Changes:
+!   - 2026-10-29: count the interior DOF of a line (order - 1 for H1), it
+!     returned order - 2
 
 FUNCTION Elemdata_GetTotalEdgeDOF(obj, ii, order, baseContinuity, &
                                   baseInterpolation) RESULT(ans)
@@ -846,7 +860,25 @@ FUNCTION Elemdata_GetTotalEdgeDOF(obj, ii, order, baseContinuity, &
   !! base interpolation type
   INTEGER(I4B) :: ans
   !! Total number of dof on edge
-  ans = MAX(order - 2, 0_I4B)
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "Elemdata_GetTotalEdgeDOF()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  ans = GetTotalInDOF(order=order, elemType=elemopt%line, &
+                      baseContinuity=baseContinuity, &
+                      baseInterpolation=baseInterpolation)
+  ans = MAX(ans, 0_I4B)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END FUNCTION Elemdata_GetTotalEdgeDOF
 
 !----------------------------------------------------------------------------
@@ -888,7 +920,8 @@ FUNCTION Elemdata_GetTotalFaceDOF(obj, ii, order, baseContinuity, &
 
   !! Get the
   ans = GetTotalInDOF(order=order, elemType=faceElemType(ii), &
-           baseContinuity=baseContinuity, baseInterpolation=baseInterpolation)
+                      baseContinuity=baseContinuity, &
+                      baseInterpolation=baseInterpolation)
 
   ans = MAX(ans, 0_I4B)
 
@@ -922,7 +955,8 @@ FUNCTION Elemdata_GetTotalCellDOF(obj, order, baseContinuity, &
   !! Total number of dof on edge
 
   ans = GetTotalInDOF(order=order, elemType=obj%name, &
-           baseContinuity=baseContinuity, baseInterpolation=baseInterpolation)
+                      baseContinuity=baseContinuity, &
+                      baseInterpolation=baseInterpolation)
 
   ans = MAX(ans, 0_I4B)
 END FUNCTION Elemdata_GetTotalCellDOF
@@ -1023,6 +1057,12 @@ END SUBROUTINE Elemdata_GetElementToElements2
 !> author: Vikas Sharma, Ph. D.
 ! date: 2024-05-22
 ! summary: Get the end points of the edge
+!
+! Get the nodes of the local edge ii from the reference element and map
+! them to global node numbers with obj%globalNodes.
+!
+! Changes:
+!   - 2026-10-29: return global node numbers (it returned the local ones)
 
 SUBROUTINE Elemdata_GetEdgeConnectivity(obj, ans, tsize, ii)
   TYPE(Elemdata_), INTENT(IN) :: obj
@@ -1041,6 +1081,11 @@ SUBROUTINE Elemdata_GetEdgeConnectivity(obj, ans, tsize, ii)
   LOGICAL(LGT) :: problem
 #endif
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   CALL GetEdgeConnectivity(elemType=obj%name, con=con, opt=1_I4B, &
                            nrow=tsize, ncol=ncol)
 
@@ -1053,8 +1098,13 @@ SUBROUTINE Elemdata_GetEdgeConnectivity(obj, ans, tsize, ii)
 #endif
 
   DO jj = 1, tsize
-    ans(jj) = con(jj, ii)
+    ans(jj) = obj%globalNodes(con(jj, ii))
   END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE Elemdata_GetEdgeConnectivity
 
 !----------------------------------------------------------------------------
@@ -1558,7 +1608,8 @@ END SUBROUTINE Elemdata_GetFaceOrient
 ! summary:  Get the orientation related vectors from the element
 
 PURE SUBROUTINE Elemdata_GetOrientation(obj, cellOrient, faceOrient, &
-                            edgeOrient, tCellOrient, tFaceOrient, tEdgeOrient)
+                                        edgeOrient, tCellOrient, &
+                                        tFaceOrient, tEdgeOrient)
   TYPE(Elemdata_), INTENT(IN) :: obj
   !! element dataa
   INTEGER(I4B), INTENT(INOUT) :: cellOrient(:)
@@ -1619,7 +1670,7 @@ SUBROUTINE Elemdata_FindFace(obj, faceCon, isFace, &
     IF (.NOT. isok) RETURN
   END IF
 
-  isFace = faceCon.IN.obj%globalNodes
+  isFace = faceCon .IN. obj%globalNodes
 
   IF (.NOT. isFace) RETURN
 
@@ -1679,12 +1730,13 @@ SUBROUTINE Elemdata_FindEdge(obj, edgeCon, isEdge, localEdgeNumber, &
     IF (.NOT. isok) RETURN
   END IF
 
-  isEdge = edgeCon.IN.obj%globalNodes
+  isEdge = edgeCon .IN. obj%globalNodes
 
   IF (.NOT. isEdge) RETURN
 
   ! get the local Edge number
-  CALL RefElemGetGeoParam(elemType=obj%name, tEdges=tEdges, edgeCon=localEdges0, &
+  CALL RefElemGetGeoParam(elemType=obj%name, tEdges=tEdges, &
+                          edgeCon=localEdges0, &
                           edgeOpt=edgeOpt)
 
   want(1:2) = Sort(edgeCon(1:2))

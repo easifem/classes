@@ -20,25 +20,25 @@
 
 SUBMODULE(MeshSelection_Class) GetElemNumMethods
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-
-USE AppendUtility, ONLY: Append
-
-USE IntVector_Method, ONLY: isAllocated, ASSIGNMENT(=), size, &
-                            GetPointer
-
-USE Display_Method, ONLY: ToString
-
+USE IntVector_Method, ONLY: IntVectorSize => Size
+USE IntVector_Method, ONLY: IntVectorGet_ => Get_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "MeshSelection_Class@GetElemNumMethods.F90"
+#endif
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                         GetTotalElemNum
+!                                                            GetTotalElemNum
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElemNum1
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElemNum1()"
-LOGICAL(LGT) :: isok
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -46,26 +46,27 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ans = 0
-
-isok = obj%ms(2)
-IF (.NOT. isok) RETURN
-
 SELECT CASE (dim)
 CASE (0)
-  ans = SIZE(obj%pointElemNum)
+  ans = IntVectorSize(obj%pointElemNum)
 CASE (1)
-  ans = SIZE(obj%curveElemNum)
+  ans = IntVectorSize(obj%curveElemNum)
 CASE (2)
-  ans = SIZE(obj%surfaceElemNum)
+  ans = IntVectorSize(obj%surfaceElemNum)
 CASE (3)
-  ans = SIZE(obj%volumeElemNum)
+  ans = IntVectorSize(obj%volumeElemNum)
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for dim")
+#endif
+
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetTotalElemNum1
 
 !----------------------------------------------------------------------------
@@ -73,10 +74,13 @@ END PROCEDURE obj_GetTotalElemNum1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalElemNum2
-CHARACTER(*), PARAMETER :: myname = "obj_GetTotalElemNum2()"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalElemNum2()"
+#endif
+
 CLASS(AbstractMesh_), POINTER :: meshptr
-INTEGER(I4B) :: ii, tsize
-INTEGER(I4B), POINTER :: intptr(:)
+INTEGER(I4B) :: ii
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -85,40 +89,56 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ans = obj%GetTotalElemNum(dim=dim)
 
-! isSelectionByMeshID
-IF (obj%ms(1)) THEN
+meshptr => dom%GetMeshPointer(dim=dim)
 
-  meshptr => dom%GetMeshPointer(dim=dim)
-
-  SELECT CASE (dim)
-
-  CASE (0)
-    tsize = SIZE(obj%pointMeshID)
-    intptr => GetPointer(obj%pointMeshID, 1_I4B)
-
-  CASE (1)
-    tsize = SIZE(obj%curveMeshID)
-    intptr => GetPointer(obj%curveMeshID, 1_I4B)
-
-  CASE (2)
-    tsize = SIZE(obj%surfaceMeshID)
-    intptr => GetPointer(obj%surfaceMeshID, 1_I4B)
-
-  CASE (3)
-    tsize = SIZE(obj%volumeMeshID)
-    intptr => GetPointer(obj%volumeMeshID, 1_I4B)
-
-  END SELECT
-
-  DO ii = 1, tsize
-    ans = ans + meshptr%GetTotalElements(meshid=intptr(ii))
-  END DO
-  intptr => NULL()
-
+isok = ASSOCIATED(meshptr)
+IF (.NOT. isok) THEN
+  meshptr => NULL()
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
 END IF
 
-! TODO enhance GetElemNum in MeshSelection_ so that it works
-! when isSelectionByNodeNum and isSelectionByBox is true.
+SELECT CASE (dim)
+
+! isSelectionByMeshID
+CASE (0)
+  DO ii = 1, obj%pointMeshID%tsize
+    ans = ans + meshptr%GetTotalElements(meshid=obj%pointMeshID%val(ii))
+  END DO
+  ! TODO enhance GetElemNum in MeshSelection_ so that it works
+  ! when isSelectionByNodeNum and isSelectionByBox is true.
+
+CASE (1)
+  DO ii = 1, obj%curveMeshID%tsize
+    ans = ans + meshptr%GetTotalElements(meshid=obj%curveMeshID%val(ii))
+  END DO
+  ! TODO enhance GetElemNum in MeshSelection_ so that it works
+  ! when isSelectionByNodeNum and isSelectionByBox is true.
+
+CASE (2)
+  DO ii = 1, obj%surfaceMeshID%tsize
+    ans = ans + meshptr%GetTotalElements(meshid=obj%surfaceMeshID%val(ii))
+  END DO
+  ! TODO enhance GetElemNum in MeshSelection_ so that it works
+  ! when isSelectionByNodeNum and isSelectionByBox is true.
+
+CASE (3)
+  DO ii = 1, obj%volumeMeshID%tsize
+    ans = ans + meshptr%GetTotalElements(meshid=obj%volumeMeshID%val(ii))
+  END DO
+  ! TODO enhance GetElemNum in MeshSelection_ so that it works
+  ! when isSelectionByNodeNum and isSelectionByBox is true.
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for dim")
+#endif
+END SELECT
+
+meshptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -171,7 +191,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 ans = 0
-
 DO ii = 0, 3
   ans = ans + obj%GetTotalElemNum(dim=ii, dom=dom)
 END DO
@@ -190,9 +209,6 @@ MODULE PROCEDURE obj_GetElemNum1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetElemNum1()"
 #endif
-
-LOGICAL(LGT) :: isok
-INTEGER(I4B), POINTER :: intptr(:)
 INTEGER(I4B) :: ii
 
 #ifdef DEBUG_VER
@@ -202,39 +218,42 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 tsize = 0
 
-isok = obj%ms(2)
-IF (.NOT. isok) RETURN
-
 SELECT CASE (dim)
+
 CASE (0)
-  tsize = SIZE(obj%pointElemNum)
-  intptr => GetPointer(obj%pointElemNum, 1_I4B)
+  tsize = obj%pointElemNum%tsize
+  DO ii = 1, tsize
+    ans(ii) = obj%pointElemNum%val(ii)
+  END DO
 
 CASE (1)
-  tsize = SIZE(obj%curveElemNum)
-  intptr => GetPointer(obj%curveElemNum, 1_I4B)
+  tsize = obj%curveElemNum%tsize
+  DO ii = 1, tsize
+    ans(ii) = obj%curveElemNum%val(ii)
+  END DO
 
 CASE (2)
-  tsize = SIZE(obj%surfaceElemNum)
-  intptr => GetPointer(obj%surfaceElemNum, 1_I4B)
+  tsize = obj%surfaceElemNum%tsize
+  DO ii = 1, tsize
+    ans(ii) = obj%surfaceElemNum%val(ii)
+  END DO
 
 CASE (3)
-  tsize = SIZE(obj%volumeElemNum)
-  intptr => GetPointer(obj%volumeElemNum, 1_I4B)
+  tsize = obj%volumeElemNum%tsize
+  DO ii = 1, tsize
+    ans(ii) = obj%volumeElemNum%val(ii)
+  END DO
 
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for dim")
+#endif
 END SELECT
-
-DO ii = 1, tsize
-  ans(ii) = intptr(ii)
-END DO
-
-intptr => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetElemNum1
 
 !----------------------------------------------------------------------------
@@ -247,9 +266,8 @@ CHARACTER(*), PARAMETER :: myname = "obj_GetElemNum2()"
 #endif
 
 CLASS(AbstractMesh_), POINTER :: meshptr
-
-INTEGER(I4B) :: ii, mysize, jj
-INTEGER(I4B), POINTER :: intptr(:)
+INTEGER(I4B) :: ii, jj
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -259,47 +277,64 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! isSelectionByElemNum
 CALL obj%GetElemNum(dim=dim, ans=ans, tsize=tsize)
 
-! isSelectionByMeshID
-IF (obj%ms(1)) THEN
-
-  meshptr => dom%GetMeshPointer(dim=dim)
-
-  SELECT CASE (dim)
-
-  CASE (0)
-    mysize = SIZE(obj%pointMeshID)
-    intptr => GetPointer(obj%pointMeshID, 1_I4B)
-
-  CASE (1)
-    mysize = SIZE(obj%curveMeshID)
-    intptr => GetPointer(obj%curveMeshID, 1_I4B)
-
-  CASE (2)
-    mysize = SIZE(obj%surfaceMeshID)
-    intptr => GetPointer(obj%surfaceMeshID, 1_I4B)
-
-  CASE (3)
-    mysize = SIZE(obj%volumeMeshID)
-    intptr => GetPointer(obj%volumeMeshID, 1_I4B)
-
-  END SELECT
+meshptr => dom%GetMeshPointer(dim=dim)
+isok = ASSOCIATED(meshptr)
+IF (.NOT. isok) THEN
+  meshptr => NULL()
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
 END IF
 
-DO ii = 1, mysize
-  CALL meshptr%GetElemNum_(meshid=intptr(ii), ans=ans(tsize + 1:), tsize=jj, &
-                           islocal=.FALSE.)
-  tsize = tsize + jj
-END DO
-intptr => NULL()
+! isSelectionByMeshID
+SELECT CASE (dim)
+CASE (0)
+  DO ii = 1, obj%pointMeshID%tsize
+    CALL meshptr%GetElemNum_(meshid=obj%pointMeshID%val(ii), &
+                             ans=ans(tsize + 1:), tsize=jj, &
+                             islocal=math%no)
+    tsize = tsize + jj
+  END DO
 
-! TODO enhance GetElemNum in [[MeshSelection_]] so that it works
+CASE (1)
+  DO ii = 1, obj%curveMeshID%tsize
+    CALL meshptr%GetElemNum_(meshid=obj%curveMeshID%val(ii), &
+                             ans=ans(tsize + 1:), tsize=jj, &
+                             islocal=math%no)
+    tsize = tsize + jj
+  END DO
+
+CASE (2)
+  DO ii = 1, obj%surfaceMeshID%tsize
+    CALL meshptr%GetElemNum_(meshid=obj%surfaceMeshID%val(ii), &
+                             ans=ans(tsize + 1:), tsize=jj, &
+                             islocal=math%no)
+    tsize = tsize + jj
+  END DO
+
+CASE (3)
+  DO ii = 1, obj%volumeMeshID%tsize
+    CALL meshptr%GetElemNum_(meshid=obj%volumeMeshID%val(ii), &
+                             ans=ans(tsize + 1:), tsize=jj, &
+                             islocal=math%no)
+    tsize = tsize + jj
+  END DO
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for dim")
+#endif
+END SELECT
+
+! TODO: enhance GetElemNum in [[MeshSelection_]] so that it works
 ! when isSelectionByNodeNum and isSelectionByBox is true.
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_GetElemNum2
 
 !----------------------------------------------------------------------------
@@ -360,7 +395,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetElemNum4
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include Error
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE GetElemNumMethods

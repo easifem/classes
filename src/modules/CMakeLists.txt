@@ -24,9 +24,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/ExceptionHandler/CMakeLists.txt)
 # CPUTime
 include(${CMAKE_CURRENT_LIST_DIR}/CPUTime/CMakeLists.txt)
 
-# CommandLineArg
-include(${CMAKE_CURRENT_LIST_DIR}/CommandLineArg/CMakeLists.txt)
-
 # MarkdownData
 include(${CMAKE_CURRENT_LIST_DIR}/MarkdownData/CMakeLists.txt)
 
@@ -57,17 +54,23 @@ include(${CMAKE_CURRENT_LIST_DIR}/CSVFile/CMakeLists.txt)
 # InputFile
 include(${CMAKE_CURRENT_LIST_DIR}/InputFile/CMakeLists.txt)
 
-# HDF5File
-include(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
-
 # XMLFile
 include(${CMAKE_CURRENT_LIST_DIR}/XMLFile/CMakeLists.txt)
 
 # VTKFile
 include(${CMAKE_CURRENT_LIST_DIR}/VTKFile/CMakeLists.txt)
 
+# VTKMeshUtility
+include(${CMAKE_CURRENT_LIST_DIR}/VTKMeshUtility/CMakeLists.txt)
+
 # PVDFile
 include(${CMAKE_CURRENT_LIST_DIR}/PVDFile/CMakeLists.txt)
+
+# HDF5File
+include(${CMAKE_CURRENT_LIST_DIR}/HDF5File/CMakeLists.txt)
+
+# VtkHDF5File
+include(${CMAKE_CURRENT_LIST_DIR}/VtkHDF5File/CMakeLists.txt)
 
 # Files
 include(${CMAKE_CURRENT_LIST_DIR}/Files/CMakeLists.txt)
@@ -108,9 +111,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/AbstractMesh/CMakeLists.txt)
 # FEMesh
 include(${CMAKE_CURRENT_LIST_DIR}/FEMesh/CMakeLists.txt)
 
-# Mesh
-include(${CMAKE_CURRENT_LIST_DIR}/Mesh/CMakeLists.txt)
-
 # MeshPointerVector
 include(${CMAKE_CURRENT_LIST_DIR}/MeshPointerVector/CMakeLists.txt)
 
@@ -128,9 +128,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/FEDomain/CMakeLists.txt)
 
 # FEDomainConnectivity
 include(${CMAKE_CURRENT_LIST_DIR}/FEDomainConnectivity/CMakeLists.txt)
-
-# Domain
-include(${CMAKE_CURRENT_LIST_DIR}/Domain/CMakeLists.txt)
 
 # DomainConnectivity
 include(${CMAKE_CURRENT_LIST_DIR}/DomainConnectivity/CMakeLists.txt)
@@ -510,3 +507,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/TDGAlgorithms/CMakeLists.txt)
 
 # IterationData
 include(${CMAKE_CURRENT_LIST_DIR}/IterationData/CMakeLists.txt)
+
+# CatalystAdaptor
+include(${CMAKE_CURRENT_LIST_DIR}/CatalystAdaptor/CMakeLists.txt)

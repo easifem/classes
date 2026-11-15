@@ -85,6 +85,7 @@ forceVar = QuadratureVariable(nrow=spaceCompo(1), ncol=maxNips, &
                               vartype=TypeFEVariableSpace)
 
 args = 0.0_DFP
+IF (PRESENT(times)) args(4) = times
 
 DO iel = 1, tElements
 
@@ -112,7 +113,7 @@ DO iel = 1, tElements
   END DO
 
   CALL FEVariable_Set( &
-    obj=forceVar, val=forceVecQuad(1:elemsd%nsd, 1:elemsd%nips), &
+    obj=forceVar, val=forceVecQuad(1:spaceCompo(1), 1:elemsd%nips), &
     rank=TypeFEVariableVector, varType=TypeFEVariableSpace, scale=1.0_DFP, &
     addContribution=no)
 

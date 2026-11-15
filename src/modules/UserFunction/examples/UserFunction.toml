@@ -1,0 +1,79 @@
+[userFunction1]
+# constant scalar valued function
+# In this case we must provide scalarValue
+# When argType is constant, then numArgs must be 0
+# When returnType is scalar, then numReturns must be 1
+
+name = "function1"
+returnType = "Scalar"
+argType = "Constant"
+numArgs = 0
+numReturns = 1
+value = 1.0
+
+[userFunction2]
+# constant vector valued function
+# In this case we must provide vectorValue
+# When argType is constant, then numArgs must be 0
+# When returnType is vector, then numReturns must be
+# greater than or equal to 1
+# The size of vectorValue should be same as the
+# numReturns
+
+name = "function2"
+returnType = "Vector"
+argType = "Constant"
+numArgs = 0
+numReturns = 3
+value = [1.0, 2.0, 3.0]
+
+[userFunction3]
+# constant matrix valued function
+# In this case we must provide matrixValue
+# When argType is constant, then numArgs must be 0
+# When returnType is matrix, then numReturns must be
+# greater than or equal to 1
+# The size of matrixValue should be same as the
+# numReturns
+
+name = "function3"
+returnType = "Matrix"
+argType = "Constant"
+numArgs = 0
+numReturns = 9
+returnShape = [3, 3]
+value = [[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+
+[userFunction]
+# constant matrix valued function
+# In this case we must provide matrixValue
+# When argType is constant, then numArgs must be 0
+# When returnType is matrix, then numReturns must be
+# greater than or equal to 1
+# The size of matrixValue should be same as the
+# numReturns
+
+name = "function"
+returnType = "Matrix"
+argType = "Constant"
+numArgs = 0
+numReturns = 9
+returnShape = [3, 3]
+value = [[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]
+
+[userFunction_lua]
+# constant matrix valued function
+# In this case we must provide matrixValue
+# When argType is constant, then numArgs must be 0
+# When returnType is matrix, then numReturns must be
+# greater than or equal to 1
+# The size of matrixValue should be same as the
+# numReturns
+
+name = "function"
+returnType = "Scalar"
+argType = "Space"
+numArgs = 1
+numReturns = 1
+luaScript = "./Function1.lua"
+luaFunctionName = "Function1"

@@ -17,13 +17,19 @@
 !
 
 SUBMODULE(BasisOpt_Class) GetMethods
-USE Display_Method, ONLY: ToString, Display
-USE ReferenceElement_Method, ONLY: GetTotalNodes, GetTotalFaces
-USE ElemshapeData_Method, ONLY: Elemsd_Set => Set, &
-                                LagrangeFacetElemShapeData, &
-                                HierarchicalFacetElemShapeData
-
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: HierarchicalFacetElemShapeData
+USE ElemshapeData_Method, ONLY: LagrangeFacetElemShapeData
+USE ReferenceElement_Method, ONLY: GetTotalFaces
+USE ReferenceElement_Method, ONLY: GetTotalNodes
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "BasisOpt_Class@GetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -144,6 +150,7 @@ IF (PRESENT(basisType)) basisType = obj%basisType
 IF (PRESENT(alpha)) alpha = obj%alpha
 IF (PRESENT(beta)) beta = obj%beta
 IF (PRESENT(lambda)) lambda = obj%lambda
+IF (PRESENT(isBrokenSpace)) isBrokenSpace = obj%isBrokenSpace
 
 CALL obj%quadOpt%GetParam( &
   isHomogeneous=quadratureIsHomogeneous, &
@@ -481,6 +488,50 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 END PROCEDURE obj_GetEdgeOrder
+
+!----------------------------------------------------------------------------
+!                                                                  GetIpType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIpType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetIpType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%ipType
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetIpType
+
+!----------------------------------------------------------------------------
+!                                                        GetIsBrokenSpace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIsBrokenSpace
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetIsBrokenSpace()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%isBrokenSpace
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetIsBrokenSpace
 
 !----------------------------------------------------------------------------
 !                                                           Include error

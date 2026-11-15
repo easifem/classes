@@ -20,13 +20,15 @@ LOGICAL(LGT) :: isok, abool
 TYPE(String), ALLOCATABLE :: tokens(:)
 
 totalData = obj%GetTotalData(ignoreComment=ignoreComment, &
-    ignoreBlank=ignoreBlank, commentSymbol=commentSymbol, separator=separator)
+                             ignoreBlank=ignoreBlank, &
+                             commentSymbol=commentSymbol, &
+                             separator=separator)
 
 ! CALL Reallocate(val, totalData)
 CALL Initiate(obj=val, tsize=totalData)
 
 ! Get the pointer to raw data, we will fill it with data from file
-vals => GetPointer(obj=val)
+! vals => GetPointer(obj=val)
 
 ioerr = 0
 jj = 0
@@ -35,30 +37,31 @@ abool = obj%IsOpen() .AND. .NOT. obj%IsEOF()
 
 IF (abool) THEN
 
-  DO
+  loop1: DO
 
     CALL obj%ReadLine(val=aline, iostat=ioerr, iomsg=iomsg)
 
-    IF (obj%IsEOF()) EXIT
+    IF (obj%IsEOF()) EXIT loop1
 
     isok = obj%IsValidRecord(aline=aline, ignoreComment=ignoreComment, &
-                         ignoreBlank=ignoreBlank, commentSymbol=commentSymbol)
+                             ignoreBlank=ignoreBlank, &
+                             commentSymbol=commentSymbol)
 
     IF (isok) THEN
 
-      CALL aline%Split(tokens=tokens, sep=separator)
+      CALL aline%SPLIT(tokens=tokens, sep=separator)
 
       totalTokens = SIZE(tokens)
 
       DO kk = 1, totalTokens
-        vals(jj + kk) = tokens(kk)%To_number(val_kind)
+        val%val(jj + kk) = tokens(kk)%To_number(val_kind)
       END DO
 
       jj = jj + totalTokens
 
     END IF
 
-  END DO
+  END DO loop1
 
   aline = ""
 
@@ -72,4 +75,3 @@ END IF
 
 IF (PRESENT(iostat)) iostat = ioerr
 IF (ALLOCATED(tokens)) DEALLOCATE (tokens)
-vals => NULL()

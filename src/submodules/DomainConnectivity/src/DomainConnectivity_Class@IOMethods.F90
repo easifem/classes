@@ -18,33 +18,60 @@
 SUBMODULE(DomainConnectivity_Class) IOMethods
 USE BaseMethod
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "DomainConnectivity_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                  DisplayFacetToCellData
+!                                                      DisplayFacetToCellData
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE dc_DisplayFacetToCellData
-INTEGER(I4B) :: ii, tsize
-TYPE(String) :: astr
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "dc_DisplayFacetToCellData()"
+#endif
+
+  INTEGER(I4B) :: ii, tsize
+  TYPE(String) :: astr
   !!
   !! main
   !!
-IF (.NOT. ALLOCATED(obj%facetToCell)) RETURN
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  IF (.NOT. ALLOCATED(obj%facetToCell)) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
   !! Display the message
-CALL Display(msg, unitno=unitno)
+  CALL Display(msg, unitno=unitno)
   !!
-tsize = SIZE(obj%facetToCell)
-astr = "facetID, globalCell(master), localFacetID(master), dim(master), &
+  tsize = SIZE(obj%facetToCell)
+  astr = "facetID, globalCell(master), localFacetID(master), dim(master), &
   & entityNum(master), globalCell(slave), localFacetID(slave), dim(slave),&
   & entityNum(slave) "
-CALL Display(astr%chars(), unitno=unitno)
-DO ii = 1, tsize
-  astr = TOSTRING(obj%facetToCell(ii)%facetID)//", "// &
-    & TOSTRING(obj%facetToCell(ii)%GlobalCellData(:, 1))//", "// &
-    & TOSTRING(obj%facetToCell(ii)%GlobalCellData(:, 2))
   CALL Display(astr%chars(), unitno=unitno)
-END DO
+  DO ii = 1, tsize
+    astr = TOSTRING(obj%facetToCell(ii)%facetID) // ", " // &
+      TOSTRING(obj%facetToCell(ii)%GlobalCellData(:, 1)) // ", " // &
+      TOSTRING(obj%facetToCell(ii)%GlobalCellData(:, 2))
+    CALL Display(astr%chars(), unitno=unitno)
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE dc_DisplayFacetToCellData
 
 END SUBMODULE IOMethods

@@ -15,17 +15,16 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractBC_Class) GetValueMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString, Display
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractFE_Class, ONLY: AbstractFE_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: ElemShapeData_, QuadraturePoint_
 USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: Display, ToString
 USE ElemShapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE InputUtility, ONLY: Input
-
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE ReallocateUtility, ONLY: Reallocate
 #ifdef DEBUG_VER
 USE ElemShapeData_Method, ONLY: ElemShapeData_Display => Display
 #endif
@@ -297,7 +296,7 @@ SUBROUTINE Get1WithUserFunction(obj, fedof, geofedof, nodeNum, nodalValue, &
 #ifdef DEBUG_VER
   isok = obj%tElemToEdge .EQ. 0
   CALL AssertError1(isok, myName, &
-                   "Edge DOF extraction is not implemented&
+    "Edge DOF extraction is not implemented&
                   & for userfunction.")
 #endif
 
@@ -468,11 +467,11 @@ SUBROUTINE Get1ConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
 
     CALL fedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     feptr => fedof%GetFEPointer( &
-             globalElement=localCellNumber, islocal=math%yes)
+      globalElement=localCellNumber, islocal=math%yes)
 
     CALL geofedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     geofeptr => geofedof%GetFEPointer( &
-                globalElement=localCellNumber, islocal=math%yes)
+      globalElement=localCellNumber, islocal=math%yes)
 
     CALL cellMesh%GetNodeCoord( &
       nodeCoord=elemCoord, nrow=indx(1), ncol=indx(2), &
@@ -517,7 +516,7 @@ SUBROUTINE Get1ConstantValue(obj, fedof, geofedof, nodeNum, nodalValue, &
 #ifdef DEBUG_VER
   isok = obj%tElemToEdge .EQ. 0
   CALL AssertError1(isok, myName, &
-                   "Edge DOF extraction is not implemented for&
+    "Edge DOF extraction is not implemented for&
                   &userfunction.")
 #endif
 
@@ -830,7 +829,7 @@ SUBROUTINE Get1CheckErrorUserFunction(obj, myName, times)
 #ifdef DEBUG_VER
   isok = ASSOCIATED(obj%func)
   CALL AssertError1(isok, myName, &
-       "When nodalValueType is Space and useFunction is specified, then &
+    "When nodalValueType is Space and useFunction is specified, then &
        &SpaceFunction is needed, but it is not associated")
 #endif
 
@@ -871,7 +870,7 @@ SUBROUTINE Get1CheckErrorUserFunction(obj, myName, times)
   aint = obj%func%GetArgType()
   isok = aint .EQ. obj%nodalValueType
   CALL AssertError1(isok, myName, &
-       "argType="//ToString(aint)//" in user function is not same as &
+    "argType="//ToString(aint)//" in user function is not same as &
        &nodalValueType "//ToString(obj%nodalValueType)//" in AbstractBC_")
 #endif
 
@@ -956,7 +955,7 @@ SUBROUTINE Get2CheckErrorUserFunction(obj, myName)
 #ifdef DEBUG_VER
   isok = ASSOCIATED(obj%func)
   CALL AssertError1(isok, myName, &
-       "When nodalValueType is Space and useFunction is specified, then &
+    "When nodalValueType is Space and useFunction is specified, then &
        &SpaceFunction is needed, but it is not associated")
 #endif
 
@@ -979,7 +978,7 @@ SUBROUTINE Get2CheckErrorUserFunction(obj, myName)
   aint = obj%func%GetArgType()
   isok = aint .EQ. obj%nodalValueType
   CALL AssertError1(isok, myName, &
-       "argType="//ToString(aint)//" in user function is not same as &
+    "argType="//ToString(aint)//" in user function is not same as &
        &nodalValueType "//ToString(obj%nodalValueType)//" in AbstractBC_")
 #endif
 
@@ -1109,7 +1108,7 @@ SUBROUTINE Get2WithUserFunction( &
 
     CALL fedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     feptr => fedof%GetFEPointer( &
-             globalElement=localCellNumber, islocal=math%yes)
+      globalElement=localCellNumber, islocal=math%yes)
 
     CALL geofedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     geofeptr => geofedof%GetFEPointer(globalElement=localCellNumber, &
@@ -1162,7 +1161,7 @@ SUBROUTINE Get2WithUserFunction( &
 #ifdef DEBUG_VER
   isok = obj%tElemToEdge .EQ. 0
   CALL AssertError1(isok, myName, &
-                   "Edge DOF extraction is not implemented for userfunction.")
+                    "Edge DOF extraction is not implemented for userfunction.")
 #endif
 
   DEALLOCATE (massMat, funcValue, ans, xij, temp, ipiv)
@@ -1250,7 +1249,7 @@ SUBROUTINE Get2WithoutUserFunction( &
 #ifdef DEBUG_VER
   CASE DEFAULT
     CALL AssertError1(math%no, myname, &
-             'No case found for nodalValueType'//ToString(obj%nodalValueType))
+                      'No case found for nodalValueType'//ToString(obj%nodalValueType))
 #endif
 
   END SELECT
@@ -1383,11 +1382,11 @@ SUBROUTINE Get2ConstantValue( &
 
     CALL fedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     feptr => fedof%GetFEPointer( &
-             globalElement=localCellNumber, islocal=math%yes)
+      globalElement=localCellNumber, islocal=math%yes)
 
     CALL geofedof%SetFE(globalElement=localCellNumber, islocal=math%yes)
     geofeptr => geofedof%GetFEPointer( &
-                globalElement=localCellNumber, islocal=math%yes)
+      globalElement=localCellNumber, islocal=math%yes)
 
     CALL cellMesh%GetNodeCoord( &
       nodeCoord=xij, nrow=indx(1), ncol=indx(2), &
@@ -1436,7 +1435,7 @@ SUBROUTINE Get2ConstantValue( &
 #ifdef DEBUG_VER
   isok = obj%tElemToEdge .EQ. 0
   CALL AssertError1(isok, myName, &
-                   "Edge DOF extraction is not implemented for userfunction.")
+                    "Edge DOF extraction is not implemented for userfunction.")
 #endif
 
   DEALLOCATE (massMat, funcValue, ans, xij, temp, ipiv)

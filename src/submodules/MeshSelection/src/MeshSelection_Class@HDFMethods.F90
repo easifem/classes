@@ -19,18 +19,23 @@
 ! summary: This module defines a data type for mesh selection
 
 SUBMODULE(MeshSelection_Class) HDFMethods
-USE Display_Method, ONLY: Display, ToString, EqualLine, &
-                          BlankLines
-
-USE BoundingBox_Method, ONLY: bb_Display => Display, bb_GetValue => GetValue
-
-USE GlobalData, ONLY: CHAR_LF, stdout
-
-USE IntVector_Method, ONLY: intvector_Display => Display, &
-                            ASSIGNMENT(=), &
-                            isAllocated
-
+USE BoundingBox_Method, ONLY: bb_Display => Display
+USE BoundingBox_Method, ONLY: bb_GetValue => GetValue
+USE Display_Method, ONLY: BlankLines
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: EqualLine
+USE Display_Method, ONLY: ToString
+USE GlobalData, ONLY: CHAR_LF
+USE GlobalData, ONLY: stdout
+USE IntVector_Method, ONLY: ASSIGNMENT(=)
+USE IntVector_Method, ONLY: intvector_Display => Display
+USE IntVector_Method, ONLY: IsAllocated
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "MeshSelection_Class@HDFMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -38,7 +43,11 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
-CHARACTER(*), PARAMETER :: myName = "obj_Import"
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+LOGICAL(LGT) :: isok
+#endif
+
 TYPE(String) :: dsetname
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
 
@@ -47,58 +56,48 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
-IF (obj%isinit) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-         '[CONFIG ERROR] :: MeshSelection_::object is already initiated, '// &
-                    'deallocate it first!')
-END IF
+#ifdef DEBUG_VER
+isok = .NOT. obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  'MeshSelection_::object is already initiated, '// &
+                  'deallocate it first!')
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsOpen()
+CALL AssertError1(isok, myName, "file is not opened.")
+#endif
+
+#ifdef DEBUG_VER
+isok = hdf5%IsRead()
+CALL AssertError1(isok, myName, "file does not have read access.")
+#endif
 
 obj%isinit = .TRUE.
 
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file is not opened')
-END IF
-
-!> check
-IF (.NOT. hdf5%isRead()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file does not have read permission')
-END IF
-
 ! READ isSelectionByMeshID
+obj%ms = math%no
 dsetname = TRIM(group)//"/isSelectionByMeshID"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%ms(1))
-ELSE
-  obj%ms(1) = .FALSE.
+IF (hdf5%pathExists(dsetname%Chars())) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=obj%ms(1))
 END IF
 
 ! READ isSelectionByElemNum
 dsetname = TRIM(group)//"/isSelectionByElemNum"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%ms(2))
-ELSE
-  obj%ms(2) = .FALSE.
+IF (hdf5%pathExists(dsetname%Chars())) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=obj%ms(2))
 END IF
 
 ! READ isSelectionByNodeNum
 dsetname = TRIM(group)//"/isSelectionByNodeNum"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=obj%ms(3))
-ELSE
-  obj%ms(3) = .FALSE.
+IF (hdf5%pathExists(dsetname%Chars())) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=obj%ms(3))
 END IF
 
 ! READ isSelectionByBox
 dsetname = TRIM(group)//"/isSelectionByBox"
-IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%ms(4))
-ELSE
-  obj%ms(4) = .FALSE.
+IF (hdf5%pathExists(dsetname%Chars())) THEN
+  CALL hdf5%READ(dsetname=dsetname%Chars(), vals=obj%ms(4))
 END IF
 
 ! READ PointMeshID
@@ -106,79 +105,71 @@ dsetname = TRIM(group)//"/PointMeshID"
 IF (hdf5%pathExists(dsetname%chars())) THEN
   CALL hdf5%READ(dsetname=dsetname%chars(), &
                  vals=intvec)
-  obj%PointMeshID = intvec
+  obj%pointMeshID = intvec
   obj%ms(1) = .TRUE.
 END IF
 
 ! READ CurveMeshID
 dsetname = TRIM(group)//"/CurveMeshID"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%CurveMeshID = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%curveMeshID = intvec
   obj%ms(1) = .TRUE.
 END IF
 
 ! READ SurfaceMeshID
 dsetname = TRIM(group)//"/SurfaceMeshID"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%SurfaceMeshID = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%surfaceMeshID = intvec
   obj%ms(1) = .TRUE.
 END IF
 
 ! READ VolumeMeshID
 dsetname = TRIM(group)//"/VolumeMeshID"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%VolumeMeshID = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%volumeMeshID = intvec
   obj%ms(1) = .TRUE.
 END IF
 
 ! READ PointElemNum
 dsetname = TRIM(group)//"/PointElemNum"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%PointElemNum = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%pointElemNum = intvec
   obj%ms(2) = .TRUE.
 END IF
 
 ! READ CurveElemNum
 dsetname = TRIM(group)//"/CurveElemNum"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%CurveElemNum = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%curveElemNum = intvec
   obj%ms(2) = .TRUE.
 END IF
 
 ! READ SurfaceElemNum
 dsetname = TRIM(group)//"/SurfaceElemNum"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%SurfaceElemNum = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%surfaceElemNum = intvec
   obj%ms(2) = .TRUE.
 END IF
 
 ! READ VolumeElemNum
 dsetname = TRIM(group)//"/VolumeElemNum"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%VolumeElemNum = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%volumeElemNum = intvec
   obj%ms(2) = .TRUE.
 END IF
 
 ! READ NodeNum
 dsetname = TRIM(group)//"/NodeNum"
 IF (hdf5%pathExists(dsetname%chars())) THEN
-  CALL hdf5%READ(dsetname=dsetname%chars(), &
-                 vals=intvec)
-  obj%NodeNum = intvec
+  CALL hdf5%READ(dsetname=dsetname%chars(), vals=intvec)
+  obj%nodeNum = intvec
   obj%ms(3) = .TRUE.
 END IF
 
@@ -193,7 +184,10 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
+
 TYPE(String) :: dsetname
 INTEGER(I4B), ALLOCATABLE :: intvec(:)
 
@@ -202,23 +196,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-!> check
 IF (.NOT. obj%isinit) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'The object is not initiated, allocate first!')
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
 END IF
-!> check
 
-IF (.NOT. hdf5%isOpen()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file is not opened')
-END IF
-!> check
+#ifdef DEBUG_VER
+CALL AssertError1(hdf5%IsOpen(), myName, "file is not opened.")
+#endif
 
-IF (.NOT. hdf5%isWrite()) THEN
-  CALL e%RaiseError(modName//'::'//myName//" - "// &
-                    'HDF5 file does not have write permission')
-END IF
+#ifdef DEBUG_VER
+CALL AssertError1(hdf5%IsWrite(), myName, "file does not have write access.")
+#endif
 
 ! READ isSelectionByMeshID
 dsetname = TRIM(group)//"/isSelectionByMeshID"
@@ -241,73 +233,72 @@ CALL hdf5%WRITE(dsetname=dsetname%chars(), &
                 vals=obj%ms(4))
 
 ! READ PointMeshID
-IF (isAllocated(obj%PointMeshID)) THEN
+IF (IsAllocated(obj%pointMeshID)) THEN
   dsetname = TRIM(group)//"/PointMeshID"
-  intvec = obj%PointMeshID
+  intvec = obj%pointMeshID
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 ! READ CurveMeshID
-IF (isAllocated(obj%CurveMeshID)) THEN
+IF (IsAllocated(obj%curveMeshID)) THEN
   dsetname = TRIM(group)//"/CurveMeshID"
-  intvec = obj%CurveMeshID
+  intvec = obj%curveMeshID
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 ! READ SurfaceMeshID
-IF (isAllocated(obj%SurfaceMeshID)) THEN
+IF (IsAllocated(obj%surfaceMeshID)) THEN
   dsetname = TRIM(group)//"/SurfaceMeshID"
-  intvec = obj%SurfaceMeshID
+  intvec = obj%surfaceMeshID
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 ! READ VolumeMeshID
-IF (isAllocated(obj%VolumeMeshID)) THEN
+IF (IsAllocated(obj%volumeMeshID)) THEN
   dsetname = TRIM(group)//"/VolumeMeshID"
-  intvec = obj%VolumeMeshID
-  CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
+  intvec = obj%volumeMeshID
+  CALL hdf5%WRITE(dsetname=dsetname%Chars(), vals=intvec)
 END IF
 
 ! READ PointElemNum
-IF (isAllocated(obj%PointElemNum)) THEN
+IF (IsAllocated(obj%pointElemNum)) THEN
   dsetname = TRIM(group)//"/PointElemNum"
-  intvec = obj%PointElemNum
+  intvec = obj%pointElemNum
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 ! READ CurveElemNum
-IF (isAllocated(obj%CurveElemNum)) THEN
+IF (IsAllocated(obj%curveElemNum)) THEN
   dsetname = TRIM(group)//"/CurveElemNum"
-  intvec = obj%CurveElemNum
+  intvec = obj%curveElemNum
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 ! READ SurfaceElemNum
-IF (isAllocated(obj%SurfaceElemNum)) THEN
+IF (IsAllocated(obj%surfaceElemNum)) THEN
   dsetname = TRIM(group)//"/SurfaceElemNum"
-  intvec = obj%SurfaceElemNum
+  intvec = obj%surfaceElemNum
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 ! READ VolumeElemNum
-IF (isAllocated(obj%VolumeElemNum)) THEN
+IF (IsAllocated(obj%volumeElemNum)) THEN
   dsetname = TRIM(group)//"/VolumeElemNum"
-  intvec = obj%VolumeElemNum
+  intvec = obj%volumeElemNum
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 ! READ NodeNum
-IF (isAllocated(obj%NodeNum)) THEN
+IF (IsAllocated(obj%nodeNum)) THEN
   dsetname = TRIM(group)//"/NodeNum"
-  intvec = obj%NodeNum
+  intvec = obj%nodeNum
   CALL hdf5%WRITE(dsetname=dsetname%chars(), vals=intvec)
 END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-  & '[END] ')
+                        '[END] ')
 #endif
-
 END PROCEDURE obj_Export
 
 !----------------------------------------------------------------------------

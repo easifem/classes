@@ -19,11 +19,11 @@
 ! summary: module for I/O defines the derived type for a Fortran File object.
 
 MODULE TxtFile_Class
-USE GlobalData
-USE String_Class
 USE BaseType
 USE ExceptionHandler_Class, ONLY: e
 USE FortranFile_Class
+USE GlobalData
+USE String_Class
 IMPLICIT NONE
 PRIVATE
 CHARACTER(*), PARAMETER :: modName = 'TxtFile_Class'
@@ -194,7 +194,7 @@ END TYPE
 ! summary: Initiate the txt file
 
 INTERFACE TxtFileInitiate
-  MODULE SUBROUTINE txt_Initiate(obj, filename, unit, status, access, form, &
+  MODULE SUBROUTINE txt_Initiate(obj, filename, unit, status, access, FORM, &
     & position, action, pad, recl, comment, separator, delimiter)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(IN) :: filename
@@ -207,7 +207,7 @@ INTERFACE TxtFileInitiate
     CHARACTER(*), OPTIONAL, INTENT(IN) :: access
     !! DIRECT, SEQUENTIAL, STREAM
     !! Default is SEQUENTIAL
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: form
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: FORM
     !! FORMATTED, UNFORMATTED
     !! Default is FORMATTED
     CHARACTER(*), OPTIONAL, INTENT(IN) :: position
@@ -317,7 +317,6 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-09
-! update: 2021-11-09
 ! summary: Returns the total number of records in a file
 !
 !
@@ -326,6 +325,9 @@ END INTERFACE
 ! This function returns the total number of records in a file
 ! If `ignoreComment=.TRUE.`, then the comments are ignored
 ! If `ignoreComment` is true, then `commentSymbol` should be given
+!
+! Changes:
+!   - 2021-11-09
 
 INTERFACE
   MODULE FUNCTION txt_GetTotalRecords(obj, ignoreComment, ignoreBlank, &
@@ -419,7 +421,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Line(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                  ignoreComment, ignoreBlank, &
+                                  commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), INTENT(OUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -441,7 +444,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Lines(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                   ignoreComment, ignoreBlank, &
+                                   commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(String), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -463,7 +467,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Char(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                  ignoreComment, ignoreBlank, &
+                                  commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     CHARACTER(*), INTENT(OUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -485,7 +490,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_boolean(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                     ignoreComment, ignoreBlank, &
+                                     commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), INTENT(INOUT) :: val
     INTEGER(I4B), INTENT(OUT) :: iostat
@@ -507,7 +513,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Int8(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                  ignoreComment, ignoreBlank, &
+                                  commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT8), INTENT(INOUT) :: val
     INTEGER(I4B), INTENT(OUT) :: iostat
@@ -529,7 +536,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Int16(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                   ignoreComment, ignoreBlank, &
+                                   commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT16), INTENT(INOUT) :: val
     INTEGER(I4B), INTENT(OUT) :: iostat
@@ -551,7 +559,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Int32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                   ignoreComment, ignoreBlank, &
+                                   commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT32), INTENT(INOUT) :: val
     INTEGER(I4B), INTENT(OUT) :: iostat
@@ -573,7 +582,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Int64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                   ignoreComment, ignoreBlank, &
+                                   commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT64), INTENT(INOUT) :: val
     INTEGER(I4B), INTENT(OUT) :: iostat
@@ -595,7 +605,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Real32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                    ignoreComment, ignoreBlank, &
+                                    commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     REAL(REAL32), INTENT(INOUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -617,7 +628,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_Real64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                    ignoreComment, ignoreBlank, &
+                                    commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     REAL(REAL64), INTENT(INOUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -639,7 +651,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_IntVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                       ignoreComment, ignoreBlank, &
+                                       commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(IntVector_), INTENT(INOUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -661,7 +674,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_RealVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                        ignoreComment, ignoreBlank, &
+                                        commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(RealVector_), INTENT(INOUT) :: val
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -683,7 +697,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_boolean(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                         ignoreComment, ignoreBlank, &
+                                         commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     LOGICAL(LGT), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -705,7 +720,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_Int8(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                      ignoreComment, ignoreBlank, &
+                                      commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -727,7 +743,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_Int16(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                       ignoreComment, ignoreBlank, &
+                                       commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT16), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -749,7 +766,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_Int32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                       ignoreComment, ignoreBlank, &
+                                       commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -771,7 +789,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_Int64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                       ignoreComment, ignoreBlank, &
+                                       commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -793,7 +812,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_Real32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                        ignoreComment, ignoreBlank, &
+                                        commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -815,7 +835,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_Real64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                        ignoreComment, ignoreBlank, &
+                                        commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -837,7 +858,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_IntVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                           ignoreComment, ignoreBlank, &
+                                           commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(IntVector_), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -859,7 +881,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_vec_RealVector(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                            ignoreComment, ignoreBlank, &
+                                            commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     TYPE(RealVector_), ALLOCATABLE, INTENT(INOUT) :: val(:)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -881,7 +904,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_mat_Int8(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                      ignoreComment, ignoreBlank, &
+                                      commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT8), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -903,7 +927,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_mat_Int16(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                       ignoreComment, ignoreBlank, &
+                                       commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT16), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -925,7 +950,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_mat_Int32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                       ignoreComment, ignoreBlank, &
+                                       commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT32), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -947,7 +973,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_mat_Int64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                       ignoreComment, ignoreBlank, &
+                                       commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     INTEGER(INT64), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -969,7 +996,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_mat_Real32(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                        ignoreComment, ignoreBlank, &
+                                        commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     REAL(REAL32), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -991,7 +1019,8 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE txt_Read_mat_Real64(obj, val, iostat, iomsg, &
-                         ignoreComment, ignoreBlank, commentSymbol, separator)
+                                        ignoreComment, ignoreBlank, &
+                                        commentSymbol, separator)
     CLASS(TxtFile_), INTENT(INOUT) :: obj
     REAL(REAL64), ALLOCATABLE, INTENT(INOUT) :: val(:, :)
     INTEGER(I4B), OPTIONAL, INTENT(OUT) :: iostat
@@ -1009,8 +1038,10 @@ END INTERFACE
 
 !> authors: Vikas Sharma, Ph. D.
 ! date: 2021-11-07
-! update: 2021-11-07
 ! summary: Reads a markdown file and converts it into the source file
+!
+! Changes:
+!   - 2021-11-07
 
 INTERFACE
   MODULE SUBROUTINE txt_ConvertMarkdownToSource(obj, outfile, lang)

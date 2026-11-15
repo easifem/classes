@@ -20,7 +20,6 @@ USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractOneDimFE_Class, ONLY: AbstractOneDimFE_
 USE BaseType, ONLY: ElemShapeData_
-USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpaceTime
@@ -78,16 +77,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-! set the value in nbcField
-CALL nbcField%SetAll(VALUE=math%zero)
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 mesh => obj%fedof%GetMeshPointer()
 CALL obj%timefedof%SetFE()
 timefeptr => obj%timefedof%GetFEPointer()
@@ -104,13 +93,18 @@ CALL Reallocate(forceVec, maxNNS, maxNNT)
 CALL Reallocate(nbcValue, maxNNS, maxNNT)
 
 forceVar = NodalVariable( &
-           nrow=maxNNS, ncol=maxNNT, rank=TypeFEVariableScalar, &
+           nrow=maxNNS, ncol=maxNNT, RANK=TypeFEVariableScalar, &
            vartype=TypeFEVariableSpaceTime)
 
 DO ibc = 1, tbc
   nbc => obj%GetNBCPointer(ibc)
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 
   CALL STScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
@@ -245,7 +239,7 @@ SUBROUTINE STScalarFieldAssembleSurfaceSource( &
 
     CALL FEVariable_Set( &
       obj=forceVar, val=nbcValue(1:nbcValue_i, 1:nbcValue_j), &
-      rank=TypeFEVariableScalar, vartype=TypeFEVariableSpaceTime, &
+      RANK=TypeFEVariableScalar, vartype=TypeFEVariableSpaceTime, &
       scale=math%one, addContribution=math%no)
 
     CALL STForceVector_( &

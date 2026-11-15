@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractMeshField_Class) VTKMethods
+USE ArangeUtility, ONLY: arange
 USE VTKFile_Class, ONLY: VTKFile_
 USE VTKFile_Class, ONLY: VTK_BINARY_APPENDED
 USE VTKFile_Class, ONLY: VTK_POLYDATA
@@ -46,11 +47,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 SELECT CASE (obj%rank)
 CASE (TypeFEVariableOpt%scalar)
-  CALL WriteScalarData(obj=obj, nodeCoordField=nodeCoordField, &
-                       filename=filename)
+  CALL WriteScalarData_2(obj=obj, nodeCoordField=nodeCoordField, &
+                         filename=filename)
 CASE (TypeFEVariableOpt%vector)
-  CALL WriteVectorData(obj=obj, nodeCoordField=nodeCoordField, &
-                       filename=filename)
+  CALL WriteVectorData_2(obj=obj, nodeCoordField=nodeCoordField, &
+                         filename=filename)
 CASE (TypeFEVariableOpt%matrix)
   CALL WriteMatrixData(obj=obj, nodeCoordField=nodeCoordField, &
                        filename=filename)
@@ -264,7 +265,7 @@ SUBROUTINE CheckErrorWriteVectorData(obj, nodeCoordField)
     isok = (jj - ii + 1) .EQ. (ss(1) * ss(2))
     CALL AssertError1(isok, myName, &
                       "In obj for iel = "//ToString(iel)// &
-                      " indxVal error(2)")
+                      " indxVal error(3)")
   END DO
 #endif
 
@@ -349,6 +350,91 @@ SUBROUTINE WriteScalarData(obj, nodeCoordField, filename)
 END SUBROUTINE WriteScalarData
 
 !----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+SUBROUTINE WriteScalarData_2(obj, nodeCoordField, filename)
+  CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+  CLASS(AbstractMeshField_), INTENT(INOUT) :: nodeCoordField
+  CHARACTER(*), INTENT(IN) :: filename
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "WriteScalarData()"
+#endif
+
+  TYPE(VTKFile_) :: vtk
+  INTEGER(I4B) :: telements, iel, tpoints, ss(TypeFEVariableOpt%maxRank), &
+                  ii, jj
+  TYPE(String) :: node_str, open_str, close_str
+  INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  ! Check error
+  CALL CheckErrorWriteScalarData(obj=obj, nodeCoordField=nodeCoordField)
+
+  node_str = String("node")
+  open_str = String("open")
+  close_str = String("close")
+
+  telements = obj%tsize
+
+  tpoints = 0
+  DO iel = 1, telements
+    ii = nodeCoordField%indxShape(iel)
+    jj = nodeCoordField%indxShape(iel + 1) - 1
+    ss(1:nodeCoordField%totalShape) = nodeCoordField%ss(ii:jj)
+    tpoints = tpoints + ss(2)
+  END DO
+
+  ALLOCATE (connectivity(tpoints), offsets(tpoints))
+
+  offsets = arange(1_I4B, tpoints)
+  connectivity = offsets - 1
+
+  CALL vtk%InitiateVTKFile( &
+    filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
+    DataStructureType=VTK_POLYDATA)
+
+  CALL vtk%WritePiece( &
+    nPoints=tpoints, nVerts=tpoints, nLines=0_I4B, nStrips=0_I4B, &
+    nPolys=0_I4B)
+
+  ii = nodeCoordField%indxVal(1)
+  jj = nodeCoordField%indxVal(telements + 1) - 1
+  tpoints = ss(2)
+
+  CALL vtk%WritePoints( &
+    x=nodeCoordField%val(ii:jj:ss(1)), &
+    y=nodeCoordField%val(ii + 1:jj:ss(1)), &
+    z=nodeCoordField%val(ii + 2:jj:ss(1)))
+
+  CALL vtk%WriteDataArray(location=node_str, action=open_str)
+
+  ii = obj%indxVal(1)
+  jj = obj%indxVal(telements + 1) - 1
+
+  CALL vtk%WriteDataArray(name=obj%name, x=obj%val(ii:jj))
+
+  CALL vtk%WriteDataArray(location=node_str, action=close_str)
+
+  CALL vtk%WriteVerts(connectivity=connectivity, offsets=offsets)
+
+  CALL vtk%WritePiece()
+
+  CALL vtk%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE WriteScalarData_2
+
+!----------------------------------------------------------------------------
 !                                                             WriteVectorData
 !----------------------------------------------------------------------------
 
@@ -372,7 +458,7 @@ SUBROUTINE WriteVectorData(obj, nodeCoordField, filename)
                           '[START] ')
 #endif
 
-  CALL CheckErrorWriteVectorData(obj=obj, nodeCoordField=nodeCoordField)
+  ! CALL CheckErrorWriteVectorData(obj=obj, nodeCoordField=nodeCoordField)
 
   node_str = String("node")
   open_str = String("open")
@@ -408,8 +494,8 @@ SUBROUTINE WriteVectorData(obj, nodeCoordField, filename)
     ss(1:obj%totalShape) = obj%ss(ii:jj)
     tpoints = ss(2)
 
-    ii = nodeCoordField%indxVal(iel)
-    jj = nodeCoordField%indxVal(iel + 1) - 1
+    ii = obj%indxVal(iel)
+    jj = obj%indxVal(iel + 1) - 1
 
     CALL vtk%WriteDataArray( &
       name=obj%name, x=obj%val(ii:jj), numberOfComponents=ss(1))
@@ -426,6 +512,95 @@ SUBROUTINE WriteVectorData(obj, nodeCoordField, filename)
                           '[END] ')
 #endif
 END SUBROUTINE WriteVectorData
+
+!----------------------------------------------------------------------------
+!                                                                 j
+!----------------------------------------------------------------------------
+
+SUBROUTINE WriteVectorData_2(obj, nodeCoordField, filename)
+  CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+  CLASS(AbstractMeshField_), INTENT(INOUT) :: nodeCoordField
+  CHARACTER(*), INTENT(IN) :: filename
+
+  ! Internal variables
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "WriteVectorData()"
+#endif
+
+  TYPE(VTKFile_) :: vtk
+  INTEGER(I4B) :: telements, iel, tpoints, ss(TypeFEVariableOpt%maxRank), &
+                  ii, jj
+  TYPE(String) :: node_str, open_str, close_str
+  INTEGER(I4B), ALLOCATABLE :: connectivity(:), offsets(:)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+  ! CALL CheckErrorWriteVectorData(obj=obj, nodeCoordField=nodeCoordField)
+
+  node_str = String("node")
+  open_str = String("open")
+  close_str = String("close")
+
+  CALL vtk%InitiateVTKFile( &
+    filename=filename, mode="NEW", DataFormat=VTK_BINARY_APPENDED, &
+    DataStructureType=VTK_POLYDATA)
+
+  telements = obj%mesh%GetTotalCells()
+
+  tpoints = 0
+  DO iel = 1, telements
+    ii = nodeCoordField%indxShape(iel)
+    jj = nodeCoordField%indxShape(iel + 1) - 1
+    ss(1:nodeCoordField%totalShape) = nodeCoordField%ss(ii:jj)
+    tpoints = tpoints + ss(2)
+  END DO
+
+  ALLOCATE (connectivity(tpoints), offsets(tpoints))
+
+  offsets = arange(1_I4B, tpoints)
+  connectivity = offsets - 1
+
+  CALL vtk%WritePiece( &
+    nPoints=tpoints, nVerts=tpoints, nLines=0_I4B, nStrips=0_I4B, &
+    nPolys=0_I4B)
+
+  ii = nodeCoordField%indxVal(1)
+  jj = nodeCoordField%indxVal(telements + 1) - 1
+
+  CALL vtk%WritePoints( &
+    x=nodeCoordField%val(ii:jj:3), y=nodeCoordField%val(ii + 1:jj:3), &
+    z=nodeCoordField%val(ii + 2:jj:3))
+
+  CALL vtk%WriteDataArray(location=node_str, action=open_str)
+
+  ii = obj%indxShape(1)
+  jj = obj%indxShape(2) - 1
+  ss(1:obj%totalShape) = obj%ss(ii:jj)
+
+  ii = obj%indxVal(1)
+  jj = obj%indxVal(telements + 1) - 1
+
+  CALL vtk%WriteDataArray( &
+    name=obj%name, x=obj%val(ii:jj), numberOfComponents=ss(1))
+
+  CALL vtk%WriteDataArray(location=node_str, action=close_str)
+
+  CALL vtk%WriteVerts(connectivity=connectivity, offsets=offsets)
+
+  CALL vtk%WritePiece()
+
+  CALL vtk%DEALLOCATE()
+
+  DEALLOCATE (connectivity, offsets)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END SUBROUTINE WriteVectorData_2
 
 !----------------------------------------------------------------------------
 !                                                             WriteMatrixData

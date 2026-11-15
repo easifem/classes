@@ -1,0 +1,23 @@
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-10-29
+! summary: Exercise QuadrangleH1LagrangeFE_SetOrder
+
+PROGRAM main
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE GlobalData, ONLY: I4B
+USE QuadrangleH1LagrangeFE_Class, ONLY: FE_ => QuadrangleH1LagrangeFE_
+USE Test_Method, ONLY: OK
+IMPLICIT NONE
+TYPE(FE_) :: obj
+
+CALL obj%Initiate(elemType=TypeElemNameOpt%Quadrangle, nsd=2_I4B, &
+                  baseContinuity="H1", baseInterpolation="Lagrange", &
+                  order=2_I4B, &
+                  ipType=TypeInterpolationOpt%Equidistance, &
+                  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
+                  quadratureOrder=[6_I4B])
+CALL obj%SetOrder(order=3_I4B)
+CALL OK(obj%opt%GetTotalDOF() .EQ. 16_I4B, "Cubic basis DOF count")
+CALL obj%DEALLOCATE()
+END PROGRAM main

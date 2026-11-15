@@ -19,11 +19,7 @@
 ! summary: This module contains constructor method for [[BlockMatrixField_]]
 
 SUBMODULE(BlockMatrixFieldLis_Class) ConstructorMethods
-USE MatrixField_Class, ONLY: MatrixFieldDeallocate
-USE MatrixField_Class, ONLY: MatrixFieldInitiate
-! USE BlockMatrixField_Class, ONLY: BlockMatrixFieldInitiate
 USE CSRMatrix_Method, ONLY: GetNNZ
-
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -46,9 +42,9 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL MatrixFieldInitiate( &
-  obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
-  usePointer=usePointer)
+CALL obj%MatrixField_%Initiate(obj2=obj2, copyFull=copyFull, &
+                               copyStructure=copyStructure, &
+                               usePointer=usePointer)
 
 CALL lis_matrix_create(obj%comm, obj%lis_ptr, ierr)
 #ifdef DEBUG_VER
@@ -217,7 +213,7 @@ CALL CHKERR(ierr)
 IF (ALLOCATED(obj%lis_ia)) DEALLOCATE (obj%lis_ia)
 IF (ALLOCATED(obj%lis_ja)) DEALLOCATE (obj%lis_ja)
 
-CALL MatrixFieldDeallocate(obj)
+CALL obj%MatrixField_%DEALLOCATE()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

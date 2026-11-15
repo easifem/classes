@@ -1,0 +1,48 @@
+# Common input file for the STScalarField_ tests.
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements,
+# six nodes 1 (0,0), 2 (10,0), 3 (10,10), 4 (0,10), 5 (5,0), 6 (5,10).
+# Space: order 1 Lagrange, six DOFs. Time: order 1 Lagrange, two DOFs
+# (timeCompo = 2). The field has 6 * 2 = 12 values.
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "NATIVE_SERIAL"
+fieldType = "Normal"
+fedofName = "space"
+geofedofName = "geofedof"
+timefedofName = "time"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[u.time]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.time.quadOpt]
+quadratureType = "GaussLegendre"

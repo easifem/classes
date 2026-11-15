@@ -17,91 +17,120 @@
 !
 
 SUBMODULE(FEFactoryUtility) Methods
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE BasisOpt_Class, ONLY: TypeBasisOpt
 USE Display_Method, ONLY: ToString
+USE HexahedronH1DGHierarchicalFE_Class, ONLY: HexahedronH1DGHierarchicalFE_
+USE HexahedronH1DGLagrangeFE_Class, ONLY: HexahedronH1DGLagrangeFE_
+USE HexahedronH1HierarchicalFE_Class, ONLY: HexahedronH1HierarchicalFE_
+USE HexahedronH1LagrangeFE_Class, ONLY: HexahedronH1LagrangeFE_
+USE InputUtility, ONLY: Input
+USE LineH1DGHierarchicalFE_Class, ONLY: LineH1DGHierarchicalFE_
+USE LineH1DGLagrangeFE_Class, ONLY: LineH1DGLagrangeFE_
+USE LineH1HierarchicalFE_Class, ONLY: LineH1HierarchicalFE_
+USE LineH1LagrangeFE_Class, ONLY: LineH1LagrangeFE_
+USE OneDimBasisOpt_Class, ONLY: TypeOneDimBasisOpt
+USE OneDimBasisOpt_Class, ONLY: TypeOneDimBasisOpt
+USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFE_
+USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFE_
+USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFE_
+USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFE_
+USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFE_
+USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFE_
+USE PrismH1DGHierarchicalFE_Class, ONLY: PrismH1DGHierarchicalFE_
+USE PrismH1DGLagrangeFE_Class, ONLY: PrismH1DGLagrangeFE_
+USE PrismH1HierarchicalFE_Class, ONLY: PrismH1HierarchicalFE_
+USE PrismH1LagrangeFE_Class, ONLY: PrismH1LagrangeFE_
+USE PyramidH1DGHierarchicalFE_Class, ONLY: PyramidH1DGHierarchicalFE_
+USE PyramidH1DGLagrangeFE_Class, ONLY: PyramidH1DGLagrangeFE_
+USE PyramidH1HierarchicalFE_Class, ONLY: PyramidH1HierarchicalFE_
+USE PyramidH1LagrangeFE_Class, ONLY: PyramidH1LagrangeFE_
+USE QuadrangleH1DGHierarchicalFE_Class, ONLY: QuadrangleH1DGHierarchicalFE_
+USE QuadrangleH1DGLagrangeFE_Class, ONLY: QuadrangleH1DGLagrangeFE_
+USE QuadrangleH1HierarchicalFE_Class, ONLY: QuadrangleH1HierarchicalFE_
+USE QuadrangleH1LagrangeFE_Class, ONLY: QuadrangleH1LagrangeFE_
 USE String_Class, ONLY: String
 USE StringUtility, ONLY: UpperCase
-USE BasisOpt_Class, ONLY: TypeBasisOpt
-USE OneDimBasisOpt_Class, ONLY: TypeOneDimBasisOpt
-USE TomlUtility, ONLY: GetValue
-USE BaseType, ONLY: TypeElemNameOpt
-
-USE LineH1LagrangeFE_Class, ONLY: LineH1LagrangeFE_
-USE LineH1HierarchicalFE_Class, ONLY: LineH1HierarchicalFE_
-USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
-USE TriangleH1HierarchicalFE_Class, ONLY: TriangleH1HierarchicalFE_
-USE QuadrangleH1LagrangeFE_Class, ONLY: QuadrangleH1LagrangeFE_
-USE QuadrangleH1HierarchicalFE_Class, ONLY: QuadrangleH1HierarchicalFE_
-USE TetrahedronH1LagrangeFE_Class, ONLY: TetrahedronH1LagrangeFE_
+USE TetrahedronH1DGHierarchicalFE_Class, ONLY: TetrahedronH1DGHierarchicalFE_
+USE TetrahedronH1DGLagrangeFE_Class, ONLY: TetrahedronH1DGLagrangeFE_
 USE TetrahedronH1HierarchicalFE_Class, ONLY: TetrahedronH1HierarchicalFE_
-USE HexahedronH1LagrangeFE_Class, ONLY: HexahedronH1LagrangeFE_
-USE HexahedronH1HierarchicalFE_Class, ONLY: HexahedronH1HierarchicalFE_
-USE PrismH1LagrangeFE_Class, ONLY: PrismH1LagrangeFE_
-USE PrismH1HierarchicalFE_Class, ONLY: PrismH1HierarchicalFE_
-USE PyramidH1LagrangeFE_Class, ONLY: PyramidH1LagrangeFE_
-USE PyramidH1HierarchicalFE_Class, ONLY: PyramidH1HierarchicalFE_
-
-USE OneDimLagrangeFE_Class, ONLY: OneDimLagrangeFE_
-USE OneDimHierarchicalFE_Class, ONLY: OneDimHierarchicalFE_
-USE OneDimOrthogonalFE_Class, ONLY: OneDimOrthogonalFE_
-
+USE TetrahedronH1LagrangeFE_Class, ONLY: TetrahedronH1LagrangeFE_
+USE TomlUtility, ONLY: GetValue
+USE TriangleH1DGHierarchicalFE_Class, ONLY: TriangleH1DGHierarchicalFE_
+USE TriangleH1DGLagrangeFE_Class, ONLY: TriangleH1DGLagrangeFE_
+USE TriangleH1HierarchicalFE_Class, ONLY: TriangleH1HierarchicalFE_
+USE TriangleH1LagrangeFE_Class, ONLY: TriangleH1LagrangeFE_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEFactoryUtility@Methods.F90"
+#endif
 
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                           FEFactory
+!                                                                FEFactory
 !----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-07-01
-! summary:  Internal routine for creating pointer form baseContinuity
-! and baseInterpolation
 
 MODULE PROCEDURE FEFactory1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "FEFactory1()"
 #endif
+LOGICAL(LGT) :: isBrokenSpace0
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+isBrokenSpace0 = Input(default=math%no, option=isBrokenSpace)
+
 SELECT CASE (elemType)
 CASE (TypeElemNameOpt%line)
   ans => FEFactoryLine(baseContinuity=baseContinuity, &
-                       baseInterpolation=baseInterpolation)
+                       baseInterpolation=baseInterpolation, &
+                       isBrokenSpace=isBrokenSpace0)
 
 CASE (TypeElemNameOpt%triangle)
   ans => FEFactoryTriangle(baseContinuity=baseContinuity, &
-                           baseInterpolation=baseInterpolation)
+                           baseInterpolation=baseInterpolation, &
+                           isBrokenSpace=isBrokenSpace0)
 
 CASE (TypeElemNameOpt%quadrangle)
   ans => FEFactoryQuadrangle(baseContinuity=baseContinuity, &
-                             baseInterpolation=baseInterpolation)
+                             baseInterpolation=baseInterpolation, &
+                             isBrokenSpace=isBrokenSpace0)
 
 CASE (TypeElemNameOpt%tetrahedron)
   ans => FEFactoryTetrahedron(baseContinuity=baseContinuity, &
-                              baseInterpolation=baseInterpolation)
+                              baseInterpolation=baseInterpolation, &
+                              isBrokenSpace=isBrokenSpace0)
 
 CASE (TypeElemNameOpt%hexahedron)
   ans => FEFactoryHexahedron(baseContinuity=baseContinuity, &
-                             baseInterpolation=baseInterpolation)
+                             baseInterpolation=baseInterpolation, &
+                             isBrokenSpace=isBrokenSpace0)
 
 CASE (TypeElemNameOpt%prism)
   ans => FEFactoryPrism(baseContinuity=baseContinuity, &
-                        baseInterpolation=baseInterpolation)
+                        baseInterpolation=baseInterpolation, &
+                        isBrokenSpace=isBrokenSpace0)
 
 CASE (TypeElemNameOpt%pyramid)
   ans => FEFactoryPyramid(baseContinuity=baseContinuity, &
-                          baseInterpolation=baseInterpolation)
+                          baseInterpolation=baseInterpolation, &
+                          isBrokenSpace=isBrokenSpace0)
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for elemType")
+#endif
 END SELECT
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE FEFactory1
 
 !----------------------------------------------------------------------------
@@ -116,8 +145,8 @@ CHARACTER(*), PARAMETER :: myName = "FEFactory2()"
 TYPE(String) :: baseInterpolation, baseContinuity
 CHARACTER(4) :: baseInterpolation0
 CHARACTER(2) :: baseContinuity0
-LOGICAL(LGT) :: isFound
-INTEGER(I4B) :: stat, origin
+LOGICAL(LGT) :: isFound, isBrokenSpace
+INTEGER(I4B) :: STAT, origin
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -129,42 +158,63 @@ baseInterpolation0 = TypeBasisOpt%GetBaseInterpolation()
 baseContinuity0 = TypeBasisOpt%GetBaseContinuity()
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading baseInterpolation...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading baseInterpolation...')
 #endif
 
 CALL GetValue(table=table, key="baseInterpolation", &
               VALUE=baseInterpolation, &
               default_value=baseInterpolation0, &
-              origin=origin, stat=stat, isFound=isFound)
+              origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
 IF (.NOT. isFound) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                   'baseInterpolation not found in toml, using default value')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'baseInterpolation not found in toml table, ' &
+                    //"using default value="//baseInterpolation0)
 END IF
 #endif
 
 #ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        'Reading baseContinuity...')
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading baseContinuity...')
 #endif
 
 CALL GetValue(table=table, key="baseContinuity", &
               VALUE=baseContinuity, &
               default_value=baseContinuity0, &
-              origin=origin, stat=stat, isFound=isFound)
+              origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
 IF (.NOT. isFound) THEN
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                      'baseContinuity not found in toml, using default value')
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'baseContinuity not found in toml, ' &
+                    //"using default value="//baseContinuity0)
+END IF
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Reading isBrokenSpace...')
+#endif
+
+CALL GetValue(table=table, key="brokenSpace", &
+              VALUE=isBrokenSpace, &
+              default_value=math%no, &
+              origin=origin, STAT=STAT, isFound=isFound)
+
+#ifdef DEBUG_VER
+IF (.NOT. isFound) THEN
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'brokenSpace not found in toml, ' &
+                    //"using brokenSpace=false")
 END IF
 #endif
 
 ans => FEFactory(elemType=elemType, &
-                 baseContinuity=baseContinuity%chars(), &
-                 baseInterpolation=baseInterpolation%chars())
+                 baseContinuity=baseContinuity%Chars(), &
+                 baseInterpolation=baseInterpolation%Chars(), &
+                 isBrokenSpace=isBrokenSpace)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -176,9 +226,11 @@ END PROCEDURE FEFactory2
 !                                                              FEFactoryLine
 !----------------------------------------------------------------------------
 
-FUNCTION FEFactoryLine(baseContinuity, baseInterpolation) RESULT(ans)
+FUNCTION FEFactoryLine(baseContinuity, baseInterpolation, isBrokenSpace) &
+  RESULT(ans)
   CHARACTER(*), INTENT(IN) :: baseContinuity
   CHARACTER(*), INTENT(IN) :: baseInterpolation
+  LOGICAL(LGT), INTENT(IN) :: isBrokenSpace
   CLASS(AbstractFE_), POINTER :: ans
 
 #ifdef DEBUG_VER
@@ -197,14 +249,22 @@ FUNCTION FEFactoryLine(baseContinuity, baseInterpolation) RESULT(ans)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
-    ALLOCATE (LineH1LagrangeFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (LineH1DGLagrangeFE_ :: ans)
+    ELSE
+      ALLOCATE (LineH1LagrangeFE_ :: ans)
+    END IF
 
   CASE ("H1HIER", "H1HEIR")
-    ALLOCATE (LineH1HierarchicalFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (LineH1DGHierarchicalFE_ :: ans)
+    ELSE
+      ALLOCATE (LineH1HierarchicalFE_ :: ans)
+    END IF
 
-#ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT
@@ -219,15 +279,16 @@ END FUNCTION FEFactoryLine
 !                                                          FEFactoryTriangle
 !----------------------------------------------------------------------------
 
-FUNCTION FEFactoryTriangle(baseContinuity, baseInterpolation) RESULT(ans)
+FUNCTION FEFactoryTriangle(baseContinuity, baseInterpolation, isBrokenSpace) &
+  RESULT(ans)
   CHARACTER(*), INTENT(IN) :: baseContinuity
   CHARACTER(*), INTENT(IN) :: baseInterpolation
+  LOGICAL(LGT), INTENT(IN) :: isBrokenSpace
   CLASS(AbstractFE_), POINTER :: ans
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "FEFactoryTriangle()"
 #endif
-
   CHARACTER(6) :: acase
 
 #ifdef DEBUG_VER
@@ -240,14 +301,22 @@ FUNCTION FEFactoryTriangle(baseContinuity, baseInterpolation) RESULT(ans)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
-    ALLOCATE (TriangleH1LagrangeFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (TriangleH1DGLagrangeFE_ :: ans)
+    ELSE
+      ALLOCATE (TriangleH1LagrangeFE_ :: ans)
+    END IF
 
   CASE ("H1HIER", "H1HEIR")
-    ALLOCATE (TriangleH1HierarchicalFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (TriangleH1DGHierarchicalFE_ :: ans)
+    ELSE
+      ALLOCATE (TriangleH1HierarchicalFE_ :: ans)
+    END IF
 
 #ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT
@@ -262,9 +331,11 @@ END FUNCTION FEFactoryTriangle
 !                                                         FEFactoryQuadrangle
 !----------------------------------------------------------------------------
 
-FUNCTION FEFactoryQuadrangle(baseContinuity, baseInterpolation) RESULT(ans)
+FUNCTION FEFactoryQuadrangle(baseContinuity, baseInterpolation, &
+                             isBrokenSpace) RESULT(ans)
   CHARACTER(*), INTENT(IN) :: baseContinuity
   CHARACTER(*), INTENT(IN) :: baseInterpolation
+  LOGICAL(LGT), INTENT(IN) :: isBrokenSpace
   CLASS(AbstractFE_), POINTER :: ans
 
 #ifdef DEBUG_VER
@@ -283,14 +354,22 @@ FUNCTION FEFactoryQuadrangle(baseContinuity, baseInterpolation) RESULT(ans)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
-    ALLOCATE (QuadrangleH1LagrangeFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (QuadrangleH1DGLagrangeFE_ :: ans)
+    ELSE
+      ALLOCATE (QuadrangleH1LagrangeFE_ :: ans)
+    END IF
 
   CASE ("H1HIER", "H1HEIR")
-    ALLOCATE (QuadrangleH1HierarchicalFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (QuadrangleH1DGHierarchicalFE_ :: ans)
+    ELSE
+      ALLOCATE (QuadrangleH1HierarchicalFE_ :: ans)
+    END IF
 
 #ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT
@@ -305,15 +384,17 @@ END FUNCTION FEFactoryQuadrangle
 !                                                        FEFactoryTetrahedron
 !----------------------------------------------------------------------------
 
-FUNCTION FEFactoryTetrahedron(baseContinuity, baseInterpolation) RESULT(ans)
+FUNCTION FEFactoryTetrahedron(baseContinuity, baseInterpolation, &
+                              isBrokenSpace) RESULT(ans)
   CHARACTER(*), INTENT(IN) :: baseContinuity
   CHARACTER(*), INTENT(IN) :: baseInterpolation
+  LOGICAL(LGT), INTENT(IN) :: isBrokenSpace
   CLASS(AbstractFE_), POINTER :: ans
 
+  ! define internal variables
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "FEFactoryTetrahedron()"
 #endif
-
   CHARACTER(6) :: acase
 
 #ifdef DEBUG_VER
@@ -326,14 +407,22 @@ FUNCTION FEFactoryTetrahedron(baseContinuity, baseInterpolation) RESULT(ans)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
-    ALLOCATE (TetrahedronH1LagrangeFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (TetrahedronH1DGLagrangeFE_ :: ans)
+    ELSE
+      ALLOCATE (TetrahedronH1LagrangeFE_ :: ans)
+    END IF
 
   CASE ("H1HIER", "H1HEIR")
-    ALLOCATE (TetrahedronH1HierarchicalFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (TetrahedronH1DGHierarchicalFE_ :: ans)
+    ELSE
+      ALLOCATE (TetrahedronH1HierarchicalFE_ :: ans)
+    END IF
 
 #ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT
@@ -348,15 +437,17 @@ END FUNCTION FEFactoryTetrahedron
 !                                                         FEFactoryHexahedron
 !----------------------------------------------------------------------------
 
-FUNCTION FEFactoryHexahedron(baseContinuity, baseInterpolation) RESULT(ans)
+FUNCTION FEFactoryHexahedron(baseContinuity, baseInterpolation, &
+                             isBrokenSpace) RESULT(ans)
   CHARACTER(*), INTENT(IN) :: baseContinuity
   CHARACTER(*), INTENT(IN) :: baseInterpolation
+  LOGICAL(LGT), INTENT(IN) :: isBrokenSpace
   CLASS(AbstractFE_), POINTER :: ans
 
+  ! define internal variables
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "FEFactoryHexahedron()"
 #endif
-
   CHARACTER(6) :: acase
 
 #ifdef DEBUG_VER
@@ -369,14 +460,22 @@ FUNCTION FEFactoryHexahedron(baseContinuity, baseInterpolation) RESULT(ans)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
-    ALLOCATE (HexahedronH1LagrangeFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (HexahedronH1DGLagrangeFE_ :: ans)
+    ELSE
+      ALLOCATE (HexahedronH1LagrangeFE_ :: ans)
+    END IF
 
   CASE ("H1HIER", "H1HEIR")
-    ALLOCATE (HexahedronH1HierarchicalFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (HexahedronH1DGHierarchicalFE_ :: ans)
+    ELSE
+      ALLOCATE (HexahedronH1HierarchicalFE_ :: ans)
+    END IF
 
 #ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT
@@ -391,15 +490,17 @@ END FUNCTION FEFactoryHexahedron
 !                                                         FEFactoryPrism
 !----------------------------------------------------------------------------
 
-FUNCTION FEFactoryPrism(baseContinuity, baseInterpolation) RESULT(ans)
+FUNCTION FEFactoryPrism(baseContinuity, baseInterpolation, isBrokenSpace) &
+  RESULT(ans)
   CHARACTER(*), INTENT(IN) :: baseContinuity
   CHARACTER(*), INTENT(IN) :: baseInterpolation
+  LOGICAL(LGT), INTENT(IN) :: isBrokenSpace
   CLASS(AbstractFE_), POINTER :: ans
 
+  ! Define internal variables
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "FEFactoryPrism()"
 #endif
-
   CHARACTER(6) :: acase
 
 #ifdef DEBUG_VER
@@ -412,14 +513,22 @@ FUNCTION FEFactoryPrism(baseContinuity, baseInterpolation) RESULT(ans)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
-    ALLOCATE (PrismH1LagrangeFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (PrismH1DGLagrangeFE_ :: ans)
+    ELSE
+      ALLOCATE (PrismH1LagrangeFE_ :: ans)
+    END IF
 
   CASE ("H1HIER", "H1HEIR")
-    ALLOCATE (PrismH1HierarchicalFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (PrismH1DGHierarchicalFE_ :: ans)
+    ELSE
+      ALLOCATE (PrismH1HierarchicalFE_ :: ans)
+    END IF
 
 #ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT
@@ -434,15 +543,17 @@ END FUNCTION FEFactoryPrism
 !                                                         FEFactoryPyramid
 !----------------------------------------------------------------------------
 
-FUNCTION FEFactoryPyramid(baseContinuity, baseInterpolation) RESULT(ans)
+FUNCTION FEFactoryPyramid(baseContinuity, baseInterpolation, isBrokenSpace) &
+  RESULT(ans)
   CHARACTER(*), INTENT(IN) :: baseContinuity
   CHARACTER(*), INTENT(IN) :: baseInterpolation
+  LOGICAL(LGT), INTENT(IN) :: isBrokenSpace
   CLASS(AbstractFE_), POINTER :: ans
 
+  ! Define internal variables
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "FEFactoryPyramid()"
 #endif
-
   CHARACTER(6) :: acase
 
 #ifdef DEBUG_VER
@@ -455,14 +566,22 @@ FUNCTION FEFactoryPyramid(baseContinuity, baseInterpolation) RESULT(ans)
 
   SELECT CASE (acase)
   CASE ("H1LAGR")
-    ALLOCATE (PyramidH1LagrangeFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (PyramidH1DGLagrangeFE_ :: ans)
+    ELSE
+      ALLOCATE (PyramidH1LagrangeFE_ :: ans)
+    END IF
 
   CASE ("H1HIER", "H1HEIR")
-    ALLOCATE (PyramidH1HierarchicalFE_ :: ans)
+    IF (isBrokenSpace) THEN
+      ALLOCATE (PyramidH1DGHierarchicalFE_ :: ans)
+    ELSE
+      ALLOCATE (PyramidH1HierarchicalFE_ :: ans)
+    END IF
 
-#ifdef DEBUG_VER
   CASE DEFAULT
-    CALL AssertError1(.FALSE., myName, &
+#ifdef DEBUG_VER
+    CALL AssertError1(math%no, myName, &
                       "No case found for acase="//acase)
 #endif
   END SELECT
@@ -481,7 +600,6 @@ MODULE PROCEDURE OneDimFEFactory1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "FEFactoryLine()"
 #endif
-
 CHARACTER(4) :: acase
 
 #ifdef DEBUG_VER
@@ -501,9 +619,9 @@ CASE ("HIER", "HEIR")
 CASE ("ORTH")
   ALLOCATE (OneDimOrthogonalFE_ :: ans)
 
-#ifdef DEBUG_VER
 CASE DEFAULT
-  CALL AssertError1(.FALSE., myName, &
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
                     "No case found for acase="//acase)
 #endif
 
@@ -527,7 +645,7 @@ CHARACTER(*), PARAMETER :: myName = "OneDimFEFactory2()"
 TYPE(String) :: baseInterpolation, baseContinuity
 CHARACTER(4) :: baseInterpolation0, baseContinuity0
 LOGICAL(LGT) :: isFound
-INTEGER(I4B) :: stat, origin
+INTEGER(I4B) :: STAT, origin
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -545,7 +663,7 @@ baseContinuity0 = TypeOneDimBasisOpt%GetBaseContinuity()
 
 CALL GetValue( &
   table=table, key="baseInterpolation", VALUE=baseInterpolation, &
-  default_value=baseInterpolation0, origin=origin, stat=stat, &
+  default_value=baseInterpolation0, origin=origin, STAT=STAT, &
   isFound=isFound)
 
 #ifdef DEBUG_VER
@@ -555,7 +673,7 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
 
 CALL GetValue( &
   table=table, key="baseContinuity", VALUE=baseContinuity, &
-  default_value=baseContinuity0, origin=origin, stat=stat, isFound=isFound)
+  default_value=baseContinuity0, origin=origin, STAT=STAT, isFound=isFound)
 
 ans => OneDimFEFactory1(baseContinuity=baseContinuity%chars(), &
                         baseInterpolation=baseInterpolation%chars())

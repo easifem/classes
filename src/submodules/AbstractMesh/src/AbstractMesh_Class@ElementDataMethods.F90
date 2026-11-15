@@ -16,16 +16,22 @@
 !
 
 SUBMODULE(AbstractMesh_Class) ElementDataMethods
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString
-USE BaseType, ONLY: TypeRefelemOpt
 USE AbstractMeshUtility, ONLY: InitiateElementToElements3D
 USE AbstractMeshUtility, ONLY: InitiateElementToElements2D
 USE AbstractMeshUtility, ONLY: InitiateElementToElements1D
+USE BaseType, ONLY: TypeRefelemOpt
+USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: ToString
 USE NodeData_Class, ONLY: TypeNode
 USE NodeData_Class, ONLY: NodeData_SetNodeType
-
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "AbstractMesh_Class@ElementDataMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -33,21 +39,20 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_InitiateElementToElements
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_InitiateElementToElements()"
-LOGICAL(LGT) :: problem
+#endif
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-problem = .NOT. ALLOCATED(obj%elementData)
-
-IF (problem) THEN
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[INTERNAL ERROR] :: AbstractMesh_::obj%elementData is not allocated')
-  RETURN
-END IF
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%elementData)
+CALL AssertError1(isok, myName, "elementData not allocated.")
+#endif
 
 IF (obj%isElementToElementsInitiated) RETURN
 obj%isElementToElementsInitiated = .TRUE.
@@ -56,31 +61,32 @@ SELECT CASE (obj%xidim)
 CASE (0_I4B)
 
 CASE (1_I4B)
-
   CALL InitiateElementToElements1D(elementData=obj%elementData, &
-                             tNodesInMesh=obj%tNodes, showTime=obj%showTime, &
+                                   tNodesInMesh=obj%tNodes, &
+                                   showTime=obj%showTime, &
                                    local_nptrs=obj%local_nptrs)
 
 CASE (2_I4B)
-
-  problem = .NOT. obj%isFaceConnectivityInitiated
-  IF (problem) CALL obj%InitiateFaceConnectivity()
+  isok = .NOT. obj%isFaceConnectivityInitiated
+  IF (isok) CALL obj%InitiateFaceConnectivity()
 
   CALL InitiateElementToElements3D(elementData=obj%elementData, &
-                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
+                                   tFaceInMesh=obj%tFaces, &
+                                   showTime=obj%showTime)
 
 CASE (3_I4B)
-
-  problem = .NOT. obj%isFaceConnectivityInitiated
-  IF (problem) CALL obj%InitiateFaceConnectivity()
+  isok = .NOT. obj%isFaceConnectivityInitiated
+  IF (isok) CALL obj%InitiateFaceConnectivity()
 
   CALL InitiateElementToElements3D(elementData=obj%elementData, &
-                                tFaceInMesh=obj%tFaces, showTime=obj%showTime)
+                                   tFaceInMesh=obj%tFaces, &
+                                   showTime=obj%showTime)
 
 CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for xidim ' &
-                    //ToString(obj%xidim))
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, "No case found for xidim.")
+#endif
+
 END SELECT
 
 CALL MarkInternalNodes(obj=obj)
@@ -89,7 +95,6 @@ CALL MarkInternalNodes(obj=obj)
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_InitiateElementToElements
 
 !----------------------------------------------------------------------------
@@ -99,30 +104,40 @@ END PROCEDURE obj_InitiateElementToElements
 SUBROUTINE MarkInternalNodes(obj)
   CLASS(AbstractMesh_), INTENT(INOUT) :: obj
 
-  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll
+  INTEGER(I4B) :: ii, jj, tsize, tElements, kk, ll, iface
   LOGICAL(LGT) :: isok
   INTEGER(I4B), ALLOCATABLE :: nptrs(:)
 
 #ifdef DEBUG_VER
   CHARACTER(*), PARAMETER :: myName = "MarkInternalNodes()"
+#endif
+
+#ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[START] ')
 #endif
 
-  IF (obj%xidim .EQ. 0) RETURN
+  IF (obj%xidim .EQ. 0) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
+    RETURN
+  END IF
 
   tElements = obj%GetTotalElements()
 
-  DO ii = 1, tElements
-
+  loop1: DO ii = 1, tElements
     isok = obj%isBoundaryElement(ii, isLocal=.TRUE.)
-    IF (.NOT. isok) CYCLE
+    IF (.NOT. isok) CYCLE loop1
 
     tsize = SIZE(obj%elementData(ii)%ptr%boundaryData)
     DO jj = 1, tsize
-      nptrs = obj%GetFacetConnectivity(globalElement=ii, &
-                             iface=obj%elementData(ii)%ptr%boundaryData(jj), &
-                                       isLocal=.TRUE.)
+
+      iface = obj%elementData(ii)%ptr%boundaryData(jj)
+      nptrs = &
+        obj%GetFacetConnectivity(globalElement=ii, &
+                                 iface=iface, isLocal=.TRUE.)
       DO kk = 1, SIZE(nptrs)
         ll = obj%GetLocalNodeNumber(globalNode=nptrs(kk), islocal=.FALSE.)
         ! obj%nodeData(ll)%ptr%nodeType = TypeNode%domainBoundary
@@ -130,18 +145,18 @@ SUBROUTINE MarkInternalNodes(obj)
                                   TypeNode%domainBoundary)
       END DO
     END DO
-
-  END DO
+  END DO loop1
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                           '[END] ')
 #endif
-
 END SUBROUTINE MarkInternalNodes
 
 !----------------------------------------------------------------------------
-!
+!                                                             Include errors
 !----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ElementDataMethods

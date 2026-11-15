@@ -15,25 +15,28 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 MODULE MatrixFieldLis_Class
-USE GlobalData, ONLY: I4B, DFP, LGT, INT64
-USE HDF5File_Class, ONLY: HDF5File_
-USE ExceptionHandler_Class, ONLY: e
 USE AbstractField_Class, ONLY: AbstractField_
-USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE AbstractMatrixField_Class, ONLY: AbstractMatrixField_
+USE AbstractNodeField_Class, ONLY: AbstractNodeField_
+USE ExceptionHandler_Class, ONLY: e
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDOF_Class, ONLY: FEDOFPointer_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: INT64
+USE GlobalData, ONLY: LGT
+USE HDF5File_Class, ONLY: HDF5File_
 USE MatrixField_Class, ONLY: MatrixField_
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
-
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 IMPLICIT NONE
-
 PRIVATE
-
-CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixFieldLis_Class"
 
 PUBLIC :: MatrixFieldLis_
 PUBLIC :: MatrixFieldLisInitiate
 PUBLIC :: MatrixFieldLisDeallocate
+
+CHARACTER(*), PRIVATE, PARAMETER :: modName = "MatrixFieldLis_Class"
 
 !----------------------------------------------------------------------------
 !                                                              MatrixField_
@@ -58,9 +61,6 @@ TYPE, EXTENDS(MatrixField_) :: MatrixFieldLis_
   !! lis_ptr is pointer returned by the LIS library
   !! It is used when engine is LIS_OMP or LIS_MPI
 CONTAINS
-  PRIVATE
-
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate by copying other object
@@ -68,7 +68,6 @@ CONTAINS
   !! Deallocate the field
   FINAL :: obj_Final
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the field
@@ -77,14 +76,12 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! export matrix field in hdf5file_
 
-  ! GET:
   ! @MatvecMethods
-  PROCEDURE, PASS(obj) :: Matvec2 => obj_Matvec2
+  PROCEDURE, PUBLIC, PASS(obj) :: Matvec2 => obj_Matvec2
   !! Matrix vector multiplication
 
-  ! SET:
   ! @DBCMethods
-  PROCEDURE, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
+  PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBC1 => obj_ApplyDirichletBC1
   !! Apply dirichlet boundary condition
   PROCEDURE, PUBLIC, PASS(obj) :: ApplyDirichletBCtoRHS => &
     obj_ApplyDirichletBCToRHS
@@ -198,16 +195,31 @@ END INTERFACE
 ! summary: This routine Imports the content of matrix field from hdf5file
 
 INTERFACE
-  MODULE SUBROUTINE obj_Import( &
-    obj, hdf5, group, fedof, fedofs, timefedof, timefedofs, geofedof, &
-    geofedofs)
+  MODULE SUBROUTINE obj_Import(obj, hdf5, group, rowFedof, rowFedofs, &
+                               rowGeoFedof, rowGeoFedofs, colFedof, &
+                               colFedofs, colGeoFedof, colGeoFedofs)
     CLASS(MatrixFieldLis_), INTENT(INOUT) :: obj
+    !! matrix field, not initiated
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file open in read mode
     CHARACTER(*), INTENT(IN) :: group
-    CLASS(FEDOF_), TARGET, OPTIONAL, INTENT(IN) :: fedof, geofedof
-    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: fedofs(:), geofedofs(:)
-    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(IN) :: timefedof
-    TYPE(TimeFEDOFPointer_), OPTIONAL, INTENT(IN) :: timefedofs(:)
+    !! group of the matrix field in the HDF5 file
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowFedof
+    !! FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowFedofs(:)
+    !! FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: rowGeoFedof
+    !! geometric FEDOF of the rows
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: rowGeoFedofs(:)
+    !! geometric FEDOF of the rows, one for each physical variable
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colFedof
+    !! FEDOF of the columns, default is rowFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colFedofs(:)
+    !! FEDOF of the columns, default is rowFedofs
+    CLASS(FEDOF_), OPTIONAL, TARGET, INTENT(IN) :: colGeoFedof
+    !! geometric FEDOF of the columns, default is rowGeoFedof
+    TYPE(FEDOFPointer_), OPTIONAL, INTENT(IN) :: colGeoFedofs(:)
+    !! geometric FEDOF of the columns, default is rowGeoFedofs
   END SUBROUTINE obj_Import
 END INTERFACE
 

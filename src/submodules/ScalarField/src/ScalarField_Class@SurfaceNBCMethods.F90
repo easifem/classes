@@ -16,23 +16,23 @@
 !
 
 SUBMODULE(ScalarField_Class) SurfaceNBCMethods
-USE Display_Method, ONLY: ToString
-USE ReallocateUtility, ONLY: Reallocate
+USE AbstractFE_Class, ONLY: AbstractFE_
+USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: math => TypeMathOpt
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
 USE FEVariable_Method, ONLY: NodalVariable
 USE FEVariable_Method, ONLY: FEVariable_Set => Set
 USE FEVariable_Method, ONLY: FEVariable_Deallocate => DEALLOCATE
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
-USE ElemshapeData_Method, ONLY: ElemShapeData_Deallocate => DEALLOCATE
-USE AbstractFE_Class, ONLY: AbstractFE_
 USE ForceVector_Method, ONLY: ForceVector_
-USE NeumannBC_Class, ONLY: NeumannBC_
-USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE InputUtility, ONLY: Input
+USE NeumannBC_Class, ONLY: NeumannBC_
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -77,17 +77,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbc => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbc)
-  IF (.NOT. isok) CYCLE
-
-  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
-END DO
-nbc => NULL()
-
 maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 
@@ -96,7 +85,7 @@ CALL Reallocate(facetCon, maxNNE)
 CALL Reallocate(forceVec, maxNNE)
 CALL Reallocate(nbcValue, maxNNE)
 
-forceVar = NodalVariable(tsize=maxNNE, rank=TypeFEVariableScalar, &
+forceVar = NodalVariable(tsize=maxNNE, RANK=TypeFEVariableScalar, &
                          vartype=TypeFEVariableSpace)
 
 mesh => obj%fedof%GetMeshPointer()
@@ -106,6 +95,11 @@ DO ibc = 1, tbc
 
   isok = ASSOCIATED(nbc)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbc, times=times)
 
   CALL ScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbc, fedof=obj%fedof, geofedof=obj%geofedof, &
@@ -169,17 +163,6 @@ IF (.NOT. isok) THEN
   RETURN
 END IF
 
-CALL nbcField%SetAll(VALUE=math%zero)
-
-DO ibc = 1, tbc
-  nbcptr => obj%GetNBCPointer(ibc)
-  isok = ASSOCIATED(nbcptr)
-  IF (.NOT. isok) CYCLE
-
-  CALL nbcField%ApplyDirichletBC(dbc=nbcptr, times=times)
-END DO
-nbcptr => NULL()
-
 maxNNEGeo = obj%geofedof%GetMaxTotalConnectivity()
 maxNNE = obj%fedof%GetMaxTotalConnectivity()
 
@@ -188,16 +171,21 @@ CALL Reallocate(facetCon, maxNNE)
 CALL Reallocate(forceVec, maxNNE)
 CALL Reallocate(nbcValue, maxNNE)
 
-forceVar = NodalVariable(tsize=maxNNE, rank=TypeFEVariableScalar, &
+forceVar = NodalVariable(tsize=maxNNE, RANK=TypeFEVariableScalar, &
                          vartype=TypeFEVariableSpace)
 
 mesh => obj%fedof%GetMeshPointer()
 
 DO ibc = 1, tbc
-  nbcptr => obj%GetNBCPointer(ibc)
+  nbcptr => nbc(ibc)%ptr
 
   isok = ASSOCIATED(nbcptr)
   IF (.NOT. isok) CYCLE
+
+  ! nbcField keeps only the data of this boundary condition, so that
+  ! the other boundaries add nothing.
+  CALL nbcField%SetAll(VALUE=math%zero)
+  CALL nbcField%ApplyDirichletBC(dbc=nbcptr, times=times)
 
   CALL ScalarFieldAssembleSurfaceSource( &
     obj=obj, nbc=nbcptr, fedof=obj%fedof, geofedof=obj%geofedof, &
@@ -288,7 +276,7 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
 
 #ifdef DEBUG_VER
     CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                      'isElemToEdge isElemToFace are both .false. &
+      'isElemToEdge isElemToFace are both .false. &
                       &Nothing to do.')
 #endif
 
@@ -332,7 +320,7 @@ SUBROUTINE ScalarFieldAssembleSurfaceSource( &
                       tsize=tnbcValue, islocal=math%yes)
 
     CALL FEVariable_Set( &
-      obj=forceVar, val=nbcValue(1:tnbcValue), rank=TypeFEVariableScalar, &
+      obj=forceVar, val=nbcValue(1:tnbcValue), RANK=TypeFEVariableScalar, &
       vartype=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
 
     CALL ForceVector_( &

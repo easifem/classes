@@ -16,8 +16,8 @@
 !
 
 SUBMODULE(STScalarField_Class) IOMethods
-USE Display_Method, ONLY: Display
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 
 #ifdef DEBUG_VER

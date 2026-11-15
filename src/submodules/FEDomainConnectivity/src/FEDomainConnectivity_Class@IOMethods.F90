@@ -22,7 +22,7 @@ IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
-                           "FEDomainConnectivity_Class@IOMethods.F90"
+  "FEDomainConnectivity_Class@IOMethods.F90"
 #endif
 
 CONTAINS
@@ -32,30 +32,51 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_DisplayFacetToCellData
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: abool
-CHARACTER(:), ALLOCATABLE :: astr
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_DisplayFacetToCellData()"
+#endif
 
-CALL Display(msg, unitno=unitno)
+  INTEGER(I4B) :: ii, tsize
+  LOGICAL(LGT) :: abool
+  CHARACTER(:), ALLOCATABLE :: astr
 
-abool = ALLOCATED(obj%facetToCell)
-CALL Display(abool, "FEDomainConnectivity_::obj%facetToCell ALLOCATED: ", &
-             unitno=unitno)
-IF (.NOT. abool) RETURN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
-tsize = SIZE(obj%facetToCell)
-astr = "facetID, globalCell(master), localFacetID(master), dim(master), &
+  CALL Display(msg, unitno=unitno)
+
+  abool = ALLOCATED(obj%facetToCell)
+  CALL Display(abool, "FEDomainConnectivity_::obj%facetToCell ALLOCATED: ", &
+               unitno=unitno)
+  IF (.NOT. abool) THEN
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                            '[END] ')
+#endif
+
+    RETURN
+  END IF
+
+  tsize = SIZE(obj%facetToCell)
+  astr = "facetID, globalCell(master), localFacetID(master), dim(master), &
   & entityNum(master), globalCell(slave), localFacetID(slave), dim(slave),&
   & entityNum(slave) "
 
-CALL Display(astr, unitno=unitno)
-
-DO ii = 1, tsize
-  astr = Tostring(obj%facetToCell(ii)%facetID)//", "// &
-         Tostring(obj%facetToCell(ii)%globalCellData(:, 1))//", "// &
-         Tostring(obj%facetToCell(ii)%globalCellData(:, 2))
   CALL Display(astr, unitno=unitno)
-END DO
+
+  DO ii = 1, tsize
+    astr = Tostring(obj%facetToCell(ii)%facetID) // ", " // &
+      Tostring(obj%facetToCell(ii)%globalCellData(:, 1)) // ", " // &
+      Tostring(obj%facetToCell(ii)%globalCellData(:, 2))
+    CALL Display(astr, unitno=unitno)
+  END DO
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_DisplayFacetToCellData
 
 !----------------------------------------------------------------------------

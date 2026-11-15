@@ -1,0 +1,3 @@
+Buildtype = "Debug"
+BuildDir = "/tmp/easifemClasses/build"
+TargetLibs = ["easifemClasses"]

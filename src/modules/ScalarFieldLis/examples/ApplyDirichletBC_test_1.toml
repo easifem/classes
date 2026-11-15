@@ -1,0 +1,73 @@
+# Input file for ApplyDirichletBC_test_1 (ScalarFieldLis_, LIS_OMP).
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements,
+# six nodes 1 (0,0), 2 (10,0), 3 (10,10), 4 (0,10), 5 (5,0), 6 (5,10).
+# Line 1 is the bottom edge (nodes 1, 5, 2), line 2 the right edge
+# (nodes 2, 3), line 4 the left edge (nodes 4, 1).
+#
+# Dirichlet BCs of u (internal list):
+#   left : u = 1 on line 4
+#   right: u = 2 on line 2
+# External Dirichlet BCs (extDBC, not part of u):
+#   bottom: u = 7 on line 1
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+[u]
+name = "u"
+engine = "LIS_OMP"
+fieldType = "Normal"
+spaceCompo = 1
+timeCompo = 1
+fedofName = "space"
+geofedofName = "geofedof"
+
+[u.geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+
+[u.space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[u.space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+[[u.dirichletBC]]
+name = "left"
+idof = 1
+nodalValueType = "Constant"
+value = 1.0
+[u.dirichletBC.boundary]
+isSelectionByMeshID = true
+[u.dirichletBC.boundary.meshID]
+line = [4]
+
+[[u.dirichletBC]]
+name = "right"
+idof = 1
+nodalValueType = "Constant"
+value = 2.0
+[u.dirichletBC.boundary]
+isSelectionByMeshID = true
+[u.dirichletBC.boundary.meshID]
+line = [2]
+
+[[extDBC]]
+name = "bottom"
+idof = 1
+nodalValueType = "Constant"
+value = 7.0
+[extDBC.boundary]
+isSelectionByMeshID = true
+[extDBC.boundary.meshID]
+line = [1]

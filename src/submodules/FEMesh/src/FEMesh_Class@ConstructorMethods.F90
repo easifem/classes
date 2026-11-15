@@ -17,6 +17,11 @@
 
 SUBMODULE(FEMesh_Class) ConstructorMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEMesh_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -24,7 +29,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Final
-CALL obj%DEALLOCATE()
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Final()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  CALL obj%DEALLOCATE()
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE obj_Final
 
 !----------------------------------------------------------------------------
@@ -32,7 +51,22 @@ END PROCEDURE obj_Final
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Constructor_1
-ALLOCATE (FEMesh_ :: ans)
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Constructor_1()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  ALLOCATE(FEMesh_ :: ans)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+
 END PROCEDURE obj_Constructor_1
 
 !----------------------------------------------------------------------------
@@ -40,27 +74,44 @@ END PROCEDURE obj_Constructor_1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE FEMeshPointerDeallocate
-CLASS(FEMesh_), POINTER :: meshObj
-INTEGER(I4B) :: ii, tsize
-LOGICAL(LGT) :: isok
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "FEMeshPointerDeallocate()"
+#endif
+  INTEGER(I4B) :: ii, tsize
+  LOGICAL(LGT) :: isok
 
-meshObj => NULL()
-IF (ALLOCATED(obj)) THEN
-  tsize = SIZE(obj)
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
 
-  DO ii = 1, tsize
+  IF (ALLOCATED(obj)) THEN
+    tsize = SIZE(obj)
 
-    meshObj => obj(ii)%ptr
-    isok = ASSOCIATED(meshObj)
-    IF (isok) THEN
-      CALL meshobj%DEALLOCATE()
-      meshObj => NULL()
-    END IF
+    DO ii = 1, tsize
 
-  END DO
+      isok = ASSOCIATED(obj(ii)%ptr)
+      IF (isok) THEN
+        CALL obj(ii)%ptr%DEALLOCATE()
+        ! free the mesh object; obj(ii)%ptr must own it
+        DEALLOCATE(obj(ii)%ptr)
+      END IF
 
-  DEALLOCATE (obj)
-END IF
+    END DO
+
+    DEALLOCATE(obj)
+  END IF
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE FEMeshPointerDeallocate
+
+!----------------------------------------------------------------------------
+!                                                             Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

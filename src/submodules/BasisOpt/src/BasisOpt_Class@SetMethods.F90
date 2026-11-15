@@ -17,16 +17,22 @@
 !
 
 SUBMODULE(BasisOpt_Class) SetMethods
-USE LagrangePolynomialUtility, ONLY: LagrangeDOF
-USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
-USE ReallocateUtility, ONLY: Reallocate
-USE Display_Method, ONLY: ToString, Display
-USE InputUtility, ONLY: Input
 USE BasisOptUtility, ONLY: SetIntegerType
-USE ElemshapeData_Method, ONLY: LagrangeElemShapeData, &
-                                HierarchicalElemShapeData
-
+USE Display_Method, ONLY: Display, ToString
+USE ElemshapeData_Method, ONLY: LagrangeElemShapeData
+USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
+USE HierarchicalPolynomialUtility, ONLY: HierarchicalDOF
+USE InputUtility, ONLY: Input
+USE LagrangePolynomialUtility, ONLY: LagrangeDOF
+USE ReallocateUtility, ONLY: Reallocate
+USE ReverseUtility, ONLY: Reverse
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@SetMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -72,7 +78,9 @@ IF (PRESENT(refelemCoord)) obj%refelemCoord = refelemCoord
 IF (PRESENT(order)) obj%order = order
 IF (PRESENT(anisoOrder)) obj%anisoOrder = anisoOrder
 IF (PRESENT(edgeOrder)) obj%edgeOrder(1:SIZE(edgeOrder)) = edgeOrder
-IF (PRESENT(faceOrder)) obj%faceOrder(1:3, 1:SIZE(faceOrder)) = faceOrder(1:3, :)
+IF (PRESENT(faceOrder)) THEN
+  obj%faceOrder(1:3, 1:SIZE(faceOrder)) = faceOrder(1:3, :)
+END IF
 IF (PRESENT(cellOrder)) obj%cellOrder(1:SIZE(cellOrder)) = cellOrder
 IF (PRESENT(feType)) obj%feType = feType
 IF (PRESENT(elemType)) obj%elemType = elemType
@@ -91,6 +99,7 @@ IF (PRESENT(isAnisotropicOrder)) obj%isAnisotropicOrder = isAnisotropicOrder
 IF (PRESENT(isEdgeOrder)) obj%isEdgeOrder = isEdgeOrder
 IF (PRESENT(isFaceOrder)) obj%isFaceOrder = isFaceOrder
 IF (PRESENT(isCellOrder)) obj%isCellOrder = isCellOrder
+IF (PRESENT(isBrokenSpace)) obj%isBrokenSpace = isBrokenSpace
 
 IF (PRESENT(tEdgeOrder)) obj%tEdgeOrder = tEdgeOrder
 IF (PRESENT(tFaceOrder)) obj%tFaceOrder = tFaceOrder
@@ -141,6 +150,16 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+! We do not fix orientation for broken spaces
+IF (obj%isBrokenSpace) THEN
+  obj%isCellOrient = math%no
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 #ifdef DEBUG_VER
 errCheck0 = Input(option=errCheck, default=.FALSE.)
 
@@ -160,12 +179,13 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isCellOrient = PRESENT(cellOrient)
 isok = PRESENT(tCell)
 IF (isok) obj%tCellOrder = tCell
 
-IF (obj%isCellOrient) CALL SetIntegerType(a=obj%cellOrient, &
-                                          n=obj%tCellOrder, b=cellOrient)
+obj%isCellOrient = PRESENT(cellOrient)
+IF (obj%isCellOrient) THEN
+  CALL SetIntegerType(a=obj%cellOrient, n=obj%tCellOrder, b=cellOrient)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -191,6 +211,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%isBrokenSpace) THEN
+  obj%isFaceOrient = math%no
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 #ifdef DEBUG_VER
 errCheck0 = Input(option=errCheck, default=.FALSE.)
 errCheck0 = errCheck0 .AND. (obj%xidim .GE. 2)
@@ -205,7 +234,7 @@ IF (errCheck0) THEN
   tsize = SIZE(faceOrient, 1)
   isok = tsize .EQ. 3
   CALL AssertError1(isok, myName, &
-           "rowsize in faceOrient should be 3.  but size(faceOrient,1) = "// &
+                    "rowsize in faceOrient should be 3.  but size(faceOrient,1) = "// &
                     ToString(tsize))
 
   tsize = SIZE(faceOrient, 2)
@@ -248,6 +277,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%isBrokenSpace) THEN
+  obj%isEdgeOrient = math%no
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
 #ifdef DEBUG_VER
 errCheck0 = Input(option=errCheck, default=.FALSE.)
 errCheck0 = errCheck0 .AND. (obj%xidim .GE. 3)
@@ -268,12 +306,13 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isEdgeOrient = PRESENT(edgeOrient)
 isok = PRESENT(tEdge)
 IF (isok) obj%tEdgeOrder = tEdge
 
-IF (obj%isEdgeOrient) CALL SetIntegerType(a=obj%edgeOrient, &
-                                          n=obj%tEdgeOrder, b=edgeOrient)
+obj%isEdgeOrient = PRESENT(edgeOrient)
+IF (obj%isEdgeOrient) THEN
+  CALL SetIntegerType(a=obj%edgeOrient, n=obj%tEdgeOrder, b=edgeOrient)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -318,12 +357,13 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isCellOrder = PRESENT(cellOrder)
 isok = PRESENT(tCell)
 IF (isok) obj%tCellOrder = tCell
 
-IF (obj%isCellOrder) CALL SetIntegerType(a=obj%cellOrder, &
-                                         n=obj%tCellOrder, b=cellOrder)
+obj%isCellOrder = PRESENT(cellOrder)
+IF (obj%isCellOrder) THEN
+  CALL SetIntegerType(a=obj%cellOrder, n=obj%tCellOrder, b=cellOrder)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -363,7 +403,7 @@ IF (errCheck0) THEN
   tsize = SIZE(faceOrder, 1)
   isok = tsize .EQ. 3
   CALL AssertError1(isok, myName, &
-             "rowsize in faceOrder should be 3.  but size(faceOrder,1) = "// &
+                    "rowsize in faceOrder should be 3.  but size(faceOrder,1) = "// &
                     ToString(tsize))
 
   tsize = SIZE(faceOrder, 2)
@@ -375,12 +415,14 @@ IF (errCheck0) THEN
 END IF
 #endif
 
-obj%isFaceOrder = PRESENT(faceOrder)
 isok = PRESENT(tFace)
 IF (isok) obj%tFaceOrder = tFace
 
-IF (obj%isFaceOrder) CALL SetIntegerType(a=obj%faceOrder, b=faceOrder, &
-                                         nrow=3, ncol=obj%tFaceOrder)
+obj%isFaceOrder = PRESENT(faceOrder)
+IF (obj%isFaceOrder) THEN
+  CALL SetIntegerType(a=obj%faceOrder, b=faceOrder, nrow=3, &
+                      ncol=obj%tFaceOrder)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -510,7 +552,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 SELECT CASE (obj%baseInterpolation(1:1))
-CASE ("L") !! Lagrange
+CASE ("L")
+  ! Lagrange
   CALL obj%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
                               errCheck=.FALSE.)
 
@@ -524,7 +567,8 @@ CASE ("L") !! Lagrange
 
   CALL obj%SetAnisotropicOrder(anisoOrder=anisoOrder, errCheck=errCheck)
 
-CASE ("H") !! Hierarchical
+CASE ("H")
+  ! Hierarchical
   CALL obj%SetCellOrientation(cellOrient=cellOrient, tCell=tCell, &
                               errCheck=errCheck)
 
@@ -541,8 +585,8 @@ CASE ("H") !! Hierarchical
   obj%tdof = HierarchicalDOF(elemType=obj%topoType, cellOrder=obj%cellOrder, &
                              faceOrder=obj%faceOrder, edgeOrder=obj%edgeOrder)
 
-#ifdef DEBUG_VER
 CASE DEFAULT
+#ifdef DEBUG_VER
   CALL AssertError1(.FALSE., myName, &
                     'No case found for baseInterpolation.')
 #endif
@@ -738,6 +782,169 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE Quadrangle_SetQuadratureType
+
+!----------------------------------------------------------------------------
+!                                                  Quadrangle_FixOrientNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Quadrangle_FixOrientOfNptrs
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Quadrangle_FixOrientOfNptrs()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: n1, n2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = (obj%order .GT. math%two_i) .AND. obj%isFaceOrient
+
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Nothing to do here.')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+n1 = 1
+n2 = 4
+
+! Edge-1: 1 --> 2
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 1) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+! Edge-2: 2 --> 3
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 2) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+! Edge-3: 3 --> 4
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 3) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+! Edge-4: 4 --> 1
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 4) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Quadrangle_FixOrientOfNptrs
+
+!----------------------------------------------------------------------------
+!                                                    Triangle_FixOrientNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Triangle_FixOrientOfNptrs
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Triangle_FixOrientOfNptrs()"
+#endif
+
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: n1, n2
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+isok = (obj%order .GT. math%two_i) .AND. obj%isFaceOrient
+
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                    'Nothing to do here.')
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+n1 = 1
+n2 = 3
+
+! Edge-1: 1 --> 2
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 1) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+! Edge-2: 2 --> 3
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 2) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+! Edge-3: 3 --> 1
+n1 = n2 + 1
+n2 = n2 + obj%order - 1
+isok = obj%faceOrient(1, 3) .EQ. math%minus_one_i
+IF (isok) THEN
+  CALL Reverse(ans=nptrs, n1=n1, n2=n2)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Triangle_FixOrientOfNptrs
+
+!----------------------------------------------------------------------------
+!                                                        Line_FixOrientNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE Line_FixOrientOfNptrs
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "Line_FixOrientOfNptrs()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseDebug(modName//'::'//myName//' - '// &
+                  'Nothing to do here.')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE Line_FixOrientOfNptrs
 
 !----------------------------------------------------------------------------
 !                                                              Include error

@@ -16,11 +16,13 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(OneDimBasisOpt_Class) GetMethods
+USE BaseType, ONLY: math => TypeMathOpt
 USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
 USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
 USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
 USE LineInterpolationUtility, ONLY: LagrangeEvalAll_Line_
 USE LineInterpolationUtility, ONLY: LagrangeGradientEvalAll_Line_
+USE LineInterpolationUtility, ONLY: LagrangeLaplacianEvalAll_Line_
 USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_
 USE LineInterpolationUtility, ONLY: HeirarchicalBasisGradient_Line_
 USE LineInterpolationUtility, ONLY: OrthogonalBasis_Line_
@@ -32,12 +34,12 @@ USE QuadraturePoint_Method, ONLY: QuadraturePoint_Deallocate => DEALLOCATE
 USE ReallocateUtility, ONLY: Reallocate
 USE SwapUtility, ONLY: SWAP_
 ! USE ReverseUtility, ONLY: Reverse
+USE Display_Method, ONLY: Display
+IMPLICIT NONE
 
 #ifdef DEBUG_VER
-USE Display_Method, ONLY: Display
+CHARACTER(*), PARAMETER :: modName = "OneDimBasisOpt_Class@GetMethods.F90"
 #endif
-
-IMPLICIT NONE
 
 CONTAINS
 
@@ -148,12 +150,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GetQuadraturePoints
 
 !----------------------------------------------------------------------------
-!
+!                                                         GetQuadratureOrder
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_GetInterpolationPoints
+MODULE PROCEDURE obj_GetQuadratureOrder
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
+CHARACTER(*), PARAMETER :: myName = "obj_GetQuadratureOrder()"
 #endif
 
 #ifdef DEBUG_VER
@@ -161,23 +163,82 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-IF (ALLOCATED(obj%xij)) THEN
-  nrow = SIZE(obj%xij, 1)
-  ncol = SIZE(obj%xij, 2)
-  xij(1:nrow, 1:ncol) = obj%xij
-ELSE
-  CALL InterpolationPoint_Line_( &
-    order=obj%order, ipType=obj%ipType, layout="VEFC", &
-    xij=obj%refelemCoord(1:1, 1:2), &
-    alpha=obj%alpha, beta=obj%beta, &
-    lambda=obj%lambda, ans=obj%xij, nrow=nrow, ncol=ncol)
-END IF
+ans = obj%quadOpt%GetQuadratureOrder()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetQuadratureOrder
+
+!----------------------------------------------------------------------------
+!                                                      GetInterpolationPoints
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInterpolationPoints
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoints()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%xij)
+CALL AssertError1(isok, myName, "xij is not ALLOCATED.")
+#endif
+
+! IF (.NOT. isok) THEN
+!   CALL InterpolationPoint_Line_( &
+!     order=obj%order, ipType=obj%ipType, layout="VEFC", &
+!     xij=obj%refelemCoord(1:1, 1:2), alpha=obj%alpha, &
+!     beta=obj%beta, lambda=obj%lambda, ans=obj%xij, &
+!     nrow=nrow, ncol=ncol)
+! ELSE
+nrow = SIZE(obj%xij, 1)
+ncol = SIZE(obj%xij, 2)
+! END IF
+
+xij(1:nrow, 1:ncol) = obj%xij(1:nrow, 1:ncol)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetInterpolationPoints
+
+!----------------------------------------------------------------------------
+!                                                       GetInterpolationPoint
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetInterpolationPoint
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetInterpolationPoint()"
+#endif
+
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%xij)
+CALL AssertError1(isok, myName, "xij is not ALLOCATED.")
+#endif
+
+ans = obj%xij(1, indx)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetInterpolationPoint
 
 !----------------------------------------------------------------------------
 !                                                   GetTotalQuadraturePoints
@@ -255,7 +316,8 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Calling Elemsd_Allocate() ...')
 #endif
 
-CALL Elemsd_Allocate(obj=elemsd, nsd=1_I4B, xidim=1_I4B, nns=tdof, nips=nips)
+CALL Elemsd_Allocate(obj=elemsd, nsd=math%one_i, xidim=math%one_i, &
+                     nns=tdof, nips=nips)
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
@@ -269,10 +331,14 @@ CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                   'Allocating internal arrays')
 #endif
 
-CALL Reallocate(obj%xij, 3, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%coeff, tdof, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%xx, nips, tdof, isExpand=.TRUE., expandFactor=2_I4B)
-CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
+CALL Reallocate(obj%xij, math%three_i, tdof, isExpand=math%yes, &
+                expandFactor=math%two_i)
+CALL Reallocate(obj%coeff, tdof, tdof, isExpand=math%yes, &
+                expandFactor=math%two_i)
+CALL Reallocate(obj%xx, nips, tdof, isExpand=math%yes, &
+                expandFactor=math%two_i)
+CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=math%yes, &
+                expandFactor=math%two_i)
 
 #ifdef DEBUG_VER
 CALL e%RaiseDebug(modName//'::'//myName//' - '// &
@@ -326,6 +392,24 @@ CALL LagrangeGradientEvalAll_Line_( &
 
 CALL SWAP_(a=elemsd%dNdXi, b=obj%temp(1:indx(5), 1:indx(6), 1:indx(7)), &
            i1=2, i2=3, i3=1)
+
+! Laplacian
+CALL LagrangeLaplacianEvalAll_Line_( &
+  order=obj%order, &
+  x=quad%points(1:quad%txi, 1:nips), &
+  xij=obj%xij(1:indx(1), 1:indx(2)), &
+  ans=obj%temp(:, :, 1), &
+  nrow=indx(8), ncol=indx(9), &
+  coeff=obj%coeff(1:tdof, 1:tdof), &
+  xx=obj%xx(1:nips, 1:tdof), &
+  firstCall=math%no, &
+  basisType=obj%basisType, &
+  alpha=obj%alpha, beta=obj%beta, &
+  lambda=obj%lambda)
+
+DO CONCURRENT(ii=1:indx(9), jj=1:indx(8))
+  elemsd%NLaplacian(ii, jj) = obj%temp(jj, ii, 1)
+END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -420,11 +504,6 @@ CALL Elemsd_Allocate( &
 CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
 
 CALL Reallocate(obj%temp, nips, tdof, 3, isExpand=.TRUE., expandFactor=2_I4B)
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
-#endif
 
 CALL OrthogonalBasis_Line_( &
   order=obj%order, xij=quad%points(1:quad%txi, 1:nips), &

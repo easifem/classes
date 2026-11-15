@@ -16,118 +16,399 @@
 !
 
 SUBMODULE(HDF5File_Class) ReadBool
-USE BaseMethod
+USE HDF5, ONLY: SIZE_T
+USE HDF5, ONLY: H5DREAD_F
+USE HDF5, ONLY: H5DGET_TYPE_F
+USE HDF5, ONLY: H5TCLOSE_F
+USE HDF5, ONLY: H5TGET_CLASS_F
+USE HDF5, ONLY: H5TGET_SIZE_F
+USE HDF5, ONLY: H5T_STRING_F
+USE HDF5, ONLY: H5KIND_TO_TYPE
+USE HDF5, ONLY: H5_INTEGER_KIND
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "HDF5File_Class@ReadBool.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                                      Read
+!                                                                        Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b0
-CHARACTER(1) :: valsc
-CHARACTER(LEN(dsetname) + 1) :: path
-INTEGER(HSIZE_T), DIMENSION(1) :: dims
-INTEGER(I4B), PARAMETER :: rank = 0
-INTEGER(I4B) :: error
-INTEGER(HID_T) :: mem, dspace_id, dset_id
+MODULE PROCEDURE obj_Read_b0
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b0()"
+#endif
+  INTEGER(INT8) :: bvals
+  CHARACTER(LEN(dsetname) + 1) :: path
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 0
+  INTEGER(I4B) :: error, ierr
+  INTEGER(HID_T) :: mem, dtype, dspace_id, dset_id
+  LOGICAL(LGT) :: isChar
 
-path = dsetname
-! Read the dataset
-mem = H5T_NATIVE_CHARACTER
-CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  CALL h5dread_f(dset_id, mem, valsc, dims, error)
-  ! Convert to logical from character
-  IF (valsc == 'F') THEN
-    vals = .FALSE.
-  ELSE
-    vals = .TRUE.
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  path = dsetname
+  CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
+  IF (error .GE. 0) THEN
+
+    ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+    ! the characters 'T'/'F' of older files
+    CALL H5DGET_TYPE_F(dset_id, dtype, ierr)
+    CALL BoolMemType(dtype, mem, isChar)
+    CALL H5DREAD_F(dset_id, mem, bvals, dims, error)
+    CALL H5TCLOSE_F(dtype, ierr)
+    vals = BoolValue(bvals, isChar)
   END IF
-END IF
-CALL postRead(obj, path, dset_id, dspace_id, error)
-END PROCEDURE hdf5_read_b0
+  CALL postRead(obj, path, dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_Read_b0
 
 !----------------------------------------------------------------------------
-!                                                                      Read
+!                                                                        Read
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b1
-CHARACTER, ALLOCATABLE :: valsc(:)
-CHARACTER(LEN(dsetname) + 1) :: path
-INTEGER(I4B) :: i, error
-INTEGER(HSIZE_T), DIMENSION(1) :: dims
-INTEGER(I4B), PARAMETER :: rank = 1
-INTEGER(HID_T) :: mem, dspace_id, dset_id
+MODULE PROCEDURE obj_Read_b1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b1()"
+#endif
+  INTEGER(INT8), ALLOCATABLE :: bvals(:)
+  CHARACTER(LEN(dsetname) + 1) :: path
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 1
+  INTEGER(I4B) :: error, ierr
+  INTEGER(HID_T) :: mem, dtype, dspace_id, dset_id
+  LOGICAL(LGT) :: isChar
 
-path = dsetname
-! Allocate space in data if needed, make sure it is the right size
-CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  IF (ALLOCATED(vals)) THEN
-    IF (ANY(SHAPE(vals) /= dims)) THEN
-      DEALLOCATE (vals)
-      ALLOCATE (vals(dims(1)))
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  path = dsetname
+  CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
+  IF (error .GE. 0) THEN
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
     END IF
-  ELSE
-    ALLOCATE (vals(dims(1)))
+    IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(dims(1)))
+    ALLOCATE(bvals(dims(1)))
+
+    ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+    ! the characters 'T'/'F' of older files
+    CALL H5DGET_TYPE_F(dset_id, dtype, ierr)
+    CALL BoolMemType(dtype, mem, isChar)
+    CALL H5DREAD_F(dset_id, mem, bvals, dims, error)
+    CALL H5TCLOSE_F(dtype, ierr)
+    vals = BoolValue(bvals, isChar)
   END IF
-  ALLOCATE (valsc(dims(1)))
-  mem = H5T_NATIVE_CHARACTER
-  CALL h5dread_f(dset_id, mem, valsc, dims, error)
-  vals = .FALSE.
-  DO CONCURRENT(i=1:SIZE(vals), valsc(i) == 'T')
-    vals(i) = .TRUE.
-  END DO
-  DEALLOCATE (valsc)
-END IF
-CALL postRead(obj, path, dset_id, dspace_id, error)
-END PROCEDURE hdf5_read_b1
+  CALL postRead(obj, path, dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_Read_b1
 
 !----------------------------------------------------------------------------
-!                                                                      Read
+!                                                                       Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b2
-CHARACTER(1), ALLOCATABLE :: valsc(:, :)
-CHARACTER(LEN(dsetname) + 1) :: path
-INTEGER(I4B) :: i, j, error
-INTEGER(HSIZE_T), DIMENSION(2) :: dims
-INTEGER(I4B), PARAMETER :: rank = 2
-INTEGER(HID_T) :: mem, dspace_id, dset_id
+MODULE PROCEDURE obj_Read__b1
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__b1()"
+#endif
+  INTEGER(INT8), ALLOCATABLE :: bvals(:)
+  CHARACTER(LEN(dsetname) + 1) :: path
+  INTEGER(HSIZE_T), DIMENSION(1) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 1
+  INTEGER(I4B) :: error, ierr
+  INTEGER(HID_T) :: mem, dtype, dspace_id, dset_id
+  LOGICAL(LGT) :: isChar
 
-path = dsetname
-CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
-IF (error >= 0) THEN
-  IF (ALLOCATED(vals)) THEN
-    IF (ANY(SHAPE(vals) /= dims)) THEN
-      DEALLOCATE (vals)
-      ALLOCATE (vals(dims(1), dims(2)))
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  tsize = math%zero_i
+  path = dsetname
+  CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
+  IF (error .GE. 0) THEN
+#ifdef DEBUG_VER
+    CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+#endif
+
+    tsize = INT(dims(1), I4B)
+    ALLOCATE(bvals(dims(1)))
+
+    ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+    ! the characters 'T'/'F' of older files
+    CALL H5DGET_TYPE_F(dset_id, dtype, ierr)
+    CALL BoolMemType(dtype, mem, isChar)
+    CALL H5DREAD_F(dset_id, mem, bvals, dims, error)
+    CALL H5TCLOSE_F(dtype, ierr)
+    vals(1:tsize) = BoolValue(bvals, isChar)
+  END IF
+  CALL postRead(obj, path, dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_Read__b1
+
+!----------------------------------------------------------------------------
+!                                                                        Read
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Read_b2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b2()"
+#endif
+  INTEGER(INT8), ALLOCATABLE :: bvals(:, :)
+  CHARACTER(LEN(dsetname) + 1) :: path
+  INTEGER(HSIZE_T), DIMENSION(2) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 2
+  INTEGER(I4B) :: error, ierr
+  INTEGER(HID_T) :: mem, dtype, dspace_id, dset_id
+  LOGICAL(LGT) :: isChar
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  path = dsetname
+  CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
+  IF (error .GE. 0) THEN
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
     END IF
-  ELSE
-    ALLOCATE (vals(dims(1), dims(2)))
+    IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(dims(1), dims(2)))
+    ALLOCATE(bvals(dims(1), dims(2)))
+
+    ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+    ! the characters 'T'/'F' of older files
+    CALL H5DGET_TYPE_F(dset_id, dtype, ierr)
+    CALL BoolMemType(dtype, mem, isChar)
+    CALL H5DREAD_F(dset_id, mem, bvals, dims, error)
+    CALL H5TCLOSE_F(dtype, ierr)
+    vals = BoolValue(bvals, isChar)
   END IF
-  ALLOCATE (valsc(dims(1), dims(2)))
+  CALL postRead(obj, path, dset_id, dspace_id, error)
 
-  ! Read the dataset
-  mem = H5T_NATIVE_CHARACTER
-  CALL h5dread_f(dset_id, mem, valsc, dims, error)
-  ! Convert from surrogate character array to boolean array
-  vals = .FALSE.
-  DO concurrent(i=1:SIZE(vals, DIM=1), j=1:SIZE(vals, DIM=2), valsc(i, j) == 'T')
-    vals(i, j) = .TRUE.
-  END DO
-
-  DEALLOCATE (valsc)
-END IF
-CALL postRead(obj, path, dset_id, dspace_id, error)
-END PROCEDURE hdf5_read_b2
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_Read_b2
 
 !----------------------------------------------------------------------------
-!                                                                 Read
+!                                                                       Read_
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE hdf5_read_b3
+MODULE PROCEDURE obj_Read__b2
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__b2()"
+#endif
+  INTEGER(INT8), ALLOCATABLE :: bvals(:, :)
+  CHARACTER(LEN(dsetname) + 1) :: path
+  INTEGER(HSIZE_T), DIMENSION(2) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 2
+  INTEGER(I4B) :: error, ierr
+  INTEGER(HID_T) :: mem, dtype, dspace_id, dset_id
+  LOGICAL(LGT) :: isChar
 
-END PROCEDURE hdf5_read_b3
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  nrow = math%zero_i
+  ncol = math%zero_i
+  path = dsetname
+  CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
+  IF (error .GE. 0) THEN
+#ifdef DEBUG_VER
+    CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+#endif
+
+    nrow = INT(dims(1), I4B)
+    ncol = INT(dims(2), I4B)
+    ALLOCATE(bvals(dims(1), dims(2)))
+
+    ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+    ! the characters 'T'/'F' of older files
+    CALL H5DGET_TYPE_F(dset_id, dtype, ierr)
+    CALL BoolMemType(dtype, mem, isChar)
+    CALL H5DREAD_F(dset_id, mem, bvals, dims, error)
+    CALL H5TCLOSE_F(dtype, ierr)
+    vals(1:nrow, 1:ncol) = BoolValue(bvals, isChar)
+  END IF
+  CALL postRead(obj, path, dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_Read__b2
+
+!----------------------------------------------------------------------------
+!                                                                        Read
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Read_b3
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Read_b3()"
+#endif
+  INTEGER(INT8), ALLOCATABLE :: bvals(:, :, :)
+  CHARACTER(LEN(dsetname) + 1) :: path
+  INTEGER(HSIZE_T), DIMENSION(3) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 3
+  INTEGER(I4B) :: error, ierr
+  INTEGER(HID_T) :: mem, dtype, dspace_id, dset_id
+  LOGICAL(LGT) :: isChar
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  path = dsetname
+  CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
+  IF (error .GE. 0) THEN
+    IF (ALLOCATED(vals)) THEN
+      IF (ANY(SHAPE(vals) .NE. dims)) DEALLOCATE(vals)
+    END IF
+    IF (.NOT. ALLOCATED(vals)) ALLOCATE(vals(dims(1), dims(2), dims(3)))
+    ALLOCATE(bvals(dims(1), dims(2), dims(3)))
+
+    ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+    ! the characters 'T'/'F' of older files
+    CALL H5DGET_TYPE_F(dset_id, dtype, ierr)
+    CALL BoolMemType(dtype, mem, isChar)
+    CALL H5DREAD_F(dset_id, mem, bvals, dims, error)
+    CALL H5TCLOSE_F(dtype, ierr)
+    vals = BoolValue(bvals, isChar)
+  END IF
+  CALL postRead(obj, path, dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_Read_b3
+
+!----------------------------------------------------------------------------
+!                                                                       Read_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Read__b3
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "obj_Read__b3()"
+#endif
+  INTEGER(INT8), ALLOCATABLE :: bvals(:, :, :)
+  CHARACTER(LEN(dsetname) + 1) :: path
+  INTEGER(HSIZE_T), DIMENSION(3) :: dims
+  INTEGER(I4B), PARAMETER :: rank = 3
+  INTEGER(I4B) :: error, ierr
+  INTEGER(HID_T) :: mem, dtype, dspace_id, dset_id
+  LOGICAL(LGT) :: isChar
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  dim1 = math%zero_i
+  dim2 = math%zero_i
+  dim3 = math%zero_i
+  path = dsetname
+  CALL preRead(obj, path, rank, dset_id, dspace_id, dims, error)
+  IF (error .GE. 0) THEN
+#ifdef DEBUG_VER
+    CALL AssertError3(INT(dims(1), I4B), SIZE(vals, 1), myName, &
+                      'a=dims(1) from hdf5File, b=SIZE(vals, 1)')
+    CALL AssertError3(INT(dims(2), I4B), SIZE(vals, 2), myName, &
+                      'a=dims(2) from hdf5File, b=SIZE(vals, 2)')
+    CALL AssertError3(INT(dims(3), I4B), SIZE(vals, 3), myName, &
+                      'a=dims(3) from hdf5File, b=SIZE(vals, 3)')
+#endif
+
+    dim1 = INT(dims(1), I4B)
+    dim2 = INT(dims(2), I4B)
+    dim3 = INT(dims(3), I4B)
+    ALLOCATE(bvals(dims(1), dims(2), dims(3)))
+
+    ! Read the raw 8-bit values: the enum {FALSE, TRUE}, an integer, or
+    ! the characters 'T'/'F' of older files
+    CALL H5DGET_TYPE_F(dset_id, dtype, ierr)
+    CALL BoolMemType(dtype, mem, isChar)
+    CALL H5DREAD_F(dset_id, mem, bvals, dims, error)
+    CALL H5TCLOSE_F(dtype, ierr)
+    vals(1:dim1, 1:dim2, 1:dim3) = BoolValue(bvals, isChar)
+  END IF
+  CALL postRead(obj, path, dset_id, dspace_id, error)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
+END PROCEDURE obj_Read__b3
+
+!----------------------------------------------------------------------------
+!                                                                 BoolMemType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE BoolMemType
+  INTEGER(SIZE_T) :: tsize
+  INTEGER(I4B) :: tclass, error
+
+  CALL H5TGET_CLASS_F(dtype, tclass, error)
+  CALL H5TGET_SIZE_F(dtype, tsize, error)
+  isChar = tclass .EQ. H5T_STRING_F
+
+  IF (tsize .EQ. 1) THEN
+    ! The enum {FALSE, TRUE}, an 8-bit integer, or a character: the bytes
+    ! are read as they are
+    memtype = dtype
+  ELSE
+    ! An integer of another size: HDF5 converts it to an 8-bit integer
+    memtype = H5KIND_TO_TYPE(INT8, H5_INTEGER_KIND)
+  END IF
+END PROCEDURE BoolMemType
+
+!----------------------------------------------------------------------------
+!                                                                   BoolValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE BoolValue
+  IF (isChar) THEN
+    ans = INT(b, I4B) .EQ. ICHAR('T')
+  ELSE
+    ans = b .NE. 0_INT8
+  END IF
+END PROCEDURE BoolValue
+
+!----------------------------------------------------------------------------
+!                                                               Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
+
 END SUBMODULE ReadBool

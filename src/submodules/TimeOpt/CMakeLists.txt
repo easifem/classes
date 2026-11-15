@@ -17,4 +17,9 @@
 #
 
 set(src_path "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_sources(${PROJECT_NAME} PRIVATE ${src_path}/TimeOpt_Class@Methods.F90)
+target_sources(
+    ${PROJECT_NAME}
+    PRIVATE
+        ${src_path}/TimeOpt_Class@Methods.F90
+        ${src_path}/TimeOpt_Class@TomlMethods.F90
+)

@@ -20,6 +20,7 @@ USE GlobalData, ONLY: I4B, DFP, LGT
 USE ExceptionHandler_Class, ONLY: e
 USE TxtFile_Class, ONLY: TxtFile_
 USE tomlf, ONLY: toml_table
+USE BaseType, ONLY: math => TypeMathOpt
 
 IMPLICIT NONE
 PRIVATE
@@ -38,29 +39,30 @@ INTEGER(I4B), PARAMETER :: MAX_ORDER = 51
 
 TYPE :: OneDimDomain_
   PRIVATE
-  LOGICAL(LGT) :: isInit = .FALSE.
+  LOGICAL(LGT) :: isInit = math%no
   !! is the object initialized
-  LOGICAL(LGT) :: isElemLengthUniform = .FALSE.
+  LOGICAL(LGT) :: isElemLengthUniform = math%no
   !! is the element length uniform in the domain
-  REAL(DFP) :: domain(2) = 0.0_DFP
+  REAL(DFP) :: domain(2) = math%zero
   !! domain(1) is the start point
   !! domain(2) is the end point
-  INTEGER(I4B) :: totalElements = 0
+  INTEGER(I4B) :: totalElements = math%zero_i
   !! total number of elements in the domain
-  INTEGER(I4B) :: totalNodes = 0
+  INTEGER(I4B) :: totalNodes = math%zero_i
   !! total number of nodes in the domain
   REAL(DFP), ALLOCATABLE :: elemLength(:)
   !! length of each element
   !! the size should be equal to totalElements
   !! When isElemLengthUniform is true, then
   !! size of elemLength is 1
-  REAL(DFP) :: xij(1, MAX_ORDER + 1) = 0.0_DFP
+  REAL(DFP), ALLOCATABLE :: nodeCoord(:)
+  !! node coordinates, the size of nodeCoord is tNodes
+  REAL(DFP) :: xij(1, MAX_ORDER + 1) = math%zero
   !! nodal coordinates in an element of mesh
 
 CONTAINS
   PRIVATE
 
-  ! CONSTRUCTOR:
   ! @ConstructorMethods
   PROCEDURE, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate the object with totalElements
@@ -71,6 +73,7 @@ CONTAINS
   GENERIC, PUBLIC :: Initiate => Initiate1, &
     Initiate2, Initiate3
 
+  !@TomlMethods
   PROCEDURE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
   !! Import parameters from a TOML file
   PROCEDURE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
@@ -81,12 +84,13 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the object
 
-  ! SET:
   ! @SetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: SetParam => obj_SetParam
   !! Set the parameters of the object
   PROCEDURE, PUBLIC, PASS(obj) :: SetDomain => obj_SetDomain
   !! Set obj%domain
+  PROCEDURE, PUBLIC, PASS(obj) :: ChangeDomain => obj_ChangeDomain
+  !! Change obj%domain
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalElements => obj_SetTotalElements
   !! Set obj%totalElements
   PROCEDURE, PUBLIC, PASS(obj) :: SetTotalNodes => obj_SetTotalNodes
@@ -99,8 +103,9 @@ CONTAINS
   !! obj%elemLength(indx) = value
   GENERIC, PUBLIC :: SetElemLength => SetElemLength1, &
     SetElemLength2
+  PROCEDURE, PUBLIC, PASS(obj) :: SetNodeCoord => obj_SetNodeCoord
+  !! set the nodal coordinates
 
-  ! GET:
   ! @GetMethods
   PROCEDURE, PUBLIC, PASS(obj) :: GetDomain => obj_GetDomain
   !! Get the domain of the object
@@ -110,9 +115,11 @@ CONTAINS
   !! Get the total number of nodes in the object
   PROCEDURE, PUBLIC, PASS(obj) :: GetElemLength => obj_GetElemLength
   !! Get an entry from the  element length array
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemNumber => obj_GetLocalElemNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalElemNumber => &
+    obj_GetLocalElemNumber
   !! Get the local element number from the global element number
-  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalNodeNumber => obj_GetLocalNodeNumber
+  PROCEDURE, PUBLIC, PASS(obj) :: GetLocalNodeNumber => &
+    obj_GetLocalNodeNumber
   !! Get the local node number from the global node number
   PROCEDURE, PUBLIC, PASS(obj) :: GetTotalVertexNodes => &
     obj_GetTotalVertexNodes
@@ -120,14 +127,100 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetConnectivity_ => obj_GetConnectivity_
   !! Get connectivity of the element without any allocation
   PROCEDURE, PUBLIC, PASS(obj) :: IsElementPresent => obj_IsElementPresent
+  !! Is element present.
+  PROCEDURE, PUBLIC, PASS(obj) :: GetNodeCoord => obj_GetNodeCoord
+  !! Get nodal coordinates
+  PROCEDURE, PUBLIC, PASS(obj) :: GetElemNumFromCoord => &
+    obj_GetElemNumFromCoord
+  !! Get element number which contains a given node coord
 
-  ! IO:
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the contents of the object
   PROCEDURE, PUBLIC, PASS(obj) :: DisplayMeshInfo => obj_DisplayMeshInfo
   !! Display mesh info
 END TYPE OneDimDomain_
+
+!----------------------------------------------------------------------------
+!                                                            Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-22
+! summary: This method is used to initiate the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate1(obj, domain, totalElements)
+    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: domain(2)
+    INTEGER(I4B), INTENT(IN) :: totalElements
+    !! Total number of elements in the domain
+  END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-22
+! summary:  This method is used to initiate the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2(obj, domain, elemLength)
+    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: domain(2)
+    REAL(DFP), INTENT(IN) :: elemLength
+    !! Total number of elements in the domain
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                           Initiate@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-22
+! summary:  This method is used to initiate the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate3(obj, domain, totalElements, elemLength)
+    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: domain(2)
+    !! domain of the object
+    INTEGER(I4B), INTENT(IN) :: totalElements
+    !! Total number of elements in the domain
+    REAL(DFP), INTENT(IN) :: elemLength(:)
+    !! Total number of elements in the domain
+    !! Only 1 to totalElements length are used
+  END SUBROUTINE obj_Initiate3
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                 Deallocate
+!----------------------------------------------------------------------------
+
+INTERFACE
+  MODULE SUBROUTINE obj_Deallocate(obj)
+    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_Deallocate
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                                   Display
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  Display the contents of the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
+    CLASS(OneDimDomain_), INTENT(IN) :: obj
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: msg
+    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
+  END SUBROUTINE obj_Display
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                                 SetParam
@@ -164,6 +257,21 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                               ChangeDomain
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2025-06-13
+! summary:  This method Changes the domain of the object
+
+INTERFACE
+  MODULE SUBROUTINE obj_ChangeDomain(obj, domain)
+    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+    REAL(DFP), INTENT(IN) :: domain(2)
+  END SUBROUTINE obj_ChangeDomain
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                                           SetTotalElements
 !----------------------------------------------------------------------------
 
@@ -194,7 +302,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             SetElemLength1
+!                                                      SetElemLength@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -209,7 +317,7 @@ INTERFACE
 END INTERFACE
 
 !---------------------------------------------------------------------------
-!                                                             SetElemLength2
+!                                                      SetElemLength@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -222,6 +330,24 @@ INTERFACE
     INTEGER(I4B), INTENT(IN) :: indx
     REAL(DFP), INTENT(IN) :: VALUE
   END SUBROUTINE obj_SetElemLength2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                     SetNodeCoord@Methods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-08-27
+! summary: Set nodeCoord
+!
+!# SetNodeCoord
+!
+! Set node coord after initiating the object.
+
+INTERFACE
+  MODULE SUBROUTINE obj_SetNodeCoord(obj)
+    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
+  END SUBROUTINE obj_SetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -278,27 +404,12 @@ END INTERFACE
 ! summary:  Get an entry from the element length array
 
 INTERFACE
-  MODULE FUNCTION obj_GetElemLength(obj, indx) RESULT(ans)
+  MODULE FUNCTION obj_GetElemLength(obj, globalElement, islocal) RESULT(ans)
     CLASS(OneDimDomain_), INTENT(IN) :: obj
-    INTEGER(I4B), INTENT(IN) :: indx
+    INTEGER(I4B), INTENT(IN) :: globalElement
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
     REAL(DFP) :: ans
   END FUNCTION obj_GetElemLength
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                   Display
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-13
-! summary:  Display the contents of the object
-
-INTERFACE
-  MODULE SUBROUTINE obj_Display(obj, msg, unitno)
-    CLASS(OneDimDomain_), INTENT(IN) :: obj
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: msg
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: unitno
-  END SUBROUTINE obj_Display
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -334,7 +445,7 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2025-06-13
-! summary: Initialize by importing data from toml config with a different structure
+! summary: Import from toml
 
 INTERFACE
   MODULE SUBROUTINE obj_ImportFromToml2(obj, tomlName, afile, filename, &
@@ -345,16 +456,6 @@ INTERFACE
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
   END SUBROUTINE obj_ImportFromToml2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                 Deallocate
-!----------------------------------------------------------------------------
-
-INTERFACE
-  MODULE SUBROUTINE obj_Deallocate(obj)
-    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
-  END SUBROUTINE obj_Deallocate
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -372,7 +473,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetLocalElemNumber
+!                                                  GetLocalElemNumber@Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -389,7 +490,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetLocalElemNumber
+!                                                 GetLocalElemNumber@Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -406,7 +507,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          GetTotalVertexDOF
+!                                                   GetTotalVertexDOF@Methods
 !----------------------------------------------------------------------------
 
 INTERFACE
@@ -417,7 +518,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           GetConnectivity_
+!                                                   GetConnectivity_@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -437,58 +538,36 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   Initiate
+!                                                       GetNodeCoord@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
-! date: 2025-06-22
-! summary:  This method is used to initiate the object
+! date: 2026-08-27
+! summary: Get nodal coordinates
+!
+!# GetNodeCoord
+!
+! Get nodal coordinates.
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate1(obj, domain, totalElements)
-    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: domain(2)
-    INTEGER(I4B), INTENT(IN) :: totalElements
-    !! Total number of elements in the domain
-  END SUBROUTINE obj_Initiate1
+  MODULE FUNCTION obj_GetNodeCoord(obj, globalNode, islocal) RESULT(ans)
+    CLASS(OneDimDomain_), INTENT(IN) :: obj
+    INTEGER(I4B), INTENT(IN) :: globalNode
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    REAL(DFP) :: ans
+  END FUNCTION obj_GetNodeCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                                   Initiate
+!                                                GetElemNumFromCoord@Methods
 !----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-22
-! summary:  This method is used to initiate the object
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, domain, elemLength)
-    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: domain(2)
-    REAL(DFP), INTENT(IN) :: elemLength
-    !! Total number of elements in the domain
-  END SUBROUTINE obj_Initiate2
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                                   Initiate
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2025-06-22
-! summary:  This method is used to initiate the object
-
-INTERFACE
-  MODULE SUBROUTINE obj_Initiate3(obj, domain, totalElements, elemLength)
-    CLASS(OneDimDomain_), INTENT(INOUT) :: obj
-    REAL(DFP), INTENT(IN) :: domain(2)
-    !! domain of the object
-    INTEGER(I4B), INTENT(IN) :: totalElements
-    !! Total number of elements in the domain
-    INTEGER(I4B), INTENT(IN) :: elemLength(:)
-    !! Total number of elements in the domain
-    !! Only 1 to totalElements length are used
-  END SUBROUTINE obj_Initiate3
+  MODULE FUNCTION obj_GetElemNumFromCoord(obj, nodeCoord) RESULT(ans)
+    CLASS(OneDimDomain_), INTENT(IN) :: obj
+    REAL(DFP), INTENT(IN) :: nodeCoord
+    INTEGER(I4B) :: ans
+  END FUNCTION obj_GetElemNumFromCoord
 END INTERFACE
 
 !----------------------------------------------------------------------------

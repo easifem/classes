@@ -20,9 +20,9 @@
 ! summary: This module contains matrix vector method for [[MatrixField_]]
 
 SUBMODULE(MatrixField_Class) LUSolveMethods
-USE InputUtility, ONLY: Input
 USE CSRMatrix_Method, ONLY: LUSOLVE
 USE CSRMatrix_Method, ONLY: LUTSOLVE
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -54,7 +54,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 isok = obj%IsInitiated()
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//" - "// &
-                  '[INTERNAL ERROR] :: MatrixField_ object is not initiated.')
+                    '[INTERNAL ERROR] :: MatrixField_ object is not initiated.')
 END IF
 #endif
 
@@ -62,7 +62,7 @@ END IF
 isok = obj%engine%chars() .EQ. "NATIVE_SERIAL"
 IF (.NOT. isok) THEN
   CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[INTERNAL ERROR] :: This routine is only avaiable for NATIVE_SERIAL')
+                    '[INTERNAL ERROR] :: This routine is only avaiable for NATIVE_SERIAL')
 END IF
 #endif
 
@@ -74,7 +74,7 @@ rhs1 = SIZE(rhs)
 isok = (sol1 .EQ. rhs1) .AND. (sol1 .EQ. s(1))
 IF (.NOT. isok) THEN
   CALL e%raiseError(modName//'::'//myName//" - "// &
-  '[INTERNAL ERROR] :: Size of sol vector should be equal to the size of rhs')
+                    '[INTERNAL ERROR] :: Size of sol vector should be equal to the size of rhs')
 END IF
 #endif
 

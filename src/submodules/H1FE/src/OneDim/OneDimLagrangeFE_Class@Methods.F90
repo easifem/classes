@@ -19,8 +19,16 @@
 
 SUBMODULE(OneDimLagrangeFE_Class) Methods
 USE BaseType, ONLY: TypeFeVariableOpt
-
+USE BaseType, ONLY: math => TypeMathOpt
+USE Projection_Method, ONLY: GetL2ProjectionDOFValueFromQuadrature
+USE Display_Method, ONLY: Display
+! USE InputUtility, ONLY: Input
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "OneDimLagrangeFE_Class@Methods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -145,7 +153,204 @@ CHARACTER(*), PARAMETER :: myName = "Deallocate_Ptr_Vector()"
 END PROCEDURE Deallocate_Ptr_Vector
 
 !----------------------------------------------------------------------------
-!                                                               Include error
+!                                                GetTimeDOFValueFromConstant
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeDOFValueFromConstant
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromConstant()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (onlyFaceBubble) THEN
+  tsize = MAX(elemsd%nns - 2, 0)
+  DO ii = 1, tsize
+    ans(ii) = math%one
+  END DO
+ELSE
+  tsize = elemsd%nns
+  DO ii = 1, tsize
+    ans(ii) = math%one
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTimeDOFValueFromConstant
+
+!----------------------------------------------------------------------------
+!                                              GetTimeDOFValueFromSTFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetTimeDOFValueFromSTFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromSTFunction()"
+#endif
+
+INTEGER(I4B) :: ii, targs, tSpaceArgs
+REAL(DFP) :: args(4), xi
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+targs = func%GetNumArgs()
+tSpaceArgs = MAX(targs - 1, math%zero_i)
+
+args = math%zero
+args(1:tSpaceArgs) = x(1:tSpaceArgs)
+
+IF (onlyFaceBubble) THEN
+  tsize = MAX(elemsd%nns - 2, 0)
+  DO ii = 1, tsize
+    xi = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    args(targs) = (math%one - xi) * math%half * times(1) &
+                  + (math%one + xi) * math%half * times(2)
+    CALL func%Get(args=args, val=ans(ii))
+  END DO
+ELSE
+  tsize = elemsd%nns
+  DO ii = 1, tsize
+    xi = obj%opt%GetInterpolationPoint(indx=ii)
+    args(targs) = (math%one - xi) * math%half * times(1) &
+                  + (math%one + xi) * math%half * times(2)
+    CALL func%Get(args=args, val=ans(ii))
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetTimeDOFValueFromSTFunction
+
+!----------------------------------------------------------------------------
+!                                                  GetDOFValueFromSTFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDOFValueFromConstant
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetDOFValueFromConstant()"
+#endif
+
+INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (onlyFaceBubble) THEN
+  tsize = MAX(elemsd%nns - 2, 0)
+  DO ii = 1, tsize
+    ans(ii) = math%one
+  END DO
+ELSE
+  tsize = elemsd%nns
+  DO ii = 1, tsize
+    ans(ii) = math%one
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetDOFValueFromConstant
+
+!----------------------------------------------------------------------------
+!                                               GetDOFValueFromSpaceFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDOFValueFromSpaceFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromSpaceFunction()"
+#endif
+
+INTEGER(I4B) :: ii
+REAL(DFP) :: args(1), xi
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (onlyFaceBubble) THEN
+  tsize = MAX(elemsd%nns - 2, 0)
+  DO ii = 1, tsize
+    xi = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    args(1) = (math%one - xi) * math%half * x(1) &
+              + (math%one + xi) * math%half * x(2)
+    CALL func%Get(args=args, val=ans(ii))
+  END DO
+ELSE
+  tsize = elemsd%nns
+  DO ii = 1, tsize
+    xi = obj%opt%GetInterpolationPoint(indx=ii)
+    args(1) = (math%one - xi) * math%half * x(1) &
+              + (math%one + xi) * math%half * x(2)
+    CALL func%Get(args=args, val=ans(ii))
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetDOFValueFromSpaceFunction
+
+!----------------------------------------------------------------------------
+!                                               GetDOFValueFromTimeFunction
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetDOFValueFromTimeFunction
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTimeDOFValueFromTimeFunction()"
+#endif
+
+INTEGER(I4B) :: ii
+REAL(DFP) :: args(1), xi
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (onlyFaceBubble) THEN
+  tsize = MAX(elemsd%nns - 2, 0)
+  DO ii = 1, tsize
+    xi = obj%opt%GetInterpolationPoint(indx=ii + 2)
+    args(1) = (math%one - xi) * math%half * times(1) &
+              + (math%one + xi) * math%half * times(2)
+    CALL func%Get(args=args, val=ans(ii))
+  END DO
+ELSE
+  tsize = elemsd%nns
+  DO ii = 1, tsize
+    xi = obj%opt%GetInterpolationPoint(indx=ii)
+    args(1) = (math%one - xi) * math%half * times(1) &
+              + (math%one + xi) * math%half * times(2)
+    CALL func%Get(args=args, val=ans(ii))
+  END DO
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetDOFValueFromTimeFunction
+
+!----------------------------------------------------------------------------
+!                                                              Include error
 !----------------------------------------------------------------------------
 
 #include "../../../include/errors.F90"

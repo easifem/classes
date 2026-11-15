@@ -17,14 +17,19 @@
 !
 
 SUBMODULE(TriangleH1LagrangeFE_Class) Methods
-USE BaseType, ONLY: TypeElemNameOpt, TypePolynomialOpt, &
-                    TypeFEVariableOpt, TypeInterpolationOpt
-USE InputUtility, ONLY: Input
+USE BaseType, ONLY: TypeElemNameOpt
+USE BaseType, ONLY: TypeFEVariableOpt
+USE BaseType, ONLY: TypeInterpolationOpt
+USE BaseType, ONLY: TypePolynomialOpt
 USE Display_Method, ONLY: ToString
-USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle, &
-                                        InterpolationPoint_Triangle_
-
+USE InputUtility, ONLY: Input
+USE TriangleInterpolationUtility, ONLY: GetTotalDOF_Triangle
+USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "TriangleH1LagrangeFE_Class@Methods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -51,38 +56,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_TriangleH1LagrangeFEPointer1
 
 !----------------------------------------------------------------------------
-!                                                 TriangleH1LagrangeFEPointer
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_TriangleH1LagrangeFEPointer2
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_TriangleH1LagrangeFEPointer2()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-ALLOCATE (ans)
-
-CALL ans%Initiate( &
-  elemType=TypeElemNameOpt%Triangle, nsd=nsd, baseContinuity="H1", &
-  baseInterpolation="Lagrange", ipType=ipType, basisType=basisType, &
-  fetype=TypeFEVariableOpt%scalar, order=order, cellOrient=cellOrient, &
-  tcell=3_I4B, faceOrient=faceOrient, tFace=3_I4B, &
-  quadratureIsHomogeneous=.TRUE., quadratureIsOrder=.TRUE., &
-  quadratureOrder=quadratureOrder, quadratureType=quadratureType)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-
-END PROCEDURE obj_TriangleH1LagrangeFEPointer2
-
-!----------------------------------------------------------------------------
-!                                                                    SetOrder
+!                                                                   SetOrder
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetOrder
@@ -92,6 +66,8 @@ CHARACTER(*), PARAMETER :: myName = "obj_SetOrder()"
 
 LOGICAL(LGT) :: isok
 INTEGER(I4B) :: order0, tdof
+CHARACTER(*), PARAMETER :: baseContinuity = "H1"
+CHARACTER(*), PARAMETER :: baseInterpolation = "LAGR"
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -101,29 +77,27 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 isok = PRESENT(order) .OR. PRESENT(anisoOrder) .OR. PRESENT(cellOrder)
 CALL AssertError1(isok, myName, &
-                  "either order or anisoOrder must be provided")
+                  "either order, cellOrder, or anisoOrder must be provided")
 #endif
 
 IF (PRESENT(order)) THEN
   order0 = order
-ELSEIF (PRESENT(anisoOrder)) THEN
+ELSE IF (PRESENT(anisoOrder)) THEN
   order0 = anisoOrder(1)
-ELSEIF (PRESENT(cellOrder)) THEN
+ELSE IF (PRESENT(cellOrder)) THEN
   order0 = cellOrder(1)
 END IF
 
 CALL obj%opt%SetIsotropicOrder(order=order0)
-
-tdof = GetTotalDOF_Triangle(order=order0, baseContinuity="H1", &
-                            baseInterpolation="Lagrange")
-
+tdof = GetTotalDOF_Triangle(order=order0, &
+                            baseContinuity=baseContinuity, &
+                            baseInterpolation=baseInterpolation)
 CALL obj%opt%SetTotalDOF(tdof)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetOrder
 
 !----------------------------------------------------------------------------

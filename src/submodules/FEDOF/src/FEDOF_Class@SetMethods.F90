@@ -18,19 +18,22 @@
 !
 
 SUBMODULE(FEDOF_Class) SetMethods
-USE ElemData_Class, ONLY: ElemData_, &
-                          ElemData_GetTotalEntities, &
-                          ElemData_GetEdge, &
-                          ElemData_GetEdgeConnectivity, &
-                          ElemData_GetElementToElements, &
-                          ElemData_GetFace
-USE IntegerUtility, ONLY: GetIntersection
 USE BaseType, ONLY: ReferenceElementInfo => TypeRefelemOpt
 USE basetype, ONLY: TypeMeshOpt
-USE ReallocateUtility, ONLY: Reallocate
 USE Display_Method, ONLY: ToString
-
+USE ElemData_Class, ONLY: ElemData_
+USE ElemData_Class, ONLY: ElemData_GetTotalEntities
+USE ElemData_Class, ONLY: ElemData_GetEdge
+USE ElemData_Class, ONLY: ElemData_GetEdgeConnectivity
+USE ElemData_Class, ONLY: ElemData_GetElementToElements
+USE ElemData_Class, ONLY: ElemData_GetFace
+USE IntegerUtility, ONLY: GetIntersection
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "FEDOF_Class@SetMethods.F90"
+#endif
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -51,14 +54,22 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%cellOrder)
+CALL AssertError1(isok, myName, "obj%cellOrder is not allocated.")
+
+CALL AssertError2(SIZE(obj%cellOrder), obj%tCells, myName, &
+                  "a=size(obj%cellOrder), b=obj%tCells.")
+#endif
+
+! CALL Reallocate(obj%cellOrder, obj%tCells)
+obj%cellOrder(1:obj%tCells) = 0
+
 tsize = SIZE(order)
 
-CALL Reallocate(obj%cellOrder, obj%tCells)
-
 IF (tsize .EQ. 1) THEN
-
-  int8_order = INT(order(1), kind=INT8)
-  obj%cellOrder = int8_order
+  int8_order = INT(order(1), KIND=INT8)
+  obj%cellOrder(1:obj%tCells) = int8_order
 
 ELSE
 
@@ -67,13 +78,12 @@ ELSE
 
     IF (isok) THEN
       jj = obj%mesh%GetLocalElemNumber(globalElement=ii, islocal=islocal)
-      int8_order = INT(order(ii), kind=INT8)
+      int8_order = INT(order(ii), KIND=INT8)
       ! IF (jj .NE. 0)
       obj%cellOrder(jj) = int8_order
     END IF
 
   END DO
-
 END IF
 
 obj%maxCellOrder = MAXVAL(obj%cellOrder)
@@ -84,7 +94,6 @@ obj%maxEdgeOrder = obj%maxFaceOrder
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetCellOrder
 
 !----------------------------------------------------------------------------
@@ -96,53 +105,80 @@ MODULE PROCEDURE obj_SetFaceOrder
 CHARACTER(*), PARAMETER :: myName = "obj_SetFaceOrder()"
 #endif
 
-INTEGER(I4B) :: nrow, ncol, ii, iel, jj, kk, &
-                e2e(ReferenceElementInfo%maxFaces, 3)
+INTEGER(I4B) :: nrow, ncol, ii, iel, jj, kk
 LOGICAL(LGT) :: isok
 TYPE(ElemData_), POINTER :: elemdata
 LOGICAL(LGT), ALLOCATABLE :: foundFaces(:)
+INTEGER(I4B), ALLOCATABLE :: e2e(:, :)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-! main
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%faceOrder)
+CALL AssertError1(isok, myName, &
+                  "obj%faceOrder is not allocated.")
+
+CALL AssertError2(SIZE(obj%faceOrder), obj%tFaces, myName, &
+                  "a=size(obj%faceOrder), b=obj%tFaces.")
+#endif
+
+! Handle brokenSpaces
+IF (obj%isBrokenSpace) THEN
+  obj%faceOrder = 0
+  obj%maxFaceOrder = 0
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! Following code is executed for continuous case
+! Allocation
 CALL Reallocate(foundFaces, obj%tFaces)
-CALL Reallocate(obj%faceOrder, obj%tFaces)
+CALL Reallocate(e2e, ReferenceElementInfo%maxFaces, 3)
 
-DO iel = 1, obj%tCells
+obj%faceOrder(1:obj%tFaces) = 0
 
-  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=.TRUE.)
-  IF (.NOT. isok) CYCLE
+loop1: DO iel = 1, obj%tCells
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE loop1
+  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=math%yes)
 
-  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=.TRUE.)
+#ifdef DEBUG_VER
   isok = ASSOCIATED(elemdata)
-  IF (.NOT. isok) CYCLE
+  IF (.NOT. isok) CYCLE loop1
+#endif
 
   ! faces
-  CALL ElemData_GetElementToElements(obj=elemdata, ans=e2e, nrow=nrow, &
-                                     ncol=ncol, includeBoundaryElement=.TRUE.)
+  CALL ElemData_GetElementToElements( &
+    obj=elemdata, ans=e2e, nrow=nrow, ncol=ncol, &
+    includeBoundaryElement=math%yes)
 
-  DO ii = 1, nrow
+  loop2: DO ii = 1, nrow
     kk = ElemData_GetFace(elemdata, e2e(ii, 2))
-    IF (foundFaces(kk)) CYCLE
+    IF (foundFaces(kk)) CYCLE loop2
 
-    foundFaces(kk) = .TRUE.
+    foundFaces(kk) = math%yes
 
     jj = obj%mesh%GetLocalElemNumber(globalElement=e2e(ii, 1), &
-                                     islocal=.FALSE.)
+                                     islocal=math%no)
 
     obj%faceOrder(kk) = MIN(obj%cellOrder(iel), obj%cellOrder(jj))
-  END DO
+  END DO loop2
+END DO loop1
 
-END DO
+IF (ALLOCATED(foundFaces)) DEALLOCATE (foundFaces)
+IF (ALLOCATED(e2e)) DEALLOCATE (e2e)
+elemdata => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetFaceOrder
 
 !----------------------------------------------------------------------------
@@ -154,92 +190,97 @@ MODULE PROCEDURE obj_SetEdgeOrder
 CHARACTER(*), PARAMETER :: myName = "obj_SetEdgeOrder()"
 #endif
 
-INTEGER(I4B) :: tsize, ii, iel, ent(4), jj, &
-                kk, edgeCon(2), n2e1(TypeMeshOpt%maxNodeToElem), &
-        n2e2(ReferenceElementInfo%maxFaces), n2e(TypeMeshOpt%maxNodeToElem), &
-                tsize1, tsize2
+INTEGER(I4B) :: tsize, ii, iel, jj, kk, tsize1, tsize2
+INTEGER(I4B) :: ent(4), edgeCon(2)
 LOGICAL(LGT) :: isok
 TYPE(ElemData_), POINTER :: elemdata
 LOGICAL(LGT), ALLOCATABLE :: foundEdges(:)
+INTEGER(I4B), ALLOCATABLE :: n2e1(:), n2e2(:), n2e(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-! main
+#ifdef DEBUG_VER
+isok = ALLOCATED(obj%edgeOrder)
+CALL AssertError1(isok, myName, "obj%edgeOrder is not allocated.")
+CALL AssertError2(SIZE(obj%edgeOrder), obj%tEdges, myName, &
+                  "a=size(obj%edgeOrder), b=obj%tEdges.")
+#endif
+
+! Handle broken spaces
+IF (obj%isBrokenSpace) THEN
+  obj%edgeOrder = 0
+  obj%maxEdgeOrder = 0
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! Following code is executed for continuous case
+! Allocation
 CALL Reallocate(foundEdges, obj%tEdges)
-CALL Reallocate(obj%edgeOrder, obj%tEdges)
+CALL Reallocate(n2e1, TypeMeshOpt%maxNodeToElem)
+CALL Reallocate(n2e2, TypeMeshOpt%maxNodeToElem)
+CALL Reallocate(n2e, TypeMeshOpt%maxNodeToElem)
 
-DO iel = 1, obj%tCells
+obj%edgeOrder(1:obj%tEdges) = 0
 
-  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=.TRUE.)
-  IF (.NOT. isok) CYCLE
+loop1: DO iel = 1, obj%tCells
+  isok = obj%mesh%IsElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE loop1
+  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=math%yes)
 
-  elemdata => obj%mesh%GetElemDataPointer(globalElement=iel, islocal=.TRUE.)
+#ifdef DEBUG_VER
   isok = ASSOCIATED(elemdata)
-  IF (.NOT. isok) CYCLE
+  IF (.NOT. isok) CYCLE loop1
+#endif
 
   ent = ElemData_GetTotalEntities(elemdata)
 
   !edges
-  DO ii = 1, ent(2)
+  loop2: DO ii = 1, ent(2)
     jj = ElemData_GetEdge(elemdata, ii)
-    IF (foundEdges(jj)) CYCLE
+    IF (foundEdges(jj)) CYCLE loop2
 
-    foundEdges(jj) = .TRUE.
+    foundEdges(jj) = math%yes
     CALL ElemData_GetEdgeConnectivity(obj=elemdata, ii=ii, ans=edgeCon, &
                                       tsize=tsize)
 
-    CALL obj%mesh%GetNodeToElements_(globalNode=edgeCon(1), islocal=.FALSE., &
-                                     ans=n2e1, tsize=tsize1)
+    CALL obj%mesh%GetNodeToElements_(globalNode=edgeCon(1), &
+                                     islocal=math%no, ans=n2e1, &
+                                     tsize=tsize1)
 
-    CALL obj%mesh%GetNodeToElements_(globalNode=edgeCon(2), islocal=.FALSE., &
-                                     ans=n2e2, tsize=tsize2)
+    CALL obj%mesh%GetNodeToElements_(globalNode=edgeCon(2), &
+                                     islocal=math%no, ans=n2e2, &
+                                     tsize=tsize2)
 
     CALL GetIntersection(a=n2e1(1:tsize1), b=n2e2(1:tsize2), c=n2e, &
                          tsize=tsize)
 
     DO kk = 1, tsize
       n2e(kk) = obj%mesh%GetLocalElemNumber(globalElement=n2e(kk), &
-                                            islocal=.FALSE.)
+                                            islocal=math%no)
     END DO
 
     obj%edgeOrder(jj) = MINVAL(obj%cellOrder(n2e(1:tsize)))
-
-  END DO
-
-END DO
+  END DO loop2
+END DO loop1
 
 IF (ALLOCATED(foundEdges)) DEALLOCATE (foundEdges)
+IF (ALLOCATED(n2e1)) DEALLOCATE (n2e1)
+IF (ALLOCATED(n2e2)) DEALLOCATE (n2e2)
+IF (ALLOCATED(n2e)) DEALLOCATE (n2e)
 elemdata => NULL()
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_SetEdgeOrder
-
-!----------------------------------------------------------------------------
-!                                                               SetNodeCoord
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_SetNodeCoord
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = 'obj_SetNodeCoord()'
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_SetNodeCoord
 
 !----------------------------------------------------------------------------
 !                                                                      SetFE
@@ -249,8 +290,6 @@ MODULE PROCEDURE obj_SetFE
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetFE()"
 #endif
-
-LOGICAL(LGT), PARAMETER :: yes = .TRUE.
 
 INTEGER(I4B) :: ii, iel, cellOrder(3), &
                 faceOrder(3, ReferenceElementInfo%maxEdges), &
@@ -267,29 +306,35 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 iel = obj%mesh%GetLocalElemNumber(globalElement=globalElement, &
                                   islocal=islocal)
 
-ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=yes)
+ii = obj%mesh%GetElemTopologyIndx(globalElement=iel, islocal=math%yes)
 
-CALL obj%GetOrders( &
-  globalElement=iel, islocal=yes, cellOrder=cellOrder, &
-  faceOrder=faceOrder, edgeOrder=edgeOrder, cellOrient=cellOrient, &
-  faceOrient=faceOrient, edgeOrient=edgeOrient, tCellOrder=indx(1), &
-  tFaceOrder=indx(2), tEdgeOrder=indx(3), tCellOrient=indx(4), &
-  tFaceOrient=indx(5:6), tEdgeOrient=indx(7))
+CALL obj%GetOrders(globalElement=iel, islocal=math%yes, cellOrder=cellOrder, &
+                   faceOrder=faceOrder, edgeOrder=edgeOrder, &
+                   cellOrient=cellOrient, faceOrient=faceOrient, &
+                   edgeOrient=edgeOrient, tCellOrder=indx(1), &
+                   tFaceOrder=indx(2), tEdgeOrder=indx(3), &
+                   tCellOrient=indx(4), tFaceOrient=indx(5:6), &
+                   tEdgeOrient=indx(7))
 
 IF (indx(1) .EQ. 1) THEN
   cellOrder(2:3) = cellOrder(1)
   indx(1) = 3
 END IF
 
-CALL obj%fe(ii)%ptr%SetOrder( &
-  order=cellOrder(1), cellOrder=cellOrder, faceOrder=faceOrder, &
-  edgeOrder=edgeOrder, errCheck=.TRUE., tcell=indx(1), tface=indx(2), &
-  tedge=indx(3))
+CALL obj%fe(ii)%ptr%SetOrder(order=cellOrder(1), cellOrder=cellOrder, &
+                             faceOrder=faceOrder, edgeOrder=edgeOrder, &
+                             errCheck=math%yes, tCell=indx(1), &
+                             tFace=indx(2), tEdge=indx(3))
 
-CALL obj%fe(ii)%ptr%SetOrientation( &
-  cellOrient=cellOrient, faceOrient=faceOrient, edgeOrient=edgeOrient, &
-  errCheck=.TRUE., tcell=indx(1), tface=indx(2), tedge=indx(3))
+IF (.NOT. obj%isBrokenSpace) THEN
+  CALL obj%fe(ii)%ptr%SetOrientation(cellOrient=cellOrient, &
+                                     faceOrient=faceOrient, &
+                                     edgeOrient=edgeOrient, &
+                                     errCheck=math%yes, tCell=indx(1), &
+                                     tFace=indx(2), tEdge=indx(3))
+END IF
 
+! Make order of integrand in cellOrder
 cellOrder(1:3) = cellOrder(1:3) * obj%scaleForQuadOrder
 CALL obj%fe(ii)%ptr%SetQuadratureOrder(order=cellOrder)
 

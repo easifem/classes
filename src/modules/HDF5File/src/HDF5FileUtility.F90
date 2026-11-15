@@ -15,19 +15,19 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 !
 
-!> authors: Vikas Sharma, Ph. D.
+!> author: Vikas Sharma, Ph. D.
 ! date: 20 July 2021
 ! summary: Some additional methods for HDF5File
 
 MODULE HDF5FileUtility
-USE GlobalData, ONLY: DFP, I4B, LGT
 USE BaseType, ONLY: DOF_
 USE BaseType, ONLY: CSRSparsity_
 USE BaseType, ONLY: CSRMatrix_
 USE BaseType, ONLY: RealVector_
 USE BaseType, ONLY: IntVector_
-USE String_Class, ONLY: String
+USE GlobalData, ONLY: DFP, I4B, LGT
 USE HDF5File_Class, ONLY: HDF5File_
+USE String_Class, ONLY: String
 IMPLICIT NONE
 PRIVATE
 

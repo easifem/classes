@@ -16,12 +16,15 @@
 !
 
 SUBMODULE(LinearElasticModelUtility) Methods
-USE FEVariable_SubtractionMethod, ONLY: OPERATOR(-)
-USE FEVariable_MultiplicationMethod, ONLY: OPERATOR(*)
-USE FEVariable_DivisionMethod, ONLY: OPERATOR(/)
-USE FEVariable_AdditionMethod, ONLY: OPERATOR(+)
-USE FEVariable_UnaryMethod, ONLY: OPERATOR(**), Sqrt
+USE FEVariable_Method, ONLY: OPERATOR(-)
+USE FEVariable_Method, ONLY: OPERATOR(*)
+USE FEVariable_Method, ONLY: OPERATOR(/)
+USE FEVariable_Method, ONLY: OPERATOR(+)
+USE FEVariable_Method, ONLY: OPERATOR(**), Sqrt
+USE FEVariable_Method, ONLY: FEVariableLen => GetLen
 USE InputUtility, ONLY: Input
+USE ExceptionHandler_Class, ONLY: e
+
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -546,7 +549,319 @@ CALL err%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE GetPoissonRatio
 
 !----------------------------------------------------------------------------
-!
+!                                                              GetLameParam
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetLameParam
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "GetLameParam()"
+#endif
+LOGICAL(LGT) :: isok
+REAL(DFP) :: r
+CHARACTER(4) :: acase
+
+#ifdef DEBUG_VER
+CALL err%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+acase = 'FFFF'
+! Lam, Mu, E, Nu
+
+isok = PRESENT(lambda)
+IF (isok) THEN
+  lam = lambda
+  acase(1:1) = 'T'
+END IF
+
+isok = PRESENT(shearModulus)
+IF (isok) THEN
+  mu = shearModulus
+  acase(2:2) = 'T'
+END IF
+
+isok = PRESENT(youngsModulus)
+IF (isok) THEN
+  acase(3:3) = 'T'
+END IF
+
+isok = PRESENT(poissonRatio)
+IF (isok) THEN
+  acase(4:4) = 'T'
+END IF
+
+SELECT CASE (acase)
+CASE ('FFTT')
+  ! IF (isE .AND. isNu) THEN
+  CALL LameParam_FFTT(lam, mu, youngsModulus, poissonRatio)
+
+CASE ('FTTF')
+  ! ELSE IF (isG .AND. isE) THEN
+  CALL LameParam_FTTF(lam, mu, shearModulus, youngsModulus)
+
+CASE ('FTFT')
+  ! ELSE IF (isG .AND. isNu) THEN
+  CALL LameParam_FTFT(lam, mu, shearModulus, poissonRatio)
+
+CASE ('TTFF')
+  ! ELSE IF (isLam .AND. isG) THEN
+  CALL LameParam_TTFF(lam, mu, lambda, shearModulus)
+
+CASE ('TFTF')
+  ! ELSE IF (isLam .AND. isE) THEN
+  CALL LameParam_TFTF(lam, mu, lambda, youngsModulus)
+
+CASE ('TFFT')
+  ! ELSE IF (isLam .AND. isNu) THEN
+  CALL LameParam_TFFT(lam, mu, lambda, poissonRatio)
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    'No case found for acase='//acase)
+#endif
+END SELECT
+
+#ifdef DEBUG_VER
+CALL err%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END PROCEDURE GetLameParam
+
+!----------------------------------------------------------------------------
+!                                                             LameParam_FFTT
+!----------------------------------------------------------------------------
+
+SUBROUTINE LameParam_FFTT(lam, mu, youngsModulus, poissonRatio)
+  REAL(DFP), INTENT(INOUT) :: lam, mu
+  REAL(DFP), INTENT(IN) :: youngsModulus, poissonRatio
+
+  lam = youngsModulus * poissonRatio / (math%one + poissonRatio) &
+        / (math%one - math%two * poissonRatio)
+  mu = youngsModulus * math%half / (math%one + poissonRatio)
+END SUBROUTINE LameParam_FFTT
+
+!----------------------------------------------------------------------------
+!                                                              LameParam_FTTF
+!----------------------------------------------------------------------------
+
+SUBROUTINE LameParam_FTTF(lam, mu, shearModulus, youngsModulus)
+  REAL(DFP), INTENT(INOUT) :: lam, mu
+  REAL(DFP), INTENT(IN) :: shearModulus, youngsModulus
+
+  lam = shearModulus * (youngsModulus - math%two * shearModulus) &
+        / (math%three * shearModulus - youngsModulus)
+  mu = shearModulus
+END SUBROUTINE LameParam_FTTF
+
+!----------------------------------------------------------------------------
+!                                                             LameParam_FTFT
+!----------------------------------------------------------------------------
+
+SUBROUTINE LameParam_FTFT(lam, mu, shearModulus, poissonRatio)
+  REAL(DFP), INTENT(INOUT) :: lam, mu
+  REAL(DFP), INTENT(IN) :: shearModulus, poissonRatio
+
+  lam = math%two * shearModulus * poissonRatio &
+        / (math%one - math%two * poissonRatio)
+  mu = shearModulus
+END SUBROUTINE LameParam_FTFT
+
+!----------------------------------------------------------------------------
+!                                                             LameParam_TTFF
+!----------------------------------------------------------------------------
+
+SUBROUTINE LameParam_TTFF(lam, mu, lambda, shearModulus)
+  REAL(DFP), INTENT(INOUT) :: lam, mu
+  REAL(DFP), INTENT(IN) :: lambda, shearModulus
+  lam = lambda
+  mu = shearModulus
+END SUBROUTINE LameParam_TTFF
+
+!----------------------------------------------------------------------------
+!                                                             LameParam_TFTF
+!----------------------------------------------------------------------------
+
+SUBROUTINE LameParam_TFTF(lam, mu, lambda, youngsModulus)
+  REAL(DFP), INTENT(INOUT) :: lam, mu
+  REAL(DFP), INTENT(IN) :: lambda, youngsModulus
+  REAL(DFP) :: r
+  lam = lambda
+  r = SQRT(youngsModulus * youngsModulus + 9.0_DFP * lam * lam &
+           + math%two * youngsModulus * lam)
+  mu = (youngsModulus - 3.0_DFP * lam + r) / 4.0_DFP
+END SUBROUTINE LameParam_TFTF
+
+!----------------------------------------------------------------------------
+!                                                             LameParam_TFFT
+!----------------------------------------------------------------------------
+
+SUBROUTINE LameParam_TFFT(lam, mu, lambda, poissonRatio)
+  REAL(DFP), INTENT(INOUT) :: lam, mu
+  REAL(DFP), INTENT(IN) :: lambda, poissonRatio
+  lam = lambda
+  mu = lam * (math%one - math%two * poissonRatio) * math%half &
+       / poissonRatio
+END SUBROUTINE LameParam_TFFT
+
+!----------------------------------------------------------------------------
+!                                                         GetLameParamFEVar_
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE GetLameParamFEVar_
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "GetLameParam()"
+INTEGER(I4B) :: tsize1, tsize2
+#endif
+LOGICAL(LGT) :: isok
+CHARACTER(4) :: acase
+INTEGER(I4B) :: tsize, ii
+
+#ifdef DEBUG_VER
+CALL err%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = lam%isInit
+CALL AssertError1(isok, myName, &
+                  "lam is not initiated.")
+#endif
+
+#ifdef DEBUG_VER
+isok = mu%isInit
+CALL AssertError1(isok, myName, &
+                  "mu is not initiated.")
+#endif
+
+#ifdef DEBUG_VER
+tsize1 = FEVariableLen(lam)
+tsize2 = FEVariableLen(mu)
+
+CALL AssertError2(tsize1, tsize2, myName, &
+                  "a=lam%len, b=mu%len,")
+#endif
+
+acase = 'FFFF'
+! lambda, shearModulus, youngsModulus, poissonRatio
+
+isok = PRESENT(lambda)
+IF (isok) THEN
+  acase(1:1) = 'T'
+END IF
+
+isok = PRESENT(shearModulus)
+IF (isok) THEN
+  acase(2:2) = 'T'
+END IF
+
+isok = PRESENT(youngsModulus)
+IF (isok) THEN
+  acase(3:3) = 'T'
+END IF
+
+isok = PRESENT(poissonRatio)
+IF (isok) THEN
+  acase(4:4) = 'T'
+END IF
+
+tsize = FEVariableLen(lam)
+
+SELECT CASE (acase)
+CASE ('FFTT')
+  ! IF (isE .AND. isNu) THEN
+#ifdef DEBUG_VER
+  tsize1 = FEVariableLen(youngsModulus)
+  tsize2 = FEVariableLen(poissonRatio)
+  CALL AssertError2(tsize1, tsize2, myName, &
+                    "a=youngsModulus%len, b=poissonRatio%len,")
+#endif
+
+  DO ii = 1, tsize
+    CALL LameParam_FFTT(lam%val(ii), mu%val(ii), youngsModulus%val(ii), &
+                        poissonRatio%val(ii))
+  END DO
+
+CASE ('FTTF')
+#ifdef DEBUG_VER
+  tsize1 = FEVariableLen(shearModulus)
+  tsize2 = FEVariableLen(youngsModulus)
+  CALL AssertError2(tsize1, tsize2, myName, &
+                    "a=shearModulus%len, b=youngsModulus%len,")
+#endif
+
+  DO ii = 1, tsize
+    CALL LameParam_FTTF(lam%val(ii), mu%val(ii), shearModulus%val(ii), &
+                        youngsModulus%val(ii))
+  END DO
+
+CASE ('FTFT')
+#ifdef DEBUG_VER
+  tsize1 = FEVariableLen(shearModulus)
+  tsize2 = FEVariableLen(poissonRatio)
+  CALL AssertError2(tsize1, tsize2, myName, &
+                    "a=shearModulus%len, b=poissonRatio%len,")
+#endif
+
+  DO ii = 1, tsize
+    CALL LameParam_FTFT(lam%val(ii), mu%val(ii), shearModulus%val(ii), &
+                        poissonRatio%val(ii))
+  END DO
+
+CASE ('TTFF')
+#ifdef DEBUG_VER
+  tsize1 = FEVariableLen(lambda)
+  tsize2 = FEVariableLen(shearModulus)
+  CALL AssertError2(tsize1, tsize2, myName, &
+                    "a=lambda%len, b=shearModulus%len,")
+#endif
+
+  DO ii = 1, tsize
+    CALL LameParam_TTFF(lam%val(ii), mu%val(ii), lambda%val(ii), &
+                        shearModulus%val(ii))
+  END DO
+
+CASE ('TFTF')
+#ifdef DEBUG_VER
+  tsize1 = FEVariableLen(lambda)
+  tsize2 = FEVariableLen(youngsModulus)
+  CALL AssertError2(tsize1, tsize2, myName, &
+                    "a=lambda%len, b=youngsModulus%len,")
+#endif
+
+  DO ii = 1, tsize
+    CALL LameParam_TFTF(lam%val(ii), mu%val(ii), lambda%val(ii), &
+                        youngsModulus%val(ii))
+  END DO
+
+CASE ('TFFT')
+#ifdef DEBUG_VER
+  tsize1 = FEVariableLen(lambda)
+  tsize2 = FEVariableLen(poissonRatio)
+  CALL AssertError2(tsize1, tsize2, myName, &
+                    "a=lambda%len, b=poissonRatio%len,")
+#endif
+
+  DO ii = 1, tsize
+    CALL LameParam_TFFT(lam%val(ii), mu%val(ii), lambda%val(ii), &
+                        poissonRatio%val(ii))
+  END DO
+
+CASE DEFAULT
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    'No case found for acase='//acase)
+#endif
+END SELECT
+
+#ifdef DEBUG_VER
+CALL err%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+END PROCEDURE GetLameParamFEVar_
+
+!----------------------------------------------------------------------------
+!                                                            GetElasticParam
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE GetElasticParam
@@ -640,17 +955,6 @@ END PROCEDURE GetElasticParam
 !                                                              Include Error
 !----------------------------------------------------------------------------
 
-SUBROUTINE AssertError1(a, myName, msg)
-  LOGICAL(LGT), INTENT(IN) :: a
-  CHARACTER(*), INTENT(IN) :: myName
-  CHARACTER(*), INTENT(IN) :: msg
-
-  IF (.NOT. a) THEN
-    CALL err%RaiseError(modName//'::'//myName//" - "// &
-                        '[INTERNAL ERROR] :: '//msg)
-    RETURN
-  END IF
-
-END SUBROUTINE AssertError1
+#include "../../include/errors.F90"
 
 END SUBMODULE Methods

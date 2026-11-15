@@ -23,21 +23,27 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableScalar
 USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: TypeInterpolationOpt
+USE Display_Method, ONLY: Display
 USE DOF_Method, ONLY: GetIDOF
 USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
-USE ElemshapeData_Method, ONLY: ElemshapeData_GetInterpolation => &
+USE ElemshapeData_Method, ONLY: ElemshapeDataGetInterpolation => &
                                 GetInterpolation
-USE FEVariable_Method, ONLY: FEVariable_Set => Set
+USE ElemshapeData_Method, ONLY: ElemshapeDataDeallocate => &
+                                DEALLOCATE
+USE FEVariable_Method, ONLY: FEVariableSet => Set
 USE FEVariable_Method, ONLY: NodalVariable
 USE FEVariable_Method, ONLY: QuadratureVariable
 USE MeshField_Class, ONLY: ScalarMeshFieldInitiate
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_Initiate => Initiate
+USE QuadraturePoint_Method, ONLY: QuadraturePointInitiate => Initiate
+USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => &
+                                  DEALLOCATE
 USE ReallocateUtility, ONLY: Reallocate
 USE RealVector_Method, ONLY: GetValue_
 USE RealVector_Method, ONLY: Get
 USE RealVector_Method, ONLY: GetValue
-USE Display_Method, ONLY: Display
+USE ReferenceElement_Method, ONLY: RefElementGetTotalNodes => GetTotalNodes
 
 IMPLICIT NONE
 
@@ -148,7 +154,7 @@ VALUE%tshape = 1
 VALUE%s(1) = tsize
 VALUE%defineOn = TypeFieldOpt%nodal
 VALUE%varType = TypeFieldOpt%space
-VALUE%rank = TypeFieldOpt%scalar
+VALUE%RANK = TypeFieldOpt%scalar
 VALUE%len = tsize
 
 #ifdef DEBUG_VER
@@ -156,102 +162,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Get4
-
-!----------------------------------------------------------------------------
-!                                                                       Get
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Get6
-! CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
-! INTEGER(I4B) :: tsize
-! INTEGER(I4B) :: s(3), p(3)
-! REAL(DFP), POINTER :: realvec(:)
-!
-! #ifdef DEBUG_VER
-!
-! CALL AssertError1(obj%isInitiated(), myName, &
-!                   'ScalarFieldLis_::obj is not initiated')
-!
-! CALL AssertError1(VALUE%isInitiated(), myName, &
-!                   'AbstractNodeField::value is not initiated')
-! #endif
-!
-! SELECT TYPE (VALUE)
-!
-! TYPE IS (ScalarField_)
-!
-!   s = GetNodeLoc(obj=obj%dof, idof=1)
-!   realvec => VALUE%GetPointer()
-!   CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
-!                        tsize=tsize)
-!   realvec => NULL()
-!
-! TYPE IS (STScalarField_)
-!
-!   s = GetNodeLoc(obj=obj%dof, idof=1)
-!   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
-!                                              idof=idof_value))
-!   tsize = obj%dof.tNodes.1
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
-!                        tsize=tsize, istart_value=p(1), iend_value=p(2), &
-!                        stride_value=p(3))
-!   realvec => NULL()
-!
-! TYPE IS (VectorField_)
-!
-!   s = GetNodeLoc(obj=obj%dof, idof=1)
-!   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
-!                                              idof=idof_value))
-!   tsize = obj%dof.tNodes.1
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
-!                        tsize=tsize, istart_value=p(1), iend_value=p(2), &
-!                        stride_value=p(3))
-!   realvec => NULL()
-!
-! ! TYPE IS (STVectorField_)
-! !
-! !   s = GetNodeLoc(obj=obj%dof, idof=1)
-! !   p = GetNodeLoc(obj=VALUE%dof, idof=GetIDOF(obj=VALUE%dof, ivar=1_I4B, &
-! !                                              idof=idof_value))
-! !   tsize = obj%dof.tNodes.1
-! !
-! !   realvec => VALUE%GetPointer()
-! !   CALL obj%GetMultiple(VALUE=realvec, istart=s(1), iend=s(2), stride=s(3), &
-! !                        tsize=tsize, istart_value=p(1), iend_value=p(2), &
-! !                        stride_value=p(3))
-! !   realvec => NULL()
-!
-! TYPE IS (ScalarFieldLis_)
-!
-!   CALL VALUE%Set(ivar=1_I4B, idof=1_I4B, VALUE=obj, idof_value=1_I4B, &
-!                  ivar_value=1_I4B)
-!
-! TYPE IS (STScalarFieldLis_)
-!
-!   CALL VALUE%Set(ivar=1_I4B, idof=idof_value, VALUE=obj, idof_value=1_I4B, &
-!                  ivar_value=1_I4B)
-!
-! TYPE IS (VectorFieldLis_)
-!
-!   CALL VALUE%Set(ivar=1_I4B, idof=idof_value, VALUE=obj, idof_value=1_I4B, &
-!                  ivar_value=1_I4B)
-!
-! ! TYPE IS (STVectorFieldLis_)
-! !
-! !   CALL VALUE%Set(ivar=1_I4B, idof=idof_value, VALUE=obj, idof_value=1_I4B, &
-! !                  ivar_value=1_I4B)
-!
-! CLASS DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     '[INTERNAL ERROR] :: No case found for type value')
-!   RETURN
-! END SELECT
-!
-! END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
 !                                                              GetFeVariable
@@ -322,10 +232,11 @@ END DO
 ! in the fedof, it will be used to allocate xij, quad, fevar
 
 IF (.NOT. isMeshFieldInit) THEN
-  CALL ScalarMeshFieldInitiate( &
-    obj=meshField, name=name, fieldType=TypeFieldOpt%normal, &
-    varType=TypeFieldOpt%space, engine=engine, defineOn=TypeFieldOpt%nodal, &
-    nns=maxCon, mesh=mesh)
+  CALL ScalarMeshFieldInitiate(obj=meshField, name=name, &
+                               fieldType=TypeFieldOpt%normal, &
+                               varType=TypeFieldOpt%space, engine=engine, &
+                               defineOn=TypeFieldOpt%nodal, nns=maxCon, &
+                               mesh=mesh)
 END IF
 
 CALL Reallocate(elemCoord, 3, maxNNE)
@@ -333,12 +244,13 @@ CALL Reallocate(refElemCoord, 3, maxNNE)
 CALL Reallocate(sol, maxFedofCon)
 CALL Reallocate(solCon, maxFedofCon)
 CALL Reallocate(xij, 4, maxCon)
-CALL QuadraturePoint_Initiate(obj=quad, txi=3, tpoints=maxCon)
+CALL QuadraturePointInitiate(obj=quad, txi=3, tpoints=maxCon)
 
 fevar = QuadratureVariable( &
-        tsize=maxCon, rank=TypeFEVariableScalar, varType=TypeFEVariableSpace)
+        tsize=maxCon, RANK=TypeFEVariableScalar, &
+        varType=TypeFEVariableSpace)
 
-sol_fevar = NodalVariable(tsize=maxFedofCon, rank=TypeFEVariableScalar, &
+sol_fevar = NodalVariable(tsize=maxFedofCon, RANK=TypeFEVariableScalar, &
                           varType=TypeFEVariableSpace)
 
 DO iel = 1, tElements
@@ -352,11 +264,10 @@ DO iel = 1, tElements
   CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_i, &
                              ncol=refElemCoord_j)
 
-  CALL feptr%GetInterpolationPoints( &
-    xij=refElemCoord, ans=xij, nrow=xij_i, ncol=xij_j, order=order, &
-    ipType=ipType)
+  CALL feptr%GetInterpolationPoints(xij=refElemCoord, ans=xij, nrow=xij_i, &
+                                    ncol=xij_j, order=order, ipType=ipType)
 
-  CALL QuadraturePoint_Initiate(obj=quad, points=xij(1:4, 1:xij_j))
+  CALL QuadraturePointInitiate(obj=quad, points=xij(1:4, 1:xij_j))
 
   CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 
@@ -367,21 +278,23 @@ DO iel = 1, tElements
                          islocal=math%yes)
 
   ! This step is necessary to fix the orientation in Lagrange elements
-  CALL feptr%GetGlobalElemShapeData( &
-    elemsd=elemsd, geoelemsd=geoelemsd, &
-    xij=elemCoord(1:elemCoord_i, 1:elemCoord_j))
+  CALL feptr%GetGlobalElemShapeData(elemsd=elemsd, geoelemsd=geoelemsd, &
+                                    xij=elemCoord(1:elemCoord_i, &
+                                                  1:elemCoord_j))
 
-  CALL obj%fedof%GetConnectivity_( &
-    ans=solCon, tsize=tSolCon, globalElement=iel, islocal=math%yes, opt='A')
+  CALL obj%fedof%GetConnectivity_(ans=solCon, tsize=tSolCon, &
+                                  globalElement=iel, islocal=math%yes, &
+                                  opt='A')
 
-  CALL obj%Get(VALUE=sol, tsize=tSol, globalNode=solCon(1:tSolCon), &
+  CALL obj%Get(VALUE=sol, tsize=tsol, globalNode=solCon(1:tSolCon), &
                islocal=math%yes)
 
-  CALL FEVariable_Set( &
-    obj=sol_fevar, val=sol(1:tSol), rank=TypeFEVariableScalar, &
-    varType=TypeFEVariableSpace, scale=math%one, addContribution=math%no)
+  CALL FEVariableSet(obj=sol_fevar, val=sol(1:tsol), &
+                     RANK=TypeFEVariableScalar, &
+                     varType=TypeFEVariableSpace, scale=math%one, &
+                     addContribution=math%no)
 
-  CALL ElemshapeData_GetInterpolation(obj=elemsd, ans=fevar, val=sol_fevar)
+  CALL ElemshapeDataGetInterpolation(obj=elemsd, ans=fevar, val=sol_fevar)
 
   CALL meshField%Insert(globalElement=iel, islocal=math%yes, fevar=fevar)
 
@@ -392,6 +305,178 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetMeshField
+
+!----------------------------------------------------------------------------
+!                                                   GetVtkUnstructuredValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVtkUnstructuredValue1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue1()"
+#endif
+REAL(DFP), ALLOCATABLE :: refElemCoord(:, :), xij(:, :), nodalValue(:)
+INTEGER(I4B), ALLOCATABLE :: fecon(:)
+INTEGER(I4B) :: maxNNE, maxCon, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+maxNNE = obj%geofedof%GetMaxTotalConnectivity()
+maxCon = obj%fedof%GetMaxTotalConnectivity()
+tsize = obj%fedof%GetSumElemTotalDOF()
+
+CALL Reallocate(VALUE, tsize)
+CALL Reallocate(nodalValue, maxCon)
+CALL Reallocate(fecon, maxCon)
+CALL Reallocate(xij, 4, maxCon)
+CALL Reallocate(refElemCoord, 3, maxNNE)
+
+CALL obj%GetVtkUnstructuredValue(VALUE=VALUE, tsize=tsize, &
+                                 refElemCoord=refElemCoord, xij=xij, &
+                                 nodalValue=nodalValue, fecon=fecon)
+
+IF (ALLOCATED(nodalValue)) DEALLOCATE (nodalValue)
+IF (ALLOCATED(fecon)) DEALLOCATE (fecon)
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(refElemCoord)) DEALLOCATE (refElemCoord)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetVtkUnstructuredValue1
+
+!----------------------------------------------------------------------------
+!                                                   GetVtkUnstructuredValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetVtkUnstructuredValue2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetVtkUnstructuredValue2()"
+INTEGER(I4B) :: maxNNE, maxCon
+#endif
+CLASS(AbstractMesh_), POINTER :: mesh
+CLASS(AbstractFE_), POINTER :: feptr
+TYPE(QuadraturePoint_) :: quad
+TYPE(ElemShapeData_) :: elemsd
+INTEGER(I4B) :: tElements, iel, ii, ip0, cellOrder(3), ipType(3), &
+                xij_nrow, xij_ncol, refElemCoord_nrow, refElemCoord_ncol, &
+                nodalValue_size, tfecon, topoIndx, lastTopoIndx, lastOrder
+LOGICAL(LGT) :: isok
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+mesh => obj%fedof%GetMeshPointer()
+tElements = mesh%GetTotalElements()
+ipType = TypeInterpolationOpt%equidistance
+
+! lazy compute and cached
+tsize = obj%fedof%GetSumElemTotalDOF()
+
+#ifdef DEBUG_VER
+maxNNE = obj%geofedof%GetMaxTotalConnectivity()
+maxCon = obj%fedof%GetMaxTotalConnectivity()
+
+CALL AssertError3(tsize, SIZE(VALUE), myName, &
+                  "a=tsize, b=size(value)")
+CALL AssertError3(maxCon, SIZE(nodalValue), myName, &
+                  "a=maxCon, b=size(nodalValue)")
+CALL AssertError3(maxCon, SIZE(fecon), myName, &
+                  "a=maxCon, b=size(fecon)")
+CALL AssertError3(math%four_i, SIZE(xij, 1), myName, &
+                  "a=4, b=size(xij,1)")
+CALL AssertError3(maxCon, SIZE(xij, 2), myName, &
+                  "a=maxCon, b=size(xij,2)")
+CALL AssertError3(math%three_i, SIZE(refElemCoord, 1), myName, &
+                  "a=3, b=size(refElemCoord,1)")
+CALL AssertError3(maxNNE, SIZE(refElemCoord, 2), myName, &
+                  "a=maxNNE, b=size(refElemCoord,2)")
+#endif
+
+xij = math%zero
+refElemCoord = math%zero
+
+ip0 = 0
+lastTopoIndx = 0
+lastOrder = -1
+
+elemLoop: DO iel = 1, tElements
+
+  isok = mesh%isElementActive(globalElement=iel, islocal=math%yes)
+  IF (.NOT. isok) CYCLE elemLoop
+
+  ! order of the VTK cell
+  CALL obj%fedof%GetCellOrder(ans=cellOrder, tsize=ii, &
+                              globalElement=iel, islocal=math%yes)
+  cellOrder(2:3) = cellOrder(1)
+  topoIndx = mesh%GetElemTopologyIndx(globalElement=iel, islocal=math%yes)
+
+  ! finite element of fedof, SetFE also sets the orientation of the
+  ! element, which is used by FixOrientOfNptrs below
+  CALL obj%fedof%SetFE(globalElement=iel, islocal=math%yes)
+  feptr => obj%fedof%GetFEPointer(globalElement=iel, islocal=math%yes)
+
+  ! The local shape data at the VTK points depends only on the finite
+  ! element (topology) and the cell order, so it is computed again only
+  ! when one of them changes
+  isok = (topoIndx .NE. lastTopoIndx) .OR. (cellOrder(1) .NE. lastOrder)
+  IF (isok) THEN
+    lastTopoIndx = topoIndx
+    lastOrder = cellOrder(1)
+
+    ! VTK points of the cell in the reference element
+    CALL feptr%GetRefElemCoord(ans=refElemCoord, nrow=refElemCoord_nrow, &
+                               ncol=refElemCoord_ncol)
+
+    CALL feptr%GetInterpolationPoints( &
+      xij=refElemCoord(1:refElemCoord_nrow, 1:refElemCoord_ncol), &
+      ans=xij, nrow=xij_nrow, ncol=xij_ncol, order=cellOrder, &
+      ipType=ipType)
+
+    CALL QuadraturePointInitiate(obj=quad, points=xij(1:4, 1:xij_ncol))
+
+    ! local shape functions, the orientation is fixed in the connectivity
+    CALL feptr%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
+  END IF
+
+  ! nodal values of the element in the local node order
+  CALL obj%fedof%GetConnectivity_(ans=fecon, tsize=tfecon, opt="A", &
+                                  globalElement=iel, islocal=math%yes)
+  CALL feptr%FixOrientOfNptrs(fecon, tfecon)
+
+  CALL obj%Get(VALUE=nodalValue, globalNode=fecon(1:tfecon), &
+               islocal=math%yes, tsize=nodalValue_size)
+
+#ifdef DEBUG_VER
+  CALL AssertError3(nodalValue_size, elemsd%nns, myName, &
+                    "a=nodalValue_size, b=elemsd%nns")
+  CALL AssertError3(xij_ncol, elemsd%nips, myName, &
+                    "a=xij_ncol, b=elemsd%nips")
+#endif
+
+  VALUE(ip0 + 1:ip0 + xij_ncol) = &
+    MATMUL(nodalValue(1:nodalValue_size), &
+           elemsd%N(1:nodalValue_size, 1:xij_ncol))
+
+  ip0 = ip0 + xij_ncol
+END DO elemLoop
+
+NULLIFY (mesh, feptr)
+CALL QuadraturePointDeallocate(quad)
+CALL ElemShapeDataDeallocate(elemsd)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+
+END PROCEDURE obj_GetVtkUnstructuredValue2
 
 !----------------------------------------------------------------------------
 !

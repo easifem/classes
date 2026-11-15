@@ -17,16 +17,17 @@
 !
 
 SUBMODULE(QuadratureOpt_Class) TomlMethods
-USE Display_Method, ONLY: Display, ToString
-USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar, &
-                                  QuadraturePoint_ToInteger
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
 USE InputUtility, ONLY: Input
-USE tomlf, ONLY: toml_get => get_value, &
-                 toml_serialize
-USE TomlUtility, ONLY: GetValue, GetValue_
-
-USE ReferenceElement_Method, ONLY: ElementType, ElementTopology
-
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToChar
+USE QuadraturePoint_Method, ONLY: QuadraturePoint_ToInteger
+USE ReferenceElement_Method, ONLY: ElementTopology
+USE ReferenceElement_Method, ONLY: ElementType
+USE tomlf, ONLY: toml_get => get_value
+USE tomlf, ONLY: toml_serialize
+USE TomlUtility, ONLY: GetValue
+USE TomlUtility, ONLY: GetValue_
 IMPLICIT NONE
 
 CONTAINS
@@ -84,7 +85,7 @@ SUBROUTINE IsHomogeneousFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
 
 #ifdef DEBUG_VER
@@ -98,7 +99,7 @@ SUBROUTINE IsHomogeneousFromToml(obj, table)
 
   CALL GetValue(table=table, key="isHomogeneous", VALUE=obj%isHomogeneous, &
                 default_value=TypeQuadratureOpt%isHomogeneous, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -115,7 +116,7 @@ SUBROUTINE NSDFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
 
 #ifdef DEBUG_VER
@@ -129,7 +130,7 @@ SUBROUTINE NSDFromToml(obj, table)
 
   CALL GetValue(table=table, key="nsd", VALUE=obj%nsd, &
                 default_value=TypeQuadratureOpt%nsd, &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
 #ifdef DEBUG_VER
   CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -146,7 +147,7 @@ SUBROUTINE TopoTypeFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound
   TYPE(String) :: astr
 
@@ -161,7 +162,7 @@ SUBROUTINE TopoTypeFromToml(obj, table)
 
   CALL GetValue(table=table, key="topoType", VALUE=astr, &
                 default_value="NA", &
-                origin=origin, stat=stat, isFound=isFound)
+                origin=origin, STAT=STAT, isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -197,7 +198,7 @@ SUBROUTINE QuadratureTypeFromToml(obj, table)
   CHARACTER(*), PARAMETER :: myName = "QuadratureTypeFromToml()"
 #endif
 
-  INTEGER(I4B) :: origin, stat, tsize, ii
+  INTEGER(I4B) :: origin, STAT, tsize, ii
   LOGICAL(LGT) :: isFound, isScalar
   TYPE(String) :: astr(3)
 
@@ -207,7 +208,7 @@ SUBROUTINE QuadratureTypeFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="quadratureType", VALUE=astr, &
-                 tsize=tsize, isScalar=isScalar, origin=origin, stat=stat, &
+                 tsize=tsize, isScalar=isScalar, origin=origin, STAT=STAT, &
                  isFound=isFound)
 
   IF (.NOT. isFound) THEN
@@ -251,7 +252,7 @@ SUBROUTINE OrderFromToml(obj, table)
   CHARACTER(*), PARAMETER :: myName = "OrderFromToml()"
 #endif
 
-  INTEGER(I4B) :: origin, stat, tsize, ii, myint(3)
+  INTEGER(I4B) :: origin, STAT, tsize, ii, myint(3)
   LOGICAL(LGT) :: isScalar
 
 #ifdef DEBUG_VER
@@ -260,7 +261,7 @@ SUBROUTINE OrderFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="order", VALUE=myint, tsize=tsize, &
-                 isScalar=isScalar, origin=origin, stat=stat, &
+                 isScalar=isScalar, origin=origin, STAT=STAT, &
                  isFound=obj%isOrder)
 
   IF (.NOT. obj%isOrder) THEN
@@ -300,7 +301,7 @@ SUBROUTINE NipsFromToml(obj, table)
   CHARACTER(*), PARAMETER :: myName = "NipsFromToml()"
 #endif
 
-  INTEGER(I4B) :: origin, stat, tsize, ii, myint(3)
+  INTEGER(I4B) :: origin, STAT, tsize, ii, myint(3)
   LOGICAL(LGT) :: isScalar
 
 #ifdef DEBUG_VER
@@ -309,7 +310,8 @@ SUBROUTINE NipsFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="nips", VALUE=myint, tsize=tsize, &
-              isScalar=isScalar, origin=origin, stat=stat, isFound=obj%isNips)
+                 isScalar=isScalar, origin=origin, STAT=STAT, &
+                 isFound=obj%isNips)
 
   IF (.NOT. obj%isNips) THEN
 #ifdef DEBUG_VER
@@ -344,7 +346,7 @@ SUBROUTINE AlphaFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, isAlphaScalar
   REAL(DFP) :: alpha(3)
   INTEGER(I4B) :: tAlpha, ii, tsize
@@ -359,7 +361,8 @@ SUBROUTINE AlphaFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="alpha", VALUE=alpha, tsize=tAlpha, &
-            isScalar=isAlphaScalar, origin=origin, stat=stat, isFound=isFound)
+                 isScalar=isAlphaScalar, origin=origin, STAT=STAT, &
+                 isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -393,7 +396,7 @@ SUBROUTINE BetaFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, isbetaScalar
   REAL(DFP) :: beta(3)
   INTEGER(I4B) :: tbeta, ii, tsize
@@ -408,7 +411,8 @@ SUBROUTINE BetaFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="beta", VALUE=beta, tsize=tbeta, &
-             isScalar=isbetaScalar, origin=origin, stat=stat, isFound=isFound)
+                 isScalar=isbetaScalar, origin=origin, STAT=STAT, &
+                 isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -442,7 +446,7 @@ SUBROUTINE LambdaFromToml(obj, table)
   TYPE(toml_table), INTENT(INOUT) :: table
 
   ! internal variables
-  INTEGER(I4B) :: origin, stat
+  INTEGER(I4B) :: origin, STAT
   LOGICAL(LGT) :: isFound, isScalar
   REAL(DFP) :: lambda(3)
   INTEGER(I4B) :: tlambda, ii, tsize
@@ -457,7 +461,7 @@ SUBROUTINE LambdaFromToml(obj, table)
 #endif
 
   CALL GetValue_(table=table, key="lambda", VALUE=lambda, tsize=tlambda, &
-                 isScalar=isScalar, origin=origin, stat=stat, isFound=isFound)
+                 isScalar=isScalar, origin=origin, STAT=STAT, isFound=isFound)
 
   IF (.NOT. isFound) THEN
 #ifdef DEBUG_VER
@@ -497,7 +501,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 #endif
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -509,17 +513,18 @@ CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+                  'the toml file :: cannot find ['//tomlName//"] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node, topoType=topoType, nsd=nsd, xidim=xidim, &
-                       refelemdomain=refelemDomain, refelemCoord=refelemCoord)
+                        refelemdomain=refelemDomain, &
+                        refelemCoord=refelemCoord)
 
 #ifdef DEBUG_VER
 IF (PRESENT(printToml)) THEN

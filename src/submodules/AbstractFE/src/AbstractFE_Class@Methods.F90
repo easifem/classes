@@ -17,10 +17,10 @@
 SUBMODULE(AbstractFE_Class) Methods
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: math => TypeMathOpt
-USE Display_Method, ONLY: ToString, Display
-USE TomlUtility, ONLY: GetValue, GetValue_
-USE tomlf, ONLY: toml_get => get_value
+USE Display_Method, ONLY: Display, ToString
 USE InputUtility, ONLY: Input
+USE tomlf, ONLY: toml_get => get_value
+USE TomlUtility, ONLY: GetValue, GetValue_
 IMPLICIT NONE
 
 CHARACTER(*), PARAMETER :: modName = "AbstractFE_Class@Methods.F90"
@@ -46,6 +46,7 @@ CALL obj%opt%Initiate(elemType=elemType, &
                       nsd=nsd, &
                       baseContinuity=baseContinuity, &
                       baseInterpolation=baseInterpolation, &
+                      isBrokenSpace=isBrokenSpace, &
                       ipType=ipType, &
                       basisType=basisType, &
                       alpha=alpha, &
@@ -80,7 +81,6 @@ CALL obj%opt%Initiate(elemType=elemType, &
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
@@ -269,7 +269,7 @@ MODULE PROCEDURE obj_ImportFromToml2
 CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
 TYPE(toml_table), ALLOCATABLE :: table
 TYPE(toml_table), POINTER :: node
-INTEGER(I4B) :: origin, stat
+INTEGER(I4B) :: origin, STAT
 LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
@@ -281,13 +281,14 @@ CALL GetValue(table=table, afile=afile, filename=filename)
 
 node => NULL()
 CALL toml_get(table, tomlName, node, origin=origin, requested=.FALSE., &
-              stat=stat)
+              STAT=STAT)
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(node)
 CALL AssertError1(isok, myName, &
                   'following error occured while reading '// &
-             'the toml file :: cannot find ['//tomlName//"] table in config.")
+                  'the toml file :: cannot find [' &
+                  //tomlName//"] table in config.")
 #endif
 
 CALL obj%ImportFromToml(table=node, elemType=elemType, nsd=nsd)
@@ -381,7 +382,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -463,7 +464,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -482,16 +483,22 @@ MODULE PROCEDURE obj_GetGlobalElemShapeData2
 CHARACTER(*), PARAMETER :: myName = "obj_GetGlobalElemShapeData2()"
 #endif
 
+LOGICAL(LGT) :: doNotInitQuad0
+
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL obj%GetQuadraturePoints(quad=quad)
+doNotInitQuad0 = Input(default=math%no, option=doNotInitQuad)
+
+IF (.NOT. doNotInitQuad0) THEN
+  CALL obj%GetQuadraturePoints(quad=quad)
+END IF
+
 CALL obj%GetLocalElemShapeData(elemsd=elemsd, quad=quad)
 CALL geofeptr%GetLocalElemShapeData(elemsd=geoelemsd, quad=quad)
-CALL obj%GetGlobalElemShapeData( &
-  elemsd=elemsd, xij=xij, geoelemsd=geoelemsd)
+CALL obj%GetGlobalElemShapeData(elemsd=elemsd, xij=xij, geoelemsd=geoelemsd)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -515,7 +522,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -636,7 +643,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -712,7 +719,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -738,7 +745,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -841,7 +848,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -868,7 +875,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -941,7 +948,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -950,6 +957,32 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetInterpolationPoints
+
+!----------------------------------------------------------------------------
+!                                                           FixOrientOfNptrs
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_FixOrientOfNptrs
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_FixOrientOfNptrs()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+  '[IMPLEMENTATION ERROR] :: This routine should&
+         &be implemented by child classes')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_FixOrientOfNptrs
 
 !----------------------------------------------------------------------------
 !                                                 GetTotalInterpolationPoints
@@ -967,7 +1000,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 #ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
-        '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
+                  '[IMPLEMENTATION ERROR] :: This routine should be implemented by '// &
                   'child classes')
 #endif
 
@@ -998,6 +1031,50 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetRefElemCoord
+
+!----------------------------------------------------------------------------
+!                                                                  GetIpType
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIpType
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetIpType()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%opt%GetIpType()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetIpType
+
+!----------------------------------------------------------------------------
+!                                                        GetIsBrokenSpace
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_GetIsBrokenSpace
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetIsBrokenSpace()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ans = obj%opt%GetIsBrokenSpace()
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_GetIsBrokenSpace
 
 !----------------------------------------------------------------------------
 !

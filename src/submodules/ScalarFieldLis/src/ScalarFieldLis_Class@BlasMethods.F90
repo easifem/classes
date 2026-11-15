@@ -21,6 +21,10 @@ IMPLICIT NONE
 
 #include "lisf.h"
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "ScalarFieldLis_Class@BlasMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -79,16 +83,25 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(x1%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(x2%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
 
 ! alpha, x, y, ierr
 CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
-CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 
+CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -118,19 +131,33 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(x1%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(x2%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(x3%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
 
 ! alpha, x, y, ierr
 CALL lis_vector_axpy(a1, x1%lis_ptr, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 CALL lis_vector_axpy(a2, x2%lis_ptr, obj%lis_ptr, ierr)
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
 CALL lis_vector_axpy(a3, x3%lis_ptr, obj%lis_ptr, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -163,7 +190,6 @@ CALL CHKERR(ierr)
 
 ! alpha, x, ierr
 CALL lis_vector_scale(scale, obj%lis_ptr, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -192,13 +218,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
 
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj2%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
 
 CALL lis_vector_copy(obj2%lis_ptr, obj%lis_ptr, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -208,6 +235,47 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_COPY
+
+!----------------------------------------------------------------------------
+!                                                                      Swap
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Swap
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Swap()"
+#endif
+INTEGER(I4B) :: ierr
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL lis_vector_is_null(obj%lis_ptr, ierr)
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL lis_vector_is_null(obj2%lis_ptr, ierr)
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%SIZE(), obj2%SIZE(), myName, &
+                  'a=obj%Size(), b=obj2%Size()')
+#endif
+
+CALL lis_vector_swap(obj%lis_ptr, obj2%lis_ptr, ierr)
+#ifdef DEBUG_VER
+CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Swap
 
 !----------------------------------------------------------------------------
 !                                                                    NORM2
@@ -231,7 +299,6 @@ CALL CHKERR(ierr)
 
 ans = 0.0_DFP
 CALL lis_vector_nrm2(obj%lis_ptr, ans, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -264,7 +331,6 @@ CALL CHKERR(ierr)
 
 ans = 0.0
 CALL lis_vector_nrm1(obj%lis_ptr, ans, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -297,7 +363,6 @@ CALL CHKERR(ierr)
 
 ans = 0.0_DFP
 CALL lis_vector_nrmi(obj%lis_ptr, ans, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -326,14 +391,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
 
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj2%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
 
 ans = 0.0_DFP
 CALL lis_vector_dot(obj%lis_ptr, obj2%lis_ptr, ans, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -362,14 +428,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj1%lis_ptr, ierr)
 CALL CHKERR(ierr)
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj2%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
 
 CALL lis_vector_pmul(obj1%lis_ptr, obj2%lis_ptr, obj%lis_ptr, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif
@@ -401,7 +472,6 @@ CALL CHKERR(ierr)
 #endif
 
 CALL lis_vector_reciprocal(obj%lis_ptr, ierr)
-
 #ifdef DEBUG_VER
 CALL CHKERR(ierr)
 #endif

@@ -16,25 +16,50 @@
 !
 
 SUBMODULE(AbstractFile_Class) ConstructorMethods
-USE BaseMethod
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+  "AbstractFile_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                             Deallocate
+!                                                                 Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE AbstractFileDeallocate
-obj%path = ''
-obj%fileName = ''
-obj%ext = ''
-obj%pathlen = 0
-obj%fnamelen = 0
-obj%extlen = 0
-obj%openstat = .FALSE.
-obj%EOFstat = .FALSE.
-obj%readstat = .FALSE.
-obj%writestat = .FALSE.
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "AbstractFileDeallocate()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[START] ')
+#endif
+
+  obj%path = ''
+  obj%fileName = ''
+  obj%ext = ''
+  obj%pathlen = 0
+  obj%fnamelen = 0
+  obj%extlen = 0
+  obj%openstat = .FALSE.
+  obj%EOFstat = .FALSE.
+  obj%readstat = .FALSE.
+  obj%writestat = .FALSE.
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName // '::' // myName // ' - ' // &
+                          '[END] ')
+#endif
 END PROCEDURE AbstractFileDeallocate
+
+!----------------------------------------------------------------------------
+!                                                              Include Error
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE ConstructorMethods

@@ -16,32 +16,33 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BasisOpt_Class) TriangleH1HierarchicalFEMethods
-USE Display_Method, ONLY: ToString, Display
-USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData, &
-                                Elemsd_Set => Set, &
-                                HierarchicalFacetElemShapeData, &
-                                Elemsd_Allocate => ALLOCATE, &
-                                Elemsd_SetNormal => SetNormal
-
-USE TriangleInterpolationUtility, ONLY: LagrangeDOF_Triangle, &
-                                        InterpolationPoint_Triangle_, &
-                                        FacetConnectivity_Triangle, &
-                                        HeirarchicalBasis_Triangle_, &
-                                        HeirarchicalBasisGradient_Triangle_
-
-USE LineInterpolationUtility, ONLY: LagrangeDOF_Line, &
-                                    InterpolationPoint_Line_, &
-                                    HeirarchicalBasis_Line_, &
-                                    HeirarchicalBasisGradient_Line_
-
-USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints, &
-                                  GetQuadratureWeights_
+USE Display_Method, ONLY: Display
+USE Display_Method, ONLY: ToString
+USE ElemshapeData_Method, ONLY: Elemsd_Allocate => ALLOCATE
+USE ElemshapeData_Method, ONLY: Elemsd_Set => Set
+USE ElemshapeData_Method, ONLY: Elemsd_SetNormal => SetNormal
+USE ElemshapeData_Method, ONLY: HierarchicalElemShapeData
+USE ElemshapeData_Method, ONLY: HierarchicalFacetElemShapeData
+USE LineInterpolationUtility, ONLY: HeirarchicalBasis_Line_
+USE LineInterpolationUtility, ONLY: HeirarchicalBasisGradient_Line_
+USE LineInterpolationUtility, ONLY: InterpolationPoint_Line_
+USE LineInterpolationUtility, ONLY: LagrangeDOF_Line
+USE QuadraturePoint_Method, ONLY: GetQuadratureWeights_
+USE QuadraturePoint_Method, ONLY: GetTotalQuadraturePoints
 USE ReallocateUtility, ONLY: Reallocate
-USE SwapUtility, ONLY: SWAP_
 USE ReverseUtility, ONLY: Reverse
-USE BaseType, ONLY: math => TypeMathOpt
-
+USE SwapUtility, ONLY: SWAP_
+USE TriangleInterpolationUtility, ONLY: FacetConnectivity_Triangle
+USE TriangleInterpolationUtility, ONLY: HeirarchicalBasis_Triangle_
+USE TriangleInterpolationUtility, ONLY: HeirarchicalBasisGradient_Triangle_
+USE TriangleInterpolationUtility, ONLY: InterpolationPoint_Triangle_
+USE TriangleInterpolationUtility, ONLY: LagrangeDOF_Triangle
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BasisOpt_Class@TriangleH1HierarchicalFEMethods.F90"
+#endif
 
 CONTAINS
 
@@ -66,28 +67,13 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 nips = GetTotalQuadraturePoints(obj=quad)
 tdof = obj%GetTotalDOF()
 
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Calling Elemsd_Allocate()')
-#endif
-
 CALL Elemsd_Allocate(obj=elemsd, nsd=obj%nsd, xidim=obj%xidim, &
                      nns=tdof, nips=nips)
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Calling GetQuadratureWeights_()')
-#endif
 
 CALL GetQuadratureWeights_(obj=quad, weights=elemsd%ws, tsize=nips)
 
 CALL Reallocate(obj%temp, nips, tdof, math%three_i, &
                 isExpand=math%yes, expandFactor=math%two_i)
-
-#ifdef DEBUG_VER
-CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                  'Calling HeirarchicalBasis_Triangle_()')
-#endif
 
 #ifdef DEBUG_VER
 isok = quad%txi .NE. math%zero_i
@@ -249,7 +235,7 @@ nns = geoFacetElemsd%nns
 #ifdef DEBUG_VER
 isok = nns .EQ. 2_I4B
 CALL AssertError1(isok, myName, &
-        "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
+                  "WIP, this routine currently works for nns .eq. 2 for geoFacetElemsd")
 #endif
 
 nips = geoFacetElemsd%nips

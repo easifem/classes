@@ -1,47 +1,49 @@
 [fedof]
 feType = "Scalar"
 # Finite element type, can be "Scalar", "Vector", "Tensor", etc.
-
-basisContinuity = "H1"
+baseContinuity = "H1"
 # conformity of basis functions, H1, HDIV, HCURL
-
-basisInterpolation = "Lagrange"
-# Interpolation functions
+baseInterpolation = "Lagrange"
+# Interpolation FUNCTIONs
 # Lagrange, Hierarchical, Orthogonal
-
+brokenSpace = false
+# true: we are dealing with broken spaces, DGFEM
+# false: we are dealing with continuous spaces, CGFEM
 ipType = "Equidistance"
-# Used when basisInterpolation is Lagrange,
+# Used when baseInterpolation is Lagrange,
 # It represents the interpolation points type
 # It can be Equidistance, GaussLegendre, GaussLegendreLobatto, etc.
-
 basisType = "Monomial"
-# Used when basisInterpolation is Lagrange,
-# It represents the type of basis functions used for constructing Lagrange 
+# Used when baseInterpolation is Lagrange,
+# It represents the type of basis functions used for constructing Lagrange
 # polynomials for interpolations.
-# It can be a vector of size 3, in that case it represents the 
+# It can be a vector of size 3, in that case it represents the
 # basis functions used in x, y, z directions.
 # basisType = ["Monomial", "Chebyshev", "Legendre"]
-
 alpha = 0.0
-# Used when basisInterpolation is Lagrange and basisType is Jacobi
+# Used when baseInterpolation is Lagrange and basisType is Jacobi
 # It represents the Jacobi polynomial parameter alpha.
 # It can be a vector of size 3, in that case it represents the
 # Jacobi polynomial parameters used in x, y, z directions.
 
 beta = 0.0
-# Used when basisInterpolation is Lagrange and basisType is Jacobi
+# Used when baseInterpolation is Lagrange and basisType is Jacobi
 # It represents the Jacobi polynomial parameter beta.
 # It can be a vector of size 3, in that case it represents the
 # Jacobi polynomial parameters used in x, y, z directions.
 
 lambda = 0.5
-# Used when basisInterpolation is Lagrange and basisType is Ultraspherical
+# Used when baseInterpolation is Lagrange and basisType is Ultraspherical
 # It represents the Ultraspherical polynomial parameter lambda.
 # It can be a vector of size 3, in that case it represents the
 # Ultraspherical polynomial parameters used in x, y, z directions.
 
 islocal = true
 order = 1
+
+scaleForQuadOrder = 2
+# Quadrature order = cell order * scaleForQuadOrder
+# It is optional, the default value is 2
 
 quadOptName = "quadOpt"
 
@@ -82,5 +84,3 @@ order = 2
 # lambda = 0.5
 # Ultraspherical polynomial parameter, it is used for Ultraspherical quadrature
 # It can be a vector of size 3, in this case it represents the Ultraspherical parameter in x, y, and z directions
-
-

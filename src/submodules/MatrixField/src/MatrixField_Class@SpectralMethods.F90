@@ -16,7 +16,6 @@
 !
 
 SUBMODULE(MatrixField_Class) SpectralMethods
-USE BaseType, ONLY: math => TypeMathOpt
 USE CSRMatrix_Method, ONLY: SymSchurLargestEigenVal
 USE CSRMatrix_Method, ONLY: SymLargestEigenVal
 IMPLICIT NONE

@@ -84,8 +84,6 @@ TYPE, EXTENDS(AbstractSolidMechanicsModel_) :: LinearElasticModel_
   !! Often used in moving mesh algorithm based on Elasticity
 
 CONTAINS
-  PRIVATE
-
   ! CONSTRUCTOR:
   ! @ConstructorMethods
 

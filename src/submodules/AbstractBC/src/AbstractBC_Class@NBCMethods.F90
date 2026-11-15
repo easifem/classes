@@ -17,7 +17,6 @@
 
 SUBMODULE(AbstractBC_Class) NBCMethods
 USE AbstractFE_Class, ONLY: AbstractFE_
-
 IMPLICIT NONE
 
 CONTAINS

@@ -15,20 +15,24 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractNodeField_Class) BlasMethods
+USE BaseType, ONLY: TypeConvergenceOpt
+USE Display_Method, ONLY: ToString
 USE RealVector_Method, ONLY: Axpy
 USE RealVector_Method, ONLY: Copy
 USE RealVector_Method, ONLY: Norm1
 USE RealVector_Method, ONLY: Norm2
 USE RealVector_Method, ONLY: Normi
-USE RealVector_Method, ONLY: Dot_Product
+USE RealVector_Method, ONLY: DOT_PRODUCT
 USE RealVector_Method, ONLY: PMUL
 USE RealVector_Method, ONLY: Reciprocal
 USE RealVector_Method, ONLY: SCAL
-USE BaseType, ONLY: TypeConvergenceOpt
-USE BaseType, ONLY: math => TypeMathOpt
-USE Display_Method, ONLY: ToString
-
+USE RealVector_Method, ONLY: Swap
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: &
+  modName = "AbstractNodeField_Class@BlasMethods.F90"
+#endif
 
 CONTAINS
 
@@ -144,6 +148,33 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_COPY
+
+!----------------------------------------------------------------------------
+!                                                                       Swap
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Swap
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Swap()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(obj%SIZE(), obj2%SIZE(), myName, &
+                  'obj%Size() and obj2%Size() are not same')
+#endif
+
+CALL Swap(x=obj%realvec, y=obj2%realvec)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Swap
 
 !----------------------------------------------------------------------------
 !                                                                      NORM2
