@@ -50,6 +50,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. x%GetEngineName(), &
+                  myName, "x uses another engine than obj, "// &
+                  "use Set(VALUE=x) between engines")
+#endif
+
 CALL AXPY(X=x%realvec, Y=obj%realvec, A=scale)
 
 #ifdef DEBUG_VER
@@ -70,6 +76,15 @@ CHARACTER(*), PARAMETER :: myName = "obj_AXPY2()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. x1%GetEngineName(), &
+                  myName, "x1 uses another engine than obj, "// &
+                  "use Set(VALUE=x1) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. x2%GetEngineName(), &
+                  myName, "x2 uses another engine than obj, "// &
+                  "use Set(VALUE=x2) between engines")
 #endif
 
 CALL AXPY(X=x1%realvec, Y=obj%realvec, A=a1)
@@ -93,6 +108,18 @@ CHARACTER(*), PARAMETER :: myName = "obj_AXPY3()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. x1%GetEngineName(), &
+                  myName, "x1 uses another engine than obj, "// &
+                  "use Set(VALUE=x1) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. x2%GetEngineName(), &
+                  myName, "x2 uses another engine than obj, "// &
+                  "use Set(VALUE=x2) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. x3%GetEngineName(), &
+                  myName, "x3 uses another engine than obj, "// &
+                  "use Set(VALUE=x3) between engines")
 #endif
 
 CALL AXPY(x=x1%realvec, y=obj%realvec, a=a1)
@@ -141,6 +168,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
+#endif
+
 CALL COPY(y=obj%realvec, x=obj2%realvec)
 
 #ifdef DEBUG_VER
@@ -161,6 +194,12 @@ CHARACTER(*), PARAMETER :: myName = "obj_Swap()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
 #endif
 
 #ifdef DEBUG_VER
@@ -294,6 +333,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
+#endif
+
 ans = 0.0_DFP
 ans = DOT_PRODUCT(obj1=obj%realvec, obj2=obj2%realvec)
 
@@ -315,6 +360,15 @@ CHARACTER(*), PARAMETER :: myName = "obj_PMUL()"
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj1%GetEngineName(), &
+                  myName, "obj1 uses another engine than obj, "// &
+                  "use Set(VALUE=obj1) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
 #endif
 
 CALL PMUL(obj=obj%realvec, obj1=obj1%realvec, obj2=obj2%realvec)

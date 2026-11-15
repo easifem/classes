@@ -1603,8 +1603,12 @@ END INTERFACE
 ! date: 2023-12-17
 ! summary: Copy the values, obj = obj2
 !
-! Copies the LIS vector of obj2 into the LIS vector of obj
-! (lis_vector_copy). obj2 must use the LIS engine and have the same size.
+! Calls lis_vector_copy. obj2 must use the same engine (LIS_OMP) and
+! have the same size as obj; the engine is checked in debug mode. To
+! copy a field of another engine use Set(VALUE=obj2).
+!
+! Changes:
+!   - 2026-11-15: debug check of the engine of obj2 (#617)
 !
 ! See also: [[obj_AXPY1]] (contains an example), [[obj_Swap]]
 
@@ -1613,7 +1617,7 @@ INTERFACE
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
     !! LIS scalar field, obj = obj2
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-    !! node field with the LIS engine
+    !! node field of the same size and engine
   END SUBROUTINE obj_Copy
 END INTERFACE
 

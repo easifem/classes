@@ -1157,8 +1157,12 @@ END INTERFACE
 ! date: 2026-11-14
 ! summary: obj = obj2
 !
-! Calls lis_vector_copy. obj2 must use the LIS engine and have the
-! same size as obj.
+! Calls lis_vector_copy. obj2 must use the same engine (LIS_OMP) and
+! have the same size as obj; the engine is checked in debug mode. To
+! copy a field of another engine use Set(VALUE=obj2).
+!
+! Changes:
+!   - 2026-11-15: debug check of the engine of obj2 (#617)
 !
 ! Examples
 !
@@ -1175,7 +1179,7 @@ INTERFACE
     CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS space-time vector field, obj = obj2
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-    !! node field with the LIS engine
+    !! node field of the same size and engine
   END SUBROUTINE obj_Copy
 END INTERFACE
 

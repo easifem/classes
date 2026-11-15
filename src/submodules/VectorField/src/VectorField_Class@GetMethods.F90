@@ -348,7 +348,9 @@ CALL AssertError1(VALUE%isInitiated(), myName, &
                   'VectorField_::value is not initiated')
 #endif
 
-CALL VALUE%Copy(obj)
+! Set13 of VALUE copies the values whatever the engines are; COPY
+! needs the same engine
+CALL VALUE%Set(VALUE=obj)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

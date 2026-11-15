@@ -2109,9 +2109,14 @@ END INTERFACE
 ! date: 2021-06-25
 ! summary: Copy the values into another vector field
 !
-! VALUE = obj: the values of obj are copied into VALUE by COPY. Both
-! fields must be initiated (checked in debug mode) and have the same
-! size.
+! VALUE = obj: the values of obj are copied into VALUE by
+! VALUE%Set(VALUE=obj) ([[obj_Set13]]), so obj and VALUE can use
+! different engines. Both fields must be initiated (checked in debug
+! mode) and have the same size.
+!
+! Changes:
+!   - 2026-11-15: uses Set13 instead of COPY, which needs the same
+!     engine (#617)
 !
 ! See also: [[obj_Set13]] (contains an example)
 
