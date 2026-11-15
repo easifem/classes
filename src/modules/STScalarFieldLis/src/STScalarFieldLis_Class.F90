@@ -107,9 +107,6 @@ CONTAINS
   !! Set or add one value in a range
   PROCEDURE, PUBLIC, PASS(obj) :: SetMultiple5 => obj_SetMultiple5
   !! Set or add a range of another node field in a range
-  PROCEDURE, PUBLIC, PASS(obj) :: Set13 => obj_Set13
-  !! Copy another space-time scalar field (overrides Set13 of
-  !! STScalarField_)
 
   ! GET:
   ! @GetMethods
@@ -670,107 +667,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
     !! group in the HDF5 file
   END SUBROUTINE obj_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                           Set@SetMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2022-01-24
-! summary: Copy another space-time scalar field, obj = VALUE
-!
-! For a STScalarFieldLis_ VALUE the LIS vector is copied
-! (lis_vector_copy). For a native STScalarField_ VALUE all its values
-! are copied into the LIS vector by SetMultiple. Both fields must have
-! the same size. In debug mode an error is raised for another type of
-! VALUE.
-!
-! Changes:
-!   - 2026-11-14: a native VALUE is copied by SetMultiple (all values),
-!     not by Set2 (one value for each time component)
-!
-! Examples
-!
-!```fortran
-! PROGRAM main
-! USE BaseType, ONLY: math => TypeMathOpt
-! USE ExceptionHandler_Class, ONLY: e
-! USE FEDOF_Class, ONLY: FEDOF_
-! USE FEDomain_Class, ONLY: FEDomain_
-! USE GlobalData, ONLY: DFP
-! USE GlobalData, ONLY: I4B
-! USE LisOmpEngine_Class, ONLY: LisOmpEngine_
-! USE STScalarField_Class, ONLY: STScalarField_
-! USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-! USE Test_Method, ONLY: OK
-! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
-! IMPLICIT NONE
-!
-! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarFieldLis_test.toml"
-! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
-! TYPE(LisOmpEngine_) :: lis
-! TYPE(FEDomain_) :: dom
-! TYPE(FEDOF_), TARGET :: fedof, geofedof
-! TYPE(TimeFEDOF_), TARGET :: timefedof
-! TYPE(STScalarFieldLis_) :: u, v
-! TYPE(STScalarField_) :: n
-! REAL(DFP) :: found(12), want(12)
-! INTEGER(I4B) :: ii, tsize
-!
-! CALL e%SetQuietMode(math%yes)
-! CALL lis%Initiate()
-! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
-! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
-!                       fedof=fedof, geofedof=geofedof, &
-!                       timefedof=timefedof, dom=dom)
-! CALL v%Initiate(NAME="v", engine="LIS_OMP", fedof=fedof, &
-!                 geofedof=geofedof, timefedof=timefedof)
-! CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", fedof=fedof, &
-!                 geofedof=geofedof, timefedof=timefedof)
-! want = [(REAL(ii, DFP), ii=1, 12)]
-!
-! ! Test 1: v = n, all values of a native field (not one value for each
-! ! time component)
-! BLOCK
-!   CALL n%SetMultiple(istart=1, iend=12, stride=1, VALUE=want)
-!   CALL v%SetAll(VALUE=0.0_DFP)
-!   CALL v%Set(VALUE=n)
-!   CALL v%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
-!                      tsize=tsize)
-!   CALL OK(ALL(ABS(found - want) .LT. tol), "Set13: LIS <- native")
-! END BLOCK
-!
-! ! Test 2: v = u, LIS vector copied
-! BLOCK
-!   CALL u%SetMultiple(istart=1, iend=12, stride=1, VALUE=2.0_DFP * want)
-!   CALL v%SetAll(VALUE=0.0_DFP)
-!   CALL v%Set(VALUE=u)
-!   CALL v%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
-!                      tsize=tsize)
-!   CALL OK(ALL(ABS(found - 2.0_DFP * want) .LT. tol), "Set13: LIS <- LIS")
-! END BLOCK
-!
-! CALL n%DEALLOCATE()
-! CALL v%DEALLOCATE()
-! CALL u%DEALLOCATE()
-! CALL timefedof%DEALLOCATE()
-! CALL fedof%DEALLOCATE()
-! CALL geofedof%DEALLOCATE()
-! CALL dom%DEALLOCATE()
-! CALL lis%DEALLOCATE()
-! END PROGRAM main
-!```
-!
-! Full example: src/modules/STScalarFieldLis/examples/Set_test_1.F90
-
-INTERFACE
-  MODULE SUBROUTINE obj_Set13(obj, VALUE)
-    CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    !! LIS space-time scalar field, obj = VALUE
-    CLASS(STScalarField_), INTENT(IN) :: VALUE
-    !! space-time scalar field to copy
-  END SUBROUTINE obj_Set13
 END INTERFACE
 
 !----------------------------------------------------------------------------

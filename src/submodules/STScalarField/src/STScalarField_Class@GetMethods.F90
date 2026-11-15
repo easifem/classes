@@ -87,6 +87,11 @@ IF (bool2) THEN
   CALL AssertError1(isok, myName, "Size of value is not enough")
 END IF
 
+IF (PRESENT(islocal)) THEN
+  CALL AssertError1(islocal, myName, &
+                    "globalNode should be a local node, islocal = true")
+END IF
+
 #endif
 
 ! globalnode present
@@ -175,7 +180,7 @@ ncol = obj%dof .tNodes. 1
 DO jj = 1, ncol
   CALL GetNodeLoc_(obj=obj%dof, idof=obj%idofs, nodenum=jj, ans=indx, &
                    tsize=mynrow)
-  CALL obj%GetMultiple(indx=indx, VALUE=VALUE(:, jj), tsize=nrow)
+  CALL obj%GetMultiple(indx=indx, VALUE=VALUE(:, jj), tsize=mynrow)
 END DO
 !$OMP END PARALLEL DO
 END PROCEDURE obj_Get2

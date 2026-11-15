@@ -54,6 +54,11 @@ BLOCK
   CALL OK(tsize .EQ. 2, "node: tsize")
   CALL OK(ALL(ABS(found(1:2) - [4.0_DFP, 10.0_DFP]) .LT. tol), &
           "node: values")
+  found = 0.0_DFP
+  CALL u%Get(VALUE=found, tsize=tsize, globalNode=4, islocal=math%yes)
+  CALL OK(tsize .EQ. 2 .AND. &
+          ALL(ABS(found(1:2) - [4.0_DFP, 10.0_DFP]) .LT. tol), &
+          "node with islocal: values")
 END BLOCK
 
 ! Test 2: all nodes of one time component
