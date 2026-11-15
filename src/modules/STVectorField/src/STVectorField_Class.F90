@@ -2204,7 +2204,7 @@ END INTERFACE
 !
 ! Full example: src/modules/STVectorField/examples/ApplyBodySource_test_1.F90
 !
-! See also: [[obj_ApplyBodySource3]]
+! See also: [[obj_ApplyBodySource2]], [[obj_ApplyBodySource3]]
 
 INTERFACE
   MODULE SUBROUTINE obj_ApplyBodySource1(obj, bodySource, scale, times)
@@ -2230,20 +2230,51 @@ END INTERFACE
 ! date: 2025-12-11
 ! summary: Add the body source given by a space-time vector field
 !
-! Under development: raises an error in debug mode and does nothing.
+! bodySource f is a space-time vector field on the same mesh as obj,
+! with the same spaceCompo; its fedof and timefedof can differ from
+! those of obj. The time element on times (the time slab) gives the
+! time shape functions T_a and quadrature points. On each element f is
+! interpolated at the space-time quadrature points of obj,
 !
-! See also: [[obj_ApplyBodySource1]]
+!   f_c(x, t) = sum_J sum_b N^f_J(x) f(c, b, J) T^f_b(t),
+!
+! with the shape functions N^f, T^f of bodySource, and
+!
+!   obj(c, a, I) = obj(c, a, I) + scale * integral N_I T_a f_c
+!
+! is added for space component c, time component a and node I, as in
+! [[obj_ApplyBodySource1]].
+!
+! Changes
+!
+! - 2026-11-15: implemented (it was a WIP stub); times argument added.
+!
+! Examples
+!
+!```fortran
+! TYPE(STVectorField_) :: u, f
+! ! f: body source on the same mesh, same spaceCompo
+! CALL u%Set(VALUE=0.0_DFP)
+! CALL u%ApplyBodySource(bodySource=f, scale=1.0_DFP, &
+!                        times=[0.0_DFP, 1.0_DFP])
+!```
+!
+! Full example: src/modules/STVectorField/examples/ApplyBodySource_test_3.F90
+!
+! See also: [[obj_ApplyBodySource1]], [[obj_ApplyBodySource3]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale)
+  MODULE SUBROUTINE obj_ApplyBodySource2(obj, bodySource, scale, times)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
-    !! ST vector field
+    !! space-time vector field (right hand side)
     !! The test function will be corresponding to the obj
-    CLASS(STVectorField_), INTENT(INOUT) :: bodySource
-    !! Body source in terms of vector field
+    CLASS(STVectorField_), INTENT(IN) :: bodySource
+    !! Body source as a space-time vector field on the same mesh as obj
     REAL(DFP), INTENT(IN) :: scale
     !! scale for body source
     !! obj = obj + scale * bodySource integral
+    REAL(DFP), INTENT(IN) :: times(:)
+    !! times of the time slab, passed to the time element
   END SUBROUTINE obj_ApplyBodySource2
 END INTERFACE
 
