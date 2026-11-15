@@ -19,6 +19,7 @@
 ! summary: Vector field data type is defined
 
 MODULE VectorField_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
@@ -90,6 +91,8 @@ CONTAINS
   !! Initiate by copying
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate by arguments
+  GENERIC, PUBLIC :: Initiate => Initiate2
+  !! Generic method to initiate a vector field
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data
   FINAL :: obj_Final
@@ -214,6 +217,8 @@ CONTAINS
   !! Write the field as the node coordinates of a high order mesh
 
   ! @TomlMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Initiate a vector field from a toml table
   PROCEDURE, PUBLIC, PASS(obj) :: SetFromToml => obj_SetFromToml
   !! Set the values from a toml table
 END TYPE VectorField_
@@ -270,17 +275,16 @@ END INTERFACE VectorFieldInitiate
 !
 ! The data stored in obj is deallocated first. A vector field has one
 ! physical variable, whose name is the first character of name, with
-! spaceCompo(1) space components and one time component. There is one
+! spaceCompo space components and one time component. There is one
 ! value for each DOF of fedof and each component, so obj%Size() is
-! fedof%GetTotalDOF() * spaceCompo(1). The values are stored in DOF
+! fedof%GetTotalDOF() * spaceCompo. The values are stored in DOF
 ! format: component 1 of all DOFs, then component 2, and so on. idofs
-! is set to [1, ..., spaceCompo(1)].
+! is set to [1, ..., spaceCompo]. The other data (engine, fieldType,
+! comm, local_n, global_n, FEDOF pointers) are set by
+! [[AbstractNodeField_:obj_Initiate2]].
 !
-! spaceCompo is required (checked in debug mode). The arguments
-! storageFMT, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo,
-! isTimeCompoScalar, tPhysicalVarNames, physicalVarNames,
-! isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes,
-! isTNodesScalar and tSize are not used.
+! The child classes of VectorField_ (e.g., VectorFieldLis_) override
+! this method with the same arguments.
 !
 ! Initiate(obj2) makes a copy of another vector field
 ! ([[obj_Initiate1]]); the example shows both.
@@ -314,7 +318,7 @@ END INTERFACE VectorFieldInitiate
 ! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 ! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 !                       filename=tomlFileName, tomlName="u")
-! CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+! CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
 !
 ! CALL OK(v%IsInitiated(), "IsInitiated")
@@ -353,29 +357,26 @@ END INTERFACE VectorFieldInitiate
 ! See also: [[obj_Initiate1]], [[obj_Deallocate]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fedof, geofedof, &
+                                  spaceCompo, fieldType, comm, local_n, &
+                                  global_n)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
     !! name of the engine
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
+    !! FEDOF of the geometry
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! number of space components
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
     !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
-    !! storage format of the scalar field
-    !! Not required.
     INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
@@ -385,57 +386,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
-    !! if true we will try to access spaceCompo
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
-    !! is space component scalar,
-    !! in this case we only access spaceCompo(1)
-    !! Not required
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
-    !! Time components
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
-    !! if true we will try to access TimeCompo
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
-    !! is Time component scalar,
-    !! in this case we only access TimeCompo(1)
-    !! Not required
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
-    !! total physical variable names
-    !! if it is zero, then physicalVarNames will not be written
-    !! evenif physicalVarNames is present, and isPhysicalVarNames
-    !! is true
-    !! Not required
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! Names of the physical variables
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
-    !! logical variable to check if physicalVarNames is present or not
-    !! if it is false then physicalVarNames will not be written
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
-    !! if true then physicalVarNames is scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
-    !! total number of nodes in each physical variable
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
-    !! if true we will try to access tNodes
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
-    !! is tNodes scalar
-    !! Not required
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
-    !! total size of node field
-    !! not required
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF object
-    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
-    !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -1659,9 +1609,9 @@ END INTERFACE
 ! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 ! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 !                       filename=tomlFileName, tomlName="u")
-! CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+! CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
-! CALL w%Initiate(name="w", engine="NATIVE_SERIAL", spaceCompo=[2], &
+! CALL w%Initiate(name="w", engine="NATIVE_SERIAL", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
 !
 ! want = [(REAL(ii, DFP), ii=1, 12)]
@@ -2643,7 +2593,7 @@ END INTERFACE
 !   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 !                         filename=tomlFileName, tomlName="u")
 !   CALL nbcField%Initiate(NAME="nbcField", engine="NATIVE_SERIAL", &
-!                          spaceCompo=[2], fedof=fedof, geofedof=geofedof)
+!                          spaceCompo=2, fedof=fedof, geofedof=geofedof)
 !
 !   CALL OK(u%GetTotalNBC() .EQ. 3, "GetTotalNBC")
 !
@@ -2786,6 +2736,77 @@ INTERFACE
     !! scale for body source
     !! obj = obj + scale * bodySource integral
   END SUBROUTINE obj_ApplyBodySource2
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ImportFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Initiate a vector field from a toml table
+!
+! Reads name, engine, fieldType and spaceCompo from table (spaceCompo is
+! required, checked in debug mode), initiates fedof, geofedof (and
+! timefedof, if present) from table if they are not initiated, and calls
+! [[obj_Initiate2]]. Then the boundary conditions are read from table.
+! timefedof and the key timeCompo are not used.
+!
+! The other ImportFromToml methods (from a file, or from a table
+! name) of AbstractNodeField_ call this method.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE VectorField_Class, ONLY: VectorField_
+! USE Test_Method, ONLY: OK
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "VectorField_test.toml"
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(VectorField_) :: u
+!
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+!
+! CALL OK(u%IsInitiated(), "IsInitiated")
+! CALL OK(u%spaceCompo .EQ. 2, "spaceCompo")
+! CALL OK(u%Size() .EQ. 2 * fedof%GetTotalDOF(), "Size")
+!
+! CALL u%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate2]],
+! [[AbstractNodeField_:obj_ReadOptsFromToml]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
+                                        timefedof, dom)
+    CLASS(VectorField_), INTENT(INOUT) :: obj
+    !! vector field
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
+    !! FEDOF of the field and of the geometry, initiated from table
+    !! if they are not initiated
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! not used
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! domain, needed when fedof or geofedof is not initiated
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------

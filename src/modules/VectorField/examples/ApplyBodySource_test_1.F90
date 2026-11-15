@@ -54,7 +54,7 @@ CALL e%SetQuietMode(math%yes)
 CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                       filename=tomlFileName, tomlName="u")
-CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 
 CALL funcOneX%Initiate(NAME="f", returnType=TypeFEVariableOpt%vector, &
@@ -123,7 +123,7 @@ END BLOCK
 
 ! Test 5: three components on a 2D mesh, h = [1, x, 2]
 BLOCK
-  CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=[3], &
+  CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=3, &
                   fedof=fedof, geofedof=geofedof)
   CALL w%Set(VALUE=0.0_DFP)
   CALL w%ApplyBodySource(bodySource=func3, scale=1.0_DFP)

@@ -35,71 +35,99 @@ CHARACTER(*), PARAMETER :: modName = &
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                            ImportFromToml
+!                                                          ReadOptsFromToml
 !----------------------------------------------------------------------------
 
-MODULE PROCEDURE obj_ImportFromToml1
+MODULE PROCEDURE obj_ReadOptsFromToml
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+CHARACTER(*), PARAMETER :: myName = "obj_ReadOptsFromToml()"
 #endif
 
-TYPE(String) :: name
-TYPE(String) :: engine
-INTEGER(I4B) :: fieldType
-INTEGER(I4B), ALLOCATABLE :: spaceCompo(:)
-LOGICAL(LGT) :: isSpaceCompo
-LOGICAL(LGT) :: isSpaceCompoScalar
-INTEGER(I4B), ALLOCATABLE :: timeCompo(:)
-LOGICAL(LGT) :: isTimeCompo
-LOGICAL(LGT) :: isTimeCompoScalar
-INTEGER(I4B) :: tPhysicalVarNames
-CHARACTER(1), ALLOCATABLE :: physicalVarNames(:)
-LOGICAL(LGT) :: isPhysicalVarNames
-LOGICAL(LGT) :: isPhysicalVarNamesScalar
+TYPE(String) :: astr
+INTEGER(I4B), ALLOCATABLE :: compo(:)
+LOGICAL(LGT) :: isScalar
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-CALL AbstractFieldReadOptsFromToml( &
-  table=table, name=name, engine=engine, fieldType=fieldType, &
-  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
-  isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &
-  isTimeCompo=isTimeCompo, isTimeCompoScalar=isTimeCompoScalar, &
-  physicalVarNames=physicalVarNames, tPhysicalVarNames=tPhysicalVarNames, &
-  isPhysicalVarNames=isPhysicalVarNames, &
-  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar)
+CALL ReadNameFromToml(table=table, name=astr)
+name = astr%chars()
 
-CALL AbstractFieldReadFEDOFFromToml1(table=table, fedof=fedof, dom=dom)
-CALL AbstractFieldReadGeoFEDOFFromToml1(table=table, fedof=geofedof, dom=dom)
-CALL AbstractFieldReadTimeFEDOFFromToml1(table=table, timefedof=timefedof)
+CALL ReadEngineFromToml(table=table, engine=astr)
+engine = astr%chars()
+astr = ""
 
-CALL obj%Initiate( &
-  name=name%chars(), engine=engine%chars(), fieldType=fieldType, &
-  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
-  isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &
-  isTimeCompo=isTimeCompo, isTimeCompoScalar=isTimeCompoScalar, &
-  physicalVarNames=physicalVarNames, tPhysicalVarNames=tPhysicalVarNames, &
-  isPhysicalVarNames=isPhysicalVarNames, &
-  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, &
-  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+CALL ReadFieldTypeFromToml(table=table, fieldType=fieldType)
 
-CALL AbstractFieldReadDBCFromToml(obj=obj, table=table)
-CALL AbstractFieldReadNBCFromToml(obj=obj, table=table)
-CALL AbstractFieldReadPointNBCFromToml(obj=obj, table=table)
+CALL ReadSpaceCompoFromToml(table=table, spaceCompo=compo, &
+                            isSpaceCompo=isSpaceCompo, &
+                            isSpaceCompoScalar=isScalar)
+spaceCompo = math%one_i
+IF (isSpaceCompo) spaceCompo = compo(1)
 
-name = ""
-engine = ""
-IF (ALLOCATED(spaceCompo)) DEALLOCATE (spaceCompo)
-IF (ALLOCATED(timeCompo)) DEALLOCATE (timeCompo)
-IF (ALLOCATED(physicalVarNames)) DEALLOCATE (physicalVarNames)
+CALL ReadTimeCompoFromToml(table=table, timeCompo=compo, &
+                           isTimeCompo=isTimeCompo, &
+                           isTimeCompoScalar=isScalar)
+timeCompo = math%one_i
+IF (isTimeCompo) timeCompo = compo(1)
+
+IF (ALLOCATED(compo)) DEALLOCATE (compo)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
-END PROCEDURE obj_ImportFromToml1
+END PROCEDURE obj_ReadOptsFromToml
+
+!----------------------------------------------------------------------------
+!                                                         ReadFEDOFFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadFEDOFFromToml
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadFEDOFFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractFieldReadFEDOFFromToml1(table=table, fedof=fedof, dom=dom)
+CALL AbstractFieldReadGeoFEDOFFromToml1(table=table, fedof=geofedof, dom=dom)
+CALL AbstractFieldReadTimeFEDOFFromToml1(table=table, timefedof=timefedof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                                            ReadBCFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ReadBCFromToml
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ReadBCFromToml()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractFieldReadDBCFromToml(obj=obj, table=table)
+CALL AbstractFieldReadNBCFromToml(obj=obj, table=table)
+CALL AbstractFieldReadPointNBCFromToml(obj=obj, table=table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ReadBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                            ImportFromToml
@@ -508,116 +536,6 @@ SUBROUTINE ReadTimeCompoFromToml(table, timeCompo, isTimeCompo, &
                           '[END] ')
 #endif
 END SUBROUTINE ReadTimeCompoFromToml
-
-!----------------------------------------------------------------------------
-!                                              ReadPhysicalVarNamesFromToml
-!----------------------------------------------------------------------------
-
-SUBROUTINE ReadPhysicalVarNamesFromToml( &
-  table, physicalVarNames, isPhysicalVarNames, isPhysicalVarNamesScalar, &
-  tPhysicalVarNames)
-  TYPE(toml_table), INTENT(INOUT) :: table
-  CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: physicalVarNames(:)
-  LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNames
-  LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNamesScalar
-  INTEGER(I4B), INTENT(OUT) :: tPhysicalVarNames
-
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "ReadPhysicalVarNamesFromToml()"
-#endif
-
-  INTEGER(I4B) :: origin, STAT, ii
-  TYPE(String), ALLOCATABLE :: tempstrs(:)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseDebug(modName//'::'//myName//' - '// &
-                    'Reading physicalVarNames ...')
-#endif
-
-  CALL GetValue( &
-    table=table, key="physicalVarNames", VALUE=tempstrs, origin=origin, &
-    STAT=STAT, isFound=isPhysicalVarNames, isScalar=isPhysicalVarNamesScalar)
-
-  tPhysicalVarNames = 0
-  IF (isPhysicalVarNames) tPhysicalVarNames = SIZE(tempstrs)
-  ALLOCATE (physicalVarNames(tPhysicalVarNames))
-  DO ii = 1, tPhysicalVarNames
-    physicalVarNames(ii) = tempstrs(ii)%slice(1, 1)
-    tempstrs(ii) = ""
-  END DO
-
-  IF (ALLOCATED(tempstrs)) DEALLOCATE (tempstrs)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-END SUBROUTINE ReadPhysicalVarNamesFromToml
-
-!----------------------------------------------------------------------------
-!                                               AbstractFieldReadOptsFromToml
-!----------------------------------------------------------------------------
-
-SUBROUTINE AbstractFieldReadOptsFromToml( &
-  table, name, engine, fieldType, spaceCompo, isSpaceCompo, &
-  isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
-  tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
-  isPhysicalVarNamesScalar)
-  TYPE(toml_table), INTENT(INOUT) :: table
-    !! Toml table
-  TYPE(String), INTENT(OUT) :: name
-  TYPE(String), INTENT(OUT) :: engine
-  INTEGER(I4B), INTENT(OUT) :: fieldType
-  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: spaceCompo(:)
-  LOGICAL(LGT), INTENT(OUT) :: isSpaceCompo
-  LOGICAL(LGT), INTENT(OUT) :: isSpaceCompoScalar
-  INTEGER(I4B), ALLOCATABLE, INTENT(INOUT) :: timeCompo(:)
-  LOGICAL(LGT), INTENT(OUT) :: isTimeCompo
-  LOGICAL(LGT), INTENT(OUT) :: isTimeCompoScalar
-  INTEGER(I4B), INTENT(OUT) :: tPhysicalVarNames
-  CHARACTER(1), ALLOCATABLE, INTENT(INOUT) :: physicalVarNames(:)
-  LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNames
-  LOGICAL(LGT), INTENT(OUT) :: isPhysicalVarNamesScalar
-
-  ! Internal variables
-#ifdef DEBUG_VER
-  CHARACTER(*), PARAMETER :: myName = "AbstractFieldReadOptsFromToml()"
-#endif
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[START] ')
-#endif
-
-  CALL ReadNameFromToml(table=table, name=name)
-  CALL ReadEngineFromToml(table=table, engine=engine)
-  CALL ReadFieldTypeFromToml(table=table, fieldType=fieldType)
-
-  CALL ReadSpaceCompoFromToml( &
-    table=table, spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
-    isSpaceCompoScalar=isSpaceCompoScalar)
-
-  CALL ReadTimeCompoFromToml( &
-    table=table, timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
-    isTimeCompoScalar=isTimeCompoScalar)
-
-  CALL ReadPhysicalVarNamesFromToml( &
-    table=table, physicalVarNames=physicalVarNames, &
-    isPhysicalVarNames=isPhysicalVarNames, &
-    isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, &
-    tPhysicalVarNames=tPhysicalVarNames)
-
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-
-END SUBROUTINE AbstractFieldReadOptsFromToml
 
 !----------------------------------------------------------------------------
 !                                             AbstractFieldReadFEDOFFromToml

@@ -39,7 +39,7 @@ CALL lis%Initiate()
 CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                       filename=tomlFileName, tomlName="u")
-CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
+CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 
 ! Test 1: the fields are initiated, with spaceCompo values per node

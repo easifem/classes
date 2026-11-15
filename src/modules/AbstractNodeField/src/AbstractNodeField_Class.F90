@@ -53,6 +53,9 @@ PUBLIC :: AbstractNodeFieldDeallocate
 PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
 PUBLIC :: AbstractNodeFieldInitiate
+PUBLIC :: AbstractNodeFieldReadBCFromToml
+PUBLIC :: AbstractNodeFieldReadFEDOFFromToml
+PUBLIC :: AbstractNodeFieldReadOptsFromToml
 PUBLIC :: AbstractNodeFieldSetParam
 PUBLIC :: AbstractNodeFieldGetFEVariable
 PUBLIC :: NodeFieldsWriteData
@@ -176,11 +179,9 @@ CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate from another node field (copy)
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
   !! Initiate with a FEDOF for each variable (under development)
-  GENERIC, PUBLIC :: Initiate => Initiate2, Initiate3
+  GENERIC, PUBLIC :: Initiate => Initiate3
   !! Initiate by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside
@@ -196,8 +197,9 @@ CONTAINS
   !! Export AbstractNodeField to HDF5File_
 
   ! @TomlMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  !! Import data From toml file
+  PROCEDURE(obj_ImportFromToml1), DEFERRED, PUBLIC, PASS(obj) :: &
+    ImportFromToml1
+  !! Import data From toml table, defined by the child classes
   PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import data From toml file
   PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
@@ -565,9 +567,12 @@ END INTERFACE AbstractNodeFieldInitiate
 ! In this routine all the optional DOF arguments are required: an
 ! error is raised if one of them is missing, or if the size of
 ! spaceCompo, timeCompo, physicalVarNames or tNodes is not
-! tPhysicalVarNames, or if the size of the vector is not tSize. The
-! child classes (e.g., ScalarField_) compute these arguments and call
-! this routine.
+! tPhysicalVarNames, or if the size of the vector is not tSize.
+!
+! This routine is not a type-bound method. Each child class (e.g.,
+! ScalarField_) has its own Initiate2 with only the arguments it needs;
+! that method computes the DOF arguments and calls this routine through
+! the generic AbstractNodeFieldInitiate.
 !
 ! See also: [[ScalarField_:obj_Initiate2]] (contains an example)
 
@@ -3118,12 +3123,21 @@ END INTERFACE
 !
 ! dom: dom is needed to initiate fedof
 ! timeOpt: It is needed to initiate timefedof
+!
+! This method is deferred. Each child class (e.g., ScalarField_) reads
+! the options it needs from the table and calls its own Initiate2.
+! The other ImportFromToml methods of AbstractNodeField_ call this
+! method.
 
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
-                                        timefedof, dom)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, timefedof, &
+                                 dom)
+    IMPORT :: AbstractNodeField_, toml_table, FEDOF_, TimeFEDOF_, &
+      AbstractDomain_
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! node field
     TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table
     CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
@@ -3144,6 +3158,106 @@ INTERFACE
     !! When we call ImportFromToml method of fedof
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ReadOptsFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Read the options of a node field from a toml table
+!
+! Reads the keys name, engine, fieldType, spaceCompo and timeCompo of
+! a node field from table. The child classes call this routine in
+! their ImportFromToml1 before they call their own Initiate2.
+!
+! If spaceCompo (timeCompo) is not in the table, then it is set to 1
+! and isSpaceCompo (isTimeCompo) is false. If spaceCompo (timeCompo)
+! is a vector in the table, only its first entry is returned.
+!
+! See also: [[obj_ReadFEDOFFromToml]], [[obj_ReadBCFromToml]],
+! [[VectorField_:obj_ImportFromToml1]]
+
+INTERFACE AbstractNodeFieldReadOptsFromToml
+  MODULE SUBROUTINE obj_ReadOptsFromToml(table, name, engine, fieldType, &
+                                         spaceCompo, isSpaceCompo, &
+                                         timeCompo, isTimeCompo)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+    CHARACTER(:), ALLOCATABLE, INTENT(OUT) :: name
+    !! name of the field
+    CHARACTER(:), ALLOCATABLE, INTENT(OUT) :: engine
+    !! name of the engine
+    INTEGER(I4B), INTENT(OUT) :: fieldType
+    !! field type
+    INTEGER(I4B), INTENT(OUT) :: spaceCompo
+    !! space components, 1 if not found
+    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompo
+    !! true if spaceCompo is found in the table
+    INTEGER(I4B), INTENT(OUT) :: timeCompo
+    !! time components, 1 if not found
+    LOGICAL(LGT), INTENT(OUT) :: isTimeCompo
+    !! true if timeCompo is found in the table
+  END SUBROUTINE obj_ReadOptsFromToml
+END INTERFACE AbstractNodeFieldReadOptsFromToml
+
+!----------------------------------------------------------------------------
+!                                              ReadFEDOFFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Read the FEDOF, GeoFEDOF and TimeFEDOF from a toml table
+!
+! If fedof (geofedof) is not initiated, then it is initiated from
+! table (see ImportFromToml of FEDOF_). If timefedof is present and
+! not initiated, then it is initiated from the node given by the key
+! timefedofName. An initiated object is not changed. The child classes
+! call this routine in their ImportFromToml1 before they call their
+! own Initiate2.
+!
+! See also: [[obj_ReadOptsFromToml]], [[obj_ReadBCFromToml]],
+! [[VectorField_:obj_ImportFromToml1]]
+
+INTERFACE AbstractNodeFieldReadFEDOFFromToml
+  MODULE SUBROUTINE obj_ReadFEDOFFromToml(table, fedof, geofedof, &
+                                          timefedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: geofedof
+    !! FEDOF of the geometry
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! TimeFEDOF, needed for space-time fields
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! domain, needed when fedof or geofedof is not initiated
+  END SUBROUTINE obj_ReadFEDOFFromToml
+END INTERFACE AbstractNodeFieldReadFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                                 ReadBCFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Read the boundary conditions of a node field from toml
+!
+! Reads the Dirichlet, Neumann and point Neumann boundary conditions
+! of obj from table. obj must be initiated. The child classes call
+! this routine at the end of their ImportFromToml1.
+!
+! See also: [[obj_ReadOptsFromToml]], [[obj_ReadFEDOFFromToml]],
+! [[VectorField_:obj_ImportFromToml1]]
+
+INTERFACE AbstractNodeFieldReadBCFromToml
+  MODULE SUBROUTINE obj_ReadBCFromToml(obj, table)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! node field, initiated
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+  END SUBROUTINE obj_ReadBCFromToml
+END INTERFACE AbstractNodeFieldReadBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                     ImportFromToml@Methods

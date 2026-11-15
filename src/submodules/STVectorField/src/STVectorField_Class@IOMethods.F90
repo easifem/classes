@@ -16,8 +16,11 @@
 !
 
 SUBMODULE(STVectorField_Class) IOMethods
-USE Display_Method, ONLY: Display
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadBCFromToml
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadFEDOFFromToml
 USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadOptsFromToml
+USE Display_Method, ONLY: Display
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -26,6 +29,56 @@ CHARACTER(*), PARAMETER :: modName = &
 #endif
 
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+LOGICAL(LGT) :: isok
+#endif
+
+CHARACTER(:), ALLOCATABLE :: name, engine
+INTEGER(I4B) :: fieldType, spaceCompo, timeCompo
+LOGICAL(LGT) :: isSpaceCompo, isTimeCompo
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldReadOptsFromToml( &
+  table=table, name=name, engine=engine, fieldType=fieldType, &
+  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, timeCompo=timeCompo, &
+  isTimeCompo=isTimeCompo)
+
+#ifdef DEBUG_VER
+isok = isTimeCompo .OR. PRESENT(timefedof)
+CALL AssertError1(isok, myName, &
+                  "timeCompo is not found in the table and timefedof &
+                  &is not present")
+isok = isSpaceCompo
+CALL AssertError1(isok, myName, "spaceCompo is not found in the table")
+#endif
+
+CALL AbstractNodeFieldReadFEDOFFromToml( &
+  table=table, fedof=fedof, geofedof=geofedof, timefedof=timefedof, &
+  dom=dom)
+
+CALL obj%Initiate(name=name, engine=engine, fedof=fedof, &
+                  geofedof=geofedof, spaceCompo=spaceCompo, &
+                  fieldType=fieldType, timeCompo=timeCompo, &
+                  timefedof=timefedof)
+
+CALL AbstractNodeFieldReadBCFromToml(obj=obj, table=table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                                    Display
@@ -40,5 +93,11 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
+
+!----------------------------------------------------------------------------
+!
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

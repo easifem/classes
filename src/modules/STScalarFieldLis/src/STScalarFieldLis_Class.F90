@@ -292,7 +292,7 @@ END INTERFACE
 ! summary: Initiate a LIS space-time scalar field by arguments
 !
 ! The space-time scalar field data are set by the Initiate method of
-! STScalarField_ (timeCompo from timefedof, or from timeCompo(1) when
+! STScalarField_ (timeCompo from timefedof, or from timeCompo when
 ! there is no timefedof). Then the LIS vector of local size local_n and
 ! global size global_n is created (lis_vector_create,
 ! lis_vector_set_size) and the local range is, ie is read
@@ -397,63 +397,38 @@ END INTERFACE
 ! See also: [[obj_Initiate1]], [[STScalarField_:obj_Initiate2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fedof, geofedof, &
+                                  fieldType, comm, local_n, global_n, &
+                                  timeCompo, timefedof)
     CLASS(STScalarFieldLis_), INTENT(INOUT) :: obj
-    !! LIS space-time scalar field to be initiated
+    !! LIS space-time scalar field
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, not used: the engine is "LIS_OMP"
+    !! name of the engine
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
+    !! FEDOF of the geometry
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
-    !! storage format, not used
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
     INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
-    !! communication group, only for a parallel environment
+    !! communication group
+    !! Only needed for parallel environment
     INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
-    !! local size of the field, only for a parallel environment
+    !! local size of field on each processor
+    !! Only needed for parallel environment
     INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
-    !! global size of the field, only for a parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components, not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
-    !! time components, timeCompo(1) is used when there is no timefedof
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
-    !! not used
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
-    !! not used
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF of the field and FEDOF of the geometry
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo
+    !! number of time components, used when timefedof is not present
+    !! or not initiated
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
-    !! TimeFEDOF, its total DOF is timeCompo
+    !! FEDOF in time; if it is initiated, timeCompo is its total DOF
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 

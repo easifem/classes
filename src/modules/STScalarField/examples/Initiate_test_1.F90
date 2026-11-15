@@ -58,7 +58,7 @@ END BLOCK
 ! Test 3: timeCompo given without timefedof
 BLOCK
   CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", fedof=fedof, &
-                  geofedof=geofedof, timeCompo=[3])
+                  geofedof=geofedof, timeCompo=3)
   CALL OK(w%timeCompo .EQ. 3, "w: timeCompo")
   CALL OK(w%SIZE() .EQ. 18, "w: Size")
 END BLOCK

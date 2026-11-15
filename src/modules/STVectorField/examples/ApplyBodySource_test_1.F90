@@ -107,7 +107,7 @@ END BLOCK
 
 ! Test 3: three components on a 2D mesh, h = [1, x, 2]
 BLOCK
-  CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=[3], &
+  CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=3, &
                   fedof=fedof, geofedof=geofedof, timefedof=timefedof)
   CALL w%Set(VALUE=0.0_DFP)
   CALL w%ApplyBodySource(bodySource=func3, scale=1.0_DFP, times=times)

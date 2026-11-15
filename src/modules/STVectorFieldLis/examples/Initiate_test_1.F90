@@ -43,7 +43,7 @@ CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
                       fedof=fedof, geofedof=geofedof, &
                       timefedof=timefedof, dom=dom)
-CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
+CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 ! Test 1: fields from the toml file and from Initiate
@@ -75,7 +75,7 @@ CALL u%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, tsize=tsize)
 CALL OK(ALL(ABS(found - want) .LT. tol), "copy: u unchanged")
 
 ! Test 4: copy of a native space-time vector field
-CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 CALL n%SetMultiple(istart=1, iend=24, stride=1, VALUE=-want)
 CALL c2%Initiate(obj2=n, copyFull=math%yes)

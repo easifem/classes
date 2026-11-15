@@ -38,7 +38,7 @@ CALL lis%Initiate()
 CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                       filename=tomlFileName, tomlName="u")
-CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 
 want = [(REAL(ii, DFP), ii=1, 12)]
