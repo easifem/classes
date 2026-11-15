@@ -45,7 +45,7 @@ TYPE :: TimeFEDOF_
   PRIVATE
   LOGICAL(LGT) :: isinit = .FALSE.
   !! It is set to true when TimeFEDOF is initiated
-  LOGICAL(LGT) :: isLagrange = .FALSE.
+  LOGICAL(LGT) :: isLagr = .FALSE.
   !! It is true when baseInterpolation is Lagrange
   LOGICAL(LGT) :: isMaxConSet = .FALSE.
   !! It is set to true when maxCon is set in GetMaxTotalConnectivity
@@ -113,6 +113,8 @@ CONTAINS
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseInterpolation => &
     obj_GetBaseInterpolation
   !! Get the base interpolation
+  PROCEDURE, PUBLIC, PASS(obj) :: IsLagrange => obj_IsLagrange
+  !! True when the base interpolation is Lagrange
   PROCEDURE, PUBLIC, PASS(obj) :: GetBaseContinuity => obj_GetBaseContinuity
   !! Get the base continuity
   PROCEDURE, PUBLIC, PASS(obj) :: GetCellOrder => obj_GetCellOrder
@@ -355,6 +357,34 @@ INTERFACE
     CLASS(TimeFEDOF_), INTENT(IN) :: obj
     CHARACTER(4) :: ans
   END FUNCTION obj_GetBaseInterpolation
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                      IsLagrange@GetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: True when the base interpolation in time is Lagrange
+!
+! Returns true when baseInterpolation is "LAGR", that is the time DOFs
+! are the values at the interpolation points. It is set by Initiate and
+! ImportFromToml; false before initiation.
+!
+! Examples
+!
+!```fortran
+! TYPE(TimeFEDOF_) :: timefedof
+! IF (timefedof%IsLagrange()) CALL Display("Lagrange in time")
+!```
+
+INTERFACE
+  MODULE FUNCTION obj_IsLagrange(obj) RESULT(ans)
+    CLASS(TimeFEDOF_), INTENT(IN) :: obj
+    !! time FEDOF
+    LOGICAL(LGT) :: ans
+    !! true when the base interpolation is Lagrange
+  END FUNCTION obj_IsLagrange
 END INTERFACE
 
 !----------------------------------------------------------------------------

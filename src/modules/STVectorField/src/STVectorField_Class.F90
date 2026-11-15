@@ -1594,18 +1594,26 @@ END INTERFACE
 ! date: 2024-06-06
 ! summary: Set the values from a user function
 !
-! func is a vector function of (x, y, z, t) with spaceCompo values. For
-! each node i of the mesh, the coordinates of the node are passed to
-! func:
+! func is a vector valued function of (x, y, z, t), four arguments.
+!
+! In each element, space component c of func is interpolated in the space
+! of fedof (GetDOFValue of the finite element), so all DOFs are set,
+! for any order and basis:
 !
 ! - with times, SIZE(times) = timeCompo (checked in debug mode), and time
-!   component a of node i is set to func(x_i, times(a)),
-! - without times, t = 0 and all time components of node i are set to
-!   func(x_i, 0).
+!   component a is set to the interpolation of func(., times(a)),
+! - without times, func(., 0) is set at all time components.
 !
-! Only the mesh nodes are set, so this is correct for order 1 Lagrange in
-! space (DOF number = node number); the other DOFs of higher orders are
-! not set. ivar, idof, spaceCompo and timeCompo are not used.
+! In time the DOFs are taken as point values, so this is valid only for
+! a Lagrange time basis whose DOFs are at times(:) (times(a) is the
+! interpolation point of time DOF a; for order 1, the ends of the time
+! slab). In debug mode the time basis must be Lagrange and times must
+! be distinct. ivar, idof, spaceCompo and timeCompo are not used.
+!
+! Changes
+!
+! - 2026-11-15: interpolate element by element; before only the mesh
+!   nodes were set (order 1 Lagrange). Debug checks on the time basis.
 !
 ! Examples
 !
@@ -1618,6 +1626,7 @@ END INTERFACE
 !```
 !
 ! Full example: src/modules/STVectorField/examples/SetByFunction_test_1.F90
+! (order 1), SetByFunction_test_2.F90 (order 2 in space)
 
 INTERFACE
   MODULE SUBROUTINE obj_SetByFunction( &
@@ -1627,7 +1636,7 @@ INTERFACE
     CLASS(UserFunction_), INTENT(INOUT) :: func
       !! User function
     REAL(DFP), OPTIONAL, INTENT(IN) :: times(:)
-    !! If present then its size should be 1
+    !! interpolation points of the Lagrange time DOFs, size timeCompo
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: ivar
     !! ivar (not used)
     INTEGER(I4B), OPTIONAL, INTENT(IN) :: idof

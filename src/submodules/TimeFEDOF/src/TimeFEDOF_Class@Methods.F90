@@ -47,10 +47,10 @@ CALL obj%DEALLOCATE()
 obj%isInit = .TRUE.
 
 obj%baseInterpolation = UpperCase(baseInterpolation(1:4))
-IF (obj%baseInterpolation == "LAGR") obj%isLagrange = .TRUE.
+IF (obj%baseInterpolation == "LAGR") obj%isLagr = .TRUE.
 
 #ifdef DEBUG_VER
-IF (obj%isLagrange) THEN
+IF (obj%isLagr) THEN
   isok = PRESENT(ipType)
   CALL AssertError1(isok, myName, "ipType should be present")
 END IF
@@ -105,7 +105,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = .FALSE.
-obj%isLagrange = .FALSE.
+obj%isLagr = .FALSE.
 obj%isMaxConSet = .FALSE.
 obj%isMaxQuadPointSet = .FALSE.
 obj%tdof = 0
@@ -141,7 +141,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 obj%isInit = obj2%isInit
-obj%isLagrange = obj2%isLagrange
+obj%isLagr = obj2%isLagr
 obj%isMaxConSet = obj2%isMaxConSet
 obj%isMaxQuadPointSet = obj2%isMaxQuadPointSet
 obj%tdof = obj2%tdof
@@ -180,7 +180,7 @@ CALL Display(msg, unitno=unitno)
 CALL Display(obj%isInit, "isInitiated: ", unitno=unitno)
 IF (.NOT. obj%isInit) RETURN
 
-CALL Display(obj%isLagrange, "isLagrange: ", unitno=unitno)
+CALL Display(obj%isLagr, "isLagrange: ", unitno=unitno)
 CALL Display(obj%isMaxConSet, "isMaxConSet: ", unitno=unitno)
 CALL Display(obj%isMaxQuadPointSet, "isMaxQuadPointSet: ", unitno=unitno)
 CALL Display(obj%tdof, "tdof: ", unitno=unitno)
@@ -264,6 +264,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_GetBaseInterpolation
+
+!----------------------------------------------------------------------------
+!                                                                 IsLagrange
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_IsLagrange
+ans = obj%isLagr
+END PROCEDURE obj_IsLagrange
 
 !----------------------------------------------------------------------------
 !                                                           GetBaseContinuity

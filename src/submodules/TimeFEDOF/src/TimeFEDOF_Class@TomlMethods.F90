@@ -77,7 +77,7 @@ CALL obj%fe%ImportFromToml(table=table)
 obj%baseInterpolation = obj%fe%GetBaseInterpolation()
 
 ! isLagrange
-IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagrange = .TRUE.
+IF (obj%baseInterpolation .EQ. "LAGR") obj%isLagr = .TRUE.
 
 ! baseContinuity
 obj%baseContinuity = obj%fe%GetBaseContinuity()
