@@ -58,9 +58,6 @@ PUBLIC :: STScalarFieldLisPointer_
 ! available, Display and Export gather the LIS vector into realVec
 ! first.
 !
-! The storage, Get and BLAS routines are shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis).
-!
 ! Changes:
 !   - 2026-11-14: Initiate creates the LIS vector; storage, Get and
 !     BLAS methods work on the LIS vector
@@ -301,8 +298,14 @@ END INTERFACE
 ! lis_vector_set_size) and the local range is, ie is read
 ! (lis_vector_get_range). The values of a new vector are zero.
 !
+! The engine of the field is always "LIS_OMP", whatever engine is
+! given, because the values are stored in the LIS vector.
+!
 ! ImportFromToml with engine = "LIS_OMP" also calls this method. The
 ! LIS library must be started before (LisOmpEngine_%Initiate).
+!
+! Changes:
+!   - 2026-11-15: the engine is set to LIS_OMP (#625)
 !
 ! Examples
 !
@@ -408,7 +411,7 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, "LIS_OMP"
+    !! name of the engine, not used: the engine is "LIS_OMP"
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
@@ -681,9 +684,6 @@ END INTERFACE
 ! (add). indx is the index of the value in the LIS vector:
 ! (a-1)*tNodes + I for space node I and time component a.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/SetMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -721,9 +721,6 @@ END INTERFACE
 ! Set: lis_vector_set_all. Add: lis_vector_set_value with
 ! LIS_ADD_VALUE for each entry.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/SetMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -758,9 +755,6 @@ END INTERFACE
 !
 ! obj(indx(i)) = [obj(indx(i)) +] scale * VALUE(i), by
 ! lis_vector_set_values4.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/SetMethods.F90).
 !
 ! Examples
 !
@@ -799,9 +793,6 @@ END INTERFACE
 ! obj(istart:iend:stride) = [obj(...) +] scale * VALUE(1:tsize), by
 ! lis_vector_set_values5, tsize = (iend - istart) / stride + 1.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/SetMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -839,9 +830,6 @@ END INTERFACE
 ! obj(istart:iend:stride) = [obj(...) +] scale *
 ! VALUE(istart_value:iend_value:stride_value), by
 ! lis_vector_set_values8.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/SetMethods.F90).
 !
 ! Examples
 !
@@ -883,9 +871,6 @@ END INTERFACE
 !
 ! obj(istart:iend:stride) = [obj(...) +] scale * VALUE, by
 ! lis_vector_set_values6.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/SetMethods.F90).
 !
 ! Examples
 !
@@ -934,9 +919,6 @@ END INTERFACE
 !   temporary array
 !   (GetMultiple), then set by SetMultiple3.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/SetMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -979,9 +961,6 @@ END INTERFACE
 ! result is NULL; in debug mode an error is raised. Use GetMultiple
 ! instead.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/GetMethods.F90).
-!
 ! See also: [[obj_GetMultiple2]]
 
 INTERFACE
@@ -1003,9 +982,6 @@ END INTERFACE
 !
 ! Returns local_n, the number of values stored on this process
 ! (number of space DOFs times timeCompo for a serial field).
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/GetMethods.F90).
 !
 ! Examples
 !
@@ -1038,9 +1014,6 @@ END INTERFACE
 !
 ! Calls lis_vector_get_value.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/GetMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1071,9 +1044,6 @@ END INTERFACE
 ! summary: Get the values at given indices
 !
 ! VALUE(i) = obj(indx(i)), by lis_vector_get_values_from_index.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/GetMethods.F90).
 !
 ! Examples
 !
@@ -1109,9 +1079,6 @@ END INTERFACE
 ! VALUE(1:tsize) = obj(istart:iend:stride), by
 ! lis_vector_get_values_from_range.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/GetMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1145,9 +1112,6 @@ END INTERFACE
 !
 ! VALUE(istart_value:iend_value:stride_value) =
 ! obj(istart:iend:stride), by lis_vector_get_values_from_range2.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/GetMethods.F90).
 !
 ! Examples
 !
@@ -1193,9 +1157,6 @@ END INTERFACE
 ! temporary array first. SetMultiple5 of a node field calls this
 ! method when VALUE is a LIS field.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/GetMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1238,9 +1199,6 @@ END INTERFACE
 ! Calls lis_vector_axpy. x must use the LIS engine and have the same
 ! size as obj.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1271,9 +1229,6 @@ END INTERFACE
 ! summary: obj = obj + a1 * x1 + a2 * x2
 !
 ! Calls lis_vector_axpy twice. x1 and x2 must use the LIS engine.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
 !
 ! Examples
 !
@@ -1310,9 +1265,6 @@ END INTERFACE
 !
 ! Calls lis_vector_axpy three times. x1, x2 and x3 must use the LIS
 ! engine.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
 !
 ! Examples
 !
@@ -1353,9 +1305,6 @@ END INTERFACE
 !
 ! Calls lis_vector_scale.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1385,9 +1334,6 @@ END INTERFACE
 !
 ! Calls lis_vector_copy. obj2 must use the LIS engine and have the
 ! same size as obj.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
 !
 ! Examples
 !
@@ -1419,9 +1365,6 @@ END INTERFACE
 ! Calls lis_vector_swap. obj2 must use the LIS engine and have the
 ! same size as obj.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1452,9 +1395,6 @@ END INTERFACE
 !
 ! Calls lis_vector_nrm2.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1483,9 +1423,6 @@ END INTERFACE
 ! summary: L1 norm of the values
 !
 ! Calls lis_vector_nrm1.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
 !
 ! Examples
 !
@@ -1516,9 +1453,6 @@ END INTERFACE
 !
 ! Calls lis_vector_nrmi.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1548,9 +1482,6 @@ END INTERFACE
 !
 ! Calls lis_vector_dot. obj2 must use the LIS engine and have the
 ! same size as obj.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
 !
 ! Examples
 !
@@ -1584,9 +1515,6 @@ END INTERFACE
 ! Calls lis_vector_pmul. obj1 and obj2 must use the LIS engine and
 ! have the same size as obj.
 !
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
-!
 ! Examples
 !
 !```fortran
@@ -1617,9 +1545,6 @@ END INTERFACE
 ! summary: Entry by entry reciprocal, obj = 1 / obj
 !
 ! Calls lis_vector_reciprocal. The entries must not be zero.
-!
-! The routine is shared with ScalarFieldLis_
-! (src/submodules/include/NodeFieldLis/BlasMethods.F90).
 !
 ! Examples
 !

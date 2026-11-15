@@ -288,8 +288,14 @@ END INTERFACE
 ! lis_vector_set_size) and the local range is, ie is read
 ! (lis_vector_get_range). The values of a new vector are zero.
 !
+! The engine of the field is always "LIS_OMP", whatever engine is
+! given, because the values are stored in the LIS vector.
+!
 ! ImportFromToml with engine = "LIS_OMP" also calls this method. The
 ! LIS library must be started before (LisOmpEngine_%Initiate).
+!
+! Changes:
+!   - 2026-11-15: the engine is set to LIS_OMP (#625)
 !
 ! Examples
 !
@@ -366,7 +372,7 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, "LIS_OMP"
+    !! name of the engine, not used: the engine is "LIS_OMP"
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available

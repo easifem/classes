@@ -131,6 +131,9 @@ CALL obj%STVectorField_%Initiate( &
   isTNodes=isTNodes, isTNodesScalar=isTNodesScalar, tSize=tSize, &
   fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
+! the values are stored in the LIS vector, whatever engine was given
+obj%engine = TypeEngineOpt%lis_omp
+
 CALL lis_vector_create(obj%comm, obj%lis_ptr, ierr)
 
 #ifdef DEBUG_VER
