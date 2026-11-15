@@ -723,22 +723,33 @@ MODULE PROCEDURE obj_Set14
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
 #endif
+INTEGER(I4B) :: tsize
+REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-SELECT TYPE (VALUE)
-TYPE IS (STVectorField_)
-  CALL obj%Copy(VALUE)
-
 #ifdef DEBUG_VER
-CLASS DEFAULT
-  CALL AssertError1(math%no, myName, &
-                    'No case found for the type of VALUE')
+CALL AssertError2(VALUE%SIZE(), obj%SIZE(), myName, &
+                  "a=VALUE%SIZE(), b=obj%SIZE()")
 #endif
-END SELECT
+
+! Same engine: Copy of the engine (realVec or LIS vector). Otherwise
+! the values of VALUE are read by GetMultiple and set by SetMultiple,
+! so a native field and a LIS field can be copied into each other.
+IF (obj%GetEngineName() .EQ. VALUE%GetEngineName()) THEN
+  CALL obj%Copy(VALUE)
+ELSE
+  tsize = VALUE%SIZE()
+  ALLOCATE (temp(tsize))
+  CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                         VALUE=temp, tsize=tsize)
+  CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                       VALUE=temp(1:tsize))
+  DEALLOCATE (temp)
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -840,8 +851,10 @@ MODULE PROCEDURE obj_SetToVectorField
 CHARACTER(*), PARAMETER :: myName = "obj_SetToVectorField()"
 LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: s(3), p(3), icompo, idof
+INTEGER(I4B) :: s(3), p(3), icompo, idof, tsize
+LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE, TARGET :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -870,7 +883,19 @@ isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
-realvec => obj%GetPointer()
+! Native engines store the values in realVec, other engines (LIS) do not:
+! their values are copied into temp
+isNative = INDEX(obj%GetEngineName(), "NATIVE") .EQ. 1
+
+IF (isNative) THEN
+  realvec => obj%GetPointer()
+ELSE
+  tsize = obj%SIZE()
+  ALLOCATE (temp(tsize))
+  CALL obj%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                       VALUE=temp, tsize=tsize)
+  realvec => temp
+END IF
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(realvec)
@@ -893,6 +918,7 @@ DO icompo = 1, obj%spaceCompo
 END DO
 
 realvec => NULL()
+IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

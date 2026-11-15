@@ -296,8 +296,14 @@ END INTERFACE
 ! lis_vector_set_size) and the local range is, ie is read
 ! (lis_vector_get_range). The values of a new vector are zero.
 !
+! The engine of the field is always "LIS_OMP", whatever engine is
+! given, because the values are stored in the LIS vector.
+!
 ! ImportFromToml with engine = "LIS_OMP" also calls this method. The
 ! LIS library must be started before (LisOmpEngine_%Initiate).
+!
+! Changes:
+!   - 2026-11-15: the engine is set to LIS_OMP (#625)
 !
 ! Examples
 !
@@ -326,7 +332,7 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, "LIS_OMP"
+    !! name of the engine, not used: the engine is "LIS_OMP"
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
@@ -1569,8 +1575,12 @@ END INTERFACE
 ! date: 2026-11-14
 ! summary: obj = obj2
 !
-! Calls lis_vector_copy. obj2 must use the LIS engine and have the
-! same size as obj.
+! Calls lis_vector_copy. obj2 must use the same engine (LIS_OMP) and
+! have the same size as obj; the engine is checked in debug mode. To
+! copy a field of another engine use Set(VALUE=obj2).
+!
+! Changes:
+!   - 2026-11-15: debug check of the engine of obj2 (#617)
 !
 ! Examples
 !
@@ -1587,7 +1597,7 @@ INTERFACE
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS vector field, obj = obj2
     CLASS(AbstractNodeField_), INTENT(IN) :: obj2
-    !! node field with the LIS engine
+    !! node field of the same size and engine
   END SUBROUTINE obj_Copy
 END INTERFACE
 

@@ -43,6 +43,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. x%GetEngineName(), &
+                  myName, "x uses another engine than obj, "// &
+                  "use Set(VALUE=x) between engines")
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
@@ -78,6 +84,15 @@ INTEGER(I4B) :: ierr
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. x1%GetEngineName(), &
+                  myName, "x1 uses another engine than obj, "// &
+                  "use Set(VALUE=x1) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. x2%GetEngineName(), &
+                  myName, "x2 uses another engine than obj, "// &
+                  "use Set(VALUE=x2) between engines")
 #endif
 
 #ifdef DEBUG_VER
@@ -126,6 +141,18 @@ INTEGER(I4B) :: ierr
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. x1%GetEngineName(), &
+                  myName, "x1 uses another engine than obj, "// &
+                  "use Set(VALUE=x1) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. x2%GetEngineName(), &
+                  myName, "x2 uses another engine than obj, "// &
+                  "use Set(VALUE=x2) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. x3%GetEngineName(), &
+                  myName, "x3 uses another engine than obj, "// &
+                  "use Set(VALUE=x3) between engines")
 #endif
 
 #ifdef DEBUG_VER
@@ -216,6 +243,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
@@ -249,6 +282,12 @@ INTEGER(I4B) :: ierr
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
 #endif
 
 #ifdef DEBUG_VER
@@ -389,6 +428,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
+#endif
+
+#ifdef DEBUG_VER
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 CALL CHKERR(ierr)
 #endif
@@ -423,6 +468,15 @@ INTEGER(I4B) :: ierr
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%GetEngineName() .EQ. obj1%GetEngineName(), &
+                  myName, "obj1 uses another engine than obj, "// &
+                  "use Set(VALUE=obj1) between engines")
+CALL AssertError1(obj%GetEngineName() .EQ. obj2%GetEngineName(), &
+                  myName, "obj2 uses another engine than obj, "// &
+                  "use Set(VALUE=obj2) between engines")
 #endif
 
 #ifdef DEBUG_VER

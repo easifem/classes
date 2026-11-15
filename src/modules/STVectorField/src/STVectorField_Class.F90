@@ -1414,8 +1414,17 @@ END INTERFACE
 ! date: 2023-03-29
 ! summary: Copy another space-time vector field
 !
-! If VALUE is of type STVectorField_, obj%Copy(VALUE) is called; other
-! types raise an error in debug mode.
+! obj = VALUE. VALUE can be a STVectorField_ or any child, for example
+! a STVectorFieldLis_. If obj and VALUE have the same engine,
+! obj%Copy(VALUE) is called; otherwise the values of VALUE are read by
+! VALUE%GetMultiple and set by obj%SetMultiple, so a native field and a
+! LIS field can be copied into each other (tested in
+! src/modules/STVectorFieldLis/examples/Set_test_2.F90). obj and VALUE
+! must have the same size (checked in debug mode).
+!
+! Changes:
+!   - 2026-11-15: VALUE can be a child of STVectorField_ and use another
+!     engine (before, only TYPE IS (STVectorField_) was copied) (#633)
 !
 ! See also: [[obj_Set10]] (contains an example)
 
@@ -1564,9 +1573,19 @@ END INTERFACE
 ! date: 2025-12-11
 ! summary: Set a vector field from one time component
 !
-! For each space component s, space component s and time component
-! timeCompo of obj is set to component s of VALUE. VALUE must have
+! For each space component s, component s of VALUE is set to space
+! component s and time component timeCompo of obj. VALUE must have
 ! obj%spaceCompo components and the same DOFs as obj.
+!
+! obj can use any engine: with a native engine (NATIVE_*) its Fortran
+! vector is used directly (GetPointer); otherwise, for example a
+! STVectorFieldLis_, all its values are first read into a temporary
+! array by obj%GetMultiple (tested in
+! src/modules/STVectorFieldLis/examples/Set_test_2.F90).
+!
+! Changes:
+!   - 2026-11-15: obj can be a STVectorFieldLis_ (before, GetPointer
+!     raised an error) (#633)
 !
 ! See also: [[obj_SetFromVectorField]] (contains an example)
 

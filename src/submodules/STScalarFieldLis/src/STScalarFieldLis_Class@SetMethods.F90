@@ -373,53 +373,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetAll
 
 !----------------------------------------------------------------------------
-!                                                                        Set
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_Set13
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
-#endif
-
-INTEGER(I4B) :: ierr
-REAL(DFP), POINTER :: realvec(:)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-SELECT TYPE (VALUE)
-
-TYPE IS (STScalarField_)
-  ! copy all values of the native field into the LIS vector
-  realvec => VALUE%GetPointer()
-  CALL obj%SetMultiple(istart=1, iend=obj%SIZE(), stride=1, &
-                       VALUE=realvec)
-  realvec => NULL()
-
-TYPE is (STScalarFieldLis_)
-  CALL lis_vector_copy(VALUE%lis_ptr, obj%lis_ptr, ierr)
-
-#ifdef DEBUG_VER
-  CALL CHKERR(ierr)
-#endif
-
-#ifdef DEBUG_VER
-CLASS DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: Unknown type of ScalarField_::value')
-  RETURN
-#endif
-END SELECT
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_Set13
-
-!----------------------------------------------------------------------------
 !
 !----------------------------------------------------------------------------
 

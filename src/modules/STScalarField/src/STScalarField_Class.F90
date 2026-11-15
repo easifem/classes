@@ -133,11 +133,15 @@ CONTAINS
   !! Set the selected nodes from an FEVariable
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all entries to one value
-  PROCEDURE, PUBLIC, PASS(obj) :: Set13 => obj_Set13
-  !! Copy another space-time scalar field
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set13 => obj_Set13
+  !! Copy another space-time scalar field, used for ASSIGNMENT(=)
+  PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
+  !! obj = [obj +] scale * VALUE, VALUE of any engine
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
-    Set7, Set8, Set9, Set10, Set11, Set12, Set13
+    Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
   !! Generic Set Method
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set13
+  !! obj = VALUE, copy the values of another space-time scalar field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) ::  SetByFunction => &
     obj_SetByFunction
   !! Set by user function
@@ -1517,17 +1521,25 @@ END INTERFACE
 ! date: 2022-01-24
 ! summary: Copy another space-time scalar field, obj = VALUE
 !
-! The values of VALUE are copied into obj (COPY). Both fields must be
-! initiated (checked in debug mode) and have the same size.
+! Calls [[obj_Set14]] with scale = 1 and addContribution = false, so
+! VALUE can use any engine (native or LIS). The same routine is used by
+! the assignment obj = VALUE.
+!
+! Changes:
+!   - 2026-11-15: VALUE of any engine; before, a LIS VALUE was copied
+!     from its stale realVec; used for ASSIGNMENT(=) (#624)
 !
 ! Examples
 !
 !```fortran
 ! CALL u%SetMultiple(istart=1, iend=12, stride=1, VALUE=src)
 ! CALL v%Set(VALUE=u)
+! w = u
 !```
 !
 ! Full example: src/modules/STScalarField/examples/Set_test_4.F90
+!
+! See also: [[obj_Set14]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set13(obj, VALUE)
@@ -1536,6 +1548,44 @@ INTERFACE
     CLASS(STScalarField_), INTENT(IN) :: VALUE
     !! space-time scalar field to copy
   END SUBROUTINE obj_Set13
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                            Set@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: obj = [obj +] scale * VALUE, another space-time scalar field
+!
+! All values of VALUE are copied, scaled or added into obj by
+! SetMultiple. A native VALUE gives its Fortran vector (GetPointer),
+! another VALUE (LIS) is first read into a temporary array by
+! GetMultiple, so obj and VALUE can use any engine: a native field and
+! a STScalarFieldLis_ can be copied into each other. Both fields must be initiated and have the same size
+! (checked in debug mode).
+!
+! Examples
+!
+!```fortran
+! CALL v%Set(VALUE=u, scale=2.0_DFP, addContribution=math%yes)
+!```
+!
+! Full example: src/modules/STScalarField/examples/Set_test_4.F90
+!
+! See also: [[obj_Set13]], [[obj_Set6]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_Set14(obj, VALUE, scale, addContribution)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
+    CLASS(STScalarField_), INTENT(IN) :: VALUE
+    !! space-time scalar field of the same size, any engine
+    REAL(DFP), INTENT(IN) :: scale
+    !! scale
+    LOGICAL(LGT), INTENT(IN) :: addContribution
+    !! add (true) or set (false)
+  END SUBROUTINE obj_Set14
 END INTERFACE
 
 !----------------------------------------------------------------------------
@@ -1772,9 +1822,11 @@ END INTERFACE
 ! summary: Get all time components of one node, or one time component
 !
 ! If globalNode is present, VALUE(1:timeCompo) are the values of all
-! time components at globalNode (a local node number) and
-! tsize = timeCompo. If timeCompo is present, VALUE(1:tNodes) are the
-! values of all space DOFs of this time component and tsize = tNodes.
+! time components at globalNode and tsize = timeCompo. globalNode is a
+! local node number: islocal, if present, must be true (checked in
+! debug mode, as in [[obj_Get4]]). If timeCompo is present,
+! VALUE(1:tNodes) are the values of all space DOFs of this time
+! component and tsize = tNodes.
 ! Exactly one of globalNode and timeCompo must be present (checked in
 ! debug mode).
 !
@@ -1793,10 +1845,14 @@ END INTERFACE
 !
 ! Full example: src/modules/STScalarField/examples/Get_test_1.F90
 !
+! Changes:
+!   - 2026-11-15: optional argument islocal (#624)
+!
 ! See also: [[obj_Get4]], [[obj_Get5]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Get1(obj, VALUE, tsize, globalNode, timeCompo)
+  MODULE SUBROUTINE obj_Get1(obj, VALUE, tsize, globalNode, timeCompo, &
+                             islocal)
     CLASS(STScalarField_), INTENT(IN) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
@@ -1812,6 +1868,8 @@ INTERFACE
     !! In this case all the space nodal values of obj at timeCompo
     !! will be returned.
     !! In this case tsize will be tnodes
+    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: islocal
+    !! globalNode is a local node number, must be true if present
   END SUBROUTINE obj_Get1
 END INTERFACE
 

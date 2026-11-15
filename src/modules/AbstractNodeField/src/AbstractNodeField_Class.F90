@@ -80,6 +80,13 @@ INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 ! methods (AXPY, SCAL, COPY, Swap, norms, ...) and HDF5 and VTK
 ! output.
 !
+! Engines: each engine (NATIVE_SERIAL, LIS_OMP, ...) implements the
+! storage methods (SetSingle, SetMultiple, GetSingle, GetMultiple) and
+! the BLAS methods on its own storage. The BLAS methods work only on
+! fields of the same engine (checked in debug mode). Values are moved
+! between fields of different engines by Set(VALUE=field), which uses
+! only the storage methods, so a new engine works with all others.
+!
 ! Components:
 !   dof_tPhysicalVars - number of physical variables
 !   dof_storageFMT - storage format (DOF format)
@@ -102,6 +109,8 @@ INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 !     GetMultiple and AXPY generics are PUBLIC, so that child types in
 !     other modules (ScalarFieldLis_) can override them (a PRIVATE
 !     binding is not overridden from another module). Call the generics.
+!   - 2026-11-15: BLAS methods check that the fields have the same
+!     engine (#617).
 
 TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   LOGICAL(LGT) :: isMaxTotalNodeNumForBCSet = math%no
@@ -2203,7 +2212,12 @@ END INTERFACE
 ! summary: Copy the values: obj = obj2
 !
 ! The values of obj2 are copied into obj by the BLAS1 COPY routine.
-! Only the values are copied; both fields must have the same size.
+! Only the values are copied; both fields must have the same size and
+! the same engine (the engine is checked in debug mode). To copy a
+! field of another engine use Set(VALUE=obj2).
+!
+! Changes:
+!   - 2026-11-15: debug check of the engine of obj2 (#617)
 !
 ! Examples
 !

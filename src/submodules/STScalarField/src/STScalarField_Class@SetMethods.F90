@@ -87,18 +87,32 @@ CALL AssertError2(myint1, myint2, myName, &
                   "a=SIZE(VALUE), b=obj%timeCompo")
 #endif
 
-#ifdef DEBUG_VER
-isok = obj%timeCompo .LE. TEMP_INTVEC_LEN
-CALL AssertError1(isok, myName, "size of TEMP_INTVEC is not enough")
-#endif
-
 #include "./include/localNodeError.F90"
 
-CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
+IF (obj%timeCompo .LE. TEMP_INTVEC_LEN) THEN
+  CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
+                 tsize=tsize)
+
+  CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, &
+                       scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
+IF (obj%timeCompo .GT. SafeSize(TEMP_DYNA_INTVEC)) THEN
+  CALL Reallocate(TEMP_DYNA_INTVEC, EXPAND_FACTOR * obj%timeCompo)
+END IF
+
+CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_DYNA_INTVEC, &
                tsize=tsize)
 
-CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, scale=scale, &
-                     addContribution=addContribution)
+CALL obj%SetMultiple(indx=TEMP_DYNA_INTVEC(1:tsize), VALUE=VALUE, &
+                     scale=scale, addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -133,6 +147,11 @@ CALL AssertError1(isok, myName, &
 isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(SIZE(VALUE), obj%timeCompo, myName, &
+                  "a=SIZE(VALUE), b=obj%timeCompo")
 #endif
 
 DO idof = 1, obj%timeCompo
@@ -172,9 +191,9 @@ CALL AssertError1(isok, myName, &
 #endif
 
 #ifdef DEBUG_VER
-isok = timeCompo .LE. obj%timeCompo
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, &
-                  'timeCompo should be less or equal to obj%timeCompo')
+                  'timeCompo should be in [1, obj%timeCompo]')
 #endif
 
 #ifdef DEBUG_VER
@@ -288,7 +307,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL AssertError1(obj%IsInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 
-isok = timeCompo .LE. obj%timeCompo
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo out of bound")
 
 isok = obj%fieldType .NE. TypeField%constant
@@ -485,7 +504,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL AssertError1(obj%isInitiated(), myName, &
                   "STScalarField_::obj not initiated")
 
-isok = timeCompo .LE. obj%timeCompo
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo is out of bound")
 
 isok = obj%fieldType .NE. TypeField%constant
@@ -552,7 +571,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
 
-isok = timeCompo .LE. obj%timeCompo
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo is out of bound")
 
 isok = obj%fieldType .NE. TypeField%constant
@@ -663,19 +682,73 @@ CALL AssertError1(isok, myName, &
                   "STScalarField_::obj is not initiated")
 #endif
 
-#ifdef DEBUG_VER
-isok = VALUE%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  "STScalarField_::value is not initiated")
-#endif
-
-CALL obj%Copy(VALUE)
+CALL obj%Set(VALUE=VALUE, scale=math%one, addContribution=math%no)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_Set13
+
+!----------------------------------------------------------------------------
+!                                                                       Set
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Set14
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
+LOGICAL(LGT) :: isok
+#endif
+INTEGER(I4B) :: tsize
+LOGICAL(LGT) :: isNative
+REAL(DFP), POINTER :: realvec(:)
+REAL(DFP), ALLOCATABLE :: temp(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  "STScalarField_::obj is not initiated")
+
+isok = VALUE%IsInitiated()
+CALL AssertError1(isok, myName, &
+                  "STScalarField_::value is not initiated")
+
+CALL AssertError2(VALUE%SIZE(), obj%SIZE(), myName, &
+                  "a=VALUE%SIZE(), b=obj%SIZE()")
+#endif
+
+! Native engines store the values in realVec, other engines (LIS) do
+! not: their values are first read into temp. VALUE is INTENT(IN), so
+! SetMultiple5 (VALUE INTENT(INOUT)) cannot be used.
+isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
+tsize = VALUE%SIZE()
+
+IF (isNative) THEN
+  realvec => VALUE%GetPointer()
+  CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                       VALUE=realvec, scale=scale, &
+                       addContribution=addContribution)
+  realvec => NULL()
+ELSE
+  CALL Reallocate(temp, tsize)
+  CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                         VALUE=temp, tsize=tsize)
+  CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                       VALUE=temp, scale=scale, &
+                       addContribution=addContribution)
+  IF (ALLOCATED(temp)) DEALLOCATE (temp)
+END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
 !                                                         SetFromScalarField
@@ -704,6 +777,15 @@ CALL AssertError1(isok, myName, &
 isok = VALUE%IsInitiated()
 CALL AssertError1(isok, myName, &
                   'ScalarField_::value is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%fieldType .NE. TypeField%constant
+CALL AssertError1(isok, myName, &
+                  'Not callable for constant STScalar field')
+
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 s = GetNodeLoc(obj=obj%dof, idof=timeCompo)

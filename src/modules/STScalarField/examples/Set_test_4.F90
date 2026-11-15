@@ -8,7 +8,8 @@
 !  layout, space first),
 !- GetFEVariable(globalNode(:), islocal, VALUE) returns them in the
 !  same layout,
-!- Set(VALUE=v) copies another space-time field (Set13),
+!- Set(VALUE=v) and v = u copy another space-time field (Set13),
+!  Set(VALUE=v, scale, addContribution) scales or adds it (Set14),
 !- SetFromScalarField(timeCompo, VALUE=s) sets one time component
 !  from a scalar field s,
 !- SetToScalarField(timeCompo, VALUE=s) sets s from one time
@@ -80,6 +81,16 @@ BLOCK
   CALL v%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
                      tsize=tsize)
   CALL OK(ALL(ABS(found - src) .LT. tol), "Set(VALUE=u): copy")
+
+  CALL v%Set(VALUE=u, scale=2.0_DFP, addContribution=math%yes)
+  CALL v%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
+                     tsize=tsize)
+  CALL OK(ALL(ABS(found - 3.0_DFP * src) .LT. tol), "Set14: v + 2 * u")
+
+  v = u
+  CALL v%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
+                     tsize=tsize)
+  CALL OK(ALL(ABS(found - src) .LT. tol), "v = u: assignment")
 END BLOCK
 
 ! Test 3: one time component from a scalar field
