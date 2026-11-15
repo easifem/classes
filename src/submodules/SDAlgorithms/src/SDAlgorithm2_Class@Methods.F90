@@ -23,10 +23,15 @@ USE InputUtility, ONLY: Input
 USE StringUtility, ONLY: UpperCase
 
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "SDAlgorithm2_Class()"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                               NewmarkBeta
+!                                                                 NewmarkBeta
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_NewmarkBetaMethod
@@ -56,7 +61,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_NewmarkBetaMethod
 
 !----------------------------------------------------------------------------
-!                                                             HHTAlphaMethod
+!                                                              HHTAlphaMethod
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_HHTAlphaMethod
@@ -98,7 +103,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_HHTAlphaMethod
 
 !----------------------------------------------------------------------------
-!                                                     GeneralizedAlphaMethod
+!                                                      GeneralizedAlphaMethod
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GeneralizedAlphaMethod
@@ -151,7 +156,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_GeneralizedAlphaMethod
 
 !----------------------------------------------------------------------------
-!                                                                Collocation
+!                                                                 Collocation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_CollocationMethod
@@ -183,7 +188,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_CollocationMethod
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
+!                                                                    Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
@@ -250,7 +255,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                SetUFormCoefficients_master
+!                                                 SetUFormCoefficients_master
 !----------------------------------------------------------------------------
 
 ! Coefficients of the u-form (the unknown sol is the displacement) of the
@@ -261,6 +266,16 @@ SUBROUTINE SetUFormCoefficients_master(obj, dt)
   CLASS(SDAlgorithm2_), INTENT(INOUT) :: obj
   !! algorithm object
   REAL(DFP), INTENT(IN) :: dt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetUFormCoefficients_master()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   !! time step size
 
   SELECT CASE (obj%name)
@@ -273,10 +288,15 @@ SUBROUTINE SetUFormCoefficients_master(obj, dt)
   CASE DEFAULT
     ! unknown names are rejected in Initiate
   END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SetUFormCoefficients_master
 
 !----------------------------------------------------------------------------
-!                                                SetAFormCoefficients_master
+!                                                 SetAFormCoefficients_master
 !----------------------------------------------------------------------------
 
 ! Coefficients of the a-form (the unknown sol is the acceleration) of the
@@ -287,6 +307,16 @@ SUBROUTINE SetAFormCoefficients_master(obj, dt)
   CLASS(SDAlgorithm2_), INTENT(INOUT) :: obj
   !! algorithm object
   REAL(DFP), INTENT(IN) :: dt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetAFormCoefficients_master()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   !! time step size
 
   SELECT CASE (obj%name)
@@ -299,10 +329,15 @@ SUBROUTINE SetAFormCoefficients_master(obj, dt)
   CASE DEFAULT
     ! unknown names are rejected in Initiate
   END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SetAFormCoefficients_master
 
 !----------------------------------------------------------------------------
-!                                                   NewmarkUFormCoefficients
+!                                                    NewmarkUFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Newmark-beta, u-form. The balance M A + C V + K U = F at t(n+1) with
@@ -321,6 +356,15 @@ SUBROUTINE NewmarkUFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "NewmarkUFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -357,10 +401,15 @@ SUBROUTINE NewmarkUFormCoefficients(obj, dt)
   obj%acc(4) = math%one / (beta * dt**2)
 
   obj%initialGuess = math%zero
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE NewmarkUFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                                   NewmarkAFormCoefficients
+!                                                    NewmarkAFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Newmark-beta, a-form. With sol = A(n+1) and the predictors
@@ -376,6 +425,15 @@ SUBROUTINE NewmarkAFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "NewmarkAFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -414,10 +472,15 @@ SUBROUTINE NewmarkAFormCoefficients(obj, dt)
   obj%initialGuess(1) = math%zero
   obj%initialGuess(2) = math%zero
   obj%initialGuess(3) = math%one
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE NewmarkAFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                          GeneralizedAlphaUFormCoefficients
+!                                           GeneralizedAlphaUFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Generalized-alpha (and HHT-alpha, alphaM = 0, alphaF = -alpha), u-form.
@@ -442,6 +505,15 @@ SUBROUTINE GeneralizedAlphaUFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma, alphaF, oneMinusAlphaM, oneMinusAlphaF
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GeneralizedAlphaUFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -481,10 +553,15 @@ SUBROUTINE GeneralizedAlphaUFormCoefficients(obj, dt)
   obj%acc(4) = math%one / (beta * dt**2)
 
   obj%initialGuess = math%zero
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE GeneralizedAlphaUFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                          GeneralizedAlphaAFormCoefficients
+!                                           GeneralizedAlphaAFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Generalized-alpha (and HHT-alpha), a-form. With sol = A(n+1) and the
@@ -502,6 +579,15 @@ SUBROUTINE GeneralizedAlphaAFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma, alphaM, oneMinusAlphaF
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "GeneralizedAlphaAFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -542,10 +628,15 @@ SUBROUTINE GeneralizedAlphaAFormCoefficients(obj, dt)
   obj%initialGuess(1) = math%zero
   obj%initialGuess(2) = math%zero
   obj%initialGuess(3) = math%one
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE GeneralizedAlphaAFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                               CollocationUFormCoefficients
+!                                                CollocationUFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Collocation (Wilson-theta when beta = 1/6, gamma = 1/2), u-form. The
@@ -562,6 +653,15 @@ SUBROUTINE CollocationUFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma, theta, thetaDt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "CollocationUFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -600,10 +700,15 @@ SUBROUTINE CollocationUFormCoefficients(obj, dt)
   obj%acc(4) = math%one / (beta * theta**3 * dt**2)
 
   obj%initialGuess = math%zero
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE CollocationUFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                               CollocationAFormCoefficients
+!                                                CollocationAFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Collocation, a-form. The Newmark a-form over the step thetaDt =
@@ -618,6 +723,15 @@ SUBROUTINE CollocationAFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma, theta, thetaDt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "CollocationAFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -658,18 +772,37 @@ SUBROUTINE CollocationAFormCoefficients(obj, dt)
   obj%initialGuess(1) = math%zero
   obj%initialGuess(2) = math%zero
   obj%initialGuess(3) = math%one
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE CollocationAFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                                               IsInitiated
+!                                                                 IsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
-!                                                                   SetForm
+!                                                                     SetForm
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetForm
@@ -702,15 +835,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetForm
 
 !----------------------------------------------------------------------------
-!                                                                   GetForm
+!                                                                     GetForm
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetForm
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetForm()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%FORM
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetForm
 
 !----------------------------------------------------------------------------
-!                                                        SetForceEvaluation
+!                                                          SetForceEvaluation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetForceEvaluation
@@ -744,15 +891,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetForceEvaluation
 
 !----------------------------------------------------------------------------
-!                                                        GetForceEvaluation
+!                                                          GetForceEvaluation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetForceEvaluation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetForceEvaluation()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%forceEvaluation
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetForceEvaluation
 
 !----------------------------------------------------------------------------
-!                                                              GetForceTime
+!                                                                GetForceTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetForceTime
@@ -892,7 +1053,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                 Display
+!                                                                     Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
@@ -945,7 +1106,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                             Include errors
+!                                                              Include errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

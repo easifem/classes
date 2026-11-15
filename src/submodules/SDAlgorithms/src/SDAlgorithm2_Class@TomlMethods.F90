@@ -28,10 +28,14 @@ USE TomlUtility, ONLY: GetValue
 
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "SDAlgorithm2_Class()"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                  NewmarkBetaImportFromToml
+!                                                   NewmarkBetaImportFromToml
 !----------------------------------------------------------------------------
 
 SUBROUTINE NewmarkBetaMethodImportFromToml(obj, table, astr, origin, stat)
@@ -199,10 +203,24 @@ CONTAINS
     REAL(DFP) :: areal
     LOGICAL(LGT) :: isFound
 
+#ifdef DEBUG_VER
+    CHARACTER(*), PARAMETER :: myName = "ReadOptional()"
+#endif
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[START] ')
+#endif
+
     CALL GetValue(table=node, key=key, VALUE=areal, &
                   default_value=math%zero, origin=origin, stat=stat, &
                   isFound=isFound)
     IF (isFound) val = areal
+
+#ifdef DEBUG_VER
+    CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                            '[END] ')
+#endif
   END SUBROUTINE ReadOptional
 
 END SUBROUTINE GeneralizedAlphaMethodImportFromToml
@@ -263,7 +281,7 @@ SUBROUTINE CollocationMethodImportFromToml(obj, table, astr, origin, stat)
 END SUBROUTINE CollocationMethodImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                             ImportFromToml
+!                                                              ImportFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml1
@@ -343,7 +361,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
-!                                                            ImportFromToml
+!                                                              ImportFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2

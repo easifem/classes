@@ -26,10 +26,14 @@ USE TomlUtility, ONLY: GetValue
 
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "CSDAlgorithm2_Class()"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                         ReadOptionalReal
+!                                                            ReadOptionalReal
 !----------------------------------------------------------------------------
 
 ! val is allocated only if key is in node. An unallocated actual
@@ -48,14 +52,28 @@ SUBROUTINE ReadOptionalReal(node, key, val)
   INTEGER(I4B) :: origin, stat
   LOGICAL(LGT) :: isFound
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "ReadOptionalReal()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   CALL GetValue(table=node, key=key, VALUE=areal, &
                 default_value=math%zero, origin=origin, stat=stat, &
                 isFound=isFound)
   IF (isFound) val = areal
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE ReadOptionalReal
 
 !----------------------------------------------------------------------------
-!                                                    BatheMethodImportFromToml
+!                                                   BatheMethodImportFromToml
 !----------------------------------------------------------------------------
 
 ! Read the parameters of Bathe method from the table astr. The key gamma
@@ -123,7 +141,7 @@ SUBROUTINE BatheMethodImportFromToml(obj, table, astr)
 END SUBROUTINE BatheMethodImportFromToml
 
 !----------------------------------------------------------------------------
-!                                              NewmarkBetaMethodImportFromToml
+!                                             NewmarkBetaMethodImportFromToml
 !----------------------------------------------------------------------------
 
 ! Read beta and gamma of Newmark-beta method from the table astr
@@ -169,7 +187,7 @@ SUBROUTINE NewmarkBetaMethodImportFromToml(obj, table, astr)
 END SUBROUTINE NewmarkBetaMethodImportFromToml
 
 !----------------------------------------------------------------------------
-!                                                             ImportFromToml
+!                                                              ImportFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml1
@@ -225,7 +243,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
-!                                                             ImportFromToml
+!                                                              ImportFromToml
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_ImportFromToml2
@@ -276,7 +294,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_ImportFromToml2
 
 !----------------------------------------------------------------------------
-!                                                             Include errors
+!                                                              Include errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

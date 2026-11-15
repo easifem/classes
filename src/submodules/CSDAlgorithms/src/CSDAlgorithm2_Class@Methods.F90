@@ -24,10 +24,14 @@ USE StringUtility, ONLY: UpperCase
 
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "CSDAlgorithm2_Class()"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
-!                                                         NewmarkBetaMethod
+!                                                           NewmarkBetaMethod
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_NewmarkBetaMethod
@@ -57,7 +61,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_NewmarkBetaMethod
 
 !----------------------------------------------------------------------------
-!                                                               BatheMethod
+!                                                                 BatheMethod
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_BatheMethod
@@ -112,7 +116,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_BatheMethod
 
 !----------------------------------------------------------------------------
-!                                                       SetWeightsGammaBathe
+!                                                        SetWeightsGammaBathe
 !----------------------------------------------------------------------------
 
 ! gamma-Bathe: b0 = b1 = 1/(2 (2 - s)), b2 = (1 - s)/(2 - s), where s is
@@ -123,6 +127,15 @@ SUBROUTINE SetWeightsGammaBathe(obj)
 
   REAL(DFP) :: twoMinusRatio
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetWeightsGammaBathe()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   twoMinusRatio = math%two - obj%splittingRatio
 
   obj%b0 = math%half / twoMinusRatio
@@ -131,10 +144,14 @@ SUBROUTINE SetWeightsGammaBathe(obj)
 
   obj%b2 = (math%one - obj%splittingRatio) / twoMinusRatio
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SetWeightsGammaBathe
 
 !----------------------------------------------------------------------------
-!                                                        SetWeightsBetaBathe
+!                                                         SetWeightsBetaBathe
 !----------------------------------------------------------------------------
 
 ! beta1/beta2-Bathe: b0 = (1 - beta1) s, b1 = (1 - beta2)(1 - s) + beta1 s,
@@ -145,6 +162,15 @@ SUBROUTINE SetWeightsBetaBathe(obj)
 
   REAL(DFP) :: ratio
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetWeightsBetaBathe()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   ratio = obj%splittingRatio
 
   obj%b0 = (math%one - obj%beta1) * ratio
@@ -153,10 +179,14 @@ SUBROUTINE SetWeightsBetaBathe(obj)
 
   obj%b2 = (math%one - ratio) * obj%beta2
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SetWeightsBetaBathe
 
 !----------------------------------------------------------------------------
-!                                                         SetWeightsRhoBathe
+!                                                          SetWeightsRhoBathe
 !----------------------------------------------------------------------------
 
 ! rho-infinity-Bathe: b1 = (rhoInf + 1)/(2 s (rhoInf - 1) + 4),
@@ -167,6 +197,15 @@ SUBROUTINE SetWeightsRhoBathe(obj)
 
   REAL(DFP) :: ratio
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetWeightsRhoBathe()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   ratio = obj%splittingRatio
 
   obj%b1 = (obj%rhoInf + math%one) / &
@@ -176,10 +215,14 @@ SUBROUTINE SetWeightsRhoBathe(obj)
 
   obj%b2 = math%half - ratio * obj%b1
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SetWeightsRhoBathe
 
 !----------------------------------------------------------------------------
-!                                                                  Initiate
+!                                                                    Initiate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Initiate
@@ -245,7 +288,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Initiate
 
 !----------------------------------------------------------------------------
-!                                                       AllocateCoefficients
+!                                                        AllocateCoefficients
 !----------------------------------------------------------------------------
 
 ! Allocate the coefficients and their zero flags for totalSubstep
@@ -260,6 +303,15 @@ SUBROUTINE AllocateCoefficients(obj, totalSubstep)
   !! number of substeps
 
   INTEGER(I4B) :: nhist
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "AllocateCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   obj%totalSubstep = totalSubstep
   nhist = 3 + totalSubstep
@@ -282,14 +334,29 @@ SUBROUTINE AllocateCoefficients(obj, totalSubstep)
   CALL Reallocate(obj%acc_zero, nhist)
   CALL Reallocate(obj%initialGuess, nhist, totalSubstep)
   CALL Reallocate(obj%initialGuess_zero, nhist, totalSubstep)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE AllocateCoefficients
 
 !----------------------------------------------------------------------------
-!                                                     DeallocateCoefficients
+!                                                      DeallocateCoefficients
 !----------------------------------------------------------------------------
 
 SUBROUTINE DeallocateCoefficients(obj)
   CLASS(CSDAlgorithm2_), INTENT(INOUT) :: obj
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "DeallocateCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   !! algorithm object
 
   ! the coefficients are allocated together in AllocateCoefficients
@@ -301,10 +368,15 @@ SUBROUTINE DeallocateCoefficients(obj)
                 obj%initialGuess, obj%initialGuess_zero)
   END IF
   obj%totalSubstep = math%zero_i
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE DeallocateCoefficients
 
 !----------------------------------------------------------------------------
-!                                                SetUFormCoefficients_master
+!                                                 SetUFormCoefficients_master
 !----------------------------------------------------------------------------
 
 ! Coefficients of the u-form (sol_k is a displacement) of obj%name
@@ -314,6 +386,15 @@ SUBROUTINE SetUFormCoefficients_master(obj, dt)
 
   REAL(DFP), INTENT(IN) :: dt
 
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetUFormCoefficients_master()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   SELECT CASE (obj%name)
   CASE ("NEWM")
     CALL NewmarkUFormCoefficients(obj, dt)
@@ -322,10 +403,15 @@ SUBROUTINE SetUFormCoefficients_master(obj, dt)
   CASE DEFAULT
     ! unknown names are rejected in Initiate
   END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SetUFormCoefficients_master
 
 !----------------------------------------------------------------------------
-!                                                SetAFormCoefficients_master
+!                                                 SetAFormCoefficients_master
 !----------------------------------------------------------------------------
 
 ! Coefficients of the a-form (sol_k is an acceleration) of obj%name
@@ -334,6 +420,16 @@ SUBROUTINE SetAFormCoefficients_master(obj, dt)
   CLASS(CSDAlgorithm2_), INTENT(INOUT) :: obj
 
   REAL(DFP), INTENT(IN) :: dt
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "SetAFormCoefficients_master()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
+
   !! time step size
 
   SELECT CASE (obj%name)
@@ -344,10 +440,15 @@ SUBROUTINE SetAFormCoefficients_master(obj, dt)
   CASE DEFAULT
     ! unknown names are rejected in Initiate
   END SELECT
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE SetAFormCoefficients_master
 
 !----------------------------------------------------------------------------
-!                                                   NewmarkUFormCoefficients
+!                                                    NewmarkUFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Newmark-beta, u-form, one substep, sol_1 = U(n+1). History:
@@ -367,6 +468,15 @@ SUBROUTINE NewmarkUFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "NewmarkUFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -400,10 +510,15 @@ SUBROUTINE NewmarkUFormCoefficients(obj, dt)
   obj%acc(2) = -math%one / (beta * dt)
   obj%acc(3) = math%one - math%half / beta
   obj%acc(4) = math%one / (beta * dt**2)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE NewmarkUFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                                   NewmarkAFormCoefficients
+!                                                    NewmarkAFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Newmark-beta, a-form, one substep, sol_1 = A(n+1). With the predictors
@@ -419,6 +534,15 @@ SUBROUTINE NewmarkAFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: beta, gamma
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "NewmarkAFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   beta = obj%beta
   gamma = obj%gamma
@@ -453,10 +577,15 @@ SUBROUTINE NewmarkAFormCoefficients(obj, dt)
 
   ! initial guess of sol_1 is An
   obj%initialGuess(3, 1) = math%one
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE NewmarkAFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                                     BatheUFormCoefficients
+!                                                      BatheUFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Bathe, u-form, two substeps, sol_1 = U(n+s), sol_2 = U(n+1), where s is
@@ -482,6 +611,15 @@ SUBROUTINE BatheUFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: ratio, substepDt, b0, b1, b2
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "BatheUFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   ratio = obj%splittingRatio
   substepDt = ratio * dt
@@ -542,10 +680,15 @@ SUBROUTINE BatheUFormCoefficients(obj, dt)
   obj%acc(3) = -obj%rhs(1, 3, 2)
   obj%acc(4) = -obj%rhs(1, 4, 2)
   obj%acc(5) = math%one / (b2 * dt)**2
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE BatheUFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                                     BatheAFormCoefficients
+!                                                      BatheAFormCoefficients
 !----------------------------------------------------------------------------
 
 ! Bathe, a-form, two substeps, sol_1 = A(n+s), sol_2 = A(n+1), where s is
@@ -570,6 +713,15 @@ SUBROUTINE BatheAFormCoefficients(obj, dt)
   !! time step size
 
   REAL(DFP) :: ratio, substepDt, b0, b1, b2
+
+#ifdef DEBUG_VER
+  CHARACTER(*), PARAMETER :: myName = "BatheAFormCoefficients()"
+#endif
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[START] ')
+#endif
 
   ratio = obj%splittingRatio
   substepDt = ratio * dt
@@ -629,18 +781,37 @@ SUBROUTINE BatheAFormCoefficients(obj, dt)
   ! initial guess of sol_1 and sol_2 is An
   obj%initialGuess(3, 1) = math%one
   obj%initialGuess(3, 2) = math%one
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 END SUBROUTINE BatheAFormCoefficients
 
 !----------------------------------------------------------------------------
-!                                                               IsInitiated
+!                                                                 IsInitiated
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_IsInitiated
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_IsInitiated()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%isInit
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_IsInitiated
 
 !----------------------------------------------------------------------------
-!                                                                   SetForm
+!                                                                     SetForm
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetForm
@@ -673,15 +844,29 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetForm
 
 !----------------------------------------------------------------------------
-!                                                                   GetForm
+!                                                                     GetForm
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetForm
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetForm()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%FORM
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetForm
 
 !----------------------------------------------------------------------------
-!                                                        SetForceEvaluation
+!                                                          SetForceEvaluation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_SetForceEvaluation
@@ -715,21 +900,40 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_SetForceEvaluation
 
 !----------------------------------------------------------------------------
-!                                                        GetForceEvaluation
+!                                                          GetForceEvaluation
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetForceEvaluation
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetForceEvaluation()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%forceEvaluation
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetForceEvaluation
 
 !----------------------------------------------------------------------------
-!                                                              GetForceTime
+!                                                                GetForceTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetForceTime
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetForceTime()"
 LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
 #ifdef DEBUG_VER
@@ -740,16 +944,26 @@ CALL AssertError1(isok, myName, &
 #endif
 
 ans = t + obj%forceTime(substep) * obj%dt
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetForceTime
 
 !----------------------------------------------------------------------------
-!                                                            GetSubstepTime
+!                                                              GetSubstepTime
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetSubstepTime
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetSubstepTime()"
 LOGICAL(LGT) :: isok
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
 #endif
 
 #ifdef DEBUG_VER
@@ -761,38 +975,84 @@ CALL AssertError1(isok, myName, &
 
 ans = t + obj%substepTime(substep) * obj%dt
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetSubstepTime
 
 !----------------------------------------------------------------------------
-!                                                           GetTotalSubstep
+!                                                             GetTotalSubstep
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetTotalSubstep
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetTotalSubstep()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%totalSubstep
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetTotalSubstep
 
 !----------------------------------------------------------------------------
-!                                                         GetCurrentSubstep
+!                                                           GetCurrentSubstep
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetCurrentSubstep
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetCurrentSubstep()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 ans = obj%currentSubstep
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetCurrentSubstep
 
 !----------------------------------------------------------------------------
-!                                                      UpdateCurrentSubstep
+!                                                        UpdateCurrentSubstep
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_UpdateCurrentSubstep
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_UpdateCurrentSubstep()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 IF (obj%currentSubstep .GE. obj%totalSubstep) THEN
   obj%currentSubstep = math%one_i
 ELSE
   obj%currentSubstep = obj%currentSubstep + math%one_i
 END IF
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_UpdateCurrentSubstep
 
 !----------------------------------------------------------------------------
-!                                                                 MakeZeros
+!                                                                   MakeZeros
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_MakeZeros
@@ -823,7 +1083,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_MakeZeros
 
 !----------------------------------------------------------------------------
-!                                                                Deallocate
+!                                                                  Deallocate
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Deallocate
@@ -861,7 +1121,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Deallocate
 
 !----------------------------------------------------------------------------
-!                                                                   Display
+!                                                                     Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
@@ -919,7 +1179,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
-!                                                            Include errors
+!                                                              Include errors
 !----------------------------------------------------------------------------
 
 #include "../../include/errors.F90"

@@ -38,10 +38,8 @@ PRIVATE
 
 PUBLIC :: CSDAlgorithm2_
 
-CHARACTER(*), PARAMETER :: modName = "CSDAlgorithm2_Class()"
-
 !----------------------------------------------------------------------------
-!                                                             CSDAlgorithm2_
+!                                                              CSDAlgorithm2_
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -211,7 +209,7 @@ CONTAINS
 END TYPE CSDAlgorithm2_
 
 !----------------------------------------------------------------------------
-!                                                    NewmarkBetaMethod@Methods
+!                                                   NewmarkBetaMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -258,7 +256,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          BatheMethod@Methods
+!                                                         BatheMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -335,7 +333,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Initiate@Methods
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -381,7 +379,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          IsInitiated@Methods
+!                                                         IsInitiated@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -423,7 +421,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              SetForm@Methods
+!                                                             SetForm@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -462,7 +460,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              GetForm@Methods
+!                                                             GetForm@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -501,7 +499,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   SetForceEvaluation@Methods
+!                                                  SetForceEvaluation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -547,7 +545,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetForceEvaluation@Methods
+!                                                  GetForceEvaluation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -585,7 +583,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetForceTime@Methods
+!                                                        GetForceTime@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -635,7 +633,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       GetSubstepTime@Methods
+!                                                      GetSubstepTime@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -684,7 +682,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                      GetTotalSubstep@Methods
+!                                                     GetTotalSubstep@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -722,7 +720,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    GetCurrentSubstep@Methods
+!                                                   GetCurrentSubstep@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -766,7 +764,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                 UpdateCurrentSubstep@Methods
+!                                                UpdateCurrentSubstep@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -787,7 +785,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            MakeZeros@Methods
+!                                                           MakeZeros@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -804,7 +802,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Deallocate@Methods
+!                                                          Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -819,7 +817,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              Display@Methods
+!                                                             Display@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -838,7 +836,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                ImportFromToml@TomlMethods
+!                                                  ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -885,7 +883,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                ImportFromToml@TomlMethods
+!                                                  ImportFromToml@TomlMethods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu

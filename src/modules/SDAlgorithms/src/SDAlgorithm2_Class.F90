@@ -27,7 +27,6 @@ IMPLICIT NONE
 PRIVATE
 PUBLIC :: SDAlgorithm2_
 PUBLIC :: SDAlgorithm2Pointer_
-CHARACTER(*), PARAMETER :: modName = "SDAlgorithm2_Class()"
 
 !----------------------------------------------------------------------------
 !
@@ -222,7 +221,7 @@ TYPE SDAlgorithm2Pointer_
 END TYPE SDAlgorithm2Pointer_
 
 !----------------------------------------------------------------------------
-!                                                          NewmarkBeta@Methods
+!                                                         NewmarkBeta@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -274,7 +273,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                       HHTAlphaMethod@Methods
+!                                                      HHTAlphaMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -329,7 +328,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                               GeneralizedAlphaMethod@Methods
+!                                              GeneralizedAlphaMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -402,7 +401,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                    CollocationMethod@Methods
+!                                                   CollocationMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -454,7 +453,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                             Initiate@Methods
+!                                                            Initiate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -501,7 +500,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                          IsInitiated@Methods
+!                                                         IsInitiated@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -543,7 +542,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              SetForm@Methods
+!                                                             SetForm@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -583,7 +582,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              GetForm@Methods
+!                                                             GetForm@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -622,7 +621,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   SetForceEvaluation@Methods
+!                                                  SetForceEvaluation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -673,7 +672,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                   GetForceEvaluation@Methods
+!                                                  GetForceEvaluation@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -711,7 +710,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                         GetForceTime@Methods
+!                                                        GetForceTime@Methods
 !----------------------------------------------------------------------------
 
 !> author: Shion Shimizu
@@ -761,7 +760,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                        HouboltMethod@Methods
+!                                                       HouboltMethod@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -771,12 +770,11 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_HouboltMethod(obj)
     CLASS(SDAlgorithm2_), INTENT(INOUT) :: obj
-    CHARACTER(*), PARAMETER :: myName = "Houbolt"
   END SUBROUTINE obj_HouboltMethod
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                            MakeZeros@Methods
+!                                                           MakeZeros@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -786,13 +784,11 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_MakeZeros(obj)
     CLASS(SDAlgorithm2_), INTENT(INOUT) :: obj
-    ! internal varibales
-    REAL(DFP), PARAMETER :: myzero = math%zero
   END SUBROUTINE obj_MakeZeros
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                              Display@Methods
+!                                                             Display@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -808,7 +804,7 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
-!                                                           Deallocate@Methods
+!                                                          Deallocate@Methods
 !----------------------------------------------------------------------------
 
 !> author: Vikas Sharma, Ph. D.
@@ -884,11 +880,6 @@ INTERFACE
     TYPE(TxtFile_), OPTIONAL, INTENT(INOUT) :: afile
     CHARACTER(*), OPTIONAL, INTENT(IN) :: filename
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: printToml
-    ! internal variables
-    CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml2()"
-    TYPE(toml_table), ALLOCATABLE :: table
-    TYPE(toml_table), POINTER :: node
-    INTEGER(I4B) :: origin, STAT
   END SUBROUTINE obj_ImportFromToml2
 END INTERFACE
 
