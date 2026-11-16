@@ -47,6 +47,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
 CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                                copyStructure=copyStructure, &
                                usePointer=usePointer)
@@ -116,16 +120,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 CALL obj%ScalarField_%Initiate( &
-  name=name, engine=engine, fieldType=fieldType, &
-  storageFMT=storageFMT, comm=comm, local_n=local_n, global_n=global_n, &
-  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
-  isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &
-  isTimeCompo=isTimeCompo, isTimeCompoScalar=isTimeCompoScalar, &
-  tPhysicalVarNames=tPhysicalVarNames, physicalVarNames=physicalVarNames, &
-  isPhysicalVarNames=isPhysicalVarNames, &
-  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, tNodes=tNodes, &
-  isTNodes=isTNodes, isTNodesScalar=isTNodesScalar, tSize=tSize, &
-  fedof=fedof, geofedof=geofedof, timefedof=timefedof)
+  name=name, engine=engine, fedof=fedof, geofedof=geofedof, &
+  fieldType=fieldType, comm=comm, local_n=local_n, global_n=global_n)
 
 ! the values are stored in the LIS vector, whatever engine was given
 obj%engine = "LIS_OMP"

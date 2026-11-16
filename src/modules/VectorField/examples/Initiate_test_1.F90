@@ -35,7 +35,7 @@ PROGRAM main
   CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                         filename=tomlFileName, tomlName="u")
-  CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+  CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", spaceCompo=2, &
                   fedof=fedof, geofedof=geofedof)
 
   CALL OK(v%IsInitiated(), "IsInitiated")

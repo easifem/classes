@@ -19,6 +19,21 @@ IMPLICIT NONE
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under development')
+#endif
+END PROCEDURE obj_ImportFromToml1
+
+!----------------------------------------------------------------------------
 !                                                                    Import
 !----------------------------------------------------------------------------
 

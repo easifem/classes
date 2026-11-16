@@ -46,7 +46,7 @@ PROGRAM main
   CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                         filename=tomlFileName, tomlName="u")
   CALL nbcField%Initiate(NAME="nbcField", engine="NATIVE_SERIAL", &
-                         spaceCompo=[2], fedof=fedof, geofedof=geofedof)
+                         spaceCompo=2, fedof=fedof, geofedof=geofedof)
 
   CALL OK(u%GetTotalNBC() .EQ. 3, "GetTotalNBC")
 

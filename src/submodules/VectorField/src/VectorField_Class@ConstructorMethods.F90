@@ -74,7 +74,6 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
-LOGICAL(LGT) :: isok
 #endif
 
 CHARACTER(1) :: dof_names(1)
@@ -86,15 +85,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-#ifdef DEBUG_VER
-isok = PRESENT(spaceCompo)
-CALL AssertError1(isok, myName, "spaceCompo should be present.")
-#endif
-
 CALL obj%DEALLOCATE()
 dof_names(1) = name(1:1)
 dof_tNodes(1) = fedof%GetTotalDOF()
-dof_spaceCompo(1) = spaceCompo(1)
+dof_spaceCompo(1) = spaceCompo
 dof_tsize = dof_tNodes(1) * dof_spaceCompo(1)
 dof_timeCompo(1) = 1_I4B
 dof_tPhysicalVarNames = 1_I4B
@@ -102,14 +96,14 @@ dof_tPhysicalVarNames = 1_I4B
 CALL AbstractNodeFieldInitiate( &
   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
   local_n=local_n, global_n=global_n, fedof=fedof, geofedof=geofedof, &
-  timefedof=timefedof, storageFMT=obj%GetStorageFMT(), &
+  storageFMT=obj%GetStorageFMT(), &
   spaceCompo=dof_spaceCompo, isSpaceCompo=.TRUE., isSpaceCompoScalar=.TRUE., &
   timeCompo=dof_timeCompo, isTimeCompo=.TRUE., isTimeCompoScalar=.TRUE., &
   tPhysicalVarNames=dof_tPhysicalVarNames, physicalVarNames=dof_names, &
   isPhysicalVarNames=.TRUE., isPhysicalVarNamesScalar=.TRUE., &
   tSize=dof_tsize, tNodes=dof_tNodes, isTNodes=.TRUE., isTNodesScalar=.TRUE.)
 
-obj%spaceCompo = spaceCompo(1)
+obj%spaceCompo = spaceCompo
 CALL Reallocate(obj%idofs, obj%spaceCompo)
 obj%idofs = Arange(1_I4B, obj%spaceCompo)
 

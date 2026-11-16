@@ -39,9 +39,9 @@ CALL lis%Initiate()
 CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                       filename=tomlFileName, tomlName="u")
-CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
+CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
-CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 CALL s%Initiate(NAME="s", engine="LIS_OMP", fedof=fedof, &
                 geofedof=geofedof)

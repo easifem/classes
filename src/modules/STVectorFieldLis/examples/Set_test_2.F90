@@ -47,13 +47,13 @@ CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
                       fedof=fedof, geofedof=geofedof, &
                       timefedof=timefedof, dom=dom)
-CALL w%Initiate(NAME="w", engine="LIS_OMP", spaceCompo=[2], &
+CALL w%Initiate(NAME="w", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
-CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
-CALL a%Initiate(NAME="a", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL a%Initiate(NAME="a", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
-CALL b%Initiate(NAME="b", engine="LIS_OMP", spaceCompo=[2], &
+CALL b%Initiate(NAME="b", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 want = [(REAL(ii, DFP), ii=1, 24)]
 

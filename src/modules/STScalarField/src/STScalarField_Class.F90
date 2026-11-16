@@ -19,6 +19,7 @@
 ! summary: Space-time scalar field data type is defined
 
 MODULE STScalarField_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
@@ -95,12 +96,16 @@ CONTAINS
   !! Initiate by copying another node field
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate an instance of STScalarField_ by passing arguments
+  GENERIC, PUBLIC :: Initiate => Initiate2
+  !! Generic method to initiate a space-time scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside the STScalarField_ object
   FINAL :: obj_Final
   !! Finalizer
 
   ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Initiate a space-time scalar field from a toml table
   PROCEDURE, PUBLIC, PASS(obj) :: Display => obj_Display
   !! Display the content of STScalarField_
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
@@ -263,7 +268,7 @@ END INTERFACE
 !
 ! obj is deallocated first. timeCompo is the total number of DOFs of
 ! timefedof when timefedof is present and initiated, otherwise it is
-! timeCompo(1) (an error is raised in debug mode if it is missing).
+! timeCompo (an error is raised in debug mode if it is missing).
 ! idofs is set to [1, ..., timeCompo]. The node field has one physical
 ! variable (named by the first character of name), one space
 ! component, timeCompo time components and fedof%GetTotalDOF() space
@@ -321,7 +326,7 @@ END INTERFACE
 ! ! Test 3: timeCompo given without timefedof
 ! BLOCK
 !   CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", fedof=fedof, &
-!                   geofedof=geofedof, timeCompo=[3])
+!                   geofedof=geofedof, timeCompo=3)
 !   CALL OK(w%timeCompo .EQ. 3, "w: timeCompo")
 !   CALL OK(w%SIZE() .EQ. 18, "w: Size")
 ! END BLOCK
@@ -352,79 +357,38 @@ END INTERFACE
 ! See also: [[obj_Initiate1]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2( &
-    obj, name, engine, fieldType, storageFMT, comm, local_n, global_n, &
-    spaceCompo, isSpaceCompo, isSpaceCompoScalar, timeCompo, isTimeCompo, &
-    isTimeCompoScalar, tPhysicalVarNames, physicalVarNames, &
-    isPhysicalVarNames, isPhysicalVarNamesScalar, tNodes, isTNodes, &
-    isTNodesScalar, tSize, fedof, geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fedof, geofedof, &
+                                  fieldType, comm, local_n, global_n, &
+                                  timeCompo, timefedof)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
-    !! space-time scalar field to be initiated
+    !! space-time scalar field
     CHARACTER(*), INTENT(IN) :: name
-    !! name of the field, needed
+    !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, needed
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: fieldType
-    !! field type, default is FIELD_TYPE_NORMAL, needed
-    !! following options are available FIELD_TYPE_NORMAL
+    !! name of the engine
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
+    !! FEDOF of the geometry
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
+    !! field type, default is FIELD_TYPE_NORMAL
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: storageFMT
-    !! storage format of the scalar field
-    !! Not used, the DOF format is used
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: comm
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: local_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
     !! local size of field on each processor
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: global_n
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: spaceCompo(:)
-    !! space components, not used (always 1)
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompo
-    !! if true we will try to access spaceCompo, NOT REQUIRED
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isSpaceCompoScalar
-    !! is space component scalar,
-    !! in this case we only access spaceCompo(1), NOT REQUIRED
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: timeCompo(:)
-    !! Time components, timeCompo(1) is used when timefedof is not
-    !! present or not initiated
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompo
-    !! if true we will try to access TimeCompo
-    !! Not required, Not needed
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTimeCompoScalar
-    !! is Time component scalar,
-    !! in this case we only access TimeCompo(1), Not needed
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tPhysicalVarNames
-    !! total physical variable names
-    !! if it is zero, then physicalVarNames will not be written
-    !! evenif physicalVarNames is present, and isPhysicalVarNames
-    !! is true, Not required
-    CHARACTER(*), OPTIONAL, INTENT(IN) :: physicalVarNames(:)
-    !! Names of the physical variables, NOT REQUIRED
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNames
-    !! logical variable to check if physicalVarNames is present or not
-    !! if it is false then physicalVarNames will not be written
-    !! NOT REQUIRED
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isPhysicalVarNamesScalar
-    !! if true then physicalVarNames is scalar
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tNodes(:)
-    !! total number of nodes in each physical variable
-    !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodes
-    !! if true we will try to access tNodes
-    !! Not required
-    LOGICAL(LGT), OPTIONAL, INTENT(IN) :: isTNodesScalar
-    !! is tNodes scalar
-    !! Not required
-    INTEGER(I4B), OPTIONAL, INTENT(IN) :: tSize
-    !! total size of node field
-    !! not required
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF of the field and FEDOF of the geometry
-    CLASS(TimeFEDOF_), OPTIONAL, TARGET, INTENT(IN) :: timefedof
-    !! TimeFEDOF object, gives timeCompo
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo
+    !! number of time components, used when timefedof is not present
+    !! or not initiated
+    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
+    !! FEDOF in time; if it is initiated, timeCompo is its total DOF
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -501,6 +465,82 @@ INTERFACE
     TYPE(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
   END SUBROUTINE obj_Final
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                  ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Initiate a space-time scalar field from a toml table
+!
+! Reads name, engine, fieldType and timeCompo from table, initiates
+! fedof, geofedof (and timefedof, if present) from table if they are not
+! initiated, and calls [[obj_Initiate2]]. Then the boundary conditions
+! are read from table.
+! The key spaceCompo is not used.
+!
+! The other ImportFromToml methods (from a file, or from a table
+! name) of AbstractNodeField_ call this method.
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! USE BaseType, ONLY: math => TypeMathOpt
+! USE ExceptionHandler_Class, ONLY: e
+! USE ExceptionHandler_Class, ONLY: EXCEPTION_INFORMATION
+! USE FEDOF_Class, ONLY: FEDOF_
+! USE FEDomain_Class, ONLY: FEDomain_
+! USE STScalarField_Class, ONLY: STScalarField_
+! USE Test_Method, ONLY: OK
+! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+! IMPLICIT NONE
+!
+! CHARACTER(*), PARAMETER :: tomlFileName = "STScalarField_test.toml"
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(TimeFEDOF_), TARGET :: timefedof
+! TYPE(STScalarField_) :: u
+!
+! CALL e%SetQuietMode(EXCEPTION_INFORMATION, math%yes)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
+!                       fedof=fedof, geofedof=geofedof, &
+!                       timefedof=timefedof, dom=dom)
+!
+! CALL OK(u%IsInitiated(), "IsInitiated")
+! CALL OK(u%Size() .EQ. timefedof%GetTotalDOF() * fedof%GetTotalDOF(), &
+!         "Size")
+!
+! CALL u%DEALLOCATE()
+! CALL timefedof%DEALLOCATE()
+! CALL fedof%DEALLOCATE()
+! CALL geofedof%DEALLOCATE()
+! CALL dom%DEALLOCATE()
+! END PROGRAM main
+!```
+!
+! See also: [[obj_Initiate2]],
+! [[AbstractNodeField_:obj_ReadOptsFromToml]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
+                                        timefedof, dom)
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
+    !! space-time scalar field
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
+    !! FEDOF of the field and of the geometry, initiated from table
+    !! if they are not initiated
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! FEDOF in time, initiated from table if it is not initiated;
+    !! if it is not present, timeCompo is read from table
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! domain, needed when fedof or geofedof is not initiated
+  END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
 
 !----------------------------------------------------------------------------

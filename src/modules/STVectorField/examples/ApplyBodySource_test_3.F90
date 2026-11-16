@@ -58,9 +58,9 @@ CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
 CALL f%ImportFromToml(tomlName="f", filename=tomlFileName, &
                       fedof=fedofB, geofedof=geofedofB, &
                       timefedof=timefedofB, dom=dom)
-CALL r%Initiate(NAME="r", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL r%Initiate(NAME="r", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
-CALL s%Initiate(NAME="s", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL s%Initiate(NAME="s", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 
 ! reference: body source given by the user function g

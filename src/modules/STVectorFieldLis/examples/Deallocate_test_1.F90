@@ -44,7 +44,7 @@ CALL u%DEALLOCATE()
 CALL OK(.NOT. u%IsInitiated(), "Deallocate twice: not initiated")
 
 ! Test 3: the field can be initiated again
-CALL u%Initiate(NAME="u", engine="LIS_OMP", spaceCompo=[2], &
+CALL u%Initiate(NAME="u", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 CALL OK(u%IsInitiated() .AND. u%SIZE() .EQ. 24, "Initiate again")
 CALL OK(u%lis_ptr .NE. 0, "Initiate again: LIS vector")

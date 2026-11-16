@@ -63,7 +63,7 @@ CALL rowNodeFedof%InitiateBrokenLagrangeFedofForVTK(from=colNodeFedof)
 ! Step-2: make rowNode
 CALL rowNode%Initiate(name="rowNode", engine=colNode%GetEngineName(), &
                       fieldType=TypeFieldOpt%normal, &
-                      spaceCompo=spaceCompo(1:1), &
+                      spaceCompo=spaceCompo(1), &
                       fedof=rowNodeFedof, geofedof=geofedof)
 
 ! Initiate from the row field rowNode and the column field colNode

@@ -222,7 +222,7 @@ END TYPE VectorFieldLisPointer_
 ! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 ! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 !                       filename=tomlFileName, tomlName="u")
-! CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
+! CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
 !
 ! ! Test 1: the fields are initiated, with spaceCompo values per node
@@ -291,7 +291,7 @@ END INTERFACE
 ! summary: Initiate a LIS vector field by arguments
 !
 ! The vector field data are set by the Initiate method of VectorField_
-! (spaceCompo from spaceCompo(1)). Then the LIS vector of local size
+! (spaceCompo components). Then the LIS vector of local size
 ! local_n and global size global_n is created (lis_vector_create,
 ! lis_vector_set_size) and the local range is, ie is read
 ! (lis_vector_get_range). The values of a new vector are zero.
@@ -308,7 +308,7 @@ END INTERFACE
 ! Examples
 !
 !```fortran
-! CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
+! CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
 ! CALL OK(v%lis_ptr .NE. 0_INT64, "v: LIS vector is created")
 !```
@@ -318,63 +318,35 @@ END INTERFACE
 ! See also: [[obj_Initiate1]], [[VectorField_:obj_Initiate2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fedof, geofedof, &
+                                  spaceCompo, fieldType, comm, local_n, &
+                                  global_n)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
-    !! LIS vector field to be initiated
+    !! LIS vector field
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, not used: the engine is "LIS_OMP"
+    !! name of the engine
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
+    !! FEDOF of the geometry
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! number of space components
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
-    !! storage format, not used
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
     INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
-    !! communication group, only for a parallel environment
+    !! communication group
+    !! Only needed for parallel environment
     INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
-    !! local size of the field, only for a parallel environment
+    !! local size of field on each processor
+    !! Only needed for parallel environment
     INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
-    !! global size of the field, only for a parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components, spaceCompo(1) is used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
-    !! passed to the Initiate method of VectorField_
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
-    !! not used
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
-    !! not used
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF of the field and FEDOF of the geometry
-    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
-    !! not used
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 
@@ -493,7 +465,7 @@ END INTERFACE
 ! CALL OK(.NOT. u%IsInitiated(), "DEALLOCATE twice: not initiated")
 !
 ! ! Test 3: the field can be initiated again
-! CALL u%Initiate(NAME="u", engine="LIS_OMP", spaceCompo=[2], &
+! CALL u%Initiate(NAME="u", engine="LIS_OMP", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
 ! CALL OK(u%IsInitiated(), "Initiate again: IsInitiated")
 ! CALL OK(u%SIZE() .EQ. 12, "Initiate again: Size")
@@ -666,7 +638,7 @@ END INTERFACE
 ! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 ! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 !                       filename=tomlFileName, tomlName="u")
-! CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=[2], &
+! CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
 !
 ! want = [(REAL(ii, DFP), ii=1, 12)]
@@ -883,9 +855,9 @@ END INTERFACE
 ! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 ! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 !                       filename=tomlFileName, tomlName="u")
-! CALL w%Initiate(NAME="w", engine="LIS_OMP", spaceCompo=[2], &
+! CALL w%Initiate(NAME="w", engine="LIS_OMP", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
-! CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=[2], &
+! CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof)
 !
 ! want = [(REAL(ii, DFP), ii=1, 12)]

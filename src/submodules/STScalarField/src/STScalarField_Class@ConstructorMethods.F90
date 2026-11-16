@@ -48,6 +48,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
 CALL AbstractNodeFieldInitiate( &
   obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
   usePointer=usePointer)
@@ -105,7 +109,7 @@ IF (.NOT. timeCompoMade) THEN
   isok = PRESENT(timeCompo)
   CALL AssertError1(isok, myName, "timeCompo is not present")
 #endif
-  dof_timeCompo(1) = timeCompo(1)
+  dof_timeCompo(1) = timeCompo
   timeCompoMade = .TRUE.
 END IF
 

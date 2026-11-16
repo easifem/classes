@@ -358,29 +358,23 @@ END INTERFACE
 ! See also: [[obj_Initiate1]], [[ScalarField_:obj_Initiate2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fedof, geofedof, &
+                                  fieldType, comm, local_n, global_n)
     CLASS(ScalarFieldLis_), INTENT(INOUT) :: obj
-    !! LIS scalar field to be initiated
+    !! LIS scalar field
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, not used: the engine is "LIS_OMP"
+    !! name of the engine
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
+    !! FEDOF of the geometry
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
     !! following options are available
     !! FIELD_TYPE_NORMAL
     !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
-    !! storage format of the scalar field
-    !! Not required.
     INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
     !! communication group
     !! Only needed for parallel environment
@@ -390,57 +384,6 @@ INTERFACE
     INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
     !! global size of field on distributed on processors
     !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
-    !! if true we will try to access spaceCompo
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
-    !! is space component scalar,
-    !! in this case we only access spaceCompo(1)
-    !! Not required
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
-    !! Time components
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
-    !! if true we will try to access TimeCompo
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
-    !! is Time component scalar,
-    !! in this case we only access TimeCompo(1)
-    !! Not required
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
-    !! total physical variable names
-    !! if it is zero, then physicalVarNames will not be written
-    !! evenif physicalVarNames is present, and isPhysicalVarNames
-    !! is true
-    !! Not required
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! Names of the physical variables
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
-    !! logical variable to check if physicalVarNames is present or not
-    !! if it is false then physicalVarNames will not be written
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
-    !! if true then physicalVarNames is scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
-    !! total number of nodes in each physical variable
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
-    !! if true we will try to access tNodes
-    !! Not required
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
-    !! is tNodes scalar
-    !! Not required
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
-    !! total size of node field
-    !! not required
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF of the field and FEDOF of the geometry
-    CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
-    !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 

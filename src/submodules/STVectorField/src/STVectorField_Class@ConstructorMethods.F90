@@ -116,16 +116,11 @@ IF (.NOT. timeCompoMade) THEN
   isok = PRESENT(timeCompo)
   CALL AssertError1(isok, myName, "timeCompo is not present")
 #endif
-  dof_timeCompo(1) = timeCompo(1)
+  dof_timeCompo(1) = timeCompo
   timeCompoMade = math%yes
 END IF
 
-#ifdef DEBUG_VER
-isok = PRESENT(spaceCompo)
-CALL AssertError1(isok, myName, "spaceCompo is not present")
-#endif
-
-dof_spaceCompo(1) = spaceCompo(1)
+dof_spaceCompo(1) = spaceCompo
 
 obj%timeCompo = dof_timeCompo(1)
 obj%spaceCompo = dof_spaceCompo(1)

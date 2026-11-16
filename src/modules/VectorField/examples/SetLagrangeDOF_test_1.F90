@@ -45,7 +45,7 @@ CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
 CALL fedof2%Initiate(order=2, dom=dom, baseContinuity="H1", &
                      baseInterpolation="Lagrange", &
                      ipType=TypeQuadratureOpt%equidistance)
-CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL w%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof2, geofedof=geofedof)
 
 xij(1, :) = [0.0_DFP, 10.0_DFP, 10.0_DFP, 0.0_DFP, 5.0_DFP, 5.0_DFP]
@@ -91,9 +91,9 @@ END BLOCK
 
 ! Test 4: three components on a 2D mesh
 BLOCK
-  CALL u3%Initiate(NAME="u", engine="NATIVE_SERIAL", spaceCompo=[3], &
+  CALL u3%Initiate(NAME="u", engine="NATIVE_SERIAL", spaceCompo=3, &
                    fedof=fedof, geofedof=geofedof)
-  CALL w3%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=[3], &
+  CALL w3%Initiate(NAME="w", engine="NATIVE_SERIAL", spaceCompo=3, &
                    fedof=fedof2, geofedof=geofedof)
   DO ii = 1, 6
     uval = f(xij(:, ii))

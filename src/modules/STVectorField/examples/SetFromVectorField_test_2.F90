@@ -39,7 +39,7 @@ CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
                       fedof=fedof, geofedof=geofedof, &
                       timefedof=timefedof, dom=dom)
-CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
+CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 
 a = [(REAL(ii, DFP), ii=1, 6)]

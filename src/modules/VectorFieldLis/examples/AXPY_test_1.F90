@@ -35,11 +35,11 @@ CALL lis%Initiate()
 CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
 CALL x%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
                       filename=tomlFileName, tomlName="u")
-CALL y%Initiate(NAME="y", engine="LIS_OMP", spaceCompo=[2], &
+CALL y%Initiate(NAME="y", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
-CALL z%Initiate(NAME="z", engine="LIS_OMP", spaceCompo=[2], &
+CALL z%Initiate(NAME="z", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
-CALL w%Initiate(NAME="w", engine="LIS_OMP", spaceCompo=[2], &
+CALL w%Initiate(NAME="w", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 
 src = [(REAL(ii, DFP), ii=1, 12)]

@@ -46,7 +46,7 @@ CALL OK(u%timeCompo .EQ. 2, "ImportFromToml: timeCompo")
 CALL OK(u%SIZE() .EQ. 24, "ImportFromToml: Size = 24")
 
 ! Test 2: Initiate by arguments
-CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=[2], &
+CALL v%Initiate(name="v", engine="NATIVE_SERIAL", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 CALL OK(v%IsInitiated(), "Initiate: IsInitiated")
 CALL OK(v%spaceCompo .EQ. 2, "Initiate: spaceCompo")

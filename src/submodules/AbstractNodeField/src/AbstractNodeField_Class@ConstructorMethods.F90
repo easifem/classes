@@ -138,8 +138,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-! Should we dealllocate here?
-CALL obj%DEALLOCATE()
+! Deallocate in the caller
+! CALL obj%DEALLOCATE()
 CALL AbstractFieldInitiate( &
   obj=obj, obj2=obj2, copyFull=copyFull, copyStructure=copyStructure, &
   usePointer=usePointer)
@@ -252,87 +252,36 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 ! Important: we should not call this method here
 ! CALL obj%DEALLOCATE()
 
-CALL AbstractFieldInitiate( &
-  obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
-  local_n=local_n, global_n=global_n)
+CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
+                           fieldType=fieldType, comm=comm, &
+                           local_n=local_n, global_n=global_n)
 
 obj%fedof => fedof
 obj%geofedof => geofedof
 IF (PRESENT(timefedof)) obj%timefedof => timefedof
 
 #ifdef DEBUG_VER
-isok = PRESENT(tPhysicalVarNames)
-CALL AssertError1(isok, myName, 'tPhysicalVarNames is not present')
-
-isok = PRESENT(storageFMT)
-CALL AssertError1(isok, myName, 'storageFMT is not present')
-
-isok = PRESENT(spaceCompo)
-CALL AssertError1(isok, myName, 'spaceCompo is not present')
-
-isok = PRESENT(isSpaceCompo)
-CALL AssertError1(isok, myName, 'isSpaceCompo is not present')
-
-isok = PRESENT(isSpaceCompoScalar)
-CALL AssertError1(isok, myName, 'isSpaceCompoScalar is not present')
-
 tsize1 = SIZE(spaceCompo)
-isok = tsize1 .EQ. tPhysicalVarNames
-CALL AssertError1(isok, myName, &
-                  'size of spaceCompo ('//ToString(tsize1)// &
-                  ') is not same as tPhysicalVarNames ('// &
-                  ToString(tPhysicalVarNames)//')')
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(spaceCompo), b=tPhysicalVarNames")
+#endif
 
-isok = PRESENT(timeCompo)
-CALL AssertError1(isok, myName, 'timeCompo is not present')
-
-isok = PRESENT(isTimeCompo)
-CALL AssertError1(isok, myName, 'isTimeCompo is not present')
-
-isok = PRESENT(isTimeCompoScalar)
-CALL AssertError1(isok, myName, 'isTimeCompoScalar is not present')
-
+#ifdef DEBUG_VER
 tsize1 = SIZE(timeCompo)
-isok = tsize1 .EQ. tPhysicalVarNames
-CALL AssertError1(isok, myName, &
-                  'size of timeCompo ('//ToString(tsize1)// &
-                  ') is not same as tPhysicalVarNames ('// &
-                  ToString(tPhysicalVarNames)//')')
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(timeCompo), b=tPhysicalVarNames")
+#endif
 
-isok = PRESENT(physicalVarNames)
-CALL AssertError1(isok, myName, 'physicalVarNames is not present')
-
-isok = PRESENT(isPhysicalVarNames)
-CALL AssertError1(isok, myName, 'isPhysicalVarNames is not present')
-
-isok = PRESENT(isPhysicalVarNamesScalar)
-CALL AssertError1(isok, myName, 'isPhysicalVarNamesScalar is not present')
-
+#ifdef DEBUG_VER
 tsize1 = SIZE(physicalVarNames)
-isok = tsize1 .EQ. tPhysicalVarNames
-CALL AssertError1(isok, myName, &
-                  'size of physicalVarNames ('//ToString(tsize1)// &
-                  ') is not same as tPhysicalVarNames ('// &
-                  ToString(tPhysicalVarNames)//')')
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(physicalVarNames), b=tPhysicalVarNames")
+#endif
 
-isok = PRESENT(tNodes)
-CALL AssertError1(isok, myName, 'tNodes is not present')
-
-isok = PRESENT(isTNodes)
-CALL AssertError1(isok, myName, 'isTNodes is not present')
-
-isok = PRESENT(isTNodesScalar)
-CALL AssertError1(isok, myName, 'isTNodesScalar is not present')
-
+#ifdef DEBUG_VER
 tsize1 = SIZE(tNodes)
-isok = tsize1 .EQ. tPhysicalVarNames
-CALL AssertError1(isok, myName, &
-                  'size of tNodes('//ToString(tsize1)// &
-                  ') is not same as tPhysicalVarNames ('// &
-                  ToString(tPhysicalVarNames)//')')
-
-isok = PRESENT(tSize)
-CALL AssertError1(isok, myName, 'tSize is not present')
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(tNodes), b=tPhysicalVarNames")
 #endif
 
 obj%dof_tPhysicalVars = tPhysicalVarNames
@@ -359,10 +308,8 @@ CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
 
 #ifdef DEBUG_VER
 tsize1 = RealVector_SIZE(obj%realVec)
-isok = tsize1 .EQ. tSize
-CALL AssertError1(isok, myName, &
-                  'size of realVec ('//ToString(tsize1)// &
-                  ') is not same as tSize ('//ToString(tSize)//')')
+CALL AssertError2(tsize1, tSize, myName, &
+                  "a=RealVector_Size(obj%realVec), b=tSize")
 #endif
 
 IF (obj%local_n .EQ. 0) CALL obj%SetLocal_n(local_n=obj%tSize)
@@ -383,8 +330,6 @@ MODULE PROCEDURE obj_Initiate3
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
 #endif
 
-! INTEGER(I4B) :: ii, jj
-
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
@@ -394,29 +339,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
 #endif
-
-! CALL AbstractFieldInitiate( &
-!   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
-!   local_n=local_n, global_n=global_n, spaceCompo=spaceCompo, &
-!   isSpaceCompo=isSpaceCompo, isSpaceCompoScalar=isSpaceCompoScalar, &
-!   timeCompo=timeCompo, isTimeCompo=isTimeCompo, &
-!   isTimeCompoScalar=isTimeCompoScalar, tPhysicalVarNames=tPhysicalVarNames, &
-!   physicalVarNames=physicalVarNames, isPhysicalVarNames=isPhysicalVarNames, &
-!   fedof=fedof, geofedof=geofedof, timefedof=timefedof)
-!
-! CALL DOF_Initiate( &
-!   obj=obj%dof, tNodes=obj%dof_tNodes, names=obj%dof_names_char, &
-!   spaceCompo=obj%dof_spaceCompo, timeCompo=obj%dof_timeCompo, &
-!   storageFMT=obj%dof_storageFMT)
-!
-! CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
-!
-! obj%tSize = RealVector_SIZE(obj%realVec)
-!
-! CALL obj%GetParam(local_n=ii, global_n=jj)
-!
-! IF (ii .EQ. 0) CALL obj%SetParam(local_n=obj%tSize)
-! IF (jj .EQ. 0) CALL obj%SetParam(global_n=obj%tSize)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

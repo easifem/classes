@@ -17,8 +17,11 @@
 !
 
 SUBMODULE(VectorField_Class) TomlMethods
-USE TomlUtility, ONLY: GetValue
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadBCFromToml
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadFEDOFFromToml
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadOptsFromToml
 USE tomlf, ONLY: toml_get => get_value
+USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -26,6 +29,50 @@ CHARACTER(*), PARAMETER :: modName = &
                            "VectorField_Class@TomlMethods.F90"
 #endif
 CONTAINS
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+LOGICAL(LGT) :: isok
+#endif
+
+CHARACTER(:), ALLOCATABLE :: name, engine
+INTEGER(I4B) :: fieldType, spaceCompo, timeCompo
+LOGICAL(LGT) :: isSpaceCompo, isTimeCompo
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldReadOptsFromToml( &
+  table=table, name=name, engine=engine, fieldType=fieldType, &
+  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, timeCompo=timeCompo, &
+  isTimeCompo=isTimeCompo)
+
+#ifdef DEBUG_VER
+isok = isSpaceCompo
+CALL AssertError1(isok, myName, "spaceCompo is not found in the table")
+#endif
+
+CALL AbstractNodeFieldReadFEDOFFromToml(table=table, fedof=fedof, &
+                                        geofedof=geofedof, dom=dom)
+
+CALL obj%Initiate(name=name, engine=engine, fedof=fedof, &
+                  geofedof=geofedof, spaceCompo=spaceCompo, &
+                  fieldType=fieldType)
+
+CALL AbstractNodeFieldReadBCFromToml(obj=obj, table=table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ImportFromToml1
 
 ! [kernel.initialCondition]
 ! name = "initialCondition"

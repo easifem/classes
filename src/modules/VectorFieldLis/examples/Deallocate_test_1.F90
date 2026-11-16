@@ -42,7 +42,7 @@ CALL u%DEALLOCATE()
 CALL OK(.NOT. u%IsInitiated(), "DEALLOCATE twice: not initiated")
 
 ! Test 3: the field can be initiated again
-CALL u%Initiate(NAME="u", engine="LIS_OMP", spaceCompo=[2], &
+CALL u%Initiate(NAME="u", engine="LIS_OMP", spaceCompo=2, &
                 fedof=fedof, geofedof=geofedof)
 CALL OK(u%IsInitiated(), "Initiate again: IsInitiated")
 CALL OK(u%SIZE() .EQ. 12, "Initiate again: Size")

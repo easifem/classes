@@ -29,6 +29,34 @@ CHARACTER(*), PARAMETER :: modName = &
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
+CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
+                               copyStructure=copyStructure, &
+                               usePointer=usePointer)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 
@@ -56,7 +84,7 @@ dof_tPhysicalVarNames = math%one_i
 
 CALL AbstractNodeFieldInitiate( &
   obj=obj, name=name, engine=engine, fieldType=fieldType, comm=comm, &
-  local_n=local_n, global_n=global_n, fedof=fedof, timefedof=timefedof, &
+  local_n=local_n, global_n=global_n, fedof=fedof, &
   storageFMT=obj%GetStorageFMT(), spaceCompo=dof_spaceCompo, &
   isSpaceCompo=math%yes, isSpaceCompoScalar=math%yes, &
   timeCompo=dof_timeCompo, isTimeCompo=math%yes, &

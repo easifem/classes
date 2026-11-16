@@ -233,7 +233,7 @@ END INTERFACE
 ! summary: Initiate a LIS space-time vector field by arguments
 !
 ! The field data are set by the Initiate method of STVectorField_
-! (spaceCompo from spaceCompo(1), timeCompo from timefedof). Then the
+! (spaceCompo components, timeCompo from timefedof). Then the
 ! LIS vector of local size local_n and global size global_n is created
 ! (lis_vector_create, lis_vector_set_size) and the local range is, ie
 ! is read (lis_vector_get_range). The values of a new vector are zero.
@@ -250,7 +250,7 @@ END INTERFACE
 ! Examples
 !
 !```fortran
-! CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=[2], &
+! CALL v%Initiate(NAME="v", engine="LIS_OMP", spaceCompo=2, &
 !                 fedof=fedof, geofedof=geofedof, timefedof=timefedof)
 ! CALL OK(v%lis_ptr .NE. 0, "v: LIS vector created")
 !```
@@ -260,63 +260,40 @@ END INTERFACE
 ! See also: [[obj_Initiate1]], [[STVectorField_:obj_Initiate2]]
 
 INTERFACE
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fedof, geofedof, &
+                                  spaceCompo, fieldType, comm, local_n, &
+                                  global_n, timeCompo, timefedof)
     CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
-    !! LIS space-time vector field to be initiated
+    !! LIS space-time vector field
     CHARACTER(*), INTENT(IN) :: name
     !! name of the field
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine, not used: the engine is "LIS_OMP"
+    !! name of the engine
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(IN) :: geofedof
+    !! FEDOF of the geometry
+    INTEGER(I4B), INTENT(IN) :: spaceCompo
+    !! number of space components
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, default is FIELD_TYPE_NORMAL
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
-    !! storage format, not used
+    !! following options are available
+    !! FIELD_TYPE_NORMAL
+    !! FIELD_TYPE_CONSTANT
     INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
-    !! communication group, only for a parallel environment
+    !! communication group
+    !! Only needed for parallel environment
     INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
-    !! local size of the field, only for a parallel environment
+    !! local size of field on each processor
+    !! Only needed for parallel environment
     INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
-    !! global size of the field, only for a parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components, spaceCompo(1) is used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
-    !! passed to the Initiate method of STVectorField_
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
-    !! passed to the Initiate method of STVectorField_
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
-    !! passed to the Initiate method of STVectorField_
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
-    !! passed to the Initiate method of STVectorField_
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
-    !! passed to the Initiate method of STVectorField_
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
-    !! not used
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
-    !! not used
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
-    !! not used
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
-    !! not used
-    CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
-    !! FEDOF of the field and FEDOF of the geometry
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo
+    !! number of time components, used when timefedof is not present
+    !! or not initiated
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
-    !! TimeFEDOF of the field, gives timeCompo
+    !! FEDOF in time; if it is initiated, timeCompo is its total DOF
   END SUBROUTINE obj_Initiate2
 END INTERFACE
 

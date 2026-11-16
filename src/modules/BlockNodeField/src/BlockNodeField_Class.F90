@@ -19,6 +19,7 @@
 ! summary: Scalar field data type is defined
 
 MODULE BlockNodeField_Class
+USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: FEVariable_
@@ -36,6 +37,7 @@ USE GlobalData, ONLY: NodesToDOF
 USE HDF5File_Class, ONLY: HDF5File_
 USE TimeFEDOF_Class, ONLY: TimeFEDOF_
 USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
+USE tomlf, ONLY: toml_table
 USE UserFunction_Class, ONLY: UserFunction_
 
 IMPLICIT NONE
@@ -71,6 +73,8 @@ CONTAINS
 
   ! IO:
   ! @IOMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
+  !! Initiate from a toml table (under development)
   PROCEDURE, PUBLIC, PASS(obj) :: IMPORT => obj_Import
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
 
@@ -205,6 +209,37 @@ END INTERFACE
 INTERFACE BlockNodeFieldDeallocate
   MODULE PROCEDURE obj_Deallocate_ptr_vector
 END INTERFACE BlockNodeFieldDeallocate
+
+!----------------------------------------------------------------------------
+!                                                   ImportFromToml@IOMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Initiate a block node field from a toml table
+!
+!@note
+!   This routine is under development; it raises an error in debug
+!   mode.
+!@endnote
+!
+! See also: [[AbstractNodeField_:obj_ImportFromToml1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
+                                        timefedof, dom)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    !! block node field
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
+    !! FEDOF of the field and of the geometry
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! FEDOF in time
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! domain
+  END SUBROUTINE obj_ImportFromToml1
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods

@@ -53,6 +53,9 @@ PUBLIC :: AbstractNodeFieldDeallocate
 PUBLIC :: AbstractNodeFieldSetSingle
 PUBLIC :: AbstractNodeFieldGetSingle
 PUBLIC :: AbstractNodeFieldInitiate
+PUBLIC :: AbstractNodeFieldReadBCFromToml
+PUBLIC :: AbstractNodeFieldReadFEDOFFromToml
+PUBLIC :: AbstractNodeFieldReadOptsFromToml
 PUBLIC :: AbstractNodeFieldSetParam
 PUBLIC :: AbstractNodeFieldGetFEVariable
 PUBLIC :: NodeFieldsWriteData
@@ -176,12 +179,6 @@ CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate from another node field (copy)
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
-  !! Initiate by passing arguments
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate with a FEDOF for each variable (under development)
-  GENERIC, PUBLIC :: Initiate => Initiate2, Initiate3
-  !! Initiate by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside
 
@@ -196,8 +193,9 @@ CONTAINS
   !! Export AbstractNodeField to HDF5File_
 
   ! @TomlMethods
-  PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
-  !! Import data From toml file
+  PROCEDURE(obj_ImportFromToml1), DEFERRED, PUBLIC, PASS(obj) :: &
+    ImportFromToml1
+  !! Import data From toml table, defined by the child classes
   PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml2 => obj_ImportFromToml2
   !! Import data From toml file
   PROCEDURE, PRIVATE, PASS(obj) :: ImportFromToml3 => obj_ImportFromToml3
@@ -565,80 +563,82 @@ END INTERFACE AbstractNodeFieldInitiate
 ! In this routine all the optional DOF arguments are required: an
 ! error is raised if one of them is missing, or if the size of
 ! spaceCompo, timeCompo, physicalVarNames or tNodes is not
-! tPhysicalVarNames, or if the size of the vector is not tSize. The
-! child classes (e.g., ScalarField_) compute these arguments and call
-! this routine.
+! tPhysicalVarNames, or if the size of the vector is not tSize.
+!
+! This routine is not a type-bound method. Each child class (e.g.,
+! ScalarField_) has its own Initiate2 with only the arguments it needs;
+! that method computes the DOF arguments and calls this routine through
+! the generic AbstractNodeFieldInitiate.
 !
 ! See also: [[ScalarField_:obj_Initiate2]] (contains an example)
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, name, engine, storageFMT, spaceCompo, isSpaceCompo, &
+    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
+    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
+    isPhysicalVarNamesScalar, tNodes, isTNodes, isTNodesScalar, &
+    tSize, fedof, geofedof, fieldType, comm, local_n, global_n, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     CHARACTER(*), INTENT(IN) :: name
-    !! name of the field
+    !! name of the field defined in [[AbstractField_]]
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
-    !! field type, default is FIELD_TYPE_NORMAL
-    !! following options are available
-    !! FIELD_TYPE_NORMAL
-    !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
-    !! storage format
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
-    !! local size of field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
-    !! global size of field on distributed on processors
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
+    !! name of the engine, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! storage format, see [[FieldOpt_Class:TypeFieldOpt]]
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space components, tsize of spaceCompo should be same as
+    !! tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompo
     !! if true we will try to access spaceCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
     !! Time components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompo
     !! if true we will try to access TimeCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! Names of the physical variables
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, size of physicalVarNames should
+    !! be same as tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNamesScalar
     !! if true then we physicalVarNames is scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
+    INTEGER(I4B), INTENT(IN)  :: tNodes(:)
     !! total number of nodes in each physical variable
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
+    LOGICAL(LGT), INTENT(IN) :: isTNodes
     !! if true we will try to access tNodes
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
+    LOGICAL(LGT), INTENT(IN) :: isTNodesScalar
     !! is tNodes scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
+    INTEGER(I4B), INTENT(IN) :: tSize
     !! total size of node field
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
+    !! field type, see TypeFieldOpt for the names, default is
+    !! TypeFieldOpt%normal, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
+    !! communication group
+    !! Only needed for parallel environment, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
@@ -664,62 +664,76 @@ END INTERFACE AbstractNodeFieldInitiate
 ! See also: [[obj_Initiate2]]
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate3(obj, name, engine, fieldType, comm, &
-                                  local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, fedof, geofedof, &
-                                  timefedof)
+  MODULE SUBROUTINE obj_Initiate3( &
+    obj, name, engine, storageFMT, spaceCompo, isSpaceCompo, &
+    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
+    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
+    isPhysicalVarNamesScalar, tNodes, isTNodes, isTNodesScalar, &
+    tSize, fedof, geofedof, fieldType, comm, local_n, global_n, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     CHARACTER(*), INTENT(IN) :: name
-    !! name of the field
+    !! name of the field defined in [[AbstractField_]]
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
-    !! field type, default is FIELD_TYPE_NORMAL
-    !! following options are available
-    !! FIELD_TYPE_NORMAL
-    !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
-    !! local size of field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
-    !! global size of field on distributed on processors
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
+    !! name of the engine, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! storage format, see [[FieldOpt_Class:TypeFieldOpt]]
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space components, tsize of spaceCompo should be same as
+    !! tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompo
     !! if true we will try to access spaceCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
     !! Time components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompo
     !! if true we will try to access TimeCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! Names of the physical variables
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, size of physicalVarNames should
+    !! be same as tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    !! FEDOFs of the physical variables and of the geometry
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then we physicalVarNames is scalar
+    INTEGER(I4B), INTENT(IN)  :: tNodes(:)
+    !! total number of nodes in each physical variable
+    LOGICAL(LGT), INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    LOGICAL(LGT), INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    INTEGER(I4B), INTENT(IN) :: tSize
+    !! total size of node field
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    !! FEDOF object for solution
+    TYPE(FEDOFPointer_), INTENT(IN) :: geofedof(:)
+    !! FEDOF object for geometry
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
+    !! field type, see TypeFieldOpt for the names, default is
+    !! TypeFieldOpt%normal, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
+    !! communication group
+    !! Only needed for parallel environment, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
     TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedof(:)
-    !! Vector of TimeFEDOFPointers
-    !! All timefedofs should be initiated
+    !! TimeFEDOF object
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 
@@ -3118,12 +3132,21 @@ END INTERFACE
 !
 ! dom: dom is needed to initiate fedof
 ! timeOpt: It is needed to initiate timefedof
+!
+! This method is deferred. Each child class (e.g., ScalarField_) reads
+! the options it needs from the table and calls its own Initiate2.
+! The other ImportFromToml methods of AbstractNodeField_ call this
+! method.
 
-INTERFACE
-  MODULE SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, &
-                                        timefedof, dom)
+ABSTRACT INTERFACE
+  SUBROUTINE obj_ImportFromToml1(obj, table, fedof, geofedof, timefedof, &
+                                 dom)
+    IMPORT :: AbstractNodeField_, toml_table, FEDOF_, TimeFEDOF_, &
+      AbstractDomain_
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! node field
     TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table
     CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof, geofedof
     !! if fedof is not initiated then it will be initiated by
     !! calling fedof%ImportFromToml(node) method.
@@ -3144,6 +3167,106 @@ INTERFACE
     !! When we call ImportFromToml method of fedof
   END SUBROUTINE obj_ImportFromToml1
 END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                               ReadOptsFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Read the options of a node field from a toml table
+!
+! Reads the keys name, engine, fieldType, spaceCompo and timeCompo of
+! a node field from table. The child classes call this routine in
+! their ImportFromToml1 before they call their own Initiate2.
+!
+! If spaceCompo (timeCompo) is not in the table, then it is set to 1
+! and isSpaceCompo (isTimeCompo) is false. If spaceCompo (timeCompo)
+! is a vector in the table, only its first entry is returned.
+!
+! See also: [[obj_ReadFEDOFFromToml]], [[obj_ReadBCFromToml]],
+! [[VectorField_:obj_ImportFromToml1]]
+
+INTERFACE AbstractNodeFieldReadOptsFromToml
+  MODULE SUBROUTINE obj_ReadOptsFromToml(table, name, engine, fieldType, &
+                                         spaceCompo, isSpaceCompo, &
+                                         timeCompo, isTimeCompo)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+    CHARACTER(:), ALLOCATABLE, INTENT(OUT) :: name
+    !! name of the field
+    CHARACTER(:), ALLOCATABLE, INTENT(OUT) :: engine
+    !! name of the engine
+    INTEGER(I4B), INTENT(OUT) :: fieldType
+    !! field type
+    INTEGER(I4B), INTENT(OUT) :: spaceCompo
+    !! space components, 1 if not found
+    LOGICAL(LGT), INTENT(OUT) :: isSpaceCompo
+    !! true if spaceCompo is found in the table
+    INTEGER(I4B), INTENT(OUT) :: timeCompo
+    !! time components, 1 if not found
+    LOGICAL(LGT), INTENT(OUT) :: isTimeCompo
+    !! true if timeCompo is found in the table
+  END SUBROUTINE obj_ReadOptsFromToml
+END INTERFACE AbstractNodeFieldReadOptsFromToml
+
+!----------------------------------------------------------------------------
+!                                              ReadFEDOFFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Read the FEDOF, GeoFEDOF and TimeFEDOF from a toml table
+!
+! If fedof (geofedof) is not initiated, then it is initiated from
+! table (see ImportFromToml of FEDOF_). If timefedof is present and
+! not initiated, then it is initiated from the node given by the key
+! timefedofName. An initiated object is not changed. The child classes
+! call this routine in their ImportFromToml1 before they call their
+! own Initiate2.
+!
+! See also: [[obj_ReadOptsFromToml]], [[obj_ReadBCFromToml]],
+! [[VectorField_:obj_ImportFromToml1]]
+
+INTERFACE AbstractNodeFieldReadFEDOFFromToml
+  MODULE SUBROUTINE obj_ReadFEDOFFromToml(table, fedof, geofedof, &
+                                          timefedof, dom)
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: fedof
+    !! FEDOF of the field
+    CLASS(FEDOF_), TARGET, INTENT(INOUT) :: geofedof
+    !! FEDOF of the geometry
+    CLASS(TimeFEDOF_), TARGET, OPTIONAL, INTENT(INOUT) :: timefedof
+    !! TimeFEDOF, needed for space-time fields
+    CLASS(AbstractDomain_), OPTIONAL, TARGET, INTENT(IN) :: dom
+    !! domain, needed when fedof or geofedof is not initiated
+  END SUBROUTINE obj_ReadFEDOFFromToml
+END INTERFACE AbstractNodeFieldReadFEDOFFromToml
+
+!----------------------------------------------------------------------------
+!                                                 ReadBCFromToml@TomlMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-15
+! summary: Read the boundary conditions of a node field from toml
+!
+! Reads the Dirichlet, Neumann and point Neumann boundary conditions
+! of obj from table. obj must be initiated. The child classes call
+! this routine at the end of their ImportFromToml1.
+!
+! See also: [[obj_ReadOptsFromToml]], [[obj_ReadFEDOFFromToml]],
+! [[VectorField_:obj_ImportFromToml1]]
+
+INTERFACE AbstractNodeFieldReadBCFromToml
+  MODULE SUBROUTINE obj_ReadBCFromToml(obj, table)
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
+    !! node field, initiated
+    TYPE(toml_table), INTENT(INOUT) :: table
+    !! toml table of the field
+  END SUBROUTINE obj_ReadBCFromToml
+END INTERFACE AbstractNodeFieldReadBCFromToml
 
 !----------------------------------------------------------------------------
 !                                                     ImportFromToml@Methods

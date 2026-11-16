@@ -17,8 +17,11 @@
 !
 
 SUBMODULE(ScalarField_Class) TomlMethods
-USE TomlUtility, ONLY: GetValue
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadBCFromToml
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadFEDOFFromToml
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldReadOptsFromToml
 USE tomlf, ONLY: toml_get => get_value
+USE TomlUtility, ONLY: GetValue
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -199,6 +202,43 @@ SUBROUTINE ImportUserFunctionValueFromToml(obj, table)
                           '[END] ')
 #endif
 END SUBROUTINE ImportUserFunctionValueFromToml
+
+!----------------------------------------------------------------------------
+!                                                            ImportFromToml
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_ImportFromToml1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
+#endif
+
+CHARACTER(:), ALLOCATABLE :: name, engine
+INTEGER(I4B) :: fieldType, spaceCompo, timeCompo
+LOGICAL(LGT) :: isSpaceCompo, isTimeCompo
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+CALL AbstractNodeFieldReadOptsFromToml( &
+  table=table, name=name, engine=engine, fieldType=fieldType, &
+  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, timeCompo=timeCompo, &
+  isTimeCompo=isTimeCompo)
+
+CALL AbstractNodeFieldReadFEDOFFromToml(table=table, fedof=fedof, &
+                                        geofedof=geofedof, dom=dom)
+
+CALL obj%Initiate(name=name, engine=engine, fedof=fedof, &
+                  geofedof=geofedof, fieldType=fieldType)
+
+CALL AbstractNodeFieldReadBCFromToml(obj=obj, table=table)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_ImportFromToml1
 
 !----------------------------------------------------------------------------
 !                                                           SetFromToml
