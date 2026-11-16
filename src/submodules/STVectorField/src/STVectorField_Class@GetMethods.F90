@@ -228,6 +228,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#include "./localNodeError.F90"
+
 IF (storageFMT .EQ. NODES_FMT) THEN
   dim1 = obj%spaceCompo
   dim2 = obj%timeCompo
@@ -279,6 +281,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#include "./localNodeError.F90"
+
 #ifdef DEBUG_VER
 isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo out of bound")
@@ -314,6 +318,8 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#include "./localNodeError.F90"
+
 #ifdef DEBUG_VER
 isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo out of bound")
@@ -347,6 +353,8 @@ INTEGER(I4B) :: indx(obj%spaceCompo), ii
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+#include "./localNodeError.F90"
 
 ncol = obj%timeCompo
 

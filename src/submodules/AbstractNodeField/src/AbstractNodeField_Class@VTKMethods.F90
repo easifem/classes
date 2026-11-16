@@ -240,7 +240,8 @@ location = String('node')
 action = String('open')
 CALL vtk%WriteDataArray(location=location, action=action)
 
-nptrs = meshptr%GetNptrs()
+! the Get methods of the fields take local node numbers
+nptrs = meshptr%GetLocalNodeNumber(globalNode=meshptr%GetNptrs())
 
 tsize = 0
 loop3: DO iobj = 1, tfield
@@ -252,7 +253,7 @@ loop3: DO iobj = 1, tfield
                         tPhysicalVars=tPhysicalVars(iobj), &
                         dofNames=dofNames(tsize + 1:aint), &
                         spaceCompo=spaceCompo(iobj)%val, &
-                        timeCompo=timeCompo(iobj)%val, islocal=math%no)
+                        timeCompo=timeCompo(iobj)%val, islocal=math%yes)
 
   tsize = aint
 END DO loop3
