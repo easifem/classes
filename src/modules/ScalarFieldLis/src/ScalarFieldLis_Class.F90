@@ -730,8 +730,14 @@ END INTERFACE
 ! summary: Set all the values
 !
 ! Sets all entries to scale * VALUE (lis_vector_set_all), or adds
-! scale * VALUE to each entry when addContribution is true. Set(VALUE)
-! of ScalarField_ calls this method.
+! scale * VALUE to each entry when addContribution is true
+! (lis_vector_shift with -scale * VALUE, since LIS computes
+! x_i - sigma). Set(VALUE) of ScalarField_ calls this method.
+!
+! Changes:
+!   - 2026-11-17: add with lis_vector_shift; before, a loop of
+!     lis_vector_set_value over indices 1..local_n, which was slow and
+!     used local indices as global ones under MPI
 !
 ! Examples
 !

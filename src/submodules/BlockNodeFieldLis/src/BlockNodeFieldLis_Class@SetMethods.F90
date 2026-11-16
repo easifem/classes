@@ -460,7 +460,7 @@ MODULE PROCEDURE obj_SetAll
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetAll()"
 #endif
-INTEGER(I4B) :: ierr, ii, n
+INTEGER(I4B) :: ierr
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
@@ -488,14 +488,13 @@ IF (.NOT. abool) THEN
   RETURN
 END IF
 
-n = obj%SIZE()
+! lis_vector_shift computes x_i - sigma on the local block of each
+! process, so sigma = -areal adds areal to every entry
+CALL lis_vector_shift(-areal, obj%lis_ptr, ierr)
 
-DO ii = 1, n
-  CALL lis_vector_set_value(LIS_ADD_VALUE, ii, areal, obj%lis_ptr, ierr)
 #ifdef DEBUG_VER
-  CALL CHKERR(ierr)
+CALL CHKERR(ierr)
 #endif
-END DO
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
