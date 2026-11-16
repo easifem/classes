@@ -47,6 +47,10 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
 CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
                                copyStructure=copyStructure, &
                                usePointer=usePointer)

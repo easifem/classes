@@ -179,10 +179,6 @@ CONTAINS
   ! @ConstructorMethods
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
   !! Initiate from another node field (copy)
-  PROCEDURE, PUBLIC, PASS(obj) :: Initiate3 => obj_Initiate3
-  !! Initiate with a FEDOF for each variable (under development)
-  GENERIC, PUBLIC :: Initiate => Initiate3
-  !! Initiate by passing arguments
   PROCEDURE, PUBLIC, PASS(obj) :: DEALLOCATE => obj_Deallocate
   !! Deallocate the data stored inside
 
@@ -577,73 +573,72 @@ END INTERFACE AbstractNodeFieldInitiate
 ! See also: [[ScalarField_:obj_Initiate2]] (contains an example)
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate2(obj, name, engine, fieldType, storageFMT, &
-                                  comm, local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, &
-                                  isPhysicalVarNamesScalar, tNodes, &
-                                  isTNodes, isTNodesScalar, tSize, fedof, &
-                                  geofedof, timefedof)
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, name, engine, storageFMT, spaceCompo, isSpaceCompo, &
+    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
+    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
+    isPhysicalVarNamesScalar, tNodes, isTNodes, isTNodesScalar, &
+    tSize, fedof, geofedof, fieldType, comm, local_n, global_n, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     CHARACTER(*), INTENT(IN) :: name
-    !! name of the field
+    !! name of the field defined in [[AbstractField_]]
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
-    !! field type, default is FIELD_TYPE_NORMAL
-    !! following options are available
-    !! FIELD_TYPE_NORMAL
-    !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: storageFMT
-    !! storage format
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
-    !! local size of field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
-    !! global size of field on distributed on processors
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
+    !! name of the engine, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! storage format, see [[FieldOpt_Class:TypeFieldOpt]]
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space components, tsize of spaceCompo should be same as
+    !! tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompo
     !! if true we will try to access spaceCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
     !! Time components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompo
     !! if true we will try to access TimeCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! Names of the physical variables
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, size of physicalVarNames should
+    !! be same as tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNamesScalar
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNamesScalar
     !! if true then we physicalVarNames is scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tNodes(:)
+    INTEGER(I4B), INTENT(IN)  :: tNodes(:)
     !! total number of nodes in each physical variable
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodes
+    LOGICAL(LGT), INTENT(IN) :: isTNodes
     !! if true we will try to access tNodes
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTNodesScalar
+    LOGICAL(LGT), INTENT(IN) :: isTNodesScalar
     !! is tNodes scalar
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tSize
+    INTEGER(I4B), INTENT(IN) :: tSize
     !! total size of node field
     CLASS(FEDOF_), TARGET, INTENT(IN) :: fedof, geofedof
     !! FEDOF object
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
+    !! field type, see TypeFieldOpt for the names, default is
+    !! TypeFieldOpt%normal, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
+    !! communication group
+    !! Only needed for parallel environment, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
     CLASS(TimeFEDOF_), TARGET, INTENT(IN), OPTIONAL :: timefedof
     !! TimeFEDOF object
   END SUBROUTINE obj_Initiate2
@@ -669,62 +664,76 @@ END INTERFACE AbstractNodeFieldInitiate
 ! See also: [[obj_Initiate2]]
 
 INTERFACE AbstractNodeFieldInitiate
-  MODULE SUBROUTINE obj_Initiate3(obj, name, engine, fieldType, comm, &
-                                  local_n, global_n, spaceCompo, &
-                                  isSpaceCompo, isSpaceCompoScalar, &
-                                  timeCompo, isTimeCompo, isTimeCompoScalar, &
-                                  tPhysicalVarNames, physicalVarNames, &
-                                  isPhysicalVarNames, fedof, geofedof, &
-                                  timefedof)
+  MODULE SUBROUTINE obj_Initiate3( &
+    obj, name, engine, storageFMT, spaceCompo, isSpaceCompo, &
+    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
+    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
+    isPhysicalVarNamesScalar, tNodes, isTNodes, isTNodesScalar, &
+    tSize, fedof, geofedof, fieldType, comm, local_n, global_n, timefedof)
     CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     CHARACTER(*), INTENT(IN) :: name
-    !! name of the field
+    !! name of the field defined in [[AbstractField_]]
     CHARACTER(*), INTENT(IN) :: engine
-    !! name of the engine
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
-    !! field type, default is FIELD_TYPE_NORMAL
-    !! following options are available
-    !! FIELD_TYPE_NORMAL
-    !! FIELD_TYPE_CONSTANT
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
-    !! communication group
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
-    !! local size of field on each processor
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
-    !! global size of field on distributed on processors
-    !! Only needed for parallel environment
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: spaceCompo(:)
-    !! space components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompo
+    !! name of the engine, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! storage format, see [[FieldOpt_Class:TypeFieldOpt]]
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space components, tsize of spaceCompo should be same as
+    !! tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompo
     !! if true we will try to access spaceCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isSpaceCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompoScalar
     !! is space component scalar,
     !! in this case we only access spaceCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: timeCompo(:)
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
     !! Time components
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompo
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompo
     !! if true we will try to access TimeCompo
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isTimeCompoScalar
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompoScalar
     !! is Time component scalar,
     !! in this case we only access TimeCompo(1)
-    INTEGER(I4B), INTENT(IN), OPTIONAL :: tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVarNames
     !! total physical variable names
     !! if it is zero, then physicalVarNames will not be written
     !! evenif physicalVarNames is present, and isPhysicalVarNames
     !! is true
-    CHARACTER(*), INTENT(IN), OPTIONAL :: physicalVarNames(:)
-    !! Names of the physical variables
-    LOGICAL(LGT), INTENT(IN), OPTIONAL :: isPhysicalVarNames
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, size of physicalVarNames should
+    !! be same as tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNames
     !! logical variable to check if physicalVarNames is present or not
     !! if it is false then physicalVarNames will not be written
-    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:), geofedof(:)
-    !! FEDOFs of the physical variables and of the geometry
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then we physicalVarNames is scalar
+    INTEGER(I4B), INTENT(IN)  :: tNodes(:)
+    !! total number of nodes in each physical variable
+    LOGICAL(LGT), INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    LOGICAL(LGT), INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    INTEGER(I4B), INTENT(IN) :: tSize
+    !! total size of node field
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    !! FEDOF object for solution
+    TYPE(FEDOFPointer_), INTENT(IN) :: geofedof(:)
+    !! FEDOF object for geometry
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
+    !! field type, see TypeFieldOpt for the names, default is
+    !! TypeFieldOpt%normal, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
+    !! communication group
+    !! Only needed for parallel environment, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
     TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedof(:)
-    !! Vector of TimeFEDOFPointers
-    !! All timefedofs should be initiated
+    !! TimeFEDOF object
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 

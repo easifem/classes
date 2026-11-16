@@ -29,6 +29,34 @@ CHARACTER(*), PARAMETER :: modName = &
 CONTAINS
 
 !----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
+CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
+                               copyStructure=copyStructure, &
+                               usePointer=usePointer)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
 !                                                                  Initiate
 !----------------------------------------------------------------------------
 

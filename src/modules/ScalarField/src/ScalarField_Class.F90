@@ -70,6 +70,8 @@ PUBLIC :: ScalarFieldSafeAllocate
 TYPE, EXTENDS(AbstractNodeField_) :: ScalarField_
 CONTAINS
   ! @ConstructorMethods
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate by copying data from other AbstractNodeField_
   PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
   !! Initiate an instance of ScalarField_ by passing arguments
   GENERIC, PUBLIC :: Initiate => Initiate2
@@ -210,6 +212,61 @@ END TYPE ScalarField_
 TYPE :: ScalarFieldPointer_
   CLASS(ScalarField_), POINTER :: ptr => NULL()
 END TYPE ScalarFieldPointer_
+
+!----------------------------------------------------------------------------
+!                                               Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-16
+! summary: Initiate a scalar field by copying another node field
+!
+! The data of obj2 (name, engine, sizes, DOF data, FEDOF pointers,
+! boundary condition pointers and realVec) are copied into obj by
+! AbstractNodeFieldInitiate.
+!
+!@note
+! copyStructure and usePointer are not used.
+!@endnote
+!
+! Examples
+!
+!```fortran
+! PROGRAM main
+! CHARACTER(*), PARAMETER :: tomlFileName = "Initiate_test_1.toml"
+! TYPE(FEDomain_) :: dom
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(ScalarField_) :: u, v
+! CHARACTER(1) :: names(1)
+! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
+! CALL u%ImportFromToml(fedof=fedof, geofedof=geofedof, dom=dom, &
+!                       filename=tomlFileName, tomlName="u")
+! CALL v%Initiate(NAME="v", engine="NATIVE_SERIAL", fedof=fedof, &
+!                 geofedof=geofedof)
+! END PROGRAM main
+!```
+!
+! See full example at
+! [Initiate_test_1.F90](|classes|ScalarField/examples/Initiate_test_1.F90)
+!
+! See also: [[obj_Initiate2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
+                                  usePointer)
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
+    !! LIS scalar field to be initiated
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! field to copy, it should be a child of AbstractNodeField_
+    !! (ScalarFieldLis_ or a native ScalarField_)
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyFull
+    !! passed to AbstractNodeFieldInitiate
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyStructure
+    !! not used
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: usePointer
+    !! not used
+  END SUBROUTINE obj_Initiate1
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                 Initiate@ConstructorMethods
