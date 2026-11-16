@@ -831,8 +831,19 @@ CALL AssertError1(isok, myName, &
                   'ScalarField_::value is not initiated')
 #endif
 
+#ifdef DEBUG_VER
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
+#endif
+
 s = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
 p = GetNodeLoc(obj=obj%dof, idof=timeCompo)
+
+! VALUE must hold one time component of obj (same space FEDOF)
+#ifdef DEBUG_VER
+CALL AssertError2(VALUE%SIZE(), (p(2) - p(1)) / p(3) + 1, myName, &
+                  "a=VALUE%SIZE(), b=size of one time component of obj")
+#endif
 
 ! the engines of VALUE and obj copy the values, see SetMultiple5
 CALL VALUE%SetMultiple( &

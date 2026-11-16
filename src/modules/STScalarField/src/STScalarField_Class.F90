@@ -1602,7 +1602,8 @@ END INTERFACE
 ! SetMultiple. A native VALUE gives its Fortran vector (GetPointer),
 ! another VALUE (LIS) is first read into a temporary array by
 ! GetMultiple, so obj and VALUE can use any engine: a native field and
-! a STScalarFieldLis_ can be copied into each other. Both fields must be initiated and have the same size
+! a STScalarFieldLis_ can be copied into each other.
+! Both fields must be initiated and have the same size
 ! (checked in debug mode).
 !
 ! Examples
@@ -1705,7 +1706,13 @@ END INTERFACE
 ! addContribution is true. VALUE must have the same space FEDOF. For
 ! the native engine the values of obj are read from its realVec
 ! (GetPointer, no copy); for other engines they are copied by
-! GetMultiple.
+! GetMultiple. timeCompo and the size of VALUE are checked in debug
+! mode.
+!
+! Changes:
+!   - 2026-11-17: debug checks of the timeCompo range and of
+!     VALUE%SIZE(); before, an out-of-range timeCompo or a smaller
+!     VALUE read or wrote out of bounds without an error
 !
 ! Examples
 !
@@ -2038,7 +2045,7 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true then global node number is local node number
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    !! time component, it should be less than obj%timeCompo
+    !! time component, it should be <= obj%timeCompo
   END SUBROUTINE obj_Get4
 END INTERFACE
 
@@ -2074,7 +2081,7 @@ INTERFACE
     LOGICAL(LGT), INTENT(IN) :: islocal
     !! if true then global node number is local node number
     INTEGER(I4B), INTENT(IN) :: timeCompo
-    !! time component, it should be less than obj%timeCompo
+    !! time component, it should <= obj%timeCompo
   END SUBROUTINE obj_Get5
 END INTERFACE
 

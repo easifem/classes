@@ -590,6 +590,7 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set17()"
 #endif
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
+INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -606,20 +607,22 @@ CALL AssertError1(VALUE%IsInitiated(), myName, &
                   'BlockNodeField_::value is not initiated')
 #endif
 
+#ifdef DEBUG_VER
+CALL AssertError2(obj%SIZE(), VALUE%SIZE(), myName, &
+                  'a=obj%SIZE(), b=VALUE%SIZE()')
+#endif
+
 abool = Input(option=addContribution, default=.FALSE.)
 
-IF (abool) THEN
-  areal = Input(option=scale, default=1.0_DFP)
-  CALL obj%AXPY(x=VALUE, scale=areal)
+! scale is used only when the values are added
+areal = 1.0_DFP
+IF (abool) areal = Input(option=scale, default=1.0_DFP)
 
-#ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
-#endif
-  RETURN
-END IF
-
-CALL obj%Copy(VALUE)
+! SetMultiple works between engines (native, LIS, ...)
+tsize = obj%SIZE()
+CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, VALUE=VALUE, &
+                     istart_value=1_I4B, iend_value=tsize, &
+                     stride_value=1_I4B, scale=areal, addContribution=abool)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

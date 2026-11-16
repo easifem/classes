@@ -161,6 +161,7 @@ END PROCEDURE obj_SetMultiple1
 MODULE PROCEDURE obj_SetMultiple2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetMultiple2()"
+LOGICAL(LGT) :: isok
 #endif
 LOGICAL(LGT) :: abool
 REAL(DFP) :: areal
@@ -168,6 +169,13 @@ REAL(DFP) :: areal
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = (istart .GE. 1) .AND. (istart .LE. obj%tSize) .AND. &
+       (iend .GE. 1) .AND. (iend .LE. obj%tSize)
+CALL AssertError1(isok, myName, &
+                  "istart or iend out of bound [1, tSize]")
 #endif
 
 abool = Input(option=addContribution, default=math%no)

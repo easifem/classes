@@ -47,6 +47,7 @@ CONTAINS
 MODULE PROCEDURE obj_Get1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+LOGICAL(LGT) :: isok
 #endif
 LOGICAL(LGT) :: isnode, isspace, istime
 INTEGER(I4B), PARAMETER :: indx_size = 128
@@ -67,6 +68,19 @@ mycase = "NNN"
 IF (isnode) mycase(1:1) = "Y"
 IF (isspace) mycase(2:2) = "Y"
 IF (istime) mycase(3:3) = "Y"
+tsize = math%zero_i
+
+#ifdef DEBUG_VER
+IF (isspace) THEN
+  isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+  CALL AssertError1(isok, myName, "spaceCompo out of bound")
+END IF
+
+IF (istime) THEN
+  isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+  CALL AssertError1(isok, myName, "timeCompo out of bound")
+END IF
+#endif
 
 SELECT CASE (mycase)
 
@@ -168,7 +182,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 IF (storageFMT .EQ. NODES_FMT) THEN
   dim1 = obj%spaceCompo
   dim2 = obj%timeCompo
-  dim3 = obj%dof.tNodes.1
+  dim3 = obj%dof .tNodes. 1
 
   DO jj = 1, dim3
     CALL obj%Get(VALUE=VALUE(:, :, jj), globalNode=jj, islocal=.TRUE., &
@@ -176,7 +190,7 @@ IF (storageFMT .EQ. NODES_FMT) THEN
   END DO
 
 ELSE
-  dim1 = obj%dof.tNodes.1
+  dim1 = obj%dof .tNodes. 1
   dim2 = obj%spaceCompo
   dim3 = obj%timeCompo
 
@@ -213,6 +227,8 @@ INTEGER(I4B) :: ii, jj, idof, s(3), indx(SIZE(globalNode))
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+#include "./localNodeError.F90"
 
 IF (storageFMT .EQ. NODES_FMT) THEN
   dim1 = obj%spaceCompo
@@ -256,12 +272,23 @@ END PROCEDURE obj_Get3
 MODULE PROCEDURE obj_Get4
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: indx(SIZE(globalNode))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#include "./localNodeError.F90"
+
+#ifdef DEBUG_VER
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo out of bound")
+
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 CALL GetNodeLoc_( &
@@ -282,12 +309,23 @@ END PROCEDURE obj_Get4
 MODULE PROCEDURE obj_Get5
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#include "./localNodeError.F90"
+
+#ifdef DEBUG_VER
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo out of bound")
+
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 indx = GetNodeLoc( &
@@ -315,6 +353,8 @@ INTEGER(I4B) :: indx(obj%spaceCompo), ii
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
+
+#include "./localNodeError.F90"
 
 ncol = obj%timeCompo
 

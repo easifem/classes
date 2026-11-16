@@ -363,8 +363,13 @@ END PROCEDURE obj_Get7
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFEVariable
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
+#endif
 REAL(DFP) :: v(obj%spaceCompo, SIZE(globalNode))
 INTEGER(I4B) :: nrow, jj
+
+#include "./localNodeError.F90"
 
 !$OMP PARALLEL DO PRIVATE(jj)
 DO jj = 1, SIZE(v, 2)

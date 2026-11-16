@@ -15,6 +15,7 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeField_Class) ConstructorMethods
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -31,6 +32,70 @@ CONTAINS
 MODULE PROCEDURE obj_Final
 CALL obj%DEALLOCATE()
 END PROCEDURE obj_Final
+
+!----------------------------------------------------------------------------
+!                                                                  Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
+CALL AbstractNodeFieldInitiate(obj=obj, obj2=obj2, copyFull=copyFull, &
+                               copyStructure=copyStructure, &
+                               usePointer=usePointer)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate1
+
+!----------------------------------------------------------------------------
+!                                                                   Initiate
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_Initiate2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+IF (obj%IsInitiated()) THEN
+  CALL obj%DEALLOCATE()
+END IF
+
+CALL AbstractNodeFieldInitiate( &
+  obj=obj, name=name, engine=engine, storageFMT=storageFMT, &
+  spaceCompo=spaceCompo, isSpaceCompo=isSpaceCompo, &
+  isSpaceCompoScalar=isSpaceCompoScalar, timeCompo=timeCompo, &
+  isTimeCompo=isTimeCompo, isTimeCompoScalar=isTimeCompoScalar, &
+  tPhysicalVarNames=tPhysicalVarNames, physicalVarNames=physicalVarNames, &
+  isPhysicalVarNames=isPhysicalVarNames, &
+  isPhysicalVarNamesScalar=isPhysicalVarNamesScalar, tNodes=tNodes, &
+  isTNodes=isTNodes, isTNodesScalar=isTNodesScalar, &
+  tSize=tSize, fedof=fedof, geofedof=geofedof, fieldType=fieldType, &
+  comm=comm, local_n=local_n, global_n=global_n, timefedof=timefedof)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Initiate2
 
 !----------------------------------------------------------------------------
 !                                                           Deallocate

@@ -22,6 +22,11 @@ IMPLICIT NONE
 
 #include "lisf.h"
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BlockNodeFieldLis_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -29,9 +34,16 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Display
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Display()"
+#endif
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL lis_vector_is_null(obj%lis_ptr, ierr)
 
@@ -43,6 +55,10 @@ IF (ierr .EQ. LIS_FALSE) THEN
   CALL AbstractNodeFieldDisplay(obj=obj, msg=msg, unitno=unitno)
 END IF
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Display
 
 !----------------------------------------------------------------------------
@@ -50,9 +66,24 @@ END PROCEDURE obj_Display
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
-CALL e%raiseError(modName//'::'//myName//' - '// &
-                  'This routine is under construction!')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseError(modName//'::'//myName//' - '// &
+                  '[WIP ERROR] :: This routine is under construction!')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -60,7 +91,9 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
 INTEGER(I4B) :: ierr
 REAL(DFP), POINTER :: realvec(:)
 

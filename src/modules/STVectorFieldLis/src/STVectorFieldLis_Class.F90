@@ -552,8 +552,13 @@ END INTERFACE
 ! date: 2026-11-14
 ! summary: Set or add one value to all entries
 !
-! Set: lis_vector_set_all. Add: lis_vector_set_value with
-! LIS_ADD_VALUE for each entry.
+! Set: lis_vector_set_all. Add: lis_vector_shift with -scale * VALUE
+! (LIS computes x_i - sigma on the local block of each process).
+!
+! Changes:
+!   - 2026-11-17: add with lis_vector_shift; before, a loop of
+!     lis_vector_set_value over indices 1..local_n, which was slow and
+!     used local indices as global ones under MPI
 !
 ! Examples
 !

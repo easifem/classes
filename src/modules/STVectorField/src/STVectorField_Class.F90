@@ -23,30 +23,31 @@ USE AbstractDomain_Class, ONLY: AbstractDomain_
 USE AbstractField_Class, ONLY: AbstractField_
 USE AbstractNodeField_Class, ONLY: AbstractNodeField_
 USE BaseType, ONLY: FEVariable_
-USE DirichletBC_Class, ONLY: DirichletBC_, DirichletBCPointer_
+USE DirichletBC_Class, ONLY: DirichletBC_
+USE DirichletBC_Class, ONLY: DirichletBCPointer_
 USE ExceptionHandler_Class, ONLY: e
-USE FEDOF_Class, ONLY: FEDOF_, FEDOFPointer_
-USE GlobalData, ONLY: DFP, DOF_FMT, I4B, LGT, NODES_FMT, NodesToDOF
+USE FEDOF_Class, ONLY: FEDOF_
+USE FEDOF_Class, ONLY: FEDOFPointer_
+USE GlobalData, ONLY: DFP
+USE GlobalData, ONLY: DOF_FMT
+USE GlobalData, ONLY: I4B
+USE GlobalData, ONLY: LGT
+USE GlobalData, ONLY: NODES_FMT
+USE GlobalData, ONLY: NodesToDOF
 USE HDF5File_Class, ONLY: HDF5File_
-USE TimeFEDOF_Class, ONLY: TimeFEDOF_, TimeFEDOFPointer_
+USE TimeFEDOF_Class, ONLY: TimeFEDOF_
+USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 USE tomlf, ONLY: toml_table
 USE UserFunction_Class, ONLY: UserFunction_
 USE VectorField_Class, ONLY: VectorField_
-USE VectorField_Class, ONLY: VectorField_
-
 IMPLICIT NONE
-
 PRIVATE
 
 INTEGER(I4B), PARAMETER :: myconversion = NodesToDOF
 
 PUBLIC :: STVectorField_
 PUBLIC :: STVectorFieldPointer_
-PUBLIC :: STVectorFieldInitiate
 PUBLIC :: STVectorFieldDeallocate
-PUBLIC :: STVectorFieldDisplay
-PUBLIC :: STVectorFieldImport
-PUBLIC :: STVectorFieldExport
 PUBLIC :: STVectorFieldSafeAllocate
 
 !----------------------------------------------------------------------------
@@ -146,10 +147,12 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set13 => obj_Set13
   !! Set several time components of one space component
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
-  !! Copy another space-time vector field
+  !! Copy another space-time vector field, used for ASSIGNMENT(=)
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
   !! Set the values of the field
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set14
+  !! obj = VALUE, copy the values of another space-time vector field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set the values from a user function
@@ -264,10 +267,6 @@ INTERFACE
     !! not used
   END SUBROUTINE obj_Initiate1
 END INTERFACE
-
-INTERFACE STVectorFieldInitiate
-  MODULE PROCEDURE obj_Initiate1
-END INTERFACE STVectorFieldInitiate
 
 !----------------------------------------------------------------------------
 !
@@ -419,10 +418,6 @@ INTERFACE
     !! FEDOF in time; if it is initiated, timeCompo is its total DOF
   END SUBROUTINE obj_Initiate2
 END INTERFACE
-
-INTERFACE STVectorFieldInitiate
-  MODULE PROCEDURE obj_Initiate2
-END INTERFACE STVectorFieldInitiate
 
 !----------------------------------------------------------------------------
 !                                              Deallocate@ConstructorMethods
@@ -622,10 +617,6 @@ INTERFACE
   END SUBROUTINE obj_Display
 END INTERFACE
 
-INTERFACE STVectorFieldDisplay
-  MODULE PROCEDURE obj_Display
-END INTERFACE STVectorFieldDisplay
-
 !----------------------------------------------------------------------------
 !                                                           Import@IOMethods
 !----------------------------------------------------------------------------
@@ -658,10 +649,6 @@ INTERFACE
     !! TimeFEDOFs of the time (several physical variables)
   END SUBROUTINE obj_Import
 END INTERFACE
-
-INTERFACE STVectorFieldImport
-  MODULE PROCEDURE obj_Import
-END INTERFACE STVectorFieldImport
 
 !----------------------------------------------------------------------------
 !                                                           Export@IOMethods
@@ -752,7 +739,7 @@ END INTERFACE STVectorFieldImport
 !
 ! See also: [[obj_Import]]
 
-INTERFACE STVectorFieldExport
+INTERFACE
   MODULE SUBROUTINE obj_Export(obj, hdf5, group)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
@@ -761,7 +748,7 @@ INTERFACE STVectorFieldExport
     CHARACTER(*), INTENT(IN) :: group
     !! group in the HDF5 file
   END SUBROUTINE obj_Export
-END INTERFACE STVectorFieldExport
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                            Set@SetMethods
@@ -1230,47 +1217,7 @@ END INTERFACE
 ! Examples
 !
 !```fortran
-! PROGRAM main
-! USE BaseType, ONLY: FEVariable_
-! USE BaseType, ONLY: math => TypeMathOpt
-! USE ExceptionHandler_Class, ONLY: e
-! USE FEDOF_Class, ONLY: FEDOF_
-! USE FEDomain_Class, ONLY: FEDomain_
-! USE GlobalData, ONLY: DFP
-! USE GlobalData, ONLY: I4B
-! USE GlobalData, ONLY: NODES_FMT
-! USE STVectorField_Class, ONLY: STVectorField_
-! USE Test_Method, ONLY: OK
-! USE TimeFEDOF_Class, ONLY: TimeFEDOF_
-! IMPLICIT NONE
-!
-! CHARACTER(*), PARAMETER :: tomlFileName = "STVectorField_test.toml"
-! REAL(DFP), PARAMETER :: tol = 1.0E-12_DFP
-! TYPE(FEDomain_) :: dom
-! TYPE(FEDOF_), TARGET :: fedof, geofedof
-! TYPE(TimeFEDOF_), TARGET :: timefedof
-! TYPE(STVectorField_) :: u, v
-! TYPE(FEVariable_) :: fevar, fevar2
-! REAL(DFP) :: v3(2, 2, 6), a3(2, 2, 3), b3(2, 2, 3), found(24), &
-!              found2(24)
-! INTEGER(I4B) :: ii, jj, kk, dim1, dim2, dim3, tsize
-!
-! CALL e%SetQuietMode(math%yes)
-! CALL dom%ImportFromToml(filename=tomlFileName, tomlName="domain")
-! CALL u%ImportFromToml(tomlName="u", filename=tomlFileName, &
-!                       fedof=fedof, geofedof=geofedof, &
-!                       timefedof=timefedof, dom=dom)
-!
-! DO kk = 1, 6
-!   DO jj = 1, 2
-!     DO ii = 1, 2
-!       v3(ii, jj, kk) = 100.0_DFP * ii + 10.0_DFP * jj + kk
-!     END DO
-!   END DO
-! END DO
-! CALL u%Set(VALUE=v3)
-!
-! ! Test 1: FEVariable round trip
+!PROGRAM main
 ! BLOCK
 !   CALL u%Get(VALUE=fevar, globalNode=[1, 5, 2], islocal=math%yes)
 !   CALL u%GetFEVariable(VALUE=fevar2, globalNode=[1, 5, 2], &
@@ -1280,41 +1227,8 @@ END INTERFACE
 !              islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
 !   CALL u%Get(VALUE=b3, storageFMT=NODES_FMT, globalNode=[3, 6, 4], &
 !              islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
-!   CALL OK(ALL(ABS(a3 - b3) .LT. tol), &
-!           "Set(FEVariable) from Get(FEVariable)")
-!   CALL OK(ALL(ABS(a3(:, :, 2) - v3(:, :, 5)) .LT. tol), &
-!           "Set(FEVariable): source nodes unchanged")
 ! END BLOCK
-!
-! ! Test 2: GetFEVariable gives the same FEVariable as Get
-! BLOCK
-!   CALL u%Set(VALUE=0.0_DFP)
-!   CALL u%Set(VALUE=fevar2, globalNode=[3, 6, 4], islocal=math%yes)
-!   CALL u%Get(VALUE=b3, storageFMT=NODES_FMT, globalNode=[3, 6, 4], &
-!              islocal=math%yes, dim1=dim1, dim2=dim2, dim3=dim3)
-!   CALL OK(ALL(ABS(a3 - b3) .LT. tol), "GetFEVariable")
-! END BLOCK
-!
-! ! Test 3: copy another field
-! BLOCK
-!   CALL u%Set(VALUE=v3)
-!   CALL v%Initiate(obj2=u)
-!   CALL v%Set(VALUE=0.0_DFP)
-!   CALL v%Set(VALUE=u)
-!   CALL u%GetMultiple(istart=1, iend=24, stride=1, VALUE=found, &
-!                      tsize=tsize)
-!   CALL v%GetMultiple(istart=1, iend=24, stride=1, VALUE=found2, &
-!                      tsize=tsize)
-!   CALL OK(ALL(ABS(found - found2) .LT. tol), "Set(STVectorField_)")
-! END BLOCK
-!
-! CALL v%DEALLOCATE()
-! CALL u%DEALLOCATE()
-! CALL timefedof%DEALLOCATE()
-! CALL fedof%DEALLOCATE()
-! CALL geofedof%DEALLOCATE()
-! CALL dom%DEALLOCATE()
-! END PROGRAM main
+!END PROGRAM main
 !```
 !
 ! See also: [[obj_Get7]], [[obj_GetFeVariable]], [[obj_Set14]]
@@ -1465,6 +1379,8 @@ END INTERFACE
 ! Changes:
 !   - 2026-11-15: VALUE can be a child of STVectorField_ and use another
 !     engine (before, only TYPE IS (STVectorField_) was copied) (#633)
+!   - 2026-11-17: used for ASSIGNMENT(=); before, obj = VALUE was the
+!     intrinsic assignment, which copied the FEDOF pointers and lis_ptr
 !
 ! See also: [[obj_Set10]] (contains an example)
 
