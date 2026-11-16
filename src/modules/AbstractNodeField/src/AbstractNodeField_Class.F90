@@ -463,15 +463,20 @@ END INTERFACE
 ! date: 2021-09-25
 ! summary: Initiate a node field from another node field
 !
-! obj is deallocated, and then the data of AbstractField_ (name, engine,
-! FEDOF pointers, ...) are copied from obj2 by Initiate of
-! AbstractField_. If obj2 is a node field, its DOF data
-! (dof_tPhysicalVars, dof_storageFMT, dof_spaceCompo, dof_timeCompo,
+! The object must be deallocated before calling this routine; it does
+! not deallocate obj. The data of AbstractField_ (name, engine, ...)
+! are copied from obj2 by Initiate of AbstractField_. If obj2 is a node
+! field, its DOF data (dof_tPhysicalVars, dof_storageFMT, dof_spaceCompo, dof_timeCompo,
 ! dof_tNodes, dof_names_char, tSize) and its values are copied too.
-! FEDOFs are always shared by pointers.
+! FEDOFs are always shared by pointers (fedof, geofedof, timefedof and
+! the arrays fedofs, geofedofs, timefedofs), and so are the boundary
+! conditions dbc, nbc and nbc_point.
 !
 ! copyFull, copyStructure and usePointer are passed to AbstractField_;
 ! they are not used at present.
+!
+! Changes:
+!   - 2026-11-16: geofedofs is copied too (it was left unallocated).
 !
 ! Examples
 !
@@ -652,14 +657,39 @@ END INTERFACE AbstractNodeFieldInitiate
 ! date: 2021-09-29
 ! summary: Initiate a node field with a FEDOF for each variable
 !
-! Initiate a node field with a FEDOF for each variable. The FEDOF is
-! defined in fedofs which is a vector of FEDOFPointer_.
+! Initiate a node field in which each physical variable has its own
+! FEDOF, geometry FEDOF and (optionally) TimeFEDOF. The DOF data, the
+! DOF object, the vector of values and local_n, global_n are set
+! exactly as in [[obj_Initiate2]]. Then the FEDOF pointers are stored
+! in obj%fedofs, obj%geofedofs and obj%timefedofs (each of size
+! tPhysicalVarNames).
 !
-! Each fedofs has associated geodofs defined inside geofedos.
+! The arrays fedof, geofedof and timefedof are handled in the same way.
+! If the size of the array is one, every entry of the stored array
+! points to fedof(1)%ptr (the same FEDOF for all variables). Otherwise
+! the size must be tPhysicalVarNames and entry ii points to
+! fedof(ii)%ptr. In debug mode an error is raised if the size is wrong
+! or if a used pointer is not associated. If timefedof is absent,
+! obj%timefedofs is not allocated.
 !
-!@note
-!   This routine is under development; it raises an error.
-!@endnote
+! As in [[obj_Initiate2]], all the DOF arguments are required, and the
+! sizes of spaceCompo, timeCompo, physicalVarNames and tNodes must be
+! tPhysicalVarNames.
+!
+! This routine is mainly for [[BlockNodeField_]]. It sets only the
+! per-variable arrays fedofs, geofedofs and timefedofs; the single
+! pointers obj%fedof, obj%geofedof and obj%timefedof (used by the
+! non-block node fields) stay NULL.
+!
+! The object must be deallocated before calling this routine; it does
+! not deallocate obj, and allocating an already allocated component
+! fails.
+!
+! This routine is not a type-bound method. Child classes call it
+! through the generic AbstractNodeFieldInitiate.
+!
+! Changes:
+!   - 2026-11-16: Implemented (it raised a WIP error before).
 !
 ! See also: [[obj_Initiate2]]
 
@@ -715,9 +745,11 @@ INTERFACE AbstractNodeFieldInitiate
     INTEGER(I4B), INTENT(IN) :: tSize
     !! total size of node field
     TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
-    !! FEDOF object for solution
+    !! FEDOF of each physical variable, size 1 (same FEDOF for all)
+    !! or tPhysicalVarNames
     TYPE(FEDOFPointer_), INTENT(IN) :: geofedof(:)
-    !! FEDOF object for geometry
+    !! geometry FEDOF of each physical variable, size 1 or
+    !! tPhysicalVarNames
     INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
     !! field type, see TypeFieldOpt for the names, default is
     !! TypeFieldOpt%normal, defined in [[AbstractField_]]
@@ -733,7 +765,8 @@ INTERFACE AbstractNodeFieldInitiate
     !! Only needed for parallel environment
     !! Defined in [[AbstractField_]]
     TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedof(:)
-    !! TimeFEDOF object
+    !! TimeFEDOF of each physical variable, size 1 or
+    !! tPhysicalVarNames
   END SUBROUTINE obj_Initiate3
 END INTERFACE AbstractNodeFieldInitiate
 

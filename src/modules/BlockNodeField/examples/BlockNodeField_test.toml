@@ -1,0 +1,76 @@
+# Common input file for the BlockNodeField_ tests.
+# square_3x2.h5: square [0, 10] x [0, 10], two Quadrangle4 elements,
+# six nodes 1 (0,0), 2 (10,0), 3 (10,10), 4 (0,10), 5 (5,0), 6 (5,10).
+# Order 1 Lagrange: every physical variable has six nodes.
+
+[domain]
+filename = "./meshdata/square_3x2.h5"
+totalMedium = 1
+
+# FEDOF of all physical variables
+[space]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[space.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+# FEDOF of the geometry
+[geofedof]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+brokenSpace = false
+ipType = "Equidistance"
+basisType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[geofedof.quadOpt]
+isHomogeneous = true
+quadratureType = "GaussLegendre"
+
+# TimeFEDOF used by ApplyDirichletBC_test_2: order 1 Lagrange in time,
+# two time DOFs
+[time]
+baseContinuity = "H1"
+baseInterpolation = "Lagrange"
+ipType = "Equidistance"
+baseType = "Monomial"
+order = 1
+scaleForQuadOrder = 2
+quadOptName = "quadOpt"
+
+[time.quadOpt]
+quadratureType = "GaussLegendre"
+
+# Dirichlet BCs used by ApplyDirichletBC_test_1 and ApplyDirichletBC_test_2
+#   bottom_y: component 2 = 7 on line 1 (nodes 1, 5, 2)
+#   left_x  : component 1 = 3 on line 4 (nodes 4, 1)
+
+[[dbc]]
+name = "bottom_y"
+idof = 2
+nodalValueType = "Constant"
+value = 7.0
+[dbc.boundary]
+isSelectionByMeshID = true
+[dbc.boundary.meshID]
+line = [1]
+
+[[dbc]]
+name = "left_x"
+idof = 1
+nodalValueType = "Constant"
+value = 3.0
+[dbc.boundary]
+isSelectionByMeshID = true
+[dbc.boundary.meshID]
+line = [4]

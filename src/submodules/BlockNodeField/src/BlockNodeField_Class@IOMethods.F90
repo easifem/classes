@@ -16,6 +16,11 @@
 
 SUBMODULE(BlockNodeField_Class) IOMethods
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class@IOMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -28,8 +33,18 @@ CHARACTER(*), PARAMETER :: myName = "obj_ImportFromToml1()"
 #endif
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
 #endif
 END PROCEDURE obj_ImportFromToml1
 
@@ -38,76 +53,24 @@ END PROCEDURE obj_ImportFromToml1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Import
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Import()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[INTERNAL ERROR] :: This routine is under construction!')
-! TYPE(String) :: dsetname
-! LOGICAL(LGT) :: bools(3)
-! TYPE(ParameterList_) :: param
-!
-! ! info
-! CALL e%raiseInformation(modName//"::"//myName//" - "// &
-!   & "[START] Import()")
-!
-! CALL AbstractNodeFieldImport( &
-!   & obj=obj, &
-!   & hdf5=hdf5, &
-!   & group=group, &
-!   & dom=dom, &
-!   & domains=domains)
-!
-! ! spaceCompo
-! dsetname = TRIM(group)//"/spaceCompo"
-! IF (hdf5%pathExists(dsetname%chars())) THEN
-!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%spaceCompo)
-! ELSE
-!   CALL e%raiseError(modName//'::'//myName//" - "// &
-!   & 'The dataset spaceCompo should be present')
-! END IF
-!
-! ! timeCompo
-! dsetname = TRIM(group)//"/timeCompo"
-! IF (hdf5%pathExists(dsetname%chars())) THEN
-!   CALL hdf5%READ(dsetname=dsetname%chars(), vals=obj%timeCompo)
-! ELSE
-!   CALL e%raiseError(modName//'::'//myName//" - "// &
-!   & 'The dataset timeCompo should be present')
-! END IF
-!
-! dsetname = TRIM(group)//"/tSize"
-! bools(1) = hdf5%pathExists(dsetname%chars())
-! dsetname = TRIM(group)//"/dof"
-! bools(2) = hdf5%pathExists(dsetname%chars())
-! dsetname = TRIM(group)//"/realVec"
-! bools(3) = hdf5%pathExists(dsetname%chars())
-!
-! IF (.NOT. ALL(bools)) THEN
-!   CALL param%initiate()
-!
-!   CALL SetBlockFieldParam( &
-!     & param=param, &
-!     & name=obj%name%chars(), &
-!     & engine=obj%engine%chars(), &
-!     & fieldType=obj%fieldType, &
-!     & timeCompo=obj%timeCompo, &
-!     & spaceCompo=obj%spaceCompo, &
-!     & engine=obj%engine%chars() &
-!     & )
-!
-!   obj%isInitiated = .FALSE.
-!
-!   IF (PRESENT(dom)) THEN
-!     CALL obj%initiate(param=param, dom=dom)
-!   ELSE
-!     CALL obj%initiate(param=param, dom=domains)
-!   END IF
-!
-!   CALL param%DEALLOCATE()
-! END IF
-!
-! CALL e%raiseInformation(modName//"::"//myName//" - "// &
-!   & "[END] Import()")
-!
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Import
 
 !----------------------------------------------------------------------------
@@ -115,9 +78,30 @@ END PROCEDURE obj_Import
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Export
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Export()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
 CALL e%RaiseError(modName//'::'//myName//' - '// &
                   '[WIP ERROR] :: This routine is under development')
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Export
+
+!----------------------------------------------------------------------------
+!                                                            Include Errors
+!----------------------------------------------------------------------------
+
+#include "../../include/errors.F90"
 
 END SUBMODULE IOMethods

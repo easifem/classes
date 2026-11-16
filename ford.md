@@ -30,6 +30,7 @@ src_dir: src/modules/H1FE/src/
          src/modules/AbstractMatrixField/src/
          src/modules/MatrixField/src/
          src/modules/BlockMatrixField/src/
+         src/modules/BlockNodeField/src/
 media_dir: docs/media
 page_dir: docs/pages
 output_dir: /tmp/formal/classes

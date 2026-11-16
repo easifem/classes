@@ -159,6 +159,15 @@ SELECT TYPE (obj2); CLASS IS (AbstractNodeField_)
     END DO
   END IF
 
+  isok = ALLOCATED(obj2%geofedofs)
+  IF (isok) THEN
+    tsize = SIZE(obj2%geofedofs)
+    ALLOCATE (obj%geofedofs(tsize))
+    DO ii = 1, tsize
+      obj%geofedofs(ii)%ptr => obj2%geofedofs(ii)%ptr
+    END DO
+  END IF
+
   obj%timefedof => obj2%timefedof
   isok = ALLOCATED(obj2%timefedofs)
   IF (isok) THEN
@@ -239,7 +248,6 @@ END PROCEDURE obj_Initiate1
 MODULE PROCEDURE obj_Initiate2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate2()"
-LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: ii, tsize1
@@ -251,7 +259,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 
 ! Important: we should not call this method here
 ! CALL obj%DEALLOCATE()
-
 CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
                            fieldType=fieldType, comm=comm, &
                            local_n=local_n, global_n=global_n)
@@ -328,17 +335,198 @@ END PROCEDURE obj_Initiate2
 MODULE PROCEDURE obj_Initiate3
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Initiate3()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: ii, tsize1
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START]')
 #endif
 
+! Important: we should not call this method here
+! CALL obj%DEALLOCATE()
+CALL AbstractFieldInitiate(obj=obj, name=name, engine=engine, &
+                           fieldType=fieldType, comm=comm, &
+                           local_n=local_n, global_n=global_n)
+
 #ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  '[WIP ERROR] :: This routine is under development')
+tsize1 = SIZE(spaceCompo)
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(spaceCompo), b=tPhysicalVarNames")
 #endif
+
+#ifdef DEBUG_VER
+tsize1 = SIZE(timeCompo)
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(timeCompo), b=tPhysicalVarNames")
+#endif
+
+#ifdef DEBUG_VER
+tsize1 = SIZE(physicalVarNames)
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(physicalVarNames), b=tPhysicalVarNames")
+#endif
+
+#ifdef DEBUG_VER
+tsize1 = SIZE(tNodes)
+CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                  "a=size(tNodes), b=tPhysicalVarNames")
+#endif
+
+obj%dof_tPhysicalVars = tPhysicalVarNames
+obj%dof_storageFMT = storageFMT
+obj%tSize = tSize
+
+CALL Reallocate(obj%dof_spaceCompo, tPhysicalVarNames)
+CALL Reallocate(obj%dof_timeCompo, tPhysicalVarNames)
+CALL Reallocate(obj%dof_tNodes, tPhysicalVarNames)
+ALLOCATE (obj%dof_names_char(tPhysicalVarNames))
+
+DO ii = 1, tPhysicalVarNames
+  obj%dof_spaceCompo(ii) = spaceCompo(ii)
+  obj%dof_timeCompo(ii) = timeCompo(ii)
+  obj%dof_tNodes(ii) = tNodes(ii)
+  obj%dof_names_char(ii) (1:1) = physicalVarNames(ii) (1:1)
+END DO
+
+CALL DOF_Initiate(obj=obj%dof, tNodes=obj%dof_tNodes, &
+                  names=obj%dof_names_char, spaceCompo=obj%dof_spaceCompo, &
+                  timeCompo=obj%dof_timeCompo, storageFMT=obj%dof_storageFMT)
+
+CALL RealVector_Initiate(obj=obj%realVec, dofobj=obj%dof)
+
+#ifdef DEBUG_VER
+tsize1 = RealVector_SIZE(obj%realVec)
+CALL AssertError2(tsize1, tSize, myName, &
+                  "a=RealVector_Size(obj%realVec), b=tSize")
+#endif
+
+IF (obj%local_n .EQ. 0) CALL obj%SetLocal_n(local_n=obj%tSize)
+IF (obj%global_n .EQ. 0) CALL obj%SetGlobal_n(global_n=obj%tSize)
+
+! handle fedof
+tsize1 = SIZE(fedof)
+IF (tsize1 .EQ. math%one_i) THEN
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(fedof(1)%ptr)
+  CALL AssertError1(isok, myName, &
+                    "fedof(1)%ptr is not associated.")
+#endif
+
+  ALLOCATE (obj%fedofs(tPhysicalVarNames))
+  DO ii = 1, tPhysicalVarNames
+    obj%fedofs(ii)%ptr => fedof(1)%ptr
+  END DO
+
+ELSE
+
+#ifdef DEBUG_VER
+  CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                    "a=size(fedof), b=tPhysicalVarNames")
+#endif
+
+  ALLOCATE (obj%fedofs(tPhysicalVarNames))
+  DO ii = 1, tPhysicalVarNames
+
+#ifdef DEBUG_VER
+    isok = ASSOCIATED(fedof(ii)%ptr)
+    CALL AssertError1(isok, myName, &
+                      "fedof(ii)%ptr is not associated, for ii = "// &
+                      ToString(ii))
+#endif
+
+    obj%fedofs(ii)%ptr => fedof(ii)%ptr
+  END DO
+
+END IF
+
+! handle geofedof
+tsize1 = SIZE(geofedof)
+IF (tsize1 .EQ. math%one_i) THEN
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(geofedof(1)%ptr)
+  CALL AssertError1(isok, myName, &
+                    "geofedof(1)%ptr is not associated.")
+#endif
+
+  ALLOCATE (obj%geofedofs(tPhysicalVarNames))
+  DO ii = 1, tPhysicalVarNames
+    obj%geofedofs(ii)%ptr => geofedof(1)%ptr
+  END DO
+
+ELSE
+
+#ifdef DEBUG_VER
+  CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                    "a=size(geofedof), b=tPhysicalVarNames")
+#endif
+
+  ALLOCATE (obj%geofedofs(tPhysicalVarNames))
+  DO ii = 1, tPhysicalVarNames
+
+#ifdef DEBUG_VER
+    isok = ASSOCIATED(geofedof(ii)%ptr)
+    CALL AssertError1(isok, myName, &
+                      "geofedof(ii)%ptr is not associated, for ii = "// &
+                      ToString(ii))
+#endif
+
+    obj%geofedofs(ii)%ptr => geofedof(ii)%ptr
+  END DO
+
+END IF
+
+! we are done here if timefedof is not present.
+IF (.NOT. PRESENT(timefedof)) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+  RETURN
+END IF
+
+! following code is executed when timefedof is present.
+
+! handle timefedof
+tsize1 = SIZE(timefedof)
+IF (tsize1 .EQ. math%one_i) THEN
+
+#ifdef DEBUG_VER
+  isok = ASSOCIATED(timefedof(1)%ptr)
+  CALL AssertError1(isok, myName, &
+                    "timefedof(1)%ptr is not associated.")
+#endif
+
+  ALLOCATE (obj%timefedofs(tPhysicalVarNames))
+  DO ii = 1, tPhysicalVarNames
+    obj%timefedofs(ii)%ptr => timefedof(1)%ptr
+  END DO
+
+ELSE
+
+#ifdef DEBUG_VER
+  CALL AssertError2(tsize1, tPhysicalVarNames, myName, &
+                    "a=size(timefedof), b=tPhysicalVarNames")
+#endif
+
+  ALLOCATE (obj%timefedofs(tPhysicalVarNames))
+  DO ii = 1, tPhysicalVarNames
+
+#ifdef DEBUG_VER
+    isok = ASSOCIATED(timefedof(ii)%ptr)
+    CALL AssertError1(isok, myName, &
+                      "timefedof(ii)%ptr is not associated, for ii = "// &
+                      ToString(ii))
+#endif
+
+    obj%timefedofs(ii)%ptr => timefedof(ii)%ptr
+  END DO
+
+END IF
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

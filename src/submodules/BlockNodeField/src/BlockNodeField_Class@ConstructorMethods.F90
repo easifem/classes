@@ -17,6 +17,11 @@
 SUBMODULE(BlockNodeField_Class) ConstructorMethods
 IMPLICIT NONE
 
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = &
+                           "BlockNodeField_Class@ConstructorMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
