@@ -1340,9 +1340,15 @@ END INTERFACE
 ! date: 2022-01-06
 ! summary: Set a block node field from another block node field
 !
-! If addContribution is true, obj = obj + scale * VALUE (AXPY);
-! otherwise the values of VALUE are copied into obj (Copy). Both fields
-! must have the same layout.
+! If addContribution is true, obj = obj + scale * VALUE; otherwise the
+! values of VALUE are copied into obj (scale is not used). Both fields
+! must have the same layout and size. The values are moved with
+! SetMultiple over the whole range, so obj and VALUE can use different
+! engines (for example a LIS and a native block field).
+!
+! Changes:
+!   - 2026-11-16: Uses SetMultiple instead of COPY and AXPY, so it
+!     works between engines (issue #612).
 !
 ! Examples
 !
@@ -1422,14 +1428,14 @@ END INTERFACE
 ! END PROGRAM main
 !```
 !
-! See also: [[AbstractNodeField_Class:obj_Copy]]
+! See also: [[AbstractNodeField_Class:obj_SetMultiple5]]
 
 INTERFACE
   MODULE SUBROUTINE obj_Set17(obj, VALUE, scale, addContribution)
     CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     CLASS(BlockNodeField_), INTENT(INOUT) :: VALUE
-    !! block node field with the same layout as obj
+    !! block node field with the same layout as obj, any engine
     REAL(DFP), OPTIONAL, INTENT(IN) :: scale
     !! scale, used only if addContribution is true, default 1
     LOGICAL(LGT), OPTIONAL, INTENT(IN) :: addContribution
