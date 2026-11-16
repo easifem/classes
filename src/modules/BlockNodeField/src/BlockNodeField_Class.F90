@@ -72,9 +72,9 @@ PUBLIC :: BlockNodeFieldDeallocate
 ! and obj%timefedofs(ivar). The single pointers obj%fedof, obj%geofedof
 ! and obj%timefedof are not used and stay NULL.
 !
-! There is no type-bound Initiate. Initiate the field with
-! AbstractNodeFieldInitiate (the FEDOFPointer_ array version), normally
-! with storageFMT = DOF_FMT. In DOF format the values are stored DOF by
+! Initiate the field with Initiate (from arguments, normally with
+! storageFMT = DOF_FMT) or Initiate(obj2) (copy of another block field),
+! and free it with DEALLOCATE. In DOF format the values are stored DOF by
 ! DOF: all nodes of DOF 1 of variable 1, all nodes of DOF 2 of
 ! variable 1, ..., then the DOFs of variable 2, and so on.
 !
@@ -88,8 +88,9 @@ PUBLIC :: BlockNodeFieldDeallocate
 ! Import and Export (HDF5) and ImportFromToml are not implemented yet;
 ! they raise an error.
 !
-! Components:
-!   idofs - not used
+! Changes:
+!   - 2026-11-16: Added Initiate (obj_Initiate1, obj_Initiate2);
+!     removed the unused component idofs.
 !
 ! Examples
 !
@@ -101,8 +102,8 @@ PUBLIC :: BlockNodeFieldDeallocate
 ! fedofs(1)%ptr => fedof
 ! geofedofs(1)%ptr => geofedof
 ! ! V has two space components, P has one
-! CALL AbstractNodeFieldInitiate( &
-!   obj=u, name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
+! CALL u%Initiate( &
+!   name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
 !   spaceCompo=[2, 1], isSpaceCompo=math%yes, &
 !   isSpaceCompoScalar=math%no, timeCompo=[1, 1], isTimeCompo=math%yes, &
 !   isTimeCompoScalar=math%no, tPhysicalVarNames=2, &
@@ -111,16 +112,21 @@ PUBLIC :: BlockNodeFieldDeallocate
 !   isTNodesScalar=math%no, tSize=18, fedof=fedofs, geofedof=geofedofs)
 !```
 !
-! Full example: src/modules/BlockNodeField/examples/Set_test_1.F90
+! Full example: src/modules/BlockNodeField/examples/Initiate_test_1.F90
 !
-! See also: [[AbstractNodeField_Class:obj_Initiate3]]
+! See also: [[obj_Initiate2]], [[obj_Initiate1]]
 
 TYPE, EXTENDS(AbstractNodeField_) :: BlockNodeField_
-  INTEGER(I4B), ALLOCATABLE :: idofs(:)
-  !! not used
 CONTAINS
   ! @ConstructorMethods
   FINAL :: obj_Final
+  !! Finalizer
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate1 => obj_Initiate1
+  !! Initiate from another node field (copy)
+  PROCEDURE, PUBLIC, PASS(obj) :: Initiate2 => obj_Initiate2
+  !! Initiate from arguments
+  GENERIC, PUBLIC :: Initiate => Initiate2
+  !! Generic method to initiate (Initiate1 is added by AbstractField_)
 
   ! @IOMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
@@ -255,6 +261,170 @@ INTERFACE
 END INTERFACE
 
 !----------------------------------------------------------------------------
+!                                                Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-16
+! summary: Initiate a block node field by copying another node field
+!
+! If obj is initiated it is deallocated first. Then the data of obj2 are
+! copied by [[AbstractNodeField_Class:obj_Initiate1]]: the data of
+! AbstractField_ (name, engine, ...), the DOF object, the values, and
+! the pointers fedofs, geofedofs and timefedofs (obj points to the same
+! FEDOF objects as obj2). obj2 is not changed.
+!
+! Examples
+!
+!```fortran
+! TYPE(BlockNodeField_) :: u, v
+! ! u is initiated with Initiate(name, ...), see [[obj_Initiate2]]
+! CALL v%Initiate(obj2=u)
+! CALL OK(v%SIZE() .EQ. u%SIZE(), "Initiate1: Size")
+!```
+!
+! Full example: src/modules/BlockNodeField/examples/Initiate_test_1.F90
+!
+! See also: [[obj_Initiate2]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate1(obj, obj2, copyFull, copyStructure, &
+                                  usePointer)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    !! node field
+    CLASS(AbstractField_), INTENT(INOUT) :: obj2
+    !! It should be a child of AbstractNodeField_
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyFull
+    !! not used
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: copyStructure
+    !! not used
+    LOGICAL(LGT), INTENT(IN), OPTIONAL :: usePointer
+    !! not used
+  END SUBROUTINE obj_Initiate1
+END INTERFACE
+
+!----------------------------------------------------------------------------
+!                                                 Initiate@ConstructorMethods
+!----------------------------------------------------------------------------
+
+!> author: Vikas Sharma, Ph. D.
+! date: 2026-11-16
+! summary: Initiate a block node field from arguments
+!
+! If obj is initiated it is deallocated first. Then
+! [[AbstractNodeField_Class:obj_Initiate3]] sets the DOF data, the DOF
+! object, the vector of values (tSize entries), local_n and global_n,
+! and stores the FEDOF pointers in obj%fedofs, obj%geofedofs and
+! (if timefedof is present) obj%timefedofs.
+!
+! All the DOF arguments are required. The sizes of spaceCompo,
+! timeCompo, physicalVarNames and tNodes must be tPhysicalVarNames, and
+! tSize must be the sum of tNodes(i) * spaceCompo(i) * timeCompo(i).
+! Only the first character of each physical variable name is stored.
+!
+! Examples
+!
+!```fortran
+! TYPE(FEDOF_), TARGET :: fedof, geofedof
+! TYPE(FEDOFPointer_) :: fedofs(1), geofedofs(1)
+! TYPE(BlockNodeField_) :: u
+! ! fedof and geofedof are initiated with six nodes
+! fedofs(1)%ptr => fedof
+! geofedofs(1)%ptr => geofedof
+! ! V has two space components, P has one: 6 * 2 + 6 * 1 = 18 values
+! CALL u%Initiate( &
+!   name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
+!   spaceCompo=[2, 1], isSpaceCompo=math%yes, &
+!   isSpaceCompoScalar=math%no, timeCompo=[1, 1], isTimeCompo=math%yes, &
+!   isTimeCompoScalar=math%no, tPhysicalVarNames=2, &
+!   physicalVarNames=["V", "P"], isPhysicalVarNames=math%yes, &
+!   isPhysicalVarNamesScalar=math%no, tNodes=[6, 6], isTNodes=math%yes, &
+!   isTNodesScalar=math%no, tSize=18, fedof=fedofs, geofedof=geofedofs)
+! CALL OK(u%SIZE() .EQ. 18, "Initiate2: Size")
+!```
+!
+! Full example: src/modules/BlockNodeField/examples/Initiate_test_1.F90
+!
+! See also: [[obj_Initiate1]], [[AbstractNodeField_Class:obj_Initiate3]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_Initiate2( &
+    obj, name, engine, storageFMT, spaceCompo, isSpaceCompo, &
+    isSpaceCompoScalar, timeCompo, isTimeCompo, isTimeCompoScalar, &
+    tPhysicalVarNames, physicalVarNames, isPhysicalVarNames, &
+    isPhysicalVarNamesScalar, tNodes, isTNodes, isTNodesScalar, &
+    tSize, fedof, geofedof, fieldType, comm, local_n, global_n, timefedof)
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
+    !! node field
+    CHARACTER(*), INTENT(IN) :: name
+    !! name of the field defined in [[AbstractField_]]
+    CHARACTER(*), INTENT(IN) :: engine
+    !! name of the engine, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN) :: storageFMT
+    !! storage format, see [[FieldOpt_Class:TypeFieldOpt]]
+    INTEGER(I4B), INTENT(IN) :: spaceCompo(:)
+    !! space components, tsize of spaceCompo should be same as
+    !! tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompo
+    !! if true we will try to access spaceCompo
+    LOGICAL(LGT), INTENT(IN) :: isSpaceCompoScalar
+    !! is space component scalar,
+    !! in this case we only access spaceCompo(1)
+    INTEGER(I4B), INTENT(IN) :: timeCompo(:)
+    !! Time components
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompo
+    !! if true we will try to access TimeCompo
+    LOGICAL(LGT), INTENT(IN) :: isTimeCompoScalar
+    !! is Time component scalar,
+    !! in this case we only access TimeCompo(1)
+    INTEGER(I4B), INTENT(IN) :: tPhysicalVarNames
+    !! total physical variable names
+    !! if it is zero, then physicalVarNames will not be written
+    !! evenif physicalVarNames is present, and isPhysicalVarNames
+    !! is true
+    CHARACTER(*), INTENT(IN) :: physicalVarNames(:)
+    !! Names of the physical variables, size of physicalVarNames should
+    !! be same as tPhysicalVarNames
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNames
+    !! logical variable to check if physicalVarNames is present or not
+    !! if it is false then physicalVarNames will not be written
+    LOGICAL(LGT), INTENT(IN) :: isPhysicalVarNamesScalar
+    !! if true then we physicalVarNames is scalar
+    INTEGER(I4B), INTENT(IN)  :: tNodes(:)
+    !! total number of nodes in each physical variable
+    LOGICAL(LGT), INTENT(IN) :: isTNodes
+    !! if true we will try to access tNodes
+    LOGICAL(LGT), INTENT(IN) :: isTNodesScalar
+    !! is tNodes scalar
+    INTEGER(I4B), INTENT(IN) :: tSize
+    !! total size of node field
+    TYPE(FEDOFPointer_), INTENT(IN) :: fedof(:)
+    !! FEDOF of each physical variable, size 1 (same FEDOF for all)
+    !! or tPhysicalVarNames
+    TYPE(FEDOFPointer_), INTENT(IN) :: geofedof(:)
+    !! geometry FEDOF of each physical variable, size 1 or
+    !! tPhysicalVarNames
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: fieldType
+    !! field type, see TypeFieldOpt for the names, default is
+    !! TypeFieldOpt%normal, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: comm
+    !! communication group
+    !! Only needed for parallel environment, defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: local_n
+    !! local size of field on each processor
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
+    INTEGER(I4B), INTENT(IN), OPTIONAL :: global_n
+    !! global size of field on distributed on processors
+    !! Only needed for parallel environment
+    !! Defined in [[AbstractField_]]
+    TYPE(TimeFEDOFPointer_), INTENT(IN), OPTIONAL :: timefedof(:)
+    !! TimeFEDOF of each physical variable, size 1 or
+    !! tPhysicalVarNames
+  END SUBROUTINE obj_Initiate2
+END INTERFACE
+
+!----------------------------------------------------------------------------
 !                                             Deallocate@ConstructorMethods
 !----------------------------------------------------------------------------
 
@@ -293,7 +463,7 @@ END INTERFACE BlockNodeFieldDeallocate
 !
 ! This routine is under development; it raises an error in debug
 ! mode and does nothing otherwise. Initiate the field with
-! AbstractNodeFieldInitiate instead.
+! Initiate instead.
 !
 ! See also: [[AbstractNodeField_:obj_ImportFromToml1]]
 
@@ -379,7 +549,6 @@ END INTERFACE
 !
 !```fortran
 ! PROGRAM main
-! USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 ! USE BaseType, ONLY: math => TypeMathOpt
 ! USE BlockNodeField_Class, ONLY: BlockNodeField_
 ! USE ExceptionHandler_Class, ONLY: e
@@ -410,8 +579,8 @@ END INTERFACE
 ! fedofs(1)%ptr => fedof
 ! geofedofs(1)%ptr => geofedof
 !
-! CALL AbstractNodeFieldInitiate( &
-!   obj=u, name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
+! CALL u%Initiate( &
+!   name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
 !   spaceCompo=[2, 1], isSpaceCompo=math%yes, isSpaceCompoScalar=math%no, &
 !   timeCompo=[1, 1], isTimeCompo=math%yes, isTimeCompoScalar=math%no, &
 !   tPhysicalVarNames=2, physicalVarNames=["V", "P"], &
@@ -1179,7 +1348,6 @@ END INTERFACE
 !
 !```fortran
 ! PROGRAM main
-! USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 ! USE BaseType, ONLY: math => TypeMathOpt
 ! USE BlockNodeField_Class, ONLY: BlockNodeField_
 ! USE ExceptionHandler_Class, ONLY: e
@@ -1210,8 +1378,8 @@ END INTERFACE
 ! fedofs(1)%ptr => fedof
 ! geofedofs(1)%ptr => geofedof
 !
-! CALL AbstractNodeFieldInitiate( &
-!   obj=u, name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
+! CALL u%Initiate( &
+!   name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
 !   spaceCompo=[2, 1], isSpaceCompo=math%yes, isSpaceCompoScalar=math%no, &
 !   timeCompo=[1, 1], isTimeCompo=math%yes, isTimeCompoScalar=math%no, &
 !   tPhysicalVarNames=2, physicalVarNames=["V", "P"], &
@@ -1219,8 +1387,8 @@ END INTERFACE
 !   tNodes=[6, 6], isTNodes=math%yes, isTNodesScalar=math%no, tSize=18, &
 !   fedof=fedofs, geofedof=geofedofs)
 !
-! CALL AbstractNodeFieldInitiate( &
-!   obj=v, name="v", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
+! CALL v%Initiate( &
+!   name="v", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
 !   spaceCompo=[2, 1], isSpaceCompo=math%yes, isSpaceCompoScalar=math%no, &
 !   timeCompo=[1, 1], isTimeCompo=math%yes, isTimeCompoScalar=math%no, &
 !   tPhysicalVarNames=2, physicalVarNames=["V", "P"], &

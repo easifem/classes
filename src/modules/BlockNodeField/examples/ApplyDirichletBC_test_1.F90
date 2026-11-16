@@ -16,7 +16,6 @@
 ! entries are unchanged.
 
 PROGRAM main
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldInitiate
 USE BaseType, ONLY: math => TypeMathOpt
 USE BlockNodeField_Class, ONLY: BlockNodeField_
 USE DirichletBC_Class, ONLY: DirichletBCDeallocate
@@ -51,8 +50,8 @@ CALL geofedof%ImportFromToml(tomlName="geofedof", &
 fedofs(1)%ptr => fedof
 geofedofs(1)%ptr => geofedof
 
-CALL AbstractNodeFieldInitiate( &
-  obj=u, name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
+CALL u%Initiate( &
+  name="u", engine="NATIVE_SERIAL", storageFMT=DOF_FMT, &
   spaceCompo=[2, 1], isSpaceCompo=math%yes, isSpaceCompoScalar=math%no, &
   timeCompo=[1, 1], isTimeCompo=math%yes, isTimeCompoScalar=math%no, &
   tPhysicalVarNames=2, physicalVarNames=["V", "P"], &
