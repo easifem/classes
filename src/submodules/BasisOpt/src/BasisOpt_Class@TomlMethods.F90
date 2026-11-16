@@ -200,19 +200,19 @@ SUBROUTINE ImportQuadOptFromToml(obj, table, origin, STAT)
   CALL toml_get(table, astr%chars(), node, origin=origin, &
                 requested=.FALSE., STAT=STAT)
 
-#ifdef DEBUG_VER
   isok = ASSOCIATED(node)
   IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
     CALL e%RaiseDebug(modName//'::'//myName//' - '// &
                       'Node with name '//astr//' is not associated'// &
                       ' quadOpt will not be imported.')
 
     CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                             '[END] ')
+#endif
 
     RETURN
   END IF
-#endif
 
   CALL obj%quadOpt%ImportFromToml(table=node, topoType=obj%topoType, &
                                   nsd=obj%nsd, xidim=obj%xidim, &
