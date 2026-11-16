@@ -123,13 +123,15 @@ CONTAINS
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all values to one value
   PROCEDURE, PRIVATE, PASS(obj) :: Set13 => obj_Set13
-  !! obj = value, copy another vector field
+  !! obj = value, copy another vector field, used for ASSIGNMENT(=)
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set values from the user function
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13
   !! Set the values of the vector field
+  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set13
+  !! obj = VALUE, copy the values of another vector field
   PROCEDURE, PUBLIC, PASS(obj) :: SetHigherOrderNodeCoord => &
     obj_SetHigherOrderNodeCoord
   !! Set the values to the coordinates of the DOFs
@@ -854,10 +856,9 @@ END INTERFACE
 ! Component c of all nodes becomes scale * VALUE(c), or scale * VALUE(c)
 ! is added with addContribution. SIZE(VALUE) must be spaceCompo.
 !
-! @note
-!   In debug mode the check of the field type is inverted: an error is
-!   raised if the field is not constant.
-! @endnote
+!@note
+! This method should not be called for a constant FieldType.
+!@endnote
 !
 ! Examples
 !
@@ -930,8 +931,10 @@ END INTERFACE
 ! date: 2021-06-25
 ! summary: Set one component of all nodes to a value
 !
-! Component spaceCompo of all nodes becomes VALUE, or scale * VALUE is
-! added with addContribution.
+! If addContribution is false then we set the values of
+! `obj@spaceCompo` to value or scale*value.
+!
+! If addContribution is true then we add the values to `obj@spaceCompo`.
 !
 ! The example also shows Set(VALUE(:), spaceCompo) ([[obj_Set5]]),
 ! Set(VALUE(:), globalNode(:), islocal, spaceCompo) ([[obj_Set9]]) and
@@ -1581,6 +1584,8 @@ END INTERFACE
 !   - 2026-11-14: VALUE can be a VectorFieldLis_ (before, only the exact
 !     type VectorField_ was accepted, and other types raised an error in
 !     debug mode or were ignored).
+!   - 2026-11-17: used for ASSIGNMENT(=); before, obj = VALUE was the
+!     intrinsic assignment, which copied the FEDOF pointers and lis_ptr
 !
 ! Examples
 !
@@ -1937,9 +1942,16 @@ END INTERFACE
 ! date: 2021-06-25
 ! summary: Get the vectors of the selected nodes in a rank 2 array
 !
-! Same as [[obj_Get2]] for the nodes of globalNode: with the nodes
-! format VALUE(c, j) is component c of node globalNode(j), with the DOF
-! format VALUE(j, c).
+! This method is same as [[obj_Get2]], which returns
+! nodal values for all nodes.
+!
+! In this method you can specify nodes through globalNode.
+!
+!@note
+!- If storageFMT is TypeFieldOpt%storageFormatNodes then, VALUE(i,J)
+!- If storageFMT is TypeFieldOpt%storageFormatNodes, then Value(J,i)
+!- Above, i denotes the space component and J denotes globaNode(J).
+!@endnote
 !
 ! See also: [[obj_Set4]] (contains an example)
 

@@ -124,7 +124,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'VectorField_::obj is not initiated')
 #endif
 

@@ -67,6 +67,7 @@ mycase = "NNN"
 IF (isnode) mycase(1:1) = "Y"
 IF (isspace) mycase(2:2) = "Y"
 IF (istime) mycase(3:3) = "Y"
+tsize = math%zero_i
 
 SELECT CASE (mycase)
 
@@ -168,7 +169,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 IF (storageFMT .EQ. NODES_FMT) THEN
   dim1 = obj%spaceCompo
   dim2 = obj%timeCompo
-  dim3 = obj%dof.tNodes.1
+  dim3 = obj%dof .tNodes. 1
 
   DO jj = 1, dim3
     CALL obj%Get(VALUE=VALUE(:, :, jj), globalNode=jj, islocal=.TRUE., &
@@ -176,7 +177,7 @@ IF (storageFMT .EQ. NODES_FMT) THEN
   END DO
 
 ELSE
-  dim1 = obj%dof.tNodes.1
+  dim1 = obj%dof .tNodes. 1
   dim2 = obj%spaceCompo
   dim3 = obj%timeCompo
 

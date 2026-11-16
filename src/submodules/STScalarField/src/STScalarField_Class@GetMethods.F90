@@ -123,16 +123,23 @@ END PROCEDURE obj_Get1
 MODULE PROCEDURE obj_Get2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
-LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: s(3), jj, mynrow
 INTEGER(I4B) :: indx(obj%timeCompo)
+LOGICAL(LGT) :: isok
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
-                  "STScalarField_:: obj is not initiated")
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
+                  "STScalarField_:: obj is not initiated")
+#endif
+
+#ifdef DEBUG_VER
 IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   nrow = obj%dof .tNodes. 1
   ncol = obj%timeCompo
@@ -149,9 +156,16 @@ isok = SIZE(VALUE, 2) .GE. ncol
 CALL AssertError1(isok, myName, "Number of cols in not enough")
 #endif
 
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+isok = obj%engine%INDEX("NATIVE") .EQ. math%one_i
+IF (isok) THEN
+
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, idof=obj%idofs, &
                  VALUE=VALUE, nrow=nrow, ncol=ncol, storageFMT=storageFMT)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
   RETURN
 END IF
@@ -170,6 +184,11 @@ IF (storageFMT .EQ. TypeFieldOpt%storageFormatDOF) THEN
   END DO
 !$OMP END PARALLEL DO
 
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
   RETURN
 END IF
 
@@ -183,6 +202,11 @@ DO jj = 1, ncol
   CALL obj%GetMultiple(indx=indx, VALUE=VALUE(:, jj), tsize=mynrow)
 END DO
 !$OMP END PARALLEL DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
@@ -190,11 +214,8 @@ END PROCEDURE obj_Get2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get3
-#ifdef DEBUG_VER
-LOGICAL(LGT) :: isok
-#endif
-
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
+LOGICAL(LGT) :: isok
 INTEGER(I4B) :: jj, mynrow
 
 #include "./include/localNodeError.F90"
@@ -219,10 +240,16 @@ isok = SIZE(VALUE, 2) .GE. ncol
 CALL AssertError1(isok, myName, "Number of cols in not enough")
 #endif
 
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+isok = obj%engine%INDEX("NATIVE") .EQ. math%one_i
+IF (isok) THEN
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, idof=obj%idofs, &
                  VALUE=VALUE, nrow=nrow, ncol=ncol, storageFMT=storageFMT, &
                  nodenum=globalNode)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
 
   RETURN
 END IF
@@ -259,10 +286,12 @@ END PROCEDURE obj_Get3
 
 MODULE PROCEDURE obj_Get4
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+LOGICAL(LGT) :: isok
 
 #include "./include/localNodeError.F90"
 
-IF (obj%engine%chars() .EQ. "NATIVE_SERIAL") THEN
+isok = obj%engine%INDEX("NATIVE") .EQ. math%one_i
+IF (isok) THEN
 
   CALL GetValue_(obj=obj%realVec, dofobj=obj%dof, ivar=1, &
                  idof=timeCompo, VALUE=VALUE, tsize=tsize, &
