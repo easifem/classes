@@ -61,4 +61,6 @@ docmark_alt: *
 docmark: !
 fpp_extensions: F90
 preprocess: true
+alias: classes = https://github.com/easifem/classes/blob/dev/src/modules/
+       base = https://github.com/easifem/base/blob/dev/src/modules/
 ---
