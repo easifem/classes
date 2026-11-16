@@ -1209,7 +1209,7 @@ END INTERFACE
 !
 ! See also: [[obj_Set6]] (contains an example)
 
-INTERFACE ScalarFieldGetFEVariable
+INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
     CLASS(ScalarField_), INTENT(IN) :: obj
     !! scalar field
@@ -1222,7 +1222,7 @@ INTERFACE ScalarFieldGetFEVariable
     INTEGER(I4B), INTENT(IN), OPTIONAL :: ivar
     !! physical variable
   END SUBROUTINE obj_GetFeVariable
-END INTERFACE ScalarFieldGetFEVariable
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                             Size@GetMethods
