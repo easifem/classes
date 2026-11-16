@@ -47,6 +47,7 @@ CONTAINS
 MODULE PROCEDURE obj_Get1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
+LOGICAL(LGT) :: isok
 #endif
 LOGICAL(LGT) :: isnode, isspace, istime
 INTEGER(I4B), PARAMETER :: indx_size = 128
@@ -68,6 +69,18 @@ IF (isnode) mycase(1:1) = "Y"
 IF (isspace) mycase(2:2) = "Y"
 IF (istime) mycase(3:3) = "Y"
 tsize = math%zero_i
+
+#ifdef DEBUG_VER
+IF (isspace) THEN
+  isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+  CALL AssertError1(isok, myName, "spaceCompo out of bound")
+END IF
+
+IF (istime) THEN
+  isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+  CALL AssertError1(isok, myName, "timeCompo out of bound")
+END IF
+#endif
 
 SELECT CASE (mycase)
 
@@ -257,12 +270,21 @@ END PROCEDURE obj_Get3
 MODULE PROCEDURE obj_Get4
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: indx(SIZE(globalNode))
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo out of bound")
+
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 CALL GetNodeLoc_( &
@@ -283,12 +305,21 @@ END PROCEDURE obj_Get4
 MODULE PROCEDURE obj_Get5
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo out of bound")
+
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 indx = GetNodeLoc( &

@@ -170,6 +170,7 @@ END PROCEDURE obj_Set2
 MODULE PROCEDURE obj_Set3
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: s(3)
 
@@ -181,6 +182,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo out of bound")
+
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 s = GetNodeLoc(obj=obj%dof, &
@@ -254,6 +263,7 @@ END PROCEDURE obj_Set4
 MODULE PROCEDURE obj_Set5
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: s(3)
 
@@ -265,6 +275,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
                   'STVectorField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
+CALL AssertError1(isok, myName, "spaceCompo out of bound")
+
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
+CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 s = GetNodeLoc(obj=obj%dof, &
@@ -391,12 +409,12 @@ CALL AssertError1(obj%isInitiated(), myName, &
 #endif
 
 #ifdef DEBUG_VER
-isok = spaceCompo .LE. obj%spaceCompo
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo out of bound")
 #endif
 
 #ifdef DEBUG_VER
-isok = timeCompo .LE. obj%timeCompo
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
@@ -463,12 +481,12 @@ CALL AssertError1(obj%isInitiated(), myName, &
 #endif
 
 #ifdef DEBUG_VER
-isok = spaceCompo .LE. obj%spaceCompo
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo out of bound")
 #endif
 
 #ifdef DEBUG_VER
-isok = timeCompo .LE. obj%timeCompo
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
@@ -554,13 +572,14 @@ CALL AssertError1(obj%isInitiated(), myName, &
 #endif
 
 #ifdef DEBUG_VER
-isok = timeCompo .LE. obj%timeCompo
+isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 #ifdef DEBUG_VER
 DO ii = 1, SIZE(spaceCompo)
-  isok = spaceCompo(ii) .LE. obj%spaceCompo
+  isok = (spaceCompo(ii) .GE. 1) .AND. &
+         (spaceCompo(ii) .LE. obj%spaceCompo)
   CALL AssertError1(isok, myName, &
                     "spaceCompo "//tostring(ii)//" out of bound")
 END DO
@@ -646,13 +665,14 @@ CALL AssertError1(obj%isInitiated(), myName, &
 #endif
 
 #ifdef DEBUG_VER
-isok = spaceCompo .LE. obj%spaceCompo
+isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo out of bound")
 #endif
 
 #ifdef DEBUG_VER
 DO ii = 1, SIZE(timeCompo)
-  isok = timeCompo(ii) .LE. obj%timeCompo
+  isok = (timeCompo(ii) .GE. 1) .AND. &
+         (timeCompo(ii) .LE. obj%timeCompo)
   CALL AssertError1(isok, myName, &
                     "timeCompo "//tostring(ii)//" out of bound")
 END DO
