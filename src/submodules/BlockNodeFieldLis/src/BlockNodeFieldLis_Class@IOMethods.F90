@@ -15,13 +15,9 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeFieldLis_Class) IOMethods
-
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay, &
-                                   AbstractNodeFieldGetPointer, &
-                                   AbstractNodeFieldExport
-
-USE BlockNodeField_Class, ONLY: BlockNodeFieldExport
-
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldDisplay
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldExport
+USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -79,7 +75,7 @@ IF (ierr .EQ. LIS_FALSE) THEN
   CALL lis_vector_gather(obj%lis_ptr, realvec, ierr)
   CALL CHKERR(ierr)
   NULLIFY (realvec)
-  CALL BlockNodeFieldExport(obj=obj, hdf5=hdf5, group=group)
+  CALL obj%BlockNodeField_%Export(hdf5=hdf5, group=group)
 END IF
 
 #ifdef DEBUG_VER

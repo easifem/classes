@@ -15,54 +15,17 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeField_Class) SetMethods
-
-USE InputUtility, ONLY: Input
-
-USE AbstractMesh_Class, ONLY: AbstractMesh_
-
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
-USE AbstractNodeField_Class, ONLY: AbstractNodeFieldGetPointer
-
-USE ScalarField_Class, ONLY: ScalarField_
-USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-
-USE STScalarField_Class, ONLY: STScalarField_
-USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-
-USE VectorField_Class, ONLY: VectorField_
-USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-
-USE STVectorField_Class, ONLY: STVectorField_
-USE STVectorFieldLis_Class, ONLY: STVectorFieldLis_
-
-USE RealVector_Method, ONLY: Set, Add, GetPointer
-
-USE Display_Method, ONLY: tostring
-
-USE GlobalData, ONLY: SpaceTime
-
-USE DOF_Method, ONLY: GetNodeLoc, &
-                      OPERATOR(.tNodes.), &
-                      GetIDOF, &
-                      GetNodeLoc_, &
-                      GetIndex_, &
-                      OPERATOR(.tDOF.), &
-                      GetIndex
-
 USE ArangeUtility, ONLY: Arange
-
-USE Basetype, ONLY: TypeFEVariableVector, &
-                    TypeFEVariableSpaceTime, &
-                    TypeFEVariableConstant
-
-USE FEVariable_Method, ONLY: Get
-
-USE ReallocateUtility, ONLY: Reallocate
-
-USE SafeSizeUtility, ONLY: SafeSize
-
+USE DOF_Method, ONLY: GetIndex_
+USE DOF_Method, ONLY: GetNodeLoc
+USE DOF_Method, ONLY: GetNodeLoc_
+USE DOF_Method, ONLY: OPERATOR(.tDOF.)
+USE InputUtility, ONLY: Input
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class@SetMethods.F90"
+#endif
 
 CONTAINS
 
@@ -71,7 +34,21 @@ CONTAINS
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set1
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set1
 
 !----------------------------------------------------------------------------
@@ -82,24 +59,34 @@ MODULE PROCEDURE obj_Set2
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set2()"
 #endif
-
 INTEGER(I4B) :: tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
+#endif
 
+#ifdef DEBUG_VER
 tsize = obj%SIZE()
-
 CALL AssertError2(tsize, SIZE(VALUE), myName, &
                   'a=obj%size(), b=size(value)')
 #endif
 
 tsize = obj%SIZE()
 
-CALL obj%SetMultiple(value=value, scale=scale, addContribution=addContribution,&
+CALL obj%SetMultiple(VALUE=VALUE, scale=scale, &
+                     addContribution=addContribution, &
                      istart=1_I4B, iend=tsize, stride=1_I4B)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set2
 
 !----------------------------------------------------------------------------
@@ -107,8 +94,15 @@ END PROCEDURE obj_Set2
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set3
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set3()"
+#endif
 INTEGER(I4B) :: indx
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
@@ -121,6 +115,11 @@ indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, ivar=ivar, idof=idof)
 
 CALL obj%SetSingle(VALUE=VALUE, indx=indx, scale=scale, &
                    addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set3
 
 !----------------------------------------------------------------------------
@@ -128,12 +127,19 @@ END PROCEDURE obj_Set3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set4
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set4()"
+#endif
 INTEGER(I4B) :: indx(128), ii, tsize, idof(128)
 REAL(DFP) :: areal(128)
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
@@ -141,8 +147,8 @@ CALL AssertError1(obj%isInitiated(), myName, &
 
 areal = VALUE
 
-tsize = obj%dof.tDOF.ivar
-idof(1:tsize) = GetIDOF(obj=obj%dof, ivar=ivar)
+tsize = obj%dof .tDOF. ivar
+idof(1:tsize) = Arange(1_I4B, tsize)
 
 DO ii = 1, SIZE(globalNode)
   CALL GetNodeLoc_(obj=obj%dof, nodenum=globalNode(ii), ivar=ivar, &
@@ -152,6 +158,10 @@ DO ii = 1, SIZE(globalNode)
                        scale=scale, addContribution=addContribution)
 END DO
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set4
 
 !----------------------------------------------------------------------------
@@ -161,19 +171,24 @@ END PROCEDURE obj_Set4
 MODULE PROCEDURE obj_Set5
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set5()"
-INTEGER(I4B) :: tsize1, tsize2
 #endif
 
 INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
+#endif
 
-tsize1 = SIZE(VALUE)
-tsize2 = SIZE(globalNode) * (obj%dof.tdof.ivar)
-
-CALL AssertError2(tsize1, tsize2, myName, &
+#ifdef DEBUG_VER
+CALL AssertError2(SIZE(VALUE), &
+                  SIZE(globalNode) * (obj%dof .tdof. ivar), &
+                  myName, &
                   "a=size(value), b=size(globalNode) * (obj%tDOF%ivar)")
 #endif
 
@@ -185,6 +200,10 @@ CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ivar=ivar, ans=indx, &
 CALL obj%SetMultiple(VALUE=VALUE, indx=indx, scale=scale, &
                      addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set5
 
 !----------------------------------------------------------------------------
@@ -192,12 +211,26 @@ END PROCEDURE obj_Set5
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set6
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set6()"
+#endif
 INTEGER(I4B) :: ii
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 DO ii = 1, SIZE(globalNode)
   CALL obj%Set(globalNode=globalNode(ii), islocal=islocal, scale=scale, &
                addContribution=addContribution, VALUE=VALUE, &
                ivar=ivar, idof=idof)
 END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set6
 
 !----------------------------------------------------------------------------
@@ -208,13 +241,19 @@ MODULE PROCEDURE obj_Set7
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set7()"
 #endif
-
 INTEGER(I4B) :: indx(SIZE(globalNode)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
-                  'BlockNodeField_::obj is not initiated')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
+                  'BlockNodeField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
 CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
                   "a=size(value), b=size(globalNode)")
 #endif
@@ -227,6 +266,10 @@ CALL GetNodeLoc_(obj=obj%dof, ans=indx, tsize=tsize, ivar=ivar, &
 CALL obj%SetMultiple(indx=indx, VALUE=VALUE, scale=scale, &
                      addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
@@ -237,13 +280,19 @@ MODULE PROCEDURE obj_Set8
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set8()"
 #endif
-
 INTEGER(I4B) :: indx(SIZE(globalNode)), tsize
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
-                  'BlockNodeField_::obj is not initiated')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
+                  'BlockNodeField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
 CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
                   "a=size(value), b=size(globalNode)")
 #endif
@@ -257,6 +306,10 @@ CALL GetNodeLoc_(obj=obj%dof, ans=indx, tsize=tsize, ivar=ivar, &
 CALL obj%SetMultiple(indx=indx, VALUE=VALUE, scale=scale, &
                      addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set8
 
 !----------------------------------------------------------------------------
@@ -264,11 +317,26 @@ END PROCEDURE obj_Set8
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set9
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set9()"
+#endif
 REAL(DFP) :: value0(SIZE(globalNode))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 value0 = VALUE
 CALL obj%Set(VALUE=value0, scale=scale, addContribution=addContribution, &
-   globalNode=globalNode, islocal=islocal, ivar=ivar, spaceCompo=spaceCompo, &
+             globalNode=globalNode, islocal=islocal, ivar=ivar, &
+             spaceCompo=spaceCompo, &
              timeCompo=timeCompo)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set9
 
 !----------------------------------------------------------------------------
@@ -278,31 +346,39 @@ END PROCEDURE obj_Set9
 MODULE PROCEDURE obj_Set10
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
-INTEGER(I4B) :: tsize1, tsize2
 #endif
-
 INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AssertError1(.NOT. obj%isInitiated(), myName, &
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
+#endif
 
-tsize1 = SIZE(VALUE)
-tsize2 = SIZE(globalNode) * SIZE(timeCompo)
-CALL AssertError2(tsize1, tsize2, myName, &
+#ifdef DEBUG_VER
+CALL AssertError2(SIZE(VALUE), &
+                  SIZE(globalNode) * SIZE(timeCompo), &
+                  myName, &
                   "a=size(value), b=size(globalNode)*size(timeCompo)")
-
 #endif
 
 #include "./localNodeError.F90"
 
 CALL GetNodeLoc_(obj=obj%dof, ivar=ivar, spaceCompo=spaceCompo, &
-               timeCompo=timeCompo, nodenum=globalNode, ans=indx, tsize=tsize)
+                 timeCompo=timeCompo, nodenum=globalNode, ans=indx, &
+                 tsize=tsize)
 
 CALL obj%SetMultiple(indx=indx, VALUE=VALUE, scale=scale, &
                      addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
@@ -310,11 +386,25 @@ END PROCEDURE obj_Set10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set11
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
+#endif
 REAL(DFP) :: value0(SIZE(globalNode) * SIZE(timeCompo))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 value0 = VALUE
 CALL obj%Set(VALUE=value0, globalNode=globalNode, islocal=islocal, &
              ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
              scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
@@ -324,31 +414,39 @@ END PROCEDURE obj_Set11
 MODULE PROCEDURE obj_Set12
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set12()"
-INTEGER(I4B) :: tsize1, tsize2
 #endif
-
 INTEGER(I4B) :: indx(SIZE(VALUE)), tsize
 
 #ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-CALL AssertError1(.NOT. obj%isInitiated(), myName, &
+#ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
+#endif
 
-tsize1 = SIZE(VALUE)
-tsize2 = SIZE(globalNode) * SIZE(spaceCompo)
-CALL AssertError2(tsize1, tsize2, myName, &
+#ifdef DEBUG_VER
+CALL AssertError2(SIZE(VALUE), &
+                  SIZE(globalNode) * SIZE(spaceCompo), &
+                  myName, &
                   "a=size(value), b=size(globalNode)*size(spaceCompo)")
-
 #endif
 
 #include "./localNodeError.F90"
 
 CALL GetNodeLoc_(obj=obj%dof, ivar=ivar, spaceCompo=spaceCompo, &
-               timeCompo=timeCompo, nodenum=globalNode, ans=indx, tsize=tsize)
+                 timeCompo=timeCompo, nodenum=globalNode, ans=indx, &
+                 tsize=tsize)
 
 CALL obj%SetMultiple(indx=indx, VALUE=VALUE, scale=scale, &
                      addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set12
 
 !----------------------------------------------------------------------------
@@ -356,11 +454,25 @@ END PROCEDURE obj_Set12
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set13
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+#endif
 REAL(DFP) :: value0(SIZE(globalNode) * SIZE(spaceCompo))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 value0 = VALUE
 CALL obj%Set(VALUE=value0, globalNode=globalNode, islocal=islocal, &
              ivar=ivar, spaceCompo=spaceCompo, timeCompo=timeCompo, &
              scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set13
 
 !----------------------------------------------------------------------------
@@ -369,24 +481,31 @@ END PROCEDURE obj_Set13
 
 MODULE PROCEDURE obj_Set14
 #ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_Set14"
+CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
 #endif
-
 INTEGER(I4B) :: indx
 
 #ifdef DEBUG_VER
-CALL AssertError1(.NOT. obj%isInitiated(), myName, &
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 
 #endif
-
-#include "./localNodeError.F90"
 
 indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, ivar=ivar, &
                   spaceCompo=spaceCompo, timeCompo=timeCompo)
 
 CALL obj%SetSingle(VALUE=VALUE, indx=indx, &
                    scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set14
 
 !----------------------------------------------------------------------------
@@ -397,25 +516,32 @@ MODULE PROCEDURE obj_Set15
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set15()"
 #endif
-
 INTEGER(I4B) :: indx(SIZE(timeCompo)), tsize
 REAL(DFP) :: value0(SIZE(timeCompo))
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
-#include "./localNodeError.F90"
-
 CALL GetNodeLoc_(obj=obj%dof, ivar=ivar, spaceCompo=spaceCompo, &
-               timeCompo=timeCompo, nodenum=globalNode, ans=indx, tsize=tsize)
+                 timeCompo=timeCompo, nodenum=globalNode, ans=indx, &
+                 tsize=tsize)
 
 value0 = VALUE
 
 CALL obj%SetMultiple(indx=indx, VALUE=value0, scale=scale, &
                      addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set15
 
 !----------------------------------------------------------------------------
@@ -426,25 +552,32 @@ MODULE PROCEDURE obj_Set16
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set16()"
 #endif
-
 INTEGER(I4B) :: indx(SIZE(spaceCompo)), tsize
 REAL(DFP) :: value0(SIZE(spaceCompo))
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
-#include "./localNodeError.F90"
-
 CALL GetNodeLoc_(obj=obj%dof, ivar=ivar, spaceCompo=spaceCompo, &
-               timeCompo=timeCompo, nodenum=globalNode, ans=indx, tsize=tsize)
+                 timeCompo=timeCompo, nodenum=globalNode, ans=indx, &
+                 tsize=tsize)
 
 value0 = VALUE
 
 CALL obj%SetMultiple(indx=indx, VALUE=value0, scale=scale, &
                      addContribution=addContribution)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set16
 
 !----------------------------------------------------------------------------
@@ -454,9 +587,7 @@ END PROCEDURE obj_Set16
 MODULE PROCEDURE obj_Set17
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set17()"
-LOGICAL(LGT) :: isok
 #endif
-
 REAL(DFP) :: areal
 LOGICAL(LGT) :: abool
 
@@ -466,14 +597,12 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'BlockNodeField_::obj is not initiated')
 #endif
 
 #ifdef DEBUG_VER
-isok = VALUE%IsInitiated()
-CALL AssertError1(isok, myName, &
+CALL AssertError1(VALUE%IsInitiated(), myName, &
                   'BlockNodeField_::value is not initiated')
 #endif
 
@@ -482,6 +611,11 @@ abool = Input(option=addContribution, default=.FALSE.)
 IF (abool) THEN
   areal = Input(option=scale, default=1.0_DFP)
   CALL obj%AXPY(x=VALUE, scale=areal)
+
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
   RETURN
 END IF
 
@@ -497,138 +631,23 @@ END PROCEDURE obj_Set17
 !
 !----------------------------------------------------------------------------
 
-! MODULE PROCEDURE obj_Set18
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_Set18()"
-! #endif
-!
-! INTEGER(I4B) :: s(3), p(3), tsize
-! REAL(DFP), POINTER :: realvec(:)
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! #ifdef DEBUG_VER
-! CALL AssertError1(obj%isInitiated(), myName, &
-!                   'BlockNodeField_ ::obj is not initiated')
-!
-! CALL AssertError1(VALUE%isInitiated(), myName, &
-!                   'AbstractNodeField_::value is not initiated')
-! #endif
-!
-! s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(obj=obj%dof, ivar=ivar, idof=idof))
-!
-! SELECT TYPE (VALUE)
-!
-! TYPE IS (ScalarField_)
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!          addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3))
-!   realvec => NULL()
-!
-! TYPE IS (STScalarField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!        addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
-!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
-!   realvec => NULL()
-!
-! TYPE IS (VectorField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!        addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
-!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
-!   realvec => NULL()
-!
-! TYPE IS (STVectorField_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!
-!   realvec => VALUE%GetPointer()
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!        addContribution=addContribution, istart=s(1), iend=s(2), stride=s(3), &
-!                        istart_value=p(1), iend_value=p(2), stride_value=p(3))
-!   realvec => NULL()
-!
-! TYPE IS (ScalarFieldLis_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=1)
-!   realvec => AbstractNodeFieldGetPointer(VALUE)
-!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
-!                          stride_value=p(3))
-!
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!                     addContribution=addContribution, istart=s(1), iend=s(2), &
-!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-!   realvec => NULL()
-!
-! TYPE IS (STScalarFieldLis_)
-!
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => AbstractNodeFieldGetPointer(VALUE)
-!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
-!                          stride_value=p(3))
-!
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!                     addContribution=addContribution, istart=s(1), iend=s(2), &
-!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-!   realvec => NULL()
-!
-! TYPE IS (VectorFieldLis_)
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => AbstractNodeFieldGetPointer(VALUE)
-!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
-!                          stride_value=p(3))
-!
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!                     addContribution=addContribution, istart=s(1), iend=s(2), &
-!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-!   realvec => NULL()
-!
-! TYPE IS (STVectorFieldLis_)
-!   p = GetNodeLoc(obj=VALUE%dof, idof=idof_value)
-!   realvec => AbstractNodeFieldGetPointer(VALUE)
-!   CALL VALUE%GetMultiple(VALUE=realvec, istart=p(1), iend=p(2), stride=p(3), &
-!                          tsize=tsize, istart_value=p(1), iend_value=p(2), &
-!                          stride_value=p(3))
-!
-!   CALL obj%SetMultiple(VALUE=realvec, scale=scale, &
-!                     addContribution=addContribution, istart=s(1), iend=s(2), &
-!            stride=s(3), istart_value=p(1), iend_value=p(2), stride_value=p(3))
-!   realvec => NULL()
-!
-! CLASS DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     '[INTERNAL ERROR] :: No case found for the type of VALUE')
-!   RETURN
-!
-! END SELECT
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END] ')
-! #endif
-! END PROCEDURE obj_Set18
+MODULE PROCEDURE obj_Assign
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Assign()"
+#endif
 
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-MODULE PROCEDURE obj_assign
 CALL obj%SetAll(VALUE=VALUE)
-END PROCEDURE obj_assign
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_Assign
 
 !----------------------------------------------------------------------------
 !

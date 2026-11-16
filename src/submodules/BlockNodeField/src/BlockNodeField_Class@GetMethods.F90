@@ -15,45 +15,26 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(BlockNodeField_Class) GetMethods
-USE InputUtility, ONLY: Input
-
-USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
-
-USE ScalarField_Class, ONLY: ScalarField_
-! USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
-
-USE STScalarField_Class, ONLY: STScalarField_
-! USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
-
-USE VectorField_Class, ONLY: VectorField_
-! USE VectorFieldLis_Class, ONLY: VectorFieldLis_
-
-USE STVectorField_Class, ONLY: STVectorField_
-
-USE RealVector_Method, ONLY: GetValue_
-
-USE ArangeUtility, ONLY: Arange
-
-USE BaseType, ONLY: TypeFEVariableScalar, &
-                    TypeFEVariableVector, &
-                    TypeFEVariableSpace, &
-                    TypeFEVariableSpaceTime
-
-USE FEVariable_Method, ONLY: NodalVariable
-
-USE DOF_Method, ONLY: GetIDOF, &
-                      OPERATOR(.tnodes.), &
-                      GetNodeLoc, &
-                      GetNodeLoc_, &
-                      OPERATOR(.tdof.), &
-                      OPERATOR(.TimeComponents.), &
-                      OPERATOR(.SpaceComponents.)
-
-USE SwapUtility, ONLY: Swap_
-
+USE BaseType, ONLY: TypeFEVariableScalar
+USE BaseType, ONLY: TypeFEVariableSpace
+USE BaseType, ONLY: TypeFEVariableSpaceTime
+USE BaseType, ONLY: TypeFEVariableVector
+USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
-
+USE DOF_Method, ONLY: GetIDOF
+USE DOF_Method, ONLY: GetNodeLoc
+USE DOF_Method, ONLY: GetNodeLoc_
+USE DOF_Method, ONLY: OPERATOR(.SpaceComponents.)
+USE DOF_Method, ONLY: OPERATOR(.tdof.)
+USE DOF_Method, ONLY: OPERATOR(.TimeComponents.)
+USE FEVariable_Method, ONLY: NodalVariable
+USE InputUtility, ONLY: Input
+USE SwapUtility, ONLY: Swap_
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class@GetMethods.F90"
+#endif
 
 CONTAINS
 
@@ -66,8 +47,12 @@ MODULE PROCEDURE obj_Get1
 CHARACTER(*), PARAMETER :: myName = "obj_Get1()"
 LOGICAL(LGT) :: isok
 #endif
-
 INTEGER(I4B) :: indx
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 #ifdef DEBUG_VER
 isok = obj%IsInitiated()
@@ -80,6 +65,10 @@ CALL AssertError1(isok, myName, &
 indx = GetNodeLoc(obj=obj%dof, nodenum=globalNode, ivar=ivar, idof=idof)
 CALL obj%GetSingle(VALUE=VALUE, indx=indx)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get1
 
 !----------------------------------------------------------------------------
@@ -87,9 +76,23 @@ END PROCEDURE obj_Get1
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get2
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get2()"
+#endif
 INTEGER(I4B) :: iend
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 iend = obj%SIZE()
 CALL obj%GetMultiple(istart=1, iend=iend, stride=1, VALUE=VALUE, tsize=tsize)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get2
 
 !----------------------------------------------------------------------------
@@ -99,20 +102,22 @@ END PROCEDURE obj_Get2
 MODULE PROCEDURE obj_Get3
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get3()"
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: myint1, myint2
 #endif
 
 INTEGER(I4B) :: indx(SIZE(globalNode))
 
 #ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'BlockNodeField_::obj is not initiated')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-myint1 = SIZE(VALUE)
-myint2 = SIZE(globalNode)
-CALL AssertError2(myint1, myint2, myName, &
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
+                  'BlockNodeField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
                   "a=SIZE(VALUE) b = SIZE(globalNode)")
 #endif
 
@@ -121,6 +126,11 @@ CALL AssertError2(myint1, myint2, myName, &
 CALL GetNodeLoc_(obj=obj%dof, ivar=ivar, idof=idof, nodenum=globalNode, &
                  ans=indx, tsize=tsize)
 CALL obj%GetMultiple(indx=indx, tsize=tsize, VALUE=VALUE)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get3
 
 !----------------------------------------------------------------------------
@@ -128,13 +138,26 @@ END PROCEDURE obj_Get3
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get4
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get4()"
+#endif
 REAL(DFP) :: value0(SIZE(globalNode))
 INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL obj%Get(VALUE=value0, globalNode=globalNode, ivar=ivar, idof=idof, &
              islocal=islocal, tsize=tsize)
 
 VALUE = NodalVariable(value0, TypeFEVariableScalar, TypeFEVariableSpace)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get4
 
 !----------------------------------------------------------------------------
@@ -142,14 +165,21 @@ END PROCEDURE obj_Get4
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get5
+#ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get5()"
-INTEGER(I4B) :: timeCompo, spaceCompo, ierr, case_id, tdof, ii, &
+#endif
+INTEGER(I4B) :: timeCompo, spaceCompo, case_id, tdof, ii, &
                 tsize
 REAL(DFP), ALLOCATABLE :: m3a(:, :, :)
 REAL(DFP), ALLOCATABLE :: m3b(:, :, :)
 REAL(DFP), ALLOCATABLE :: value0(:)
 
-tdof = obj%dof.tdof.ivar
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+tdof = obj%dof .tdof. ivar
 case_id = SIZE(globalNode)
 
 ALLOCATE (m3a(case_id, tdof, 1))
@@ -165,8 +195,8 @@ value0 = RESHAPE(m3a, [case_id * tdof])
 DEALLOCATE (m3a)
 
 case_id = 0_I4B
-timeCompo = obj%dof.TimeComponents.ivar
-spaceCompo = obj%dof.SpaceComponents.ivar
+timeCompo = obj%dof .TimeComponents. ivar
+spaceCompo = obj%dof .SpaceComponents. ivar
 
 IF ((spaceCompo .GT. 1)) THEN
   IF (timeCompo .GT. 1) THEN
@@ -207,9 +237,11 @@ CASE (4)
   VALUE = NodalVariable(value0, TypeFEVariableScalar, TypeFEVariableSpace)
 
 CASE DEFAULT
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for given arguments')
-  RETURN
+
+#ifdef DEBUG_VER
+  CALL AssertError1(math%no, myName, &
+                    "No case found for case_id, case_id="//ToString(case_id))
+#endif
 
 END SELECT
 
@@ -217,6 +249,10 @@ IF (ALLOCATED(value0)) DEALLOCATE (value0)
 IF (ALLOCATED(m3a)) DEALLOCATE (m3a)
 IF (ALLOCATED(m3b)) DEALLOCATE (m3b)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get5
 
 !----------------------------------------------------------------------------
@@ -226,20 +262,22 @@ END PROCEDURE obj_Get5
 MODULE PROCEDURE obj_Get6
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Get6()"
-LOGICAL(LGT) :: isok
-INTEGER(I4B) :: myint1, myint2
 #endif
 
 INTEGER(I4B) :: indx(SIZE(globalNode)), idof
 
 #ifdef DEBUG_VER
-isok = obj%IsInitiated()
-CALL AssertError1(isok, myName, &
-                  'BlockNodeField_::obj is not initiated')
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
-myint1 = SIZE(globalNode)
-myint2 = SIZE(VALUE)
-CALL AssertError2(myint1, myint2, myName, &
+#ifdef DEBUG_VER
+CALL AssertError1(obj%IsInitiated(), myName, &
+                  'BlockNodeField_::obj is not initiated')
+#endif
+
+#ifdef DEBUG_VER
+CALL AssertError2(SIZE(globalNode), SIZE(VALUE), myName, &
                   "a=size(globalNode), b=Size(value)")
 #endif
 
@@ -253,6 +291,10 @@ CALL GetNodeLoc_(obj=obj%dof, idof=idof, nodenum=globalNode, &
 
 CALL obj%GetMultiple(indx=indx, VALUE=VALUE, tsize=tsize)
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get6
 
 !----------------------------------------------------------------------------
@@ -260,84 +302,52 @@ END PROCEDURE obj_Get6
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Get7
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Get7()"
+#endif
 REAL(DFP) :: value0(SIZE(globalNode))
 INTEGER(I4B) :: tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
 
 CALL obj%Get(VALUE=value0, globalNode=globalNode, ivar=ivar, &
              spaceCompo=spaceCompo, timeCompo=timeCompo, islocal=islocal, &
              tsize=tsize)
 VALUE = NodalVariable(value0, TypeFEVariableScalar, TypeFEVariableSpace)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Get7
-
-!----------------------------------------------------------------------------
-!                                                                 Get
-!----------------------------------------------------------------------------
-
-! MODULE PROCEDURE obj_Get8
-! #ifdef DEBUG_VER
-! CHARACTER(*), PARAMETER :: myName = "obj_Get8()"
-! LOGICAL(LGT) :: isok
-! #endif
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[START] ')
-! #endif
-!
-! #ifdef DEBUG_VER
-! isok = obj%IsInitiated()
-! CALL AssertError1(isok, myName, &
-!                   "BlockNodeField_:: obj is not initiated")
-!
-! isok = VALUE%IsInitiated()
-! CALL AssertError1(isok, myName, &
-!                   "BlockNodeField_:: value is not initiated")
-! #endif
-!
-! SELECT TYPE (VALUE)
-!
-! ! CLASS IS (ScalarField_)
-! !   CALL VALUE%Set(ivar=1, idof=1, VALUE=obj, ivar_value=ivar, idof_value=idof)
-!
-! CLASS IS (STScalarField_)
-!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! CLASS IS (VectorField_)
-!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! CLASS IS (STVectorField_)
-!   CALL VALUE%Set(ivar=1, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! CLASS IS (BlockNodeField_)
-! CALL VALUE%Set(ivar=ivar_value, idof=idof_value, VALUE=obj, ivar_value=ivar, &
-!                  idof_value=idof)
-!
-! #ifdef DEBUG_VER
-! CLASS DEFAULT
-!   CALL e%RaiseError(modName//'::'//myName//' - '// &
-!                     '[INTENRAL ERROR] :: No case found for the type of value')
-! #endif
-! END SELECT
-!
-! #ifdef DEBUG_VER
-! CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-!                         '[END] ')
-! #endif
-!
-! END PROCEDURE obj_Get8
 
 !----------------------------------------------------------------------------
 !                                                           GetFEVariable
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_GetFEVariable
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_GetFEVariable()"
+#endif
+
 INTEGER(I4B) :: ivar0
-ivar0 = input(option=ivar, default=1_I4B)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+ivar0 = Input(option=ivar, default=1_I4B)
 CALL obj%Get(globalNode=globalNode, VALUE=VALUE, ivar=ivar0, &
              islocal=islocal)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_GetFEVariable
 
 !----------------------------------------------------------------------------

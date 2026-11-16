@@ -18,57 +18,21 @@
 ! date: 28 June 2021
 ! summary: Scalar field data type is defined
 
+#ifndef USE_LIS
 MODULE BlockNodeFieldLis_Class
-USE GlobalData
-USE Basetype
-USE String_Class
-USE AbstractField_Class
-USE AbstractNodeField_Class
-USE BlockNodeField_Class
-USE ExceptionHandler_Class, ONLY: e
-USE FPL, ONLY: ParameterList_
-USE HDF5File_Class
-USE DirichletBC_Class
+USE BlockNodeField_Class, ONLY: BlockNodeField_
 IMPLICIT NONE
 PRIVATE
-CHARACTER(*), PARAMETER :: modName = "BlockNodeFieldLis_Class"
-CHARACTER(*), PARAMETER :: myprefix = "BlockNodeField"
+
 PUBLIC :: BlockNodeFieldLis_
-PUBLIC :: TypeBlockNodeFieldLis
-PUBLIC :: BlockNodeFieldPointer_
-
-!----------------------------------------------------------------------------
-!                                                         BlockNodeFieldLis_
-!----------------------------------------------------------------------------
-
-!> authors: Vikas Sharma, Ph. D.
-! date: 06 Jan 2022
-! summary: This nodal field is designed for the multiphysics applications
-!
-!{!pages/docs-api/BlockNodeFieldLis/BlockNodeFieldLis_.md!}
+PUBLIC :: BlockNodeFieldLisPointer_
 
 TYPE, EXTENDS(BlockNodeField_) :: BlockNodeFieldLis_
-CONTAINS
-  PRIVATE
-  FINAL :: obj_Final
 END TYPE BlockNodeFieldLis_
-
-TYPE(BlockNodeFieldLis_), PARAMETER :: TypeBlockNodeFieldLis = &
-& BlockNodeFieldLis_(domains=NULL())
-
-!----------------------------------------------------------------------------
-!                                                  BlockNodeFieldLisPointer_
-!----------------------------------------------------------------------------
 
 TYPE :: BlockNodeFieldLisPointer_
   CLASS(BlockNodeFieldLis_), POINTER :: ptr => NULL()
 END TYPE BlockNodeFieldLisPointer_
 
-CONTAINS
-
-SUBROUTINE obj_Final(obj)
-  TYPE(BlockNodeFieldLis_), INTENT(INOUT) :: obj
-  CALL obj%DEALLOCATE()
-END SUBROUTINE obj_Final
-
 END MODULE BlockNodeFieldLis_Class
+#endif

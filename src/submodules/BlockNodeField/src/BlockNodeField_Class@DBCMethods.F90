@@ -16,13 +16,17 @@
 !
 
 SUBMODULE(BlockNodeField_Class) DBCMethods
-USE InputUtility, ONLY: Input
+USE BaseType, ONLY: math => TypeMathOpt
 USE DOF_Method, ONLY: OPERATOR(.timeComponents.)
 USE DOF_Method, ONLY: OPERATOR(.spaceComponents.)
+USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
-USE BaseType, ONLY: math => TypeMathOpt
-
 IMPLICIT NONE
+
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: modName = "BlockNodeField_Class@DBCMethods.F90"
+#endif
+
 CONTAINS
 
 !----------------------------------------------------------------------------
@@ -45,7 +49,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-tTimeCompo = obj%dof.timeComponents.ivar
+tTimeCompo = obj%dof .timeComponents. ivar
 isok = tTimeCompo .EQ. 1
 CALL AssertError1(isok, myName, &
                   "timeComponents is not equal to 1")
@@ -54,7 +58,7 @@ CALL AssertError1(isok, myName, &
 spaceCompo = dbc%GetDOFNo()
 
 #ifdef DEBUG_VER
-tSpaceCompo = obj%dof.spaceComponents.ivar
+tSpaceCompo = obj%dof .spaceComponents. ivar
 isok = spaceCompo .LE. tSpaceCompo
 CALL AssertError1(isok, myName, &
                   "dbc%GetDOFNo() is greater than obj%dof.spaceComponents")
@@ -115,7 +119,7 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-tTimeCompo = obj%dof.timeComponents.ivar
+tTimeCompo = obj%dof .timeComponents. ivar
 isok = tTimeCompo .EQ. 1
 CALL AssertError1(isok, myName, &
                   "timeComponents is not equal to 1")
@@ -134,7 +138,7 @@ CALL AssertError1(isok, myName, &
 #endif
 
 #ifdef DEBUG_VER
-tSpaceCompo = obj%dof.spaceComponents.ivar
+tSpaceCompo = obj%dof .spaceComponents. ivar
 #endif
 
 CALL obj%SetMaxTotalNodeNumForBC(dbcvec=dbc, ivar=ivar)
@@ -195,11 +199,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tTimeCompo = obj%dof.timeComponents.ivar
+tTimeCompo = obj%dof .timeComponents. ivar
 spaceCompo = dbc%GetDOFNo()
 
 #ifdef DEBUG_VER
-tSpaceCompo = obj%dof.spaceComponents.ivar
+tSpaceCompo = obj%dof .spaceComponents. ivar
 isok = spaceCompo .LE. tSpaceCompo
 CALL AssertError1(isok, myName, &
                   "dbc%GetDOFNo() is greater than obj%dof.spaceComponents")
@@ -261,20 +265,23 @@ END PROCEDURE obj_ApplyDirichletBC3
 MODULE PROCEDURE obj_ApplyDirichletBC4
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_ApplyDirichletBC4()"
+INTEGER(I4B) :: tSpaceCompo
 #endif
 
 INTEGER(I4B), PARAMETER :: expandFactor = 2
 LOGICAL(LGT) :: isok
-INTEGER(I4B) :: ibc, spaceCompo, tbc, nrow, ncol, tTimeCompo, idof, &
-                tSpaceCompo
+INTEGER(I4B) :: ibc, spaceCompo, tbc, nrow, ncol, tTimeCompo, idof
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
-tTimeCompo = obj%dof.timeComponents.ivar
-tSpaceCompo = obj%dof.spaceComponents.ivar
+tTimeCompo = obj%dof .timeComponents. ivar
+
+#ifdef DEBUG_VER
+tSpaceCompo = obj%dof .spaceComponents. ivar
+#endif
 
 #ifdef DEBUG_VER
 isok = ASSOCIATED(obj%fedofs(ivar)%ptr)
