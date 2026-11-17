@@ -702,7 +702,6 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: tsize
 LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -723,8 +722,8 @@ CALL AssertError2(VALUE%SIZE(), obj%SIZE(), myName, &
 #endif
 
 ! Native engines store the values in realVec, other engines (LIS) do
-! not: their values are first read into temp. VALUE is INTENT(IN), so
-! SetMultiple5 (VALUE INTENT(INOUT)) cannot be used.
+! not: their values are first read into obj%tempVec. VALUE is
+! INTENT(IN), so SetMultiple5 (VALUE INTENT(INOUT)) cannot be used.
 isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
 tsize = VALUE%SIZE()
 
@@ -735,13 +734,13 @@ IF (isNative) THEN
                        addContribution=addContribution)
   realvec => NULL()
 ELSE
-  CALL Reallocate(temp, tsize)
+  CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                         VALUE=temp, tsize=tsize)
+                         VALUE=obj%tempVec, tsize=tsize)
   CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                       VALUE=temp, scale=scale, &
+                       VALUE=obj%tempVec(1:tsize), scale=scale, &
                        addContribution=addContribution)
-  IF (ALLOCATED(temp)) DEALLOCATE (temp)
 END IF
 
 #ifdef DEBUG_VER

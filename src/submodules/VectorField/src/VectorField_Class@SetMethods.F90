@@ -661,7 +661,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
 INTEGER(I4B) :: tsize
 LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -684,12 +683,12 @@ IF (isNative) THEN
   realvec => NULL()
 ELSE
   tsize = VALUE%SIZE()
-  ALLOCATE (temp(tsize))
+  CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                         VALUE=temp, tsize=tsize)
-  CALL obj%SetMultiple(VALUE=temp, istart=1_I4B, iend=tsize, &
-                       stride=1_I4B)
-  DEALLOCATE (temp)
+                         VALUE=obj%tempVec, tsize=tsize)
+  CALL obj%SetMultiple(VALUE=obj%tempVec(1:tsize), istart=1_I4B, &
+                       iend=tsize, stride=1_I4B)
 END IF
 
 #ifdef DEBUG_VER
@@ -705,7 +704,6 @@ END PROCEDURE obj_Set13
 MODULE PROCEDURE obj_SetByFunction
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_SetByFunction()"
-LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: returnType

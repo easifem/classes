@@ -174,6 +174,21 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   TYPE(RealVector_) :: realVec
   !! Vector of reals for internal use only
   !! note - This variable is only for internal use
+  REAL(DFP), ALLOCATABLE :: tempVec(:)
+  !! Workspace that Set methods reuse instead of allocating a local
+  !! temporary array on each call.
+  !! It only grows (`Reallocate` with `isExpand`), so its size can be
+  !! larger than the data it holds: always pass `tempVec(1:tsize)`.
+  !! Rules for using it:
+  !!
+  !! - Only a leaf routine may fill it: do not call another method of
+  !!   `obj` that may also use `tempVec` while its data is still needed.
+  !! - Do not use it when the source argument can be `obj` itself
+  !!   (aliasing).
+  !! - It is not thread safe: do not share one field across threads.
+  !! - It is not copied by `Copy`; `Deallocate` frees it.
+  !!
+  !! note - This variable is only for internal use
 
 CONTAINS
   ! @ConstructorMethods

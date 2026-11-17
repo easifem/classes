@@ -630,6 +630,7 @@ IF (ALLOCATED(obj%dof_tNodes)) DEALLOCATE (obj%dof_tNodes)
 IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
 obj%tSize = 0
 CALL RealVector_Deallocate(obj%realVec)
+IF (ALLOCATED(obj%tempVec)) DEALLOCATE (obj%tempVec)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

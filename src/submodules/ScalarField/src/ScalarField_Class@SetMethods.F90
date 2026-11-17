@@ -311,7 +311,6 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: s(3), p(3), tsize
 LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -342,12 +341,13 @@ IF (isNative) THEN
 ELSE
   p = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
   tsize = (p(2) - p(1)) / p(3) + 1
-  CALL Reallocate(temp, tsize)
-  CALL VALUE%GetMultiple(istart=p(1), iend=p(2), stride=p(3), VALUE=temp, &
-                         tsize=tsize)
-  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), VALUE=temp, &
-                       scale=scale, addContribution=addContribution)
-  IF (ALLOCATED(temp)) DEALLOCATE (temp)
+  CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
+  CALL VALUE%GetMultiple(istart=p(1), iend=p(2), stride=p(3), &
+                         VALUE=obj%tempVec, tsize=tsize)
+  CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
+                       VALUE=obj%tempVec(1:tsize), scale=scale, &
+                       addContribution=addContribution)
 END IF
 
 #ifdef DEBUG_VER
@@ -454,6 +454,14 @@ CALL ElemShapeDataDeallocate(cellElemsd)
 CALL ElemShapeDataDeallocate(geoCellElemsd)
 
 NULLIFY (meshptr, feptr, geofeptr)
+
+IF (ALLOCATED(xij)) DEALLOCATE (xij)
+IF (ALLOCATED(ans)) DEALLOCATE (ans)
+IF (ALLOCATED(massMat)) DEALLOCATE (massMat)
+IF (ALLOCATED(funcValue)) DEALLOCATE (funcValue)
+IF (ALLOCATED(temp)) DEALLOCATE (temp)
+IF (ALLOCATED(ipiv)) DEALLOCATE (ipiv)
+IF (ALLOCATED(con)) DEALLOCATE (con)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &

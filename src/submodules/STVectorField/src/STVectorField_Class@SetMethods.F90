@@ -744,7 +744,6 @@ MODULE PROCEDURE obj_Set14
 CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
 #endif
 INTEGER(I4B) :: tsize
-REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -763,12 +762,12 @@ IF (obj%GetEngineName() .EQ. VALUE%GetEngineName()) THEN
   CALL obj%Copy(VALUE)
 ELSE
   tsize = VALUE%SIZE()
-  ALLOCATE (temp(tsize))
+  CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                         VALUE=temp, tsize=tsize)
+                         VALUE=obj%tempVec, tsize=tsize)
   CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                       VALUE=temp(1:tsize))
-  DEALLOCATE (temp)
+                       VALUE=obj%tempVec(1:tsize))
 END IF
 
 #ifdef DEBUG_VER
