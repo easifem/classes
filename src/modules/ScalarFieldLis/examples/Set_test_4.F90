@@ -2,9 +2,9 @@
 ! date: 2026-11-13
 ! summary: Set a native scalar field from a LIS scalar field
 !
-! n is a native ScalarField_ and u is a ScalarFieldLis_. The assignment
-! n = u and n%Set(VALUE=u, scale, addContribution) read the values of u
-! from its LIS vector (u has no Fortran vector to point to).
+! n is a native ScalarField_ and u is a ScalarFieldLis_. n%Set(VALUE=u)
+! and n%Set(VALUE=u, scale, addContribution) read the values of u from
+! its LIS vector (u has no Fortran vector to point to).
 
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt
@@ -42,12 +42,12 @@ CALL m%Initiate(NAME="m", engine="NATIVE_SERIAL", fedof=fedof, &
 want = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
 CALL u%Set(VALUE=want)
 
-! Test 1: assignment from a LIS field
+! Test 1: Set(VALUE=u) from a LIS field
 BLOCK
   CALL n%Set(VALUE=0.0_DFP)
-  n = u
+  CALL n%Set(VALUE=u)
   CALL n%Get(VALUE=found, tsize=tsize)
-  CALL OK(ALL(ABS(found - want) .LT. tol), "n = u")
+  CALL OK(ALL(ABS(found - want) .LT. tol), "Set(VALUE=u)")
 END BLOCK
 
 ! Test 2: LIS field, set and add

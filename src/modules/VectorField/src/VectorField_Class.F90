@@ -123,15 +123,13 @@ CONTAINS
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all values to one value
   PROCEDURE, PRIVATE, PASS(obj) :: Set13 => obj_Set13
-  !! obj = value, copy another vector field, used for ASSIGNMENT(=)
+  !! Copy another vector field, CALL obj%Set(VALUE=...)
   PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set values from the user function
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13
   !! Set the values of the vector field
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set13
-  !! obj = VALUE, copy the values of another vector field
   PROCEDURE, PUBLIC, PASS(obj) :: SetHigherOrderNodeCoord => &
     obj_SetHigherOrderNodeCoord
   !! Set the values to the coordinates of the DOFs
@@ -714,7 +712,7 @@ INTERFACE
   MODULE SUBROUTINE obj_ExportHigherOrderNodeCoordToVTK(obj, vtk, filename, &
                                                         opentag, content, &
                                                         closetag)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field of node coordinates
     TYPE(VTKFile_), INTENT(INOUT) :: vtk
     !! VTK file
@@ -1586,6 +1584,11 @@ END INTERFACE
 !     debug mode or were ignored).
 !   - 2026-11-17: used for ASSIGNMENT(=); before, obj = VALUE was the
 !     intrinsic assignment, which copied the FEDOF pointers and lis_ptr
+!   - 2026-11-18: no longer bound to ASSIGNMENT(=), because VALUE is
+!     INTENT(INOUT) (Get methods take obj INTENT(INOUT)). Use
+!     CALL obj%Set(VALUE=...); `obj = VALUE` is now the intrinsic
+!     assignment, a shallow copy of the FEDOF pointers and lis_ptr,
+!     and must not be used.
 !
 ! Examples
 !
@@ -1649,8 +1652,9 @@ INTERFACE
   MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field, obj = VALUE
-    CLASS(VectorField_), INTENT(IN) :: VALUE
-    !! vector field to be copied, any engine (native or LIS)
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
+    !! vector field to be copied, any engine (native or LIS);
+    !! must not be the same object as `obj`
   END SUBROUTINE obj_Set13
 END INTERFACE
 
@@ -1886,7 +1890,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, VALUE, tsize, globalNode, spaceCompo)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values
@@ -1918,7 +1922,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol, storageFMT, force3D)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! values
@@ -1958,7 +1962,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get3(obj, VALUE, nrow, ncol, storageFMT, globalNode, &
                              islocal, force3D)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! The number of columns in value is same as the
@@ -1997,7 +2001,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get4(obj, VALUE, tsize, globalNode, islocal, &
                              spaceCompo)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! the size of value should be same as globalNode
@@ -2025,7 +2029,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal, spaceCompo)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     REAL(DFP), INTENT(INOUT) :: VALUE
     !! value to be returned
@@ -2052,7 +2056,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get6(obj, VALUE, globalNode, islocal)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! space nodal values of vector
@@ -2084,7 +2088,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get7(obj, VALUE)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     CLASS(VectorField_), INTENT(INOUT) :: VALUE
     !! vector field, VALUE = obj
@@ -2107,7 +2111,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
-    CLASS(VectorField_), INTENT(IN) :: obj
+    CLASS(VectorField_), INTENT(INOUT) :: obj
     !! vector field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number

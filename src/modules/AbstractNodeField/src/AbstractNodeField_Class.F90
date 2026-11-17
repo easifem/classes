@@ -185,6 +185,8 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !!   `obj` that may also use `tempVec` while its data is still needed.
   !! - Do not use it when the source argument can be `obj` itself
   !!   (aliasing).
+  !! - Never pass `obj%tempVec` as an argument to a method of the same
+  !!   `obj`: the LIS GetMultiple4 (addContribution) reallocates it.
   !! - It is not thread safe: do not share one field across threads.
   !! - It is not copied by `Copy`; `Deallocate` frees it.
   !!
@@ -1667,7 +1669,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! index, size(indx) = size(value) = tsize
@@ -1694,7 +1696,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -1722,7 +1724,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      tsize)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
@@ -1803,7 +1805,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple4(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      scale, addContribution)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of obj
@@ -1830,7 +1832,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! node field
     INTEGER(I4B), INTENT(IN) :: indx
     !! index of the value
@@ -1858,7 +1860,7 @@ END INTERFACE AbstractNodeFieldGetSingle
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
-    CLASS(AbstractNodeField_), INTENT(IN) :: obj
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
     !! abstract node field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node numbers

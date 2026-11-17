@@ -438,8 +438,6 @@ DO iel = 1, telements
                islocal=math%yes)
 END DO
 
-DEALLOCATE (massMat, ipiv, xij, ans, temp, con, funcValue)
-
 DO ii = 1, SIZE(quad)
   CALL QuadraturePointDeallocate(quad(ii))
   CALL QuadraturePointDeallocate(facetQuad(ii))

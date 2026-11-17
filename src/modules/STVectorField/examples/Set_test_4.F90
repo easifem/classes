@@ -7,8 +7,7 @@
 !  FEVariable,
 !- Set(VALUE=fevar, globalNode(:), islocal) sets the selected nodes from
 !  such a FEVariable,
-!- Set(VALUE=v) copies another space-time vector field, and the
-!  assignment v = u calls it.
+!- Set(VALUE=v) copies another space-time vector field.
 !
 ! The values of nodes 1, 5, 2 are read in a FEVariable and set at
 ! nodes 3, 6, 4. The test values are f(s, t, i) = 100 s + 10 t + i.
@@ -89,12 +88,6 @@ BLOCK
   CALL v%GetMultiple(istart=1, iend=24, stride=1, VALUE=found2, &
                      tsize=tsize)
   CALL OK(ALL(ABS(found - found2) .LT. tol), "Set(STVectorField_)")
-
-  CALL v%Set(VALUE=0.0_DFP)
-  v = u
-  CALL v%GetMultiple(istart=1, iend=24, stride=1, VALUE=found2, &
-                     tsize=tsize)
-  CALL OK(ALL(ABS(found - found2) .LT. tol), "ASSIGNMENT(=): v = u")
 END BLOCK
 
 CALL v%DEALLOCATE()

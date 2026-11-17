@@ -23,6 +23,7 @@ USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: ToString
+USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePointInitiate => Initiate
 USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
 USE ReallocateUtility, ONLY: Reallocate

@@ -5,9 +5,8 @@
 ! Set(VALUE, scale, addContribution) sets v = scale * VALUE, or adds
 ! scale * VALUE to v when addContribution is true. VALUE can be a
 ! ScalarFieldLis_ (copied LIS vector to LIS vector) or a ScalarField_
-! with the native engine (copied from its Fortran vector). The
-! assignment v = u copies the values of u. All fields use the same
-! FEDOF.
+! with the native engine (copied from its Fortran vector).
+! Set(VALUE=u) copies the values of u. All fields use the same FEDOF.
 
 PROGRAM main
 USE BaseType, ONLY: math => TypeMathOpt
@@ -45,12 +44,12 @@ CALL n%Initiate(NAME="n", engine="NATIVE_SERIAL", fedof=fedof, &
 want = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
 CALL u%Set(VALUE=want)
 
-! Test 1: assignment from a LIS field
+! Test 1: Set(VALUE=u) from a LIS field
 BLOCK
   CALL v%Set(VALUE=0.0_DFP)
-  v = u
+  CALL v%Set(VALUE=u)
   CALL v%Get(VALUE=found, tsize=tsize)
-  CALL OK(ALL(ABS(found - want) .LT. tol), "v = u")
+  CALL OK(ALL(ABS(found - want) .LT. tol), "Set(VALUE=u)")
 END BLOCK
 
 ! Test 2: LIS field, set and add

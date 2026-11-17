@@ -139,14 +139,12 @@ CONTAINS
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set12 => obj_Set12
   !! Set all entries to one value
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set13 => obj_Set13
-  !! Copy another space-time scalar field, used for ASSIGNMENT(=)
+  !! Copy another space-time scalar field, CALL obj%Set(VALUE=...)
   PROCEDURE, PRIVATE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
   !! obj = [obj +] scale * VALUE, VALUE of any engine
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
   !! Generic Set Method
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set13
-  !! obj = VALUE, copy the values of another space-time scalar field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) ::  SetByFunction => &
     obj_SetByFunction
   !! Set by user function
@@ -1562,19 +1560,22 @@ END INTERFACE
 ! summary: Copy another space-time scalar field, obj = VALUE
 !
 ! Calls [[obj_Set14]] with scale = 1 and addContribution = false, so
-! VALUE can use any engine (native or LIS). The same routine is used by
-! the assignment obj = VALUE.
+! VALUE can use any engine (native or LIS).
 !
 ! Changes:
 !   - 2026-11-15: VALUE of any engine; before, a LIS VALUE was copied
 !     from its stale realVec; used for ASSIGNMENT(=) (#624)
+!   - 2026-11-18: no longer bound to ASSIGNMENT(=), because VALUE is
+!     INTENT(INOUT) (Get methods take obj INTENT(INOUT)). Use
+!     CALL obj%Set(VALUE=...); `obj = VALUE` is now the intrinsic
+!     assignment, a shallow copy of the FEDOF pointers and lis_ptr,
+!     and must not be used.
 !
 ! Examples
 !
 !```fortran
 ! CALL u%SetMultiple(istart=1, iend=12, stride=1, VALUE=src)
 ! CALL v%Set(VALUE=u)
-! w = u
 !```
 !
 ! Full example: src/modules/STScalarField/examples/Set_test_4.F90
@@ -1585,7 +1586,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field, obj = VALUE
-    CLASS(STScalarField_), INTENT(IN) :: VALUE
+    CLASS(STScalarField_), INTENT(INOUT) :: VALUE
     !! space-time scalar field to copy
   END SUBROUTINE obj_Set13
 END INTERFACE
@@ -1620,8 +1621,9 @@ INTERFACE
   MODULE SUBROUTINE obj_Set14(obj, VALUE, scale, addContribution)
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
-    CLASS(STScalarField_), INTENT(IN) :: VALUE
-    !! space-time scalar field of the same size, any engine
+    CLASS(STScalarField_), INTENT(INOUT) :: VALUE
+    !! space-time scalar field of the same size, any engine;
+    !! must not be the same object as `obj`
     REAL(DFP), INTENT(IN) :: scale
     !! scale
     LOGICAL(LGT), INTENT(IN) :: addContribution
@@ -1900,7 +1902,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, VALUE, tsize, globalNode, timeCompo, &
                              islocal)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! Value to be returned
@@ -1946,7 +1948,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE, nrow, ncol, storageFMT)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! values, SIZE(VALUE, 1) >= nrow, SIZE(VALUE, 2) >= ncol
@@ -1988,7 +1990,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get3( &
     obj, VALUE, nrow, ncol, globalNode, islocal, storageFMT)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! values, SIZE(VALUE, 1) >= nrow, SIZE(VALUE, 2) >= ncol
@@ -2033,7 +2035,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get4( &
     obj, VALUE, globalNode, tsize, islocal, timeCompo)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values to be returned
@@ -2072,7 +2074,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal, timeCompo)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE
     !! value to be returned
@@ -2103,7 +2105,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get6(obj, VALUE, globalNode, islocal)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! returned value in FEVariable format
@@ -2139,7 +2141,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
-    CLASS(STScalarField_), INTENT(IN) :: obj
+    CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
@@ -2563,7 +2565,7 @@ INTERFACE
     CLASS(STScalarField_), INTENT(INOUT) :: obj
     !! space-time scalar field (right hand side)
     !! The test function will be corresponding to the obj
-    CLASS(STScalarField_), INTENT(IN) :: bodySource
+    CLASS(STScalarField_), INTENT(INOUT) :: bodySource
     !! Body source as a space-time scalar field on the same mesh as obj
     REAL(DFP), INTENT(IN) :: scale
     !! scale for body source

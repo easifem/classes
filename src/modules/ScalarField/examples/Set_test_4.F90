@@ -2,8 +2,8 @@
 ! date: 2026-10-28
 ! summary: Set a scalar field from another scalar field
 !
-! The assignment v = u copies the values of u into v (both fields have
-! the same FEDOF).
+! Set(VALUE=u) copies the values of u into v (both fields have the
+! same FEDOF).
 !
 ! Set(VALUE=u, scale, addContribution=.TRUE.) adds
 ! scale * u to v.
@@ -38,9 +38,9 @@ want = [1.0_DFP, 2.0_DFP, 3.0_DFP, 4.0_DFP, 5.0_DFP, 6.0_DFP]
 CALL u%Set(VALUE=want)
 CALL v%Set(VALUE=0.0_DFP)
 
-v = u
+CALL v%Set(VALUE=u)
 CALL v%Get(VALUE=found, tsize=tsize)
-CALL OK(ALL(ABS(found - want) .LT. tol), "v = u")
+CALL OK(ALL(ABS(found - want) .LT. tol), "Set(VALUE=u)")
 
 CALL v%Set(VALUE=u, scale=2.0_DFP, addContribution=math%yes)
 CALL v%Get(VALUE=found, tsize=tsize)

@@ -123,8 +123,6 @@ CONTAINS
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, &
     Set5, Set6, Set7, Set8
   !! Set the entries of the scalar field
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set7
-  !! `obj = obj2` copies the values of another scalar field
   PROCEDURE, PUBLIC, PASS(obj) :: SetLagrangeDOF => obj_SetLagrangeDOF
   !! Set the Lagrange DOFs by interpolating another scalar field
 
@@ -990,10 +988,12 @@ END INTERFACE
 
 !> author: Vikas Sharma, Ph. D.
 ! date: 2021-06-25
-! summary: Copy the values of another scalar field (assignment)
+! summary: Copy the values of another scalar field
 !
-! Copies the values of `VALUE` into `obj`. The assignment
-! `obj = VALUE` calls this method.
+! Copies the values of `VALUE` into `obj`. Call it as
+! `CALL obj%Set(VALUE=VALUE)`. Do not write `obj = VALUE`: since
+! 2026-11-18 it is not bound to this method and is the intrinsic
+! assignment, a shallow copy of the FEDOF pointers and lis_ptr.
 !
 ! `obj` must be initiated. Both fields must have the same DOF
 ! layout. Nothing checks this.
@@ -1059,7 +1059,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Set7(obj, VALUE)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! initiated scalar field, receives the values
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
+    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
     !! scalar field to copy
   END SUBROUTINE obj_Set7
 END INTERFACE
@@ -1164,8 +1164,9 @@ INTERFACE
   MODULE SUBROUTINE obj_Set8(obj, VALUE, scale, addContribution)
     CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
-    CLASS(ScalarField_), INTENT(IN) :: VALUE
-    !! other scalar field, any engine
+    CLASS(ScalarField_), INTENT(INOUT) :: VALUE
+    !! other scalar field, any engine;
+    !! must not be the same object as `obj`
     REAL(DFP), INTENT(IN) :: scale
     !! factor for `VALUE`
     LOGICAL(LGT), INTENT(IN) :: addContribution
@@ -1426,7 +1427,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, islocal)
-    CLASS(ScalarField_), INTENT(IN) :: obj
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE
     !! value of the entry
@@ -1454,7 +1455,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE, tsize)
-    CLASS(ScalarField_), INTENT(IN) :: obj
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values of all entries, `SIZE(VALUE) >= obj%Size()`
@@ -1481,7 +1482,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get3(obj, VALUE, globalNode, islocal, tsize)
-    CLASS(ScalarField_), INTENT(IN) :: obj
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values of the selected entries,
@@ -1521,7 +1522,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get4(obj, VALUE, globalNode, islocal)
-    CLASS(ScalarField_), INTENT(IN) :: obj
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! initiated FEVariable; returns the nodal values
@@ -1547,7 +1548,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
-    CLASS(ScalarField_), INTENT(IN) :: obj
+    CLASS(ScalarField_), INTENT(INOUT) :: obj
     !! scalar field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! local node numbers

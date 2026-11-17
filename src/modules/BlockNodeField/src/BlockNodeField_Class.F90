@@ -1519,7 +1519,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get1(obj, VALUE, globalNode, islocal, ivar, idof)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     REAL(DFP), INTENT(INOUT) :: VALUE
     !! value of the entry
@@ -1562,7 +1562,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE, tsize)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! all values, SIZE(VALUE) >= obj%SIZE()
@@ -1601,7 +1601,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get3( &
     obj, VALUE, tsize, globalNode, islocal, ivar, idof)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values, SIZE(VALUE) = SIZE(globalNode)
@@ -1646,7 +1646,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get4(obj, VALUE, globalNode, islocal, ivar, idof)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! nodal FEVariable, TypeFEVariableScalar, TypeFEVariableSpace
@@ -1696,7 +1696,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get5(obj, VALUE, globalNode, islocal, ivar)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! nodal FEVariable; scalar if spaceCompo is 1, otherwise vector;
@@ -1740,7 +1740,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get6( &
     obj, VALUE, tsize, globalNode, islocal, ivar, spaceCompo, timeCompo)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values, SIZE(VALUE) = SIZE(globalNode)
@@ -1777,7 +1777,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get7( &
     obj, VALUE, globalNode, islocal, ivar, spaceCompo, timeCompo)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! nodal FEVariable, TypeFEVariableScalar, TypeFEVariableSpace
@@ -1840,7 +1840,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFEVariable(obj, globalNode, islocal, VALUE, ivar)
-    CLASS(BlockNodeField_), INTENT(IN) :: obj
+    CLASS(BlockNodeField_), INTENT(INOUT) :: obj
     !! block node field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! local node numbers
