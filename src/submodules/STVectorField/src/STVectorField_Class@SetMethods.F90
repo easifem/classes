@@ -788,7 +788,6 @@ LOGICAL(LGT) :: isok
 INTEGER(I4B) :: idof, icompo, s(3), p(3), tsize
 LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE, TARGET :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -818,24 +817,25 @@ CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 ! Native engines store the values in realVec, other engines (LIS) do not:
-! their values are copied into temp
+! their values are copied into obj%tempVec
 isNative = INDEX(VALUE%GetEngineName(), "NATIVE") .EQ. 1
 
 IF (isNative) THEN
   realvec => VALUE%GetPointer()
-ELSE
-  tsize = VALUE%SIZE()
-  ALLOCATE (temp(tsize))
-  CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                         VALUE=temp, tsize=tsize)
-  realvec => temp
-END IF
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(realvec)
-CALL AssertError1(isok, myName, &
-                  'realvec obtained To value is not ASSOCIATED')
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, &
+                    'realvec obtained To value is not ASSOCIATED')
 #endif
+
+ELSE
+  tsize = VALUE%SIZE()
+  CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
+  CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                         VALUE=obj%tempVec, tsize=tsize)
+END IF
 
 DO icompo = 1, obj%spaceCompo
   s = GetNodeLoc(obj=VALUE%dof, idof=icompo)
@@ -846,14 +846,21 @@ DO icompo = 1, obj%spaceCompo
 
   p = GetNodeLoc(obj=obj%dof, idof=idof)
 
-  CALL obj%SetMultiple( &
-    VALUE=realvec, scale=scale, addContribution=addContribution, &
-    istart_value=s(1), iend_value=s(2), stride_value=s(3), &
-    istart=p(1), iend=p(2), stride=p(3))
+  IF (isNative) THEN
+    CALL obj%SetMultiple( &
+      VALUE=realvec, scale=scale, addContribution=addContribution, &
+      istart_value=s(1), iend_value=s(2), stride_value=s(3), &
+      istart=p(1), iend=p(2), stride=p(3))
+  ELSE
+    CALL obj%SetMultiple( &
+      VALUE=obj%tempVec(1:tsize), scale=scale, &
+      addContribution=addContribution, &
+      istart_value=s(1), iend_value=s(2), stride_value=s(3), &
+      istart=p(1), iend=p(2), stride=p(3))
+  END IF
 END DO
 
 realvec => NULL()
-IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -870,10 +877,9 @@ MODULE PROCEDURE obj_SetToVectorField
 CHARACTER(*), PARAMETER :: myName = "obj_SetToVectorField()"
 LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: s(3), p(3), icompo, idof, tsize
+INTEGER(I4B) :: s(3), p(3), icompo, idof, tsize, ii
 LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE, TARGET :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -903,41 +909,49 @@ CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
 ! Native engines store the values in realVec, other engines (LIS) do not:
-! their values are copied into temp
+! their values are copied into VALUE%tempVec
 isNative = INDEX(obj%GetEngineName(), "NATIVE") .EQ. 1
 
 IF (isNative) THEN
   realvec => obj%GetPointer()
-ELSE
-  tsize = obj%SIZE()
-  ALLOCATE (temp(tsize))
-  CALL obj%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                       VALUE=temp, tsize=tsize)
-  realvec => temp
-END IF
 
 #ifdef DEBUG_VER
-isok = ASSOCIATED(realvec)
-CALL AssertError1(isok, myName, &
-                  'realvec obtained To value is not ASSOCIATED')
+  isok = ASSOCIATED(realvec)
+  CALL AssertError1(isok, myName, &
+                    'realvec obtained To value is not ASSOCIATED')
 #endif
+
+ELSE
+  tsize = obj%SIZE()
+  CALL Reallocate(VALUE%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
+  CALL obj%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
+                       VALUE=VALUE%tempVec, tsize=ii)
+  tsize = ii
+END IF
 
 DO icompo = 1, obj%spaceCompo
   s = GetNodeLoc(obj=VALUE%dof, idof=icompo)
 
-  idof = GetIDOF( &
-         spaceCompo=icompo, timeCompo=timeCompo, &
-         tspaceCompo=obj%spaceCompo)
+  idof = GetIDOF(spaceCompo=icompo, timeCompo=timeCompo, &
+                 tspaceCompo=obj%spaceCompo)
   p = GetNodeLoc(obj=obj%dof, idof=idof)
 
-  CALL VALUE%SetMultiple( &
-    VALUE=realvec, scale=scale, addContribution=addContribution, &
-    istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-    istart=s(1), iend=s(2), stride=s(3))
+  IF (isNative) THEN
+    CALL VALUE%SetMultiple( &
+      VALUE=realvec, scale=scale, addContribution=addContribution, &
+      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+      istart=s(1), iend=s(2), stride=s(3))
+  ELSE
+    CALL VALUE%SetMultiple( &
+      VALUE=VALUE%tempVec(1:tsize), scale=scale, &
+      addContribution=addContribution, &
+      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
+      istart=s(1), iend=s(2), stride=s(3))
+  END IF
 END DO
 
 realvec => NULL()
-IF (ALLOCATED(temp)) DEALLOCATE (temp)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
