@@ -321,7 +321,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC easifemBase::easifemBase)
 # ParaView Catalyst (in situ visualization), optional
 option(USE_CATALYST "Enable ParaView Catalyst in situ visualization" OFF)
 if(USE_CATALYST)
-    find_package(catalyst 2.0 REQUIRED)
+    find_package(catalyst 2.0 REQUIRED QUIET)
     message(STATUS "[INFO] :: Catalyst found: ${catalyst_DIR}")
     target_link_libraries(
         ${PROJECT_NAME}
