@@ -1439,8 +1439,8 @@ END INTERFACE
 ! VALUE is a vector, nodal FEVariable. If it is constant, its vector is
 ! set at all nodes of globalNode ([[obj_Set7]]). If it is a space
 ! variable, its values (shape (spaceCompo, SIZE(globalNode))) are set
-! with the nodes format ([[obj_Set8]]). Other variable types raise an
-! error.
+! node by node ([[obj_Set1]]). The values are used in place from
+! VALUE%val, so no copy is made. Other variable types raise an error.
 !
 ! Examples
 !

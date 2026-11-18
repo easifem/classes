@@ -20,10 +20,7 @@ USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: QuadraturePoint_
-USE BaseType, ONLY: TypeFEVariableConstant
 USE BaseType, ONLY: TypeFEVariableOpt
-USE BaseType, ONLY: TypeFEVariableSpace
-USE BaseType, ONLY: TypeFEVariableVector
 USE BaseType, ONLY: fevaropt => TypeFEVariableOpt
 USE BaseType, ONLY: math => TypeMathOpt
 USE Display_Method, ONLY: Display
@@ -34,7 +31,6 @@ USE DOF_Method, ONLY: GetNodeLoc_
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
 USE ElemShapeData_Method, ONLY: GetInterpolation_
-USE FEVariable_Method, ONLY: Get
 USE InputUtility, ONLY: Input
 USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePointInitiate => Initiate
@@ -576,7 +572,10 @@ END PROCEDURE obj_Set10
 MODULE PROCEDURE obj_Set11
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
+LOGICAL(LGT) :: isok
 #endif
+
+INTEGER(I4B) :: ii, jj, ncomp
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -590,20 +589,37 @@ CALL AssertError1(obj%fieldType .NE. TypeFieldOpt%constant, myName, &
                   'Not callable for constant vector field')
 #endif
 
+#ifdef DEBUG_VER
+CALL AssertError2(VALUE%s(1), obj%spaceCompo, myName, &
+                  "a=VALUE%s(1), b=obj%spaceCompo")
+#endif
+
+! The values of VALUE are used in place (slices of VALUE%val), so no
+! copy is made. VALUE%val stores the components of a node together:
+! val(i + (j - 1) * ncomp) is component i at node j.
+ncomp = VALUE%s(1)
+
 SELECT CASE (VALUE%vartype)
 
 CASE (TypeFieldOpt%constant)
-  CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableVector, &
-                         TypeFEVariableConstant), globalNode=globalNode, &
+  CALL obj%Set(VALUE=VALUE%val(1:ncomp), globalNode=globalNode, &
                scale=scale, addContribution=addContribution, &
                islocal=islocal)
 
 CASE (TypeFieldOpt%space)
-  CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableVector, &
-                         TypeFEVariableSpace), globalNode=globalNode, &
-               scale=scale, islocal=islocal, &
-               addContribution=addContribution, &
-               storageFMT=TypeFieldOpt%storageFormatNodes)
+
+#ifdef DEBUG_VER
+  isok = VALUE%s(2) .EQ. SIZE(globalNode)
+  CALL AssertError1(isok, myName, &
+                    "VALUE%s(2) not same as SIZE(globalNode)")
+#endif
+
+  DO ii = 1, SIZE(globalNode)
+    jj = (ii - 1) * ncomp
+    CALL obj%Set(globalNode=globalNode(ii), islocal=islocal, &
+                 VALUE=VALUE%val(jj + 1:jj + ncomp), scale=scale, &
+                 addContribution=addContribution)
+  END DO
 
 CASE DEFAULT
 
