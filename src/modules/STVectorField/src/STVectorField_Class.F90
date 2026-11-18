@@ -1206,11 +1206,12 @@ END INTERFACE
 ! summary: Set the selected nodes from a FEVariable
 !
 ! VALUE must be a space-time FEVariable (other types raise an error in
-! debug mode). Its rank 3 data is passed to [[obj_Set7]], so it is read
-! as (spaceCompo, timeCompo, SIZE(globalNode)).
+! debug mode). Its data is read as (spaceCompo, SIZE(globalNode),
+! timeCompo), the shape that [[obj_Get7]] returns, so a FEVariable
+! from Get7 can be set directly; see the example.
 !
-! Note: [[obj_Get7]] returns a FEVariable of shape (spaceCompo, nns,
-! nnt), which does not fit this layout; see the example.
+! The values are used in place from VALUE%val, so no copy is made:
+! each time component is set by one SetMultiple call.
 !
 ! Examples
 !
