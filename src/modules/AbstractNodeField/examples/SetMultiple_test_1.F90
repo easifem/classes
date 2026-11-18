@@ -82,6 +82,8 @@ CALL x%GetMultiple(istart=1, iend=3, stride=1, VALUE=found, &
 CALL OK(tsize .EQ. 3, "GetMultiple range of value: tsize")
 CALL OK(ALL(ABS(found(4:6) - [1.0_DFP, 1.0_DFP, 3.0_DFP]) .LT. tol), &
         "GetMultiple range of value")
+CALL OK(ALL(ABS(found(1:3)) .LT. tol), &
+        "GetMultiple range of value: other entries not changed")
 
 CALL x%DEALLOCATE()
 CALL fedof%DEALLOCATE()

@@ -1279,6 +1279,10 @@ END INTERFACE
 ! (lis_vector_get_values_from_range2); the other entries of VALUE are
 ! not changed. tsize = (iend - istart) / stride + 1.
 !
+! Changes:
+!   - 2026-11-18: VALUE is INTENT(INOUT) (it was INTENT(OUT)), so the
+!     entries outside the range keep their values (#620).
+!
 ! Examples
 !
 !```fortran
@@ -1300,7 +1304,7 @@ INTERFACE
     !! LIS block node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
-    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values, entries istart_value:iend_value:stride_value are written
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of entries of VALUE, same number of entries as obj range

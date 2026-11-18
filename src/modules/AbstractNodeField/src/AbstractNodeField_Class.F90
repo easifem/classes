@@ -1718,6 +1718,13 @@ END INTERFACE
 ! VALUE(istart_value::stride_value) = obj(istart:iend:stride); tsize
 ! is the number of indices of the range of obj.
 !
+! Entries of VALUE outside istart_value:iend_value:stride_value are not
+! changed.
+!
+! Changes:
+!   - 2026-11-18: VALUE is INTENT(INOUT) (it was INTENT(OUT)), so the
+!     entries outside the range keep their values (#620).
+!
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
 INTERFACE
@@ -1728,7 +1735,7 @@ INTERFACE
     !! node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
-    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! returned vlaue
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of values
