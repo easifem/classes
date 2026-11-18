@@ -1166,9 +1166,9 @@ END INTERFACE
 !   (or added) in the range of obj (lis_vector_set_values9), no
 !   copy. obj and VALUE can be the same field when the two ranges do
 !   not overlap.
-! - otherwise (other engine) the range of VALUE is copied into a
-!   temporary array
-!   (GetMultiple), then set by SetMultiple3.
+! - otherwise (other engine) the range of VALUE is copied into
+!   obj%tempVec (GetMultiple), then set (or added) in the range of
+!   obj (lis_vector_set_values8).
 !
 ! Examples
 !

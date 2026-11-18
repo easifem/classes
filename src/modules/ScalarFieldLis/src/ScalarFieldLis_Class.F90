@@ -1008,8 +1008,9 @@ END INTERFACE
 !  no temporary array,
 !- LIS: scale times the range of VALUE is set (or added) in the range
 !  of obj (lis_vector_set_values9), no temporary array,
-!- otherwise: the range of VALUE is copied into a temporary array by
-!  GetMultiple of VALUE, then set by [[obj_SetMultiple3]].
+!- otherwise: the range of VALUE is copied into obj%tempVec by
+!  GetMultiple of VALUE, then set (or added) in the range of obj
+!  (lis_vector_set_values8).
 !
 ! @note
 !   obj and VALUE can be the same field, but then the two ranges should
