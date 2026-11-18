@@ -25,8 +25,6 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: TypeFEVariableConstant
 USE BaseType, ONLY: TypeFEVariableOpt
-USE BaseType, ONLY: TypeFEVariableSpaceTime
-USE BaseType, ONLY: TypeFEVariableVector
 USE Display_Method, ONLY: tostring
 USE DOF_Method, ONLY: GetIDOF
 USE DOF_Method, ONLY: GetIndex_
@@ -34,7 +32,6 @@ USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: GetNodeLoc_
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
-USE FEVariable_Method, ONLY: Get
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE GlobalData, ONLY: SpaceTime
 USE InputUtility, ONLY: Input
@@ -46,7 +43,6 @@ USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 USE STScalarField_Class, ONLY: STScalarField_
 USE STScalarFieldLis_Class, ONLY: STScalarFieldLis_
 USE STVectorFieldLis_Class, ONLY: STVectorFieldLis_
-USE SwapUtility, ONLY: Swap_
 USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 IMPLICIT NONE
@@ -513,23 +509,65 @@ END PROCEDURE obj_Set9
 MODULE PROCEDURE obj_Set10
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set10()"
+LOGICAL(LGT) :: isok
 #endif
-REAL(DFP), ALLOCATABLE :: m3a(:, :, :), m3b(:, :, :)
+INTEGER(I4B) :: ii, tsize, nsize, offset
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+#ifdef DEBUG_VER
+CALL AssertError1(obj%isInitiated(), myName, &
+                  'STVectorField_::obj is not initiated')
+#endif
+
 SELECT CASE (VALUE%vartype)
 CASE (SpaceTime)
-  ! m3a is in (i, J, a) format (space component, node, time component),
-  ! obj_Set7 needs (i, a, J), so swap the last two dimensions
-  m3a = GET(VALUE, TypeFEVariableVector, TypeFEVariableSpaceTime)
-  ALLOCATE (m3b(SIZE(m3a, 1), SIZE(m3a, 3), SIZE(m3a, 2)))
-  CALL Swap_(a=m3b, b=m3a, i1=1, i2=3, i3=2)
-  CALL obj%Set(VALUE=m3b, globalNode=globalNode, islocal=islocal, &
-               scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  CALL AssertError2(VALUE%s(1), obj%spaceCompo, myName, &
+                    "a=VALUE%s(1), b=obj%spaceCompo")
+  CALL AssertError2(VALUE%s(2), SIZE(globalNode), myName, &
+                    "a=VALUE%s(2), b=SIZE(globalNode)")
+  CALL AssertError2(VALUE%s(3), obj%timeCompo, myName, &
+                    "a=VALUE%s(3), b=obj%timeCompo")
+#endif
+
+#include "./localNodeError.F90"
+
+  ! VALUE%val is in (i, J, a) format (space component, node, time
+  ! component). For a time component a, GetNodeLoc_ returns the
+  ! locations node by node, all space components of a node together,
+  ! which is the (i, J) order of the a-th block of VALUE%val. So each
+  ! block is set in place by one SetMultiple, no copy is made.
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isIntTempVecInUse
+  CALL AssertError1(isok, myName, "obj%intTempVec is already in use")
+  obj%isIntTempVecInUse = .TRUE.
+#endif
+
+  nsize = obj%spaceCompo * SIZE(globalNode)
+  CALL Reallocate(obj%intTempVec, nsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
+
+  DO ii = 1, obj%timeCompo
+    CALL GetNodeLoc_( &
+      obj=obj%dof, nodenum=globalNode, ans=obj%intTempVec, &
+      tsize=tsize, timeCompo=ii, spaceCompo=obj%space_idofs, ivar=1)
+
+    offset = (ii - 1) * nsize
+    CALL obj%SetMultiple( &
+      indx=obj%intTempVec(1:tsize), &
+      VALUE=VALUE%val(offset + 1:offset + tsize), &
+      scale=scale, addContribution=addContribution)
+  END DO
+
+#ifdef DEBUG_VER
+  obj%isIntTempVecInUse = .FALSE.
+#endif
 
 CASE DEFAULT
 
