@@ -1390,7 +1390,7 @@ END INTERFACE
 ! entries of VALUE are not changed. With scale 1 and without
 ! addContribution the values are written directly
 ! (lis_vector_get_values_from_range2); otherwise they are first copied
-! to a temporary array.
+! into obj%tempVec.
 !
 ! Examples
 !

@@ -1380,8 +1380,8 @@ END INTERFACE
 ! VALUE(range_v) = [VALUE(range_v) +] scale * obj(range), where
 ! range = istart:iend:stride and range_v = istart_value:iend_value:
 ! stride_value. Set: lis_vector_get_values_from_range2 writes in
-! VALUE, then the range is scaled. Add: the values are copied into a
-! temporary array first. SetMultiple5 of a node field calls this
+! VALUE, then the range is scaled. Add: the values are copied into
+! obj%tempVec first. SetMultiple5 of a node field calls this
 ! method when VALUE is a LIS field.
 !
 ! Examples

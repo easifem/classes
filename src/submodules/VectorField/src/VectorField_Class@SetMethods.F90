@@ -649,6 +649,7 @@ END PROCEDURE obj_Set12
 MODULE PROCEDURE obj_Set13
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set13()"
+LOGICAL(LGT) :: isok
 #endif
 
 INTEGER(I4B) :: tsize, ii
@@ -676,6 +677,13 @@ IF (isNative) THEN
   realvec => NULL()
 ELSE
   tsize = VALUE%SIZE()
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
@@ -683,6 +691,10 @@ ELSE
   tsize = ii
   CALL obj%SetMultiple(VALUE=obj%tempVec(1:tsize), istart=1_I4B, &
                        iend=tsize, stride=1_I4B)
+
+#ifdef DEBUG_VER
+  obj%isTempVecInUse = .FALSE.
+#endif
 END IF
 
 #ifdef DEBUG_VER

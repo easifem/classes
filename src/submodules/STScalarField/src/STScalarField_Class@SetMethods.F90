@@ -729,6 +729,13 @@ IF (isNative) THEN
                        addContribution=addContribution)
   realvec => NULL()
 ELSE
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
@@ -737,6 +744,10 @@ ELSE
   CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
                        VALUE=obj%tempVec(1:tsize), scale=scale, &
                        addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  obj%isTempVecInUse = .FALSE.
+#endif
 END IF
 
 #ifdef DEBUG_VER

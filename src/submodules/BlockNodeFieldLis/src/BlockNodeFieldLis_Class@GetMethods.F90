@@ -152,6 +152,7 @@ END PROCEDURE obj_GetMultiple3
 MODULE PROCEDURE obj_GetMultiple4
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple4()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: ierr, jj, tsize
 LOGICAL(LGT) :: isAdd, isScale
@@ -187,6 +188,13 @@ IF (.NOT. isAdd) THEN
 ELSE
 
   ! add: copy the values into obj%tempVec first
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL lis_vector_get_values_from_range2( &
@@ -198,6 +206,10 @@ ELSE
 
   VALUE(istart_value:jj:stride_value) = &
     VALUE(istart_value:jj:stride_value) + areal * obj%tempVec(1:tsize)
+
+#ifdef DEBUG_VER
+  obj%isTempVecInUse = .FALSE.
+#endif
 END IF
 
 #ifdef DEBUG_VER

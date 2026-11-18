@@ -304,6 +304,12 @@ ELSE
     code = LIS_INS_VALUE
   END IF
 
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=istart_value, iend=iend_value2, &
@@ -315,6 +321,7 @@ ELSE
 
 #ifdef DEBUG_VER
   CALL CHKERR(ierr)
+  obj%isTempVecInUse = .FALSE.
 #endif
 END IF
 

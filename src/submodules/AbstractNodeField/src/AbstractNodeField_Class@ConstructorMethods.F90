@@ -631,6 +631,7 @@ IF (ALLOCATED(obj%dof_names_char)) DEALLOCATE (obj%dof_names_char)
 obj%tSize = 0
 CALL RealVector_Deallocate(obj%realVec)
 IF (ALLOCATED(obj%tempVec)) DEALLOCATE (obj%tempVec)
+obj%isTempVecInUse = .FALSE.
 IF (ALLOCATED(obj%intTempVec)) DEALLOCATE (obj%intTempVec)
 obj%isIntTempVecInUse = .FALSE.
 

@@ -341,6 +341,13 @@ IF (isNative) THEN
 ELSE
   p = GetNodeLoc(obj=VALUE%dof, idof=math%one_i)
   tsize = (p(2) - p(1)) / p(3) + 1
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=p(1), iend=p(2), stride=p(3), &
@@ -348,6 +355,10 @@ ELSE
   CALL obj%SetMultiple(istart=s(1), iend=s(2), stride=s(3), &
                        VALUE=obj%tempVec(1:tsize), scale=scale, &
                        addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  obj%isTempVecInUse = .FALSE.
+#endif
 END IF
 
 #ifdef DEBUG_VER

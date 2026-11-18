@@ -788,6 +788,7 @@ END PROCEDURE obj_Set13
 MODULE PROCEDURE obj_Set14
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: tsize, ii
 
@@ -808,6 +809,13 @@ IF (obj%GetEngineName() .EQ. VALUE%GetEngineName()) THEN
   CALL obj%Copy(VALUE)
 ELSE
   tsize = VALUE%SIZE()
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
@@ -815,6 +823,10 @@ ELSE
   tsize = ii
   CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
                        VALUE=obj%tempVec(1:tsize))
+
+#ifdef DEBUG_VER
+  obj%isTempVecInUse = .FALSE.
+#endif
 END IF
 
 #ifdef DEBUG_VER
@@ -878,6 +890,13 @@ IF (isNative) THEN
 
 ELSE
   tsize = VALUE%SIZE()
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
@@ -907,6 +926,10 @@ DO icompo = 1, obj%spaceCompo
       istart=p(1), iend=p(2), stride=p(3))
   END IF
 END DO
+
+#ifdef DEBUG_VER
+IF (.NOT. isNative) obj%isTempVecInUse = .FALSE.
+#endif
 
 realvec => NULL()
 
@@ -971,6 +994,13 @@ IF (isNative) THEN
 
 ELSE
   tsize = obj%SIZE()
+
+#ifdef DEBUG_VER
+  isok = .NOT. VALUE%isTempVecInUse
+  CALL AssertError1(isok, myName, "VALUE%tempVec is already in use")
+  VALUE%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(VALUE%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL obj%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
@@ -999,6 +1029,10 @@ DO icompo = 1, obj%spaceCompo
                            istart=s(1), iend=s(2), stride=s(3))
   END IF
 END DO
+
+#ifdef DEBUG_VER
+IF (.NOT. isNative) VALUE%isTempVecInUse = .FALSE.
+#endif
 
 realvec => NULL()
 
