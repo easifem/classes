@@ -65,8 +65,8 @@ tnodes = obj%fedof%GetTotalVertexDOF()
 ALLOCATE (VALUE(tsize))
 CALL obj%Get(VALUE=VALUE, tsize=tsize)
 
-! name = obj%name%chars()//"_"//dofnames(1)
-name = obj%name%Join(array=dofnames, sep="_")
+! array name: <fieldname>_<dofname>, as in AbstractNodeField
+name = obj%name%chars()//"_"//dofnames(1)
 
 CALL vtk%WriteDataArray(name=name, x=VALUE(1:tnodes), numberOfComponents=1)
 
