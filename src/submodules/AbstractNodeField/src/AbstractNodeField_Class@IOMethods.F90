@@ -45,6 +45,21 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+CALL Display(msg, unitNo=unitNo)
+
+isok = obj%IsInitiated()
+CALL Display(isok, "AbstractNodeField_::obj Initiated: ", &
+             unitNo=unitNo)
+
+IF (.NOT. isok) THEN
+#ifdef DEBUG_VER
+  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                          '[END] ')
+#endif
+
+  RETURN
+END IF
+
 CALL AbstractFieldDisplay(obj=obj, msg=msg, unitNo=unitNo)
 
 isok = ASSOCIATED(obj%fedof)

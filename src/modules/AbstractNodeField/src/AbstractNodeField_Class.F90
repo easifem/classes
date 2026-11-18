@@ -181,15 +181,44 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !! larger than the data it holds: always pass `tempVec(1:tsize)`.
   !! Rules for using it:
   !!
-  !! - Only a leaf routine may fill it: do not call another method of
-  !!   `obj` that may also use `tempVec` while its data is still needed.
+  !! - Do not call another method of `obj` that may also use
+  !!   `tempVec` while its data is still needed.
   !! - Do not use it when the source argument can be `obj` itself
   !!   (aliasing).
-  !! - Never pass `obj%tempVec` as an argument to a method of the same
-  !!   `obj`: the LIS GetMultiple4 (addContribution) reallocates it.
+  !! - Pass `obj%tempVec` to a method of the same `obj` only when that
+  !!   method never uses `tempVec`, for example the native
+  !!   `SetMultiple`. The LIS `GetMultiple4` (addContribution) and the
+  !!   LIS `SetMultiple5` reallocate it.
+  !! - In DEBUG mode, set `isTempVecInUse` while it holds data, and
+  !!   check that it is false before filling it.
   !! - It is not thread safe: do not share one field across threads.
   !! - It is not copied by `Copy`; `Deallocate` frees it.
   !!
+  !! note - This variable is only for internal use
+  LOGICAL(LGT) :: isTempVecInUse = .FALSE.
+  !! True while `tempVec` holds data that is still needed.
+  !! It is set and checked only in DEBUG mode, to catch nested use.
+  !! note - This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: intTempVec(:)
+  !! Integer workspace that Set methods reuse for the DOF indices
+  !! that they pass to `SetMultiple`, instead of a module buffer.
+  !! It only grows (`Reallocate` with `isExpand`), so its size can be
+  !! larger than the data it holds: always pass `intTempVec(1:tsize)`.
+  !! Rules for using it:
+  !!
+  !! - Only a high-level Set method may fill it and pass it as `indx`
+  !!   to `SetMultiple` or `SetSingle` of the same `obj`.
+  !! - Leaf methods (`SetMultiple`, `SetSingle`, `GetMultiple`, and
+  !!   their LIS versions) must never use it: it may be their `indx`.
+  !! - In DEBUG mode, set `isIntTempVecInUse` while it holds data,
+  !!   and check that it is false before filling it.
+  !! - It is not thread safe: do not share one field across threads.
+  !! - It is not copied by `Copy`; `Deallocate` frees it.
+  !!
+  !! note - This variable is only for internal use
+  LOGICAL(LGT) :: isIntTempVecInUse = .FALSE.
+  !! True while `intTempVec` holds data that is still needed.
+  !! It is set and checked only in DEBUG mode, to catch nested use.
   !! note - This variable is only for internal use
 
 CONTAINS
@@ -1718,6 +1747,13 @@ END INTERFACE
 ! VALUE(istart_value::stride_value) = obj(istart:iend:stride); tsize
 ! is the number of indices of the range of obj.
 !
+! Entries of VALUE outside istart_value:iend_value:stride_value are not
+! changed.
+!
+! Changes:
+!   - 2026-11-18: VALUE is INTENT(INOUT) (it was INTENT(OUT)), so the
+!     entries outside the range keep their values (#620).
+!
 ! See also: [[obj_SetMultiple1]] (contains an example)
 
 INTERFACE
@@ -1728,7 +1764,7 @@ INTERFACE
     !! node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! index, size(indx) = size(value) = tsize
-    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! returned vlaue
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of values

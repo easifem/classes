@@ -20,6 +20,7 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE InputUtility, ONLY: Input
+USE ReallocateUtility, ONLY: Reallocate
 IMPLICIT NONE
 
 #include "lisf.h"
@@ -248,7 +249,6 @@ INTEGER(I4B) :: ierr, code, tsize, tsize2, iend_value2
 LOGICAL(LGT) :: isLis, isNative, isAdd
 REAL(DFP) :: areal
 REAL(DFP), POINTER :: realvec(:)
-REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -297,15 +297,34 @@ ELSE IF (isLis) THEN
   CALL CHKERR(ierr)
 #endif
 
-! otherwise: copy the values of VALUE to a temporary array
+! otherwise: copy the values of VALUE into obj%tempVec, then LIS sets
+! (or adds) scale times them in the range of obj
 ELSE
-  ALLOCATE (temp(tsize))
+  IF (isAdd) THEN
+    code = LIS_ADD_VALUE
+  ELSE
+    code = LIS_INS_VALUE
+  END IF
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
+  CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=istart_value, iend=iend_value2, &
-                         stride=stride_value, VALUE=temp, tsize=tsize2)
-  CALL obj%SetMultiple3( &
-    istart=istart, iend=iend, stride=stride, VALUE=temp, istart_value=1, &
-    iend_value=tsize, stride_value=1, scale=areal, addContribution=isAdd)
-  DEALLOCATE (temp)
+                         stride=stride_value, VALUE=obj%tempVec, &
+                         tsize=tsize2)
+
+  CALL lis_vector_set_values8(code, istart, stride, tsize, obj%tempVec, &
+                              obj%lis_ptr, areal, 1_I4B, 1_I4B, ierr)
+
+#ifdef DEBUG_VER
+  CALL CHKERR(ierr)
+  obj%isTempVecInUse = .FALSE.
+#endif
 END IF
 
 #ifdef DEBUG_VER

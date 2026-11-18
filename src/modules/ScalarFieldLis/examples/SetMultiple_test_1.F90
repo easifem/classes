@@ -117,6 +117,8 @@ BLOCK
   CALL OK(tsize .EQ. 3, "GetMultiple range of value: tsize")
   CALL OK(ALL(ABS(found(4:6) - [7.0_DFP, -4.0_DFP, 7.0_DFP]) &
               .LT. tol), "GetMultiple range of value")
+  CALL OK(ALL(ABS(found(1:3)) .LT. tol), &
+          "GetMultiple range of value: other entries not changed")
 END BLOCK
 
 CALL x%DEALLOCATE()

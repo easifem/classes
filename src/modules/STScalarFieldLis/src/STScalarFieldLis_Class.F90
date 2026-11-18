@@ -895,9 +895,9 @@ END INTERFACE
 !   (or added) in the range of obj (lis_vector_set_values9), no
 !   copy. obj and VALUE can be the same field when the two ranges do
 !   not overlap.
-! - otherwise (other engine) the range of VALUE is copied into a
-!   temporary array
-!   (GetMultiple), then set by SetMultiple3.
+! - otherwise (other engine) the range of VALUE is copied into
+!   obj%tempVec (GetMultiple), then set (or added) in the range of
+!   obj (lis_vector_set_values8).
 !
 ! Examples
 !
@@ -1093,6 +1093,13 @@ END INTERFACE
 ! VALUE(istart_value:iend_value:stride_value) =
 ! obj(istart:iend:stride), by lis_vector_get_values_from_range2.
 !
+! Entries of VALUE outside istart_value:iend_value:stride_value are not
+! changed.
+!
+! Changes:
+!   - 2026-11-18: VALUE is INTENT(INOUT) (it was INTENT(OUT)), so the
+!     entries outside the range keep their values (#620).
+!
 ! Examples
 !
 !```fortran
@@ -1113,7 +1120,7 @@ INTERFACE
     !! LIS space-time scalar field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
-    REAL(DFP), INTENT(OUT) :: VALUE(:)
+    REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! values, entries istart_value:iend_value:stride_value are written
     INTEGER(I4B), INTENT(IN) :: istart_value, iend_value, stride_value
     !! range of entries of VALUE, same number of entries as obj range
@@ -1133,8 +1140,8 @@ END INTERFACE
 ! VALUE(range_v) = [VALUE(range_v) +] scale * obj(range), where
 ! range = istart:iend:stride and range_v = istart_value:iend_value:
 ! stride_value. Set: lis_vector_get_values_from_range2 writes in
-! VALUE, then the range is scaled. Add: the values are copied into a
-! temporary array first. SetMultiple5 of a node field calls this
+! VALUE, then the range is scaled. Add: the values are copied into
+! obj%tempVec first. SetMultiple5 of a node field calls this
 ! method when VALUE is a LIS field.
 !
 ! Examples

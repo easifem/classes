@@ -2631,8 +2631,13 @@ END INTERFACE
 ! Writes the values of the vertex DOFs as a data array with one
 ! component. These are the first `fedof%GetTotalVertexDOF()` values.
 !
-! The array name is the name of the physical variable. That is the
-! first character of the field name.
+! The array name is `<fieldname>_<dofname>`, for example `u_u` for a
+! field named `u`. [[AbstractNodeField_:obj_WriteData_vtk2]] uses the
+! same naming.
+!
+! Changes:
+!   - 2026-11-18: the array name includes the field name; it was only
+!     the name of the physical variable (#659).
 !
 ! [[AbstractNodeField_:obj_WriteData_vtk1]] calls this method after it
 ! writes the mesh.

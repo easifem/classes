@@ -33,21 +33,12 @@ USE GlobalData, ONLY: NONE, Scalar, SpaceTime
 USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
 USE RealVector_Method, ONLY: Add, GetPointer, Set
-USE SafeSizeUtility, ONLY: SafeSize
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
                            "STScalarField_Class@SetMethods.F90"
 #endif
-
-INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
-INTEGER(I4B), PARAMETER :: TEMP_INTVEC_LEN = 128
-INTEGER(I4B) :: TEMP_INTVEC(TEMP_INTVEC_LEN)
-!$OMP THREADPRIVATE(TEMP_INTVEC)
-
-INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
-!$OMP THREADPRIVATE(TEMP_DYNA_INTVEC)
 
 CONTAINS
 
@@ -89,30 +80,25 @@ CALL AssertError2(myint1, myint2, myName, &
 
 #include "./include/localNodeError.F90"
 
-IF (obj%timeCompo .LE. TEMP_INTVEC_LEN) THEN
-  CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
-                 tsize=tsize)
-
-  CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, &
-                       scale=scale, addContribution=addContribution)
-
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+isok = .NOT. obj%isIntTempVecInUse
+CALL AssertError1(isok, myName, "obj%intTempVec is already in use")
+obj%isIntTempVecInUse = .TRUE.
 #endif
 
-  RETURN
-END IF
+tsize = obj%timeCompo
+CALL Reallocate(obj%intTempVec, tsize, isExpand=math%yes, &
+                expandFactor=math%two_i)
 
-IF (obj%timeCompo .GT. SafeSize(TEMP_DYNA_INTVEC)) THEN
-  CALL Reallocate(TEMP_DYNA_INTVEC, EXPAND_FACTOR * obj%timeCompo)
-END IF
-
-CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=TEMP_DYNA_INTVEC, &
+CALL GetIndex_(obj=obj%dof, nodenum=globalNode, ans=obj%intTempVec, &
                tsize=tsize)
 
-CALL obj%SetMultiple(indx=TEMP_DYNA_INTVEC(1:tsize), VALUE=VALUE, &
+CALL obj%SetMultiple(indx=obj%intTempVec(1:tsize), VALUE=VALUE, &
                      scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+obj%isIntTempVecInUse = .FALSE.
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -501,49 +487,47 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
+CALL AssertError1(obj%IsInitiated(), myName, &
                   "STScalarField_::obj not initiated")
+#endif
 
+#ifdef DEBUG_VER
 isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo is out of bound")
+#endif
 
+#ifdef DEBUG_VER
 isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
+#endif
 
+#ifdef DEBUG_VER
 CALL AssertError2(SIZE(VALUE), SIZE(globalNode), &
                   myName, 'a=SIZE(VALUE), b=size(globalNode)')
-
 #endif
 
 #include "./include/localNodeError.F90"
 
-tsize = SIZE(globalNode)
-
-IF (tsize .LE. TEMP_INTVEC_LEN) THEN
-  CALL GetNodeLoc_(obj=obj%dof, idof=timeCompo, &
-                   nodenum=globalNode, ans=TEMP_INTVEC, tsize=tsize)
-
-  CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, scale=scale, &
-                       addContribution=addContribution)
-
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+isok = .NOT. obj%isIntTempVecInUse
+CALL AssertError1(isok, myName, "obj%intTempVec is already in use")
+obj%isIntTempVecInUse = .TRUE.
 #endif
 
-  RETURN
-END IF
-
-IF (tsize .GT. SafeSize(TEMP_DYNA_INTVEC)) THEN
-  CALL Reallocate(TEMP_DYNA_INTVEC, EXPAND_FACTOR * tsize)
-END IF
+tsize = SIZE(globalNode)
+CALL Reallocate(obj%intTempVec, tsize, isExpand=math%yes, &
+                expandFactor=math%two_i)
 
 CALL GetNodeLoc_(obj=obj%dof, idof=timeCompo, nodenum=globalNode, &
-                 ans=TEMP_DYNA_INTVEC, tsize=tsize)
+                 ans=obj%intTempVec, tsize=tsize)
 
-CALL obj%SetMultiple(indx=TEMP_DYNA_INTVEC(1:tsize), VALUE=VALUE, &
+CALL obj%SetMultiple(indx=obj%intTempVec(1:tsize), VALUE=VALUE, &
                      scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+obj%isIntTempVecInUse = .FALSE.
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -570,10 +554,14 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #ifdef DEBUG_VER
 CALL AssertError1(obj%isInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
+#endif
 
+#ifdef DEBUG_VER
 isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo is out of bound")
+#endif
 
+#ifdef DEBUG_VER
 isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, 'Not callable for constant STScalar field')
 #endif
@@ -607,9 +595,11 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 #endif
 
 #ifdef DEBUG_VER
-CALL AssertError1(obj%isInitiated(), myName, &
+CALL AssertError1(obj%IsInitiated(), myName, &
                   'STScalarField_::obj is not initiated')
+#endif
 
+#ifdef DEBUG_VER
 isok = obj%fieldType .NE. TypeField%constant
 CALL AssertError1(isok, myName, &
                   'Not callable for constant STScalar field')
@@ -628,8 +618,9 @@ CASE (SpaceTime)
 
 CASE DEFAULT
 #ifdef DEBUG_VER
-  CALL e%RaiseError(modName//'::'//myName//' - '// &
-                    '[INTERNAL ERROR] :: No case found for Value%vartype')
+  CALL AssertError1(math%no, myName, &
+                    "No case found for value%varType="// &
+                    ToString(VALUE%varType))
 #endif
 END SELECT
 
@@ -699,7 +690,7 @@ MODULE PROCEDURE obj_Set14
 CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
 LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize, ii
 LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
 
@@ -712,11 +703,15 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 isok = obj%IsInitiated()
 CALL AssertError1(isok, myName, &
                   "STScalarField_::obj is not initiated")
+#endif
 
+#ifdef DEBUG_VER
 isok = VALUE%IsInitiated()
 CALL AssertError1(isok, myName, &
                   "STScalarField_::value is not initiated")
+#endif
 
+#ifdef DEBUG_VER
 CALL AssertError2(VALUE%SIZE(), obj%SIZE(), myName, &
                   "a=VALUE%SIZE(), b=obj%SIZE()")
 #endif
@@ -734,13 +729,25 @@ IF (isNative) THEN
                        addContribution=addContribution)
   realvec => NULL()
 ELSE
+
+#ifdef DEBUG_VER
+  isok = .NOT. obj%isTempVecInUse
+  CALL AssertError1(isok, myName, "obj%tempVec is already in use")
+  obj%isTempVecInUse = .TRUE.
+#endif
+
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                         VALUE=obj%tempVec, tsize=tsize)
+                         VALUE=obj%tempVec, tsize=ii)
+  tsize = ii
   CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
                        VALUE=obj%tempVec(1:tsize), scale=scale, &
                        addContribution=addContribution)
+
+#ifdef DEBUG_VER
+  obj%isTempVecInUse = .FALSE.
+#endif
 END IF
 
 #ifdef DEBUG_VER
