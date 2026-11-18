@@ -1864,7 +1864,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the row
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense row, SIZE(vecVal) = number of columns
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the row
   END SUBROUTINE obj_SetRow1
 END INTERFACE
@@ -1909,7 +1909,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the row
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense row, SIZE(vecVal) = number of columns
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the row
   END SUBROUTINE obj_SetRow2
 END INTERFACE
@@ -1956,7 +1956,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the row
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense row, SIZE(vecVal) = number of columns
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the row
   END SUBROUTINE obj_SetRow3
 END INTERFACE
@@ -2003,7 +2003,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the rows
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense row, SIZE(vecVal) = number of columns
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the rows
   END SUBROUTINE obj_SetRow4
 END INTERFACE
@@ -2050,7 +2050,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the rows
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense row, SIZE(vecVal) = number of columns
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the rows
   END SUBROUTINE obj_SetRow5
 END INTERFACE
@@ -2098,7 +2098,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the rows
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense row, SIZE(vecVal) = number of columns
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the rows
   END SUBROUTINE obj_SetRow6
 END INTERFACE
@@ -2146,7 +2146,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the rows
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense row, SIZE(vecVal) = number of columns
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the rows
   END SUBROUTINE obj_SetRow7
 END INTERFACE
@@ -2195,7 +2195,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the column
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense column, SIZE(vecVal) = number of rows
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the column
   END SUBROUTINE obj_SetColumn1
 END INTERFACE
@@ -2240,7 +2240,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the column
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense column, SIZE(vecVal) = number of rows
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the column
   END SUBROUTINE obj_SetColumn2
 END INTERFACE
@@ -2287,7 +2287,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the column
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense column, SIZE(vecVal) = number of rows
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the column
   END SUBROUTINE obj_SetColumn3
 END INTERFACE
@@ -2335,7 +2335,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the columns
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense column, SIZE(vecVal) = number of rows
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the columns
   END SUBROUTINE obj_SetColumn4
 END INTERFACE
@@ -2383,7 +2383,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the columns
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense column, SIZE(vecVal) = number of rows
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the columns
   END SUBROUTINE obj_SetColumn5
 END INTERFACE
@@ -2431,7 +2431,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the columns
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense column, SIZE(vecVal) = number of rows
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the columns
   END SUBROUTINE obj_SetColumn6
 END INTERFACE
@@ -2479,7 +2479,7 @@ ABSTRACT INTERFACE
     !! scalar value for all nonzero entries of the columns
     REAL(DFP), OPTIONAL, INTENT(IN) :: vecVal(:)
     !! dense column, SIZE(vecVal) = number of rows
-    CLASS(AbstractNodeField_), OPTIONAL, INTENT(IN) :: nodeFieldVal
+    CLASS(AbstractNodeField_), OPTIONAL, INTENT(INOUT) :: nodeFieldVal
     !! node field with the values of the columns
   END SUBROUTINE obj_SetColumn7
 END INTERFACE

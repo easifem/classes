@@ -155,7 +155,6 @@ CHARACTER(*), PARAMETER :: myName = "obj_GetMultiple4()"
 INTEGER(I4B) :: ierr, jj, tsize
 LOGICAL(LGT) :: isAdd, isScale
 REAL(DFP) :: areal
-REAL(DFP), ALLOCATABLE :: temp(:)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -186,19 +185,18 @@ IF (.NOT. isAdd) THEN
 
 ELSE
 
-  ! add: copy the values first
-  ! ALLOCATE (temp(tsize))
-  CALL Reallocate(temp, tsize)
+  ! add: copy the values into obj%tempVec first
+  CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
+                  expandFactor=math%two_i)
   CALL lis_vector_get_values_from_range2( &
-    obj%lis_ptr, istart, stride, tsize, temp, 1, 1, ierr)
+    obj%lis_ptr, istart, stride, tsize, obj%tempVec, 1, 1, ierr)
 
 #ifdef DEBUG_VER
   CALL CHKERR(ierr)
 #endif
 
   VALUE(istart_value:jj:stride_value) = &
-    VALUE(istart_value:jj:stride_value) + areal * temp(1:tsize)
-  IF (ALLOCATED(temp)) DEALLOCATE (temp)
+    VALUE(istart_value:jj:stride_value) + areal * obj%tempVec(1:tsize)
 END IF
 
 #ifdef DEBUG_VER

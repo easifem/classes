@@ -913,7 +913,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Set13(obj, VALUE)
     CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS vector field, obj = VALUE
-    CLASS(VectorField_), INTENT(IN) :: VALUE
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
     !! vector field to copy
   END SUBROUTINE obj_Set13
 END INTERFACE
@@ -1246,7 +1246,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS vector field
     INTEGER(I4B), INTENT(IN) :: indx
     !! index of the entry, 1 <= indx <= obj%Size()
@@ -1277,7 +1277,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS vector field
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! indices of the entries
@@ -1311,7 +1311,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS vector field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
@@ -1349,7 +1349,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      tsize)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS vector field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
@@ -1393,7 +1393,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple4(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      scale, addContribution)
-    CLASS(VectorFieldLis_), INTENT(IN) :: obj
+    CLASS(VectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS vector field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj

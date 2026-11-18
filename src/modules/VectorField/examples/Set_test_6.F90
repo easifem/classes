@@ -3,9 +3,8 @@
 ! summary: Copy the values between vector fields
 !
 ! Set(VALUE=u) copies the values of the vector field u into obj, and
-! Get(VALUE=w) copies the values of obj into the vector field w. The
-! assignment v = u calls Set(VALUE=u). All fields must be initiated with
-! the same FEDOF and spaceCompo.
+! Get(VALUE=w) copies the values of obj into the vector field w. All
+! fields must be initiated with the same FEDOF and spaceCompo.
 
 PROGRAM main
   USE BaseType, ONLY: math => TypeMathOpt
@@ -50,12 +49,6 @@ PROGRAM main
   CALL w%GetMultiple(istart=1, iend=12, stride=1, VALUE=raw, &
                      tsize=tsize)
   CALL OK(ALL(ABS(raw - want) .LT. tol), "Get(VALUE=w): w = v")
-
-  CALL v%Set(VALUE=0.0_DFP)
-  v = u
-  CALL v%GetMultiple(istart=1, iend=12, stride=1, VALUE=raw, &
-                     tsize=tsize)
-  CALL OK(ALL(ABS(raw - want) .LT. tol), "ASSIGNMENT(=): v = u")
 
   CALL w%DEALLOCATE()
   CALL v%DEALLOCATE()

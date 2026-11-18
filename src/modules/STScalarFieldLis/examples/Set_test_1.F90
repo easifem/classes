@@ -4,8 +4,8 @@
 !
 ! Set(VALUE=field) copies all values of a native STScalarField_ or of
 ! another STScalarFieldLis_ into the LIS vector of v, and a native
-! field n = u gets the values of the LIS vector of u (not its stale
-! realVec). Set(VALUE, scale, addContribution) (Set14) scales or adds
+! field n%Set(VALUE=u) gets the values of the LIS vector of u (not its
+! stale realVec). Set(VALUE, scale, addContribution) (Set14) scales or adds
 ! them. u, v are STScalarFieldLis_ and n is a native STScalarField_,
 ! all with 12 values (6 space DOFs, timeCompo = 2).
 
@@ -67,10 +67,10 @@ BLOCK
   CALL OK(ALL(ABS(found - 2.0_DFP * want) .LT. tol), "Set13: LIS <- LIS")
 END BLOCK
 
-! Test 3: n = u, a native field from a LIS field (assignment)
+! Test 3: n%Set(VALUE=u), a native field from a LIS field
 BLOCK
   CALL n%SetAll(VALUE=0.0_DFP)
-  n = u
+  CALL n%Set(VALUE=u)
   CALL n%GetMultiple(istart=1, iend=12, stride=1, VALUE=found, &
                      tsize=tsize)
   CALL OK(ALL(ABS(found - 2.0_DFP * want) .LT. tol), "Set13: native <- LIS")

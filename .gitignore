@@ -16,6 +16,7 @@
 *.vtkhdf
 *.hdf
 *.hdf5
+*.vtu
 
 vscode-settings
 media/

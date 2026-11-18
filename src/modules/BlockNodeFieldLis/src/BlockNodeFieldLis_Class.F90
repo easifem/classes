@@ -1203,7 +1203,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
-    CLASS(BlockNodeFieldLis_), INTENT(IN) :: obj
+    CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     !! LIS block node field
     INTEGER(I4B), INTENT(IN) :: indx
     !! index of the entry, 1 <= indx <= obj%Size()
@@ -1227,7 +1227,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
-    CLASS(BlockNodeFieldLis_), INTENT(IN) :: obj
+    CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     !! LIS block node field
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! indices of the entries
@@ -1255,7 +1255,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
-    CLASS(BlockNodeFieldLis_), INTENT(IN) :: obj
+    CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     !! LIS block node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
@@ -1296,7 +1296,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      tsize)
-    CLASS(BlockNodeFieldLis_), INTENT(IN) :: obj
+    CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     !! LIS block node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
@@ -1342,7 +1342,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple4(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      scale, addContribution)
-    CLASS(BlockNodeFieldLis_), INTENT(IN) :: obj
+    CLASS(BlockNodeFieldLis_), INTENT(INOUT) :: obj
     !! LIS block node field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
@@ -1388,7 +1388,7 @@ INTERFACE
     !! physical variable number
     INTEGER(I4B), INTENT(IN) :: idof
     !! local degree of freedom number in ivar
-    CLASS(AbstractNodeField_), INTENT(IN) :: VALUE
+    CLASS(AbstractNodeField_), INTENT(INOUT) :: VALUE
     !! node field to copy from
     INTEGER(I4B), INTENT(IN) :: ivar_value
     !! physical variable number in value

@@ -147,12 +147,10 @@ CONTAINS
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set13 => obj_Set13
   !! Set several time components of one space component
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Set14 => obj_Set14
-  !! Copy another space-time vector field, used for ASSIGNMENT(=)
+  !! Copy another space-time vector field, CALL obj%Set(VALUE=...)
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, &
     Set7, Set8, Set9, Set10, Set11, Set12, Set13, Set14
   !! Set the values of the field
-  GENERIC, PUBLIC :: ASSIGNMENT(=) => Set14
-  !! obj = VALUE, copy the values of another space-time vector field
   PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: SetByFunction => &
     obj_SetByFunction
   !! Set the values from a user function
@@ -1381,6 +1379,11 @@ END INTERFACE
 !     engine (before, only TYPE IS (STVectorField_) was copied) (#633)
 !   - 2026-11-17: used for ASSIGNMENT(=); before, obj = VALUE was the
 !     intrinsic assignment, which copied the FEDOF pointers and lis_ptr
+!   - 2026-11-18: no longer bound to ASSIGNMENT(=), because VALUE is
+!     INTENT(INOUT) (Get methods take obj INTENT(INOUT)). Use
+!     CALL obj%Set(VALUE=...); `obj = VALUE` is now the intrinsic
+!     assignment, a shallow copy of the FEDOF pointers and lis_ptr,
+!     and must not be used.
 !
 ! See also: [[obj_Set10]] (contains an example)
 
@@ -1388,7 +1391,7 @@ INTERFACE
   MODULE SUBROUTINE obj_Set14(obj, VALUE)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
-    CLASS(STVectorField_), INTENT(IN) :: VALUE
+    CLASS(STVectorField_), INTENT(INOUT) :: VALUE
     !! space-time vector field to copy
   END SUBROUTINE obj_Set14
 END INTERFACE
@@ -1510,7 +1513,7 @@ INTERFACE
     obj, VALUE, timeCompo, scale, addContribution)
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
-    CLASS(VectorField_), INTENT(IN) :: VALUE
+    CLASS(VectorField_), INTENT(INOUT) :: VALUE
     !! vector field, any engine (native or LIS)
     INTEGER(I4B), INTENT(IN) :: timeCompo
     !! time component of vector field
@@ -1749,7 +1752,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get1( &
     obj, VALUE, tsize, globalNode, spaceCompo, timeCompo)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! value = obj
@@ -1781,7 +1784,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get2(obj, VALUE, storageFMT, dim1, dim2, dim3)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :, :)
     !! values, see storageFMT
@@ -1813,7 +1816,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get3( &
     obj, VALUE, storageFMT, globalNode, islocal, dim1, dim2, dim3)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :, :)
     !! returned value
@@ -1851,7 +1854,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get4( &
     obj, VALUE, tsize, globalNode, islocal, spaceCompo, timeCompo)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:)
     !! nodal values of space-time component
@@ -1886,7 +1889,7 @@ END INTERFACE
 INTERFACE
   MODULE SUBROUTINE obj_Get5( &
     obj, VALUE, globalNode, islocal, spaceCompo, timeCompo)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE
     !! nodal value of space-time component
@@ -1916,7 +1919,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get6(obj, VALUE, nrow, ncol, globalNode, islocal)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     REAL(DFP), INTENT(INOUT) :: VALUE(:, :)
     !! space-time nodal values at global node
@@ -1947,7 +1950,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_Get7(obj, VALUE, globalNode, islocal)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     TYPE(FEVariable_), INTENT(INOUT) :: VALUE
     !! nodal, vector, space-time FEVariable (spaceCompo, nodes, timeCompo)
@@ -1972,7 +1975,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetFeVariable(obj, globalNode, islocal, VALUE, ivar)
-    CLASS(STVectorField_), INTENT(IN) :: obj
+    CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field
     INTEGER(I4B), INTENT(IN) :: globalNode(:)
     !! global or local node number
@@ -2243,7 +2246,7 @@ INTERFACE
     CLASS(STVectorField_), INTENT(INOUT) :: obj
     !! space-time vector field (right hand side)
     !! The test function will be corresponding to the obj
-    CLASS(STVectorField_), INTENT(IN) :: bodySource
+    CLASS(STVectorField_), INTENT(INOUT) :: bodySource
     !! Body source as a space-time vector field on the same mesh as obj
     REAL(DFP), INTENT(IN) :: scale
     !! scale for body source

@@ -336,7 +336,7 @@ END PROCEDURE obj_ApplyBodySource3
 SUBROUTINE ApplyBodySource2_SameFEDOF(obj, bodySource, scale, times)
   CLASS(STScalarField_), INTENT(INOUT) :: obj
   !! space-time scalar field (right hand side)
-  CLASS(STScalarField_), INTENT(IN) :: bodySource
+  CLASS(STScalarField_), INTENT(INOUT) :: bodySource
   !! body source with the same fedof and timefedof as obj
   REAL(DFP), INTENT(IN) :: scale
   !! scale for body source
@@ -471,7 +471,7 @@ END SUBROUTINE ApplyBodySource2_SameFEDOF
 SUBROUTINE ApplyBodySource2_DiffFEDOF(obj, bodySource, scale, times)
   CLASS(STScalarField_), INTENT(INOUT) :: obj
   !! space-time scalar field (right hand side)
-  CLASS(STScalarField_), INTENT(IN) :: bodySource
+  CLASS(STScalarField_), INTENT(INOUT) :: bodySource
   !! body source with another fedof or timefedof, same mesh as obj
   REAL(DFP), INTENT(IN) :: scale
   !! scale for body source

@@ -833,7 +833,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetSingle(obj, indx, VALUE)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
+    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS space-time vector field
     INTEGER(I4B), INTENT(IN) :: indx
     !! index of the entry, 1 <= indx <= obj%Size()
@@ -864,7 +864,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple1(obj, indx, VALUE, tsize)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
+    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS space-time vector field
     INTEGER(I4B), INTENT(IN) :: indx(:)
     !! indices of the entries
@@ -898,7 +898,7 @@ END INTERFACE
 
 INTERFACE
   MODULE SUBROUTINE obj_GetMultiple2(obj, istart, iend, stride, VALUE, tsize)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
+    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS space-time vector field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
@@ -936,7 +936,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple3(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      tsize)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
+    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS space-time vector field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
@@ -980,7 +980,7 @@ INTERFACE
   MODULE SUBROUTINE obj_GetMultiple4(obj, istart, iend, stride, VALUE, &
                                      istart_value, iend_value, stride_value, &
                                      scale, addContribution)
-    CLASS(STVectorFieldLis_), INTENT(IN) :: obj
+    CLASS(STVectorFieldLis_), INTENT(INOUT) :: obj
     !! LIS space-time vector field
     INTEGER(I4B), INTENT(IN) :: istart, iend, stride
     !! range of entries of obj
