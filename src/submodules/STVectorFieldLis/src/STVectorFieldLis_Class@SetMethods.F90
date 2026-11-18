@@ -20,15 +20,6 @@ USE BaseType, ONLY: math => TypeMathOpt
 USE InputUtility, ONLY: Input
 IMPLICIT NONE
 
-INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
-
-INTEGER(I4B), PARAMETER :: TEMP_INTVEC_LEN = 128
-INTEGER(I4B) :: TEMP_INTVEC(TEMP_INTVEC_LEN)
-!$OMP THREADPRIVATE(TEMP_INTVEC)
-
-INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
-!$OMP THREADPRIVATE(TEMP_DYNA_INTVEC)
-
 #include "lisf.h"
 
 #ifdef DEBUG_VER
@@ -280,10 +271,11 @@ IF (isNative) THEN
                     'realvec obtained from value is not ASSOCIATED')
 #endif
 
-  CALL obj%SetMultiple3( &
-    istart=istart, iend=iend, stride=stride, VALUE=realvec, &
-    istart_value=istart_value, iend_value=iend_value2, &
-    stride_value=stride_value, scale=areal, addContribution=isAdd)
+  CALL obj%SetMultiple3(istart=istart, iend=iend, stride=stride, &
+                        VALUE=realvec, istart_value=istart_value, &
+                        iend_value=iend_value2, &
+                        stride_value=stride_value, scale=areal, &
+                        addContribution=isAdd)
 
   realvec => NULL()
 
@@ -309,9 +301,10 @@ ELSE
   ALLOCATE (temp(tsize))
   CALL VALUE%GetMultiple(istart=istart_value, iend=iend_value2, &
                          stride=stride_value, VALUE=temp, tsize=tsize2)
-  CALL obj%SetMultiple3( &
-    istart=istart, iend=iend, stride=stride, VALUE=temp, istart_value=1, &
-    iend_value=tsize, stride_value=1, scale=areal, addContribution=isAdd)
+
+  CALL obj%SetMultiple3(istart=istart, iend=iend, stride=stride, VALUE=temp, &
+                        istart_value=1, iend_value=tsize, stride_value=1, &
+                        scale=areal, addContribution=isAdd)
   DEALLOCATE (temp)
 END IF
 

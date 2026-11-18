@@ -41,7 +41,6 @@ USE InputUtility, ONLY: Input
 USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
 USE ReallocateUtility, ONLY: Reallocate
 USE RealVector_Method, ONLY: Add, GetPointer, Set
-USE SafeSizeUtility, ONLY: SafeSize
 USE ScalarField_Class, ONLY: ScalarField_
 USE ScalarFieldLis_Class, ONLY: ScalarFieldLis_
 USE STScalarField_Class, ONLY: STScalarField_
@@ -52,14 +51,6 @@ USE VectorField_Class, ONLY: VectorField_
 USE VectorFieldLis_Class, ONLY: VectorFieldLis_
 IMPLICIT NONE
 
-INTEGER(I4B), PARAMETER :: EXPAND_FACTOR = 2
-INTEGER(I4B), PARAMETER :: TEMP_INTVEC_LEN = 128
-INTEGER(I4B) :: TEMP_INTVEC(TEMP_INTVEC_LEN)
-!$OMP THREADPRIVATE(TEMP_INTVEC)
-
-INTEGER(I4B), ALLOCATABLE :: TEMP_DYNA_INTVEC(:)
-!$OMP THREADPRIVATE(TEMP_DYNA_INTVEC)
-!
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: modName = &
                            "STVectorField_Class@SetMethods.F90"
@@ -74,6 +65,7 @@ CONTAINS
 MODULE PROCEDURE obj_Set1
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set1()"
+LOGICAL(LGT) :: isok
 #endif
 INTEGER(I4B) :: ii, tsize
 
@@ -99,15 +91,28 @@ CALL AssertError2(SIZE(VALUE, 2), obj%timeCompo, myName, &
 
 #include "./localNodeError.F90"
 
+#ifdef DEBUG_VER
+isok = .NOT. obj%isIntTempVecInUse
+CALL AssertError1(isok, myName, "obj%intTempVec is already in use")
+obj%isIntTempVecInUse = .TRUE.
+#endif
+
+CALL Reallocate(obj%intTempVec, obj%spaceCompo, isExpand=math%yes, &
+                expandFactor=math%two_i)
+
 DO ii = 1, obj%timeCompo
   CALL GetNodeLoc_( &
-    obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
+    obj=obj%dof, nodenum=globalNode, ans=obj%intTempVec, &
     tsize=tsize, timeCompo=ii, spaceCompo=obj%space_idofs, ivar=1)
 
   CALL obj%SetMultiple( &
-    VALUE=VALUE(:, ii), indx=TEMP_INTVEC(1:tsize), &
+    VALUE=VALUE(:, ii), indx=obj%intTempVec(1:tsize), &
     scale=scale, addContribution=addContribution)
 END DO
+
+#ifdef DEBUG_VER
+obj%isIntTempVecInUse = .FALSE.
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -187,7 +192,9 @@ CALL AssertError1(obj%isInitiated(), myName, &
 #ifdef DEBUG_VER
 isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo out of bound")
+#endif
 
+#ifdef DEBUG_VER
 isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
@@ -196,9 +203,9 @@ s = GetNodeLoc(obj=obj%dof, &
                idof=GetIDOF(spaceCompo=spaceCompo, timeCompo=timeCompo, &
                             tspaceCompo=obj%spaceCompo))
 
-CALL obj%SetMultiple( &
-  VALUE=VALUE, istart=s(1), iend=s(2), &
-  stride=s(3), scale=scale, addContribution=addContribution)
+CALL obj%SetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), &
+                     stride=s(3), scale=scale, &
+                     addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -280,18 +287,20 @@ CALL AssertError1(obj%isInitiated(), myName, &
 #ifdef DEBUG_VER
 isok = (spaceCompo .GE. 1) .AND. (spaceCompo .LE. obj%spaceCompo)
 CALL AssertError1(isok, myName, "spaceCompo out of bound")
+#endif
 
+#ifdef DEBUG_VER
 isok = (timeCompo .GE. 1) .AND. (timeCompo .LE. obj%timeCompo)
 CALL AssertError1(isok, myName, "timeCompo out of bound")
 #endif
 
-s = GetNodeLoc(obj=obj%dof, &
-               idof=GetIDOF(spaceCompo=spaceCompo, timeCompo=timeCompo, &
-                            tspaceCompo=obj%spaceCompo))
+s = GetNodeLoc(obj=obj%dof, idof=GetIDOF(spaceCompo=spaceCompo, &
+                                         timeCompo=timeCompo, &
+                                         tspaceCompo=obj%spaceCompo))
 
-CALL obj%SetMultiple( &
-  VALUE=VALUE, istart=s(1), iend=s(2), &
-  stride=s(3), scale=scale, addContribution=addContribution)
+CALL obj%SetMultiple(VALUE=VALUE, istart=s(1), iend=s(2), &
+                     stride=s(3), scale=scale, &
+                     addContribution=addContribution)
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -425,33 +434,26 @@ CALL AssertError2(SIZE(VALUE), SIZE(globalNode), myName, &
 
 #include "./localNodeError.F90"
 
-tsize = SIZE(globalNode)
-
-IF (tsize .LE. TEMP_INTVEC_LEN) THEN
-  CALL GetNodeLoc_( &
-    obj=obj%dof, nodenum=globalNode, ans=TEMP_INTVEC, &
-    tsize=tsize, timeCompo=timeCompo, spaceCompo=spaceCompo, ivar=1)
-
-  CALL obj%SetMultiple(indx=TEMP_INTVEC(1:tsize), VALUE=VALUE, scale=scale, &
-                       addContribution=addContribution)
 #ifdef DEBUG_VER
-  CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                          '[END] ')
+isok = .NOT. obj%isIntTempVecInUse
+CALL AssertError1(isok, myName, "obj%intTempVec is already in use")
+obj%isIntTempVecInUse = .TRUE.
 #endif
 
-  RETURN
-END IF
-
-IF (tsize .GT. SafeSize(TEMP_DYNA_INTVEC)) THEN
-  CALL Reallocate(TEMP_DYNA_INTVEC, EXPAND_FACTOR * tsize)
-END IF
+tsize = SIZE(globalNode)
+CALL Reallocate(obj%intTempVec, tsize, isExpand=math%yes, &
+                expandFactor=math%two_i)
 
 CALL GetNodeLoc_( &
-  obj=obj%dof, nodenum=globalNode, ans=TEMP_DYNA_INTVEC, &
+  obj=obj%dof, nodenum=globalNode, ans=obj%intTempVec, &
   tsize=tsize, timeCompo=timeCompo, spaceCompo=spaceCompo, ivar=1)
 
-CALL obj%SetMultiple(indx=TEMP_DYNA_INTVEC(1:tsize), VALUE=VALUE, &
+CALL obj%SetMultiple(indx=obj%intTempVec(1:tsize), VALUE=VALUE, &
                      scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+obj%isIntTempVecInUse = .FALSE.
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -536,9 +538,12 @@ CASE DEFAULT
                     'No case found for Value%vartype '// &
                     ' only SpaceTime allowed')
 #endif
-
 END SELECT
 
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set10
 
 !----------------------------------------------------------------------------
@@ -546,7 +551,21 @@ END PROCEDURE obj_Set10
 !----------------------------------------------------------------------------
 
 MODULE PROCEDURE obj_Set11
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
+#endif
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
 CALL obj%SetAll(VALUE=VALUE, scale=scale, addContribution=addContribution)
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
 END PROCEDURE obj_Set11
 
 !----------------------------------------------------------------------------
@@ -613,9 +632,9 @@ IF (storageFMT .EQ. DOF_FMT) THEN
 
     s = GetNodeLoc(obj=obj%dof, idof=indx)
 
-    CALL obj%SetMultiple( &
-      VALUE=VALUE(:, ii), istart=s(1), iend=s(2), &
-      stride=s(3), scale=scale, addContribution=addContribution)
+    CALL obj%SetMultiple(VALUE=VALUE(:, ii), istart=s(1), iend=s(2), &
+                         stride=s(3), scale=scale, &
+                         addContribution=addContribution)
   END DO
 
 #ifdef DEBUG_VER
@@ -626,15 +645,29 @@ IF (storageFMT .EQ. DOF_FMT) THEN
   RETURN
 END IF
 
+#ifdef DEBUG_VER
+isok = .NOT. obj%isIntTempVecInUse
+CALL AssertError1(isok, myName, "obj%intTempVec is already in use")
+obj%isIntTempVecInUse = .TRUE.
+#endif
+
+CALL Reallocate(obj%intTempVec, SIZE(spaceCompo), isExpand=math%yes, &
+                expandFactor=math%two_i)
+
 indx = obj%dof .tNodes. 1
 
 DO ii = 1, indx
-  CALL GetNodeLoc_(obj=obj%dof, nodenum=ii, ans=TEMP_INTVEC, tsize=tsize, &
-                   timeCompo=timeCompo, spaceCompo=spaceCompo, ivar=1)
+  CALL GetNodeLoc_(obj=obj%dof, nodenum=ii, ans=obj%intTempVec, &
+                   tsize=tsize, timeCompo=timeCompo, &
+                   spaceCompo=spaceCompo, ivar=1)
 
-  CALL obj%SetMultiple(VALUE=VALUE(:, ii), indx=TEMP_INTVEC(1:tsize), &
+  CALL obj%SetMultiple(VALUE=VALUE(:, ii), indx=obj%intTempVec(1:tsize), &
                        scale=scale, addContribution=addContribution)
 END DO
+
+#ifdef DEBUG_VER
+obj%isIntTempVecInUse = .FALSE.
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -671,8 +704,7 @@ CALL AssertError1(isok, myName, "spaceCompo out of bound")
 
 #ifdef DEBUG_VER
 DO ii = 1, SIZE(timeCompo)
-  isok = (timeCompo(ii) .GE. 1) .AND. &
-         (timeCompo(ii) .LE. obj%timeCompo)
+  isok = (timeCompo(ii) .GE. 1) .AND. (timeCompo(ii) .LE. obj%timeCompo)
   CALL AssertError1(isok, myName, &
                     "timeCompo "//tostring(ii)//" out of bound")
 END DO
@@ -706,9 +738,9 @@ IF (storageFMT .EQ. DOF_FMT) THEN
 
     s = GetNodeLoc(obj=obj%dof, idof=indx)
 
-    CALL obj%SetMultiple( &
-      VALUE=VALUE(:, ii), istart=s(1), iend=s(2), &
-      stride=s(3), scale=scale, addContribution=addContribution)
+    CALL obj%SetMultiple(VALUE=VALUE(:, ii), istart=s(1), iend=s(2), &
+                         stride=s(3), scale=scale, &
+                         addContribution=addContribution)
   END DO
 
 #ifdef DEBUG_VER
@@ -719,15 +751,29 @@ IF (storageFMT .EQ. DOF_FMT) THEN
   RETURN
 END IF
 
+#ifdef DEBUG_VER
+isok = .NOT. obj%isIntTempVecInUse
+CALL AssertError1(isok, myName, "obj%intTempVec is already in use")
+obj%isIntTempVecInUse = .TRUE.
+#endif
+
+CALL Reallocate(obj%intTempVec, SIZE(timeCompo), isExpand=math%yes, &
+                expandFactor=math%two_i)
+
 indx = obj%dof .tNodes. 1
 
 DO ii = 1, indx
-  CALL GetNodeLoc_(obj=obj%dof, nodenum=ii, ans=TEMP_INTVEC, tsize=tsize, &
-                   timeCompo=timeCompo, spaceCompo=spaceCompo, ivar=1)
+  CALL GetNodeLoc_(obj=obj%dof, nodenum=ii, ans=obj%intTempVec, &
+                   tsize=tsize, timeCompo=timeCompo, &
+                   spaceCompo=spaceCompo, ivar=1)
 
-  CALL obj%SetMultiple(VALUE=VALUE(:, ii), indx=TEMP_INTVEC(1:tsize), &
+  CALL obj%SetMultiple(VALUE=VALUE(:, ii), indx=obj%intTempVec(1:tsize), &
                        scale=scale, addContribution=addContribution)
 END DO
+
+#ifdef DEBUG_VER
+obj%isIntTempVecInUse = .FALSE.
+#endif
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -743,7 +789,7 @@ MODULE PROCEDURE obj_Set14
 #ifdef DEBUG_VER
 CHARACTER(*), PARAMETER :: myName = "obj_Set14()"
 #endif
-INTEGER(I4B) :: tsize
+INTEGER(I4B) :: tsize, ii
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -765,7 +811,8 @@ ELSE
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                         VALUE=obj%tempVec, tsize=tsize)
+                         VALUE=obj%tempVec, tsize=ii)
+  tsize = ii
   CALL obj%SetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
                        VALUE=obj%tempVec(1:tsize))
 END IF
@@ -785,7 +832,7 @@ MODULE PROCEDURE obj_SetFromVectorField
 CHARACTER(*), PARAMETER :: myName = "obj_SetFromVectorField()"
 LOGICAL(LGT) :: isok
 #endif
-INTEGER(I4B) :: idof, icompo, s(3), p(3), tsize
+INTEGER(I4B) :: idof, icompo, s(3), p(3), tsize, ii
 LOGICAL(LGT) :: isNative
 REAL(DFP), POINTER :: realvec(:)
 
@@ -834,7 +881,8 @@ ELSE
   CALL Reallocate(obj%tempVec, tsize, isExpand=math%yes, &
                   expandFactor=math%two_i)
   CALL VALUE%GetMultiple(istart=1_I4B, iend=tsize, stride=1_I4B, &
-                         VALUE=obj%tempVec, tsize=tsize)
+                         VALUE=obj%tempVec, tsize=ii)
+  tsize = ii
 END IF
 
 DO icompo = 1, obj%spaceCompo
@@ -938,16 +986,17 @@ DO icompo = 1, obj%spaceCompo
   p = GetNodeLoc(obj=obj%dof, idof=idof)
 
   IF (isNative) THEN
-    CALL VALUE%SetMultiple( &
-      VALUE=realvec, scale=scale, addContribution=addContribution, &
-      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-      istart=s(1), iend=s(2), stride=s(3))
+    CALL VALUE%SetMultiple(VALUE=realvec, scale=scale, &
+                           addContribution=addContribution, &
+                           istart_value=p(1), iend_value=p(2), &
+                           stride_value=p(3), &
+                           istart=s(1), iend=s(2), stride=s(3))
   ELSE
-    CALL VALUE%SetMultiple( &
-      VALUE=VALUE%tempVec(1:tsize), scale=scale, &
-      addContribution=addContribution, &
-      istart_value=p(1), iend_value=p(2), stride_value=p(3), &
-      istart=s(1), iend=s(2), stride=s(3))
+    CALL VALUE%SetMultiple(VALUE=VALUE%tempVec(1:tsize), scale=scale, &
+                           addContribution=addContribution, &
+                           istart_value=p(1), iend_value=p(2), &
+                           stride_value=p(3), &
+                           istart=s(1), iend=s(2), stride=s(3))
   END IF
 END DO
 

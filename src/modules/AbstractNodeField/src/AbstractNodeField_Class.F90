@@ -191,6 +191,27 @@ TYPE, ABSTRACT, EXTENDS(AbstractField_) :: AbstractNodeField_
   !! - It is not copied by `Copy`; `Deallocate` frees it.
   !!
   !! note - This variable is only for internal use
+  INTEGER(I4B), ALLOCATABLE :: intTempVec(:)
+  !! Integer workspace that Set methods reuse for the DOF indices
+  !! that they pass to `SetMultiple`, instead of a module buffer.
+  !! It only grows (`Reallocate` with `isExpand`), so its size can be
+  !! larger than the data it holds: always pass `intTempVec(1:tsize)`.
+  !! Rules for using it:
+  !!
+  !! - Only a high-level Set method may fill it and pass it as `indx`
+  !!   to `SetMultiple` or `SetSingle` of the same `obj`.
+  !! - Leaf methods (`SetMultiple`, `SetSingle`, `GetMultiple`, and
+  !!   their LIS versions) must never use it: it may be their `indx`.
+  !! - In DEBUG mode, set `isIntTempVecInUse` while it holds data,
+  !!   and check that it is false before filling it.
+  !! - It is not thread safe: do not share one field across threads.
+  !! - It is not copied by `Copy`; `Deallocate` frees it.
+  !!
+  !! note - This variable is only for internal use
+  LOGICAL(LGT) :: isIntTempVecInUse = .FALSE.
+  !! True while `intTempVec` holds data that is still needed.
+  !! It is set and checked only in DEBUG mode, to catch nested use.
+  !! note - This variable is only for internal use
 
 CONTAINS
   ! @ConstructorMethods
