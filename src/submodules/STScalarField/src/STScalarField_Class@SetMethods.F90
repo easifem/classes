@@ -18,15 +18,12 @@
 SUBMODULE(STScalarField_Class) SetMethods
 USE AbstractMesh_Class, ONLY: AbstractMesh_
 USE ArangeUtility, ONLY: Arange
-USE BaseType, ONLY: TypeFEVariableScalar
-USE BaseType, ONLY: TypeFEVariableSpaceTime
 USE Display_Method, ONLY: tostring
 USE DOF_Method, ONLY: GetIDOF
 USE DOF_Method, ONLY: GetIndex_
 USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: GetNodeLoc_
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
-USE FEVariable_Method, ONLY: Get
 USE FieldOpt_Class, ONLY: TypeField => TypeFieldOpt
 USE FieldOpt_Class, ONLY: TypeFieldOpt
 USE GlobalData, ONLY: NONE, Scalar, SpaceTime
@@ -588,6 +585,7 @@ MODULE PROCEDURE obj_Set11
 LOGICAL(LGT) :: isok
 CHARACTER(*), PARAMETER :: myName = "obj_Set11()"
 #endif
+INTEGER(I4B) :: ii, nsize, offset
 
 #ifdef DEBUG_VER
 CALL e%RaiseInformation(modName//'::'//myName//' - '// &
@@ -610,11 +608,25 @@ CALL AssertError1(isok, myName, &
 SELECT CASE (VALUE%vartype)
 
 CASE (SpaceTime)
-  CALL obj%Set(VALUE=GET(VALUE, TypeFEVariableScalar, &
-                         TypeFEVariableSpaceTime), &
-               globalNode=globalNode, scale=scale, &
-               addContribution=addContribution, islocal=islocal, &
-               storageFMT=TypeField%storageFormatDOF)
+
+#ifdef DEBUG_VER
+  CALL AssertError2(VALUE%s(1), SIZE(globalNode), myName, &
+                    "a=VALUE%s(1), b=SIZE(globalNode)")
+  CALL AssertError2(VALUE%s(2), obj%timeCompo, myName, &
+                    "a=VALUE%s(2), b=obj%timeCompo")
+#endif
+
+  ! VALUE%val is in (J, a) format (node, time component), so the a-th
+  ! block of SIZE(globalNode) values is the a-th time component. Each
+  ! block is set in place (obj_Set9), no copy is made.
+  nsize = SIZE(globalNode)
+  DO ii = 1, obj%timeCompo
+    offset = (ii - 1) * nsize
+    CALL obj%Set(VALUE=VALUE%val(offset + 1:offset + nsize), &
+                 globalNode=globalNode, scale=scale, &
+                 addContribution=addContribution, islocal=islocal, &
+                 timeCompo=ii)
+  END DO
 
 CASE DEFAULT
 #ifdef DEBUG_VER

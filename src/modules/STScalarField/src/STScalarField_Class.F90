@@ -1489,8 +1489,9 @@ END INTERFACE
 ! stored as val(j, a), the value at globalNode(j) of time component a
 ! (s = [SIZE(globalNode), timeCompo]). This is the easifemBase layout
 ! (space first) and the layout returned by Get6 and GetFEVariable. The
-! values are set by Set8 with the DOF format. In debug mode an error is
-! raised for another vartype.
+! values are used in place from VALUE%val, so no copy is made: each
+! time component is set by Set9. In debug mode an error is raised for
+! another vartype.
 !
 ! Examples
 !

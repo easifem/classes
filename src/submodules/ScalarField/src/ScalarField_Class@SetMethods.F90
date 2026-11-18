@@ -18,9 +18,6 @@
 SUBMODULE(ScalarField_Class) SetMethods
 USE AbstractFE_Class, ONLY: AbstractFE_
 USE AbstractMesh_Class, ONLY: AbstractMesh_
-USE BaseType, ONLY: TypeFEVariableScalar
-USE BaseType, ONLY: TypeFEVariableConstant
-USE BaseType, ONLY: TypeFEVariableSpace
 USE BaseType, ONLY: TypeFEVariableOpt
 USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
@@ -29,7 +26,6 @@ USE DOF_Method, ONLY: GetNodeLoc
 USE DOF_Method, ONLY: OPERATOR(.tNodes.)
 USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
 USE ElemShapeData_Method, ONLY: GetInterpolation_
-USE FEVariable_Method, ONLY: FEVariableGet => GET
 USE InputUtility, ONLY: Input
 USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePointInitiate => Initiate
@@ -248,20 +244,19 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[START] ')
 #endif
 
+! The values of VALUE are used in place from VALUE%val, so no copy is
+! made: val(1) for a constant, val(1:nns) for a space variable.
 SELECT CASE (VALUE%vartype)
 
 CASE (TypeFEVariableOpt%constant)
 
-  CALL obj%Set(VALUE=FEVariableGet(VALUE, TypeFEVariableScalar, &
-                                   TypeFEVariableConstant), globalNode= &
-               globalNode, scale=scale, addContribution=addContribution, &
-               islocal=islocal)
+  CALL obj%Set(VALUE=VALUE%val(1), globalNode=globalNode, scale=scale, &
+               addContribution=addContribution, islocal=islocal)
 
 CASE (TypeFEVariableOpt%space)
 
-  CALL obj%Set(VALUE=FEVariableGet(VALUE, TypeFEVariableScalar, &
-                                   TypeFEVariableSpace), globalNode= &
-               globalNode, scale=scale, addContribution=addContribution, &
+  CALL obj%Set(VALUE=VALUE%val(1:VALUE%s(1)), globalNode=globalNode, &
+               scale=scale, addContribution=addContribution, &
                islocal=islocal)
 
 CASE DEFAULT
