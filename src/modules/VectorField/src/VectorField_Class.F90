@@ -210,8 +210,6 @@ CONTAINS
   !! Import data from HDF5 file
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data to HDF5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-  !! Export data to VTK file
   PROCEDURE, PUBLIC, PASS(obj) :: ExportHigherOrderNodeCoordToVTK &
     => obj_ExportHigherOrderNodeCoordToVTK
   !! Write the field as the node coordinates of a high order mesh
@@ -665,29 +663,6 @@ INTERFACE VectorFieldExport
     !! group in the HDF5 file
   END SUBROUTINE obj_Export
 END INTERFACE VectorFieldExport
-
-!----------------------------------------------------------------------------
-!                                                      ExportToVTK@VTKMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-10-28
-! summary: Write the values of a vector field in a VTK file
-!
-! The values of all DOFs are written as one data array (named as the
-! field) with three components x, y, z; the missing components are
-! zero. It is called by WriteData_vtk of AbstractNodeField_.
-!
-! See also: [[AbstractNodeField_:obj_WriteData_vtk1]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
-    CLASS(VectorField_), INTENT(INOUT) :: obj
-    !! node field object
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    !! vtkfile object
-  END SUBROUTINE obj_ExportToVTK
-END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                  ExportHigherOrderNodeCoordToVTK@VTKMethods

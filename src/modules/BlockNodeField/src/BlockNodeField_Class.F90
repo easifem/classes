@@ -208,8 +208,7 @@ CONTAINS
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, &
     Get5, Get6, Get7
   !! Generic method to get values
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetFEVariable => &
-    obj_GetFEVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFEVariable
   !! Get all DOFs of ivar at nodes in FEVariable (default ivar = 1)
 
   ! @DirichletBCMethods

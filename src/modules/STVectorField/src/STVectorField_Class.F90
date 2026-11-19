@@ -180,8 +180,7 @@ CONTAINS
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4, Get5, &
     Get6, Get7
   !! Get the values of the field
-  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: GetFEVariable => &
-    obj_GetFeVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get multiple values in FEVariable
 
   ! SET:

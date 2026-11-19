@@ -22,7 +22,6 @@ USE BaseType, ONLY: QuadraturePoint_
 USE BaseType, ONLY: ElemShapeData_
 USE BaseType, ONLY: TypeInterpolationOpt
 USE BaseType, ONLY: math => TypeMathOpt
-USE Display_Method, ONLY: ToString
 USE ElemShapeData_Method, ONLY: ElemShapeDataDeallocate => DEALLOCATE
 USE QuadraturePoint_Method, ONLY: QuadraturePointInitiate => Initiate
 USE QuadraturePoint_Method, ONLY: QuadraturePointDeallocate => DEALLOCATE
@@ -35,49 +34,6 @@ CHARACTER(*), PARAMETER :: modName = &
 #endif
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!                                                               ExportToVTK
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ExportToVTK
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
-#endif
-
-INTEGER(I4B) :: tsize, tnodes
-REAL(DFP), ALLOCATABLE :: VALUE(:)
-TYPE(String) :: name
-CHARACTER(1), ALLOCATABLE :: dofnames(:)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-tsize = obj%GetTotalPhysicalVars()
-ALLOCATE (dofnames(tsize))
-CALL obj%GetPhysicalNames(dofnames)
-
-tsize = obj%fedof%GetTotalDOF()
-tnodes = obj%fedof%GetTotalVertexDOF()
-
-ALLOCATE (VALUE(tsize))
-CALL obj%Get(VALUE=VALUE, tsize=tsize)
-
-! array name: <fieldname>_<dofname>, as in AbstractNodeField
-name = obj%name%chars()//"_"//dofnames(1)
-
-CALL vtk%WriteDataArray(name=name, x=VALUE(1:tnodes), numberOfComponents=1)
-
-name = ''
-DEALLOCATE (dofnames)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
 !                                                   GetVtkUnstructuredValue

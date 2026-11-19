@@ -38,7 +38,6 @@ USE GlobalData, ONLY: DFP, I4B, INT64, LGT
 USE HDF5File_Class, ONLY: HDF5File_
 USE MeshField_Class, ONLY: MeshField_
 USE String_Class, ONLY: String
-USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
 
 PRIVATE
@@ -112,11 +111,9 @@ CONTAINS
   !! Display the field
   PROCEDURE, PUBLIC, PASS(obj) :: Export => obj_Export
   !! Export data in hdf5 file
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk
-  !! Write data in vtk file
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_hdf5 => obj_WriteData_hdf5
   !! Write data in hdf5 file
-  GENERIC, PUBLIC :: WriteData => WriteData_vtk, WriteData_hdf5
+  GENERIC, PUBLIC :: WriteData => WriteData_hdf5
 
   ! @GetMethods
   ! DEFERRED:
@@ -355,27 +352,25 @@ END INTERFACE AbstractFieldExport
 !                                                     WriteData@IOMethods
 !----------------------------------------------------------------------------
 
+!> author: Vikas Sharma, Ph. D.
+! date: 2023-11-24
+! summary: Write the data of a field in an HDF5 file
+!
+! This is the only routine of the generic `WriteData`. A child class
+! should override it. This routine does nothing; debug builds raise an
+! error. No class in `easifemClasses` overrides it yet.
+!
+! See also: [[obj_Export]]
+
 INTERFACE
   MODULE SUBROUTINE obj_WriteData_hdf5(obj, hdf5, group)
     CLASS(AbstractField_), INTENT(INOUT) :: obj
+    !! field
     TYPE(HDF5File_), INTENT(INOUT) :: hdf5
+    !! HDF5 file, opened for writing
     CHARACTER(*), INTENT(IN) :: group
+    !! group in the HDF5 file
   END SUBROUTINE obj_WriteData_hdf5
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      WriteData@IOMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-24
-! summary:  Export data in [[VTKFile_]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_WriteData_vtk(obj, vtk)
-    CLASS(AbstractField_), INTENT(INOUT) :: obj
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-  END SUBROUTINE obj_WriteData_vtk
 END INTERFACE
 
 !----------------------------------------------------------------------------
