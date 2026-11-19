@@ -137,8 +137,7 @@ CONTAINS
   !! Get selected entries in an FEVariable
   GENERIC, PUBLIC :: Get => Get1, Get2, Get3, Get4
   !! Get the entries of the scalar field
-  PROCEDURE, PUBLIC, NON_OVERRIDABLE, PASS(obj) :: GetFEVariable => &
-    obj_GetFeVariable
+  PROCEDURE, PUBLIC, PASS(obj) :: GetFEVariable => obj_GetFeVariable
   !! Get selected entries in an FEVariable, same as `Get4`
   PROCEDURE, PUBLIC, PASS(obj) :: Size => obj_Size
   !! Number of values stored on this process
@@ -2632,8 +2631,7 @@ END INTERFACE
 ! component. These are the first `fedof%GetTotalVertexDOF()` values.
 !
 ! The array name is `<fieldname>_<dofname>`, for example `u_u` for a
-! field named `u`. [[AbstractNodeField_:obj_WriteData_vtk2]] uses the
-! same naming.
+! field named `u`.
 !
 ! Changes:
 !   - 2026-11-18: the array name includes the field name; it was only

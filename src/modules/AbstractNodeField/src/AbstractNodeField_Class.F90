@@ -58,7 +58,6 @@ PUBLIC :: AbstractNodeFieldReadFEDOFFromToml
 PUBLIC :: AbstractNodeFieldReadOptsFromToml
 PUBLIC :: AbstractNodeFieldSetParam
 PUBLIC :: AbstractNodeFieldGetFEVariable
-PUBLIC :: NodeFieldsWriteData
 
 INTEGER(I4B), PARAMETER :: MYSTORAGEFORMAT = TypeFieldOpt%storageFormatDOF
 
@@ -367,11 +366,6 @@ CONTAINS
   !! Write the values in a VTK file (child class)
   PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk1
   !! Write the mesh and the values in a VTK file
-  PROCEDURE, NOPASS :: WriteData_vtk2 => &
-    obj_WriteData_vtk2
-  !! Write several node fields in a VTK file
-  GENERIC, PUBLIC :: WriteData => WriteData_vtk2
-  !! Write several node fields in a VTK file
   PROCEDURE, PRIVATE, PASS(obj) :: GetVtkUnstructuredGridData1 => &
     obj_GetVtkUnstructuredGridData1
   !! Get vtk data for unstructured grid
@@ -937,7 +931,7 @@ END INTERFACE
 ! 3. The point data section and the piece are closed, and the file is
 !    closed.
 !
-! See also: [[obj_WriteData_vtk2]], [[obj_ExportToVTK]]
+! See also: [[obj_ExportToVTK]]
 
 INTERFACE AbstractNodeFieldWriteData
   MODULE SUBROUTINE obj_WriteData_vtk1(obj, vtk)
@@ -947,35 +941,6 @@ INTERFACE AbstractNodeFieldWriteData
     !! VTK file
   END SUBROUTINE obj_WriteData_vtk1
 END INTERFACE AbstractNodeFieldWriteData
-
-!----------------------------------------------------------------------------
-!                                                        WriteData@VTKMethods
-!----------------------------------------------------------------------------
-
-!> author: Shion Shimizu
-! date: 2023-12-21
-! summary: Write several node fields in a VTK file
-!
-! The node fields obj(:)%ptr (at most 24, not associated pointers are
-! skipped) must be initiated and have the same mesh. The mesh of the
-! last field is written, and then the vertex values of all physical
-! variables of all fields are written as point data. vtk must be open;
-! it is not closed on return.
-!
-! See also: [[obj_WriteData_vtk1]]
-
-INTERFACE AbstractNodeFieldWriteData
-  MODULE SUBROUTINE obj_WriteData_vtk2(obj, vtk)
-    CLASS(AbstractNodeFieldPointer_), INTENT(INOUT) :: obj(:)
-    !! node fields
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    !! VTK file
-  END SUBROUTINE obj_WriteData_vtk2
-END INTERFACE AbstractNodeFieldWriteData
-
-INTERFACE NodeFieldsWriteData
-  MODULE PROCEDURE obj_WriteData_vtk2
-END INTERFACE NodeFieldsWriteData
 
 !----------------------------------------------------------------------------
 !                                                    GetStorageFMT@GetMethods
