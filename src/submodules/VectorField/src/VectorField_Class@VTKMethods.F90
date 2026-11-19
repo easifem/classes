@@ -17,14 +17,11 @@
 
 SUBMODULE(VectorField_Class) VTKMethods
 USE AbstractFE_Class, ONLY: AbstractFE_
-USE BaseType, ONLY: TypeInterpolationOpt
-USE Display_Method, ONLY: Display
 USE FEDOF_Class, ONLY: FEDOF_
 USE GlobalData, ONLY: INT8
 USE InputUtility, ONLY: Input
 USE ReallocateUtility, ONLY: Reallocate
 USE ReferenceElement_Method, ONLY: GetVtkElementTypeFromTopology_
-USE String_Class, ONLY: String
 USE VTKFile_Class, ONLY: VTK_BINARY_APPENDED
 USE VTKFile_Class, ONLY: VTK_UNSTRUCTUREDGRID
 IMPLICIT NONE
@@ -35,40 +32,6 @@ CHARACTER(*), PARAMETER :: modName = &
 #endif
 
 CONTAINS
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_ExportToVTK
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_ExportToVTK()"
-#endif
-
-INTEGER(I4B) :: tsize, value_i, value_j
-REAL(DFP), ALLOCATABLE :: VALUE(:, :)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-tsize = obj%fedof%GetTotalDOF()
-CALL Reallocate(VALUE, tsize, 3)
-
-CALL obj%Get(VALUE=VALUE, nrow=value_i, ncol=value_j, &
-             storageFMT=obj%GetStorageFMT())
-
-CALL vtk%WriteDataArray(NAME=obj%name, x=VALUE(1:value_i, 1), &
-                        y=VALUE(1:value_i, 2), z=VALUE(1:value_i, 3))
-
-IF (ALLOCATED(VALUE)) DEALLOCATE (VALUE)
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_ExportToVTK
 
 !----------------------------------------------------------------------------
 !                                               ExportHighOrderNodeCoordToVTK

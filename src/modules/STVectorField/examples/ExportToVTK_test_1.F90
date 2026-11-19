@@ -4,8 +4,7 @@
 !
 ! This example writes the mesh and the nodal values of a space-time
 ! vector field in a VTK file. It uses only VTKFile_, the mesh and Get of
-! the field. STVectorField_ has no WriteData_vtk or ExportToVTK of its
-! own.
+! the field. STVectorField_ has no VTK method of its own.
 !
 ! The steps are:
 !

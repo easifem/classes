@@ -4,7 +4,7 @@
 !
 ! This example writes the mesh and the nodal values of a vector field
 ! in a VTK file. It uses only VTKFile_, the mesh and Get of the field.
-! It does not call WriteData_vtk or ExportToVTK of the field.
+! VectorField_ has no VTK method of its own.
 !
 ! The steps are:
 !

@@ -39,7 +39,6 @@ USE TimeOpt_Class, ONLY: TimeOpt_
 USE tomlf, ONLY: toml_table
 USE TxtFile_Class, ONLY: TxtFile_
 USE UserFunction_Class, ONLY: UserFunction_
-USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
 PRIVATE
 
@@ -362,10 +361,6 @@ CONTAINS
   !! Set maximum total node numbers for boundary conditions
 
   !@VTKMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-  !! Write the values in a VTK file (child class)
-  PROCEDURE, PUBLIC, PASS(obj) :: WriteData_vtk => obj_WriteData_vtk1
-  !! Write the mesh and the values in a VTK file
   PROCEDURE, PRIVATE, PASS(obj) :: GetVtkUnstructuredGridData1 => &
     obj_GetVtkUnstructuredGridData1
   !! Get vtk data for unstructured grid
@@ -893,54 +888,6 @@ INTERFACE AbstractNodeFieldDisplay
     !! unit number, default is stdout
   END SUBROUTINE obj_Display
 END INTERFACE AbstractNodeFieldDisplay
-
-!----------------------------------------------------------------------------
-!                                                      ExportToVTK@VTKMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2024-07-29
-! summary: Write the values of a node field in a VTK file
-!
-! It is called by [[obj_WriteData_vtk1]] after the mesh is written. It
-! should be implemented by the child class; this routine raises an
-! error.
-!
-! See also: [[ScalarField_:obj_ExportToVTK]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    !! node field object
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    !! vtkfile object
-  END SUBROUTINE obj_ExportToVTK
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                        WriteData@VTKMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2023-11-24
-! summary: Write a node field in a VTK file
-!
-! 1. The mesh of fedof is written in vtk.
-! 2. The point data section is opened, and the values are written by
-!    ExportToVTK of the child class.
-! 3. The point data section and the piece are closed, and the file is
-!    closed.
-!
-! See also: [[obj_ExportToVTK]]
-
-INTERFACE AbstractNodeFieldWriteData
-  MODULE SUBROUTINE obj_WriteData_vtk1(obj, vtk)
-    CLASS(AbstractNodeField_), INTENT(INOUT) :: obj
-    !! node field
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    !! VTK file
-  END SUBROUTINE obj_WriteData_vtk1
-END INTERFACE AbstractNodeFieldWriteData
 
 !----------------------------------------------------------------------------
 !                                                    GetStorageFMT@GetMethods

@@ -4,7 +4,7 @@
 !
 ! This example writes the mesh and the nodal values of a block node
 ! field in a VTK file. It uses only VTKFile_, the mesh and Get of the
-! field. BlockNodeField_ has no WriteData_vtk or ExportToVTK of its own.
+! field. BlockNodeField_ has no VTK method of its own.
 !
 ! The steps are:
 !

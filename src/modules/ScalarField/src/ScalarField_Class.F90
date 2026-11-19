@@ -45,7 +45,6 @@ USE TimeFEDOF_Class, ONLY: TimeFEDOFPointer_
 USE TimeOpt_Class, ONLY: TimeOpt_
 USE Tomlf, ONLY: toml_table
 USE UserFunction_Class, ONLY: UserFunction_
-USE VTKFile_Class, ONLY: VTKFile_
 IMPLICIT NONE
 PRIVATE
 
@@ -212,8 +211,6 @@ CONTAINS
   !! Export the field to an HDF5 file
 
   ! @VTKMethods
-  PROCEDURE, PUBLIC, PASS(obj) :: ExportToVTK => obj_ExportToVTK
-  !! Write the vertex values in a VTK file
 
   ! @TomlMethods
   PROCEDURE, PUBLIC, PASS(obj) :: ImportFromToml1 => obj_ImportFromToml1
@@ -2617,38 +2614,6 @@ INTERFACE
     CHARACTER(*), INTENT(IN) :: group
     !! group in the file
   END SUBROUTINE obj_Export
-END INTERFACE
-
-!----------------------------------------------------------------------------
-!                                                      ExportToVTK@VTKMethods
-!----------------------------------------------------------------------------
-
-!> author: Vikas Sharma, Ph. D.
-! date: 2026-07-01
-! summary: Write the vertex values in a VTK file
-!
-! Writes the values of the vertex DOFs as a data array with one
-! component. These are the first `fedof%GetTotalVertexDOF()` values.
-!
-! The array name is `<fieldname>_<dofname>`, for example `u_u` for a
-! field named `u`.
-!
-! Changes:
-!   - 2026-11-18: the array name includes the field name; it was only
-!     the name of the physical variable (#659).
-!
-! [[AbstractNodeField_:obj_WriteData_vtk1]] calls this method after it
-! writes the mesh.
-!
-! See also: [[AbstractNodeField_:obj_WriteData_vtk1]]
-
-INTERFACE
-  MODULE SUBROUTINE obj_ExportToVTK(obj, vtk)
-    CLASS(ScalarField_), INTENT(INOUT) :: obj
-    !! scalar field
-    TYPE(VTKFile_), INTENT(INOUT) :: vtk
-    !! open VTK file
-  END SUBROUTINE obj_ExportToVTK
 END INTERFACE
 
 !----------------------------------------------------------------------------

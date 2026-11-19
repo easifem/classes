@@ -15,8 +15,6 @@
 ! along with this program.  If not, see <https: //www.gnu.org/licenses/>
 
 SUBMODULE(AbstractField_Class) WriteDataMethods
-USE Display_Method, ONLY: Display
-USE Display_Method, ONLY: ToString
 IMPLICIT NONE
 
 #ifdef DEBUG_VER
@@ -51,32 +49,6 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
                         '[END] ')
 #endif
 END PROCEDURE obj_WriteData_hdf5
-
-!----------------------------------------------------------------------------
-!
-!----------------------------------------------------------------------------
-
-MODULE PROCEDURE obj_WriteData_vtk
-#ifdef DEBUG_VER
-CHARACTER(*), PARAMETER :: myName = "obj_WriteData_vtk()"
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[START] ')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseError(modName//'::'//myName//' - '// &
-                  'This routine should be implemented by '// &
-                  'child classes')
-#endif
-
-#ifdef DEBUG_VER
-CALL e%RaiseInformation(modName//'::'//myName//' - '// &
-                        '[END] ')
-#endif
-END PROCEDURE obj_WriteData_vtk
 
 !----------------------------------------------------------------------------
 !                                                              Include Errors
