@@ -468,6 +468,59 @@ CALL e%RaiseInformation(modName//'::'//myName//' - '// &
 END PROCEDURE obj_Set7
 
 !----------------------------------------------------------------------------
+!                                                                  CopyValue
+!----------------------------------------------------------------------------
+
+MODULE PROCEDURE obj_CopyValue
+#ifdef DEBUG_VER
+CHARACTER(*), PARAMETER :: myName = "obj_CopyValue()"
+LOGICAL(LGT) :: isok
+INTEGER(I4B) :: n1, nshape
+#endif
+
+INTEGER(I4B) :: ii, tsize
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[START] ')
+#endif
+
+#ifdef DEBUG_VER
+isok = obj%isInit .AND. obj2%isInit
+CALL AssertError1(isok, myName, "obj or obj2 is not initiated.")
+
+IF (isok) THEN
+  isok = obj%tSize .EQ. obj2%tSize
+  CALL AssertError1(isok, myName, &
+                    "obj and obj2 have different numbers of elements.")
+END IF
+
+IF (isok) THEN
+  n1 = obj2%tSize + 1
+  isok = ALL(obj%indxVal(1:n1) .EQ. obj2%indxVal(1:n1))
+  IF (isok) isok = ALL(obj%indxShape(1:n1) .EQ. obj2%indxShape(1:n1))
+  IF (isok) THEN
+    nshape = obj2%indxShape(n1) - 1
+    isok = ALL(obj%ss(1:nshape) .EQ. obj2%ss(1:nshape))
+  END IF
+  CALL AssertError1(isok, myName, &
+                    "obj and obj2 have different blocks.")
+END IF
+#endif
+
+tsize = obj2%indxVal(obj2%tSize + 1) - 1
+
+DO CONCURRENT(ii=1:tsize)
+  obj%val(ii) = obj2%val(ii)
+END DO
+
+#ifdef DEBUG_VER
+CALL e%RaiseInformation(modName//'::'//myName//' - '// &
+                        '[END] ')
+#endif
+END PROCEDURE obj_CopyValue
+
+!----------------------------------------------------------------------------
 !                                                             Include Errors
 !----------------------------------------------------------------------------
 

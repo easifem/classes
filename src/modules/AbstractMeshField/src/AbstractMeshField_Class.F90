@@ -266,6 +266,9 @@ CONTAINS
   !! Set the values by using user function pointers
 
   GENERIC, PUBLIC :: Set => Set1, Set2, Set3, Set4, Set5, Set6, Set7
+  PROCEDURE, NON_OVERRIDABLE, PUBLIC, PASS(obj) :: CopyValue => &
+    obj_CopyValue
+  !! Copy the values of another field with the same blocks
 
   ! @InsertMethods
   PROCEDURE, NON_OVERRIDABLE, PASS(obj) :: Insert1 => obj_Insert1
@@ -2743,6 +2746,43 @@ END INTERFACE
 INTERFACE AbstractMeshFieldSet
   MODULE PROCEDURE obj_Set7
 END INTERFACE AbstractMeshFieldSet
+
+!----------------------------------------------------------------------------
+!                                                      CopyValue@SetMethods
+!----------------------------------------------------------------------------
+
+!> author: Shion Shimizu
+! date: 2026-11-23
+! summary: Copy the values of another field with the same blocks
+!
+! Copies the values of `obj2` into `obj`. The name, engine, mesh and
+! shapes of `obj` do not change. It allocates nothing, so the copy is
+! cheap.
+!
+! A typical use is a quantity stored on two time levels. A commit copies
+! the current values into the committed values. A revert does the
+! opposite.
+!
+! @note
+! `obj` and `obj2` must have the same blocks. Same blocks means the same
+! number of elements and the same data shape in each element. For a full
+! copy of another field, use `Initiate(obj2=...)`.
+! @endnote
+!
+! Examples
+!
+! - [test 1](|classes|MeshField/examples/CopyValue_test_1.F90)
+!
+! See also: [[obj_Initiate1]], [[obj_Set1]]
+
+INTERFACE
+  MODULE SUBROUTINE obj_CopyValue(obj, obj2)
+    CLASS(AbstractMeshField_), INTENT(INOUT) :: obj
+    !! mesh field to copy into
+    CLASS(AbstractMeshField_), INTENT(IN) :: obj2
+    !! mesh field to copy from, with the same blocks as `obj`
+  END SUBROUTINE obj_CopyValue
+END INTERFACE
 
 !----------------------------------------------------------------------------
 !                                                       Insert@InsertMethods
